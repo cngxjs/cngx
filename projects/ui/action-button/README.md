@@ -28,6 +28,38 @@ export class ExampleComponent {
 }
 ```
 
+## Inputs
+
+Every input is forwarded to one of the four host directives; the button itself declares none.
+
+|Input|Forwarded to|Default|
+|-|-|-|
+|`cngxActionButton` (variant)|`CngxButtonBrain`|`solid`, then group / config|
+|`tone`|`CngxButtonBrain`|config, then `neutral`|
+|`size`|`CngxButtonBrain`|group / config, then `md`|
+|`disabled`|`CngxButtonBrain`|`false`|
+|`disabledReason`|`CngxButtonBrain`|`undefined`|
+|`cngxDescribedBy`|`CngxButtonBrain`|`null`|
+|`type`|`CngxButtonBrain`|`'button'`|
+|`action`|`CngxAsyncClick` (`cngxAsyncClick`)|required for own runs|
+|`feedbackDuration`|`CngxAsyncClick`|`2000` ms|
+|`showDelay`|`CngxAsyncClick`|`CNGX_LOADING_CONFIG.showDelay` (120 ms)|
+|`minDwell`|`CngxAsyncClick`|`CNGX_LOADING_CONFIG.minDwell` (400 ms)|
+|`pendingLabel`|`CngxActionStatusBrain`|`undefined` (idle label under the spinner)|
+|`succeededLabel`|`CngxActionStatusBrain`|`undefined`|
+|`failedLabel`|`CngxActionStatusBrain`|`undefined`|
+|`succeededAnnouncement`|`CngxActionStatusBrain`|rendered cell, label, then `asyncClickSucceeded`|
+|`failedAnnouncement`|`CngxActionStatusBrain`|rendered cell, label, then `asyncClickFailed`|
+|`autoAnnounce`|`CngxActionStatusBrain`|`undefined` (speaks unless a toast covers)|
+|`externalState`|`CngxActionStatusBrain`|`undefined` (own runs)|
+|`toastSuccess`|`CngxActionToast`|`undefined`|
+|`toastError`|`CngxActionToast`|`undefined`|
+|`toastErrorDetail`|`CngxActionToast`|`false`|
+|`toastSuccessDuration`|`CngxActionToast`|`3000` ms|
+|`toastErrorDuration`|`CngxActionToast`|`'persistent'`|
+
+`(settled)` is re-exported from `CngxAsyncClick`. Read the status layer programmatically through `inject(CNGX_ACTION_STATUS)` on the button's injector; `btn.state` stays on the class.
+
 ## Overview
 
 `button[cngxActionButton]` is an attribute component on the native `<button>`. `CngxAsyncClick` runs as a host directive on the same element, so the button carries `aria-busy`, the async state classes and the click guard itself; every attribute you write lands on the real button. The visual axes are the `CngxButton` ones: `cngxActionButton="outline"` binds the variant, `tone` and `size` are inputs, and `provideButtonConfig` / a button group apply as for `cngxButton`.
