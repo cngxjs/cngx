@@ -1,7 +1,7 @@
 // Structural types for the slices of compodocx's `documentation.json` the tools
 // read. This is a minimal projection - not the full compodocx schema - covering
 // only the component/directive/token keys the five query tools ground against.
-// Grounded on the shape emitted by `compodocx -e json`, schemaVersion 2 and 6.
+// Grounded on the shape emitted by `compodocx -e json`, schemaVersion 2, 6 and 7.
 // Schema 6 drops `category` and `factoryKind`; `schema-v6.ts` derives both from
 // the schema-6 `feature` and `di` fields at load time.
 
@@ -152,16 +152,56 @@ export interface DocFunction {
   di?: DocDi;
 }
 
+/** A lib's numeric error-code range, copied verbatim from the manifest. */
+export interface ErrorCodeRange {
+  lib: string;
+  from: number;
+  to: number;
+}
+
+/**
+ * One error code's projected entry in the snapshot's `cngxErrorCodes` block.
+ * `files` and `page` from the manifest are dropped (repo paths a consumer cannot
+ * act on); `messages` is the deduplicated call-site text and `body` the stripped
+ * page markdown.
+ */
+export interface ErrorCodeEntry {
+  code: string;
+  lib: string;
+  severity: string;
+  production: string;
+  title: string;
+  status: string;
+  url: string;
+  messages: string[];
+  body: string;
+}
+
+/**
+ * The error-code block the snapshot step stamps beside `cngxVersion`, derived
+ * from `scripts/manifests/error-codes.json`. `schemaVersion` is the manifest's
+ * own version (the loader reads 3), not the compodocx schema version.
+ */
+export interface ErrorCodeBlock {
+  schemaVersion: number;
+  docsBaseUrl: string;
+  ranges: ErrorCodeRange[];
+  codes: ErrorCodeEntry[];
+}
+
 /**
  * The subset of the `documentation.json` root the loader reads. `cngxVersion`
  * is absent in the raw compodocx output - the snapshot step stamps it - so it
  * is optional here and the loader normalises a missing value to `null`.
+ * `cngxErrorCodes` is likewise stamped by the snapshot step; a raw export (every
+ * fetched release asset) carries none, which the loader projects to `null`.
  */
 export interface DocumentationJson {
   schemaVersion: number;
   generatedAt?: string;
   compodocxVersion?: string;
   cngxVersion?: string;
+  cngxErrorCodes?: ErrorCodeBlock;
   components?: DocEntry[];
   directives?: DocEntry[];
   injectables?: DocEntry[];

@@ -1,38 +1,93 @@
-import { DOCUMENT } from '@angular/common';
-import { computed, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
-import { outputToObservable, takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { fromEvent, switchMap } from 'rxjs';
-import { createTransitionTracker } from '@cngx/core/utils';
-import { CngxFocusTrap } from '@cngx/common/a11y';
-import type { CngxDrawer, DrawerPosition } from './drawer.directive';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  HostAttributeToken,
+  inject,
+  input,
+  type OnChanges,
+  type OnInit,
+  untracked,
+} from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
+import type { DrawerPosition } from './drawer.directive';
+import {
+  CNGX_DRAWER_HOST,
+  type CngxDrawerHost,
+  type CngxDrawerPanelPresentation,
+} from './drawer-host';
+import {
+  CNGX_DRAWER_SURFACE_DRIVER,
+  type CngxDrawerModality,
+  CngxDrawerSurface,
+  type CngxDrawerSurfaceDriver,
+} from './drawer-surface.directive';
 
 /**
  * How the drawer panel interacts with the content area.
  */
-export type DrawerMode = 'over' | 'push' | 'side';
+export type DrawerMode = 'over' | 'push';
 
 /**
  * The sliding panel of a drawer. Reads its open state from an explicit
- * `[cngxDrawerPanel]` reference - no ancestor injection.
+ * `[cngxDrawerPanel]` reference, or from the `CNGX_DRAWER_HOST` a
+ * `CngxDrawer` on the same element provides when the attribute is bare - no
+ * ancestor injection. Both go through the `CngxDrawerHost` contract, never
+ * the concrete `CngxDrawer` class.
  *
- * Composes `CngxFocusTrap` as a `hostDirective` - the consumer controls
- * the `[enabled]` and `[autoFocus]` inputs from the template.
+ * The open panel is a transient surface (`CngxDrawerSurface`): Escape, the
+ * Android back gesture and a press outside the panel close the drawer
+ * (`closeOnClickOutside`, default `true`). A press on the trigger whose
+ * `aria-controls` names the panel `id` is not outside, so the trigger
+ * toggles the drawer itself. While closed the panel
+ * is `aria-hidden` AND `inert`. On close, focus returns to the element that
+ * was focused when the drawer opened - unless the user moved focus to
+ * another element themselves.
  *
- * Optionally closes the drawer when the user clicks outside the panel
- * (`closeOnClickOutside`, default `true`). The click that opened the
- * drawer never counts as an outside click. While closed (except in
- * `side` mode) the panel is `aria-hidden` AND `inert`, so its focusable
- * children are unreachable for keyboard and AT alike. On close, focus
- * returns to the element that was focused when the drawer opened -
- * unless the user moved focus to another focusable element themselves
- * (a click on a focusable outside target keeps its focus).
+ * **Modality.** `modality` defaults to `'page'` for `over` and `'none'` for
+ * `push`:
  *
- * The `role` input defaults to `complementary`. On a `<nav>` host pass
- * `[role]="null"` so the implicit navigation landmark survives:
+ * - `'page'`: the open panel traps focus, renders `role="dialog"` +
+ *   `aria-modal="true"` (named by `label`, else a static `aria-label` /
+ *   `aria-labelledby`, else `CNGX_LAYOUT_I18N.drawerDialog`), makes
+ *   everything outside it `inert` up to `<body>`
+ *   (focus-trap anchors, live regions and a visible backdrop stay live) and
+ *   locks scrolling on the nearest scroll container above it (else the
+ *   document root). The full-height drawer that covers the app header.
+ * - `'contained'`: the same inside the `[cngxDrawer]` host only. The
+ *   panel's siblings inside the host are `inert` and a scroll container
+ *   between the panel and the host is locked; everything outside the host
+ *   stays live. No trap and no `aria-modal`: focus moves into the panel on
+ *   open, returns to the opener on close, and Tab can reach the page
+ *   around the host. The clipped drawer below a live app header: place the
+ *   header outside `[cngxDrawer]`.
+ * - `'none'`: the page around the panel stays operable.
+ *
+ * `push` is never modal: it lays the panel out next to the content, which
+ * stays in use; `'page'` or `'contained'` with `push` resolve to `'none'`
+ * and warn `CNGX1076` in development.
+ *
+ * **Scrim.** The panel renders `cngx-drawer-panel--modal` while its
+ * resolved modality is `'page'` or `'contained'` (plus
+ * `cngx-drawer-panel--contained` for the latter). The opt-in stylesheet
+ * `cngx-drawer.css` paints the scrim from it: add the `cngx-drawer` class
+ * to the `[cngxDrawer]` host and the host shows a scrim over itself while
+ * a modal panel inside it is open (`--cngx-drawer-scrim-bg`, default
+ * `--cngx-backdrop-bg`). A press on the scrim is a press outside the panel
+ * and closes the drawer. The panel sits above the scrim when it is
+ * positioned with a `z-index` above `--cngx-drawer-scrim-z-index` (`1`).
+ *
+ * The `role` input (landmark while not an open page modal) defaults to
+ * `complementary`. On a `<nav>` host pass `[role]="null"` so the implicit
+ * navigation landmark survives:
  *
  * ```html
- * <nav [cngxDrawerPanel]="drawer" position="left" mode="over" [role]="null"
- *      [enabled]="drawer.opened()" [autoFocus]="true">
+ * <button aria-controls="nav-panel" [attr.aria-expanded]="drawer.opened()"
+ *         (click)="drawer.toggle()">Menu</button>
+ * <nav id="nav-panel" [cngxDrawerPanel]="drawer" position="left" mode="over" [role]="null">
  *   <a href="/home">Home</a>
  * </nav>
  * ```
@@ -45,14 +100,17 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>
  * <example-url>/#/common/layout/drawer/direction-all-four-sides</example-url>
  * <example-url>/#/common/layout/drawer/events-openedchange-closed</example-url>
- * <example-url>/#/common/layout/drawer/mode-over-push-side</example-url>
+ * <example-url>/#/common/layout/drawer/app-header-clipped</example-url>
+ * <example-url>/#/common/layout/drawer/full-height-modal</example-url>
+ * <example-url>/#/common/layout/drawer/filter-panel-push</example-url>
  * <example-url>/#/common/layout/drawer/pattern-consumer-wiring</example-url>
  */
 @Directive({
   selector: '[cngxDrawerPanel]',
   exportAs: 'cngxDrawerPanel',
   standalone: true,
-  hostDirectives: [{ directive: CngxFocusTrap, inputs: ['enabled', 'autoFocus'] }],
+  hostDirectives: [{ directive: CngxDrawerSurface, inputs: ['label'], outputs: [] }],
+  providers: [{ provide: CNGX_DRAWER_SURFACE_DRIVER, useExisting: CngxDrawerPanel }],
   host: {
     '[class.cngx-drawer-panel]': 'true',
     '[class.cngx-drawer-panel--open]': 'isOpen()',
@@ -62,15 +120,26 @@ export type DrawerMode = 'over' | 'push' | 'side';
     '[class.cngx-drawer-panel--bottom]': "position() === 'bottom'",
     '[class.cngx-drawer-panel--over]': "mode() === 'over'",
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
-    '[class.cngx-drawer-panel--side]': "mode() === 'side'",
-    '[attr.aria-hidden]': "mode() !== 'side' && !isOpen() ? true : null",
-    '[attr.inert]': "mode() !== 'side' && !isOpen() ? '' : null",
-    '[attr.role]': 'role()',
+    '[class.cngx-drawer-panel--modal]': "surfaceModality() !== 'none'",
+    '[class.cngx-drawer-panel--contained]': "surfaceModality() === 'contained'",
+    '[attr.id]': 'panelId()',
+    '[attr.aria-hidden]': 'isOpen() ? null : true',
+    '[attr.inert]': "isOpen() ? null : ''",
   },
 })
-export class CngxDrawerPanel {
-  /** Reference to the parent `CngxDrawer` state owner. */
-  readonly drawerRef = input.required<CngxDrawer>({ alias: 'cngxDrawerPanel' });
+export class CngxDrawerPanel implements CngxDrawerSurfaceDriver, OnInit, OnChanges {
+  /**
+   * The drawer state owner (a `CngxDrawer`, or anything implementing
+   * `CngxDrawerHost`). Bind it explicitly (`[cngxDrawerPanel]="drawer"`), or
+   * leave the attribute bare on an element that also carries `cngxDrawer`.
+   */
+  readonly drawerInput = input<CngxDrawerHost | undefined, CngxDrawerHost | '' | undefined>(
+    undefined,
+    {
+      alias: 'cngxDrawerPanel',
+      transform: (v) => (typeof v === 'string' ? undefined : v),
+    },
+  );
 
   /** Direction the panel slides from. */
   readonly position = input<DrawerPosition>('left');
@@ -79,93 +148,136 @@ export class CngxDrawerPanel {
    * How the panel interacts with the content area:
    * - `'over'` (default) - overlays content (absolute positioned)
    * - `'push'` - pushes content aside (content gets margin)
-   * - `'side'` - always visible, no toggle behavior
    */
   readonly mode = input<DrawerMode>('over');
 
-  /** Whether clicking outside the panel closes the drawer. */
+  /**
+   * How much of the page the open panel blocks:
+   *
+   * - `'page'`: the whole page is blocked. The panel is a modal dialog,
+   *   focus is trapped in it and everything outside it is `inert` up to
+   *   `<body>`.
+   * - `'contained'`: only the `[cngxDrawer]` host is blocked. The content
+   *   beside the panel is `inert` and scroll-locked, everything outside the
+   *   host (an app header above it) stays clickable, and focus moves into
+   *   the panel without being trapped.
+   * - `'none'`: nothing is blocked. No `inert`, no lock, no trap.
+   *
+   * With the `cngx-drawer` stylesheet, `'page'` and `'contained'` show a
+   * scrim over the `[cngxDrawer]` host. Unbound, it follows the mode: `over`
+   * is `'page'`, `push` is `'none'`. `push` never blocks: `'page'` or
+   * `'contained'` with `push` resolve to `'none'` and warn `CNGX1076` in
+   * development. See {@link CngxDrawerModality}.
+   */
+  readonly modality = input<CngxDrawerModality | undefined>(undefined);
+
+  /** Whether a press outside the panel closes the drawer. */
   readonly closeOnClickOutside = input<boolean>(true);
 
   /**
-   * Landmark role rendered on the panel. Defaults to `complementary`;
-   * pass `navigation` for nav drawers or `null` to keep the element's
-   * implicit role (e.g. on a `<nav>` host).
+   * Landmark role rendered on the panel while it is not an open page modal
+   * (an open `'page'` panel is a `dialog`; a `'contained'` one keeps this
+   * role). Defaults to `complementary`; pass `navigation` for nav drawers or
+   * `null` to keep the element's implicit role (e.g. on a `<nav>` host).
    */
   readonly role = input<string | null>('complementary');
 
-  /** Whether the drawer is currently open (derived from the drawer ref). In `side` mode, always `true`. */
-  readonly isOpen = computed(() => this.mode() === 'side' || this.drawerRef().opened());
+  private readonly hostDrawer = inject(CNGX_DRAWER_HOST, { self: true, optional: true });
 
-  private suppressOutsideClick = false;
-  private restoreTarget: HTMLElement | null = null;
+  /** The resolved drawer: the explicit reference wins over a drawer host on the element. */
+  readonly drawerRef = computed(() => this.drawerInput() ?? this.hostDrawer);
+
+  private readonly staticId = inject(new HostAttributeToken('id'), { optional: true });
+
+  /** The panel's `id`: a static `id` attribute wins over the drawer's `panelId`. */
+  protected readonly panelId = computed(() => {
+    const fromDrawer = this.drawerRef()?.panelId();
+    if (this.staticId !== null) {
+      return this.staticId;
+    }
+    return fromDrawer === undefined || fromDrawer === '' ? null : fromDrawer;
+  });
+
+  /** Whether the drawer is currently open (derived from the drawer ref). */
+  readonly isOpen = computed(() => this.drawerRef()?.opened() ?? false);
+
+  /** @internal Drives the composed `CngxDrawerSurface`. */
+  readonly surfaceActive = this.isOpen;
+  /** @internal Drives the composed `CngxDrawerSurface`. */
+  readonly surfaceModality = computed<CngxDrawerModality>(() =>
+    this.mode() === 'push' ? 'none' : (this.modality() ?? 'page'),
+  );
+  /** @internal Drives the composed `CngxDrawerSurface`: the `[cngxDrawer]` host. */
+  readonly surfaceBoundary = computed<HTMLElement | null>(
+    () => this.drawerRef()?.elementRef.nativeElement ?? null,
+  );
+  /** @internal Drives the composed `CngxDrawerSurface`. */
+  readonly surfaceLandmarkRole = this.role;
+
+  private readonly presentation: CngxDrawerPanelPresentation = {
+    mode: this.mode,
+    modal: computed(() => this.surfaceModality() !== 'none'),
+    position: this.position,
+    element: inject<ElementRef<HTMLElement>>(ElementRef).nativeElement,
+  };
+  /** @internal Drives the composed `CngxDrawerSurface`. */
+  readonly surfaceOutsideDismiss = this.closeOnClickOutside;
+
+  private connection: { readonly drawer: CngxDrawerHost; readonly disconnect: () => void } | null =
+    null;
 
   constructor() {
-    const doc = inject(DOCUMENT);
-    const el = inject(ElementRef<HTMLElement>);
+    inject(DestroyRef).onDestroy(() => this.disconnect());
 
-    // Focus restoration: closing puts `inert` on the panel, which would
-    // silently drop focus to <body>. Capture the focused element at the
-    // open transition and hand focus back at the close transition when
-    // focus is still inside the panel (Escape) or already fell to <body>
-    // (outside click on a non-focusable area). A focusable outside target
-    // the user clicked keeps its focus.
-    const openTransition = createTransitionTracker(() => this.isOpen());
-    effect(() => {
-      const open = openTransition.current();
-      const wasOpen = openTransition.previous();
-      if (open === wasOpen) {
-        return;
-      }
-      untracked(() => {
-        if (open) {
-          const active = doc.activeElement;
-          this.restoreTarget = active instanceof HTMLElement ? active : null;
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      effect(() => {
+        const requested = this.modality();
+        if (this.mode() !== 'push' || requested === undefined || requested === 'none') {
           return;
         }
-        const active = doc.activeElement;
-        const focusLost =
-          active === null ||
-          active === doc.body ||
-          (el.nativeElement as HTMLElement).contains(active);
-        if (focusLost && this.restoreTarget?.isConnected) {
-          this.restoreTarget.focus();
-        }
-        this.restoreTarget = null;
+        untracked(() =>
+          cngxDevWarn(
+            'CNGX1076',
+            '[cngxDrawerPanel] mode="push" is never modal; a page or contained modality resolves to "none". ' +
+              'A push drawer lays out next to the content, which stays in use. ' +
+              'Use mode="over" for a modal drawer.',
+            { modality: requested },
+          ),
+        );
       });
-    });
+    }
+  }
 
-    // A click on a toggle OUTSIDE the container opens the drawer and then
-    // bubbles on to the document listener below within the same dispatch -
-    // without suppression it would close its own drawer instantly. The
-    // openedChange emit is synchronous inside that dispatch; the flag is
-    // lifted on the next macrotask, after the bubble phase has finished
-    // (a microtask checkpoint can run between listeners of a native event).
-    toObservable(this.drawerRef)
-      .pipe(
-        switchMap((drawer) => outputToObservable(drawer.openedChange)),
-        takeUntilDestroyed(),
-      )
-      .subscribe((opened) => {
-        if (opened) {
-          this.suppressOutsideClick = true;
-          setTimeout(() => (this.suppressOutsideClick = false));
-        }
-      });
+  // Connecting registers the presentation in the drawer's slot, a signal
+  // write; lifecycle hooks are no reactive context. ngOnChanges follows a
+  // rebound reference, ngOnInit covers a panel without bound inputs.
+  ngOnChanges(): void {
+    this.syncConnection();
+  }
 
-    // Hit-test against the container, not the panel - toggle buttons and backdrops
-    // sit inside the container and must not count as outside clicks.
-    fromEvent<MouseEvent>(doc, 'click')
-      .pipe(takeUntilDestroyed())
-      .subscribe((e) => {
-        if (
-          !this.suppressOutsideClick &&
-          this.mode() !== 'side' &&
-          this.isOpen() &&
-          this.closeOnClickOutside() &&
-          !(this.drawerRef().elementRef.nativeElement as HTMLElement).contains(e.target as Node)
-        ) {
-          this.drawerRef().close();
-        }
-      });
+  ngOnInit(): void {
+    this.syncConnection();
+  }
+
+  private syncConnection(): void {
+    const drawer = untracked(this.drawerRef);
+    if (this.connection?.drawer === drawer) {
+      return;
+    }
+    this.disconnect();
+    if (drawer) {
+      this.connection = { drawer, disconnect: drawer.connectPanel(this.presentation) };
+    }
+  }
+
+  private disconnect(): void {
+    const connection = this.connection;
+    this.connection = null;
+    connection?.disconnect();
+  }
+
+  /** @internal Drives the composed `CngxDrawerSurface`. */
+  surfaceDismiss(): void {
+    this.drawerRef()?.close();
   }
 }

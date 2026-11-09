@@ -134,17 +134,11 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // with box-shadow, which WHCM strips; redrawn as ButtonBorder borders.
   'projects/forms/filter-builder/filter-builder-expression-row.component.css',
   'projects/forms/filter-builder/filter-builder-row.component.css',
-  // Disabled painted by colour, re-signalled with GrayText (an aria-disabled
-  // control gets no UA GrayText).
-  'projects/common/popover/popover-action.component.css',
   // Slider track + fill are background-only (range: a gradient) and flatten.
   'projects/common/interactive/slider/slider.component.css',
   'projects/common/interactive/slider/range-slider.component.css',
   'projects/common/theming/components/cngx-slider.css',
   'projects/ui/tabs/tab-overflow.component.css',
-  // @cngx/ui/feedback (Phase D) - the toast overlay's only edge is its
-  // box-shadow elevation (plus a one-sided accent); re-drawn with ButtonBorder.
-  'projects/ui/feedback/toast/toast-outlet.css',
   // @cngx/ui/stepper (Phase D) - the errored step's inset box-shadow ring and
   // the active step's fill/ring signal; re-drawn with outline + Highlight.
   'projects/ui/stepper/stepper.component.css',
@@ -213,6 +207,10 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/common/popover/popover-panel.component.css',
     note: 'the box-shadow is decorative elevation only; the panel keeps a real 1px border that self-heals, so the shadow loss leaves a visible edge',
+  },
+  {
+    file: 'projects/ui/feedback/toast/toast-outlet.css',
+    note: 'the box-shadow is decorative elevation only; the toast keeps a real 1px border that self-heals, so the shadow loss leaves a visible edge',
   },
   // @cngx/forms/select (Phase C) - each select variant paints a focus-time glow
   // halo on the invalid trigger with `box-shadow`, forced to `none` under WHCM.
@@ -330,7 +328,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(55);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(53);
   });
 });
 

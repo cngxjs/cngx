@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Bind <code>[loading]</code>, <code>[error]</code>, or a single <code>[state]</code> <code>CngxAsyncState</code>. Matching <code>cngxPopoverLoading</code> / <code>cngxPopoverError</code> templates swap into the body slot.',
   description:
-    'When any content state is active the panel sets <code>aria-busy</code>, clears its <code>aria-describedby</code> body pointer, and renders the matching slot template. The first popover fakes a 2s load; the second resolves with an error after 1.5s and shows the <code>cngxPopoverError</code> template with the rejection value as <code>$implicit</code>.',
+    'The header stays visible in every content state. While loading the panel sets <code>aria-busy</code> and drops its <code>aria-describedby</code>; in the error view <code>aria-describedby</code> points at the error surface, which renders the matching slot template. The first popover fakes a 2s load; the second resolves with an error after 1.5s and shows the <code>cngxPopoverError</code> template with the rejection value as <code>$implicit</code>.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',

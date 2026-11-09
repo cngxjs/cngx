@@ -199,7 +199,7 @@ Reactive media query directive that exposes a `matches` signal. Wraps `window.ma
 ```html
 <div cngxMediaQuery="(min-width: 1024px)" #mq="cngxMediaQuery">
   <nav [cngxDrawerPanel]="drawer"
-       [mode]="mq.matches() ? 'side' : 'over'">
+       [mode]="mq.matches() ? 'push' : 'over'">
     <!-- Navigation -->
   </nav>
 </div>
@@ -345,7 +345,7 @@ private readonly host = inject(ElementRef<Element>).nativeElement;
 private readonly wide =
   this.container?.property('--cngx-thing-wide', this.host) ?? signal('').asReadonly();
 
-readonly mode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
+readonly mode = computed(() => (this.wide() === '1' ? 'push' : 'over'));
 ```
 
 **The rule must style a descendant, never the container itself.** A container query resolves against an *ancestor* query container of the element it styles, so a rule whose subject is the container element matches nothing and the property never changes. Pass that descendant as the second argument to `property()`.

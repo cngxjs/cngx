@@ -144,6 +144,14 @@ describe('CngxMenuTrigger', () => {
     expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
   });
 
+  it('claims no focus restore on the popover, leaving it to the menu focus stack', () => {
+    const { fixture, popover } = setup();
+    expect(popover.restoreFocusHint()).toBe(false);
+
+    fixture.destroy();
+    expect(popover.restoreFocusHint()).toBeUndefined();
+  });
+
   it('aria-controls names the role=menu element, not the popover wrapper', () => {
     const { triggerEl, menu, popover } = setup();
     const menuEl = document.querySelector('[role="menu"]');

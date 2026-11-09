@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cdp, userEvent } from 'vitest/browser';
 
 import { CngxButton } from './button.component';
+import { provideButtonSpinner } from './button-spinner.token';
 import type { CngxButtonSize } from './button.types';
 import { CngxButtonStart } from './slots';
 
@@ -88,6 +89,54 @@ class GeometryHost {
   readonly touch = signal<'on' | null>(null);
   readonly action: AsyncAction = () => new Promise<void>(() => undefined);
 }
+
+// A provided busy glyph renders its svg inside its own host, one level below
+// the busy layer, with no size of its own.
+@Component({
+  selector: 'cngx-geometry-provided-spinner',
+  standalone: true,
+  template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" /></svg>`,
+})
+class ProvidedSpinner {}
+
+@Component({
+  selector: 'cngx-button-provided-spinner-host',
+  standalone: true,
+  imports: [CngxButton, CngxAsyncClick],
+  viewProviders: [provideButtonSpinner(ProvidedSpinner)],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    './button.component.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `<button cngxButton class="b-provided-busy" [cngxAsyncClick]="action">Save changes</button>`,
+})
+class ProvidedSpinnerHost {
+  readonly action: AsyncAction = () => new Promise<void>(() => undefined);
+}
+
+// The brain contract alone: a host that renders a status label in place of the
+// spinner sets data-status-label next to data-busy (CngxActionButton,
+// CngxPopoverAction). Static markup, only button.component.css loaded, so the
+// rule is proven to live in the button sheet and not in a host's own sheet.
+@Component({
+  selector: 'cngx-button-status-label-host',
+  standalone: true,
+  styleUrls: ['../../core/theming/layers.css', './button.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <button type="button" class="cngx-button b-status-label" data-busy="true" data-status-label>
+      <span class="cngx-button__slot">+</span><span class="cngx-button__label">Saving...</span>
+    </button>
+    <button type="button" class="cngx-button b-no-status-label" data-busy="true">
+      <span class="cngx-button__label">Save</span>
+    </button>
+  `,
+})
+class StatusLabelHost {}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -274,6 +323,38 @@ describe('CngxButton geometry: busy', () => {
     const busy = query(btn, '.cngx-button__busy');
     // inset: 0 spans the padding box, so it misses only the two border pixels.
     expect(busy.getBoundingClientRect().width).toBeGreaterThanOrEqual(width - 2.5);
+  });
+});
+
+describe('CngxButton geometry: busy status label', () => {
+  it('keeps the label visible under data-busy when the host sets data-status-label', () => {
+    const fixture = TestBed.createComponent(StatusLabelHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const labelled = query(mountedRoot, '.b-status-label');
+    expect(computedValue(query(labelled, '.cngx-button__label'), 'opacity')).toBe('1');
+    // Only the label is lifted: the other children keep the busy fade.
+    expect(computedValue(query(labelled, '.cngx-button__slot'), 'opacity')).toBe('0');
+    const plain = query(mountedRoot, '.b-no-status-label');
+    expect(computedValue(query(plain, '.cngx-button__label'), 'opacity')).toBe('0');
+  });
+});
+
+describe('CngxButton geometry: provided spinner', () => {
+  it('sizes a provided spinner with a bare svg to the ring box and centres it', async () => {
+    const fixture = TestBed.createComponent(ProvidedSpinnerHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const btn = query(mountedRoot, '.b-provided-busy');
+    await startRun(fixture, btn);
+    const svg = query(btn, '.cngx-button__busy svg').getBoundingClientRect();
+    const font = px(btn, 'font-size');
+    expect(svg.width).toBeCloseTo(font, 0);
+    expect(svg.height).toBeCloseTo(font, 0);
+    const box = btn.getBoundingClientRect();
+    expect(svg.top + svg.height / 2).toBeCloseTo(box.top + box.height / 2, 0);
   });
 });
 

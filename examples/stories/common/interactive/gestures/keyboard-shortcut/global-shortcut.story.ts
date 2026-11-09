@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxKeyboardShortcut: global shortcut',
-  subtitle: 'Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on macOS) anywhere on the page. The actuator carries <code>aria-keyshortcuts</code> so screen readers announce the combo. Global scope skips <code>INPUT</code>, <code>TEXTAREA</code>, <code>SELECT</code> and <code>contenteditable</code> targets so typing in the field below does not fire it.',
-  description: 'Global keyboard shortcut bound declaratively on a focusable actuator. Discoverability via aria-keyshortcuts is the consumer\'s responsibility; the directive only intercepts keydown.',
+  subtitle: 'Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>Cmd</kbd>+<kbd>K</kbd> on macOS) or <kbd>/</kbd> anywhere on the page. Both shortcuts run on the app\'s hotkey registry, and the directive sets <code>aria-keyshortcuts</code> on each actuator. In a text field only modifier combos, <kbd>Escape</kbd> and function keys fire: <kbd>Ctrl</kbd>+<kbd>K</kbd> still works while typing, <kbd>/</kbd> types a slash.',
+  description: 'Global keyboard shortcuts bound declaratively on focusable actuators. The directive registers them in the document keymap and owns aria-keyshortcuts; the text-entry rule keeps bare keys from firing while the user types.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -20,26 +20,35 @@ export const STORY: DemoSpec = {
   imports: ['CngxKeyboardShortcut'],
   setup: `protected globalCount = signal(0);
   protected lastShortcut = signal('none');
-  protected handleGlobal(): void {
+  protected handleShortcut(name: string): void {
     this.globalCount.update(n => n + 1);
-    this.lastShortcut.set('Ctrl+K / Cmd+K');
+    this.lastShortcut.set(name);
   }`,
-  template: `  <button
-    type="button"
-    [cngxKeyboardShortcut]="'mod+k'"
-    (shortcutTriggered)="handleGlobal()"
-    aria-keyshortcuts="Control+K Meta+K"
-    class="sort-btn"
-  >
-    Run command (<kbd>Ctrl</kbd>+<kbd>K</kbd>)
-  </button>
+  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button
+      type="button"
+      [cngxKeyboardShortcut]="'mod+k'"
+      (shortcutTriggered)="handleShortcut('Ctrl+K / Cmd+K')"
+      class="sort-btn"
+    >
+      Run command (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd>)
+    </button>
+    <button
+      type="button"
+      [cngxKeyboardShortcut]="'/'"
+      (shortcutTriggered)="handleShortcut('/'); field.focus()"
+      class="sort-btn"
+    >
+      Focus search (<kbd>/</kbd>)
+    </button>
+  </div>
 
   <p class="demo-gesture-hint" style="margin-top:12px">
-    Press <kbd>Ctrl</kbd>+<kbd>K</kbd> anywhere on the page. Then focus the input and try again: it stays silent because global scope filters form fields.
+    Press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd> anywhere on the page, or <kbd>/</kbd> to jump into the field. In the field Ctrl/Cmd+K still fires; / types a slash.
   </p>
   <label class="demo-gesture-hint" style="display:block">
-    <span style="display:block;margin-bottom:4px">Type here (shortcut suppressed)</span>
-    <input type="text" placeholder="Ctrl+K does not fire while focused" style="width:260px" />
+    <span style="display:block;margin-bottom:4px">Type here (Ctrl/Cmd+K fires, / types)</span>
+    <input #field type="text" placeholder="Ctrl/Cmd+K fires, / types a slash" style="width:260px" />
   </label>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">

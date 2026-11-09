@@ -71,8 +71,9 @@ function toApiInput(input: DocInput): ApiInput {
   };
 }
 
-// compodocx sets the entry-level `signal` flag to false on every component and
-// directive, so a member declared with `input()` / `model()` / `output()` decides.
+// compodocx wrote the entry-level `signal` flag as false on every component and
+// directive and dropped it with schema 7, so a member declared with `input()` /
+// `model()` / `output()` decides.
 function isSignalBased(entry: DocEntry): boolean {
   const members = [...(entry.inputsClass ?? []), ...(entry.outputsClass ?? [])];
   return entry.signal === true || members.some((member) => member.signalKind !== undefined);

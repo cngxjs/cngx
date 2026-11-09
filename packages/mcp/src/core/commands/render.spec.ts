@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import type { CngxCommand, CommandContext } from '../registry.js';
 import { COMMANDS, defaultFound, isFound, unwrapAnswer } from '../registry.js';
-import { createDocsResolver } from '../data/docs-resolver.js';
+import { createDocsResolver, createErrorCodeResolver } from '../data/docs-resolver.js';
 import { loadDocsFromFile } from '../data/loader.js';
 import { cell, table, toPlainText } from './markdown.js';
 import type { ApiResult } from './get-api.js';
@@ -17,7 +17,7 @@ import { apiMarkdown, getApi } from './get-api.js';
 
 const fixture = (name: string) => fileURLToPath(new URL(`../../../test/fixtures/${name}`, import.meta.url));
 const bundled = loadDocsFromFile(fixture('documentation.sample.json'));
-const ctx: CommandContext = { bundled, resolve: createDocsResolver(bundled) };
+const ctx: CommandContext = { bundled, resolve: createDocsResolver(bundled), resolveErrorCodes: createErrorCodeResolver(bundled) };
 
 const byCli = (cliName: string): CngxCommand => {
   const def = COMMANDS.find((command) => command.cliName === cliName);
@@ -36,10 +36,10 @@ async function render(cliName: string, input: Record<string, unknown>, context: 
   return { markdown: def.toMarkdown(answer.payload, {}), found: isFound(def, answer.payload) };
 }
 
-const VERSIONED = ['find', 'api', 'slots', 'theme', 'di', 'config'];
+const VERSIONED = ['find', 'api', 'slots', 'theme', 'di', 'config', 'explain'];
 
 describe('command definitions carry their CLI surface', () => {
-  it('names the nine CLI subcommands, each once', () => {
+  it('names the ten CLI subcommands, each once', () => {
     expect(COMMANDS.map((def) => def.cliName)).toEqual([
       'find',
       'list',
@@ -50,6 +50,7 @@ describe('command definitions carry their CLI surface', () => {
       'config',
       'example',
       'migrate',
+      'explain',
     ]);
   });
 
@@ -63,7 +64,7 @@ describe('command definitions carry their CLI surface', () => {
     }
   });
 
-  it('maps version to --cngx-version on exactly the six version-scoped commands', () => {
+  it('maps version to --cngx-version on exactly the seven version-scoped commands', () => {
     const flagged = COMMANDS.filter((def) => def.cliFlags?.['version'] === 'cngx-version').map((def) => def.cliName);
 
     expect(flagged.sort()).toEqual([...VERSIONED].sort());
@@ -217,7 +218,7 @@ describe('toMarkdown over the sample fixture', () => {
       loadDocs: loadDocsFromFile,
     });
 
-    const { markdown, found } = await render('migrate', { from: '0.1.0' }, { bundled: bundledNew, resolve });
+    const { markdown, found } = await render('migrate', { from: '0.1.0' }, { bundled: bundledNew, resolve, resolveErrorCodes: createErrorCodeResolver(bundledNew) });
 
     expect(found).toBe(true);
     expect(markdown).toContain('# Migrating 0.1.0 -> 0.2.0');
@@ -234,7 +235,7 @@ describe('toMarkdown over the sample fixture', () => {
 
 describe('toMarkdown over compodoc HTML', () => {
   const v6 = loadDocsFromFile(fixture('documentation.v6.sample.json'));
-  const v6ctx: CommandContext = { bundled: v6, resolve: createDocsResolver(v6) };
+  const v6ctx: CommandContext = { bundled: v6, resolve: createDocsResolver(v6), resolveErrorCodes: createErrorCodeResolver(v6) };
   const COMPODOC_HTML = /<\/?(?:p|code|strong|em|a|example-url)[\s>]|&#?[a-z0-9]+;/i;
 
   it.each([

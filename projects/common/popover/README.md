@@ -67,6 +67,18 @@ The explicit anchor wins over the trigger. When the anchor unmounts, the trigger
 </div>
 ```
 
+### Focus return
+
+On close, `CngxPopoverTrigger` can return focus to the element that was focused before the popover opened. It only does so when focus would otherwise be lost (on `body` or inside the panel); a close that moved focus to another control leaves it there. The decision resolves in this order:
+
+1. `[restoreFocus]` on the trigger, when bound.
+2. The composer claim on the popover (`restoreFocusHint()`). `CngxPopoverPanel` claims `true`, so a panel returns focus to its trigger by default. A menu trigger claims `false`, because the menu focus stack restores.
+3. `false`. A bare `[cngxPopover]` stays opt-in.
+
+Bind `[restoreFocus]="false"` on a panel's trigger to keep focus where the browser leaves it. In a sheet or fullscreen presentation the claim is ignored and `CngxPopoverSheet` restores.
+
+Composers hint the trigger through owner-keyed claims on `CngxPopover`: `claimHaspopup(owner, value)`, `claimControls(owner, idSignal)` and `claimRestoreFocus(owner, value)`, each with a `release*(owner)` partner called on destroy. With several composers on one popover (a panel around a menu), the last live claim wins and a release removes only that owner's claim.
+
 ## Popover Panel
 
 Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, and async action buttons.
@@ -79,6 +91,7 @@ import {
   CngxPopoverBody,
   CngxPopoverFooter,
   CngxPopoverAction,
+  CngxPopoverDismiss,
   providePopoverPanel,
   withCloseButton,
   withArrow,
@@ -102,16 +115,30 @@ import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive
   <p cngxPopoverBody>This action cannot be undone.</p>
   
   <div cngxPopoverFooter>
-    <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
-    <cngx-popover-action role="confirm" [action]="deleteItem" variant="danger" [showDelay]="120">
+    <button cngxPopoverDismiss>Cancel</button>
+    <button cngxPopoverAction="solid" tone="danger" [action]="deleteItem" [showDelay]="120">
       Delete
       <ng-template cngxPending>Deleting...</ng-template>
       <ng-template cngxSucceeded>Deleted!</ng-template>
       <ng-template cngxFailed let-err>{{ err }}</ng-template>
-    </cngx-popover-action>
+    </button>
   </div>
 </cngx-popover-panel>
 ```
+
+Both footer hosts are button-family hosts on the native `<button>`: `button.component.css` paints them, the size is pinned to `sm` (a bound `size` wins), the default variant is `outline` and the tone comes from `tone`, not from the panel variant. `button[cngxPopoverDismiss]` closes the panel; `button[cngxPopoverAction]` requires `[action]`. Focus returns to the trigger through the panel's restore claim.
+
+#### Migration
+
+| Old markup | New markup |
+|-|-|
+| `<cngx-popover-action role="dismiss">` | `<button cngxPopoverDismiss>` |
+| `<cngx-popover-action role="confirm" [action]="a">` | `<button cngxPopoverAction [action]="a">` |
+| `variant="primary"` | `cngxPopoverAction="solid" tone="primary"` |
+| `variant="danger"` | `cngxPopoverAction="solid" tone="danger"` |
+| `variant="ghost"` | `cngxPopoverAction="ghost"` |
+| `variant="secondary"` | default (`outline`) |
+| `--cngx-popover-action-*` tokens | `--cngx-button-*` tokens |
 
 The confirm action times its busy visual through the loading gate. The `cngxPending` template shows only after `showDelay` (unbound, `CNGX_LOADING_CONFIG.showDelay`), so a run that settles before the delay never flashes "Deleting..."; once shown it is held for `minDwell` past the run, and for that whole window the action is painted busy (not disabled) and refuses a second click. Bind `[showDelay]` / `[minDwell]` to override per instance, or leave them unbound to inherit the config.
 
@@ -125,6 +152,8 @@ The confirm action times its busy visual through the loading gate. The `cngxPend
   <ng-template cngxPopoverEmpty>No data found</ng-template>
 </cngx-popover-panel>
 ```
+
+**State copy.** Without a slot template, the loading, error and empty views still say something. The text resolves in this order: the projected `*cngxPopoverLoading` / `*cngxPopoverError` / `*cngxPopoverEmpty` template (it replaces the whole node), then `[loadingText]` / `[errorText]` / `[emptyText]`, then `providePopoverPanel(withPopoverPanelLabels({ loading, error, empty }))`, then the `popover` section of the language pack ("Loading", "Could not load", "Nothing to show"). The header row and its close button stay in every view. In the error and empty views `aria-describedby` points at that surface; loading speaks through `aria-busy` and the visible text. A slot template still gets the resolved copy: `let-text` on `*cngxPopoverLoading` / `*cngxPopoverEmpty`, and `let-text="text"` next to the raw error (`let-err`) on `*cngxPopoverError`, so a template that only restyles a state can print the default text.
 
 ### Custom Close Button
 

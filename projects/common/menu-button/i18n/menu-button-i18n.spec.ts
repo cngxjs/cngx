@@ -21,7 +21,10 @@ describe('CNGX_MENU_BUTTON_I18N', () => {
   });
 
   it('defaults to the English section', () => {
-    expect(TestBed.inject(CNGX_MENU_BUTTON_I18N)()).toEqual({ splitToggle: 'More options' });
+    expect(TestBed.inject(CNGX_MENU_BUTTON_I18N)()).toEqual({
+      splitToggle: 'More options',
+      splitMainBusy: 'The main action is running',
+    });
   });
 
   it('reads the menu-button section of the active pack and English for the keys it leaves out', () => {

@@ -101,6 +101,23 @@ import { CngxToastOutlet } from '@cngx/ui/feedback';
 export class AppComponent {}
 ```
 
+#### CSS Custom Properties
+
+Each toast draws on the overlay surface (a 1px border plus the popover-panel shadow) with no severity stripe. Severity shows on the glyph and on the outlined action, which trails the text block and centres on it (also for a projected `contentTemplate` or `content` body). A toast without a title centres icon, text, action and dismiss on one line.
+
+- `--cngx-toast-border` (default `1px solid oklch(0 0 0 / 0.08)`, dark `oklch(1 0 0 / 0.12)`) - Toast border; it keeps the edge visible under forced colors, where the shadow is dropped
+- `--cngx-toast-shadow` (default `0 8px 24px oklch(0 0 0 / 0.12)`, dark alpha `0.5`) - Toast elevation
+- `--cngx-toast-{severity}-accent` (default `--cngx-feedback-{severity}-icon`: the core `--cngx-color-{info,success,warning,danger}` mixed 90% into `--cngx-color-text`) - Per-severity glyph and action accent
+- `--cngx-toast-accent` - Accent of the current toast, set by each `.cngx-toast--{severity}` rule; theme the per-severity tokens instead
+- `--cngx-toast-actions-gap` (default `--cngx-space-sm`) - Gap between the text block and the action
+- `--cngx-toast-action-padding` (default `--cngx-space-xs` / `--cngx-space-sm`) - Action padding
+- `--cngx-toast-action-radius` (default `4px`) - Action corner radius
+- `--cngx-toast-action-color` (default the severity accent mixed 60% into `--cngx-color-text`) - Action label and border color; pin it to `--cngx-toast-accent` for the pure accent
+- `--cngx-toast-action-hover-bg` (default `oklch(0 0 0 / 0.04)`, dark `oklch(1 0 0 / 0.06)`) - Action hover overlay
+- `--cngx-toast-timer-height` (default `2px`) - Countdown bar thickness; `0` turns the bar off
+- `--cngx-toast-timer-color` (default `--cngx-toast-accent`) - Countdown bar color
+- `--cngx-toast-timer-duration` (runtime, set inline by the outlet) - Total run time of the current timer segment
+- `--cngx-toast-timer-offset` (runtime, set inline by the outlet) - Negative elapsed time of the current timer segment, for `animation-delay`
 
 ### CngxToastOn
 
@@ -207,9 +224,26 @@ Toasts that carry an `action` are never merged. Two "Item deleted" toasts with a
 
 ### Overflow
 
-- When `maxVisible` is exceeded, oldest toast is evicted
-- Evicted toast's `afterDismissed()` subject still emits
+- The outlet renders the newest `maxVisible` toasts; older ones wait out of view and are not dismissed
+- A waiting toast holds its timer, so it never expires unseen (an Undo action included). It shows again once a visible toast leaves and resumes with the time it had left
+- Exception: when every visible toast is persistent, waiting toasts keep their timer running, so a persistent stack cannot hold them forever
+- A toast pushed out of view drops its hover and focus pauses; a removed element fires no `pointerleave`
 - New toasts insert at the beginning or end (controlled by `insertPosition`)
+
+### Timer
+
+Every timed toast publishes its auto-dismiss clock on the `.cngx-toast` element. A persistent toast carries none of these hooks.
+
+- `data-timer="running"` while the clock runs, `"paused"` while it is held (pointer over the toast, focus inside it, or waiting behind `maxVisible`)
+- `--cngx-toast-timer-duration` - total run time of the current segment
+- `--cngx-toast-timer-offset` - negative elapsed time of the current segment
+- `.cngx-toast__timer` - an `aria-hidden` element inside the toast. The outlet re-creates it on every segment (start, pause, resume, repeated message), so an animation declared as `animation: <name> var(--cngx-toast-timer-duration) linear var(--cngx-toast-timer-offset) forwards` starts at the exact remaining time and needs no clock of its own. Stop it with `[data-timer='paused'] .cngx-toast__timer { animation-play-state: paused }`
+
+The default skin draws a countdown bar from these hooks: a border along the bottom inner edge in the severity accent, draining toward the inline start (right to left in RTL) and stopping while paused. Set `--cngx-toast-timer-height: 0` to turn it off, or restyle `.cngx-toast__timer` for another shape; the timer ring example (`/#/ui/feedback/toast/timer-ring`) builds a ring around the icon on the same hooks.
+
+- **Reduced motion**: the bar does not render under `[data-motion='reduced']`, or under the OS `prefers-reduced-motion: reduce` unless the root sets `data-motion='full'`. A frozen bar would claim progress that is not moving
+- **Forced colors**: the bar is a border, so it draws in the system text color with no extra rules
+- **Screen readers**: the timer is not content and is never announced; the pause on hover and focus covers WCAG 2.2.1
 
 
 

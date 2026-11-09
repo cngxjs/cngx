@@ -752,19 +752,14 @@
     {
       "code": "CNGX1035",
       "lib": "common",
-      "severity": "warn",
-      "production": "stripped",
+      "severity": null,
+      "production": null,
       "title": "Confirm popover action without an action",
       "page": "core-concepts/error-codes/cngx1035.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1035.html",
-      "status": "active",
-      "files": ["projects/common/popover/popover-action.component.ts"],
-      "messages": [
-        {
-          "file": "projects/common/popover/popover-action.component.ts",
-          "text": "[cngx-popover-action] role=\"confirm\" without an [action] renders a button whose click runs nothing and leaves the popover open. Bind [action] or use role=\"dismiss\"."
-        }
-      ]
+      "status": "retired",
+      "files": [],
+      "messages": []
     },
     {
       "code": "CNGX1036",
@@ -868,10 +863,28 @@
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1041.html",
       "status": "active",
       "files": [
+        "projects/common/button/provide-cngx-button.ts",
+        "projects/common/menu-button/provide-cngx-menu-button.ts",
         "projects/common/stepper/provide-cngx-stepper.ts",
         "projects/common/tabs/provide-cngx-tabs.ts"
       ],
       "messages": [
+        {
+          "file": "projects/common/button/provide-cngx-button.ts",
+          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
+        },
+        {
+          "file": "projects/common/button/provide-cngx-button.ts",
+          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
+        },
+        {
+          "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
+          "text": "provideCngxMenuButton(): dropped feature without a `_target` discriminator. Pass the caret through `withButtonCaretIcon(...)` and labels through `withMenuButtonI18nLabels(...)`."
+        },
+        {
+          "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
+          "text": "provideCngxMenuButtonAt(): dropped feature without a `_target` discriminator. Pass the caret through `withButtonCaretIcon(...)` and labels through `withMenuButtonI18nLabels(...)`."
+        },
         {
           "file": "projects/common/stepper/provide-cngx-stepper.ts",
           "text": "provideCngxStepper(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/stepper and labels through `withStepperI18nLabels(...)`."
@@ -1413,23 +1426,11 @@
       "page": "core-concepts/error-codes/cngx1071.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1071.html",
       "status": "active",
-      "files": [
-        "projects/common/button/close-button.component.ts",
-        "projects/common/button/icon-button.component.ts",
-        "projects/common/menu-button/icon-menu-button.component.ts"
-      ],
+      "files": ["projects/common/button/button-brain.directive.ts"],
       "messages": [
         {
-          "file": "projects/common/button/close-button.component.ts",
-          "text": "[cngxCloseButton] has no accessible name. Set aria-label, aria-labelledby or title on the host and name what it closes; the glyph alone is silent to assistive technology."
-        },
-        {
-          "file": "projects/common/button/icon-button.component.ts",
-          "text": "[cngxIconButton] has no accessible name. Set aria-label, aria-labelledby or title on the host; the icon alone is silent to assistive technology."
-        },
-        {
-          "file": "projects/common/menu-button/icon-menu-button.component.ts",
-          "text": "[cngxIconMenuButton] has no accessible name. Set aria-label, aria-labelledby or title on the host; the icon alone is silent to assistive technology."
+          "file": "projects/common/button/button-brain.directive.ts",
+          "text": "[${...}] has no accessible name. Set aria-label, aria-labelledby or title on the host; the glyph alone is silent to assistive technology."
         }
       ]
     },
@@ -1481,6 +1482,125 @@
         {
           "file": "projects/common/interactive/menu/menu-trigger.directive.ts",
           "text": "[cngxMenuTrigger] has no aria-expanded writer. Co-host [cngxPopoverTrigger] on the same element; it writes aria-haspopup, aria-expanded and aria-controls for the menu."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1075",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Button brain without a host descriptor",
+      "page": "core-concepts/error-codes/cngx1075.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1075.html",
+      "status": "active",
+      "files": ["projects/common/button/button-brain.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/button/button-brain.directive.ts",
+          "text": "[cngxButtonBrain] on <${...}> has no host descriptor. Add provideButtonHost(name, { defaultVariant }) to the providers of the component or directive that declares CngxButtonBrain in its hostDirectives."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1076",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Push drawer requested as modal",
+      "page": "core-concepts/error-codes/cngx1076.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1076.html",
+      "status": "active",
+      "files": ["projects/common/layout/drawer/drawer-panel.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/layout/drawer/drawer-panel.directive.ts",
+          "text": "[cngxDrawerPanel] mode=\"push\" is never modal; a page or contained modality resolves to \"none\". A push drawer lays out next to the content, which stays in use. Use mode=\"over\" for a modal drawer."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1077",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Two hotkeys tie on one press",
+      "page": "core-concepts/error-codes/cngx1077.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1077.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkeys \"${...}\" and \"${...}\" both matched one press at the same scope depth; \"${...}\" (registered last) runs."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1078",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Hotkey on a browser-reserved combo",
+      "page": "core-concepts/error-codes/cngx1078.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1078.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" uses \"${...}\", which the browser handles before the page."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1079",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Hotkey on Ctrl+Alt collides with AltGr",
+      "page": "core-concepts/error-codes/cngx1079.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1079.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" uses \"${...}\"; Ctrl+Alt is AltGr on Windows and Linux, so it never fires on layouts that type characters with AltGr."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1080",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Unparseable hotkey combo",
+      "page": "core-concepts/error-codes/cngx1080.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1080.html",
+      "status": "active",
+      "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts",
+          "text": "createHotkeyRegistry(): hotkey \"${...}\" has the unparseable combo \"${...}\"; it never fires."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1081",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Second popover trigger takes the close listener",
+      "page": "core-concepts/error-codes/cngx1081.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1081.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover.directive.ts",
+          "text": "[cngxPopover] a second CngxPopoverTrigger registered on this popover and replaced the first one. Only the last-registered trigger restores focus on close, so bind one CngxPopoverTrigger per popover."
         }
       ]
     },

@@ -13,7 +13,8 @@ import {
  *
  * `splitToggle` is the default accessible name of a `cngxIconMenuButton`
  * inside a `cngxSplitButton`. A consumer `aria-label` on the button wins
- * over it. The same shape as the menu-button section of a language pack,
+ * over it. `splitMainBusy` describes that caret while the main action runs.
+ * The same shape as the menu-button section of a language pack,
  * declared once as {@link CngxMenuButtonLanguageSection}.
  */
 export type CngxMenuButtonI18n = CngxMenuButtonLanguageSection;

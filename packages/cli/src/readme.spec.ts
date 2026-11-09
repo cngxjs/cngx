@@ -91,9 +91,9 @@ describe('README', () => {
   });
 
   it('mutation: a README naming an unregistered command fails', () => {
-    const planted = `${README}\n|\`cngx explain <code>\`|-|-|\n`;
+    const planted = `${README}\n|\`cngx frobnicate <code>\`|-|-|\n`;
 
-    expect(documentedCommands(planted)).toContain('explain');
+    expect(documentedCommands(planted)).toContain('frobnicate');
   });
 
   it('documents no flag the adapter lacks', () => {

@@ -128,9 +128,17 @@
       text-align: center;
     }
 
-    /* Only the error branch signals danger; the empty settle stays neutral. */
+    /* Only the error branch signals danger; the empty settle stays neutral.
+       The copy reads the danger text rung: the raw danger is a fill colour and
+       misses 4.5:1 on the light surface. */
     .cngx-stat-card__error.cngx-empty-state {
-      color: var(--cngx-stat-card-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+      color: var(
+        --cngx-stat-card-error-color,
+        var(
+          --cngx-color-danger-text,
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+        )
+      );
     }
 
     .cngx-stat-card__error .cngx-empty-state__title {
@@ -148,6 +156,7 @@
       --cngx-icon-svg-size: var(--cngx-stat-card-error-icon-size, 22px);
       --cngx-icon-svg-stroke-width: 1.5;
       vertical-align: baseline;
+      color: var(--cngx-stat-card-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
     /* Out of flow entirely: a refresh must not move the figure the user is

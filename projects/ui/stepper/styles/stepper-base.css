@@ -330,15 +330,15 @@
     initial-value: 999px;
   }
 
-  /**
-   * Font-size of a group-header chip - smaller than the step labels so it
-   * reads as a tag, not a peer step.
-   * @group Group chip
-   */
-  @property --cngx-stepper-group-chip-font-size {
-    syntax: '*';
-    inherits: true;
-    initial-value: 0.8125em;
+  /* Not registered as @property: an em value on a registered token
+   * computes where it is declared, not where font-size reads it. */
+  :root {
+    /**
+     * Font-size of a group-header chip - smaller than the step labels so it
+     * reads as a tag, not a peer step.
+     * @group Group chip
+     */
+    --cngx-stepper-group-chip-font-size: 0.8125em;
   }
 
   /**

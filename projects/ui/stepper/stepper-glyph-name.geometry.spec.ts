@@ -1,6 +1,6 @@
 import { Component, input, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxStep } from '@cngx/common/stepper';
+import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
 import { accessibleName } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -41,6 +41,34 @@ class GlyphNameHost {
   readonly skin = input<'classic' | 'path-chevron' | 'chips' | 'breadcrumb'>('chips');
   readonly dir = input<'ltr' | 'rtl'>('ltr');
 }
+
+// An outer stepper whose active step nests an inner stepper, neither declaring
+// an indicator font. Guards the `inherits: false -> true` flip: the inner
+// indicator must resolve the `:root` default, not inherit a value off the outer
+// context.
+@Component({
+  selector: 'cngx-stepper-nested-glyph-host',
+  standalone: true,
+  imports: [CngxStepper, CngxStep, CngxStepContent],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../common/theming/components/cngx-icon-glyph.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <cngx-stepper aria-label="Outer" skin="classic" [activeStepIndex]="0">
+      <div cngxStep label="Outer" [completed]="true">
+        <ng-template cngxStepContent>
+          <cngx-stepper aria-label="Inner" skin="classic" [activeStepIndex]="0">
+            <div cngxStep label="Inner done" [completed]="true"></div>
+            <div cngxStep label="Inner next"></div>
+          </cngx-stepper>
+        </ng-template>
+      </div>
+    </cngx-stepper>
+  `,
+})
+class NestedGlyphNameHost {}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -164,13 +192,48 @@ describe('stepper status glyphs', () => {
     expect(box.top + box.height / 2).toBeCloseTo(disc.top + disc.height / 2, 0);
   });
 
+  // A declared em override on the host is the exact mechanism the Material
+  // bridge uses (it broadcasts `--cngx-step-indicator-font-size` onto the
+  // stepper scope). The registered @property used to drop it as a font-size
+  // cycle; now it reaches the indicator.
+  it('sizes the indicator font from a declared em override on the host', () => {
+    mount('classic');
+    const indicator = header(0).querySelector<HTMLElement>('.cngx-stepper__indicator')!;
+    const parentFont = parseFloat(getComputedStyle(indicator.parentElement!).fontSize);
+    const base = parseFloat(getComputedStyle(indicator).fontSize);
+    mountedRoot!.style.setProperty('--cngx-step-indicator-font-size', '2em');
+    const sized = parseFloat(getComputedStyle(indicator).fontSize);
+    expect(sized).toBeCloseTo(2 * parentFont, 1);
+    expect(sized).toBeGreaterThan(base);
+  });
+
+  it('resolves the default indicator font in a nested stepper, byte-identical to the top level', () => {
+    const fixture = TestBed.createComponent(NestedGlyphNameHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const indicators = Array.from(
+      mountedRoot.querySelectorAll<HTMLElement>('.cngx-stepper__indicator'),
+    );
+    expect(indicators.length).toBeGreaterThanOrEqual(2);
+    const [outer, inner] = indicators;
+    const innerFont = parseFloat(getComputedStyle(inner).fontSize);
+    const innerParent = parseFloat(getComputedStyle(inner.parentElement!).fontSize);
+    // The :root 0.85em default cascades to a child-context indicator and
+    // resolves against its own parent - it does not inherit a scaled value off
+    // the outer indicator, which the inherits:false -> true flip could regress.
+    expect(innerFont).toBeCloseTo(0.85 * innerParent, 1);
+    expect(innerFont).toBeCloseTo(parseFloat(getComputedStyle(outer).fontSize), 1);
+  });
+
   // Without the floor the indicator font sizes the check again, below 12px too.
   it('sizes the classic disc check from the indicator font once the micro floor is lifted', () => {
     mount('classic');
     mountedRoot!.style.setProperty('--cngx-icon-svg-micro-floor', '0px');
     const indicator = header(0).querySelector<HTMLElement>('.cngx-stepper__indicator')!;
-    // A rem value: an em value on this registered token is a font-size cycle.
-    indicator.style.setProperty('--cngx-step-indicator-font-size', '0.5rem');
+    // An em value: the token is no longer a registered @property, so font-size
+    // reads it without tripping the Chromium font-size cycle.
+    indicator.style.setProperty('--cngx-step-indicator-font-size', '0.5em');
     const svg = indicator.querySelector<SVGSVGElement>('svg.cngx-stepper__indicator-check')!;
     const width = svg.getBoundingClientRect().width;
     expect(width).toBe(Math.round(0.85 * parseFloat(getComputedStyle(svg).fontSize)));

@@ -6,14 +6,27 @@ import {
   matchesKeyCombo,
   parseKeyCombo,
   provideNestedInteractiveSelector,
+  resolveAriaKeyShortcuts,
+  resolveKeyComboParts,
+  resolveMacPlatform,
 } from './keyboard.util';
 
 function press(
   key: string,
-  mods: Partial<{ ctrl: boolean; meta: boolean; shift: boolean; alt: boolean; composing: boolean }> = {},
+  mods: Partial<{
+    ctrl: boolean;
+    meta: boolean;
+    shift: boolean;
+    alt: boolean;
+    composing: boolean;
+    code: string;
+    altGraph: boolean;
+  }> = {},
 ): KeyboardEvent {
   return new KeyboardEvent('keydown', {
     key,
+    code: mods.code ?? '',
+    modifierAltGraph: mods.altGraph ?? false,
     ctrlKey: mods.ctrl ?? false,
     metaKey: mods.meta ?? false,
     shiftKey: mods.shift ?? false,
@@ -99,7 +112,7 @@ describe('matchesKeyCombo IME composition', () => {
     expect(matchesKeyCombo(press('b', { meta: true }), combo, true)).toBe(true);
   });
 
-  it("rejects a composing bare-key press even when the key text matches", () => {
+  it('rejects a composing bare-key press even when the key text matches', () => {
     const combo = parseKeyCombo('k');
     expect(matchesKeyCombo(press('k', { composing: true }), combo, false)).toBe(false);
   });
@@ -113,6 +126,247 @@ describe("matchesKeyCombo literal '+' key", () => {
     expect(matchesKeyCombo(press('+', { meta: true, shift: true }), combo, true)).toBe(true);
     expect(matchesKeyCombo(press('+', { ctrl: true }), combo, false)).toBe(true);
     expect(matchesKeyCombo(press('+'), combo, true)).toBe(false);
+  });
+});
+
+describe('matchesKeyCombo AltGr guard', () => {
+  it('rejects AltGr character input off macOS even though the physical key matches', () => {
+    const combo = parseKeyCombo('ctrl+alt+e');
+    // Windows reports AltGr as Ctrl+Alt; the code fallback alone would accept KeyE.
+    const altGr = press('€', { code: 'KeyE', ctrl: true, alt: true, altGraph: true });
+    expect(matchesKeyCombo(altGr, combo, false)).toBe(false);
+    const chord = press('€', { code: 'KeyE', ctrl: true, alt: true });
+    expect(matchesKeyCombo(chord, combo, false)).toBe(true);
+  });
+
+  it('matches a bare punctuation combo typed through AltGr', () => {
+    // German layout: AltGr+Q types '@', reported as Ctrl+Alt with AltGraph.
+    const at = press('@', { code: 'KeyQ', ctrl: true, alt: true, altGraph: true });
+    expect(matchesKeyCombo(at, parseKeyCombo('@'), false)).toBe(true);
+    expect(matchesKeyCombo(at, parseKeyCombo('q'), false)).toBe(false);
+    expect(matchesKeyCombo(at, parseKeyCombo('mod+@'), false)).toBe(false);
+    const withMeta = press('@', {
+      code: 'KeyQ',
+      ctrl: true,
+      alt: true,
+      meta: true,
+      altGraph: true,
+    });
+    expect(matchesKeyCombo(withMeta, parseKeyCombo('@'), false)).toBe(false);
+  });
+
+  it('matches a bare punctuation combo typed through Option on macOS', () => {
+    // German Mac layout: Option+L types '@' (checked in Safari and Firefox).
+    const at = press('@', { code: 'KeyL', alt: true });
+    expect(matchesKeyCombo(at, parseKeyCombo('@'), true)).toBe(true);
+    expect(matchesKeyCombo(at, parseKeyCombo('alt+@'), true)).toBe(true);
+    expect(matchesKeyCombo(at, parseKeyCombo('l'), true)).toBe(false);
+    expect(
+      matchesKeyCombo(
+        press('@', { code: 'KeyL', alt: true, meta: true }),
+        parseKeyCombo('@'),
+        true,
+      ),
+    ).toBe(false);
+    // Off macOS a plain Alt (no AltGraph) stays strict.
+    expect(matchesKeyCombo(at, parseKeyCombo('@'), false)).toBe(false);
+    // 'alt+@' still requires Option.
+    expect(matchesKeyCombo(press('@'), parseKeyCombo('alt+@'), true)).toBe(false);
+  });
+
+  it('is off on macOS, where Option is alt and there is no AltGr key', () => {
+    const combo = parseKeyCombo('alt+b');
+    expect(matchesKeyCombo(press('∫', { code: 'KeyB', alt: true }), combo, true)).toBe(true);
+    expect(
+      matchesKeyCombo(press('∫', { code: 'KeyB', alt: true, altGraph: true }), combo, true),
+    ).toBe(true);
+  });
+});
+
+describe('matchesKeyCombo physical-key fallback', () => {
+  it('matches a Shift+digit press whose key is the shifted glyph', () => {
+    const combo = parseKeyCombo('shift+1');
+    expect(matchesKeyCombo(press('!', { code: 'Digit1', shift: true }), combo, false)).toBe(true);
+  });
+
+  it('a bare digit combo still rejects the shifted press', () => {
+    const combo = parseKeyCombo('1');
+    expect(matchesKeyCombo(press('!', { code: 'Digit1', shift: true }), combo, false)).toBe(false);
+  });
+
+  it('never trusts the code when the layout still produces a Latin letter (QWERTZ)', () => {
+    // QWERTZ: the key labelled Y sits on the US Z position.
+    const shiftY = press('Y', { code: 'KeyZ', shift: true });
+    expect(matchesKeyCombo(shiftY, parseKeyCombo('shift+z'), false)).toBe(false);
+    expect(matchesKeyCombo(shiftY, parseKeyCombo('shift+y'), false)).toBe(true);
+    expect(
+      matchesKeyCombo(press('y', { code: 'KeyZ', alt: true }), parseKeyCombo('alt+z'), false),
+    ).toBe(false);
+  });
+
+  it('falls back to the physical US position on a non-Latin layout', () => {
+    const combo = parseKeyCombo('alt+z');
+    expect(matchesKeyCombo(press('я', { code: 'KeyZ', alt: true }), combo, false)).toBe(true);
+  });
+
+  it('matches an Option dead key on macOS by its physical key', () => {
+    // Option+E starts an accent composition: event.key is 'Dead', not a character.
+    const combo = parseKeyCombo('alt+e');
+    expect(matchesKeyCombo(press('Dead', { code: 'KeyE', alt: true }), combo, true)).toBe(true);
+    expect(matchesKeyCombo(press('Dead', { code: 'KeyU', alt: true }), combo, true)).toBe(false);
+  });
+
+  it('does not fall back without Alt or Shift', () => {
+    const combo = parseKeyCombo('mod+z');
+    expect(matchesKeyCombo(press('я', { code: 'KeyZ', ctrl: true }), combo, false)).toBe(false);
+  });
+});
+
+describe('resolveKeyComboParts', () => {
+  it('orders modifiers ctrl alt shift meta on every platform', () => {
+    const combo = parseKeyCombo('meta+shift+alt+ctrl+k');
+    expect(resolveKeyComboParts(combo, true)).toEqual([
+      'ctrl',
+      'alt',
+      'shift',
+      'meta',
+      { key: 'k' },
+    ]);
+    expect(resolveKeyComboParts(combo, false)).toEqual([
+      'ctrl',
+      'alt',
+      'shift',
+      'meta',
+      { key: 'k' },
+    ]);
+  });
+
+  it('resolves mod per platform', () => {
+    const combo = parseKeyCombo('mod+shift+k');
+    expect(resolveKeyComboParts(combo, true)).toEqual(['shift', 'meta', { key: 'k' }]);
+    expect(resolveKeyComboParts(combo, false)).toEqual(['ctrl', 'shift', { key: 'k' }]);
+  });
+
+  it('lists a modifier once when mod resolves to a modifier the combo also names', () => {
+    expect(resolveKeyComboParts(parseKeyCombo('mod+ctrl+k'), false)).toEqual([
+      'ctrl',
+      { key: 'k' },
+    ]);
+  });
+
+  it('returns only the key for a bare combo', () => {
+    expect(resolveKeyComboParts(parseKeyCombo('?'), false)).toEqual([{ key: '?' }]);
+  });
+});
+
+describe('resolveAriaKeyShortcuts', () => {
+  const aria = (combo: string, isMac: boolean): string =>
+    resolveAriaKeyShortcuts(parseKeyCombo(combo), isMac);
+
+  it('serialises mod per platform with an upper-case letter', () => {
+    expect(aria('mod+k', false)).toBe('Control+K');
+    expect(aria('mod+k', true)).toBe('Meta+K');
+  });
+
+  it("serialises the literal '+' key as Plus", () => {
+    expect(aria('mod++', false)).toBe('Control+Plus');
+    expect(aria('mod++', true)).toBe('Meta+Plus');
+  });
+
+  it('puts modifiers in canonical order before the key', () => {
+    expect(aria('mod+shift+?', false)).toBe('Control+Shift+?');
+    expect(aria('mod+shift+?', true)).toBe('Shift+Meta+?');
+  });
+
+  it('serialises bare and named keys as UI Events key values', () => {
+    expect(aria('?', false)).toBe('?');
+    expect(aria('escape', false)).toBe('Escape');
+    expect(aria('alt+arrowup', false)).toBe('Alt+ArrowUp');
+    expect(aria('space', false)).toBe('Space');
+    expect(aria('ctrl+pagedown', false)).toBe('Control+PageDown');
+    expect(aria('f2', false)).toBe('F2');
+  });
+});
+
+describe('combo key vocabulary', () => {
+  // [combo key, event.key the browser reports, aria-keyshortcuts token]
+  const NAMED_KEYS: readonly (readonly [string, string, string])[] = [
+    ['space', ' ', 'Space'],
+    ['esc', 'Escape', 'Escape'],
+    ['escape', 'Escape', 'Escape'],
+    ['enter', 'Enter', 'Enter'],
+    ['tab', 'Tab', 'Tab'],
+    ['backspace', 'Backspace', 'Backspace'],
+    ['delete', 'Delete', 'Delete'],
+    ['insert', 'Insert', 'Insert'],
+    ['home', 'Home', 'Home'],
+    ['end', 'End', 'End'],
+    ['pageup', 'PageUp', 'PageUp'],
+    ['pagedown', 'PageDown', 'PageDown'],
+    ['arrowup', 'ArrowUp', 'ArrowUp'],
+    ['arrowdown', 'ArrowDown', 'ArrowDown'],
+    ['arrowleft', 'ArrowLeft', 'ArrowLeft'],
+    ['arrowright', 'ArrowRight', 'ArrowRight'],
+    ['contextmenu', 'ContextMenu', 'ContextMenu'],
+    ['capslock', 'CapsLock', 'CapsLock'],
+    ['numlock', 'NumLock', 'NumLock'],
+    ['scrolllock', 'ScrollLock', 'ScrollLock'],
+    ['printscreen', 'PrintScreen', 'PrintScreen'],
+    ['pause', 'Pause', 'Pause'],
+    ['f2', 'F2', 'F2'],
+    ['+', '+', 'Plus'],
+  ];
+
+  it('every key the serialiser names also matches the press it advertises', () => {
+    for (const [comboKey, eventKey, token] of NAMED_KEYS) {
+      const combo = parseKeyCombo(comboKey);
+      expect(resolveAriaKeyShortcuts(combo, false), comboKey).toBe(token);
+      expect(matchesKeyCombo(press(eventKey), combo, false), comboKey).toBe(true);
+    }
+  });
+
+  it('keeps a single character whose upper case is two characters', () => {
+    expect(resolveAriaKeyShortcuts(parseKeyCombo('alt+ß'), false)).toBe('Alt+ß');
+    expect(resolveAriaKeyShortcuts(parseKeyCombo('ä'), false)).toBe('Ä');
+  });
+
+  it("parses the 'esc' alias to the UI Events value 'escape'", () => {
+    expect(parseKeyCombo('mod+esc').key).toBe('escape');
+  });
+});
+
+describe('resolveMacPlatform', () => {
+  const nav = (fields: { platform?: string; userAgentData?: { platform?: string } }): Navigator =>
+    fields as unknown as Navigator;
+
+  it('reads navigator.platform', () => {
+    expect(resolveMacPlatform(nav({ platform: 'MacIntel' }))).toBe(true);
+    expect(resolveMacPlatform(nav({ platform: 'Win32' }))).toBe(false);
+  });
+
+  it('prefers userAgentData.platform over navigator.platform', () => {
+    expect(
+      resolveMacPlatform(nav({ platform: 'Win32', userAgentData: { platform: 'macOS' } })),
+    ).toBe(true);
+    expect(
+      resolveMacPlatform(nav({ platform: 'MacIntel', userAgentData: { platform: 'Windows' } })),
+    ).toBe(false);
+  });
+
+  it('falls back to navigator.platform when the client hint is empty', () => {
+    expect(resolveMacPlatform(nav({ platform: 'MacIntel', userAgentData: { platform: '' } }))).toBe(
+      true,
+    );
+  });
+
+  it('resolves iOS and iPadOS as Apple platforms', () => {
+    expect(resolveMacPlatform(nav({ platform: 'iPad' }))).toBe(true);
+    expect(resolveMacPlatform(nav({ platform: 'iPhone' }))).toBe(true);
+    expect(resolveMacPlatform(nav({ platform: 'Linux armv8l' }))).toBe(false);
+  });
+
+  it('resolves an absent navigator to false', () => {
+    expect(resolveMacPlatform(undefined)).toBe(false);
   });
 });
 
@@ -139,7 +393,11 @@ describe('CNGX_NESTED_INTERACTIVE_SELECTOR', () => {
     ]) {
       expect(matches(selector, html), html).toBe(true);
     }
-    for (const html of ['<a></a>', '<span contenteditable="false"></span>', '<span role="option"></span>']) {
+    for (const html of [
+      '<a></a>',
+      '<span contenteditable="false"></span>',
+      '<span role="option"></span>',
+    ]) {
       expect(matches(selector, html), html).toBe(false);
     }
   });

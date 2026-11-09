@@ -33,11 +33,18 @@ import type { PopoverHaspopup } from './popover.types';
  * ```
  *
  * ### Focus restoration
- * Opt in with `[restoreFocus]="true"` to restore focus on close to the
- * element that was focused before the popover opened (the popover
- * snapshots it synchronously in `show()`, so content autofocus cannot
- * displace the restore target). Useful for menus, confirm panels, and
- * dialogs that steal focus from the trigger.
+ * On close, the trigger can return focus to the element that was focused
+ * before the popover opened (the popover snapshots it synchronously in
+ * `show()`, so content autofocus cannot displace the restore target). The
+ * popover calls the trigger synchronously at the end of every close, so the
+ * decision is made at close time and a close that lands before the next
+ * change detection pass (a fast Enter then Escape) still restores. The
+ * decision resolves in this order: the `[restoreFocus]` input, then the
+ * composer claim on the popover (`CngxPopoverPanel` claims `true`, a menu
+ * trigger claims `false` because its focus stack restores), then `false`.
+ * A bare popover therefore stays opt-in, and the restore runs only when
+ * focus is lost at close time. One trigger per popover: a later trigger
+ * takes over the close listener, as it does the implicit anchor slot.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-trigger.directive.ts
@@ -101,19 +108,30 @@ export class CngxPopoverTrigger {
   });
 
   /**
-   * When `true`, remembers the popover's pre-open focus target (the
-   * popover snapshots `document.activeElement` synchronously inside
-   * `show()`, before content autofocus can land in the panel) and
-   * restores focus to it when the popover closes. A snapshot of `body`
+   * When `true` at close time, restores focus to the popover's pre-open
+   * focus target (the popover snapshots `document.activeElement`
+   * synchronously inside `show()`, before content autofocus can land in
+   * the panel and hands it to the trigger when it closes). The value is
+   * read when the popover closes, not when it opens. A snapshot of `body`
    * (a browser that does not focus a clicked button, such as Safari)
    * falls back to this trigger. The restore runs only when focus is
    * lost at close time - on `body` or inside the panel - so a close
    * caused by a click or Escape in another control leaves focus there.
-   * Defaults to `false` so the trigger stays a passive ARIA atom; opt in
-   * for menus, confirm panels, and dialogs that move focus away from
-   * the trigger.
+   * Unbound, the popover's composer claim decides
+   * (`popoverRef().restoreFocusHint()`: `CngxPopoverPanel` claims `true`, a
+   * menu trigger `false`), and without a claim it stays `false`, so a bare
+   * popover trigger is a passive ARIA atom. Bind `true` or `false` to
+   * override the composer.
    */
-  readonly restoreFocus = input(false);
+  readonly restoreFocusInput = input<boolean | undefined>(undefined, { alias: 'restoreFocus' });
+
+  /**
+   * @internal Resolved focus return: the `[restoreFocus]` input, then the
+   * popover's composer claim, then `false`.
+   */
+  protected readonly restoreFocus = computed(
+    () => this.restoreFocusInput() ?? this.popoverRef().restoreFocusHint() ?? false,
+  );
 
   /**
    * Resolved `aria-haspopup`. Consumer override (`haspopup` on the
@@ -145,7 +163,22 @@ export class CngxPopoverTrigger {
       : null,
   );
 
-  private savedFocus: HTMLElement | null = null;
+  /**
+   * Close-time focus return, called synchronously by the popover at the end
+   * of every close with its pre-open focus origin. The decision is read
+   * here, not sampled on open: a close in a sheet presentation resolves
+   * `restoreFocus()` to `false` by itself.
+   */
+  private readonly handleClose = (origin: HTMLElement | null): void => {
+    if (!this.restoreFocus()) {
+      return;
+    }
+    const target = origin && origin !== this.doc.body ? origin : this.elRef.nativeElement;
+    if (!this.isFocusLost() || !target.isConnected || typeof target.focus !== 'function') {
+      return;
+    }
+    target.focus();
+  };
 
   constructor() {
     // Register this element as the anchor for fallback positioning.
@@ -160,30 +193,14 @@ export class CngxPopoverTrigger {
       this.popoverRef().releaseAnchorElement(this.elRef.nativeElement);
     });
 
-    // Focus restoration: adopt the popover's pre-show focus snapshot on
-    // open, restore on close. Inert until `restoreFocus` is opted into.
-    effect(() => {
-      if (!this.restoreFocus()) {
-        return;
-      }
-      const visible = this.popoverRef().isVisible();
-      if (visible) {
-        untracked(() => {
-          const origin = this.popoverRef().focusOrigin();
-          this.savedFocus = origin && origin !== this.doc.body ? origin : this.elRef.nativeElement;
-        });
-      } else if (this.savedFocus) {
-        const target = this.savedFocus;
-        this.savedFocus = null;
-        untracked(() => {
-          if (!this.isFocusLost()) {
-            return;
-          }
-          if (typeof target.focus === 'function' && target.isConnected) {
-            target.focus();
-          }
-        });
-      }
+    // Close listener per popover: the popover calls it synchronously from
+    // its close, so an open and close inside one tick cannot skip the
+    // restore. onCleanup also runs on destroy; the release is
+    // identity-guarded like the anchor slot.
+    effect((onCleanup) => {
+      const pop = this.popoverRef();
+      untracked(() => pop.registerCloseListener(this.handleClose));
+      onCleanup(() => pop.releaseCloseListener(this.handleClose));
     });
   }
 

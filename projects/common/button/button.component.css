@@ -33,6 +33,10 @@
  *   painted at opacity 0 (width stable), spinner ring centred over it; the
  *   ring stops rotating under reduced motion. The fade sits on every direct
  *   child, so projected content cannot opt back in with its own rule
+ * - `[data-busy][data-status-label]` - host hook: a host that shows a status
+ *   label instead of the spinner (`CngxActionButton`, `CngxPopoverAction`)
+ *   sets `data-status-label`, and `.cngx-button__label` stays at
+ *   `opacity: 1` while the other children keep the busy fade
  * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
  *   side
  *
@@ -166,7 +170,8 @@
   }
 
   /**
-   * Diameter of the busy spinner ring.
+   * Diameter of the busy spinner ring, and the box of a bare `svg` or `img`
+   * drawn by a `provideButtonSpinner` component.
    * @group Busy
    */
   @property --cngx-button-spinner-size {
@@ -625,6 +630,11 @@
     :scope[data-busy] > :not(.cngx-button__busy) {
       opacity: 0;
     }
+    /* Host hook: a host that renders a status label instead of the spinner
+       sets data-status-label, and only the label is lifted back. */
+    :scope[data-busy][data-status-label] > .cngx-button__label {
+      opacity: 1;
+    }
     .cngx-button__busy {
       position: absolute;
       inset: 0;
@@ -638,6 +648,15 @@
       border-block-start-color: transparent;
       border-radius: 50%;
       animation: cngx-button-spin var(--cngx-spin-duration, 0.8s) linear infinite;
+    }
+    /* A CNGX_BUTTON_SPINNER component draws its glyph inside its own host, one
+       level below the busy layer; a bare svg or img there has no size of its
+       own, so it gets the ring's box. A glyph sized by its component's own
+       styles keeps that size (unlayered beats this layer). */
+    .cngx-button__busy > * > :is(svg, img) {
+      display: block;
+      inline-size: round(nearest, var(--cngx-button-spinner-size, 1em), 1px);
+      block-size: round(nearest, var(--cngx-button-spinner-size, 1em), 1px);
     }
 
     /* Content slots scale with the button font. */

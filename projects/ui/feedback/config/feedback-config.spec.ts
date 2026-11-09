@@ -1,4 +1,6 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CNGX_BUTTON_CLOSE_ICON, injectButtonCloseIcon } from '@cngx/common/button';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -6,6 +8,7 @@ import {
   injectErrorDetail,
   provideFeedback,
   withAlerts,
+  withCloseIcon,
   withToasts,
   type FeedbackFeature,
 } from './feedback-config';
@@ -52,6 +55,18 @@ describe('provideFeedback merge rule', () => {
     expect(config.alertDefaultDuration).toBe(3000);
     expect(config.alertDedupWindow).toBe(250);
     expect(config.alertMaxVisible).toBe(2);
+  });
+});
+
+@Component({ selector: 'test-close-glyph', template: 'x' })
+class CloseGlyph {}
+
+describe('withCloseIcon', () => {
+  it('provides the glyph through provideButtonCloseIcon and records it on the config', () => {
+    const config = resolveConfig(withCloseIcon(CloseGlyph));
+    expect(config.closeIconComponent).toBe(CloseGlyph);
+    expect(TestBed.inject(CNGX_BUTTON_CLOSE_ICON)).toBe(CloseGlyph);
+    expect(TestBed.runInInjectionContext(() => injectButtonCloseIcon())).toBe(CloseGlyph);
   });
 });
 

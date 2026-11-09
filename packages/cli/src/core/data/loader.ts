@@ -7,14 +7,41 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { projectSchemaV2 } from './schema-v2.js';
 import { projectSchemaV6 } from './schema-v6.js';
-import type { DocEntry, DocFunction, DocToken, DocumentationJson } from './types.js';
+import type {
+  DocEntry,
+  DocFunction,
+  DocToken,
+  DocumentationJson,
+  ErrorCodeBlock,
+  ErrorCodeEntry,
+  ErrorCodeRange,
+} from './types.js';
+
+/** The projected error-code view: the block without its manifest `schemaVersion`. */
+export type ErrorCodeIndex = Omit<ErrorCodeBlock, 'schemaVersion'>;
+
+/** The manifest `schemaVersion` an error-code block must carry to be read. */
+const ERROR_CODE_SCHEMA_VERSION = 3;
+
+/** Narrows to `unknown[]` rather than `Array.isArray`'s `any[]`, so the cast below stays type-safe. */
+function isUnknownArray(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value);
+}
 
 /**
- * The `documentation.json` schema versions this server reads. Both are projected
+ * The `documentation.json` schema versions this server reads. All are projected
  * onto one shape at load time: schema 2 gains the input `alias` (`schema-v2.ts`),
- * schema 6 the schema-2 `category` and `factoryKind` (`schema-v6.ts`).
+ * schema 6 and 7 the schema-2 `category` and `factoryKind` (`schema-v6.ts`).
+ * Schema 7 only drops fields the core does not read (the entry `signal` flag and
+ * the TypeScript node fields in `jsdoctags`), so it shares the schema-6 projection.
  */
-export const SUPPORTED_SCHEMA_VERSIONS = [2, 6] as const;
+export const SUPPORTED_SCHEMA_VERSIONS = [2, 6, 7] as const;
+
+/** `2, 6 and 7`: every supported version, the last one joined with `and`. */
+function listVersions(versions: readonly number[]): string {
+  const head = versions.slice(0, -1);
+  return head.length === 0 ? String(versions[0]) : `${head.join(', ')} and ${versions[versions.length - 1]}`;
+}
 
 function isSupportedSchemaVersion(version: number): boolean {
   return (SUPPORTED_SCHEMA_VERSIONS as readonly number[]).includes(version);
@@ -40,6 +67,8 @@ export interface DocsIndex {
   injectables: DocEntry[];
   tokens: DocToken[];
   functions: DocFunction[];
+  /** The bundled error-code block, or `null` when absent/unreadable (a raw export). */
+  errorCodes: ErrorCodeIndex | null;
 }
 
 // Both the mcp server and the cli read this snapshot and show these messages to
@@ -72,7 +101,7 @@ export class SchemaVersionError extends MalformedSnapshotError {
     readonly found: number,
     readonly supported: readonly number[] = SUPPORTED_SCHEMA_VERSIONS,
   ) {
-    super(`schemaVersion ${found}; this package reads ${supported.join(' and ')}`);
+    super(`schemaVersion ${found}; this package reads ${listVersions(supported)}`);
     this.name = 'SchemaVersionError';
   }
 }
@@ -101,6 +130,28 @@ function shapeDefect(raw: unknown): string | null {
 }
 
 /**
+ * Read an error-code block onto the tool-facing index. Returns `null` - never
+ * throws - for an absent block, a block carrying another manifest `schemaVersion`,
+ * or a malformed shape, so a bad block in a snapshot can never take the other
+ * commands down with it; the block sits outside the compodocx
+ * `SUPPORTED_SCHEMA_VERSIONS` guard.
+ */
+export function parseErrorCodeBlock(block: unknown): ErrorCodeIndex | null {
+  if (block === null || typeof block !== 'object') {
+    return null;
+  }
+  const candidate = block as { schemaVersion?: unknown; docsBaseUrl?: unknown; ranges?: unknown; codes?: unknown };
+  if (candidate.schemaVersion !== ERROR_CODE_SCHEMA_VERSION) {
+    return null;
+  }
+  const { docsBaseUrl, ranges, codes } = candidate;
+  if (typeof docsBaseUrl !== 'string' || !isUnknownArray(ranges) || !isUnknownArray(codes)) {
+    return null;
+  }
+  return { docsBaseUrl, ranges: ranges as ErrorCodeRange[], codes: codes as ErrorCodeEntry[] };
+}
+
+/**
  * Validate a parsed snapshot and project it to the tool-facing `DocsIndex`.
  * Throws {@link SchemaVersionError} on a schema mismatch - the guard the loader
  * spec pins in both directions - and {@link MalformedSnapshotError} on any other
@@ -116,7 +167,7 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
   }
   let doc: DocumentationJson;
   try {
-    doc = raw.schemaVersion === 6 ? projectSchemaV6(raw) : projectSchemaV2(raw);
+    doc = raw.schemaVersion === 2 ? projectSchemaV2(raw) : projectSchemaV6(raw);
   } catch (error) {
     throw new MalformedSnapshotError(error instanceof Error ? error.message : String(error));
   }
@@ -132,12 +183,32 @@ export function createDocsIndex(raw: DocumentationJson): DocsIndex {
     injectables: doc.injectables ?? [],
     tokens: doc.tokens ?? [],
     functions: doc.miscellaneous?.functions ?? [],
+    errorCodes: parseErrorCodeBlock((raw as { cngxErrorCodes?: unknown }).cngxErrorCodes),
   };
 }
 
 /** Read and validate a snapshot from an explicit path (used by tests + loader). */
 export function loadDocsFromFile(path: string): DocsIndex {
   return parseDocs(readFileSync(path, 'utf8'));
+}
+
+/**
+ * Read a release's `error-codes.json` asset. Unlike the block inside a snapshot, the
+ * asset is the whole answer, so anything unreadable throws {@link SnapshotLoadError}
+ * for the resolver to map, and never reaches a cache.
+ */
+export function loadErrorCodesFromFile(path: string): ErrorCodeIndex {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    throw new SnapshotLoadError(`error-codes.json cannot be read: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const index = parseErrorCodeBlock(parsed);
+  if (index === null) {
+    throw new SnapshotLoadError(`error-codes.json is not a readable block; this package reads manifest schemaVersion ${ERROR_CODE_SCHEMA_VERSION}`);
+  }
+  return index;
 }
 
 function parseDocs(raw: string): DocsIndex {

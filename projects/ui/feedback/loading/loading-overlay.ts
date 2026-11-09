@@ -113,8 +113,10 @@ export class CngxLoadingOverlay {
   readonly minDwell = input<number>(this.loadingConfig.minDwell);
 
   /**
-   * @deprecated Use `minDwell`. Kept one release for migration; when set, it
-   * takes precedence over `minDwell`.
+   * Former name of `minDwell`: minimum display time in ms once visible. When set,
+   * it takes precedence over `minDwell`.
+   *
+   * @deprecated Use `minDwell`. Kept one release for migration.
    */
   readonly minDuration = input<number | undefined>(undefined);
 

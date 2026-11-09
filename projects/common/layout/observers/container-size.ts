@@ -145,7 +145,7 @@ export function createContainerSize(
  * ```typescript
  * private readonly container = inject(CNGX_CONTAINER_SIZE, { optional: true });
  * private readonly wide = this.container?.property('--cngx-thing-wide', this.host) ?? signal('').asReadonly();
- * readonly mode = computed(() => (this.wide() === '1' ? 'side' : 'over'));
+ * readonly mode = computed(() => (this.wide() === '1' ? 'push' : 'over'));
  * ```
  *
  * A component that declares the container in its own stylesheet and reads it

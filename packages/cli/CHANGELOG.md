@@ -10,10 +10,18 @@ another release.
 
 ### Added
 
+- Reads `documentation.json` schema 7 (compodocx 0.16) next to schema 2 and 6,
+  from the bundled snapshot and from a fetched release.
 - Package scaffold with a guarded copy of the shared query core from
   `@cngx/mcp` and the bundled API snapshot.
 - `cngx` subcommands generated from the shared command registry: `find`,
-  `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`.
+  `list`, `api`, `slots`, `theme`, `di`, `config`, `example`, `migrate`,
+  `explain`.
+- `cngx explain <code>` prints the doc entry of a CNGX error code: its title,
+  lib, severity, production behaviour, messages and docs URL. Accepts `CNGX0001`,
+  `cngx0001`, `0001` or a pasted console line; exits 1 for an unknown code, listing
+  the nearest codes of its lib. Takes `--cngx-version` and `--offline`; another
+  release answers from its `error-codes.json` asset.
 - `--format md|json`, `--cngx-version`, `--version` / `-v`, `--help` / `-h`;
   exit codes 0 (answered), 1 (not found or unresolved), 2 (usage error),
   3 (internal error: a snapshot that cannot load, a throw, a failed write).

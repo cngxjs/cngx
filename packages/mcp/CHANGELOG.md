@@ -36,6 +36,12 @@ release (`cngx://provenance` and `groundedVersion` name the one that answered).
 
 ### Added
 
+- Snapshots of `documentation.json` schema 7 (compodocx 0.16) load like
+  schema 6, from the bundled snapshot and from a fetched release. A schema the
+  package cannot read now lists every supported version (`reads 2, 6 and 7`).
+- `get_error_code` returns a CNGX error code's title, lib, severity, production
+  behaviour, messages and doc page from the bundled snapshot. It takes an optional
+  `version`, resolved from the release's `error-codes.json` asset.
 - A `migrate_usage` `signatureChanged` row of an input carries `changed`, the
   parts of its binding contract that moved (`type`, `required`,
   `binding kind`). Rows of the other categories have no `changed` field.

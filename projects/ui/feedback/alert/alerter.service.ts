@@ -3,7 +3,7 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from './alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { createHeldTimerRegistry } from '../internal/pausable-timer';
+import { createHeldTimerRegistry, type TimerHoldSource } from '../internal/pausable-timer';
 
 /** Auto-dismiss fallback when neither `duration` nor `withAlerts({defaultDuration})` is set. */
 const ALERT_FALLBACK_DURATION = 5000;
@@ -165,16 +165,26 @@ export class CngxAlerter {
 
   /**
    * @internal - called by `CngxAlertStack` on hover/focus (WCAG 2.2.1).
-   * Hold-counted: hover and focus-within pause independently; the timer
-   * resumes only when the last hold releases.
+   * Holds are sourced: hover and focus-within pause independently, and the
+   * timer resumes only when the last source releases.
    */
-  pauseTimer(id: number): void {
-    this.timers.hold(id);
+  pauseTimer(id: number, source: TimerHoldSource): void {
+    this.timers.hold(id, source);
   }
 
   /** @internal - called by `CngxAlertStack` on pointer-leave/focus-out. */
-  resumeTimer(id: number): void {
-    this.timers.release(id);
+  resumeTimer(id: number, source: TimerHoldSource): void {
+    this.timers.release(id, source);
+  }
+
+  /**
+   * @internal - drops several hold sources of an alert in one transition.
+   * `CngxAlertStack` calls it for an alert that leaves the rendered set or
+   * when the stack unmounts: the removed element never fires `pointerleave`
+   * or a reliable `focusout`.
+   */
+  dropHolds(id: number, sources: readonly TimerHoldSource[]): void {
+    this.timers.dropHolds(id, sources);
   }
 
   /** Dismiss a single alert by id. */

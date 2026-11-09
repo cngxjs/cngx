@@ -9,6 +9,7 @@ import {
   RELEASE_BASE_URL,
   releaseAssetUrl,
 } from './snapshot-fetch.js';
+import { ERROR_CODES_ASSET, fetchErrorCodes } from './snapshot-fetch.js';
 
 describe('normalizeReleaseVersion', () => {
   it.each([
@@ -60,6 +61,26 @@ describe('ghDownloadArgs', () => {
   });
 });
 
+describe('asset parameter', () => {
+  it('downloads the named asset through gh', () => {
+    expect(ghDownloadArgs('0.2.0', '/tmp/snap', 'other.json')).toEqual([
+      'release',
+      'download',
+      'v0.2.0',
+      '--repo',
+      CNGX_REPO,
+      '--pattern',
+      'other.json',
+      '--dir',
+      '/tmp/snap',
+    ]);
+  });
+
+  it('builds the URL of the named asset', () => {
+    expect(releaseAssetUrl(RELEASE_BASE_URL, '0.2.0', 'other.json')).toBe(`${RELEASE_BASE_URL}/v0.2.0/other.json`);
+  });
+});
+
 describe('isReleaseVersion', () => {
   it('accepts release and prerelease versions, including hyphenated prerelease ids', () => {
     for (const version of ['0.2.0', '10.20.30', '0.1.0-rc.9', '0.2.0-rc-1', '1.0.0-alpha.beta-2']) {
@@ -101,6 +122,42 @@ const ghThrows = (error: Error) =>
   vi.fn(async () => {
     throw error;
   });
+
+describe('fetchErrorCodes', () => {
+  it('downloads the error-code asset through gh, pinned to the cngx repo', async () => {
+    const deps = makeDeps();
+
+    expect(await fetchErrorCodes('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/${ERROR_CODES_ASSET}`, dir: DIR });
+    expect(deps.runGh).toHaveBeenCalledWith(['release', 'download', 'v0.2.0', '--repo', CNGX_REPO, '--pattern', 'error-codes.json', '--dir', DIR]);
+    expect(deps.httpGet).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the HTTPS URL of the asset when gh fails, and writes the body', async () => {
+    const deps = makeDeps({ runGh: ghThrows(new Error('no auth')) });
+
+    expect(await fetchErrorCodes('0.2.0', deps)).toEqual({ ok: true, path: `${DIR}/error-codes.json`, dir: DIR });
+    expect(deps.httpGet).toHaveBeenCalledWith(`${BASE}/v0.2.0/error-codes.json`);
+    expect(deps.writeFile).toHaveBeenCalledWith(`${DIR}/error-codes.json`, '{"https":true}');
+  });
+
+  it('answers asset-missing for a 404 and removes its temp dir', async () => {
+    const deps = makeDeps({ runGh: ghThrows(new Error('no auth')), httpGet: vi.fn(async () => ({ status: 404, body: '' })) });
+
+    expect(await fetchErrorCodes('0.1.0-rc.9', deps)).toEqual({
+      ok: false,
+      reason: 'asset-missing',
+      message: `gh: no auth https: ${BASE}/v0.1.0-rc.9/error-codes.json returned 404.`,
+    });
+    expect(deps.removeDir).toHaveBeenCalledWith(DIR);
+  });
+
+  it('rejects an invalid version before any temp dir', async () => {
+    const deps = makeDeps();
+
+    expect(await fetchErrorCodes('../x', deps)).toMatchObject({ ok: false, reason: 'invalid-version' });
+    expect(deps.makeTempDir).not.toHaveBeenCalled();
+  });
+});
 
 describe('fetchSnapshot', () => {
   it('returns the gh download and never calls HTTPS when gh succeeds', async () => {

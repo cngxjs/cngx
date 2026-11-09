@@ -14,6 +14,8 @@ export interface KeyCombo {
   readonly alt: boolean;
 }
 
+const KEY_ALIASES: Readonly<Record<string, string>> = { esc: 'escape' };
+
 /**
  * Parses a keyboard shortcut string like `'ctrl+shift+k'` or `'mod+b'` into
  * a structured {@link KeyCombo}.
@@ -24,6 +26,11 @@ export interface KeyCombo {
  * A trailing `+` names the literal plus key: `'mod++'` parses as
  * `mod` + `'+'` (the split's trailing empty segment is the key, not a
  * dangling separator).
+ *
+ * The space bar is spelled `'space'` (a combo segment is trimmed, so `' '`
+ * cannot name it) and `'esc'` is an alias that parses to `'escape'`, the
+ * UI Events key value, so the matcher and {@link resolveAriaKeyShortcuts}
+ * read one vocabulary.
  *
  * ```typescript
  * const combo = parseKeyCombo('mod+b');
@@ -40,7 +47,8 @@ export function parseKeyCombo(combo: string): KeyCombo {
   // 'mod++' splits into ['mod', '', ''] - a trailing empty segment means the
   // combo ends in '+', so the key IS the literal plus character.
   const last = parts.pop() ?? '';
-  const key = last === '' && combo.trimEnd().endsWith('+') ? '+' : last;
+  const literal = last === '' && combo.trimEnd().endsWith('+') ? '+' : last;
+  const key = KEY_ALIASES[literal] ?? literal;
   return {
     key,
     ctrl: parts.includes('ctrl'),
@@ -68,9 +76,38 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * Events fired during IME composition (`event.isComposing`) never match -
  * keystrokes that build a composed character are text input, not shortcuts.
  *
+ * Two layout pitfalls are handled here so no consumer has to:
+ *
+ * - **Option and Shift transform the key.** Option+B on macOS reports
+ *   `event.key === '∫'`, Shift+1 reports `'!'`. For a letter or digit combo
+ *   key pressed with Alt or Shift, a failed `event.key` compare retries
+ *   against the physical `event.code` (`KeyB`, `Digit1`), but only when
+ *   `event.key` is not itself a Latin letter or digit. A layout that still
+ *   produces a letter is compared by `event.key` alone, so QWERTZ Shift+Y
+ *   (`key 'Y'`, `code 'KeyZ'`) matches `'shift+y'` and never `'shift+z'`.
+ *   Limit: when the layout turns the key into a non-Latin character (Option
+ *   on a non-QWERTY Mac, a Cyrillic layout), the fallback reads the physical
+ *   US position, so `'alt+z'` matches the key that sits where US Z sits.
+ *   Remapping the binding is the mitigation.
+ * - **AltGr is character input, not a chord.** Windows and Linux report
+ *   AltGr as `ctrlKey + altKey`, so AltGr+E (`€`) would otherwise match
+ *   `'ctrl+alt+e'`. Off macOS, a combo naming `ctrl`, `alt` or `mod` never
+ *   matches while `event.getModifierState('AltGraph')` is set. A combo
+ *   naming none of them reads the AltGr press as the character it types:
+ *   the reported Ctrl and Alt are ignored and the key is compared by
+ *   `event.key` only, so `'@'` matches AltGr+Q on a German layout and `'q'`
+ *   never does. macOS has no AltGr key (Option is `alt`), so the guard is
+ *   off there.
+ * - **Option types punctuation on macOS.** Layouts such as German reach
+ *   `@ [ ] { } | \ ~` through Option (`'@'` is Option+L). On macOS a
+ *   single punctuation combo that does not name `alt` is Alt-agnostic, the
+ *   same rule as the Shift case above: `'@'` matches Option+L while
+ *   `'alt+@'` still requires Option and ctrl/meta stay strict.
+ *
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
- * @param isMac Whether the current platform is macOS (affects `mod` resolution).
+ * @param isMac Whether the current platform is macOS (affects `mod` resolution
+ *   and the AltGr guard). Resolve it once with {@link resolveMacPlatform}.
  *
  * @since 0.1.0
  */
@@ -81,11 +118,20 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
   if (event.isComposing) {
     return false;
   }
-  if (event.key.toLowerCase() !== combo.key) {
+  const altGr = !isMac && event.getModifierState?.('AltGraph') === true;
+  const namesAltGrModifier = combo.ctrl || combo.alt || combo.mod;
+  if (altGr && namesAltGrModifier) {
     return false;
   }
-  // Alt is always strict: a combo that does not name it rejects an Alt press.
-  if (combo.alt !== event.altKey) {
+  if (!matchesComboKey(event, combo.key, altGr)) {
+    return false;
+  }
+  // Alt is strict: a combo that does not name it rejects an Alt press. The
+  // Alt (and Ctrl) an AltGr press reports belong to the typed character, and
+  // so does the Option a macOS layout needs for punctuation.
+  const punctuation = combo.key.length === 1 && !/[a-z0-9]/.test(combo.key);
+  const optionTypesKey = isMac && punctuation && !combo.alt;
+  if (!altGr && !optionTypesKey && combo.alt !== event.altKey) {
     return false;
   }
   // `mod` requires the platform primary and leaves the other one free;
@@ -94,18 +140,204 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
     ? isMac
       ? event.metaKey
       : event.ctrlKey
-    : combo.ctrl === event.ctrlKey && combo.meta === event.metaKey;
+    : (altGr || combo.ctrl === event.ctrlKey) && combo.meta === event.metaKey;
   if (!primaryOk) {
     return false;
   }
   // Strict shift for letters, digits and named keys (so bare `b` rejects
   // `Shift+B`); shift-agnostic for a single punctuation char whose glyph
   // already encodes Shift, unless the combo names `shift` explicitly.
-  const shiftAgnostic = combo.key.length === 1 && !/[a-z0-9]/.test(combo.key) && !combo.shift;
+  const shiftAgnostic = punctuation && !combo.shift;
   if (!shiftAgnostic && combo.shift !== event.shiftKey) {
     return false;
   }
   return true;
+}
+
+/**
+ * One part of a resolved key combo: a modifier name, or the combo's single
+ * non-modifier key (lower-case, as {@link parseKeyCombo} stores it).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo resolveKeyComboParts, KeyCombo
+ */
+export type KeyComboPart = 'ctrl' | 'meta' | 'alt' | 'shift' | { readonly key: string };
+
+type KeyComboModifier = Exclude<KeyComboPart, { readonly key: string }>;
+
+const CANONICAL_MODIFIER_ORDER: readonly KeyComboModifier[] = ['ctrl', 'alt', 'shift', 'meta'];
+
+function resolvedModifiers(combo: KeyCombo, isMac: boolean): readonly KeyComboModifier[] {
+  const held: Record<KeyComboModifier, boolean> = {
+    ctrl: combo.ctrl || (combo.mod && !isMac),
+    alt: combo.alt,
+    shift: combo.shift,
+    meta: combo.meta || (combo.mod && isMac),
+  };
+  return CANONICAL_MODIFIER_ORDER.filter((m) => held[m]);
+}
+
+/**
+ * Resolves a parsed {@link KeyCombo} into its display parts: the held
+ * modifiers in canonical order (`ctrl alt shift meta` on every platform, the
+ * Apple HIG order of the macOS glyphs), then the key. `mod` resolves to
+ * `meta` on macOS and `ctrl` elsewhere; a combo naming both `mod` and the
+ * modifier it resolves to lists that modifier once.
+ *
+ * Pure derivation for a renderer: localized labels, glyphs and spoken text
+ * are the renderer's job, the parts only fix what is held and in which order.
+ *
+ * ```ts
+ * resolveKeyComboParts(parseKeyCombo('mod+shift+k'), true);
+ * // ['shift', 'meta', { key: 'k' }]
+ * ```
+ *
+ * @param combo The parsed combo.
+ * @param isMac Whether the current platform is macOS (resolves `mod`).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo parseKeyCombo, resolveAriaKeyShortcuts, KeyComboPart
+ */
+export function resolveKeyComboParts(combo: KeyCombo, isMac: boolean): readonly KeyComboPart[] {
+  return [...resolvedModifiers(combo, isMac), { key: combo.key }];
+}
+
+const ARIA_MODIFIER_TOKENS: Readonly<Record<KeyComboModifier, string>> = {
+  ctrl: 'Control',
+  alt: 'Alt',
+  shift: 'Shift',
+  meta: 'Meta',
+};
+
+// UI Events `key` values for the named keys a lower-cased combo can carry.
+const ARIA_NAMED_KEYS: Readonly<Record<string, string>> = {
+  '+': 'Plus',
+  space: 'Space',
+  enter: 'Enter',
+  escape: 'Escape',
+  tab: 'Tab',
+  backspace: 'Backspace',
+  delete: 'Delete',
+  insert: 'Insert',
+  home: 'Home',
+  end: 'End',
+  pageup: 'PageUp',
+  pagedown: 'PageDown',
+  arrowup: 'ArrowUp',
+  arrowdown: 'ArrowDown',
+  arrowleft: 'ArrowLeft',
+  arrowright: 'ArrowRight',
+  contextmenu: 'ContextMenu',
+  capslock: 'CapsLock',
+  numlock: 'NumLock',
+  scrolllock: 'ScrollLock',
+  printscreen: 'PrintScreen',
+};
+
+function ariaKeyToken(key: string): string {
+  const named = ARIA_NAMED_KEYS[key];
+  if (named !== undefined) {
+    return named;
+  }
+  if (/^f\d{1,2}$/.test(key)) {
+    return key.toUpperCase();
+  }
+  if (key.length === 1) {
+    // 'ß'.toUpperCase() is 'SS': two characters would name a different key.
+    const upper = key.toUpperCase();
+    return upper.length === 1 ? upper : key;
+  }
+  // A name outside the table: the UI Events value of a one-word key.
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+/**
+ * Serialises a parsed {@link KeyCombo} into an `aria-keyshortcuts` value
+ * (WAI-ARIA 1.2): the modifiers `Control`, `Alt`, `Shift`, `Meta` in
+ * canonical order, then exactly one non-modifier key. Letters are upper-case,
+ * the literal `+` key is `Plus`, space is `Space`, and named keys use their
+ * UI Events key value (`Escape`, `ArrowUp`, `PageDown`). `mod` resolves per
+ * platform. The tokens are spec tokens, not user-facing copy: never
+ * translate them.
+ *
+ * ```ts
+ * resolveAriaKeyShortcuts(parseKeyCombo('mod+k'), false); // 'Control+K'
+ * resolveAriaKeyShortcuts(parseKeyCombo('mod++'), true);  // 'Meta+Plus'
+ * ```
+ *
+ * @param combo The parsed combo.
+ * @param isMac Whether the current platform is macOS (resolves `mod`).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo parseKeyCombo, resolveKeyComboParts
+ */
+export function resolveAriaKeyShortcuts(combo: KeyCombo, isMac: boolean): string {
+  const modifiers = resolvedModifiers(combo, isMac).map((m) => ARIA_MODIFIER_TOKENS[m]);
+  return [...modifiers, ariaKeyToken(combo.key)].join('+');
+}
+
+const APPLE_PLATFORM = /mac|iphone|ipad|ipod/i;
+
+// `userAgentData` (UA Client Hints) is not in lib.dom yet.
+interface NavigatorWithUaData {
+  readonly platform?: string;
+  readonly userAgentData?: { readonly platform?: string };
+}
+
+/**
+ * Detects macOS from a `Navigator`, the one platform rule every shortcut
+ * consumer shares: `mod` resolves to Cmd there, the AltGr guard of
+ * {@link matchesKeyCombo} is off, and key labels switch to the macOS glyphs.
+ * Reads `navigator.userAgentData.platform` where the browser ships UA
+ * Client Hints and falls back to `navigator.platform` when the hint is
+ * missing or empty. iOS and iPadOS count as macOS: a hardware keyboard there
+ * uses Cmd as the primary modifier and shows the same glyphs. Returns
+ * `false` for `undefined`, so a server render resolves to the non-mac
+ * labels.
+ *
+ * ```ts
+ * const isMac = resolveMacPlatform(injectWindow()?.navigator);
+ * ```
+ *
+ * @param nav The navigator to read, `undefined` on the server.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo matchesKeyCombo, resolveKeyComboParts
+ */
+export function resolveMacPlatform(nav: Navigator | undefined): boolean {
+  if (nav === undefined) {
+    return false;
+  }
+  const source = nav as NavigatorWithUaData;
+  // An empty hint (some engines ship the API without the value) falls through.
+  const hint = source.userAgentData?.platform;
+  const platform = hint !== undefined && hint !== '' ? hint : (source.platform ?? '');
+  return APPLE_PLATFORM.test(platform);
+}
+
+const LATIN_LETTER_OR_DIGIT = /^[a-z0-9]$/;
+
+function matchesComboKey(event: KeyboardEvent, comboKey: string, altGr: boolean): boolean {
+  // The space bar reports `' '`; combos spell it `'space'`.
+  const key = event.key === ' ' ? 'space' : event.key.toLowerCase();
+  if (key === comboKey) {
+    return true;
+  }
+  // AltGr output is the character itself; its physical key names another one.
+  const transformable =
+    !altGr && LATIN_LETTER_OR_DIGIT.test(comboKey) && (event.altKey || event.shiftKey);
+  // A key that is still a Latin letter or digit was not transformed by the
+  // modifier, only remapped by the layout: trusting `code` there would match
+  // the wrong letter (QWERTZ Y sits on US Z).
+  if (!transformable || LATIN_LETTER_OR_DIGIT.test(key)) {
+    return false;
+  }
+  const physical = /[0-9]/.test(comboKey) ? `Digit${comboKey}` : `Key${comboKey.toUpperCase()}`;
+  return event.code === physical;
 }
 
 const NESTED_INTERACTIVE_DEFAULTS = [

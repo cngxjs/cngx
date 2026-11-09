@@ -1,11 +1,18 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, Directive, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
+import { CngxPopoverPanel } from './popover-panel.component';
+import { CngxPopoverBody, CngxPopoverHeader } from './popover-panel-slots';
 import { CngxPopoverAnchor } from './popover-anchor.directive';
 import { CngxPopoverSheet } from './popover-sheet.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
+import {
+  CNGX_POPOVER_PRESENTATION,
+  type CngxPopoverPresentation,
+  type CngxPopoverPresentationSeam,
+} from './popover-presentation';
 
 // ── Test helpers ────────────────────────────────────────────────────────
 
@@ -106,6 +113,64 @@ class RestoreFocusHost {
 
 @Component({
   template: `
+    <button [cngxPopoverTrigger]="pop" [restoreFocus]="restore()" id="trigger">Open</button>
+    <div cngxPopover #pop="cngxPopover">Claimed</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class RestoreClaimHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly restore = signal<boolean | undefined>(undefined);
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="panel.popover" [restoreFocus]="restore()" id="trigger">
+      Open
+    </button>
+    <button id="outside" type="button">Outside</button>
+    <cngx-popover-panel #panel [showClose]="true" [empty]="empty()">
+      <span cngxPopoverHeader>Recent activity</span>
+      <div cngxPopoverBody><button id="inside" type="button">Done</button></div>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverTrigger, CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody],
+})
+class PanelTriggerHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  readonly restore = signal<boolean | undefined>(undefined);
+  readonly empty = signal(false);
+}
+
+/** Presentation modifier whose layout a spec flips directly. */
+@Directive({
+  selector: '[testPresentation]',
+  providers: [{ provide: CNGX_POPOVER_PRESENTATION, useExisting: TestPresentation }],
+})
+class TestPresentation implements CngxPopoverPresentationSeam {
+  readonly presentation = signal<CngxPopoverPresentation>('anchored');
+  onShown(): void {
+    /* no-op */
+  }
+  onHide(): void {
+    /* no-op */
+  }
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
+    <div cngxPopover testPresentation #pop="cngxPopover">Flippable</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger, TestPresentation],
+})
+class FlippingPresentationHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly presentation = viewChild.required(TestPresentation);
+}
+
+@Component({
+  template: `
     @if (showTrigger()) {
       <button [cngxPopoverTrigger]="pop" id="trigger">Open</button>
     }
@@ -114,6 +179,33 @@ class RestoreFocusHost {
   imports: [CngxPopover, CngxPopoverTrigger],
 })
 class ConditionalTriggerHost {
+  readonly popover = viewChild.required(CngxPopover);
+  readonly showTrigger = signal(true);
+}
+
+@Component({
+  template: `
+    <button [cngxPopoverTrigger]="pop" id="first">First</button>
+    <button [cngxPopoverTrigger]="pop" id="second">Second</button>
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class TwoTriggersHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  template: `
+    @if (showTrigger()) {
+      <button [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">Open</button>
+    }
+    <button id="outside" type="button">Outside</button>
+    <div cngxPopover #pop="cngxPopover">Content</div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class ConditionalRestoreTriggerHost {
   readonly popover = viewChild.required(CngxPopover);
   readonly showTrigger = signal(true);
 }
@@ -188,29 +280,29 @@ describe('CngxPopoverTrigger', () => {
     it('names the element a composer registers through the controls hint', () => {
       const { fixture, triggerEl } = setup(ControlsHintHost);
       const host = fixture.componentInstance as ControlsHintHost;
-      host.popover().setControls(signal('inner-menu'));
+      host.popover().claimControls(host, signal('inner-menu'));
       fixture.detectChanges();
       expect(host.popover().controlsHint()).toBe('inner-menu');
       expect(triggerEl.getAttribute('aria-controls')).toBe('inner-menu');
     });
 
-    it('follows a change of the registered source without another setControls', () => {
+    it('follows a change of the registered source without another claim', () => {
       const { fixture, triggerEl } = setup(ControlsHintHost);
       const host = fixture.componentInstance as ControlsHintHost;
       const source = signal('inner-menu');
-      host.popover().setControls(source);
+      host.popover().claimControls(host, source);
       fixture.detectChanges();
       source.set('renamed-menu');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-controls')).toBe('renamed-menu');
     });
 
-    it('clears the hint with setControls(null)', () => {
+    it('clears the hint when the owner releases its claim', () => {
       const { fixture, triggerEl } = setup(ControlsHintHost);
       const host = fixture.componentInstance as ControlsHintHost;
-      host.popover().setControls(signal('inner-menu'));
+      host.popover().claimControls(host, signal('inner-menu'));
       fixture.detectChanges();
-      host.popover().setControls(null);
+      host.popover().releaseControls(host);
       fixture.detectChanges();
       expect(host.popover().controlsHint()).toBeNull();
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
@@ -219,7 +311,7 @@ describe('CngxPopoverTrigger', () => {
     it('lets a bound controls win over the hint', () => {
       const { fixture, triggerEl } = setup(ControlsTriggerHost);
       const host = fixture.componentInstance as ControlsTriggerHost;
-      host.popover().setControls(signal('hinted'));
+      host.popover().claimControls(host, signal('hinted'));
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-controls')).toBe('inner-list');
     });
@@ -227,7 +319,7 @@ describe('CngxPopoverTrigger', () => {
     it('ignores the hint in a sheet presentation and names the popover', () => {
       const { fixture, triggerEl } = setup(SheetControlsHintHost);
       const host = fixture.componentInstance as SheetControlsHintHost;
-      host.popover().setControls(signal('inner-menu'));
+      host.popover().claimControls(host, signal('inner-menu'));
       fixture.detectChanges();
       expect(host.popover().controlsHint()).toBeNull();
       expect(triggerEl.getAttribute('aria-controls')).toBe(host.popover().id());
@@ -246,7 +338,7 @@ describe('CngxPopoverTrigger', () => {
     it('should pick up the popover haspopup signal as default', () => {
       const { fixture, triggerEl } = setup(BasicTriggerHost);
       const host = fixture.componentInstance as BasicTriggerHost;
-      host.popover().setHaspopup('dialog');
+      host.popover().claimHaspopup(host, 'dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('dialog');
     });
@@ -254,7 +346,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let consumer haspopup override the popover hint', () => {
       const { fixture, triggerEl } = setup(MenuTriggerHost);
       const host = fixture.componentInstance as MenuTriggerHost;
-      host.popover().setHaspopup('dialog');
+      host.popover().claimHaspopup(host, 'dialog');
       fixture.detectChanges();
       expect(triggerEl.getAttribute('aria-haspopup')).toBe('menu');
     });
@@ -267,7 +359,7 @@ describe('CngxPopoverTrigger', () => {
     it('should let none cancel the popover haspopup hint', () => {
       const { fixture, triggerEl } = setup(NoneHaspopupHost);
       const host = fixture.componentInstance as NoneHaspopupHost;
-      host.popover().setHaspopup('dialog');
+      host.popover().claimHaspopup(host, 'dialog');
       fixture.detectChanges();
       expect(triggerEl.hasAttribute('aria-haspopup')).toBe(false);
     });
@@ -306,6 +398,146 @@ describe('CngxPopoverTrigger', () => {
       fixture.destroy();
     });
 
+    function closeFromInsidePanel(restore: boolean | undefined) {
+      const fixture = TestBed.createComponent(RestoreClaimHost);
+      fixture.componentInstance.restore.set(restore);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance;
+      host.popover().claimRestoreFocus(host, true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      triggerEl.focus();
+      host.popover().show();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const active = document.activeElement;
+      fixture.destroy();
+      return { active, triggerEl };
+    }
+
+    it('restores focus through a composer claim when no input is bound', () => {
+      const { active, triggerEl } = closeFromInsidePanel(undefined);
+      expect(active).toBe(triggerEl);
+    });
+
+    it('lets [restoreFocus]="false" beat a composer claim', () => {
+      const { active, triggerEl } = closeFromInsidePanel(false);
+      expect(active).not.toBe(triggerEl);
+    });
+
+    describe('bound to a CngxPopoverPanel', () => {
+      function mountPanel(configure?: (host: PanelTriggerHost) => void) {
+        const fixture = TestBed.createComponent(PanelTriggerHost);
+        configure?.(fixture.componentInstance);
+        testRoot.appendChild(fixture.nativeElement);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        const root = fixture.nativeElement as HTMLElement;
+        const popoverEl = root.querySelector('cngx-popover-panel') as HTMLElement;
+        stubPopoverElement(popoverEl);
+        const triggerEl = root.querySelector('#trigger') as HTMLElement;
+        const popover = fixture.componentInstance.panel().popover;
+        const flush = () => {
+          fixture.detectChanges();
+          TestBed.flushEffects();
+        };
+        const open = () => {
+          triggerEl.focus();
+          popover.show();
+          flush();
+        };
+        return { fixture, root, triggerEl, popover, flush, open };
+      }
+
+      it('returns focus to the trigger when the panel hides with focus inside', () => {
+        const { fixture, root, triggerEl, popover, flush, open } = mountPanel();
+        open();
+        root.querySelector<HTMLButtonElement>('#inside')!.focus();
+        popover.hide();
+        flush();
+        expect(document.activeElement).toBe(triggerEl);
+        fixture.destroy();
+      });
+
+      it('returns focus to the trigger from the built-in close, also in the empty view', () => {
+        for (const empty of [false, true]) {
+          const { fixture, root, triggerEl, flush, open } = mountPanel((h) => h.empty.set(empty));
+          open();
+          const close = root.querySelector<HTMLButtonElement>('button.cngx-popover-panel__close')!;
+          close.focus();
+          close.click();
+          flush();
+          expect(document.activeElement, `empty=${empty}`).toBe(triggerEl);
+          fixture.destroy();
+        }
+      });
+
+      it('leaves focus on body with [restoreFocus]="false"', () => {
+        const { fixture, root, popover, flush, open } = mountPanel((h) => h.restore.set(false));
+        open();
+        root.querySelector<HTMLButtonElement>('#inside')!.focus();
+        popover.hide();
+        flush();
+        expect(document.activeElement).toBe(document.body);
+        fixture.destroy();
+      });
+
+      it('leaves focus on an outside control the user moved to', () => {
+        const { fixture, root, popover, flush, open } = mountPanel();
+        open();
+        const outside = root.querySelector<HTMLButtonElement>('#outside')!;
+        outside.focus();
+        popover.hide();
+        flush();
+        expect(document.activeElement).toBe(outside);
+        fixture.destroy();
+      });
+    });
+
+    it('drops its snapshot when restore turns off mid-open, so a later flip moves no focus', () => {
+      const fixture = TestBed.createComponent(FlippingPresentationHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+      host.popover().claimRestoreFocus(host, true);
+      flush();
+
+      triggerEl.focus();
+      host.popover().show();
+      flush();
+      host.presentation().presentation.set('sheet');
+      flush();
+      host.popover().hide();
+      flush();
+      triggerEl.blur();
+      expect(document.activeElement).toBe(document.body);
+
+      host.presentation().presentation.set('anchored');
+      flush();
+      expect(document.activeElement).not.toBe(triggerEl);
+      fixture.destroy();
+    });
+
     it('should restore focus on close when restoreFocus is true', () => {
       const fixture = TestBed.createComponent(RestoreFocusHost);
       testRoot.appendChild(fixture.nativeElement);
@@ -324,6 +556,30 @@ describe('CngxPopoverTrigger', () => {
       panelItem.focus();
       host.popover().hide();
       fixture.detectChanges();
+      expect(document.activeElement).toBe(triggerEl);
+      fixture.destroy();
+    });
+
+    it('restores focus when show() and hide() run before change detection', () => {
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+
+      triggerEl.focus();
+      const host = fixture.componentInstance as RestoreFocusHost;
+      // A fast keyboard user (Enter, then Escape) opens and closes inside
+      // one tick: no change detection runs between show() and hide().
+      host.popover().show();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
       expect(document.activeElement).toBe(triggerEl);
       fixture.destroy();
     });
@@ -420,6 +676,104 @@ describe('CngxPopoverTrigger', () => {
       fixture.detectChanges();
       expect(document.activeElement).toBe(triggerEl);
       fixture.destroy();
+    });
+
+    it('releases the close listener on trigger destroy, so a later close moves no focus', () => {
+      const fixture = TestBed.createComponent(ConditionalRestoreTriggerHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const outsideEl = fixture.nativeElement.querySelector('#outside') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance as ConditionalRestoreTriggerHost;
+
+      host.showTrigger.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(triggerEl.isConnected).toBe(false);
+
+      // The pre-open origin is a live element, so a listener left behind by
+      // the destroyed trigger would move focus onto it.
+      outsideEl.focus();
+      host.popover().show();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      host.popover().hide();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(document.activeElement).not.toBe(triggerEl);
+      expect(document.activeElement).toBe(document.body);
+      fixture.destroy();
+    });
+  });
+
+  describe('close listener', () => {
+    it('does not throw or focus a disconnected element when the host is destroyed while open', () => {
+      const testRoot = document.createElement('div');
+      document.body.appendChild(testRoot);
+      const fixture = TestBed.createComponent(RestoreFocusHost);
+      testRoot.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const triggerEl = fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      stubPopoverElement(popoverEl);
+      const host = fixture.componentInstance as RestoreFocusHost;
+
+      triggerEl.focus();
+      host.popover().show();
+      fixture.detectChanges();
+      const panelItem = document.createElement('button');
+      popoverEl.appendChild(panelItem);
+      panelItem.focus();
+      expect(host.popover().state()).not.toBe('closed');
+
+      // Record every focus() call with the target's connection state at
+      // call time: the popover's destroy runs finalize() and the close
+      // listener while the trigger is torn down in the same pass.
+      const focusCalls: { el: HTMLElement; connected: boolean }[] = [];
+      const realFocus = HTMLElement.prototype.focus;
+      const focusSpy = vi
+        .spyOn(HTMLElement.prototype, 'focus')
+        .mockImplementation(function (this: HTMLElement, options?: FocusOptions) {
+          focusCalls.push({ el: this, connected: this.isConnected });
+          realFocus.call(this, options);
+        });
+
+      expect(() => fixture.destroy()).not.toThrow();
+      focusSpy.mockRestore();
+
+      expect(focusCalls.filter((call) => !call.connected)).toEqual([]);
+      const active = document.activeElement;
+      expect(active === null || active.isConnected).toBe(true);
+      testRoot.remove();
+    });
+
+    it('warns once when a second trigger takes the close listener of one popover', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(TwoTriggersHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(1);
+      expect(String(takeovers[0][0])).toMatch(/Only the last-registered trigger restores focus/);
+      fixture.destroy();
+    });
+
+    it('does not warn for a single trigger', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { fixture } = setup(BasicTriggerHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(0);
     });
   });
 

@@ -92,6 +92,8 @@ During the dwell tail the visual and the semantics disagree on purpose: the run 
 
 The gate watches the directive's own run and a host-reflected run (`CNGX_HOST_INTERACTION_STATE.busy`, e.g. `CngxActionButton` with `[externalState]`); both show the busy visual. The `[busy]` input is different: it is an ARIA hint only, sets `aria-busy` and shows no spinner, because it does not describe a run the host paints.
 
+Run state for hosts: the directive provides `CNGX_ASYNC_RUN_STATE` (`useExisting`) on its own element. A co-hosted component (the button family, `CngxActionButton`, the stepper controls) reads `pending`, `busyVisible`, `busy`, `enabled`, `state`, `settled` and `announce()` through that token from the same element, never through the `CngxAsyncClick` class, so another runner can drive the same host by providing the token. A host that also provides `CNGX_HOST_INTERACTION_STATE` (the button family, `CngxActionButton`) reads it lazily with `{ self: true }`: the directive in turn reads that state, so an eager inject in either direction is a cycle. A unit without that cycle injects it eagerly (the stepper next and previous controls with `{ self: true }`, the complete control with `{ host: true }`).
+
 `@cngx/common/theming/components/cngx-async.css` (part of the `cngx.css` bundle) paints them through these tokens on hosts without their own paint (a bare `<button>`, an anchor). Button-family hosts (`.cngx-button`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxActionButton`) are skipped; they keep their variant paint and show their own busy treatment.
 
 |Token|Unset default|

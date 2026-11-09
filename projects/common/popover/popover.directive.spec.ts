@@ -275,6 +275,72 @@ describe('CngxPopover', () => {
       outside.remove();
     });
 
+    it('calls the close listener once per finalize() with the pre-open origin', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      outside.focus();
+      const listener = vi.fn((origin: HTMLElement | null) => {
+        // The state is already closed and the origin already cleared when
+        // the listener runs; the origin arrives as the argument.
+        expect(host.popover().state()).toBe('closed');
+        expect(host.popover().focusOrigin()).toBeNull();
+        return origin;
+      });
+      host.popover().registerCloseListener(listener);
+
+      host.popover().show();
+      host.popover().hide();
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenLastCalledWith(outside);
+
+      host.popover().hide();
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      host.popover().show();
+      host.popover().hide();
+      expect(listener).toHaveBeenCalledTimes(2);
+      outside.remove();
+    });
+
+    it('keeps a successor close listener registered when a stale one releases', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const stale = vi.fn();
+      const successor = vi.fn();
+      // The takeover warns (CNGX1081); keep the spec output clean.
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      host.popover().registerCloseListener(stale);
+      host.popover().registerCloseListener(successor);
+      host.popover().releaseCloseListener(stale);
+
+      host.popover().show();
+      host.popover().hide();
+      expect(stale).not.toHaveBeenCalled();
+      expect(successor).toHaveBeenCalledTimes(1);
+
+      host.popover().releaseCloseListener(successor);
+      host.popover().show();
+      host.popover().hide();
+      expect(successor).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not warn when the same close listener registers again', () => {
+      const { fixture } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const listener = vi.fn();
+      host.popover().registerCloseListener(listener);
+      host.popover().registerCloseListener(listener);
+      host.popover().releaseCloseListener(listener);
+      host.popover().registerCloseListener(listener);
+
+      const takeovers = warnSpy.mock.calls.filter((call) => /^CNGX1081: /.test(String(call[0])));
+      expect(takeovers).toHaveLength(0);
+      warnSpy.mockRestore();
+    });
+
     it('moves focus out of the panel on close so it never sits under aria-hidden', () => {
       const { fixture, popoverEl } = setup(BasicHost);
       const host = fixture.componentInstance as BasicHost;
@@ -441,6 +507,23 @@ describe('CngxPopover', () => {
       (ev as unknown as Record<string, unknown>)['newState'] = 'closed';
       el.dispatchEvent(ev);
     }
+
+    it('calls the close listener on the light-dismiss path with the pre-open origin', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const host = fixture.componentInstance as AutoModeHost;
+      const outside = document.createElement('button');
+      document.body.appendChild(outside);
+      outside.focus();
+      const listener = vi.fn();
+      host.popover().registerCloseListener(listener);
+
+      host.popover().show();
+      dispatchLightDismiss(popoverEl);
+
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenCalledWith(outside);
+      outside.remove();
+    });
 
     it('runs the full teardown when the browser closes the popover', () => {
       const { fixture, popoverEl } = setup(AutoModeHost);
@@ -1308,6 +1391,71 @@ describe('CngxPopover', () => {
       TestBed.flushEffects();
       document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
       expect(popover.state()).toBe('closed');
+    });
+
+    it('keeps a co-composer haspopup claim alive when the later composer releases', () => {
+      const { popover } = seamSetup();
+      const panelLike = {};
+      const menuLike = {};
+
+      popover.claimHaspopup(panelLike, 'dialog');
+      popover.claimHaspopup(menuLike, 'menu');
+      expect(popover.haspopup()).toBe('menu');
+
+      popover.releaseHaspopup(menuLike);
+      expect(popover.haspopup()).toBe('dialog');
+
+      popover.releaseHaspopup(panelLike);
+      expect(popover.haspopup()).toBeUndefined();
+    });
+
+    it('keeps a co-composer controls claim alive when the later composer releases', () => {
+      const { popover } = seamSetup();
+      const first = {};
+      const second = {};
+      const secondId = signal('menu-2');
+
+      popover.claimControls(first, signal('menu-1'));
+      popover.claimControls(second, secondId);
+      expect(popover.controlsHint()).toBe('menu-2');
+
+      secondId.set('menu-2b');
+      expect(popover.controlsHint()).toBe('menu-2b');
+
+      popover.releaseControls(second);
+      expect(popover.controlsHint()).toBe('menu-1');
+
+      popover.releaseControls(first);
+      expect(popover.controlsHint()).toBeNull();
+    });
+
+    it('resolves the restore-focus hint from the last live claim', () => {
+      const { popover } = seamSetup();
+      const a = {};
+      const b = {};
+      expect(popover.restoreFocusHint()).toBeUndefined();
+
+      popover.claimRestoreFocus(a, true);
+      popover.claimRestoreFocus(b, false);
+      expect(popover.restoreFocusHint()).toBe(false);
+
+      popover.releaseRestoreFocus(b);
+      expect(popover.restoreFocusHint()).toBe(true);
+
+      popover.releaseRestoreFocus(a);
+      expect(popover.restoreFocusHint()).toBeUndefined();
+    });
+
+    it('keeps the non-anchored haspopup and controls gates over live claims', () => {
+      const { fixture, popover, seam } = seamSetup();
+      const owner = {};
+      popover.claimHaspopup(owner, 'menu');
+      popover.claimControls(owner, signal('menu-1'));
+
+      seam.presentation.set('sheet');
+      fixture.detectChanges();
+      expect(popover.haspopup()).toBe('dialog');
+      expect(popover.controlsHint()).toBeNull();
     });
 
     it('keeps the anchored path unchanged while the seam reports anchored', () => {

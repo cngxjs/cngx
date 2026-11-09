@@ -161,8 +161,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     await openForced(page, '/#/common/interactive/button-toggle/group/basic-view-switcher');
     const checked = page.locator('.cngx-ex-artifact .cngx-button-toggle--checked').first();
     await expect(checked).toBeVisible();
-    const s = await readAffordance(checked);
-    expect(s.backgroundColor).toBe(s.highlight);
+    // The fill transitions over 150ms; poll until it lands on Highlight.
+    const { highlight } = await readAffordance(checked);
+    await expect.poll(async () => (await readAffordance(checked)).backgroundColor).toBe(highlight);
   });
 
   test('solid primary button fills with Highlight, the other variants stay ButtonFace', async ({ page }) => {
@@ -237,7 +238,7 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
   test('a pending popover confirm keeps its busy paint and never computes GrayText', async ({ page }) => {
     await openForced(page, '/#/common/popover/popover-panel/with-footer-actions');
     await page.locator('.cngx-ex-artifact button.chip', { hasText: 'Save Confirm' }).click();
-    const confirm = page.locator('.cngx-popover-action--primary').first();
+    const confirm = page.locator('button.cngx-popover-action[data-tone="primary"]').first();
     await expect(confirm).toBeVisible();
     await confirm.click();
     // Wait for the gated busy flag rather than a fixed sleep: once data-busy is
@@ -263,6 +264,29 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(paint.runFlag).toBe('true');
     expect(paint.color).not.toBe(paint.grayText);
     expect(paint.borderTopColor).not.toBe(paint.grayText);
+  });
+
+  test('default popover state copy stays readable (muted and danger colours forced to system colours)', async ({ page }) => {
+    await openForced(page, '/#/common/popover/popover-panel/close-and-empty-slots');
+    await page.getByLabel('Use custom slot templates').uncheck();
+    const trigger = page.getByRole('button', { name: 'Recent activity', exact: true });
+
+    for (const [label, surface] of [
+      ['Load error', '.cngx-popover-panel__error'],
+      ['No activity (empty state)', '.cngx-popover-panel__empty'],
+    ] as const) {
+      const toggle = page.getByLabel(label, { exact: true });
+      await toggle.check();
+      await trigger.click();
+      const copy = page.locator(`cngx-popover-panel ${surface}`);
+      await expect(copy).toBeVisible();
+      const a = await readAffordance(copy);
+      const color = await copy.evaluate((el) => getComputedStyle(el).color);
+      expect(color, `${surface} text colour`).not.toBe(a.canvas);
+      await page.keyboard.press('Escape');
+      await expect(copy).toBeHidden();
+      await toggle.uncheck();
+    }
   });
 
   test('a busy cngx-button never computes GrayText (the extended aria-disabled excludes data-busy)', async ({ page }) => {

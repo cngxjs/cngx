@@ -12,7 +12,7 @@ import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert/alert';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
-import { createHeldTimerRegistry } from '../internal/pausable-timer';
+import { createHeldTimerRegistry, type TimerHoldSource } from '../internal/pausable-timer';
 
 /**
  * Configuration for a single toast.
@@ -227,17 +227,35 @@ export class CngxToaster {
   }
 
   /**
-   * @internal - called by toast-outlet on hover/focus (WCAG 2.2.1).
-   * Hold-counted: hover and focus-within pause independently; the timer
-   * resumes only when the last hold releases.
+   * @internal - called by toast-outlet on hover/focus (WCAG 2.2.1) and for
+   * toasts kept out of view by `maxVisible`. Holds are sourced: hover,
+   * focus-within and the queue pause independently, and the timer resumes
+   * only when the last source releases.
    */
-  pauseTimer(id: number): void {
-    this.timers.hold(id);
+  pauseTimer(id: number, source: TimerHoldSource): void {
+    this.timers.hold(id, source);
   }
 
-  /** @internal - called by toast-outlet on mouse-leave/focus-out. */
-  resumeTimer(id: number): void {
-    this.timers.release(id);
+  /**
+   * @internal - current countdown segment per timed toast id. `CngxToastOutlet`
+   * is the only reader: it derives the `data-timer` state, the timer custom
+   * properties and the serial-keyed timer element from it. Written in a
+   * microtask flush, never inside a timer call.
+   */
+  readonly timerSegments = this.timers.segments;
+
+  /** @internal - called by toast-outlet on mouse-leave/focus-out and on reveal. */
+  resumeTimer(id: number, source: TimerHoldSource): void {
+    this.timers.release(id, source);
+  }
+
+  /**
+   * @internal - drops several hold sources of a toast in one transition. The
+   * outlet calls it for a toast that leaves the visible set, whose removed
+   * element never fires `pointerleave` or a reliable `focusout`.
+   */
+  dropHolds(id: number, sources: readonly TimerHoldSource[]): void {
+    this.timers.dropHolds(id, sources);
   }
 
   /** Dismiss a toast by id. */

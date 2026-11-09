@@ -81,11 +81,6 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     kind: 'real',
   },
   {
-    file: 'projects/common/popover/popover-action.component.css',
-    token: '--cngx-popover-action-transition',
-    kind: 'real',
-  },
-  {
     file: 'projects/common/interactive/toggle/toggle.component.css',
     token: '--cngx-toggle-transition',
     kind: 'real',
@@ -205,6 +200,7 @@ const DURATION_EXCLUDED: ReadonlyArray<{ token: string; reason: string }> = [
   { token: '--cngx-skeleton-shimmer-duration', reason: 'skeleton shimmer loop (1.5s)' },
   { token: '--cngx-recycler-placeholder-shimmer-duration', reason: 'fast-fling placeholder shimmer loop (1.6s)' },
   { token: '--cngx-dialog-backdrop-transition', reason: 'opt-in hook, initial-value: none (no default transition to derive)' },
+  { token: '--cngx-toast-timer-duration', reason: 'per-toast runtime value set inline by the outlet, not a scale-timed interaction' },
 ];
 
 // The scale itself - the source every SET derives from, not a consumer.
@@ -276,7 +272,7 @@ describe('duration-derivation coverage manifest', () => {
   );
 
   it('fixes the manifest size so a bulk edit dropping a family is caught', () => {
-    expect(DURATION_DERIVED_FAMILIES.length).toBe(26);
+    expect(DURATION_DERIVED_FAMILIES.length).toBe(25);
   });
 });
 

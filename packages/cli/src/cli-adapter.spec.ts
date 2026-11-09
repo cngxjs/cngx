@@ -13,8 +13,9 @@ import type { CliIo, ContextOptions, DoctorModule } from './cli-adapter.js';
 import { EXIT_INTERNAL, EXIT_NOT_FOUND, EXIT_OK, EXIT_USAGE, adapterFlags, commandHelp, doctorHelp, flagName, generalHelp, main, runCli } from './cli-adapter.js';
 import type { CngxCommand, CommandContext } from './core/registry.js';
 import { COMMANDS } from './core/registry.js';
-import type { DocsResolverDeps } from './core/data/docs-resolver.js';
-import { createDocsResolver } from './core/data/docs-resolver.js';
+import type { DocsResolverDeps, ErrorCodeResolverDeps } from './core/data/docs-resolver.js';
+import { createDocsResolver, createErrorCodeResolver } from './core/data/docs-resolver.js';
+import type { DocsIndex, ErrorCodeIndex } from './core/data/loader.js';
 import { createDocsIndex, loadBundledDocs, loadDocsFromFile } from './core/data/loader.js';
 import { getStoryExample } from './core/commands/get-story-example.js';
 import { assertNoAnsi } from './output-guards.js';
@@ -24,7 +25,27 @@ const FIXTURE = fileURLToPath(new URL('../../mcp/test/fixtures/documentation.sam
 const PACKAGE_JSON = new URL('../package.json', import.meta.url);
 const CLI_VERSION = (JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as { version: string }).version;
 
-const bundled = loadDocsFromFile(FIXTURE);
+// The sample fixture carries no error-code block; `explain` needs one, so the
+// cli's bundled index is augmented in memory (the shared fixture file stays
+// block-less, which loader.spec's absent-block case relies on).
+const ERROR_CODE_BLOCK = {
+  docsBaseUrl: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/',
+  ranges: [{ lib: 'core', from: 1, to: 899 }],
+  codes: [
+    {
+      code: 'CNGX0001',
+      lib: 'core',
+      severity: 'warn',
+      production: 'stripped',
+      title: 'Locale is not a BCP 47 tag',
+      status: 'active',
+      url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html',
+      messages: ['formatMessage(): not a BCP 47 locale'],
+      body: '## Locale is not a BCP 47 tag\n\nUse a BCP 47 tag.',
+    },
+  ],
+};
+const bundled = { ...loadDocsFromFile(FIXTURE), errorCodes: ERROR_CODE_BLOCK };
 
 const DATA_DIR = new URL('../data/', import.meta.url);
 
@@ -45,6 +66,12 @@ const offlineDeps: DocsResolverDeps = {
   loadDocs: loadDocsFromFile,
 };
 
+/** The error-code resolver of a context whose spec never reaches an asset. */
+const noErrorCodeAsset = (docs: DocsIndex) =>
+  createErrorCodeResolver(docs, {
+    fetchErrorCodes: async (version) => ({ ok: false, reason: 'asset-missing', message: `no asset for v${version}` }),
+  });
+
 interface Run {
   code: number;
   stdout: string;
@@ -55,7 +82,7 @@ async function cli(...argv: string[]): Promise<Run> {
   let stdout = '';
   let stderr = '';
   const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
-  const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, offlineDeps) };
+  const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, offlineDeps), resolveErrorCodes: noErrorCodeAsset(bundled) };
   const code = await runCli(argv, { commands: COMMANDS, loadContext: () => context, cliVersion: CLI_VERSION, io });
   assertNoAnsi(stdout);
   assertNoAnsi(stderr);
@@ -73,6 +100,7 @@ const CASES: readonly { cli: string; known: string[]; unknown: string[]; md: str
   { cli: 'config', known: ['CNGX_SELECT_CONFIG'], unknown: ['NoSuchThing'], md: '# CNGX_SELECT_CONFIG' },
   { cli: 'example', known: ['CngxSelect'], unknown: ['NoSuchThing'], md: '# CngxSelect examples' },
   { cli: 'migrate', known: ['0.1.0-rc.6'], unknown: ['9.9.9'], md: '# Migrating 0.1.0-rc.6 -> 0.1.0-rc.6' },
+  { cli: 'explain', known: ['CNGX0001'], unknown: ['CNGX5999'], md: '## CNGX0001' },
 ];
 
 describe('cngx subcommands', () => {
@@ -151,7 +179,7 @@ describe('usage errors', () => {
     .filter(([cliName, flag]) => !adapterFlags(COMMANDS.find((def) => def.cliName === cliName)!).includes(flag));
 
   it('covers every positional of the registry that is not also an adapter flag', () => {
-    expect(POSITIONAL_FLAGS.map(([cliName]) => cliName).sort()).toEqual(['api', 'config', 'di', 'example', 'find', 'migrate', 'slots', 'theme']);
+    expect(POSITIONAL_FLAGS.map(([cliName]) => cliName).sort()).toEqual(['api', 'config', 'di', 'example', 'explain', 'find', 'migrate', 'slots', 'theme']);
   });
 
   it.each(POSITIONAL_FLAGS)('takes the positional of cngx %s only by position, never as %s', async (cliName, flag) => {
@@ -197,10 +225,10 @@ describe('usage errors', () => {
   });
 
   it('rejects an unknown command, listing the commands', async () => {
-    const run = await cli('explain', 'x');
+    const run = await cli('frobnicate', 'x');
 
     expect(run.code).toBe(EXIT_USAGE);
-    expect(run.stderr).toContain('unknown command "explain"');
+    expect(run.stderr).toContain('unknown command "frobnicate"');
     expect(run.stderr).toContain('api');
   });
 
@@ -216,6 +244,117 @@ describe('usage errors', () => {
     expect(run.code).toBe(EXIT_USAGE);
     expect(run.stdout).toBe('');
     expect(run.stderr).toContain('Commands:');
+  });
+});
+
+describe('cngx explain', () => {
+  it('prints one json document whose result carries the code', async () => {
+    const run = await cli('explain', 'CNGX0001', '--format=json');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(JSON.parse(run.stdout)).toMatchObject({ cngxVersion: '0.1.0-rc.6', result: { code: 'CNGX0001', lib: 'core' } });
+  });
+
+  it('reads the code out of a pasted console line', async () => {
+    const run = await cli('explain', 'CNGX0001: formatMessage(): "de_AT" is not a BCP 47 locale');
+
+    expect(run.code).toBe(EXIT_OK);
+    expect(run.stdout).toContain('## CNGX0001');
+  });
+
+  it('exits 1 for an unknown code, listing the nearest codes of its lib', async () => {
+    const run = await cli('explain', 'CNGX0002');
+
+    expect(run.code).toBe(EXIT_NOT_FOUND);
+    expect(run.stdout).toContain('Nearest core codes');
+    expect(run.stdout).toContain('CNGX0001');
+  });
+
+  describe('for another release', () => {
+    const ASSET: ErrorCodeIndex = {
+      ...ERROR_CODE_BLOCK,
+      codes: [{ ...ERROR_CODE_BLOCK.codes[0]!, code: 'CNGX0002', title: 'Only in that release' }],
+    };
+    const NO_ASSET = { ok: false as const, reason: 'asset-missing' as const, message: 'no asset' };
+    const detected = (version: string): InstalledVersion => ({ version, source: 'installed', notes: [], packages: { '@cngx/core': version } });
+
+    async function explain(
+      argv: string[],
+      { version, fetched = { ok: true, path: '/asset.json' } }: { version?: string; fetched?: Awaited<ReturnType<ErrorCodeResolverDeps['fetchErrorCodes']>> } = {},
+    ) {
+      let stdout = '';
+      let stderr = '';
+      const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
+      const fetchErrorCodes = vi.fn<ErrorCodeResolverDeps['fetchErrorCodes']>(async () => fetched);
+      const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>();
+      const loadContext = ({ offline }: ContextOptions): CommandContext => ({
+        bundled,
+        resolve: createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile }),
+        resolveErrorCodes: createErrorCodeResolver(bundled, { fetchErrorCodes, loadErrorCodes: () => ASSET, offline }),
+      });
+      const detectVersion = () => (version === undefined ? { version: null, source: 'none' as const, notes: [], packages: {} } : detected(version));
+      const code = await runCli(['explain', ...argv], { commands: COMMANDS, loadContext, detectVersion, cliVersion: CLI_VERSION, io });
+      return { code, stdout, stderr, fetchErrorCodes, fetchSnapshot };
+    }
+
+    it('answers an explicit version from its asset, stamped with that version', async () => {
+      const run = await explain(['CNGX0002', '--cngx-version=v0.2.0', '--format=json']);
+
+      expect(run.code).toBe(EXIT_OK);
+      expect(JSON.parse(run.stdout)).toMatchObject({ cngxVersion: '0.2.0', result: { code: 'CNGX0002', title: 'Only in that release' } });
+      expect(run.fetchErrorCodes).toHaveBeenCalledExactlyOnceWith('0.2.0');
+      expect(run.fetchSnapshot).not.toHaveBeenCalled();
+    });
+
+    it('exits 1 for --offline with an uncached version, with the exact message and no fetch', async () => {
+      const run = await explain(['CNGX0001', '--cngx-version=0.2.0', '--offline']);
+
+      expect(run.code).toBe(EXIT_NOT_FOUND);
+      expect(run.stderr).toBe('cngx explain: asset-missing: v0.2.0 is not cached and --offline forbids a fetch.\n');
+      expect(run.fetchErrorCodes).not.toHaveBeenCalled();
+    });
+
+    it('never falls back to the bundled entry for an explicit version with no asset', async () => {
+      const run = await explain(['CNGX0001', '--cngx-version=0.2.0'], { fetched: NO_ASSET });
+
+      expect(run.code).toBe(EXIT_NOT_FOUND);
+      expect(run.stderr).toContain('asset-missing: no asset');
+      expect(run.stdout).not.toContain('Locale is not a BCP 47 tag');
+    });
+
+    it('exits 2 for a malformed version with no document', async () => {
+      const run = await explain(['CNGX0001', '--cngx-version=1.2', '--format=json']);
+
+      expect(run.code).toBe(EXIT_USAGE);
+      expect(run.stdout).toBe('');
+      expect(run.fetchErrorCodes).not.toHaveBeenCalled();
+    });
+
+    it('answers a detected release with no asset from the bundle, announcing it once', async () => {
+      const run = await explain(['CNGX0001'], { version: '0.2.0', fetched: NO_ASSET });
+
+      expect(run.code).toBe(EXIT_OK);
+      expect(run.stdout).toContain('## CNGX0001');
+      expect(run.stderr.match(/could not be resolved/g)).toHaveLength(1);
+      expect(run.stderr).toContain('answering from the bundled snapshot 0.1.0-rc.6. Pass --offline to skip the fetch.');
+    });
+
+    it('fetches nothing for a detected bundled version', async () => {
+      const run = await explain(['CNGX0001'], { version: '0.1.0-rc.6' });
+
+      expect(run.code).toBe(EXIT_OK);
+      expect(run.stdout).toContain('## CNGX0001');
+      expect(run.stderr).toBe('');
+      expect(run.fetchErrorCodes).not.toHaveBeenCalled();
+    });
+
+    it('never fetches for an input that is not a code, under a detected release', async () => {
+      const run = await explain(['foo'], { version: '0.2.0', fetched: NO_ASSET });
+
+      expect(run.code).toBe(EXIT_NOT_FOUND);
+      expect(run.fetchErrorCodes).not.toHaveBeenCalled();
+      expect(run.stderr).not.toContain('could not be resolved');
+    });
   });
 });
 
@@ -239,7 +378,7 @@ describe('version and snapshot resolution', () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
     let stdout = '';
     const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
-    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps), resolveErrorCodes: noErrorCodeAsset(bundled) };
 
     const code = await runCli(['api', 'CngxSelect', '--cngx-version=0.2.0', '--format=json'], {
       commands: COMMANDS,
@@ -257,7 +396,7 @@ describe('version and snapshot resolution', () => {
     const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: NEW }), loadDocs: loadDocsFromFile };
     let stdout = '';
     const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
-    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps), resolveErrorCodes: noErrorCodeAsset(bundled) };
 
     const code = await runCli(['migrate', '0.1.0-rc.6', '--to=0.2.0'], {
       commands: COMMANDS,
@@ -289,6 +428,15 @@ describe('version and snapshot resolution', () => {
     config: { cngxVersion: '0.1.0-rc.6', result: null },
     example: { cngxVersion: '0.1.0-rc.6', result: null },
     migrate: { cngxVersion: null, result: null, error: { reason: 'asset-missing', message: 'no asset for v9.9.9' } },
+    explain: {
+      cngxVersion: '0.1.0-rc.6',
+      result: {
+        code: 'CNGX5999',
+        lib: null,
+        nearest: [],
+        url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx5999.html',
+      },
+    },
   };
 
   it('covers every command in the not-found json table', () => {
@@ -312,7 +460,7 @@ describe('version and snapshot resolution', () => {
       ],
       injectables: [],
     });
-    const context: CommandContext = { bundled: ambiguous, resolve: createDocsResolver(ambiguous, offlineDeps) };
+    const context: CommandContext = { bundled: ambiguous, resolve: createDocsResolver(ambiguous, offlineDeps), resolveErrorCodes: noErrorCodeAsset(ambiguous) };
     let stdout = '';
     const io: CliIo = { stdout: (text) => (stdout += text), stderr: () => undefined };
 
@@ -404,7 +552,7 @@ describe('a missing bundled snapshot', () => {
     const io: CliIo = { stdout: () => undefined, stderr: (text) => (stderr += text) };
     const loadContext = (): CommandContext => {
       const docs = loadBundledDocs(empty);
-      return { bundled: docs, resolve: createDocsResolver(docs, offlineDeps) };
+      return { bundled: docs, resolve: createDocsResolver(docs, offlineDeps), resolveErrorCodes: noErrorCodeAsset(docs) };
     };
 
     expect(await runCli(['api', 'CngxSelect'], { commands: COMMANDS, loadContext, cliVersion: CLI_VERSION, io })).toBe(EXIT_INTERNAL);
@@ -469,7 +617,7 @@ describe('a malformed migrate version', () => {
         return offlineDeps.fetchSnapshot(version);
       },
     };
-    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps) };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, deps), resolveErrorCodes: noErrorCodeAsset(bundled) };
     const code = await runCli(argv, { commands: COMMANDS, loadContext: () => context, cliVersion: CLI_VERSION, io });
     return { code, stdout, stderr, fetches };
   }
@@ -541,7 +689,7 @@ describe('version parity across cli api, cli migrate and the mcp resolver', () =
   async function viaCli(argv: string[]): Promise<string | null> {
     const { fetched, resolve } = spied();
     const io: CliIo = { stdout: () => undefined, stderr: () => undefined };
-    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => ({ bundled, resolve }), cliVersion: CLI_VERSION, io });
+    const code = await runCli(argv, { commands: COMMANDS, loadContext: () => ({ bundled, resolve, resolveErrorCodes: noErrorCodeAsset(bundled) }), cliVersion: CLI_VERSION, io });
     if (code === EXIT_OK) {
       return '0.1.0-rc.6';
     }
@@ -630,7 +778,7 @@ describe('internal errors', () => {
     let stdout = '';
     let stderr = '';
     const io: CliIo = { stdout: (text) => (stdout += text), stderr: (text) => (stderr += text) };
-    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, offlineDeps) };
+    const context: CommandContext = { bundled, resolve: createDocsResolver(bundled, offlineDeps), resolveErrorCodes: noErrorCodeAsset(bundled) };
     const code = await runCli(argv, { commands: [def], loadContext: () => context, cliVersion: CLI_VERSION, io });
     return { code, stdout, stderr };
   }
@@ -788,7 +936,11 @@ describe('installed-version pinning', () => {
     const offline: boolean[] = [];
     const loadContext = (options: ContextOptions): CommandContext => {
       offline.push(options.offline);
-      return { bundled, resolve: createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, offline: options.offline }) };
+      return {
+        bundled,
+        resolve: createDocsResolver(bundled, { fetchSnapshot, loadDocs: loadDocsFromFile, offline: options.offline }),
+        resolveErrorCodes: noErrorCodeAsset(bundled),
+      };
     };
     const code = await runCli(argv, { commands: COMMANDS, loadContext, detectVersion, cliVersion: CLI_VERSION, io });
     return { code, stdout, stderr, fetchSnapshot, detectVersion, offline };
@@ -1080,7 +1232,7 @@ describe('cngx doctor', () => {
       unknownFlags: args.filter((arg) => arg.startsWith('-') && arg !== '--json'),
     }));
     const loaded: DoctorModule = { runDoctor, parseArgs, ...module };
-    const context = { bundled, resolve: createDocsResolver(bundled, offlineDeps) };
+    const context = { bundled, resolve: createDocsResolver(bundled, offlineDeps), resolveErrorCodes: noErrorCodeAsset(bundled) };
     const code = await runCli(argv, { commands: COMMANDS, loadContext: () => context, loadDoctor: async () => loaded, cliVersion: CLI_VERSION, io });
     return { code, stdout, stderr, runDoctor: loaded.runDoctor as typeof runDoctor };
   }

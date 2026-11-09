@@ -22,7 +22,12 @@ import {
 } from '@cngx/common/a11y';
 import { createPinnedScrollLock } from '@cngx/common/layout';
 import { injectWindow } from '@cngx/core/tokens';
-import { createKeyedRegistry, createSlotRegistry, createTransitionTracker } from '@cngx/core/utils';
+import {
+  createCloseWatcher,
+  createKeyedRegistry,
+  createSlotRegistry,
+  createTransitionTracker,
+} from '@cngx/core/utils';
 import { cngxDevWarn, CngxRuntimeError } from '@cngx/utils';
 
 import { CngxPopover } from './popover.directive';
@@ -52,13 +57,6 @@ const LIVE_REGION_SELECTOR = '[aria-live], [role="status"], [role="alert"], [rol
 const FOCUS_TRAP_ANCHOR_CLASS = 'cdk-focus-trap-anchor';
 // Longer than a tap's pointerdown-to-click gap, shorter than a second tap.
 const CLICK_SWALLOW_MS = 600;
-
-// Not in lib.dom yet; Chromium only (Android back gesture, Escape).
-interface CloseWatcherLike {
-  onclose: (() => void) | null;
-  destroy(): void;
-}
-type CloseWatcherCtor = new () => CloseWatcherLike;
 
 // Engaged modal sheets, oldest first. Only the topmost answers an outside
 // tap: a tap on a later sheet is outside an earlier one that is not its
@@ -298,7 +296,10 @@ export class CngxPopoverSheet
   private releaseLock: (() => void) | null = null;
   private settlingFrame: number | null = null;
   private readonly devWarned = { title: false, mode: false };
-  private closeWatcher: CloseWatcherLike | null = null;
+  // Created inside the opening call, so a tap-opened sheet creates it under
+  // the tap's user activation (Chrome groups watchers created without one).
+  // Without CloseWatcher (iOS Safari) the back gesture leaves the page.
+  private readonly closeWatcher = createCloseWatcher(() => this.handleBackGesture(), this.win);
 
   // Capture phase: the tap must be seen before anything under it reacts.
   // The page siblings are inert, so a tap outside the panel lands on a
@@ -506,7 +507,7 @@ export class CngxPopoverSheet
     this.startSettling();
     this.doc.addEventListener('pointerdown', this.outsidePointerDown, true);
     this.doc.addEventListener('keydown', this.escapeKeydown, true);
-    this.armCloseWatcher();
+    this.closeWatcher.arm();
   }
 
   // The reverse: a flip back to modal while open re-homes focus into the
@@ -586,7 +587,7 @@ export class CngxPopoverSheet
       clearTimeout(this.escapeKeyTimer);
       this.escapeKeyTimer = null;
     }
-    this.disarmCloseWatcher();
+    this.closeWatcher.disarm();
     this.restoreInert();
     this.releaseLock?.();
     this.releaseLock = null;
@@ -601,33 +602,19 @@ export class CngxPopoverSheet
     }
   }
 
-  // Created inside the opening call, so a tap-opened sheet creates it under
-  // the tap's user activation (Chrome groups watchers created without one).
-  // Without CloseWatcher (iOS Safari) the back gesture leaves the page.
-  private armCloseWatcher(): void {
-    const Watcher = (this.win as { CloseWatcher?: CloseWatcherCtor } | null)?.CloseWatcher;
-    if (typeof Watcher !== 'function') {
+  private handleBackGesture(): void {
+    if (this.escapeKeyTimer !== null) {
+      if (this.engaged) {
+        this.closeWatcher.arm();
+      }
       return;
     }
-    const watcher = new Watcher();
-    watcher.onclose = () => {
-      if (this.closeWatcher === watcher) {
-        this.closeWatcher = null;
-      }
-      if (this.escapeKeyTimer !== null) {
-        if (this.engaged) {
-          this.armCloseWatcher();
-        }
-        return;
-      }
-      this.requestClose('back');
-      // A blocked request leaves the sheet open; the spent watcher would let
-      // the next back gesture navigate away.
-      if (this.engaged && this.closeWatcher === null) {
-        this.armCloseWatcher();
-      }
-    };
-    this.closeWatcher = watcher;
+    this.requestClose('back');
+    // A blocked request leaves the sheet open; the spent watcher would let
+    // the next back gesture navigate away.
+    if (this.engaged) {
+      this.closeWatcher.arm();
+    }
   }
 
   private armClickSwallow(): void {
@@ -641,12 +628,6 @@ export class CngxPopoverSheet
       clearTimeout(this.clickSwallowTimer);
       this.clickSwallowTimer = null;
     }
-  }
-
-  private disarmCloseWatcher(): void {
-    const watcher = this.closeWatcher;
-    this.closeWatcher = null;
-    watcher?.destroy();
   }
 
   private liftOwnInert(): void {

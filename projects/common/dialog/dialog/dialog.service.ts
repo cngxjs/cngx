@@ -17,6 +17,8 @@ import {
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, type Observable, take } from 'rxjs';
 
+import { CNGX_HOTKEY_SCOPE } from '@cngx/common/interactive';
+
 import { CNGX_DIALOG_ARIA_REGISTRY } from './dialog-aria-registry';
 import type { CngxDialogConfig } from './dialog-config';
 import { CNGX_DIALOG_DATA } from './dialog-config';
@@ -288,6 +290,8 @@ export class CngxDialogOpener {
         // queries cannot see - labelling flows through the registry instead.
         { provide: CNGX_DIALOG_ARIA_REGISTRY, useValue: dialogInstance },
         { provide: CNGX_DIALOG_DATA, useValue: config.data ?? null },
+        // Same reason: content injectors hang off the service, not the dialog.
+        { provide: CNGX_HOTKEY_SCOPE, useValue: dialogInstance.hotkeyScope },
       ],
     });
 

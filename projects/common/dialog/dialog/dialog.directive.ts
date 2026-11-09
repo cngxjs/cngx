@@ -22,6 +22,11 @@ import {
   onTransitionDone,
   type TransitionDoneHandle,
 } from '@cngx/core/utils';
+import {
+  CNGX_HOTKEY_SCOPE,
+  createHotkeyScope,
+  type CngxHotkeyScopeNode,
+} from '@cngx/common/interactive';
 import { createScrollLock } from '@cngx/common/layout';
 import { cngxDevWarn } from '@cngx/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
@@ -166,6 +171,7 @@ function warnNonModalA11y(id: string, titleText: string): void {
   providers: [
     { provide: DIALOG_REF, useExisting: CngxDialog },
     { provide: CNGX_DIALOG_ARIA_REGISTRY, useExisting: CngxDialog },
+    { provide: CNGX_HOTKEY_SCOPE, useFactory: () => inject(CngxDialog).hotkeyScope },
   ],
   host: {
     '[class.cngx-dialog--opening]': 'isOpening()',
@@ -418,6 +424,19 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    * nor strand a rendered backdrop without its dismissal surface.
    */
   private readonly openedAsModal = signal(false);
+
+  /**
+   * @internal Hotkey scope of the dialog subtree: modal while opened as a
+   * modal, so app bindings outside stay quiet while focus is inside, and
+   * inactive while closed, so bindings inside never fire from a hidden dialog.
+   */
+  readonly hotkeyScope: CngxHotkeyScopeNode = createHotkeyScope({
+    element: this.elRef.nativeElement,
+    modal: this.openedAsModal.asReadonly(),
+    active: computed(() => this.lifecycleSignal() !== 'closed'),
+    parent: inject(CNGX_HOTKEY_SCOPE, { optional: true, skipSelf: true }),
+    destroyRef: this.destroyRef,
+  });
 
   constructor() {
     this.createLiveRegion();

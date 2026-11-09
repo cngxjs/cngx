@@ -24,7 +24,7 @@ describe('createServer', () => {
     const { tools } = await client.listTools();
 
     expect(client.getInstructions()).toContain('cngx 0.1.0-rc.6');
-    expect(tools).toHaveLength(9);
+    expect(tools).toHaveLength(10);
     await client.close();
   });
 
@@ -41,6 +41,40 @@ describe('createServer', () => {
     const answer = JSON.parse(content!.text) as { ok: boolean; groundedVersion: string; result: { name: string } };
 
     expect(answer).toMatchObject({ ok: true, groundedVersion: '0.1.0-rc.6', result: { name: 'CngxSelect' } });
+    await client.close();
+  });
+
+  it('answers get_error_code for another release over the injected fetch', async () => {
+    const docs = loadDocsFromFile(DOCS_FIXTURE);
+    const fetchErrorCodes = vi.fn(async () => ({ ok: true as const, path: '/asset.json' }));
+    const loadErrorCodes = () => ({
+      docsBaseUrl: 'https://example.test/',
+      ranges: [{ lib: 'core', from: 1, to: 899 }],
+      codes: [
+        {
+          code: 'CNGX0001',
+          lib: 'core',
+          severity: 'warn',
+          production: 'stripped',
+          title: 'From the asset',
+          status: 'active',
+          url: 'https://example.test/cngx0001.html',
+          messages: [],
+          body: '',
+        },
+      ],
+    });
+    const server = createServer({ docs, llmDump: null, errorCodeResolverDeps: { fetchErrorCodes, loadErrorCodes } });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: 'server-spec', version: '0.0.0' });
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    const result = await client.callTool({ name: 'get_error_code', arguments: { code: 'CNGX0001', version: '0.2.0' } });
+    const [content] = result.content as { type: string; text: string }[];
+
+    expect(JSON.parse(content!.text)).toMatchObject({ ok: true, groundedVersion: '0.2.0', result: { title: 'From the asset' } });
+    expect(fetchErrorCodes).toHaveBeenCalledWith('0.2.0');
     await client.close();
   });
 

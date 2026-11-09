@@ -14,6 +14,7 @@ import {
   SnapshotLoadError,
   SUPPORTED_SCHEMA_VERSIONS,
 } from './loader.js';
+import { loadErrorCodesFromFile, parseErrorCodeBlock } from './loader.js';
 import type { DocumentationJson } from './types.js';
 
 const FIXTURE = fileURLToPath(new URL('../../../test/fixtures/documentation.sample.json', import.meta.url));
@@ -72,8 +73,8 @@ describe('bundled loaders', () => {
 });
 
 describe('createDocsIndex schema guard', () => {
-  it('supports schema 2 and 6', () => {
-    expect(SUPPORTED_SCHEMA_VERSIONS).toEqual([2, 6]);
+  it('supports schema 2, 6 and 7', () => {
+    expect(SUPPORTED_SCHEMA_VERSIONS).toEqual([2, 6, 7]);
   });
 
   it('accepts a schema-2 snapshot', () => {
@@ -88,12 +89,21 @@ describe('createDocsIndex schema guard', () => {
     expect(index.functions.find((fn) => fn.name === 'provideSelectConfig')?.factoryKind).toBe('provider');
   });
 
-  it('rejects a snapshot whose schemaVersion the server does not support, naming both supported versions', () => {
+  it('accepts a schema-7 snapshot and projects it like schema 6', () => {
+    const v6 = JSON.parse(readFileSync(V6_FIXTURE, 'utf8')) as DocumentationJson;
+    const index = createDocsIndex({ ...v6, schemaVersion: 7 });
+
+    expect(index.meta).toMatchObject({ schemaVersion: 7, cngxVersion: '0.1.0-rc.9' });
+    expect(index.components.find((entry) => entry.name === 'CngxSelect')?.category).toBe('forms/select');
+    expect(index.functions.find((fn) => fn.name === 'provideSelectConfig')?.factoryKind).toBe('provider');
+  });
+
+  it('rejects a snapshot whose schemaVersion the server does not support, naming every supported version', () => {
     const mismatched: DocumentationJson = { ...readFixture(), schemaVersion: 3 };
 
     expect(() => createDocsIndex(mismatched)).toThrow(SchemaVersionError);
     expect(() => createDocsIndex(mismatched)).toThrow(MalformedSnapshotError);
-    expect(() => createDocsIndex(mismatched)).toThrow(/schemaVersion 3; this package reads 2 and 6/);
+    expect(() => createDocsIndex(mismatched)).toThrow(/schemaVersion 3; this package reads 2, 6 and 7/);
   });
 
   it('normalises a missing cngxVersion to null', () => {
@@ -133,6 +143,52 @@ describe('createDocsIndex functions projection', () => {
     delete raw.miscellaneous;
 
     expect(createDocsIndex(raw).functions).toEqual([]);
+  });
+});
+
+describe('createDocsIndex error-code projection', () => {
+  const validBlock = () => ({
+    schemaVersion: 3,
+    docsBaseUrl: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/',
+    ranges: [{ lib: 'core', from: 1, to: 899 }],
+    codes: [
+      {
+        code: 'CNGX0001',
+        lib: 'core',
+        severity: 'warn',
+        production: 'stripped',
+        title: 'Locale is not a BCP 47 tag',
+        status: 'active',
+        url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html',
+        messages: ['formatMessage(): not a BCP 47 locale'],
+        body: '## Locale is not a BCP 47 tag',
+      },
+    ],
+  });
+
+  it('projects a valid block onto errorCodes, without its manifest schemaVersion', () => {
+    const block = validBlock();
+    const index = createDocsIndex({ ...readFixture(), cngxErrorCodes: block } as DocumentationJson);
+
+    expect(index.errorCodes).toEqual({ docsBaseUrl: block.docsBaseUrl, ranges: block.ranges, codes: block.codes });
+  });
+
+  it('gives errorCodes null for an absent block', () => {
+    expect(createDocsIndex(readFixture()).errorCodes).toBeNull();
+  });
+
+  it('gives errorCodes null for another manifest schemaVersion, and still loads components', () => {
+    const raw = { ...readFixture(), cngxErrorCodes: { ...validBlock(), schemaVersion: 4 } } as DocumentationJson;
+    const index = createDocsIndex(raw);
+
+    expect(index.errorCodes).toBeNull();
+    expect(index.components.length).toBeGreaterThan(0);
+  });
+
+  it('gives errorCodes null for a non-list codes', () => {
+    const raw = { ...readFixture(), cngxErrorCodes: { ...validBlock(), codes: 'nope' } } as unknown as DocumentationJson;
+
+    expect(createDocsIndex(raw).errorCodes).toBeNull();
   });
 });
 
@@ -190,5 +246,48 @@ describe('a malformed snapshot', () => {
     writeFileSync(path, '{ "schemaVersion": 6,');
 
     expect(() => loadDocsFromFile(path)).toThrow(MalformedSnapshotError);
+  });
+});
+
+describe('loadErrorCodesFromFile', () => {
+  const block = {
+    schemaVersion: 3,
+    docsBaseUrl: 'https://example.test/',
+    ranges: [{ lib: 'core', from: 1, to: 899 }],
+    codes: [],
+  };
+
+  function assetFile(body: string): string {
+    const path = join(mkdtempSync(join(tmpdir(), 'cngx-error-codes-')), 'error-codes.json');
+    writeFileSync(path, body);
+    return path;
+  }
+
+  it('reads a valid block onto the index, without its manifest schemaVersion', () => {
+    expect(loadErrorCodesFromFile(assetFile(JSON.stringify(block)))).toEqual({
+      docsBaseUrl: block.docsBaseUrl,
+      ranges: block.ranges,
+      codes: block.codes,
+    });
+  });
+
+  it('throws naming the schemaVersion it reads for another manifest schema', () => {
+    const path = assetFile(JSON.stringify({ ...block, schemaVersion: 4 }));
+
+    expect(() => loadErrorCodesFromFile(path)).toThrow(SnapshotLoadError);
+    expect(() => loadErrorCodesFromFile(path)).toThrow(/this package reads manifest schemaVersion 3/);
+  });
+
+  it('throws for a file that is not JSON', () => {
+    expect(() => loadErrorCodesFromFile(assetFile('{ "schemaVersion":'))).toThrow(SnapshotLoadError);
+  });
+
+  it('throws for a missing file', () => {
+    expect(() => loadErrorCodesFromFile(join(tmpdir(), 'cngx-no-such-dir', 'error-codes.json'))).toThrow(SnapshotLoadError);
+  });
+
+  it('reads the same rules as the block inside a snapshot', () => {
+    expect(parseErrorCodeBlock(undefined)).toBeNull();
+    expect(parseErrorCodeBlock({ ...block, codes: 'nope' })).toBeNull();
   });
 });

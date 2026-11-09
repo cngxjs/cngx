@@ -332,6 +332,11 @@ export const CNGX_LANGUAGE_EN = {
   layout: {
     expandableTextMore: 'Show more',
     expandableTextLess: 'Show less',
+    resizeHandle: 'Resize',
+    resizeValueText: '{size} pixels',
+    panelTrigger: 'Panel',
+    sidebarRegion: 'Sidebar',
+    drawerDialog: 'Drawer',
   },
   menu: {
     submenuOpened: 'Submenu opened',
@@ -342,6 +347,7 @@ export const CNGX_LANGUAGE_EN = {
   },
   menuButton: {
     splitToggle: 'More options',
+    splitMainBusy: 'The main action is running',
   },
   paginator: {
     label: 'Pagination',
@@ -370,6 +376,9 @@ export const CNGX_LANGUAGE_EN = {
   },
   popover: {
     close: 'Close',
+    loading: 'Loading',
+    error: 'Could not load',
+    empty: 'Nothing to show',
   },
   recycler: {
     loaded: {

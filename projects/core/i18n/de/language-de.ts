@@ -328,6 +328,11 @@ export const CNGX_LANGUAGE_DE = {
   layout: {
     expandableTextMore: 'Mehr anzeigen',
     expandableTextLess: 'Weniger anzeigen',
+    resizeHandle: 'Größe ändern',
+    resizeValueText: '{size} Pixel',
+    panelTrigger: 'Seitenbereich',
+    sidebarRegion: 'Seitenleiste',
+    drawerDialog: 'Seitenbereich',
   },
   menu: {
     submenuOpened: 'Untermenü geöffnet',
@@ -338,6 +343,7 @@ export const CNGX_LANGUAGE_DE = {
   },
   menuButton: {
     splitToggle: 'Weitere Optionen',
+    splitMainBusy: 'Die Hauptaktion läuft',
   },
   paginator: {
     label: 'Seitennavigation',
@@ -366,6 +372,9 @@ export const CNGX_LANGUAGE_DE = {
   },
   popover: {
     close: 'Schließen',
+    loading: 'Wird geladen',
+    error: 'Konnte nicht geladen werden',
+    empty: 'Nichts anzuzeigen',
   },
   recycler: {
     loaded: {

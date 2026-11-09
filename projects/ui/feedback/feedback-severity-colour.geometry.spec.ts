@@ -10,7 +10,7 @@ import { cdp } from 'vitest/browser';
 // of alert, alert stack, banner and toast derive from the core
 // `--cngx-color-{info,success,warning,danger}` instead of carrying their own
 // literals, through one shared `--cngx-feedback-{severity}-*` set: the icon
-// (alert, stack, banner, and the toast stripe and icon) mixes the core colour
+// (alert, stack, banner and toast) mixes the core colour
 // 90% into the text colour so it still clears 3:1 on the pale severity tint,
 // and a severity paints the same glyph colour in every family. The alert, stack and banner bg
 // and border tints keep the earlier hand-picked pastel lightness and chroma
@@ -104,6 +104,7 @@ const CORE: Record<(typeof SEVERITIES)[number], string> = {
         @for (severity of severities; track severity) {
           <div [class]="'cngx-toast cngx-toast--' + severity + ' toast-' + severity">
             <span class="cngx-toast__icon">!</span>
+            <button type="button" class="cngx-toast__action">Undo</button>
           </div>
         }
       </cngx-toast-outlet>
@@ -230,12 +231,23 @@ describe.each(SCHEMES)('feedback severity colour, %s', (scheme) => {
   const at = one;
 
   describe.each(SEVERITIES)('%s', (severity) => {
-    it('paints the toast stripe and icon in the shared glyph colour', () => {
+    it('paints the toast icon in the shared glyph colour and leaves the edge neutral', () => {
       const root = mount();
       const toast = at(root, `.toast-${severity}`);
       const glyph = ink(at(root, `.probe-mix-${severity}`));
-      expect(paint('#fff', computedValue(toast, 'border-inline-start-color'))).toEqual(glyph);
       expect(ink(one(toast, '.cngx-toast__icon'))).toEqual(glyph);
+      const edge = computedValue(toast, 'border-top-color');
+      expect(computedValue(toast, 'border-inline-start-color')).toBe(edge);
+      expect(paint('#fff', edge)).not.toEqual(glyph);
+      // The action derives from the same accent, mixed 60% into the text.
+      const action = one(toast, '.cngx-toast__action');
+      expect(ink(action)).toEqual(
+        resolve(
+          root,
+          `color-mix(in oklab, var(--cngx-feedback-${severity}-icon) 60%, var(--cngx-color-text))`,
+        ),
+      );
+      expect(computedValue(action, 'border-top-color')).toBe(computedValue(action, 'color'));
     });
 
     it('resolves the same glyph and tints in alert, stack, banner and toast', () => {

@@ -443,6 +443,17 @@ describe('CngxPopoverSheet', () => {
       TestBed.flushEffects();
       expect(trigger.getAttribute('aria-haspopup')).toBe('true');
     });
+
+    it('drops a restore-focus claim while the sheet restores focus itself', () => {
+      const { host, flush } = setup();
+      const owner = {};
+      host.popover().claimRestoreFocus(owner, true);
+      expect(host.popover().restoreFocusHint()).toBe(false);
+
+      host.request.set('anchored');
+      flush();
+      expect(host.popover().restoreFocusHint()).toBe(true);
+    });
   });
 
   describe('accessible name', () => {

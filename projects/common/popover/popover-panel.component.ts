@@ -50,6 +50,13 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * `closeOnOutsideClick`, `mode`, `exclusive`, `cngxPopoverOpen`) are
  * forwarded.
  *
+ * ### Focus return
+ * On by default: when the panel closes and focus would otherwise be lost
+ * (on `body` or inside the panel), its `CngxPopoverTrigger` returns focus
+ * to the element focused before open. Opt out with `[restoreFocus]="false"`
+ * on the trigger. A close that moves focus to another control leaves it
+ * there.
+ *
  * The `variant` input is a free-form string mapped to a CSS class
  * (`cngx-popover-panel--{variant}`). Five variants are pre-themed
  * in `popover-panel-theme.scss`: `default`, `info`, `warning`,
@@ -62,10 +69,8 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  *   <span cngxPopoverHeader>Delete Item?</span>
  *   <p cngxPopoverBody>This action cannot be undone.</p>
  *   <div cngxPopoverFooter>
- *     <cngx-popover-action role="dismiss">Cancel</cngx-popover-action>
- *     <cngx-popover-action role="confirm" [action]="delete" variant="danger">
- *       Delete
- *     </cngx-popover-action>
+ *     <button cngxPopoverDismiss>Cancel</button>
+ *     <button cngxPopoverAction="solid" tone="danger" [action]="delete">Delete</button>
  *   </div>
  * </cngx-popover-panel>
  * ```
@@ -79,10 +84,19 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  * </cngx-popover-panel>
  * ```
  *
+ * ### State copy
+ * The loading, error and empty views never render an empty box. Without a
+ * slot template each shows default copy, resolved in this order: the
+ * projected `*cngxPopoverLoading` / `*cngxPopoverError` / `*cngxPopoverEmpty`
+ * template (replaces the whole node), then `[loadingText]` / `[errorText]` /
+ * `[emptyText]`, then `withPopoverPanelLabels(...)`, then the `popover`
+ * section of the language pack. The header row (title and close button)
+ * stays in every view.
+ *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
  * @since 0.1.0
- * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
+ * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverDismiss, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
  * @slot cngxPopoverArrow Replaces the pointer that ties the panel to its trigger.
  * @slot cngxPopoverClose Replaces the dismiss control.
  * @slot cngxPopoverLoading Rendered while the panel's content is loading.
@@ -133,44 +147,66 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
       }
     }
 
-    @if (view() === 'skeleton') {
-      @if (loadingTpl(); as tpl) {
-        <div class="cngx-popover-panel__loading">
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+    @if (hasHeader() || showClose()) {
+      <div class="cngx-popover-panel__header-row">
+        <div class="cngx-popover-panel__header" [id]="headerId">
+          <ng-content select="[cngxPopoverHeader]" />
         </div>
-      }
-    } @else if (view() === 'error' || view() === 'content+error') {
-      @if (errorTpl(); as tpl) {
-        <div class="cngx-popover-panel__error">
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: viewError() }" />
-        </div>
-      }
-    } @else if (view() === 'empty') {
-      @if (emptyTpl(); as tpl) {
-        <div class="cngx-popover-panel__empty">
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
-        </div>
-      }
-    } @else if (view() === 'content') {
-      @if (hasHeader() || showClose()) {
-        <div class="cngx-popover-panel__header-row">
-          <div class="cngx-popover-panel__header" [id]="headerId">
-            <ng-content select="[cngxPopoverHeader]" />
-          </div>
-          @if (showClose()) {
-            @if (closeTpl(); as tpl) {
-              <ng-container *ngTemplateOutlet="tpl.templateRef" />
-            } @else {
-              <button
-                cngxCloseButton
-                [attr.aria-label]="closeLabel()"
-                class="cngx-popover-panel__close"
-                (click)="popover.hide()"
-              ></button>
-            }
+        @if (showClose()) {
+          @if (closeTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          } @else {
+            <button
+              cngxCloseButton
+              [attr.aria-label]="closeLabel()"
+              class="cngx-popover-panel__close"
+              (click)="popover.hide()"
+            ></button>
           }
-        </div>
-      }
+        }
+      </div>
+    }
+
+    @if (view() === 'skeleton') {
+      <div class="cngx-popover-panel__loading">
+        @if (loadingTpl(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              tpl.templateRef;
+              context: { $implicit: resolvedLoadingText(), text: resolvedLoadingText() }
+            "
+          />
+        } @else {
+          {{ resolvedLoadingText() }}
+        }
+      </div>
+    } @else if (view() === 'error' || view() === 'content+error') {
+      <div class="cngx-popover-panel__error" [id]="errorId">
+        @if (errorTpl(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              tpl.templateRef;
+              context: { $implicit: viewError(), error: viewError(), text: resolvedErrorText() }
+            "
+          />
+        } @else {
+          {{ resolvedErrorText() }}
+        }
+      </div>
+    } @else if (view() === 'empty') {
+      <div class="cngx-popover-panel__empty" [id]="emptyId">
+        @if (emptyTpl(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              tpl.templateRef;
+              context: { $implicit: resolvedEmptyText(), text: resolvedEmptyText() }
+            "
+          />
+        } @else {
+          {{ resolvedEmptyText() }}
+        }
+      </div>
+    } @else if (view() === 'content') {
       <div class="cngx-popover-panel__body" [id]="bodyId">
         <ng-content select="[cngxPopoverBody]" />
         <ng-content />
@@ -246,6 +282,18 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   /** Accessible name of the built-in close button. */
   protected readonly closeLabel = computed(() => this.labels().close);
 
+  /**
+   * Copy of the state views: rendered without a slot template, handed to a
+   * slot template as its `text` context. Input, then config, then pack.
+   * Read tracked on purpose - the panel has no live region, so a language
+   * flip only updates the visible text in place.
+   */
+  protected readonly resolvedLoadingText = computed(
+    () => this.loadingText() ?? this.labels().loading,
+  );
+  protected readonly resolvedErrorText = computed(() => this.errorText() ?? this.labels().error);
+  protected readonly resolvedEmptyText = computed(() => this.emptyText() ?? this.labels().empty);
+
   /** Resolved showClose - input takes precedence over config. */
   readonly showClose = computed(() => this.showCloseInput() ?? this.config.showClose ?? false);
 
@@ -266,6 +314,27 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
 
   /** Whether the panel content is empty. Fallback when `[state]` is not set. */
   readonly empty = input(false);
+
+  /**
+   * Text shown in the loading view when no `*cngxPopoverLoading` template is
+   * projected. Unbound, it falls back to `withPopoverPanelLabels` and the
+   * `popover` section of the language pack.
+   */
+  readonly loadingText = input<string | undefined>(undefined);
+
+  /**
+   * Text shown in the error view when no `*cngxPopoverError` template is
+   * projected. Unbound, it falls back to `withPopoverPanelLabels` and the
+   * `popover` section of the language pack.
+   */
+  readonly errorText = input<string | undefined>(undefined);
+
+  /**
+   * Text shown in the empty view when no `*cngxPopoverEmpty` template is
+   * projected. Unbound, it falls back to `withPopoverPanelLabels` and the
+   * `popover` section of the language pack.
+   */
+  readonly emptyText = input<string | undefined>(undefined);
 
   /**
    * @internal The one view the panel body renders. A bound `[state]` goes
@@ -343,18 +412,37 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
   private readonly uid = nextUid('cngx-pp');
   protected readonly headerId = `${this.uid}-header`;
   protected readonly bodyId = `${this.uid}-body`;
+  protected readonly errorId = `${this.uid}-error`;
+  protected readonly emptyId = `${this.uid}-empty`;
 
   /**
-   * Only point to the header when one is projected - a bare id reference
-   * resolves even against an element that never renders (the header row is
-   * gated on `hasHeader()`), leaving AT with an empty accessible name.
+   * Only point to the header when one is projected. The header row renders
+   * in every view (loading, error, empty, content), so `hasHeader()` alone is
+   * the gate: with a header the reference always resolves, and without one a
+   * bare id would leave AT with an empty accessible name.
    */
   protected readonly ariaLabelledBy = computed(() => (this.hasHeader() ? this.headerId : null));
 
-  /** Only point to body when default content is showing (not loading/error/empty/none). */
-  protected readonly ariaDescribedBy = computed(() =>
-    this.view() === 'content' ? this.bodyId : null,
-  );
+  /**
+   * The surface that describes the current view: the body in `content`, the
+   * error surface in `error` / `content+error`, the empty surface in `empty`.
+   * Loading speaks through `aria-busy` and its visible text, and `none`
+   * renders nothing, so both emit no reference. Every emitted id resolves
+   * because each surface always renders in its view.
+   */
+  protected readonly ariaDescribedBy = computed(() => {
+    switch (this.view()) {
+      case 'content':
+        return this.bodyId;
+      case 'error':
+      case 'content+error':
+        return this.errorId;
+      case 'empty':
+        return this.emptyId;
+      default:
+        return null;
+    }
+  });
 
   protected readonly hostClass = computed(() => {
     const v = this.variant() ?? this.config.defaultVariant ?? 'default';
@@ -369,8 +457,14 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
 
   constructor() {
     // Hint any CngxPopoverTrigger pointing at this popover to default
-    // `aria-haspopup="dialog"`. Consumer override on the trigger wins.
-    this.popover.setHaspopup('dialog');
+    // `aria-haspopup="dialog"`. Consumer override on the trigger wins, and a
+    // co-composer's later claim (a menu trigger) wins while it lives.
+    this.popover.claimHaspopup(this, 'dialog');
+    // Dialog pattern: focus returns to the opener when the panel closes and
+    // focus would otherwise be lost. `[restoreFocus]="false"` on the trigger
+    // opts out, and a menu trigger inside claims `false` (its focus stack
+    // restores).
+    this.popover.claimRestoreFocus(this, true);
 
     effect(() => {
       const isVisible = this.popover.isVisible();
@@ -387,6 +481,8 @@ export class CngxPopoverPanel implements CngxPopoverArrowBounds {
     });
 
     this.destroyRef.onDestroy(() => {
+      this.popover.releaseHaspopup(this);
+      this.popover.releaseRestoreFocus(this);
       if (this.autoDismissTimer) {
         clearTimeout(this.autoDismissTimer);
       }

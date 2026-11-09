@@ -611,3 +611,64 @@ export const CNGX_ICON_STOP = {
     d: 'M5 4H11A1 1 0 0 1 12 5V11A1 1 0 0 1 11 12H5A1 1 0 0 1 4 11V5A1 1 0 0 1 5 4Z',
   },
 } as const satisfies CngxIconData;
+
+/** Three bars (menu / navigation panel trigger). @internal */
+export const CNGX_ICON_MENU = {
+  viewBox: '0 0 24 24',
+  d: 'M4 6h16M4 12h16M4 18h16',
+  paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 2H10V3H2ZM2 5H10V6H2ZM2 8H10V9H2Z',
+  },
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M2 3H14V4H2ZM2 7H14V8H2ZM2 11H14V12H2Z',
+  },
+} as const satisfies CngxIconData;
+
+/**
+ * Panel frame with a column on its left edge and a chevron in the content
+ * pointing away from the column: the panel is closed and a press opens it.
+ * Drawn for a panel on the start side in LTR; a renderer mirrors it with
+ * `scaleX(-1)` for a panel on the right. The 24-grid lines sit on 5, 10
+ * and 19, not on multiples of 3: at the 20px box a 2-unit stroke centred on
+ * a multiple of 3 spreads into a third-full-third pixel triplet, and at 32px
+ * it lands centred on a pixel edge. The micro and small drawings are whole
+ * pixels, the frame rounded by leaving out the corner pixels and the
+ * chevron a one-pixel staircase.
+ * Pairs with `CNGX_ICON_PANEL_CLOSE`. @internal
+ */
+export const CNGX_ICON_PANEL_OPEN = {
+  viewBox: '0 0 24 24',
+  d: 'M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM10 5v14M13 9l3 3-3 3',
+  paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 1H10V2H2ZM1 2H2V10H1ZM4 2H5V10H4ZM10 2H11V10H10ZM6 3H7V4H6ZM7 4H8V5H7ZM8 5H9V7H8ZM7 7H8V8H7ZM6 8H7V9H6ZM2 10H10V11H2Z',
+  },
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M3 2H13V3H3ZM2 3H3V13H2ZM5 3H6V13H5ZM13 3H14V13H13ZM8 5H9V6H8ZM9 6H10V7H9ZM10 7H11V9H10ZM9 9H10V10H9ZM8 10H9V11H8ZM3 13H13V14H3Z',
+  },
+} as const satisfies CngxIconData;
+
+/**
+ * Panel frame with a column on its left edge and a chevron in the content
+ * pointing toward the column: the panel is open and a press closes it. Same
+ * frame, grid and mirroring as `CNGX_ICON_PANEL_OPEN`, chevron reversed.
+ * @internal
+ */
+export const CNGX_ICON_PANEL_CLOSE = {
+  viewBox: '0 0 24 24',
+  d: 'M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM10 5v14M16 9l-3 3 3 3',
+  paint: 'stroke',
+  micro: {
+    viewBox: '0 0 12 12',
+    d: 'M2 1H10V2H2ZM1 2H2V10H1ZM4 2H5V10H4ZM10 2H11V10H10ZM8 3H9V4H8ZM7 4H8V5H7ZM6 5H7V7H6ZM7 7H8V8H7ZM8 8H9V9H8ZM2 10H10V11H2Z',
+  },
+  small: {
+    viewBox: '0 0 16 16',
+    d: 'M3 2H13V3H3ZM2 3H3V13H2ZM5 3H6V13H5ZM13 3H14V13H13ZM10 5H11V6H10ZM9 6H10V7H9ZM8 7H9V9H8ZM9 9H10V10H9ZM10 10H11V11H10ZM3 13H13V14H3Z',
+  },
+} as const satisfies CngxIconData;

@@ -117,7 +117,15 @@
     .cngx-incremental-list__error-text {
       margin: 0;
       text-align: center;
-      color: var(--cngx-incremental-list-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+      /* The danger text rung: the raw danger is a fill colour and misses 4.5:1
+         on the light surface. */
+      color: var(
+        --cngx-incremental-list-error-color,
+        var(
+          --cngx-color-danger-text,
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+        )
+      );
     }
 
     /* The library ships no cngx-button, so the built-in retry affordance is a

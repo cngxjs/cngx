@@ -18,7 +18,15 @@ export {
   type CngxDisplayFormatters,
 } from './intl-format.util';
 export { CNGX_LOCALE, injectLocale, provideLocale, provideLocaleAt } from './locale';
-export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
+export {
+  parseKeyCombo,
+  matchesKeyCombo,
+  resolveAriaKeyShortcuts,
+  resolveKeyComboParts,
+  resolveMacPlatform,
+  type KeyCombo,
+  type KeyComboPart,
+} from './keyboard.util';
 export {
   CNGX_NESTED_INTERACTIVE_SELECTOR,
   provideNestedInteractiveSelector,
@@ -34,6 +42,7 @@ export {
 } from './typeahead.util';
 export { hasTransition, onTransitionDone, type TransitionDoneHandle } from './transition.util';
 export { nextUid } from './uid.util';
+export { CNGX_LIVE_SURFACE_ATTR, CNGX_LIVE_SURFACE_SELECTOR } from './live-surface';
 export { type AsyncStatus, type CngxAsyncState } from './async-state';
 export { buildAsyncStateView, type AsyncStateViewSources } from './build-async-state-view';
 export { createAggregateAsyncState } from './aggregate-async-state';
@@ -45,6 +54,8 @@ export {
   type ValueTransition,
 } from './transition-tracker';
 export { createVisibilityGate } from './visibility-gate';
+export { createCloseWatcher, type CngxCloseWatcher } from './close-watcher';
+export { injectLazySelf, type CngxLazySelfOptions } from './lazy-self';
 export { resolveSpokenText } from './spoken-text';
 export { createLatencyProbe, type CngxLatencyProbe } from './latency-probe';
 export {

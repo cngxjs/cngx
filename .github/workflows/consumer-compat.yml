@@ -1,20 +1,22 @@
 name: Consumer compat
 
 # Installs the packed libs into fresh Angular apps and builds them, the way a
-# consumer would. Slow (a full `ng new` + install per row), so it runs nightly,
-# on demand, and on PRs that touch what a consumer installs.
+# consumer would. Slow (a full `ng new` + install per row, up to a quarter of an
+# hour), so it runs nightly, on demand, and on PRs that touch what a
+# consumer installs beyond library source.
 #
-# Fixture rows are required checks (e.g. angular-22-full), so the workflow
-# starts on every PR: a path filter on the trigger would leave those checks
-# pending forever on a PR that does not touch the paths. The `changes` job
-# decides instead, from the same input list the schematics-consumer job
-# reads (scripts/schematics-consumer-inputs.mjs), so a build-only PR runs the
-# rows too; on an unrelated PR every fixture row reports success without
-# running its slow steps.
+# The workflow starts on every PR and the `changes` job decides, so every
+# fixture row reports under its matrix name either way: on an unrelated PR it
+# reports success without running its slow steps. The decision reads
+# scripts/schematics-consumer-inputs.mjs (--workflow consumer-compat): the
+# schematics, the lib manifests, the themes, the release scripts and the
+# workspace config run the rows on the PR. Library source alone does not: the
+# required schematics-consumer job already builds an onboarded app against it,
+# and the nightly runs these rows on it.
 #
 # The cli row (pack-cli + fixture-cli) has its own input list
-# (--workflow consumer-compat-cli): a cli-only PR runs it and no lib row, a lib
-# change runs both. Neither cli job is a required check.
+# (--workflow consumer-compat-cli): a cli-only PR runs it and no lib row.
+# None of these rows is a required check.
 
 on:
   schedule:

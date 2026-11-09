@@ -81,7 +81,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 468,
+      "line": 470,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 471,
+      "line": 473,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -197,6 +197,60 @@
       ]
     },
     {
+      "class": "CngxDrawerSurface",
+      "file": "projects/common/layout/drawer/drawer-surface.directive.ts",
+      "line": 296,
+      "member": "label",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "labelInput" },
+        { "kind": "bundle", "field": "i18n", "path": ["drawerDialog"], "token": "CNGX_LAYOUT_I18N" }
+      ]
+    },
+    {
+      "class": "CngxResizable",
+      "file": "projects/common/layout/resizable/resizable.directive.ts",
+      "line": 155,
+      "member": "resolvedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "label" },
+        { "kind": "bundle", "field": "i18n", "path": ["resizeHandle"], "token": "CNGX_LAYOUT_I18N" }
+      ]
+    },
+    {
+      "class": "CngxResizable",
+      "file": "projects/common/layout/resizable/resizable.directive.ts",
+      "line": 157,
+      "member": "resolvedValueText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "valueText" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["resizeValueText"],
+          "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxSidebar",
+      "file": "projects/common/layout/sidebar/sidebar.directive.ts",
+      "line": 201,
+      "member": "label",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "labelInput" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["sidebarRegion"],
+          "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
       "line": 151,
@@ -225,6 +279,54 @@
           "field": "i18n",
           "path": ["expandableTextLess"],
           "token": "CNGX_LAYOUT_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxPopoverPanel",
+      "file": "projects/common/popover/popover-panel.component.ts",
+      "line": 291,
+      "member": "resolvedLoadingText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "loadingText" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["loading"],
+          "token": "CNGX_POPOVER_PANEL_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxPopoverPanel",
+      "file": "projects/common/popover/popover-panel.component.ts",
+      "line": 293,
+      "member": "resolvedErrorText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "errorText" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["error"],
+          "token": "CNGX_POPOVER_PANEL_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxPopoverPanel",
+      "file": "projects/common/popover/popover-panel.component.ts",
+      "line": 294,
+      "member": "resolvedEmptyText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "emptyText" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["empty"],
+          "token": "CNGX_POPOVER_PANEL_CONFIG"
         }
       ]
     },
@@ -644,7 +746,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 602,
+      "line": 579,
       "member": "resolveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -661,7 +763,7 @@
     {
       "class": "CngxActionButton",
       "file": "projects/ui/action-button/action-button.ts",
-      "line": 615,
+      "line": 592,
       "member": "resolveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -805,7 +907,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 149,
+      "line": 150,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -821,7 +923,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 152,
+      "line": 153,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -837,7 +939,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 154,
+      "line": 155,
       "member": "statusText",
       "enclosing": "computed",
       "tiers": [
@@ -853,7 +955,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 199,
+      "line": 200,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -869,7 +971,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 202,
+      "line": 203,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [
@@ -885,7 +987,7 @@
     {
       "class": "CngxDgaSortHeader",
       "file": "projects/ui/data-grid-accordion/data-grid-sort-header.directive.ts",
-      "line": 204,
+      "line": 205,
       "member": "announcementTemplate",
       "enclosing": "method",
       "tiers": [

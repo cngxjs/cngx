@@ -75,3 +75,10 @@ export {
   TIMELINE_DE,
   TREETABLE_DE,
 } from './i18n-de.fixture';
+export {
+  mirrorScreenReader,
+  type SrMirror,
+  type SrMirrorAnnouncement,
+  type SrMirrorRow,
+  type SrMirrorTarget,
+} from './sr-mirror.fixture';

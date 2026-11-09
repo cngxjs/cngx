@@ -7,6 +7,7 @@ export {
   type AsyncAction,
   type CngxAsyncSettle,
 } from './async-click/async-click.directive';
+export { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from './async-click/async-run-state.token';
 export {
   CNGX_HOST_INTERACTION_STATE,
   type CngxHostInteractionState,
@@ -189,8 +190,40 @@ export {
   type CngxChipStripRovingOptions,
 } from './reorder/chip-strip-roving';
 export { CngxKeyboardShortcut } from './keyboard/keyboard-shortcut.directive';
+export {
+  type CngxHotkeyBinding,
+  type CngxHotkeyReach,
+  type CngxHotkeyRef,
+  type CngxHotkeyRegistration,
+} from './keyboard/hotkeys/hotkey-binding';
+export {
+  CNGX_HOTKEY_SCOPE,
+  createHotkeyScope,
+  resolveHotkeyScopeChain,
+  type CngxHotkeyScopeNode,
+  type CngxHotkeyScopeOptions,
+} from './keyboard/hotkeys/hotkey-scope';
+export { CngxHotkeyScope } from './keyboard/hotkeys/hotkey-scope.directive';
+export {
+  CNGX_HOTKEY_REGISTRY,
+  createHotkeyRegistry,
+  injectHotkey,
+  injectHotkeyRegistry,
+  injectHotkeyRegistryDeps,
+  injectHotkeys,
+  type CngxHotkeyGroup,
+  type CngxHotkeyListing,
+  type CngxHotkeyRegistry,
+  type CngxHotkeyRegistryDeps,
+  type CngxHotkeyRegistryFactory,
+} from './keyboard/hotkeys/hotkey-registry';
 export { CngxSearch } from './keyboard/search.directive';
-export { CngxClickOutside } from './keyboard/click-outside.directive';
+export { createActivationKeyHandler } from './keyboard/activation-key';
+export {
+  CngxClickOutside,
+  CNGX_CLICK_OUTSIDE_DRIVER,
+  type CngxClickOutsideDriver,
+} from './keyboard/click-outside.directive';
 export { CngxBeforeUnload } from './guard/before-unload.directive';
 export { canDeactivateWhenClean } from './guard/can-deactivate';
 export { CngxHoverable } from './hoverable/hoverable.directive';

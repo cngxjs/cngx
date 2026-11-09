@@ -37,10 +37,10 @@ import {
 import { CngxAvatar, CngxIcon } from '@cngx/common/display';
 import { CngxMenu, CngxMenuItem, CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
 import {
-  CNGX_BUTTON_CARET_ICON,
   CngxIconMenuButton,
   CngxMenuButton,
   CngxSplitButton,
+  provideButtonCaretIcon,
 } from '@cngx/common/menu-button';
 import { CngxBottomSheet, CngxDialog, CngxDialogTitle } from '@cngx/common/dialog';
 import {
@@ -88,7 +88,7 @@ import {
 import type { CngxTreeNode } from '@cngx/utils';
 
 /**
- * `CNGX_BUTTON_CARET_ICON` for the lab: Material's `arrow_drop_down`, the glyph
+ * `provideButtonCaretIcon` for the lab: Material's `arrow_drop_down`, the glyph
  * `mat-button` uses with `[matMenuTriggerFor]`. The menu button wraps it in
  * its caret `<cngx-icon>`, so the icon bridge sizes it.
  */
@@ -138,7 +138,7 @@ interface FieldModel {
   // Component-scoped banner stack so the dismissible banner renders inside the
   // lab section (its own outlet) instead of the app-level outlet at the top.
   providers: [CngxBanner],
-  viewProviders: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: MaterialLabCaret }],
+  viewProviders: [provideButtonCaretIcon(MaterialLabCaret)],
   imports: [
     FormsModule,
     FormField,

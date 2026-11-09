@@ -61,6 +61,7 @@ config queries fetch a different release's snapshot when handed an optional
 |`get_config`|`{ name, version? }`|A configuration cascade by config token name, stem, or component name: the config token, its provider functions, the `with*` feature functions, and the resolution-priority ordering.|
 |`get_story_example`|`{ name }`|`{ ok: true, groundedVersion, result }` like the other name tools, `groundedVersion` always the bundled release: the runnable example URLs (public documentation links) and a StackBlitz URL when one exists. `result` is null for an unknown name.|
 |`migrate_usage`|`{ from, to? }`|A structured API delta between two CNGX releases: removed, renamed, and signature-changed components (injectable services included), inputs, outputs, slots, and DI tokens. `to` defaults to the bundled snapshot version.|
+|`get_error_code`|`{ code, version? }`|`{ ok: true, groundedVersion, result }`: a CNGX error code's title, owning lib, severity, production behaviour, call-site messages, and documentation page. Accepts a bare code, a four-digit number, or a pasted console line. `result` is null for an input that is not a code, and a not-found view (the matching lib and its nearest codes) for an unknown code.|
 
 Each answer grounds against one CNGX release; the server reports the bundled
 version and the snapshot timestamp in its connect-time instructions. An answer
@@ -83,6 +84,9 @@ the reply reflects that version and not the bundled one. A fetch that fails retu
 the same typed error result `migrate_usage` uses, so the query answers as data
 rather than throwing.
 
+`get_error_code` takes the same `version` for a code from another release than the
+bundled one. It fetches that release's `error-codes.json` asset instead of its snapshot.
+
 ### Cross-version deltas
 
 `migrate_usage` is the version-upgrade answer. It resolves each version to a
@@ -100,13 +104,13 @@ seconds. No network or an absent asset returns a typed error result instead:
 |-|-|
 |`gh-missing`|No longer produced: a missing `gh` falls back to HTTPS. Kept in the type for compatibility.|
 |`network`|The download failed for a network reason.|
-|`asset-missing`|The release or its `documentation.json` asset does not exist. Also covers a snapshot with an unreadable or unknown schema, a local temp-directory or write failure (the message names it), and a query that threw (its message starts with `internal:`).|
+|`asset-missing`|The release or its `documentation.json` asset does not exist, or its `error-codes.json` asset for `get_error_code`, which releases before the first such asset lack. Also covers a snapshot with an unreadable or unknown schema, a local temp-directory or write failure (the message names it), and a query that threw (its message starts with `internal:`).|
 |`invalid-version`|A version that is not a release version (`1.2`, `01.2.3`, `1.2.3-rc.`), answered before any fetch.|
 
 ### The CLI
 
 `@cngx/cli` exposes the same queries as `cngx` subcommands (`cngx api CngxSelect`,
-`cngx migrate 0.1.0 --to 0.2.0`) for agents and CI jobs that do not speak MCP. It
+`cngx migrate 0.1.0 --to 0.2.0`, `cngx explain CNGX0001`) for agents and CI jobs that do not speak MCP. It
 does not depend on the MCP SDK: both packages run one query core, kept in
 `packages/mcp/src/core` and copied byte for byte into `packages/cli/src/core` by
 `npm run cli:sync`. CI runs `npm run cli:copy-check`, so the copy cannot drift

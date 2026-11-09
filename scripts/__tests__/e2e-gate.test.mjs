@@ -13,6 +13,8 @@ describe('gateFailure', () => {
     ['success', 'all', 'success', undefined],
     ['success', 'some', 'success', undefined],
     ['success', 'none', 'skipped', undefined],
+    ['success', 'deferred', 'skipped', undefined],
+    ['success', 'deferred', 'failure', 'the shards ended with "failure" (scope deferred)'],
     ['success', 'some', 'skipped', 'the shards ended with "skipped" (scope some)'],
     ['success', 'all', 'failure', 'the shards ended with "failure" (scope all)'],
     ['success', 'all', 'cancelled', 'the shards ended with "cancelled" (scope all)'],
@@ -33,6 +35,15 @@ describe('the ci workflow', () => {
     expect(block).toContain(`needs: [e2e-scope, ${job}-shard]`);
     expect(block).toContain('if: ${{ !cancelled() }}');
     expect(block).toContain('node scripts/e2e-gate.mjs');
+  });
+
+  // The sweep runs on main pushes only; on a pull request its gate passes as deferred.
+  it('defers the console sweep off pull requests', () => {
+    const shard = workflow.slice(workflow.indexOf('\n  console-sweep-shard:\n'), workflow.indexOf('\n  console-sweep-shard:\n') + 300);
+    const gate = workflow.slice(workflow.indexOf('\n  console-sweep:\n'), workflow.indexOf('\n  console-sweep:\n') + 600);
+
+    expect(shard).toContain("if: github.event_name != 'pull_request' && needs.e2e-scope.outputs.mode != 'none'");
+    expect(gate).toContain("MODE: ${{ github.event_name == 'pull_request' && 'deferred' || needs.e2e-scope.outputs.mode }}");
   });
 
   it('shards both suites by the scope and asks the scope on pull requests only', () => {

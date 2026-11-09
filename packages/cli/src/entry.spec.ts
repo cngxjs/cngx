@@ -21,6 +21,11 @@ const BIG = ['list', '--format=json'];
 // says nothing: stderr carries only what a spec asserts.
 const PROJECT = mkdtempSync(join(tmpdir(), 'cngx-entry-project-'));
 const BUNDLED_VERSION = existsSync(DATA) ? (JSON.parse(readFileSync(DATA, 'utf8')) as { cngxVersion?: string }).cngxVersion : undefined;
+const CNGX0001_TITLE = existsSync(DATA)
+  ? (JSON.parse(readFileSync(DATA, 'utf8')) as { cngxErrorCodes?: { codes?: { code: string; title: string }[] } }).cngxErrorCodes?.codes?.find(
+      (entry) => entry.code === 'CNGX0001',
+    )?.title
+  : undefined;
 mkdirSync(join(PROJECT, 'node_modules', '@cngx', 'core'), { recursive: true });
 writeFileSync(join(PROJECT, 'node_modules', '@cngx', 'core', 'package.json'), JSON.stringify({ name: '@cngx/core', version: BUNDLED_VERSION }));
 afterAll(() => rmSync(PROJECT, { recursive: true, force: true }));
@@ -40,6 +45,16 @@ describe('the built entry', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain('# CngxSelect');
+    expect(result.stderr).toBe('');
+    assertNoAnsi(result.stdout);
+  });
+
+  it('explains a CNGX error code from the bundled snapshot', () => {
+    const result = run('explain', 'cngx0001');
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('## CNGX0001');
+    expect(result.stdout).toContain(CNGX0001_TITLE ?? 'Locale is not a BCP 47 tag');
     expect(result.stderr).toBe('');
     assertNoAnsi(result.stdout);
   });
@@ -151,6 +166,40 @@ describe('the built entry', () => {
     } finally {
       closeSync(fd);
     }
+  });
+
+  describe('explain for another release', () => {
+    const caches: string[] = [];
+    afterAll(() => caches.forEach((dir) => rmSync(dir, { recursive: true, force: true })));
+
+    function explainWithCache(seed: boolean) {
+      const cache = mkdtempSync(join(tmpdir(), 'cngx-entry-cache-'));
+      caches.push(cache);
+      if (seed) {
+        const { cngxErrorCodes } = JSON.parse(readFileSync(DATA, 'utf8')) as { cngxErrorCodes: unknown };
+        mkdirSync(join(cache, 'error-codes', '9.9.9'), { recursive: true });
+        writeFileSync(join(cache, 'error-codes', '9.9.9', 'error-codes.json'), JSON.stringify(cngxErrorCodes));
+      }
+      return spawnSync(process.execPath, [ENTRY, 'explain', 'CNGX0001', '--cngx-version', '9.9.9', '--offline', '--format', 'json'], {
+        cwd: PROJECT,
+        encoding: 'utf8',
+        env: { ...process.env, CNGX_CACHE_DIR: cache },
+      });
+    }
+
+    it('exits 1 offline with an empty cache', () => {
+      const result = explainWithCache(false);
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('v9.9.9 is not cached and --offline forbids a fetch.');
+    });
+
+    it('answers offline from an asset in the cache, grounded on that release', () => {
+      const result = explainWithCache(true);
+
+      expect(result.status).toBe(0);
+      expect(JSON.parse(result.stdout)).toMatchObject({ cngxVersion: '9.9.9', result: { code: 'CNGX0001' } });
+    });
   });
 
   describe('a corrupt bundled snapshot', () => {
