@@ -343,6 +343,18 @@
   }
 
   /**
+   * Drop-shadow of an open overlay rail (the `compact` drawer and the full
+   * nav over the `medium` rail), so it reads as a layer over the content
+   * rather than a third column. Defaults to `--cngx-sidenav-expanded-shadow`.
+   * @group State / Over
+   */
+  @property --cngx-sidenav-overlay-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
+  }
+
+  /**
    * Opacity of the mobile backdrop scrim.
    * @group State / Over
    */
@@ -504,6 +516,7 @@
     --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+    --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
     --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
     --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
     --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
@@ -619,6 +632,7 @@
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--open {
     transform: translateX(0);
     visibility: visible;
+    box-shadow: var(--cngx-sidenav-overlay-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
     transition:
       transform var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
@@ -670,6 +684,11 @@
     border-inline-start: var(--cngx-sidenav-border-width, 1px) solid
       var(--cngx-sidenav-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
     order: 2; /* content first, end sidenav last */
+  }
+
+  /* A hidden rest is 0 wide: the edge border would leave a 1px hairline. */
+  cngx-sidenav[data-sidebar-state='hidden'] {
+    border-inline-width: 0;
   }
 
   .cngx-sidenav__body {

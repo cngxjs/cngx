@@ -264,3 +264,78 @@ describe('CngxSidenav overlay focus geometry', () => {
     fixture.destroy();
   });
 });
+
+// F11 mechanism: the scrim fades on the panel's duration token, an open
+// overlay casts --cngx-sidenav-overlay-shadow, a hidden rest has no hairline.
+@Component({
+  selector: 'cngx-sidenav-f11-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout style="inline-size: 30rem; block-size: 20rem; --cngx-duration-base: 0.4s">
+      <cngx-sidenav mode="over" ariaLabel="Nav" [opened]="open">Nav</cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+      <cngx-sidenav
+        position="end"
+        mode="side"
+        collapsedAs="hidden"
+        [collapsed]="true"
+        ariaLabel="Inspector"
+        >Inspector</cngx-sidenav
+      >
+    </cngx-sidenav-layout>
+  `,
+})
+class SidenavF11Host {
+  open = false;
+}
+
+describe('CngxSidenav overlay visuals (F11)', () => {
+  function mountF11() {
+    const fixture = TestBed.createComponent(SidenavF11Host);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const root = mountedRoot;
+    return {
+      fixture,
+      backdrop: root.querySelector('.cngx-sidenav-backdrop') as HTMLElement,
+      start: root.querySelector('cngx-sidenav.cngx-sidenav--start') as HTMLElement,
+      end: root.querySelector('cngx-sidenav.cngx-sidenav--end') as HTMLElement,
+    };
+  }
+
+  it('fades the backdrop on the panel duration token instead of snapping', async () => {
+    const { fixture, backdrop, start } = mountF11();
+    await nextFrame();
+    expect(getComputedStyle(backdrop).opacity).toBe('0');
+    const railDuration = getComputedStyle(start)
+      .getPropertyValue('--cngx-sidenav-transition-duration')
+      .trim();
+    expect(railDuration).toBe('0.4s');
+    expect(getComputedStyle(backdrop).transitionDuration.split(',')[0].trim()).toBe(railDuration);
+    fixture.destroy();
+  });
+
+  it('casts the overlay shadow on an open over rail', async () => {
+    const { fixture, start } = mountF11();
+    fixture.componentInstance.open = true;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    await nextFrame();
+    expect(getComputedStyle(start).boxShadow).not.toBe('none');
+    // Close before teardown: the open page-modal surface holds inert on the
+    // page, released on the close edge.
+    fixture.componentInstance.open = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    fixture.destroy();
+  });
+
+  it('leaves no border hairline on a hidden rest', () => {
+    const { fixture, end } = mountF11();
+    expect(end.getAttribute('data-sidebar-state')).toBe('hidden');
+    expect(end.getBoundingClientRect().width).toBe(0);
+    fixture.destroy();
+  });
+});

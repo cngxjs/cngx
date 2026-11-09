@@ -215,6 +215,19 @@ describe('CngxSidenav', () => {
     expect(left.expanded()).toBe(true);
   });
 
+  it('renders the backdrop always and shows it only for a modal overlay', () => {
+    const { fixture, left, host } = setupDual();
+    const layoutEl = fixture.nativeElement.querySelector('cngx-sidenav-layout') as HTMLElement;
+    expect(layoutEl.querySelector('.cngx-sidenav-backdrop')).not.toBeNull();
+    expect(layoutEl.classList.contains('cngx-sidenav-layout--has-overlay')).toBe(false);
+
+    left.open();
+    fixture.detectChanges();
+    expect(host.leftOpen()).toBe(true);
+    expect(layoutEl.classList.contains('cngx-sidenav-layout--has-overlay')).toBe(true);
+    expect(layoutEl.querySelector('.cngx-sidenav-backdrop')!.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('layout finds start and end sidenavs', () => {
     const { layout } = setupDual();
     expect(layout.startSidenav()).not.toBeNull();

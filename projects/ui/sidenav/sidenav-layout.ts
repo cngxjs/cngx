@@ -69,11 +69,10 @@ import {
     <ng-content select="cngx-sidenav[position=start], cngx-sidenav:not([position])" />
     <ng-content select="cngx-sidenav-content" />
     <ng-content select="cngx-sidenav[position=end]" />
-    <!-- Visual only: the open rail's surface makes it inert and dismisses on
-         a press outside the rail, so the backdrop needs no handler. -->
-    @if (hasModalOverlay()) {
-      <div class="cngx-sidenav-backdrop" aria-hidden="true"></div>
-    }
+    <!-- Visual only, always rendered so it fades with the panel: the open
+         rail's surface makes it inert and dismisses on a press outside the
+         rail, so it needs no handler. --has-overlay shows it. -->
+    <div class="cngx-sidenav-backdrop" aria-hidden="true"></div>
   `,
 })
 export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {

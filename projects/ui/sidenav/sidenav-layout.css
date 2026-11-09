@@ -19,6 +19,8 @@
  *
  * - `--ready` - added after first render to enable transitions and
  *   prevent the open-state flash on mount
+ * - `--has-overlay` - an open overlay with `modality` `page` or
+ *   `contained`: the backdrop fades in with the panel slide
  *
  * **Slots**
  *
@@ -32,6 +34,15 @@
  * - `@cngx/themes/material/nav-link-theme` - Material 3 nav-link
  *   palette
  */
+
+/* The panel duration token is registered inherits:false and broadcast only
+   inside cngx-sidenav, so the backdrop (a layout child) derives it from the
+   same motion rung here: the scrim fade and the slide share one clock. */
+@layer cngx.tokens {
+  .cngx-sidenav-backdrop {
+    --cngx-sidenav-transition-duration: var(--cngx-duration-base);
+  }
+}
 
 @layer cngx.components {
   cngx-sidenav-layout {
@@ -116,13 +127,37 @@
         var(--cngx-sidenav-transition-easing, ease);
   }
 
+  /* Always rendered: the opacity runs on the panel's duration and easing
+     tokens, so the scrim fades in and out with the slide instead of snapping
+     at t=0. Hidden, it leaves hit-testing once the fade ends. */
   .cngx-sidenav-backdrop {
     position: absolute;
     inset: 0;
     z-index: 1;
     background: var(--cngx-sidenav-backdrop-bg, oklch(0 0 0));
-    opacity: var(--cngx-sidenav-backdrop-opacity, 0.5);
+    opacity: 0;
+    visibility: hidden;
     cursor: pointer;
+  }
+
+  cngx-sidenav-layout.cngx-sidenav-layout--ready > .cngx-sidenav-backdrop {
+    transition:
+      opacity var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
+  }
+
+  cngx-sidenav-layout.cngx-sidenav-layout--has-overlay > .cngx-sidenav-backdrop {
+    opacity: var(--cngx-sidenav-backdrop-opacity, 0.5);
+    visibility: visible;
+  }
+
+  cngx-sidenav-layout.cngx-sidenav-layout--ready.cngx-sidenav-layout--has-overlay
+    > .cngx-sidenav-backdrop {
+    transition:
+      opacity var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s 0s;
   }
 
   @media (prefers-reduced-motion: reduce) {
