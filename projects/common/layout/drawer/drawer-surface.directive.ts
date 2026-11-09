@@ -26,8 +26,11 @@ import {
 } from '@cngx/common/a11y';
 import {
   CNGX_CLICK_OUTSIDE_DRIVER,
+  CNGX_HOTKEY_SCOPE,
   CngxClickOutside,
   type CngxClickOutsideDriver,
+  type CngxHotkeyScopeNode,
+  createHotkeyScope,
 } from '@cngx/common/interactive';
 import { injectWindow } from '@cngx/core/tokens';
 import { createCloseWatcher } from '@cngx/core/utils';
@@ -165,6 +168,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
     { provide: CNGX_FOCUS_TRAP_DRIVER, useExisting: CngxDrawerSurface },
     { provide: CNGX_FOCUS_RESTORE_DRIVER, useExisting: CngxDrawerSurface },
     { provide: CNGX_CLICK_OUTSIDE_DRIVER, useExisting: CngxDrawerSurface },
+    { provide: CNGX_HOTKEY_SCOPE, useFactory: () => inject(CngxDrawerSurface).hotkeyScope },
   ],
   host: {
     '[attr.role]': 'surfaceRole()',
@@ -256,6 +260,19 @@ export class CngxDrawerSurface
     this.isActive() ? this.resolvedModality() : 'none',
   );
   protected readonly engagedPage = computed(() => this.engagedModality() === 'page');
+
+  /**
+   * @internal Hotkey scope of the surface subtree: modal while engaged as
+   * `'page'` or `'contained'`, so app bindings outside stay quiet while focus
+   * is inside. Always active: the drawer's own bindings (toggle, close) must
+   * fire whether the surface is engaged or not.
+   */
+  readonly hotkeyScope: CngxHotkeyScopeNode = createHotkeyScope({
+    element: this.host,
+    modal: computed(() => this.engagedModality() !== 'none'),
+    parent: inject(CNGX_HOTKEY_SCOPE, { optional: true, skipSelf: true }),
+    destroyRef: inject(DestroyRef),
+  });
   protected readonly surfaceRole = computed(() => {
     if (this.engagedPage()) {
       return 'dialog';

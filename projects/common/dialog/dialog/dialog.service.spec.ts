@@ -1,6 +1,8 @@
-import { ApplicationRef, Component } from '@angular/core';
+import { ApplicationRef, Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { CNGX_HOTKEY_SCOPE, injectHotkey } from '@cngx/common/interactive';
 
 import { CngxDialogOpener, CngxDialogRef, provideDialog } from './dialog.service';
 import { CngxDialogStack } from './dialog-stack';
@@ -359,5 +361,54 @@ describe('CngxDialogOpener', () => {
     TestBed.flushEffects();
     expect(stack.stack()).toEqual([]);
     expect(html.style.overflow).toBe(overflow);
+  });
+});
+
+let hotkeyFired = 0;
+let hotkeyContent: HotkeyContent | null = null;
+
+@Component({
+  template: `<button type="button" id="hotkey-content">content</button>`,
+})
+class HotkeyContent {
+  readonly scope = inject(CNGX_HOTKEY_SCOPE, { optional: true });
+  readonly ref = injectHotkey({
+    id: 'test.opener.submit',
+    combo: 'ctrl+enter',
+    run: () => hotkeyFired++,
+  });
+
+  constructor() {
+    hotkeyContent = this;
+  }
+}
+
+function pressCtrlEnter(target: EventTarget): void {
+  target.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true, cancelable: true }),
+  );
+}
+
+describe('CngxDialogOpener hotkey scope', () => {
+  it('registers opened content into the dialog scope and stops firing after close', () => {
+    hotkeyFired = 0;
+    const opener = createOpener();
+    const ref = opener.open<number>(HotkeyContent);
+    TestBed.flushEffects();
+
+    const dialogEl = document.body.querySelector('cngx-dialog-outlet dialog');
+    const scope = hotkeyContent?.scope;
+    expect(scope?.element).toBe(dialogEl);
+    expect(scope?.muted()).toBe(false);
+
+    pressCtrlEnter(document.body.querySelector('#hotkey-content') as HTMLElement);
+    expect(hotkeyFired).toBe(1);
+
+    ref.close(1);
+    TestBed.flushEffects();
+
+    expect(scope?.muted()).toBe(true);
+    pressCtrlEnter(document.body);
+    expect(hotkeyFired).toBe(1);
   });
 });
