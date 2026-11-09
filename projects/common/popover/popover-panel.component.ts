@@ -114,6 +114,7 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
         'exclusive',
         'cngxPopoverOpen',
       ],
+      outputs: ['opened', 'closed'],
     },
   ],
   host: {

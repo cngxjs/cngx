@@ -8,6 +8,7 @@ import {
   inject,
   Injector,
   input,
+  output,
   signal,
   untracked,
   type Signal,
@@ -393,6 +394,22 @@ export class CngxPopover {
   readonly exclusive = input(true);
 
   /**
+   * Emits once each time the popover opens: at the end of `show()`, in the
+   * caller's task, after the native `showPopover()` call. A `show()` that
+   * returns early (already open, no Popover API) emits nothing. Bind it to
+   * react to the open as an event instead of watching `state` in an effect.
+   */
+  readonly opened = output<void>();
+
+  /**
+   * Emits once each time the popover reaches `closed`: after `hide()` (at
+   * the end of the exit transition when there is one) and after the
+   * browser's own light dismiss. A no-op `hide()` and the teardown on
+   * destroy emit nothing.
+   */
+  readonly closed = output<void>();
+
+  /**
    * Programmatic override of {@link exclusive}. `null` (default) defers to the
    * `[exclusive]` input; a boolean wins over it. Lets a composing organism
    * (e.g. a submenu wiring in `@cngx/ui/context-menu`) open a nested panel
@@ -685,9 +702,10 @@ export class CngxPopover {
 
     this.destroyRef.onDestroy(() => {
       // finalize() disarms pendingClose; a 'closed' state means it already
-      // ran and the handle is gone.
+      // ran and the handle is gone. An output cannot emit on a destroyed
+      // directive, so the teardown close stays silent.
       if (this.stateSignal() !== 'closed') {
-        this.finalize();
+        this.finalize(false);
       }
     });
 
@@ -760,6 +778,7 @@ export class CngxPopover {
       // getComputedStyle read on this directive's side.
       this.updateArrowOffset();
     });
+    this.opened.emit();
   }
 
   /** Close the popover. No-op if already `closed` or `closing`. */
@@ -1021,7 +1040,8 @@ export class CngxPopover {
     }
   }
 
-  private finalize(): void {
+  private finalize(emit = true): void {
+    const wasClosed = this.stateSignal() === 'closed';
     // Disarm any pending close wait no matter which path got here - the
     // browser's own light dismiss routes through handleToggle straight to
     // finalize(), and a stale armed handle would force-close a reopened
@@ -1051,5 +1071,8 @@ export class CngxPopover {
       // Element may already be hidden or disconnected
     }
     this.stateSignal.set('closed');
+    if (emit && !wasClosed) {
+      this.closed.emit();
+    }
   }
 }

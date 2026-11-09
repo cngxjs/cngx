@@ -516,6 +516,101 @@ describe('CngxPopover', () => {
     });
   });
 
+  describe('opened and closed outputs', () => {
+    function spyOutputs(popover: CngxPopover): { opened: ReturnType<typeof vi.fn>; closed: ReturnType<typeof vi.fn> } {
+      const opened = vi.fn();
+      const closed = vi.fn();
+      popover.opened.subscribe(opened);
+      popover.closed.subscribe(closed);
+      return { opened, closed };
+    }
+
+    it('emits opened once per show() and nothing on a no-op show()', () => {
+      const { fixture } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      const { opened, closed } = spyOutputs(popover);
+
+      popover.show();
+      expect(opened).toHaveBeenCalledTimes(1);
+      popover.show();
+      expect(opened).toHaveBeenCalledTimes(1);
+      expect(closed).not.toHaveBeenCalled();
+    });
+
+    it('emits closed once for a hide() without a transition and nothing on a no-op hide()', () => {
+      const { fixture } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      const { closed } = spyOutputs(popover);
+
+      popover.hide();
+      expect(closed).not.toHaveBeenCalled();
+      popover.show();
+      popover.hide();
+      expect(closed).toHaveBeenCalledTimes(1);
+      popover.hide();
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits closed at the end of the exit transition, not when hide() starts it', () => {
+      vi.useFakeTimers();
+      const { fixture } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+      const { closed } = spyOutputs(popover);
+
+      popover.show();
+      popover.hide();
+      expect(popover.state()).toBe('closing');
+      expect(closed).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(1000);
+      expect(popover.state()).toBe('closed');
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits closed once for a browser light dismiss', () => {
+      const { fixture, popoverEl } = setup(AutoModeHost);
+      const popover = (fixture.componentInstance as AutoModeHost).popover();
+      const { closed } = spyOutputs(popover);
+
+      popover.show();
+      const ev = new Event('toggle');
+      (ev as unknown as Record<string, unknown>)['newState'] = 'closed';
+      popoverEl.dispatchEvent(ev);
+      popoverEl.dispatchEvent(ev);
+
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits nothing when an open popover is torn down on destroy', () => {
+      const { fixture } = setup(BasicHost);
+      const popover = (fixture.componentInstance as BasicHost).popover();
+      const { closed } = spyOutputs(popover);
+
+      popover.show();
+      expect(() => fixture.destroy()).not.toThrow();
+      expect(closed).not.toHaveBeenCalled();
+    });
+
+    it('emits both outputs from the controlled-open input', () => {
+      const { fixture } = setup(ControlledHost);
+      const host = fixture.componentInstance as ControlledHost;
+      const { opened, closed } = spyOutputs(host.popover());
+
+      host.controlledOpen.set(true);
+      fixture.detectChanges();
+      expect(opened).toHaveBeenCalledTimes(1);
+
+      host.controlledOpen.set(false);
+      fixture.detectChanges();
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('host classes', () => {
     it('should apply cngx-popover--opening during opening', () => {
       const { fixture, popoverEl } = setup(BasicHost);
