@@ -89,4 +89,40 @@ test.describe('CngxSidenav layout regressions', () => {
     await expect(team).toHaveAttribute('aria-expanded', 'false');
     await expect(team).toBeFocused();
   });
+
+  test('a non-modal end inspector keeps the list and the start rail operable', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/dual-sidebar-master-detail');
+    const layout = page.locator('cngx-sidenav-layout').first();
+    const inspector = layout.locator('cngx-sidenav.cngx-sidenav--end');
+    const content = layout.locator('cngx-sidenav-content');
+    const startRail = layout.locator('cngx-sidenav.cngx-sidenav--start');
+
+    await content.getByRole('button', { name: 'Order #1042' }).click();
+    await expect(inspector).toHaveClass(/cngx-sidenav--open/);
+    await expect(inspector.getByRole('heading', { name: 'Order #1042' })).toBeVisible();
+
+    // Non-modal: no dialog role, no backdrop, nothing outside made inert.
+    await expect(inspector).not.toHaveAttribute('aria-modal', 'true');
+    await expect(layout).not.toHaveClass(/cngx-sidenav-layout--has-overlay/);
+    await expect(layout.locator('.cngx-sidenav-backdrop')).toBeHidden();
+    await expect(content).not.toHaveAttribute('inert', '');
+    await expect(startRail).not.toHaveAttribute('inert', '');
+
+    // The list stays clickable: another order swaps the detail in place.
+    await content.getByRole('button', { name: 'Order #1044' }).click();
+    await expect(inspector).toHaveClass(/cngx-sidenav--open/);
+    await expect(inspector.getByRole('heading', { name: 'Order #1044' })).toBeVisible();
+
+    // The start rail stays clickable too (no backdrop intercepts the press);
+    // a press outside a non-modal inspector still asks it to close.
+    await startRail.getByText('Products').click();
+    await expect(inspector).not.toHaveClass(/cngx-sidenav--open/);
+
+    // Escape with focus inside the inspector dismisses it.
+    await content.getByRole('button', { name: 'Order #1043' }).click();
+    await expect(inspector).toHaveClass(/cngx-sidenav--open/);
+    await inspector.getByRole('button', { name: 'Close' }).focus();
+    await page.keyboard.press('Escape');
+    await expect(inspector).not.toHaveClass(/cngx-sidenav--open/);
+  });
 });

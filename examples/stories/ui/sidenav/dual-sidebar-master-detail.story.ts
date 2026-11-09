@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: dual sidebar master detail',
-  subtitle: 'Left sidebar docked as permanent navigation (<code>side</code> mode, <code>collapsedAs="hidden"</code>). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.',
-  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left docked nav that hides to zero width and a right over-mode detail drawer. Clicking an order opens the detail; closing it leaves the left nav intact.',
+  subtitle: 'Left sidebar docked as permanent navigation (<code>side</code> mode, <code>collapsedAs="hidden"</code>). Right sidebar as a non-modal inspector (<code>modality="none"</code>): it overlays the content without a backdrop, so the order list and the left nav stay operable while it is open.',
+  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left docked nav that hides to zero width and a right over-mode inspector. <code>modality="none"</code> keeps the page live: no backdrop, no inert, no focus trap. Clicking another order swaps the detail in place (the order buttons name the inspector in <code>aria-controls</code>, so their press is not an outside press); Escape or Close dismisses it.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -44,13 +44,15 @@ export const STORY: DemoSpec = {
         <button type="button" class="demo-sidenav__order-item"
                 [class.is-selected]="selectedItem() === item"
                 [attr.aria-current]="selectedItem() === item ? 'true' : null"
+                [attr.aria-controls]="detailNav.id()"
                 (click)="selectItem(item)">
           {{ item }}
         </button>
       }
     </cngx-sidenav-content>
 
-    <cngx-sidenav #detailNav position="end" [(opened)]="rightOpen" mode="over" width="280px">
+    <cngx-sidenav #detailNav position="end" [(opened)]="rightOpen" mode="over" modality="none"
+                  ariaLabel="Order details" width="280px">
       <div class="demo-sidenav__detail-pad">
         @if (selectedItem()) {
           <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">{{ selectedItem() }}</h3>

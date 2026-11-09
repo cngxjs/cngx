@@ -362,3 +362,68 @@ describe('CngxSidenav accessible name', () => {
     expect(end.getAttribute('aria-label')).toBe('Side panel');
   });
 });
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav position="start" mode="side">Start</cngx-sidenav>
+      <cngx-sidenav-content>
+        <button class="order" type="button" [attr.aria-controls]="inspector.id()">Order</button>
+      </cngx-sidenav-content>
+      <cngx-sidenav #inspector position="end" mode="over" modality="none" [(opened)]="open">
+        <button class="inside" type="button">Close</button>
+      </cngx-sidenav>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class InspectorHost {
+  open = signal(false);
+}
+
+describe('CngxSidenav non-modal inspector (S1)', () => {
+  function setup() {
+    TestBed.configureTestingModule({ imports: [InspectorHost] });
+    const fixture = TestBed.createComponent(InspectorHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      layout: root.querySelector('cngx-sidenav-layout') as HTMLElement,
+      content: root.querySelector('cngx-sidenav-content') as HTMLElement,
+      ...railsOf(fixture),
+      order: root.querySelector('.order') as HTMLElement,
+      inside: root.querySelector('.inside') as HTMLElement,
+    };
+  }
+
+  afterEach(() => document.body.replaceChildren());
+
+  it('leaves the page operable: no dialog, no backdrop, no inert', () => {
+    const { layout, content, start, end } = setup();
+    expect(end.getAttribute('role')).not.toBe('dialog');
+    expect(end.hasAttribute('aria-modal')).toBe(false);
+    expect(layout.classList.contains('cngx-sidenav-layout--has-overlay')).toBe(false);
+    expect(content.hasAttribute('inert')).toBe(false);
+    expect(start.hasAttribute('inert')).toBe(false);
+  });
+
+  it('stays open on a press of an element that controls it', () => {
+    const { fixture, host, order } = setup();
+    order.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0 }));
+    fixture.detectChanges();
+    expect(host.open()).toBe(true);
+  });
+
+  it('closes on Escape inside it', () => {
+    const { fixture, host, inside } = setup();
+    inside.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
+  });
+});
