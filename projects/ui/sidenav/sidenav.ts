@@ -427,8 +427,18 @@ export class CngxSidenav
   /** @internal Drives the composed `CngxSidebar`: the rail's accessible name. */
   readonly sidebarLabel = computed(() => this.resolvedAriaLabel());
 
-  /** @internal Drives the composed `CngxDrawerSurface`: engaged while an open overlay. */
-  readonly surfaceActive = this.overlayActive;
+  /**
+   * @internal Drives the composed `CngxDrawerSurface`: engaged while an open
+   * overlay. An `auto` rail holds off until the container rule has resolved
+   * its width class: before that frame the rail reads as compact, and a
+   * surface engaged then would run its autofocus against a rail that has no
+   * layout yet, so an initially open overlay would go modal with focus left
+   * on the page. Engaging on the resolved frame gives the trap a real edge.
+   */
+  readonly surfaceActive = computed(
+    () =>
+      this.overlayActive() && (this.mode() !== 'auto' || this.rawWidthClass().trim() !== ''),
+  );
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceModality = this.modality;
   /** @internal Drives the composed `CngxDrawerSurface`: one name in every state. */

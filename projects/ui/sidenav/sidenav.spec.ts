@@ -52,7 +52,7 @@ import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/co
         Left content
       </cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
-      <cngx-sidenav position="end" [(opened)]="rightOpen"> Right content </cngx-sidenav>
+      <cngx-sidenav position="end" mode="over" [(opened)]="rightOpen"> Right content </cngx-sidenav>
     </cngx-sidenav-layout>
   `,
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],

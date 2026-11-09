@@ -427,3 +427,50 @@ describe('CngxSidenav non-modal inspector (S1)', () => {
     expect(host.open()).toBe(false);
   });
 });
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav [mode]="mode()" [opened]="true">
+        <button class="first" type="button">First</button>
+      </cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class UnresolvedHost {
+  mode = signal<SidenavMode>('auto');
+}
+
+// jsdom resolves no container rule, so the width class stays unresolved here:
+// the state an auto rail is in on its first frames in a browser.
+describe('CngxSidenav surface before the width class resolves', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  function setup(mode: SidenavMode) {
+    TestBed.configureTestingModule({ imports: [UnresolvedHost] });
+    const fixture = TestBed.createComponent(UnresolvedHost);
+    fixture.componentInstance.mode.set(mode);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    return {
+      rail: root.querySelector('cngx-sidenav') as HTMLElement,
+      content: root.querySelector('cngx-sidenav-content') as HTMLElement,
+    };
+  }
+
+  it('holds an open auto overlay off the page modal until the class resolves', () => {
+    const { rail, content } = setup('auto');
+    expect(rail.hasAttribute('aria-modal')).toBe(false);
+    expect(content.hasAttribute('inert')).toBe(false);
+  });
+
+  it('engages a pinned over rail at once', () => {
+    const { rail, content } = setup('over');
+    expect(rail.getAttribute('aria-modal')).toBe('true');
+    expect(content.hasAttribute('inert')).toBe(true);
+  });
+});
