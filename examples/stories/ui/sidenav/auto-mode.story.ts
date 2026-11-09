@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     "import { CngxPanelTrigger } from '@cngx/common/layout';",
   ],
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavLink', 'CngxPanelTrigger'],
-  setup: `protected readonly navOpen = signal(true);
+  setup: `protected readonly navOpen = signal(false);
   protected readonly nav = viewChild(CngxSidenav);`,
   setupChrome: `protected readonly pinned = signal(false);
   protected togglePinned(): void {

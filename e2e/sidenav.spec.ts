@@ -128,4 +128,24 @@ test.describe('CngxSidenav layout regressions', () => {
     await page.keyboard.press('Escape');
     await expect(inspector).not.toHaveClass(/cngx-sidenav--open/);
   });
+
+  test('the auto-mode drawer starts closed at compact and returns focus to its trigger', async ({
+    page,
+  }) => {
+    await page.goto('/#/ui/sidenav/auto-mode');
+    const nav = page.locator('cngx-sidenav').first();
+    const trigger = page.getByRole('button', { name: 'Toggle navigation' });
+    await page.getByRole('button', { name: 'Width 40rem' }).click();
+    await expect(nav).toHaveClass(/cngx-sidenav--over/);
+    await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
+    await expect(nav).not.toHaveAttribute('aria-modal', 'true');
+
+    await trigger.click();
+    await expect(nav).toHaveClass(/cngx-sidenav--open/);
+    await expect(nav).toHaveAttribute('aria-modal', 'true');
+
+    await page.keyboard.press('Escape');
+    await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
+    await expect(trigger).toBeFocused();
+  });
 });
