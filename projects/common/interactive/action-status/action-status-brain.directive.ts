@@ -250,8 +250,10 @@ export class CngxActionStatusBrain implements CngxActionStatus {
       if (rendered !== '') {
         return rendered;
       }
-      const label = success ? this.succeededLabel() : this.failedLabel();
-      return label ?? (success ? this.i18n().asyncClickSucceeded : this.i18n().asyncClickFailed);
+      if (success) {
+        return this.succeededLabel() ?? this.i18n().asyncClickSucceeded;
+      }
+      return this.failedLabel() ?? this.i18n().asyncClickFailed;
     });
   }
 

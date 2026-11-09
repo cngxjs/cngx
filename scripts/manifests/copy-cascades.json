@@ -79,6 +79,38 @@
       ]
     },
     {
+      "class": "CngxActionStatusBrain",
+      "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+      "line": 254,
+      "member": "outcomeText",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "succeededLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["asyncClickSucceeded"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionStatusBrain",
+      "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+      "line": 256,
+      "member": "outcomeText",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "failedLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["asyncClickFailed"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
       "line": 470,
@@ -740,39 +772,6 @@
           "field": "copy",
           "path": ["disabledReason"],
           "token": "CNGX_LANGUAGE_PACK"
-        }
-      ]
-    },
-    {
-      "class": "CngxActionButton",
-      "file": "projects/ui/action-button/action-button.ts",
-      "line": 579,
-      "member": "resolveAnnouncement",
-      "enclosing": "untracked",
-      "tiers": [
-        { "kind": "input", "field": "succeededAnnouncement" },
-        { "kind": "input", "field": "succeededLabel" },
-        {
-          "kind": "bundle",
-          "field": "i18n",
-          "path": ["asyncClickSucceeded"],
-          "token": "CNGX_INTERACTIVE_I18N"
-        }
-      ]
-    },
-    {
-      "class": "CngxActionButton",
-      "file": "projects/ui/action-button/action-button.ts",
-      "line": 592,
-      "member": "resolveAnnouncement",
-      "enclosing": "untracked",
-      "tiers": [
-        { "kind": "input", "field": "failedLabel" },
-        {
-          "kind": "bundle",
-          "field": "i18n",
-          "path": ["asyncClickFailed"],
-          "token": "CNGX_INTERACTIVE_I18N"
         }
       ]
     },
