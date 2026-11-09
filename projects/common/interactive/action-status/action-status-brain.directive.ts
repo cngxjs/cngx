@@ -4,6 +4,7 @@ import {
   contentChild,
   Directive,
   effect,
+  ElementRef,
   inject,
   Injector,
   input,
@@ -21,8 +22,10 @@ import {
   type CngxAsyncState,
 } from '@cngx/core/utils';
 
+import { CngxRuntimeError } from '@cngx/utils';
+
 import type { CngxAsyncSettle } from '../async-click/async-click.directive';
-import { CNGX_ASYNC_RUN_STATE } from '../async-click/async-run-state.token';
+import { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from '../async-click/async-run-state.token';
 import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
 import { reflectAsyncDisplayStatus } from '../async-status/async-status.directive';
 import { injectInteractiveI18n } from '../i18n/interactive-i18n';
@@ -57,7 +60,8 @@ import {
  * edge; the own runs then speak nothing. Back to idle empties the region.
  *
  * Needs a co-hosted `CNGX_ASYNC_RUN_STATE` (a `cngxAsyncClick`), read lazily
- * because the runner reads the host interaction state that reads this brain.
+ * because the runner reads the host interaction state that reads this brain;
+ * without one the first read throws `CNGX1082`.
  *
  * ```ts
  * hostDirectives: [
@@ -91,7 +95,8 @@ import {
 export class CngxActionStatusBrain implements CngxActionStatus {
   private readonly i18n = injectInteractiveI18n();
   private readonly injector = inject(Injector);
-  private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
+  private readonly element = inject<ElementRef<Element>>(ElementRef).nativeElement;
+  private readonly runStateLookup = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
   private readonly covers = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
   private readonly cells = createKeyedRegistry<Element>({ name: 'CngxActionStatusBrain' });
 
@@ -273,6 +278,21 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   /** Removes a result cell registration while `element` still holds it. */
   unregisterCell(kind: 'success' | 'error', element: Element): void {
     this.cells.unregister(kind, element);
+  }
+
+  /** The co-hosted run; throws `CNGX1082` when the host lists no runner. */
+  private runState(): CngxAsyncRunState {
+    const run = this.runStateLookup();
+    if (run) {
+      return run;
+    }
+    const tag = this.element.tagName.toLowerCase();
+    throw new CngxRuntimeError(
+      'CNGX1082',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[cngxActionStatusBrain] on <${tag}> has no co-hosted run. Add CngxAsyncClick to the hostDirectives of the component or directive that declares CngxActionStatusBrain.`,
+    );
   }
 
   private resolveAnnouncement(status: 'success' | 'error'): string {

@@ -209,9 +209,37 @@ function setup(configure?: (host: Host) => void) {
   };
 }
 
+/** The brain without a co-hosted runner: the first read throws CNGX1082. */
+@Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
+  selector: 'button[testRunlessHost]',
+  hostDirectives: [CngxActionStatusBrain],
+  template: `<ng-content />`,
+})
+class TestRunlessHost {}
+
+@Component({
+  imports: [TestRunlessHost],
+  template: `<button testRunlessHost>Save</button>`,
+})
+class RunlessHost {}
+
 describe('CngxActionStatusBrain', () => {
   afterEach(() => {
     covered.clear();
+  });
+
+  it('throws CNGX1082 when the host lists no async run', () => {
+    const fixture = TestBed.createComponent(RunlessHost);
+    expect(() => fixture.detectChanges()).toThrow(
+      expect.objectContaining({
+        name: 'CngxRuntimeError',
+        code: 'CNGX1082',
+        message: expect.stringMatching(
+          /^CNGX1082: \[cngxActionStatusBrain\] on <button> has no co-hosted run/,
+        ),
+      }),
+    );
   });
 
   it('resolves content queries in a selector-less host directive', async () => {
