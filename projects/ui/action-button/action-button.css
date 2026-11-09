@@ -3,14 +3,16 @@
  * Status-label layout for `CngxActionButton`. The host is the native
  * `<button cngxActionButton>` and carries `.cngx-button.cngx-action-button`;
  * box, paint, variant x tone, size, disabled, busy, contrast and forced
- * colors come from the shared `CngxButton` sheet. This sheet only stacks
- * the status labels.
+ * colors come from the shared `CngxButton` sheet, which also stacks the
+ * status cells (`.cngx-action-status-cell`). This sheet adds no rule; the
+ * classes below are hooks.
  *
  * **Layout**
  *
  * - `.cngx-action-button__labels` - one grid cell holding the idle content
- *   and the pending, succeeded and failed labels; the button is as wide as
- *   the widest label, so it never jumps after a run
+ *   and the pending, succeeded and failed labels (the shared sheet's
+ *   `.cngx-action-status-cell` stack); the button is as wide as the widest
+ *   label, so it never jumps after a run
  * - `.cngx-action-button__label[data-active]` - the visible, named label;
  *   the others are `visibility: hidden` and `aria-hidden`
  * - `[data-busy][data-status-label]` - a status label shows instead of the
@@ -27,23 +29,3 @@
  * (`[data-busy]`), and the settle result is the label swap plus the live
  * region, with no success or error tint.
  */
-
-@layer cngx.components {
-  @scope (.cngx-action-button) {
-    .cngx-action-button__labels {
-      display: inline-grid;
-      justify-items: center;
-      align-items: center;
-    }
-
-    .cngx-action-button__label {
-      grid-area: 1 / 1;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .cngx-action-button__label:not([data-active]) {
-      visibility: hidden;
-    }
-  }
-}

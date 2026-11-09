@@ -1,7 +1,8 @@
 /**
  * @overview
  * `button[cngxPopoverAction]` (async confirm) and `button[cngxPopoverDismiss]`
- * (close) carry no paint of their own beyond the status-label stack below.
+ * (close) carry no paint of their own; the status-label stack is the
+ * shared sheet's `.cngx-action-status-cell` rule.
  * Both are `CngxButtonBrain` hosts with the `.cngx-button` class, so
  * `button.component.css` paints them: variants
  * (`data-variant`, default `outline`), tones (`data-tone`), disabled by
@@ -24,7 +25,8 @@
  *
  * **Status labels**
  *
- * - `.cngx-popover-action__labels` - one grid cell holding the idle content
+ * - `.cngx-popover-action__labels` - one grid cell (the button sheet's
+ *   `.cngx-action-status-cell` stack) holding the idle content
  *   and the projected `cngxPending`, `cngxSucceeded` and `cngxFailed` cells;
  *   the button is as wide as the widest label, so a right-aligned footer
  *   never shifts while the run swaps them
@@ -47,23 +49,3 @@
  * - `@cngx/themes/material/button-theme` - Material 3 button palette and
  *   metrics for both hosts.
  */
-
-@layer cngx.components {
-  @scope (.cngx-popover-action) {
-    .cngx-popover-action__labels {
-      display: inline-grid;
-      justify-items: center;
-      align-items: center;
-    }
-
-    .cngx-popover-action__label {
-      grid-area: 1 / 1;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .cngx-popover-action__label:not([data-active]) {
-      visibility: hidden;
-    }
-  }
-}
