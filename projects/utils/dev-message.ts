@@ -1,3 +1,5 @@
+import { VERSION } from './version';
+
 /** @internal */
 type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 
@@ -17,13 +19,27 @@ type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 export type CngxErrorCode = `CNGX${CngxDigit}${CngxDigit}${CngxDigit}${CngxDigit}`;
 
 /**
- * Base URL of the per-code doc pages. A code's page is
- * `${CNGX_ERROR_DOCS_URL}cngx<nnnn>.html`.
+ * Base URL of the per-code doc pages in the docs of `main`. A diagnostic links
+ * through {@link errorDocsUrl}, which swaps in the installed release.
  *
  * @internal
  */
 export const CNGX_ERROR_DOCS_URL =
-  'https://cngxjs.github.io/cngx/additional-documentation/error-codes/';
+  'https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/';
+
+/**
+ * Base URL of the per-code doc pages for `version`. A final release links to
+ * its own docs (`/cngx/v<version>/`); a prerelease and the unpublished
+ * placeholder have none and link to `main`. The check is the `-`, never the
+ * placeholder string: the release rewrites every placeholder occurrence.
+ *
+ * @internal
+ */
+export function errorDocsUrl(version: string = VERSION.full): string {
+  return version.includes('-')
+    ? CNGX_ERROR_DOCS_URL
+    : CNGX_ERROR_DOCS_URL.replace('/main/', `/v${version}/`);
+}
 
 /**
  * Formats a coded diagnostic as `CNGXnnnn: <message> Find more at <url>`.
@@ -33,7 +49,7 @@ export const CNGX_ERROR_DOCS_URL =
  * @internal
  */
 export function formatDiagnostic(code: CngxErrorCode, message: string): string {
-  return `${code}: ${message} Find more at ${CNGX_ERROR_DOCS_URL}${code.toLowerCase()}.html`;
+  return `${code}: ${message} Find more at ${errorDocsUrl()}${code.toLowerCase()}.html`;
 }
 
 /**

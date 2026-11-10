@@ -115,16 +115,33 @@ export function stripPageBody(raw, docsBaseUrl) {
 }
 
 /**
- * Build the `cngxErrorCodes` block from the error-codes manifest and the page
- * bodies. `schemaVersion`, `docsBaseUrl` and `ranges` are copied verbatim; each
- * code keeps the answer-relevant fields, drops `files` and `page`, deduplicates
- * its message texts and carries its stripped page body. `readPage(page)` returns
- * the raw markdown for a manifest `page` path.
+ * Whether `version` has docs and examples of its own: a final release does,
+ * a prerelease (anything with a `-`) falls back to `main`.
  */
-export function buildErrorCodeBlock(manifest, readPage) {
+const isFinalRelease = (version) => !version.includes('-');
+
+/**
+ * `url` with its `/main/` docs folder swapped for `/v<version>/` when
+ * `version` is a final release; a prerelease keeps the docs of `main`.
+ */
+export function releaseDocsUrl(url, version) {
+  return isFinalRelease(version) ? url.replace('/main/', `/v${version}/`) : url;
+}
+
+/**
+ * Build the `cngxErrorCodes` block from the error-codes manifest and the page
+ * bodies. `schemaVersion` and `ranges` are copied verbatim; `docsBaseUrl`, each
+ * `url` and the links in the bodies point at the docs of `cngxVersion`
+ * ({@link releaseDocsUrl}). Each code keeps the answer-relevant fields, drops
+ * `files` and `page`, deduplicates its message texts and carries its stripped
+ * page body. `readPage(page)` returns the raw markdown for a manifest `page`
+ * path.
+ */
+export function buildErrorCodeBlock(manifest, readPage, cngxVersion) {
+  const docsBaseUrl = releaseDocsUrl(manifest.docsBaseUrl, cngxVersion);
   return {
     schemaVersion: manifest.schemaVersion,
-    docsBaseUrl: manifest.docsBaseUrl,
+    docsBaseUrl,
     ranges: manifest.ranges,
     codes: manifest.codes.map((code) => ({
       code: code.code,
@@ -133,26 +150,26 @@ export function buildErrorCodeBlock(manifest, readPage) {
       production: code.production,
       title: code.title,
       status: code.status,
-      url: code.url,
+      url: releaseDocsUrl(code.url, cngxVersion),
       messages: dedupeMessageTexts(code.messages),
-      body: stripPageBody(readPage(code.page), manifest.docsBaseUrl),
+      body: stripPageBody(readPage(code.page), docsBaseUrl),
     })),
   };
 }
 
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
+const EXAMPLES_BASE_URL = 'https://cngxjs.github.io/cngx/examples';
+
 /**
  * Reads the snapshot flags. `cngxVersion` is `--cngx-version=<v>` when given
  * (a malformed one throws), else `rootVersion`; base precedence is the
- * `--base=` flag, then `env.EXAMPLES_BASE_URL`, then the GH Pages default.
+ * `--base=` flag, then `env.EXAMPLES_BASE_URL`, then the GH Pages examples of
+ * that version (`/cngx/examples/v<version>` for a final release, the `main`
+ * build at `/cngx/examples` for a prerelease).
  */
 export function parseSnapshotArgs(argv, rootVersion, env = {}) {
   const args = new Map(argv.map((a) => a.split('=', 2)).map(([k, v]) => [k, v ?? '']));
-  const baseUrl = (args.get('--base') || env.EXAMPLES_BASE_URL || 'https://cngxjs.github.io/cngx/examples').replace(
-    /\/+$/,
-    '',
-  );
   let cngxVersion = rootVersion;
   if (args.has('--cngx-version')) {
     cngxVersion = args.get('--cngx-version');
@@ -160,6 +177,10 @@ export function parseSnapshotArgs(argv, rootVersion, env = {}) {
       throw new Error(`--cngx-version "${cngxVersion}" is not a well-formed semver`);
     }
   }
+  const versionBase = isFinalRelease(cngxVersion)
+    ? `${EXAMPLES_BASE_URL}/v${cngxVersion}`
+    : EXAMPLES_BASE_URL;
+  const baseUrl = (args.get('--base') || env.EXAMPLES_BASE_URL || versionBase).replace(/\/+$/, '');
   return { baseUrl, cngxVersion, requireLlmDump: args.has('--require-llm-dump') };
 }
 
@@ -220,7 +241,11 @@ function main() {
   doc.cngxVersion = cngxVersion;
 
   const errorCodeManifest = JSON.parse(readFileSync(ERROR_CODES_MANIFEST, 'utf8'));
-  doc.cngxErrorCodes = buildErrorCodeBlock(errorCodeManifest, (page) => readFileSync(join(ROOT, page), 'utf8'));
+  doc.cngxErrorCodes = buildErrorCodeBlock(
+    errorCodeManifest,
+    (page) => readFileSync(join(ROOT, page), 'utf8'),
+    cngxVersion,
+  );
 
   const rebased = rebaseExampleUrls(doc, BASE_URL);
 

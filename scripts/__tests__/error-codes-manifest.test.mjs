@@ -639,7 +639,7 @@ describe('error-code manifest', () => {
     const path = 'projects/utils/dev-message.ts';
     const text = readFileSync(resolve(REPO_ROOT, path), 'utf-8');
     const [literal] = collectDocsUrls([{ path, text }]);
-    expect(literal).toBe(`${DEFAULT_BASE_URL}/additional-documentation/error-codes/`);
+    expect(literal).toBe(`${DEFAULT_BASE_URL}/main/additional-documentation/error-codes/`);
     expect(literal).toBe(DOCS_BASE_URL);
   });
 });
