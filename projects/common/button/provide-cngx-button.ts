@@ -167,7 +167,7 @@ function partitionFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner
+ * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner, provideActionStatusConfig
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButton(...features: readonly CngxButtonFeature[]): EnvironmentProviders {
@@ -182,7 +182,9 @@ export function provideCngxButton(...features: readonly CngxButtonFeature[]): En
 /**
  * Component-scoped twin of {@link provideCngxButton}. Spread into
  * `viewProviders` or `providers`. Same dispatch semantics; config features
- * merge over the parent scope's config (`provideButtonConfigAt`).
+ * merge over the parent scope's config (`provideButtonConfigAt`), the action
+ * status features over the parent's action status config per key
+ * (`provideActionStatusConfigAt`).
  *
  * ```ts
  * @Component({
@@ -192,7 +194,7 @@ export function provideCngxButton(...features: readonly CngxButtonFeature[]): En
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButton, provideButtonConfigAt
+ * @relatedTo provideCngxButton, provideButtonConfigAt, provideActionStatusConfigAt
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButtonAt(...features: readonly CngxButtonFeature[]): Provider[] {
