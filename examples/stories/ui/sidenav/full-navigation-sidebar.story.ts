@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: full navigation sidebar',
-  subtitle: 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.',
-  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. Mode toggle covers <code>over</code> and <code>side</code>; in <code>side</code> the toggle button and <code>shortcut="mod+b"</code> collapse the docked rail to an icon rail that peeks on hover, in the overlay modes they open and close it.',
+  subtitle: 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. The library paints the row states; Material theming via <code>sidenav-theme.scss</code> maps them onto M3 roles.',
+  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. No <code>mode</code> is bound, so the rail follows the width class of its layout: docked beside the content from 64rem (<code>expanded</code>), where the toggle button and <code>shortcut="mod+b"</code> collapse it to an icon rail that peeks on hover; an icon rail with the full nav as an overlay from 48rem (<code>medium</code>); an overlay drawer below that (<code>compact</code>). The toggle is a <code>[cngxPanelTrigger]</code>, so its <code>aria-expanded</code> states the resting state and ignores a hover peek.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -19,30 +19,23 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from \'@cngx/ui\';',
     'import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavGroupContent, CngxNavBadge } from \'@cngx/common\';',
+    'import { CngxPanelTrigger } from \'@cngx/common/layout\';',
   ],
-  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge'],
+  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge', 'CngxPanelTrigger'],
   setup: `protected readonly navOpen = signal(true);
   protected readonly navCollapsed = signal(false);
-  protected readonly navMode = signal<'over' | 'side'>('side');
-  protected readonly modes: ('over' | 'side')[] = ['over', 'side'];
   protected readonly activeLink = signal('/dashboard');
   protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];`,
   template: `
   <div class="filter-row">
-    <span class="filter-label">Mode:</span>
-    @for (m of modes; track m) {
-      <button type="button" class="chip" [attr.aria-pressed]="navMode() === m"
-              (click)="navMode.set(m)">{{ m }}</button>
-    }
-    <button class="sort-btn" type="button" (click)="nav.toggle()"
-            [attr.aria-controls]="nav.id()" [attr.aria-expanded]="nav.expanded()">
+    <button class="sort-btn" type="button" [cngxPanelTrigger]="nav.panelTarget">
       Toggle navigation
     </button>
   </div>
 
   <cngx-sidenav-layout class="demo-sidenav__container">
     <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
-                  [mode]="navMode()" width="240px" [resizable]="true" shortcut="mod+b">
+                  width="240px" [resizable]="true" shortcut="mod+b">
       <cngx-sidenav-header class="demo-sidenav__header">
         Workspace
       </cngx-sidenav-header>
@@ -113,7 +106,6 @@ export const STORY: DemoSpec = {
     <cngx-sidenav-content class="demo-sidenav__content">
       <h3 class="demo-sidenav__content-title">{{ activeLink().substring(1) || 'Dashboard' }}</h3>
       <p class="demo-sidenav__content-hint">
-        Mode: <strong>{{ navMode() }}</strong> -
         Click nav items to change the active state.
         Groups expand with <code>CngxNavGroup</code> + <code>CngxDisclosure</code>.
       </p>
