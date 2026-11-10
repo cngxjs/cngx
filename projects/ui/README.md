@@ -296,16 +296,25 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `--cngx-sidenav-resize-handle-color` | M3 primary | Handle highlight color |
 | `--cngx-sidenav-expanded-shadow` | `4px 0 12px rgba(0,0,0,0.1)` | Mini expanded shadow |
 
-**Nav link theming** (applied inside sidenavs via `sidenav.theme()`):
+**Nav row theming** (links and `[cngxNavGroup]` heads inside `cngx-sidenav`; the state fills, indicator, inset and ring colours are SET on the `cngx-sidenav` host, `sidenav.theme()` maps them onto M3 roles):
 
 | Variable | Description |
 |-|-|
 | `--cngx-nav-link-color` | Default text color |
 | `--cngx-nav-link-hover-color` | Hover text color |
+| `--cngx-nav-link-hover-bg` | Hover fill (primary 6 % over transparent) |
+| `--cngx-nav-link-pressed-bg` | Pressed fill (primary 12 %) |
 | `--cngx-nav-link-active-color` | Active text color |
-| `--cngx-nav-link-active-bg` | Active background (M3 secondary-container) |
-| `--cngx-nav-link-radius` | Border radius (default 8px) |
-| `--cngx-nav-link-padding` | Padding (density-dependent) |
+| `--cngx-nav-link-active-bg` | Active fill (primary 16 %; M3 secondary-container in the bridge) |
+| `--cngx-nav-link-active-hover-bg` | Active row under the pointer (primary 22 %) |
+| `--cngx-nav-link-active-indicator-color` | Inline-start bar on the active row (`--cngx-color-primary-text`; `transparent` in the M3 bridge) |
+| `--cngx-nav-link-active-indicator-size` | Bar width (from `--cngx-space-xs`) |
+| `--cngx-nav-link-active-indicator-inset` | Bar block inset (from `--cngx-space-sm`) |
+| `--cngx-nav-link-inset` | Row inline inset from the rail edges (from `--cngx-space-xs`) |
+| `--cngx-nav-link-focus-outline-color` | Outer focus ring (`--cngx-color-text`) |
+| `--cngx-nav-link-focus-inner-color` | Inner focus ring (`--cngx-sidenav-bg`) |
+| `--cngx-nav-link-radius` | Border radius (default 4px, 8px in the M3 bridge) |
+| `--cngx-nav-link-padding` | Padding (from `--cngx-space-sm` / `--cngx-space-md`) |
 
 **Animated nav group expand/collapse:**
 
