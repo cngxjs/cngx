@@ -119,6 +119,7 @@ import {
   createSelectCore,
   type CngxSelectCompareFn,
   type CngxSelectCore,
+  unresolvedOptionLabel,
 } from '../shared/internal/select-core';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
@@ -332,12 +333,15 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Formats a value into the input text. The input is rewritten through it
-   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
+   * after a commit, a rollback, a clear and a blur. Unbound, the input shows
+   * the label of the matching option, or `String(value)` when no option
+   * matches.
    */
-  readonly displayWith = input<(value: T) => string>(String);
+  readonly displayWith = input<((value: T) => string) | undefined>(undefined);
   /**
-   * Rewrites the input from the committed value when focus leaves the control,
-   * dropping unfinished search text. Defaults to `true`.
+   * Rewrites the input from the committed value (`displayWith`, else the
+   * option label) when focus leaves the control, dropping unfinished search
+   * text. Defaults to `true`.
    */
   readonly clearOnBlur = input<boolean>(true);
   /**
@@ -941,9 +945,23 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
+  /**
+   * The formatter the input text is written through: a bound `displayWith`,
+   * else the label of the matching option, else `String(value)`. Reads the
+   * options, so options that arrive after the value produce a new formatter
+   * and the display binding rewrites the unfocused input.
+   */
+  private readonly resolvedDisplayWith = computed<(value: T) => string>(() => {
+    const bound = this.displayWith();
+    if (bound) {
+      return bound;
+    }
+    this.core.unfilteredFlatOptions();
+    return (v) => this.core.findOption(v)?.label ?? unresolvedOptionLabel(v);
+  });
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
-    displayWith: this.displayWith,
+    displayWith: this.resolvedDisplayWith,
     focused: this.focusState.focused,
     inputEl: this.inputEl,
     searchRef: this.searchInputRef,

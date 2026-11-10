@@ -117,6 +117,7 @@ import {
   createSelectCore,
   type CngxSelectCompareFn,
   type CngxSelectCore,
+  unresolvedOptionLabel,
 } from '../shared/internal/select-core';
 import {
   CngxSelectCaret,
@@ -328,10 +329,15 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   );
   /**
    * Formats a value into the input text. The input is rewritten through it
-   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
+   * after a commit, a rollback, a clear and a blur. Unbound, the input shows
+   * the label of the matching option, or `String(value)` when no option
+   * matches.
    */
-  readonly displayWith = input<(value: T) => string>((v) => String(v));
-  /** When `true` (default), blur without a pick resets to `displayWith(value())`. */
+  readonly displayWith = input<((value: T) => string) | undefined>(undefined);
+  /**
+   * When `true` (default), blur without a pick resets the input to the text
+   * of the committed value (`displayWith`, else the option label).
+   */
   readonly clearOnBlur = input<boolean>(true);
   /**
    * Per-instance match policy. Receives the option's `{ value, label }` and the
@@ -851,9 +857,23 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * `writeFromValue` seed. Resolved via `CNGX_DISPLAY_BINDING_FACTORY`
    * for telemetry / audit / custom reset-policy override.
    */
+  /**
+   * The formatter the input text is written through: a bound `displayWith`,
+   * else the label of the matching option, else `String(value)`. Reads the
+   * options, so options that arrive after the value produce a new formatter
+   * and the display binding rewrites the unfocused input.
+   */
+  private readonly resolvedDisplayWith = computed<(value: T) => string>(() => {
+    const bound = this.displayWith();
+    if (bound) {
+      return bound;
+    }
+    this.core.unfilteredFlatOptions();
+    return (v) => this.core.findOption(v)?.label ?? unresolvedOptionLabel(v);
+  });
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
-    displayWith: this.displayWith,
+    displayWith: this.resolvedDisplayWith,
     focused: this.focusState.focused,
     inputEl: this.inputEl,
     searchRef: this.searchInputRef,

@@ -696,6 +696,82 @@ describeFieldAriaHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select'
   userWrite: (cmp) => (cmp as CngxActionSelect<string>).value.set('a'),
 });
 
+// ── Input text from the option label ───────────────────────────────────
+
+describe('CngxActionSelect - input text shows the option label', () => {
+  @Component({
+    template: `
+      <cngx-action-select
+        [label]="'Colour'"
+        [options]="options()"
+        [displayWith]="format()"
+        [(value)]="value"
+      />
+    `,
+    imports: [CngxActionSelect],
+  })
+  class LabelHost {
+    readonly options = signal<CngxSelectOptionsInput<string>>([
+      { value: 'red', label: 'Red' },
+      { value: 'green', label: 'Green' },
+    ]);
+    readonly value = signal<string | undefined>(undefined);
+    readonly format = signal<((v: string) => string) | undefined>(undefined);
+  }
+
+  function setup(init: (host: LabelHost) => void = () => undefined) {
+    TestBed.configureTestingModule({ imports: [LabelHost] });
+    const fixture = TestBed.createComponent(LabelHost);
+    init(fixture.componentInstance);
+    flush(fixture);
+    flush(fixture);
+    const instance = fixture.debugElement.query(By.directive(CngxActionSelect))
+      .componentInstance as CngxActionSelect<string>;
+    const input = fixture.nativeElement.querySelector('input[role="combobox"]') as HTMLInputElement;
+    return { fixture, host: fixture.componentInstance, instance, input };
+  }
+
+  it('writes the label of the bound value, not the raw value', () => {
+    const { input } = setup((h) => h.value.set('red'));
+    expect(input.value).toBe('Red');
+  });
+
+  it('writes the label of a picked option', () => {
+    const { fixture, instance, input } = setup();
+    instance.open();
+    flush(fixture);
+    const rows = fixture.nativeElement.querySelectorAll('.cngx-select__panel [role="option"]');
+    (rows[1] as HTMLElement).click();
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBe('green');
+    expect(input.value).toBe('Green');
+  });
+
+  it('rewrites the input once options arrive after the value', () => {
+    const { fixture, host, input } = setup((h) => {
+      h.options.set([]);
+      h.value.set('red');
+    });
+    expect(input.value).toBe('red');
+    host.options.set([{ value: 'red', label: 'Red' }]);
+    flush(fixture);
+    expect(input.value).toBe('Red');
+  });
+
+  it('lets a bound displayWith win over the option label', () => {
+    const { input } = setup((h) => {
+      h.value.set('red');
+      h.format.set((v) => v.toUpperCase());
+    });
+    expect(input.value).toBe('RED');
+  });
+
+  it('writes String(value) for a value no option matches', () => {
+    const { input } = setup((h) => h.value.set('blue'));
+    expect(input.value).toBe('blue');
+  });
+});
+
 describeMobileSheet('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
   inputs: '[options]="options"',
   optionSelector: '[cngxOption]',
