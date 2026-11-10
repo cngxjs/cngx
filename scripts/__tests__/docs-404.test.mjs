@@ -57,6 +57,10 @@ describe('render404Html', () => {
     expect(html).toContain('<meta name="robots" content="noindex">');
   });
 
+  it('asks for no favicon outside the site', () => {
+    expect(render404Html('/cngx/')).toContain('<link rel="icon" href="data:,">');
+  });
+
   it('defaults to the GitHub Pages root of cngx', () => {
     expect(DOCS_ROOT).toBe('/cngx/');
     expect(render404Html()).toContain('"/cngx/versions.json"');
