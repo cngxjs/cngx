@@ -37,10 +37,9 @@
  *   label instead of the spinner (`CngxActionButton`, `CngxPopoverAction`)
  *   sets `data-status-label`, and `.cngx-button__label` stays at
  *   `opacity: 1` while the other children keep the busy fade
- * - `.cngx-action-status-cell` - the status cells of an action host
- *   (`[cngxActionStatusCell]`) share one grid cell inside
- *   `.cngx-button__label`, so the button is as wide as its widest label;
- *   only the `[data-active]` cell is visible
+ * - `.cngx-button__label` with `[cngxActionStatusStack]` - the status cells
+ *   of an action host; the stack's own sheet puts them in one grid cell, so
+ *   the button is as wide as its widest label
  * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
  *   side
  *
@@ -684,21 +683,6 @@
        sets data-status-label, and only the label is lifted back. */
     :scope[data-busy][data-status-label] > .cngx-button__label {
       opacity: 1;
-    }
-    /* Status cells of an action host ([cngxActionStatusCell]): stacked in
-       one grid cell, so the button keeps the width of its widest label. */
-    .cngx-button__label:has(> .cngx-action-status-cell) {
-      display: inline-grid;
-      justify-items: center;
-      align-items: center;
-    }
-    .cngx-action-status-cell {
-      grid-area: 1 / 1;
-      display: inline-flex;
-      align-items: center;
-    }
-    .cngx-action-status-cell:not([data-active]) {
-      visibility: hidden;
     }
     .cngx-button__busy {
       position: absolute;

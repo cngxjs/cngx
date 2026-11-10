@@ -1,5 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { CngxActionStatusCell } from './action-status-cell.directive';
 import { CNGX_ACTION_STATUS } from './action-status.token';
@@ -13,8 +19,11 @@ import { CNGX_ACTION_STATUS } from './action-status.token';
  * matching label input. Each cell is a `CngxActionStatusCell`.
  *
  * An attribute component that sits on the host's label element and renders
- * the cells as its direct children, with no wrapper, so a stack rule on the
+ * the cells as its direct children, with no wrapper, so a host rule on the
  * label element (`.cngx-button__label` in the button sheet) reaches them.
+ * Its own sheet stacks the cells in one grid cell and hides the inactive
+ * ones (`.cngx-action-status-stack`), so a host outside the button family
+ * needs no stack rule of its own.
  * `cellClass` puts the host's own class on every cell, next to the
  * `.cngx-action-status-cell` hook.
  *
@@ -37,6 +46,9 @@ import { CNGX_ACTION_STATUS } from './action-status.token';
   standalone: true,
   imports: [NgTemplateOutlet, CngxActionStatusCell],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  host: { class: 'cngx-action-status-stack' },
+  styleUrl: './action-status-stack.component.css',
   template: `
     <span [class]="cellClass()" cngxActionStatusCell="idle"><ng-content /></span>
     @if (status.hasCell().pending) {

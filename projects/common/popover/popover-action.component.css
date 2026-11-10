@@ -25,8 +25,8 @@
  *
  * **Status labels**
  *
- * - `.cngx-popover-action__labels` - one grid cell (the button sheet's
- *   `.cngx-action-status-cell` stack) holding the idle content
+ * - `.cngx-popover-action__labels` - one grid cell (the
+ *   `CngxActionStatusStack` sheet) holding the idle content
  *   and the projected `cngxPending`, `cngxSucceeded` and `cngxFailed` cells;
  *   the button is as wide as the widest label, so a right-aligned footer
  *   never shifts while the run swaps them

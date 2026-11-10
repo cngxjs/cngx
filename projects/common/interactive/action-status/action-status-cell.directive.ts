@@ -18,10 +18,10 @@ import { CNGX_ACTION_STATUS, type CngxActionStatusCellKind } from './action-stat
  * register their element on the contract, so the settle announcement reads
  * the rendered result text, also while the busy visual still hides it.
  *
- * The cell carries `.cngx-action-status-cell`. Inside a `.cngx-button`
- * host the shared button sheet stacks the cells of a `.cngx-button__label`
- * in one grid cell and hides the inactive ones (`visibility: hidden`); a
- * host outside the button family brings that rule itself.
+ * The cell carries `.cngx-action-status-cell`. `CngxActionStatusStack`
+ * renders the cells and its sheet stacks them in one grid cell and hides
+ * the inactive ones (`visibility: hidden`); a host that writes its cells by
+ * hand brings that rule itself.
  *
  * ```html
  * <span class="my-label" cngxActionStatusCell="idle"><ng-content /></span>
