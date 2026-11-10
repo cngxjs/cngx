@@ -246,6 +246,12 @@ export class CngxDrawerSurface
     });
   };
 
+  // Swallows the click that trails the outside press which dismissed an
+  // engaged page modal. iOS Safari fires pointerdown at touchstart but hit
+  // tests the synthesized click again after touchend; by then the dismissal
+  // has dropped `inert` and the click lands on the live opener, reopening it.
+  private releaseTrailingClick: (() => void) | null = null;
+
   private resolvedDriver: CngxDrawerSurfaceDriver | null | undefined = undefined;
   private driver(): CngxDrawerSurfaceDriver | null {
     if (this.resolvedDriver === undefined) {
@@ -357,9 +363,15 @@ export class CngxDrawerSurface
       this.destroyed = true;
       this.clearEscapeKey();
       this.closeWatcher.disarm();
+      this.releaseTrailingClick?.();
     });
 
-    inject(CngxClickOutside, { self: true }).clickOutside.subscribe(() => this.requestDismiss());
+    inject(CngxClickOutside, { self: true }).clickOutside.subscribe(() => {
+      if (untracked(this.engagedPage)) {
+        this.swallowTrailingClick();
+      }
+      this.requestDismiss();
+    });
 
     effect((onCleanup) => {
       if (!this.isActive()) {
@@ -447,6 +459,31 @@ export class CngxDrawerSurface
       this.emitDismiss();
     }
     this.rearmIfEngaged();
+  }
+
+  // One shot: the next click is the trailing one of the dismissing gesture.
+  // A gesture that ends without a click (a scroll, a cancelled touch) is
+  // followed by a pointerdown or a keydown before any later click, so either
+  // drops the guard. Listeners added during the dismissing pointerdown's
+  // bubble phase do not see that same event.
+  private swallowTrailingClick(): void {
+    this.releaseTrailingClick?.();
+    const doc = this.doc;
+    const swallow = (event: Event): void => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      release();
+    };
+    const release = (): void => {
+      doc.removeEventListener('click', swallow, true);
+      doc.removeEventListener('pointerdown', release, true);
+      doc.removeEventListener('keydown', release, true);
+      this.releaseTrailingClick = null;
+    };
+    doc.addEventListener('click', swallow, true);
+    doc.addEventListener('pointerdown', release, true);
+    doc.addEventListener('keydown', release, true);
+    this.releaseTrailingClick = release;
   }
 
   private requestDismiss(): void {
