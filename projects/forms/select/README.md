@@ -2,7 +2,7 @@
 
 The select family - nine specialised dropdown composites (eight data-driven variants plus the declarative `<cngx-select-shell>`) sharing one signal-native core. Replaces the monolithic `[multiple]` / `[searchable]` / `[hierarchical]` flag pattern with one component per intent.
 
-> For the deep architectural rationale, see [`ARCHITECTURE.md`](./ARCHITECTURE.md) in this folder.
+> For the deep architectural rationale, see [`ARCHITECTURE.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md) in this folder.
 
 ## When you reach for it
 

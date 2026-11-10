@@ -21,6 +21,9 @@ import { describe, expect, it } from 'vitest';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const PROJECTS = join(ROOT, 'projects');
 const DOCS_SITE = 'https://cngxjs.github.io/cngx/';
+const GITHUB_BLOB = 'https://github.com/cngxjs/cngx/blob/main/';
+/** Folders whose READMEs belong to no docs page (internal select spine). */
+const NO_DOCS_PAGE = ['projects/forms/select/shared/'];
 
 function readmes(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -113,6 +116,28 @@ describe('README relative links', () => {
         .map((href) => `${relative(ROOT, file)}: ${href}`),
     );
     expect(fixed).toEqual([]);
+  });
+
+  it('links only Markdown the docs build renders as a page', () => {
+    // compodocx gives a README and a core-concepts file a page; any other
+    // Markdown file (ARCHITECTURE.md, a migration note) and the READMEs under
+    // NO_DOCS_PAGE have none, so a relative link to one is dead on the docs
+    // site. Link those through GitHub (`GITHUB_BLOB`) instead. A
+    // README without a page of its own is only read on GitHub and may link
+    // anything there.
+    const noPage = (path) => NO_DOCS_PAGE.some((dir) => path.startsWith(dir));
+    const rendered = (path) =>
+      !noPage(path) &&
+      (path.endsWith('/README.md') || path.startsWith('core-concepts/'));
+    const offenders = README_FILES.filter((file) => !noPage(relative(ROOT, file))).flatMap(
+      (file) =>
+        links(readFileSync(file, 'utf8'))
+          .filter((href) => !isExternal(href) && !href.startsWith('#'))
+          .map((href) => relative(ROOT, resolve(dirname(file), decodeURI(href.split('#')[0]))))
+          .filter((target) => target.endsWith('.md') && !rendered(target))
+          .map((target) => `${relative(ROOT, file)}: ${target}, link ${GITHUB_BLOB}${target}`),
+    );
+    expect(offenders).toEqual([]);
   });
 
   it('slugs headings the way GitHub renders them', () => {

@@ -169,7 +169,7 @@ with `injectDataGridAccordionConfig()`. `withDataGridAccordionLabels` takes a pa
 bundle (or a `Signal` of one) for the count, sort, filter, row-error and note copy;
 unset keys read the `dataGridAccordion` section of the language pack (English without
 one). `CngxDataGridAccordionConfigFeature` is a union
-since the labels feature landed - see [the migration note](./config-feature-migration.md)
+since the labels feature landed - see [the migration note](https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/config-feature-migration.md)
 if you extended or merged the old interface.
 
 ## Sort and filter

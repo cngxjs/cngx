@@ -259,6 +259,6 @@ Sets loading indicator colors (`--cngx-loading-indicator-color/track`), bar dime
 
 ## See Also
 
-- [CngxAsyncState](https://github.com/cngxjs/cngx) - Async state management
+- [CngxAsyncState](../../../common/data/async-state/README.md) - Async state management
 - [CngxAsyncContainer](../async-container/README.md) - Integrated loading UI
-- [CngxSkeleton](../../README.md) - Placeholder content during load
+- [CngxSkeleton](../../../common/layout/text/README.md) - Placeholder content during load
