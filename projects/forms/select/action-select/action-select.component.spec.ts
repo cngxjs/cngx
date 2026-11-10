@@ -644,6 +644,78 @@ describe('CngxActionSelect - selected survives a filtering term', () => {
   });
 });
 
+@Component({
+  template: `
+    <cngx-action-select
+      [label]="'Tag'"
+      [options]="options"
+      [compareWith]="compareWith"
+      [clearable]="true"
+      [(value)]="value"
+    />
+  `,
+  imports: [CngxActionSelect],
+})
+class ClearableHost {
+  readonly options = TAGS;
+  readonly compareWith: (a: Tag | undefined, b: Tag | undefined) => boolean =
+    (a, b) => (a?.id ?? null) === (b?.id ?? null);
+  readonly value = signal<Tag | undefined>({ id: 't1', name: 'Design' });
+}
+
+describe('CngxActionSelect - keyboard collapse onto the clear button', () => {
+  function setupClearable(): {
+    fixture: ReturnType<typeof TestBed.createComponent<ClearableHost>>;
+    select: CngxActionSelect<Tag>;
+    input: HTMLInputElement;
+    clear: HTMLButtonElement;
+  } {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [ClearableHost] });
+    const fixture = TestBed.createComponent(ClearableHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxActionSelect));
+    const el = selectDe.nativeElement as HTMLElement;
+    return {
+      fixture,
+      select: selectDe.componentInstance as CngxActionSelect<Tag>,
+      input: el.querySelector('input') as HTMLInputElement,
+      clear: el.querySelector('.cngx-action-select__clear') as HTMLButtonElement,
+    };
+  }
+
+  // A Tab from the input onto the clear button: the focusout of the owner
+  // names the clear button as its related target.
+  function tabOntoClear(input: HTMLInputElement, clear: HTMLButtonElement): void {
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: clear }));
+  }
+
+  it('collapses the open panel when keyboard focus moves onto the clear button', () => {
+    const { fixture, select, input, clear } = setupClearable();
+    expect(clear).not.toBeNull();
+    select.open();
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
+
+    tabOntoClear(input, clear);
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('keeps the panel open on the same move while the action guard is dirty', () => {
+    const { fixture, select, input, clear } = setupClearable();
+    select.open();
+    flush(fixture);
+    select.actionCallbacks().setDirty(true);
+    flush(fixture);
+
+    tabOntoClear(input, clear);
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
+  });
+});
+
 describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
   createMockField({ name: 'pick' }).accessor,
 );
