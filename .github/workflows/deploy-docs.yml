@@ -1,5 +1,11 @@
 name: Deploy Compodoc
 
+# One site for every kept release and main: /cngx/v<version>/ per release tag
+# (scripts/docs-release-tags.mjs picks them), /cngx/main/ for this branch,
+# /cngx/ opens the newest entry of versions.json. A release deploys through the
+# push of its release commit to main (the tag is pushed first), so no tag
+# trigger is needed; the github-pages environment only accepts main anyway.
+
 on:
   push:
     branches: ['main']
@@ -22,8 +28,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # Full history and tags: the release docs are built from their tags.
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -37,24 +46,88 @@ jobs:
       - name: Regenerate examples
         run: node scripts/examples-gen/index.mjs
 
-      # The relative <example-url> tags resolve against `exampleUrlBase` in
-      # .compodocrc.json (the examples app this workflow publishes).
-      - name: Build Docs
-        run: npm run docs
+      - name: List kept releases
+        id: releases
+        run: |
+          tags="$(node scripts/docs-release-tags.mjs)"
+          {
+            echo 'tags<<TAGS_EOF'
+            echo "$tags"
+            echo 'TAGS_EOF'
+            echo "count=$(printf '%s' "$tags" | grep -c . || true)"
+            echo "key=docs-releases-v1-$(printf '%s' "$tags" | sha256sum | cut -c1-16)"
+          } >> "$GITHUB_OUTPUT"
+          echo "Kept releases: ${tags:-none}" | tr '\n' ' '
+
+      # The release folders only change when the tag list does: a new release
+      # misses the cache and rebuilds all of them, a dropped one goes with it.
+      - name: Restore release docs
+        id: cache
+        if: steps.releases.outputs.count != '0'
+        uses: actions/cache/restore@v4
+        with:
+          path: docs
+          key: ${{ steps.releases.outputs.key }}
+
+      - name: Build release docs
+        if: steps.releases.outputs.count != '0' && steps.cache.outputs.cache-hit != 'true'
+        env:
+          TAGS: ${{ steps.releases.outputs.tags }}
+        run: |
+          set -euo pipefail
+          mkdir -p docs
+          for tag in $TAGS; do
+            dir="$RUNNER_TEMP/release-$tag"
+            git worktree add --detach "$dir" "$tag"
+            (
+              cd "$dir"
+              npm ci
+              node scripts/examples-gen/index.mjs
+              npx ng build examples --configuration production \
+                --base-href "/cngx/examples/$tag/" --deploy-url "/cngx/examples/$tag/" \
+                --output-path "$RUNNER_TEMP/examples-$tag"
+              mkdir -p "$GITHUB_WORKSPACE/docs/examples/$tag"
+              cp -R "$RUNNER_TEMP/examples-$tag/browser/." "$GITHUB_WORKSPACE/docs/examples/$tag/"
+              npx compodocx -d "$GITHUB_WORKSPACE/docs" --versionLabel "$tag" \
+                --exampleUrlBase "https://cngxjs.github.io/cngx/examples/$tag" --silent
+            )
+            test -f "docs/$tag/index.html" || { echo "::error::docs/$tag/index.html missing"; exit 1; }
+            test -f "docs/examples/$tag/index.html" || { echo "::error::docs/examples/$tag/index.html missing"; exit 1; }
+            git worktree remove --force "$dir"
+          done
+
+      - name: Save release docs
+        if: steps.releases.outputs.count != '0' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: docs
+          key: ${{ steps.releases.outputs.key }}
+
+      # Not `npm run docs`: it starts with `rm -rf docs` and would drop the
+      # release folders. The relative <example-url> tags resolve against
+      # `exampleUrlBase` in .compodocrc.json (the examples of main).
+      - name: Build docs of main
+        run: npx compodocx --versionLabel main
 
       # Publish the llm-md export as static text at the site root:
       # /cngx/llms.txt (generated index) + /cngx/llms-full.txt (full dump).
-      # Runs after Build Docs because `npm run docs` starts with `rm -rf docs`.
       - name: Publish llms.txt
         run: |
           npm run docs:llm
           node scripts/llms-publish.mjs
 
+      # Built to a temp folder and copied in: `--output-path docs/examples`
+      # would delete the release examples under docs/examples/<tag>.
       - name: Build Examples App
         run: |
-          npx ng build examples --configuration production --base-href /cngx/examples/ --deploy-url /cngx/examples/ --output-path docs/examples
-          mv docs/examples/browser/* docs/examples/
-          rm -rf docs/examples/browser
+          npx ng build examples --configuration production --base-href /cngx/examples/ --deploy-url /cngx/examples/ --output-path "$RUNNER_TEMP/examples-main"
+          mkdir -p docs/examples
+          cp -R "$RUNNER_TEMP/examples-main/browser/." docs/examples/
+
+      # Missing paths (dropped releases, unversioned URLs printed by older
+      # packages) go to the same page of the newest release.
+      - name: Write 404 page
+        run: node scripts/docs-404.mjs docs
 
       - name: Disable Jekyll
         run: touch docs/.nojekyll
