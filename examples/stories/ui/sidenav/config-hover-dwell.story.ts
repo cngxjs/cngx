@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   viewProviders: ['provideSidenavConfigAt(withSidenavHoverDwell({ enterDelay: 250 }))'],
   template: `
   <cngx-sidenav-layout class="demo-sidenav__container" style="height: 180px;">
-    <cngx-sidenav #navConfig="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px">
+    <cngx-sidenav #navConfig="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px" ariaLabel="Scoped default navigation">
       <cngx-sidenav-header class="demo-sidenav__header">Config</cngx-sidenav-header>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Dashboard</a>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Inbox</a>
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   </cngx-sidenav-layout>
 
   <cngx-sidenav-layout class="demo-sidenav__container" style="height: 180px; margin-top: 1rem;">
-    <cngx-sidenav #navOverride="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px" [expandDelay]="600">
+    <cngx-sidenav #navOverride="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px" [expandDelay]="600" ariaLabel="Override navigation">
       <cngx-sidenav-header class="demo-sidenav__header">Override</cngx-sidenav-header>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Settings</a>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Help</a>
