@@ -31,6 +31,15 @@ export interface QueryParamSyncOptions<T = boolean> {
  * signal is the source and reflects outward. Re-hydrates on browser
  * back/forward. Dev-warns once and no-ops when `@angular/router` is absent.
  *
+ * The key, the initial hydrate and the bookkeeping are resolved on the first
+ * effect run, not in the call: a `Signal<string>` key backed by an input is
+ * read after the input is bound, and in a directive the hydrated state is in
+ * place before the caller's view first renders. A read of `state()` in the
+ * caller's constructor or `ngOnInit` still sees the un-hydrated value. Called
+ * from an environment injector (a service, `runInInjectionContext`), the
+ * effects are root effects: `state()` is hydrated on the first application
+ * tick, not when the call returns.
+ *
  * Loop-safety (the core of this helper): the reflect effect writes the URL in
  * `untracked()` and skips `navigate` when the serialized `state()` equals the
  * last value it wrote - a local closure seeded from the initial URL read, not
@@ -39,7 +48,7 @@ export interface QueryParamSyncOptions<T = boolean> {
  * back/forward re-hydration never triggers a reflex navigate. A `param` rename
  * is migrated in one navigate (`{ [old]: null, [new]: serialize(state()) }`)
  * by a dedicated effect whose only tracked source is the normalized param
- * signal; its first run seeds bookkeeping and never navigates.
+ * signal; its first run finds the key `init()` seeded and never navigates.
  *
  * The `state.set` inside the hydrate effect is a deliberate signal-write-in-
  * effect: the URL is an external system and `state` is a caller-owned signal
@@ -72,23 +81,34 @@ export function injectQueryParamSync<T = boolean>(
     opts.serialize ?? ((value) => (value ? 'open' : null));
   const deserialize: (raw: string | null) => T = opts.deserialize ?? ((raw) => (raw != null) as T);
 
-  // Closure bookkeeping, seeded from the initial URL read. `lastWritten` is
-  // the serialized value the reflect path last pushed to the URL; the hydrate
-  // path also updates it so an accepted URL value is not reflected back.
-  const initialParam = paramSignal();
-  let lastWritten: string | null = route.snapshot.queryParamMap.get(initialParam) ?? null;
-  let previousParam = initialParam;
+  // Closure bookkeeping, seeded by `init()` from the initial URL read.
+  // `lastWritten` is the serialized value the reflect path last pushed to the
+  // URL; the hydrate path also updates it so an accepted URL value is not
+  // reflected back.
+  let lastWritten: string | null = null;
+  let previousParam = '';
+  let initialized = false;
 
-  // URL wins on initial load.
-  if (lastWritten != null) {
-    const hydrated = deserialize(lastWritten);
-    if (!Object.is(hydrated, state())) {
-      state.set(hydrated);
+  // Runs once, on the first run of whichever effect runs first, so an
+  // input-backed key is read after binding. URL wins on initial load.
+  const init = (): void => {
+    if (initialized) {
+      return;
     }
-  }
+    initialized = true;
+    previousParam = paramSignal();
+    lastWritten = route.snapshot.queryParamMap.get(previousParam) ?? null;
+    if (lastWritten != null) {
+      const hydrated = deserialize(lastWritten);
+      if (!Object.is(hydrated, state())) {
+        state.set(hydrated);
+      }
+    }
+  };
 
   // Reflect: signal change -> URL. Tracks `state()` only; param read untracked.
   effect(() => {
+    untracked(init);
     const raw = serialize(state());
     untracked(() => {
       if (raw === lastWritten) {
@@ -107,7 +127,7 @@ export function injectQueryParamSync<T = boolean>(
 
   // Re-hydrate: URL change (back/forward) -> signal. Tracks the query-param
   // emission only; param and state reads are untracked. The first run mirrors
-  // the initial snapshot already handled synchronously above, so it is skipped
+  // the initial snapshot already handled by `init()`, so it is skipped
   // - processing it would race the reflect effect's still-pending initial
   // navigate and reset `state` to a stale value. Later runs skip our own
   // reflect echo via the `lastWritten` guard.
@@ -118,6 +138,7 @@ export function injectQueryParamSync<T = boolean>(
   effect(() => {
     const map = queryMap();
     untracked(() => {
+      init();
       if (!hydrateInitialized) {
         hydrateInitialized = true;
         return;
@@ -136,10 +157,12 @@ export function injectQueryParamSync<T = boolean>(
 
   // Rename migration: param change -> one merged navigate that removes the old
   // key and writes the current value under the new one. Tracks the param
-  // signal only; the first run seeds `previousParam` and never navigates.
+  // signal only; the first run finds the `previousParam` `init()` seeded and
+  // never navigates.
   effect(() => {
     const param = paramSignal();
     untracked(() => {
+      init();
       if (param === previousParam) {
         return;
       }
