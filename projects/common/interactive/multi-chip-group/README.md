@@ -57,7 +57,7 @@ The group provides `CNGX_CONTROL_VALUE` and `CNGX_FORM_FIELD_CONTROL` directly, 
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and host bindings.
+- [API on compodocx](../../../../README.md) for inputs, outputs, and host bindings.
 - Stories: `examples/stories/common/interactive/multi-chip-group/`.
 - `CngxChipGroup`: single-select sibling. Same `CNGX_CHIP_GROUP_HOST` contract, `selected = model<T | undefined>`.
 - `CngxChipInGroup`: leaf directive that wires `role="option"`, defers selection mutations to the group, and composes `CngxRovingItem` for roving tabindex.

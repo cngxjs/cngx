@@ -151,5 +151,5 @@ What the headless layer contributes, before any organism ARIA:
 - [`@cngx/common/stepper`](../stepper/) - guided process; timeline is history
 - [`CngxTime`](../display/) - relative timestamp formatting for `[cngxTimelineTime]`
 - [`CngxAsyncState`](../../core/) - the per-row `[state]` contract
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../README.md)
 - Tests: `projects/common/timeline/*.spec.ts`

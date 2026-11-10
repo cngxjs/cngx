@@ -34,6 +34,6 @@ The directive does not own a live region. Announcement strategy is decided by th
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs and host bindings.
+- [API on compodocx](../../../../README.md) for inputs and host bindings.
 - Stories: `examples/stories/common/interactive/error-state/`.
 - Family: `CngxErrorRegistry`, `CngxErrorAggregator`, `CngxErrorScope`, `CngxErrorSource`.

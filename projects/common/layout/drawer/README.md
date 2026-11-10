@@ -260,7 +260,7 @@ The header sits outside the `[cngxDrawer]` host, so the contained panel leaves i
 
 ## See Also
 
-- [compodocx API documentation](https://cngxjs.github.io/cngx/)
+- [compodocx API documentation](../../../../README.md)
 - Demo: `examples/stories/common/drawer-demo/`
 - Tests: `projects/common/layout/drawer/*.spec.ts`
 - `CngxDrawerSurface` in `@cngx/common/layout` - Composed by `CngxDrawerPanel`

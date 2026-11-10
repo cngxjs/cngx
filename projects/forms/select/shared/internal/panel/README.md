@@ -43,6 +43,6 @@ The host contract itself is the broader extension point - see `../panel-host.ts`
 
 ## See also
 
-- API on compodocx https://cngxjs.github.io/cngx/
+- [API on compodocx](../../../../../../README.md)
 - `@cngx/forms/select/shared` for the rest of the family infrastructure (commit machinery, lifecycle helpers, template registry, configuration cascade).
 - Variants composing this panel: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`, `CngxReorderableMultiSelect`. `CngxTreeSelect` ships its own panel body.

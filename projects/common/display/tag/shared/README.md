@@ -13,5 +13,5 @@ Both files carry `@internal` doc tags. The helper deliberately copies the select
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the public tag surface.
+- [API on compodocx](../../../../../README.md) for the public tag surface.
 - `CngxTag`, `CngxTagGroup`: the two atoms that consume these helpers.

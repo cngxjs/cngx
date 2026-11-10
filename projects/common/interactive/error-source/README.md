@@ -25,7 +25,7 @@ The directive registers each source on construction and unregisters on destroy. 
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full contract.
+- [API on compodocx](../../../../README.md) for the full contract.
 - `CngxErrorAggregator` - collects sources, exposes the aggregated state.
 - `CngxErrorRegistry` - root coordinator across aggregators and scopes.
 - `CngxErrorScope` - reveal boundary (submit, navigate, manual).

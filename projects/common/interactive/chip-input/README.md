@@ -97,7 +97,7 @@ Supersede contract: when a second token is committed before the first validation
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full signature and the `CngxStateful` slot type.
+- [API on compodocx](../../../../README.md) for the full signature and the `CngxStateful` slot type.
 - Stories: `examples/stories/common/interactive/chip-input/`.
 - `CngxChip` (`@cngx/common/display`) for the chip atom that renders each token.
 - `CngxChipGroup` / `CngxMultiChipGroup` (`@cngx/common/interactive`) when the chip strip needs roving tabindex and group-level keyboard semantics.

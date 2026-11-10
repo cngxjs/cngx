@@ -182,5 +182,5 @@ density tracking keeps working.
 
 - [CngxScrollSpy](../../common/layout/) - the detection atom the rail composes
 - [CngxSidenav](../sidenav/) - collapsible primary-navigation rail
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../README.md)
 - Tests: `projects/ui/toc/toc.component.spec.ts`, `toc-router-sync.directive.spec.ts`

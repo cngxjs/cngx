@@ -402,7 +402,7 @@ export class DyslexiaFriendlyComponent {
 
 ## See Also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../../README.md)
 - [SpeechSynthesis API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis)
 - [Cognitive Accessibility - WebAIM](https://webaim.org/articles/cognitive/)
 - Demo: `examples/stories/common/speak-demo/`
