@@ -68,7 +68,8 @@
   // former nesting under the layout host never reached the link.
   // Rails used without a cngx-sidenav-layout wrapper pick the
   // bridge up too.
-  @include bridge.on('.cngx-nav-link') {
+  // Group heads ([cngxNavGroup]) share the row shape and read the same fills.
+  @include bridge.on('.cngx-nav-link, [cngxNavGroup]') {
     @include nav-link.theme($theme);
   }
 }

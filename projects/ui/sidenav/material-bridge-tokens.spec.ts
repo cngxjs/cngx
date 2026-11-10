@@ -43,11 +43,13 @@ describe('nav-link Material bridge', () => {
     '--cngx-nav-link-active-bg',
     '--cngx-nav-link-active-color',
     '--cngx-nav-link-active-font-weight',
+    '--cngx-nav-link-active-hover-bg',
+    '--cngx-nav-link-active-indicator-color',
     '--cngx-nav-link-color',
     '--cngx-nav-link-font-size',
     '--cngx-nav-link-hover-bg',
     '--cngx-nav-link-hover-color',
-    '--cngx-nav-link-padding',
+    '--cngx-nav-link-pressed-bg',
     '--cngx-nav-link-radius',
   ];
 
@@ -92,9 +94,9 @@ $theme: mat.define-theme((
     expect(broadcast![0]).toContain('--mat-sys-level1');
   });
 
-  it('emits the nav-link tokens on the .cngx-nav-link host class, not nested under the layout', () => {
+  it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {
     const css = compiledTheme();
-    const navLink = css.match(/:where\(\.cngx-nav-link\)\s*\{[^}]*\}/);
+    const navLink = css.match(/:where\(\.cngx-nav-link, \[cngxNavGroup\]\)\s*\{[^}]*\}/);
     expect(navLink).not.toBeNull();
     // the inherits:false trio that the former layout nesting killed
     expect(navLink![0]).toContain('--cngx-nav-link-radius:');

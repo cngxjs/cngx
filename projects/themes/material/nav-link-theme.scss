@@ -1,5 +1,3 @@
-@use 'sass:map';
-@use 'sass:math';
 @use '@angular/material' as mat;
 
 // Provides M3/M2 colors for `[cngxNavLink]` when used inside a sidenav.
@@ -15,18 +13,41 @@
 
     --cngx-nav-link-color: var(--mat-sys-on-surface-variant, #{$_on-surface-variant});
     --cngx-nav-link-hover-color: var(--mat-sys-on-surface, #{$_on-surface});
+    // M3 state layers: on-surface at 8 % (hover) and 12 % (pressed).
+    --cngx-nav-link-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface, #{$_on-surface}) 8%,
+      transparent
+    );
+    --cngx-nav-link-pressed-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface, #{$_on-surface}) 12%,
+      transparent
+    );
     --cngx-nav-link-active-color: var(
       --mat-sys-on-secondary-container,
       #{$_on-secondary-container}
     );
     --cngx-nav-link-active-bg: var(--mat-sys-secondary-container, #{$_secondary-container});
+    --cngx-nav-link-active-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-secondary-container, #{$_on-secondary-container}) 8%,
+      var(--mat-sys-secondary-container, #{$_secondary-container})
+    );
+    // M3 has no bar: the active row is the secondary-container pill with
+    // on-secondary-container text and the active weight as non-colour cue.
+    --cngx-nav-link-active-indicator-color: transparent;
   } @else {
     $_primary: mat.get-theme-color($theme, primary);
 
     --cngx-nav-link-color: rgba(0, 0, 0, 0.65);
     --cngx-nav-link-hover-color: rgba(0, 0, 0, 0.87);
+    --cngx-nav-link-hover-bg: #{rgba($_primary, 0.04)};
+    --cngx-nav-link-pressed-bg: #{rgba($_primary, 0.06)};
     --cngx-nav-link-active-color: #{$_primary};
     --cngx-nav-link-active-bg: #{rgba($_primary, 0.08)};
+    --cngx-nav-link-active-hover-bg: #{rgba($_primary, 0.12)};
+    --cngx-nav-link-active-indicator-color: #{$_primary};
   }
 }
 
@@ -34,26 +55,12 @@
   --cngx-nav-link-radius: 8px;
   --cngx-nav-link-font-size: 0.875rem;
   --cngx-nav-link-active-font-weight: 500;
-  --cngx-nav-link-hover-bg: rgba(0, 0, 0, 0.04);
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.clamp(-4, $scale, 0);
-
-  $paddings: (
-    0: 10px 16px,
-    -1: 8px 12px,
-    -2: 6px 8px,
-    -3: 4px 6px,
-    -4: 2px 4px,
-  );
-
-  --cngx-nav-link-padding: #{map.get($paddings, $scale)};
-}
-
+// No density mixin: the row padding is SET from the --cngx-space-* scale on
+// the cngx-sidenav host, and density-bridge.scss maps Material density onto
+// that scale like every scale-derived component.
 @mixin theme($theme) {
   @include base();
   @include color($theme);
-  @include density($theme);
 }
