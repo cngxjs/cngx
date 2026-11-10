@@ -124,6 +124,7 @@ import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
+import { createInputHostHandlers } from '../shared/internal/input-host-handlers';
 import {
   CngxSelectAction,
   CngxSelectCaret,
@@ -1148,27 +1149,35 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly handleInputKeydown = this.triggerInput.handleInputKeydown;
   private readonly handleActionCommit = this.triggerInput.handleActionCommit;
 
-  protected handleWrapperClick(): void {
-    if (this.disabled()) {
-      return;
-    }
-    this.focus();
-    if (!this.panelOpen()) {
-      this.open();
-    }
-  }
+  private readonly inputHost = createInputHostHandlers({
+    focusState: this.focusState,
+    focusWithin: this.hostFocus,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+    panelOpen: () => this.panelOpen(),
+    focus: () => this.focus(),
+    inputEl: () => this.inputEl()?.nativeElement,
+    blurLeave: {
+      host: this.hostEl.nativeElement,
+      clearOnBlur: () => this.clearOnBlur(),
+      onLeave: () => this.display.writeFromValue(this.value()),
+    },
+    retryFn: () => this.retryFn(),
+    retry: () => this.retry.emit(),
+  });
+  /** @internal */
+  protected readonly handleWrapperClick = this.inputHost.handleWrapperClick;
+  /** @internal */
+  protected readonly handleRetry = this.inputHost.handleRetry;
+  /** @internal */
+  protected readonly handleFocus = this.inputHost.handleFocus;
+  /** @internal */
+  protected readonly handleBlur = this.inputHost.handleBlur;
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
-
-  protected handleRetry(): void {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const fn = this.retryFn();
-    if (fn) {
-      fn();
-    }
-    this.retry.emit();
-  }
 
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
@@ -1213,46 +1222,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   // True only inside the lifecycle emitter's post-close focus restore -
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
-  }
-
-  protected handleBlur(event?: FocusEvent): void {
-    this.focusState.markBlurred();
-    if (!this.clearOnBlur()) {
-      return;
-    }
-    // Skip clear-on-blur when focus moves INSIDE the component (action-
-    // slot button, clear button). Otherwise blur races the click: blur
-    // fires first, writes `displayWith(value)` (or empty), and by the
-    // time the click runs the raw input is gone - `commit()` silently
-    // drops because the draft label is empty.
-    const related = event?.relatedTarget as HTMLElement | null;
-    if (related && this.isWithinComponent(related)) {
-      return;
-    }
-    this.display.writeFromValue(this.value());
-  }
-
-  /**
-   * Whether `el` is a descendant of the host. Includes the popover
-   * panel + action-slot - `<div cngxPopover>` lives in the host
-   * template even when rendered in the top-layer, and `contains`
-   * follows the DOM tree, not the rendering tree.
-   *
-   * Uses the injected `ElementRef` rather than `closest()` against a
-   * hardcoded class so re-skinning doesn't break the blur-guard.
-   *
-   * @internal
-   */
-  private isWithinComponent(el: HTMLElement): boolean {
-    return this.hostEl.nativeElement.contains(el);
-  }
 
   /**
    * Scalar commit handler. Variant callbacks:

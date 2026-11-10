@@ -137,6 +137,7 @@ import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
+import { createInputHostHandlers } from '../shared/internal/input-host-handlers';
 import {
   CngxComboboxTriggerLabel,
   type CngxComboboxTriggerLabelContext,
@@ -1352,34 +1353,31 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** Descendants that own their own click; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
-  protected handleWrapperClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    const target = event.target as HTMLElement | null;
-    const nested = target?.closest(this.nestedInteractive) as HTMLElement | null;
-    // The own input matches the selector too; a click on it must still open.
-    // Only a genuinely nested control (chip remove, clear button) is left alone.
-    if (nested && nested !== this.inputEl()?.nativeElement) {
-      return;
-    }
-    this.focus();
-    if (!this.panelOpen()) {
-      this.open();
-    }
-  }
+  private readonly inputHost = createInputHostHandlers({
+    focusState: this.focusState,
+    focusWithin: this.hostFocus,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+    panelOpen: () => this.panelOpen(),
+    focus: () => this.focus(),
+    inputEl: () => this.inputEl()?.nativeElement,
+    nestedInteractive: this.nestedInteractive,
+    retryFn: () => this.retryFn(),
+    retry: () => this.retry.emit(),
+  });
+  /** @internal */
+  protected readonly handleWrapperClick = this.inputHost.handleWrapperClick;
+  /** @internal */
+  protected readonly handleRetry = this.inputHost.handleRetry;
+  /** @internal */
+  protected readonly handleFocus = this.inputHost.handleFocus;
+  /** @internal */
+  protected readonly handleBlur = this.inputHost.handleBlur;
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
-
-  protected handleRetry(): void {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const fn = this.retryFn();
-    if (fn) {
-      fn();
-    }
-    this.retry.emit();
-  }
 
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
@@ -1418,15 +1416,4 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
-  }
-
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
 }

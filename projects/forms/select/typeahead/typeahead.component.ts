@@ -111,6 +111,7 @@ import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-annou
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
+import { createInputHostHandlers } from '../shared/internal/input-host-handlers';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -1030,27 +1031,37 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.inputEl()?.nativeElement.focus(options);
   }
 
-  protected handleWrapperClick(): void {
-    if (this.disabled()) {
-      return;
-    }
-    this.focus();
-    if (!this.panelOpen()) {
-      this.open();
-    }
-  }
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  private readonly inputHost = createInputHostHandlers({
+    focusState: this.focusState,
+    focusWithin: this.hostFocus,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+    panelOpen: () => this.panelOpen(),
+    focus: () => this.focus(),
+    inputEl: () => this.inputEl()?.nativeElement,
+    blurLeave: {
+      host: this.hostEl.nativeElement,
+      clearOnBlur: () => this.clearOnBlur(),
+      onLeave: () => this.display.writeFromValue(this.value()),
+    },
+    retryFn: () => this.retryFn(),
+    retry: () => this.retry.emit(),
+  });
+  /** @internal */
+  protected readonly handleWrapperClick = this.inputHost.handleWrapperClick;
+  /** @internal */
+  protected readonly handleRetry = this.inputHost.handleRetry;
+  /** @internal */
+  protected readonly handleFocus = this.inputHost.handleFocus;
+  /** @internal */
+  protected readonly handleBlur = this.inputHost.handleBlur;
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
-
-  protected handleRetry(): void {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const fn = this.retryFn();
-    if (fn) {
-      fn();
-    }
-    this.retry.emit();
-  }
 
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
@@ -1100,33 +1111,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // needs no entry: the trigger flushes the term on blur and the auto-open is
   // gated on focus.
   private readonly dismissedTerm = signal<string | null>(null);
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
-  }
-
-  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
-
-  protected handleBlur(event?: FocusEvent): void {
-    this.focusState.markBlurred();
-    // Snap input back to `displayWith(value)` when text drifted from
-    // the committed value. Disable via `[clearOnBlur]="false"`.
-    if (!this.clearOnBlur()) {
-      return;
-    }
-    // Focus moving INSIDE the component (a panel Retry button, an option row)
-    // must keep the typed term: the blur races the click, and snapping back
-    // to `displayWith(value)` here would drop the draft before the click runs.
-    const related = event?.relatedTarget as HTMLElement | null;
-    if (related && this.hostEl.nativeElement.contains(related)) {
-      return;
-    }
-    this.display.writeFromValue(this.value());
-  }
 
   /**
    * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown

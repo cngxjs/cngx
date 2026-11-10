@@ -34,7 +34,8 @@ export interface CngxOpenOnFocusGesture {
   consumeClick(event: MouseEvent): boolean;
 }
 
-function isFocusOpenMode(mode: 'click' | 'focus' | 'click+focus' | undefined): boolean {
+/** @internal */
+export function isFocusOpenMode(mode: 'click' | 'focus' | 'click+focus' | undefined): boolean {
   return mode === 'focus' || mode === 'click+focus';
 }
 
