@@ -47,9 +47,19 @@
  * - `.cngx-sidenav__resize-handle` - col-resize drag bar on the
  *   rail's edge; tinted on hover / drag via
  *   `--cngx-sidenav-resize-handle-color`
- * - `.cngx-nav-link` - nav-link rule with hover / `--active` /
- *   `:focus-visible` states; the collapsed rail hides labels and renders
- *   first-letter initials via `[data-initial]::before`
+ * - `.cngx-nav-link` - nav-link rule; with `[cngxNavGroup]` heads it
+ *   shares one row shape (radius, inline inset, graded fills, focus ring);
+ *   the collapsed rail hides labels and renders first-letter initials via
+ *   `[data-initial]::before`
+ *
+ * **Nav row states**
+ *
+ * Rest (transparent), hover, pressed (`:active`), active
+ * (`.cngx-nav-link--active`) and active+hover, each a stronger fill than the
+ * one before: hover < pressed < active < active+hover. Active beats hover and
+ * pressed; hovering or pressing the active row paints active+hover. Only
+ * background and colour transition (the global reduced-motion net collapses
+ * them).
  * - `.cngx-nav-group-content` - grid-rows expand/collapse wrapper
  *   for nested nav groups
  *
@@ -83,11 +93,17 @@
  * - `--cngx-sidenav-resize-handle-color` -> `--cngx-color-primary`
  * - `--cngx-sidenav-resize-handle-focus-outline-color` -> `--cngx-color-primary`
  * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-primary`
+ * - `--cngx-nav-link-hover-bg` / `-pressed-bg` / `-active-bg` /
+ *   `-active-hover-bg` -> `--cngx-color-primary` at 6 / 12 / 16 / 22 %
+ *   over transparent; `--cngx-nav-link-inset` -> `--cngx-space-xs`. All are
+ *   SET on the `cngx-sidenav` host, so an accent or surface scoped to one
+ *   rail reaches its rows; override them on the host or the row.
  *
  * **Dark mode**
  *
- * Three hooks deepen the expanded-rail shadow and flip the nav-link
- * hover / active overlays from alpha-on-black to alpha-on-white:
+ * The nav row fills need no hook: they are one accent mixed over
+ * transparent, so they follow the scheme through the surface beneath.
+ * Three hooks deepen the expanded-rail shadow:
  *
  * - `prefers-color-scheme: dark`
  * - `[data-color-scheme="dark"]`
@@ -397,6 +413,18 @@
   }
 
   /**
+   * Inline inset of each nav row from the rail edges (expanded rail only).
+   * SET from `--cngx-space-xs` on the `cngx-sidenav` host.
+   * @group Layout
+   */
+  @property --cngx-nav-link-inset {
+    syntax: '<length>';
+    /* Read on the row; inherits so the cngx-sidenav host SET reaches it. */
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
    * Corner radius of each nav link.
    * @group Layout
    */
@@ -427,6 +455,17 @@
   }
 
   /**
+   * Background while a nav row is pressed (`:active`). Sits between the hover
+   * and the active fill; a pressed active row keeps the active-hover fill.
+   * @group State / Pressed
+   */
+  @property --cngx-nav-link-pressed-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.06);
+  }
+
+  /**
    * Text color of the active nav link.
    * @group State / Active
    */
@@ -444,6 +483,17 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Background of the active nav link under the pointer. The strongest fill,
+   * so hovering the active row still answers.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.1);
   }
 
   /**
@@ -507,9 +557,10 @@
    * any `var(…)` fallback inside component CSS, so we must explicitly
    * paint the resolved value at :root for each color-flavoured token.
    * Rail surface + border delegate to the foundation tokens; the
-   * alpha-overlay tints (nav-link hover/active, expanded-shadow) stay
-   * component-local because they need to flip from black-tint to
-   * white-tint between modes.
+   * expanded shadow flips per scheme below. The nav-link tokens are not
+   * here: they are SET on the cngx-sidenav host, so a host-scoped accent
+   * reaches them, and their primary tints follow the scheme through the
+   * surface they composite over, with no per-scheme hook.
    */
   :root {
     --cngx-sidenav-bg: var(--cngx-color-surface, oklch(0.97 0.005 250));
@@ -517,31 +568,22 @@
     --cngx-sidenav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
     --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
-    --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
-    --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
-    --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
-      --cngx-nav-link-hover-bg: oklch(1 0 0 / 0.06);
-      --cngx-nav-link-active-bg: oklch(1 0 0 / 0.1);
     }
   }
 
   :root[data-color-scheme='dark'],
   :root.dark {
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
-    --cngx-nav-link-hover-bg: oklch(1 0 0 / 0.06);
-    --cngx-nav-link-active-bg: oklch(1 0 0 / 0.1);
   }
 
   :root[data-color-scheme='light'],
   :root.light {
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
-    --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
-    --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
   }
 }
 
@@ -555,6 +597,32 @@
        16 -> md; nav-link-padding 10/16 -> sm/md (10 -> 8). */
     --cngx-sidenav-padding: var(--cngx-space-md);
     --cngx-nav-link-padding: var(--cngx-space-sm) var(--cngx-space-md);
+    --cngx-nav-link-inset: var(--cngx-space-xs);
+    /* Nav row fills: one accent at rising ratios over transparent, so they
+       composite over any --cngx-sidenav-bg and grow away from the surface in
+       light and dark alike. SET here (not :root) so a host-scoped
+       --cngx-color-primary reaches them; read on the rows (inherits: true). */
+    --cngx-nav-link-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%,
+      transparent
+    );
+    --cngx-nav-link-pressed-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-nav-link-active-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 16%,
+      transparent
+    );
+    --cngx-nav-link-active-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 22%,
+      transparent
+    );
+    --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -756,21 +824,47 @@
     text-decoration: none;
     font-size: var(--cngx-nav-link-font-size, 0.875rem);
     color: var(--cngx-nav-link-color, currentColor);
+  }
+
+  /*
+   * One row shape for links and group heads. State ladder: rest (0,1,1),
+   * then hover, pressed, active, active+hover, all four at (0,2,1) in this
+   * source order, so the order is the precedence: active beats hover and
+   * pressed, active+hover beats active, a pressed active row stays
+   * active+hover. `:is()` takes its strongest argument, (0,1,0) for the class
+   * and the attribute alike. Only background and colour transition.
+   * `background: transparent` at rest beats the UA button face on group heads.
+   */
+  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]) {
     border-radius: var(--cngx-nav-link-radius, 4px);
+    background: transparent;
     transition:
-      background var(--cngx-duration-fast, 150ms),
+      background-color var(--cngx-duration-fast, 150ms),
       color var(--cngx-duration-fast, 150ms);
   }
 
-  cngx-sidenav .cngx-nav-link:hover {
+  cngx-sidenav:not([data-sidebar-state='rail']) :is(.cngx-nav-link, [cngxNavGroup]) {
+    margin-inline: var(--cngx-nav-link-inset, 4px);
+  }
+
+  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]):hover {
     color: var(--cngx-nav-link-hover-color, currentColor);
     background: var(--cngx-nav-link-hover-bg, oklch(0 0 0 / 0.04));
   }
 
-  cngx-sidenav .cngx-nav-link--active {
+  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]):active {
+    background: var(--cngx-nav-link-pressed-bg, oklch(0 0 0 / 0.06));
+  }
+
+  cngx-sidenav .cngx-nav-link.cngx-nav-link--active {
     color: var(--cngx-nav-link-active-color, currentColor);
     background: var(--cngx-nav-link-active-bg, oklch(0 0 0 / 0.08));
     font-weight: var(--cngx-nav-link-active-font-weight, 600);
+  }
+
+  cngx-sidenav .cngx-nav-link--active:hover {
+    color: var(--cngx-nav-link-active-color, currentColor);
+    background: var(--cngx-nav-link-active-hover-bg, oklch(0 0 0 / 0.1));
   }
 
   /*
