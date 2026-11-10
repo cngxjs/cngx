@@ -559,8 +559,10 @@
         )
       );
     }
+    /* The boundary is the only cue an outline button has, so it reads the
+     * 3:1 border rung (WCAG 1.4.11). */
     :scope[data-variant='outline'] {
-      border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
+      border-color: var(--cngx-color-border-strong, oklch(0.62 0.005 250));
     }
     :scope[data-variant='outline']:not([data-tone='neutral']) {
       border-color: color-mix(in oklch, var(--cngx-button-tone, currentColor) 60%, transparent);

@@ -65,6 +65,7 @@ const CONSUMED = [
   '--cngx-close-button-radius',
   '--cngx-close-button-size',
   '--cngx-color-border',
+  '--cngx-color-border-strong',
   '--cngx-color-danger',
   '--cngx-color-danger-strong',
   '--cngx-color-danger-text',
@@ -146,7 +147,7 @@ describe('button Material bridge', () => {
       '--cngx-button-hover-shade: var(--mat-sys-on-error)',
     );
     expect(block(css, '.cngx-button[data-variant=outline]')).toContain(
-      '--cngx-color-border: var(--mat-sys-outline)',
+      '--cngx-color-border-strong: var(--mat-sys-outline)',
     );
   });
 
