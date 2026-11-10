@@ -1,4 +1,4 @@
-# CngxTreetable (CDK)
+# CngxTreetable
 
 Headless tree table built on Angular CDK Table. Renders fully unstyled, accessible tree hierarchies with expand/collapse, selection, keyboard navigation, and async state integration. All visual styling is provided via CSS custom properties for complete theming freedom.
 

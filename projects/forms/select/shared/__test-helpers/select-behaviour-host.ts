@@ -285,7 +285,9 @@ export function describeSelectBehaviourHost(
         const node = document.getElementById(ref!);
         expect(node?.textContent).toContain('Save failed');
         expect(panel().contains(node)).toBe(false);
-        expect(idrefs(t, 'aria-describedby')).toContain(ref);
+        // I8: with no field error occupying aria-errormessage, the commit error
+        // rides there alone - never duplicated onto aria-describedby.
+        expect(idrefs(t, 'aria-describedby')).not.toContain(ref);
       },
     );
 
@@ -458,6 +460,20 @@ export function describeSelectBehaviourHost(
     }
 
     if (opts.closedTypeahead) {
+      it('keeps the panel closed on a space typed into a running typeahead term', () => {
+        vi.useFakeTimers();
+        const { fixture, cmp, trigger } = mount();
+        // No row starts with 'z': the buffer holds a term. Both keys land back
+        // to back, before any change detection pass.
+        for (const key of ['z', ' ']) {
+          trigger().dispatchEvent(
+            new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+          );
+        }
+        fixture.detectChanges();
+        expect((cmp as VariantApi).panelOpen()).toBe(false);
+      });
+
       it('cancels the pending typeahead buffer reset when the host is destroyed', () => {
         vi.useFakeTimers();
         const { fixture, cmp, trigger } = mount();

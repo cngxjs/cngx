@@ -48,6 +48,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
@@ -105,7 +106,7 @@ import { mergeCommitState } from '../shared/internal/merged-commit-state';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { createActionTriggerInput } from '../shared/internal/action-trigger-input';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY, searchResultsFrom } from '../shared/search-effects';
 import {
@@ -239,6 +240,7 @@ export interface CngxActionSelectChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     NgTemplateOutlet,
   ],
   providers: [
@@ -305,9 +307,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -921,8 +923,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
 
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => {
@@ -1060,7 +1065,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => (isEmptyScalar(x) ? undefined : (x as T)),
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
 
     // Auto-open on typing. Same gating as CngxTypeahead - display-binding
@@ -1069,6 +1074,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      readonly: this.core.readonly,
       focused: this.focusState.focused,
       open: () => this.open(),
       autoOpenGate: () => !this.display.isWritingFromValue(),

@@ -419,3 +419,48 @@ describe('createTemplateRegistry', () => {
     expect(registry.empty()).toBe(tpl);
   });
 });
+
+// ── F1 (commit 10): every config-tier slot of the shared registry resolves
+// from CNGX_SELECT_CONFIG.templates. The 11 host-specific slots have no config
+// tier (select-family-accepted-debt section 8) and stay out. ─────────────────
+const CONFIG_TIER_KEYS = [
+  'check',
+  'caret',
+  'optgroup',
+  'placeholder',
+  'empty',
+  'loading',
+  'loadingGlyph',
+  'optionLabel',
+  'error',
+  'retryButton',
+  'refreshing',
+  'commitError',
+  'clearButton',
+  'optionPending',
+  'optionError',
+] as const;
+
+describe('F1: every config-tier template slot falls back to CNGX_SELECT_CONFIG.templates', () => {
+  it.each(CONFIG_TIER_KEYS)('%s resolves from the config tier', (key) => {
+    @Component({
+      standalone: true,
+      template: `<ng-template #tpl>config-template</ng-template>`,
+    })
+    class Factory {
+      readonly tpl = viewChild.required<TemplateRef<unknown>>('tpl');
+    }
+    const factory = TestBed.createComponent(Factory);
+    factory.detectChanges();
+    const tpl = factory.componentInstance.tpl() as unknown as TemplateRef<never>;
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig({ config: { templates: { [key]: tpl } } })],
+    });
+    const fixture = TestBed.createComponent(NoSlotsHost);
+    flush(fixture);
+    const registry = fixture.componentInstance.probe().registry as unknown as Record<string, () => unknown>;
+    expect(registry[key]()).toBe(tpl);
+  });
+});

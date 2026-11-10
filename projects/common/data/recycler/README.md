@@ -1,4 +1,4 @@
-# Recycler - DOM Recycling
+# Recycler
 
 Signal-based virtualizer for long lists. Items outside the viewport are removed from the DOM while scroll position stays correct. No special viewport component, no structural directive - the consumer renders with `@for` and two spacer containers.
 

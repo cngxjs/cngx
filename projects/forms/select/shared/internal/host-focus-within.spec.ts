@@ -71,6 +71,25 @@ describe('createHostFocusWithin', () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 
+  it('collapses the open panel when focus moves onto a nested interactive control outside it', () => {
+    const { host, focus } = setup();
+    const panel = host.querySelector<HTMLElement & { hidePopover?: () => void }>('.panel')!;
+    const hide = vi.fn();
+    panel.hidePopover = hide;
+    const chipRemove = document.createElement('button');
+    chipRemove.className = 'chip-remove';
+    host.insertBefore(chipRemove, panel);
+
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+    owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(owner, chipRemove);
+    expect(hide).toHaveBeenCalledTimes(1);
+    expect(onLeave).not.toHaveBeenCalled();
+    expect(close).not.toHaveBeenCalled();
+    expect(focus.focusedWithin()).toBe(true);
+  });
+
   it('keeps focus within when focus moves from the trigger into the panel', () => {
     const { host, focus } = setup();
     const owner = host.querySelector<HTMLElement>('.owner')!;
@@ -182,5 +201,31 @@ describe('createHostFocusWithin - modal sheet close contract', () => {
     } finally {
       outside.remove();
     }
+  });
+});
+
+// ── B2 (commit 7): focus leaving the host closes an anchored panel even under
+// dismissOn 'escape' - this pins the current behaviour, not a change. ─────────
+import { afterEach as afterEachB2 } from 'vitest';
+import { provideSelectConfig, withDismissOn } from '../config';
+import { KINDS as B2_KINDS, cleanupRoots as b2Cleanup, mount as b2Mount } from '../__test-helpers/review-probe-host';
+
+describe('B2: focus leaving the host closes the anchored panel under dismissOn escape', () => {
+  afterEachB2(() => {
+    b2Cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('closes when focus moves to a control outside the host', () => {
+    const m = b2Mount(B2_KINDS['select'], { providers: [provideSelectConfig(withDismissOn('escape'))] });
+    const trigger = m.el.querySelector<HTMLElement>('.cngx-field-trigger')!;
+    trigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    m.open();
+    expect(m.v.panelOpen()).toBe(true);
+
+    const outside = m.fixture.nativeElement.querySelector('.outside-btn') as HTMLElement;
+    trigger.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    m.settle();
+    expect(m.v.panelOpen()).toBe(false);
   });
 });

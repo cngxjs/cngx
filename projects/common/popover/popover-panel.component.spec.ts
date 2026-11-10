@@ -251,6 +251,20 @@ class ConfigArrowTplSource {
 
 @Component({
   template: `
+    <cngx-popover-panel (opened)="opened = opened + 1" (closed)="closed = closed + 1">
+      <p cngxPopoverBody>Events</p>
+    </cngx-popover-panel>
+  `,
+  imports: [CngxPopoverPanel, CngxPopoverBody],
+})
+class EventsHost {
+  readonly panel = viewChild.required(CngxPopoverPanel);
+  opened = 0;
+  closed = 0;
+}
+
+@Component({
+  template: `
     <cngx-popover-panel
       #panel="cngxPopoverPanel"
       [showClose]="true"
@@ -371,6 +385,18 @@ describe('CngxPopoverPanel', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it('forwards the popover opened and closed outputs to a binding on the panel', () => {
+    const { fixture } = setup(EventsHost);
+    const host = fixture.componentInstance as EventsHost;
+
+    host.panel().popover.show();
+    expect(host.opened).toBe(1);
+    expect(host.closed).toBe(0);
+
+    host.panel().popover.hide();
+    expect(host.closed).toBe(1);
   });
 
   it('should create with default variant class', () => {

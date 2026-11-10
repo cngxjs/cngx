@@ -346,4 +346,34 @@ describe('createContextMenuTriggerCore', () => {
       expect(handleArrowLeft).toHaveBeenCalledOnce();
     });
   });
+
+  it('drops the menu highlight on every popover close event, also an open gesture still waiting for items', () => {
+    const listeners = new Set<() => void>();
+    const closingPopover = {
+      ...mockPopover(),
+      closed: {
+        subscribe: (cb: () => void) => {
+          listeners.add(cb);
+          return { unsubscribe: () => listeners.delete(cb) };
+        },
+      },
+    };
+    const resetHighlight = vi.fn();
+    const menuWithReset = mockMenu();
+    (menuWithReset.ad as unknown as { resetHighlight: () => void }).resetHighlight = resetHighlight;
+    const core = build({ popover: () => closingPopover, menu: () => menuWithReset });
+
+    core.handleContextMenu(mouse());
+    expect(listeners.size).toBe(1);
+
+    closingPopover.hide();
+    listeners.forEach((cb) => cb());
+    expect(resetHighlight).toHaveBeenCalledOnce();
+
+    core.handleContextMenu(mouse());
+    expect(listeners.size).toBe(1);
+
+    core.destroy();
+    expect(listeners.size).toBe(0);
+  });
 });

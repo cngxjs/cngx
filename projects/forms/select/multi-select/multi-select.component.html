@@ -20,6 +20,7 @@
     [cngxListboxTrigger]="lb"
     [popover]="pop"
     [closeOnSelect]="false"
+    [typeaheadBuffer]="typeaheadController.buffer"
     [attr.tabindex]="effectiveTabIndex()"
     [attr.aria-label]="aria.label"
     [attr.aria-labelledby]="aria.labelledBy"
@@ -30,6 +31,7 @@
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
     [attr.aria-readonly]="aria.readonly"
+    (pointerdown)="handlePointerDown()"
     (click)="handleTriggerClick()"
     (focus)="handleFocus()"
     (blur)="handleBlur()"
@@ -209,27 +211,34 @@
     [closeOnEscape]="sheetWiring.escapeEnabled()"
     (closeRequested)="sheetWiring.handleSheetClose($event)"
     (closing)="hostFocus.refocusOwnerBeforeRemoval()"
+    (opened)="handlePanelOpened()"
   >
     <cngx-select-sheet-header />
-    <div
-      cngxListbox
-      [attr.id]="listboxId"
-      cngxPopoverSheetInitialFocus
-      [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
-      #lb="cngxListbox"
-      [label]="resolvedListboxLabel()"
-      [multiple]="true"
-      [compareWith]="listboxCompareWith()"
-      [externalActivation]="externalActivation()"
-      [explicitOptions]="panelRef.options()"
-      [items]="panelRef.items()"
-      [virtualCount]="virtualItemCount()"
-      [windowStart]="virtualWindowStart()"
-      [(selectedValues)]="values"
-    >
-      <cngx-select-panel #panelRef="cngxSelectPanel" />
-    </div>
+    <cngx-select-panel-shell [actionFocusTrapEnabled]="actionFocusTrapEnabled()">
+      <div
+        cngxListbox
+        [attr.id]="listboxId"
+        cngxPopoverSheetInitialFocus
+        [attr.tabindex]="sheetWiring.sheetModal() ? 0 : null"
+        #lb="cngxListbox"
+        [label]="resolvedListboxLabel()"
+        [multiple]="true"
+        [compareWith]="listboxCompareWith()"
+        [externalActivation]="externalActivation()"
+        [explicitOptions]="panelRef.options()"
+        [items]="panelRef.items()"
+        [virtualCount]="virtualItemCount()"
+        [windowStart]="virtualWindowStart()"
+        [typeaheadItems]="virtualTypeaheadItems()"
+        [(selectedValues)]="values"
+      >
+        <cngx-select-panel #panelRef="cngxSelectPanel" />
+      </div>
+    </cngx-select-panel-shell>
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  @if (!panelOpen() && commitErrorText()) {
+    <span class="cngx-select__commit-error-hint" aria-hidden="true">{{ commitErrorText() }}</span>
+  }
   <span class="cngx-sr-only" [id]="disabledReasonId">{{ disabledReasonText() }}</span>
 </div>

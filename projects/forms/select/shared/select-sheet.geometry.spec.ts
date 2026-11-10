@@ -215,10 +215,11 @@ async function open(variant: Variant, configure?: (host: SheetVariantHost) => vo
   fixture.detectChanges();
   await frames(6);
   const panel = mountedRoot.querySelector<HTMLElement>('.cngx-select__panel')!;
-  // The direct child below the header scrolls: the listbox, or the tree
-  // panel host that wraps the tree.
+  // The scroll viewport below the fixed sheet header: the panel-shell wraps
+  // the listbox and the status/action regions and owns the overflow, or the
+  // tree panel host that wraps the tree.
   const scroller = panel.querySelector<HTMLElement>(
-    ':scope > [role="listbox"], :scope > cngx-tree-select-panel',
+    ':scope > cngx-select-panel-shell, :scope > cngx-tree-select-panel',
   )!;
   return { fixture, host, panel, scroller };
 }
@@ -261,6 +262,12 @@ describe('select mobile sheet geometry', () => {
         expect(scroller.scrollHeight).toBeGreaterThan(scroller.clientHeight);
       });
 
+      it('opts the windowed scroller out of scroll anchoring', async () => {
+        const { scroller } = await open(variant, (h) => h.count.set(60));
+        const expected = scroller.matches('.cngx-select-panel-shell') ? 'none' : 'auto';
+        expect(computedValue(scroller, 'overflow-anchor')).toBe(expected);
+      });
+
       it('shows the header with the label, X and the variant Done', async () => {
         const { panel } = await open(variant);
         const header = panel.querySelector<HTMLElement>('cngx-select-sheet-header')!;
@@ -292,6 +299,34 @@ describe('select mobile sheet geometry', () => {
       });
     });
   }
+
+  it('windows a 1000-option sheet over the panel shell and reaches the last option', async () => {
+    const { fixture, panel, scroller } = await open('select', (h) => h.count.set(1000));
+    const rows = () => panel.querySelectorAll<HTMLElement>('.cngx-select__option');
+    const settle = async () => {
+      await frames(3);
+      fixture.detectChanges();
+      await frames(3);
+    };
+
+    expect(rows().length).toBeGreaterThan(0);
+    expect(rows().length).toBeLessThan(100);
+    expect(rows()[0].textContent).toContain('Option 0');
+
+    scroller.scrollTop = 6400;
+    await settle();
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    expect(rows().length).toBeLessThan(100);
+    expect(rows()[0].textContent).not.toContain('Option 0');
+
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+    // Row heights differ from the estimate, so the first jump can land short.
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+    expect(rows().length).toBeLessThan(100);
+    expect(rows()[rows().length - 1].textContent).toContain('Option 999');
+  });
 
   it('paints a CanvasText top edge under forced colors', async () => {
     await emulate([{ name: 'forced-colors', value: 'active' }]);

@@ -178,6 +178,7 @@ class DebouncedSearchHostDir {
   readonly focus = vi.fn();
   readonly listboxRef = signal({
     ad: {
+      activeId: signal<string | null>(null),
       highlightNext: vi.fn(),
       highlightPrev: vi.fn(),
       activateCurrent: () => this.termAtActivate.push(this.searchTerm()),
@@ -288,5 +289,108 @@ describe('CngxSelectSearch - pending debounced write on Escape and Enter', () =>
     fixture.detectChanges();
     expect(host.writes).toEqual(['ber']);
     expect(input.value).toBe('ber');
+  });
+});
+
+@Directive({
+  selector: '[ariaSearchHost]',
+  standalone: true,
+  providers: [{ provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: AriaSearchHostDir }],
+})
+class AriaSearchHostDir {
+  readonly searchTerm = model<string>('');
+  readonly panelOpen = signal(false);
+  readonly listboxId = signal('lb-1');
+  readonly activeId = signal<string | null>(null);
+  readonly highlightFirst = vi.fn();
+  readonly highlightLast = vi.fn();
+  readonly activateCurrent = vi.fn();
+  readonly close = vi.fn();
+  readonly focus = vi.fn();
+  readonly listboxRef = signal({
+    ad: {
+      activeId: this.activeId,
+      highlightNext: () => this.activeId.set('opt-1'),
+      highlightPrev: () => this.activeId.set('opt-0'),
+      highlightFirst: this.highlightFirst,
+      highlightLast: this.highlightLast,
+      activateCurrent: this.activateCurrent,
+    },
+  } as never);
+}
+
+@Component({
+  template: `
+    <div ariaSearchHost>
+      <cngx-select-search />
+    </div>
+  `,
+  imports: [CngxSelectSearch, AriaSearchHostDir],
+})
+class HostAria {}
+
+// C1 / A4: the declarative search input is an APG combobox - role, controls,
+// expanded and activedescendant reflect the panel and the listbox highlight,
+// Home / End reach the listbox, and an IME Enter never commits.
+describe('CngxSelectSearch - combobox ARIA and keyboard', () => {
+  function mountAria() {
+    const fixture = TestBed.createComponent(HostAria);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const host = fixture.debugElement.query(By.directive(AriaSearchHostDir)).injector.get(AriaSearchHostDir);
+    const input = fixture.debugElement.query(By.css('input[type=search]')).nativeElement as HTMLInputElement;
+    const press = (key: string, over: Partial<{ isComposing: boolean; keyCode: number }> = {}) => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      if (over.isComposing !== undefined) {
+        Object.defineProperty(event, 'isComposing', { value: over.isComposing });
+      }
+      if (over.keyCode !== undefined) {
+        Object.defineProperty(event, 'keyCode', { value: over.keyCode });
+      }
+      input.dispatchEvent(event);
+      fixture.detectChanges();
+    };
+    return { fixture, host, input, press };
+  }
+
+  it('carries role="combobox" and aria-autocomplete="list"', () => {
+    const { input } = mountAria();
+    expect(input.getAttribute('role')).toBe('combobox');
+    expect(input.getAttribute('aria-autocomplete')).toBe('list');
+  });
+
+  it('points aria-controls at the host listbox id', () => {
+    const { input, host } = mountAria();
+    expect(input.getAttribute('aria-controls')).toBe(host.listboxId());
+  });
+
+  it('reflects the panel open state on aria-expanded', () => {
+    const { input, host, fixture } = mountAria();
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    host.panelOpen.set(true);
+    fixture.detectChanges();
+    expect(input.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('follows the listbox highlight on aria-activedescendant', () => {
+    const { input, press } = mountAria();
+    press('ArrowDown');
+    expect(input.getAttribute('aria-activedescendant')).toBe('opt-1');
+  });
+
+  it('moves the listbox highlight on Home and End', () => {
+    const { host, press } = mountAria();
+    press('Home');
+    press('End');
+    expect(host.highlightFirst).toHaveBeenCalledTimes(1);
+    expect(host.highlightLast).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not commit on an Enter that closes an IME composition', () => {
+    const { host, press } = mountAria();
+    press('Enter', { isComposing: true });
+    press('Enter', { keyCode: 229 });
+    expect(host.activateCurrent).not.toHaveBeenCalled();
   });
 });

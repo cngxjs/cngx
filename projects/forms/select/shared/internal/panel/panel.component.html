@@ -1,36 +1,34 @@
-<cngx-select-panel-shell
-  [actionFocusTrapEnabled]="host.actionFocusTrapEnabled?.() ?? false"
-  [actionPosition]="host.actionPosition?.() ?? 'bottom'"
->
-  @if (virtualizer(); as v) {
-    <div class="cngx-select__virtual-spacer" cngxRecyclerPlaceholder [rowHeight]="v.rowSizeHint()" aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
+@if (host.autoRecycler?.needed()) {
+  <ng-container cngxSelectAutoRecycler />
+}
+@if (spacerVirtualizer(); as v) {
+  <div class="cngx-select__virtual-spacer" cngxRecyclerPlaceholder [rowHeight]="v.rowSizeHint()" aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
+}
+@for (item of renderItems(); track $index) {
+  @if (host.isGroup(item)) {
+    <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
+      @if (host.tpl.optgroup(); as tpl) {
+        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
+      } @else {
+        <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
+      }
+      @for (opt of item.children; track opt.value) {
+        <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled, virtualIndex: null }" />
+      }
+    </div>
+  } @else {
+    <ng-container
+      *ngTemplateOutlet="optionRow; context: {
+        $implicit: item,
+        groupDisabled: false,
+        virtualIndex: virtualizer() ? virtualizer()!.startIndex() + $index : null
+      }"
+    />
   }
-  @for (item of renderItems(); track $index) {
-    @if (host.isGroup(item)) {
-      <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
-        @if (host.tpl.optgroup(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
-        } @else {
-          <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
-        }
-        @for (opt of item.children; track opt.value) {
-          <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled, virtualIndex: null }" />
-        }
-      </div>
-    } @else {
-      <ng-container
-        *ngTemplateOutlet="optionRow; context: {
-          $implicit: item,
-          groupDisabled: false,
-          virtualIndex: virtualizer() ? virtualizer()!.startIndex() + $index : null
-        }"
-      />
-    }
-  }
-  @if (virtualizer(); as v) {
-    <div class="cngx-select__virtual-spacer" cngxRecyclerPlaceholder [rowHeight]="v.rowSizeHint()" aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
-  }
-</cngx-select-panel-shell>
+}
+@if (spacerVirtualizer(); as v) {
+  <div class="cngx-select__virtual-spacer" cngxRecyclerPlaceholder [rowHeight]="v.rowSizeHint()" aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
+}
 
 <!--
   Option-row template - shared by grouped and flat items. Single

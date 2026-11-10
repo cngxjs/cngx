@@ -1030,3 +1030,57 @@ describe('CngxMenuTrigger submenu keys on the focused menu', () => {
     expect(outerPop.isVisible()).toBe(true);
   });
 });
+
+@Component({
+  template: `
+    <button type="button" [cngxMenuTrigger]="menu" [popover]="pop">Actions</button>
+    <div cngxPopover #pop="cngxPopover">
+      <ul cngxMenu [label]="'Actions'" tabindex="0" #menu="cngxMenu">
+        @if (loaded()) {
+          <li cngxMenuItem value="cut">Cut</li>
+          <li cngxMenuItem value="copy">Copy</li>
+        }
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover],
+})
+class LateItemsHost {
+  readonly loaded = signal(false);
+}
+
+describe('CngxMenuTrigger - an open gesture does not outlive the close', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [LateItemsHost] });
+  });
+
+  it('opened empty and closed, items arriving later set no aria-activedescendant', async () => {
+    const fixture = TestBed.createComponent(LateItemsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
+      .nativeElement as HTMLElement;
+    const menuDe = fixture.debugElement.query(By.directive(CngxMenu));
+    const menu = menuDe.injector.get(CngxMenu);
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+
+    triggerEl.focus();
+    press(triggerEl, 'ArrowDown');
+    fixture.detectChanges();
+    await settle();
+    expect(popover.isVisible()).toBe(true);
+
+    popover.hide();
+    fixture.detectChanges();
+    await settle();
+    expect(popover.isVisible()).toBe(false);
+
+    fixture.componentInstance.loaded.set(true);
+    fixture.detectChanges();
+    await settle();
+    fixture.detectChanges();
+    expect(menu.ad.activeIndex()).toBe(-1);
+    expect((menuDe.nativeElement as HTMLElement).hasAttribute('aria-activedescendant')).toBe(false);
+  });
+});

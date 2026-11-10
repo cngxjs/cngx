@@ -107,6 +107,7 @@ const NOT_APPLICABLE = {
     enterKeyHint: 'the projected <cngx-select-search> owns its input attributes',
     chipOverflow: SCALAR,
     maxVisibleChips: SCALAR,
+    virtualization: 'projected options: no renderer slice can take a row out of the DOM',
   },
 };
 

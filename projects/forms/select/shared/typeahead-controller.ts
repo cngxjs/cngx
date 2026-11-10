@@ -11,7 +11,12 @@ import type { CngxSelectCompareFn } from './internal/select-core';
 export interface TypeaheadControllerOptions<T> {
   /** Flat candidate list in listbox order. */
   readonly options: Signal<readonly CngxSelectOptionDef<T>[]>;
-  /** Reserved - the matcher compares labels only. */
+  /**
+   * Resolves a value to its option index for {@link TypeaheadController.matchFromValue},
+   * so a value selected under a custom equality (e.g. case-insensitive) seeds
+   * the typeahead round-robin start. The prefix match itself still compares
+   * labels only.
+   */
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   /** Buffer-reset window. Maps to `typeaheadDebounceInterval`. */
   readonly debounceMs: Signal<number>;
@@ -48,6 +53,12 @@ export interface TypeaheadController<T> {
    * Buffer auto-clears after `debounceMs`.
    */
   matchFromIndex(char: string, currentIndex: number): CngxSelectOptionDef<T> | null;
+  /**
+   * Resolves `value` to its option index through `compareWith`, so the current
+   * selection seeds the typeahead round-robin start without each host
+   * re-implementing the lookup. Returns `-1` for `undefined` or no match.
+   */
+  matchFromValue(value: T | undefined): number;
   /** Idempotent - clears buffer + pending timer. */
   clearBuffer(): void;
   readonly buffer: Signal<string>;
@@ -74,7 +85,12 @@ export function createTypeaheadController<T>(
     if (options.disabled()) {
       return null;
     }
-    if (char.length !== 1 || !/\S/.test(char)) {
+    if (char.length !== 1) {
+      return null;
+    }
+    // A leading space is not a typeahead key; a space inside a running buffer
+    // is part of a multi-word term ("new y" -> "New York").
+    if (!/\S/.test(char) && walker.buffer() === '') {
       return null;
     }
     const term = walker.type(char);
@@ -83,11 +99,34 @@ export function createTypeaheadController<T>(
     return index < 0 ? null : opts[index];
   };
 
+  const matchFromValue = (value: T | undefined): number => {
+    if (value === undefined) {
+      return -1;
+    }
+    const eq = options.compareWith();
+    return options.options().findIndex((o) => eq(o.value, value));
+  };
+
   return {
     matchFromIndex,
+    matchFromValue,
     clearBuffer: () => walker.clear(),
     buffer: walker.buffer,
   };
+}
+
+/**
+ * Whether a key feeds the select typeahead: a printable character, or a space
+ * while a buffer is running, so "new y" reaches "New York". A leading space
+ * stays an open key.
+ *
+ * @internal
+ */
+export function typeaheadAcceptsKey(key: string, buffer: string): boolean {
+  if (key.length !== 1) {
+    return false;
+  }
+  return /\S/.test(key) || buffer !== '';
 }
 
 /**

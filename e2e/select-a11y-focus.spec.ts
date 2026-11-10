@@ -116,6 +116,9 @@ test.describe('select family IME composition', () => {
     const section = ex(page);
     const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.click();
+    // The first open renders its rows one frame later; an arrow pressed in
+    // that frame has no row to move to. Wait for the rows before driving keys.
+    await expect(section.getByRole('option').first()).toBeVisible();
     await page.keyboard.press('ArrowDown');
     await expect(trigger).toHaveAttribute('aria-activedescendant', /.+/);
 

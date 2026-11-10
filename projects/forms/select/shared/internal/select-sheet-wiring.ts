@@ -203,8 +203,11 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.popoverRef()?.hide();
   };
 
-  // Hides without the variant's close(): that one refocuses the trigger,
-  // which would pull focus back from where the user just moved it.
+  // Focus leaving the host is a Tab-navigation close, not an outside
+  // dismissal: it fires in every dismissOn mode, escape included, because a
+  // panel the user has Tab-navigated away from is no longer theirs to hold
+  // open. Hides without the variant's close(): that one refocuses the
+  // trigger, which would pull focus back from where the user just moved it.
   const handleFocusLeave = (): void => {
     if (!panelOpen() || !sheetAnchored()) {
       return;

@@ -78,6 +78,29 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
   const focused = signal(false);
   const wrapped = new WeakMap<() => void, () => void>();
 
+  // I6: Tab from the trigger onto a nested interactive control that lives in
+  // the host but outside the open panel (a chip remove, the clear button)
+  // must collapse the panel, so aria-expanded never reads true while focus
+  // sits on that control. Closes through the panel's own hidePopover(), which
+  // runs CngxPopover's full finalize via the native toggle and leaves focus on
+  // the control (no refocus to the owner).
+  const collapseOnNestedInteractiveFocus = (next: EventTarget | null): boolean => {
+    if (!(next instanceof HTMLElement) || next === host || next === opts.owner()) {
+      return false;
+    }
+    if (!host.contains(next)) {
+      return false;
+    }
+    const panel = host.querySelector<HTMLElement & { hidePopover?: () => void }>(
+      '.cngx-popover--open',
+    );
+    if (!panel || panel.contains(next)) {
+      return false;
+    }
+    panel.hidePopover?.();
+    return true;
+  };
+
   const refocusOwnerBeforeRemoval = (): void => {
     const owner = opts.owner();
     const active = host.ownerDocument.activeElement;
@@ -98,6 +121,9 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       focused.set(true);
     },
     handleFocusOut: (event) => {
+      if (collapseOnNestedInteractiveFocus(event.relatedTarget)) {
+        return;
+      }
       if (!isFocusLeavingHost(event, host) || isBlurInsideOpenPanel(event, host)) {
         return;
       }

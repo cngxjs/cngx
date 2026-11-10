@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The consumer binds <code>(click)="pop.toggle()"</code>. <code>CngxPopoverTrigger</code> only handles ARIA wiring.',
   description:
-    'Click-triggered popover with the default <code>mode="manual"</code>. The button uses <code>haspopup="menu"</code> because the popover hosts a native <code>&lt;menu&gt;</code>; CngxPopoverTrigger projects that value as <code>aria-haspopup</code> alongside <code>aria-expanded</code> and <code>aria-controls</code>. <code>[restoreFocus]="true"</code> sends focus back to the Actions button after a menu item closes the popover. Each menu item closes the popover via <code>pop.hide()</code>.',
+    'Click-triggered popover with the default <code>mode="manual"</code>. The button uses <code>haspopup="menu"</code> because the popover hosts a native <code>&lt;menu&gt;</code>; CngxPopoverTrigger projects that value as <code>aria-haspopup</code> alongside <code>aria-expanded</code> and <code>aria-controls</code>. <code>[restoreFocus]="true"</code> sends focus back to the Actions button after a menu item closes the popover. Each menu item closes the popover via <code>pop.hide()</code>. The <code>(opened)</code> and <code>(closed)</code> outputs report each real open and close, including the close at the end of the exit transition.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
@@ -23,13 +23,15 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxPopover', 'CngxPopoverTrigger'],
   moduleImports: ["import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';"],
   imports: ['CngxPopover', 'CngxPopoverTrigger'],
-  setup: `protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);`,
+  setup: `protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
+protected readonly lastEvent = signal<'none' | 'opened' | 'closed'>('none');`,
   template: `  <div class="demo-popover-stage">
     <button type="button" [cngxPopoverTrigger]="pop" [restoreFocus]="true" (click)="pop.toggle()" class="chip"
             haspopup="menu">
       Actions
     </button>
-    <div cngxPopover #pop="cngxPopover" placement="bottom-start" class="demo-popover-surface">
+    <div cngxPopover #pop="cngxPopover" placement="bottom-start" class="demo-popover-surface"
+         (opened)="lastEvent.set('opened')" (closed)="lastEvent.set('closed')">
       <menu class="demo-popover-menu">
         @for (item of menuItems(); track item) {
           <li>
@@ -52,6 +54,10 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">isVisible</span>
       <span class="event-value">{{ pop.isVisible() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">last event</span>
+      <span class="event-value">{{ lastEvent() }}</span>
     </div>
   </div>`,
 };

@@ -99,6 +99,19 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   handleSelect(node: FlatTreeNode<T>): void;
   /** Close the popover (Escape inside the panel). */
   close(): void;
+  /**
+   * Whether Escape closes under the active dismiss policy: `false` under
+   * `dismissOn: 'outside'` and while a modal sheet holds a pending
+   * pessimistic commit. The panel's Escape handler reads it before acting.
+   */
+  readonly escapeEnabled: Signal<boolean>;
+  /**
+   * Close via the dismiss policy - a modal sheet routes through its own
+   * close flow, an anchored panel through `close()`. The panel's Escape
+   * handler calls it instead of `close()` directly so every dismiss vector
+   * honours the same policy.
+   */
+  escapeClose(): void;
 }
 
 /**

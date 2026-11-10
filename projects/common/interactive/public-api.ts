@@ -180,6 +180,7 @@ export { CngxSwipeDismiss } from './gestures/swipe-dismiss.directive';
 export type { SwipeAxis, SwipeDirection } from './gestures/swipe-direction';
 export {
   CngxReorder,
+  matchesReorderGesture,
   type CngxReorderEvent,
   type CngxReorderModifier,
 } from './reorder/reorder.directive';

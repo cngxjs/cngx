@@ -43,9 +43,9 @@ test.describe('CngxTreeSelect demo', () => {
     await openBasicTrigger(page);
     const tree = panelTree(page).first();
     await expect(tree).toBeVisible();
-    // aria-multiselectable belongs to the aria-selected model; the tree
-    // communicates multi-ness via per-row aria-checked instead.
-    await expect(tree).not.toHaveAttribute('aria-multiselectable', /.+/);
+    // I3: the multi-select tree announces its multi-ness on the container so
+    // assistive tech reads it on entry, alongside the per-row aria-checked.
+    await expect(tree).toHaveAttribute('aria-multiselectable', 'true');
   });
 
   test('leaf click adds a chip and emits selectionChange(toggle)', async ({ page }) => {
