@@ -4,6 +4,7 @@ import { CngxButton } from '@cngx/common/button';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 import { computedValue, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target) against the compiled
 // async-click Material bridge (async-click-bridge.spec-host.scss). The hosts
@@ -135,5 +136,39 @@ describe('async-click Material bridge, rendered', () => {
     expect(getComputedStyle(el).getPropertyValue('--cngx-async-success-color').trim()).not.toBe('');
     const ref = await atRest(one(root, '.ref'));
     expect(paintOf(await atRest(el))).toEqual(paintOf(ref));
+  });
+});
+
+describe('async-click state under forced colors', () => {
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', { features: [] });
+  });
+
+  async function forced(): Promise<HTMLElement> {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    return mount();
+  }
+
+  it('marks a settled success with a 2px solid border on a bare host', async () => {
+    const el = await settle(one(await forced(), '.ok'), 'cngx-async--success');
+    expect(computedValue(el, 'border-top-style')).toBe('solid');
+    expect(computedValue(el, 'border-top-width')).toBe('2px');
+  });
+
+  it('marks a settled failure with a 2px dashed border on a bare host', async () => {
+    const el = await settle(one(await forced(), '.fail'), 'cngx-async--error');
+    expect(computedValue(el, 'border-top-style')).toBe('dashed');
+    expect(computedValue(el, 'border-top-width')).toBe('2px');
+  });
+
+  it('leaves a cngxButton host edge untouched', async () => {
+    const root = await forced();
+    const el = await settle(one(root, '.btn-ok'), 'cngx-async--success');
+    const ref = one(root, '.ref');
+    for (const prop of ['border-top-style', 'border-top-width']) {
+      expect(computedValue(el, prop), prop).toBe(computedValue(ref, prop));
+    }
   });
 });
