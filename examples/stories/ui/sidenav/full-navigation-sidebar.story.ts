@@ -66,7 +66,7 @@ export const STORY: DemoSpec = {
          [active]="activeLink() === '/calendar'"
          (click)="activeLink.set('/calendar'); $event.preventDefault()">
         Calendar
-        <span cngxNavBadge variant="dot" [value]="1" class="demo-sidenav__badge-dot"></span>
+        <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New events" class="demo-sidenav__badge-dot"></span>
       </a>
 
       <span cngxNavLabel class="demo-sidenav__label">Manage</span>

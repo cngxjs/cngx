@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxNavBadge: counts and dots',
   subtitle:
-    '<code>cngxNavBadge</code> renders count, dot, and status variants. Decorative by default (<code>aria-hidden="true"</code>); set <code>[ariaLabel]</code> when the badge conveys information the link text does not.',
+    '<code>cngxNavBadge</code> renders count, dot, and status variants. The badge itself stays <code>aria-hidden="true"</code>; <code>[ariaLabel]</code> is rendered as visually hidden text after it and joins the link name. A dot needs one, or the name never says what it means.',
   description:
-    'Three inbox-style links with badges. Inbox shows an unread count with an explicit accessible label, Updates shows a presence dot (purely visual), Archive holds a zero count so <code>isEmpty()</code> applies the hidden modifier.',
+    'Three inbox-style links with badges. Inbox shows an unread count and reads "Inbox 12 unread", Updates shows a presence dot labelled "New updates", Archive holds a zero count so <code>isEmpty()</code> applies the hidden modifier.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'building-block',
@@ -31,7 +31,7 @@ export const STORY: DemoSpec = {
     </a>
     <a cngxNavLink href="#updates" class="demo-nav__link demo-nav__link--row">
       Updates
-      <span cngxNavBadge variant="dot" [value]="1" class="demo-nav__badge--dot"></span>
+      <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New updates" class="demo-nav__badge--dot"></span>
     </a>
     <a cngxNavLink href="#archive" class="demo-nav__link demo-nav__link--row">
       Archive
