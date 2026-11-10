@@ -1,7 +1,7 @@
 {
   "$schema": "./error-codes.schema.json",
   "schemaVersion": 3,
-  "docsBaseUrl": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/",
+  "docsBaseUrl": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/",
   "ranges": [
     { "lib": "core", "from": 1, "to": 899 },
     { "lib": "utils", "from": 900, "to": 999 },
@@ -19,7 +19,7 @@
       "production": "stripped",
       "title": "Locale is not a BCP 47 tag",
       "page": "core-concepts/error-codes/cngx0001.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0001.html",
       "status": "active",
       "files": ["projects/core/i18n/format-message.ts"],
       "messages": [
@@ -36,7 +36,7 @@
       "production": "stripped",
       "title": "Plural message without a numeric count",
       "page": "core-concepts/error-codes/cngx0002.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0002.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0002.html",
       "status": "active",
       "files": ["projects/core/i18n/format-message.ts"],
       "messages": [
@@ -53,7 +53,7 @@
       "production": "stripped",
       "title": "No argument for a placeholder",
       "page": "core-concepts/error-codes/cngx0003.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0003.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0003.html",
       "status": "active",
       "files": ["projects/core/i18n/format-message.ts"],
       "messages": [
@@ -70,7 +70,7 @@
       "production": "stripped",
       "title": "Registry key already registered",
       "page": "core-concepts/error-codes/cngx0004.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0004.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0004.html",
       "status": "active",
       "files": ["projects/core/utils/registry.ts"],
       "messages": [
@@ -87,7 +87,7 @@
       "production": "stripped",
       "title": "Language pack provided below the root injector",
       "page": "core-concepts/error-codes/cngx0005.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0005.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0005.html",
       "status": "active",
       "files": ["projects/core/i18n/provide-i18n.ts"],
       "messages": [
@@ -104,7 +104,7 @@
       "production": "stripped",
       "title": "Invalid `dir` on the document root",
       "page": "core-concepts/error-codes/cngx0006.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0006.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0006.html",
       "status": "active",
       "files": ["projects/core/bidi/direction.ts"],
       "messages": [
@@ -121,7 +121,7 @@
       "production": "stripped",
       "title": "Duplicate node id in a tree",
       "page": "core-concepts/error-codes/cngx0901.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0901.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0901.html",
       "status": "active",
       "files": ["projects/utils/tree.ts"],
       "messages": [
@@ -138,7 +138,7 @@
       "production": "stripped",
       "title": "Unknown earcon",
       "page": "core-concepts/error-codes/cngx1001.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1001.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1001.html",
       "status": "active",
       "files": ["projects/common/audio/engine/audio-engine.ts"],
       "messages": [
@@ -155,7 +155,7 @@
       "production": "stripped",
       "title": "Lifecycle key bound on `[cngxAudio]`",
       "page": "core-concepts/error-codes/cngx1002.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1002.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1002.html",
       "status": "active",
       "files": ["projects/common/audio/event-mode/audio.directive.ts"],
       "messages": [
@@ -172,7 +172,7 @@
       "production": "stripped",
       "title": "Unrecognised event key on `[cngxAudio]`",
       "page": "core-concepts/error-codes/cngx1003.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1003.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1003.html",
       "status": "active",
       "files": ["projects/common/audio/event-mode/audio.directive.ts"],
       "messages": [
@@ -189,7 +189,7 @@
       "production": "stripped",
       "title": "DOM-event key bound on `[cngxAudioStatus]`",
       "page": "core-concepts/error-codes/cngx1004.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1004.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1004.html",
       "status": "active",
       "files": ["projects/common/audio/status-mode/audio-status.directive.ts"],
       "messages": [
@@ -206,7 +206,7 @@
       "production": "stripped",
       "title": "No state source for `[cngxAudioStatus]`",
       "page": "core-concepts/error-codes/cngx1005.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1005.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1005.html",
       "status": "active",
       "files": ["projects/common/audio/status-mode/audio-status.directive.ts"],
       "messages": [
@@ -223,7 +223,7 @@
       "production": "stripped",
       "title": "Invalid Date bound to a timestamp",
       "page": "core-concepts/error-codes/cngx1006.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1006.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1006.html",
       "status": "active",
       "files": [
         "projects/common/card/card-timestamp.component.ts",
@@ -247,7 +247,7 @@
       "production": "stripped",
       "title": "Non-numeric chart data without a summary accessor",
       "page": "core-concepts/error-codes/cngx1007.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1007.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1007.html",
       "status": "active",
       "files": ["projects/common/chart/chart/chart.component.ts"],
       "messages": [
@@ -264,7 +264,7 @@
       "production": "stripped",
       "title": "More than one chart overlay",
       "page": "core-concepts/error-codes/cngx1008.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1008.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1008.html",
       "status": "active",
       "files": ["projects/common/chart/chart/chart.component.ts"],
       "messages": [
@@ -281,7 +281,7 @@
       "production": "stripped",
       "title": "Two chart axes share one orientation",
       "page": "core-concepts/error-codes/cngx1009.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1009.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1009.html",
       "status": "active",
       "files": ["projects/common/chart/chart/chart.component.ts"],
       "messages": [
@@ -298,7 +298,7 @@
       "production": "stripped",
       "title": "Chart preset without an accessible name",
       "page": "core-concepts/error-codes/cngx1010.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1010.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1010.html",
       "status": "active",
       "files": ["projects/common/chart/presets/preset-state.ts"],
       "messages": [
@@ -315,7 +315,7 @@
       "production": "stripped",
       "title": "Grid recycler without columns",
       "page": "core-concepts/error-codes/cngx1011.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1011.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1011.html",
       "status": "active",
       "files": ["projects/common/data/recycler/recycler.ts"],
       "messages": [
@@ -332,7 +332,7 @@
       "production": "stripped",
       "title": "Per-index size estimate on a large recycler",
       "page": "core-concepts/error-codes/cngx1012.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1012.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1012.html",
       "status": "active",
       "files": ["projects/common/data/recycler/recycler.ts"],
       "messages": [
@@ -349,7 +349,7 @@
       "production": "stripped",
       "title": "Recycler scroll element not found on first render",
       "page": "core-concepts/error-codes/cngx1013.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1013.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1013.html",
       "status": "active",
       "files": ["projects/common/data/recycler/scroll-observer.ts"],
       "messages": [
@@ -366,7 +366,7 @@
       "production": "stripped",
       "title": "Second dialog title or description registered",
       "page": "core-concepts/error-codes/cngx1014.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1014.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1014.html",
       "status": "active",
       "files": ["projects/common/dialog/dialog/dialog.directive.ts"],
       "messages": [
@@ -383,7 +383,7 @@
       "production": "stripped",
       "title": "Non-modal dialog without a title",
       "page": "core-concepts/error-codes/cngx1015.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1015.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1015.html",
       "status": "active",
       "files": ["projects/common/dialog/dialog/dialog.directive.ts"],
       "messages": [
@@ -400,7 +400,7 @@
       "production": "stripped",
       "title": "Status without an accessible name",
       "page": "core-concepts/error-codes/cngx1016.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1016.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1016.html",
       "status": "active",
       "files": ["projects/common/display/status/status.component.ts"],
       "messages": [
@@ -417,7 +417,7 @@
       "production": "stripped",
       "title": "Status reduced to a bare coloured dot",
       "page": "core-concepts/error-codes/cngx1017.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1017.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1017.html",
       "status": "active",
       "files": ["projects/common/display/status/status.component.ts"],
       "messages": [
@@ -434,7 +434,7 @@
       "production": "stripped",
       "title": "Tag group label without a semantic list",
       "page": "core-concepts/error-codes/cngx1018.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1018.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1018.html",
       "status": "active",
       "files": ["projects/common/display/tag-group/tag-group.component.ts"],
       "messages": [
@@ -451,7 +451,7 @@
       "production": "stripped",
       "title": "Two directives bind `aria-busy` on one element",
       "page": "core-concepts/error-codes/cngx1019.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1019.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1019.html",
       "status": "active",
       "files": ["projects/common/interactive/async-status/async-status.directive.ts"],
       "messages": [
@@ -468,7 +468,7 @@
       "production": "stripped",
       "title": "Duplicate error source key",
       "page": "core-concepts/error-codes/cngx1020.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1020.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1020.html",
       "status": "active",
       "files": ["projects/common/interactive/error-registry/aggregator-contract.ts"],
       "messages": [
@@ -485,7 +485,7 @@
       "production": "stripped",
       "title": "Duplicate name in the error registry",
       "page": "core-concepts/error-codes/cngx1021.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1021.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1021.html",
       "status": "active",
       "files": ["projects/common/interactive/error-registry/error-registry.ts"],
       "messages": [
@@ -506,7 +506,7 @@
       "production": "stripped",
       "title": "Nested option groups",
       "page": "core-concepts/error-codes/cngx1022.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1022.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1022.html",
       "status": "active",
       "files": ["projects/common/interactive/listbox/option-group.directive.ts"],
       "messages": [
@@ -523,7 +523,7 @@
       "production": "stripped",
       "title": "Option without a label",
       "page": "core-concepts/error-codes/cngx1023.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1023.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1023.html",
       "status": "active",
       "files": ["projects/common/interactive/listbox/option.directive.ts"],
       "messages": [
@@ -540,7 +540,7 @@
       "production": "stripped",
       "title": "Submenu directive without a menu item",
       "page": "core-concepts/error-codes/cngx1024.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1024.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1024.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"],
       "messages": [
@@ -557,7 +557,7 @@
       "production": "stripped",
       "title": "Submenu without a popover or menu",
       "page": "core-concepts/error-codes/cngx1025.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1025.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1025.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"],
       "messages": [
@@ -574,7 +574,7 @@
       "production": "stripped",
       "title": "Submenu popover without position fallbacks",
       "page": "core-concepts/error-codes/cngx1026.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1026.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1026.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu-item-submenu.directive.ts"],
       "messages": [
@@ -591,7 +591,7 @@
       "production": "stripped",
       "title": "Menu host is not focusable",
       "page": "core-concepts/error-codes/cngx1027.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1027.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1027.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu.directive.ts"],
       "messages": [
@@ -608,7 +608,7 @@
       "production": "stripped",
       "title": "Reorder items without an index",
       "page": "core-concepts/error-codes/cngx1028.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1028.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1028.html",
       "status": "active",
       "files": ["projects/common/interactive/reorder/reorder.directive.ts"],
       "messages": [
@@ -625,7 +625,7 @@
       "production": "stripped",
       "title": "Duplicate tree node id",
       "page": "core-concepts/error-codes/cngx1029.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1029.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1029.html",
       "status": "active",
       "files": ["projects/common/interactive/tree-controller/tree-controller.ts"],
       "messages": [
@@ -642,7 +642,7 @@
       "production": "stripped",
       "title": "Duplicate tree selection key",
       "page": "core-concepts/error-codes/cngx1030.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1030.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1030.html",
       "status": "active",
       "files": ["projects/common/interactive/tree-controller/tree-controller.ts"],
       "messages": [
@@ -659,7 +659,7 @@
       "production": "stripped",
       "title": "Router not set up for a router-sync directive",
       "page": "core-concepts/error-codes/cngx1031.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1031.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1031.html",
       "status": "active",
       "files": [
         "projects/common/data/paginate/paginate-routing.directive.ts",
@@ -693,7 +693,7 @@
       "production": "stripped",
       "title": "Root selector matched no element",
       "page": "core-concepts/error-codes/cngx1032.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1032.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1032.html",
       "status": "active",
       "files": [
         "projects/common/layout/observers/intersection-observer.directive.ts",
@@ -722,7 +722,7 @@
       "production": "stripped",
       "title": "Scroll-spy section not found",
       "page": "core-concepts/error-codes/cngx1033.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1033.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1033.html",
       "status": "active",
       "files": ["projects/common/layout/scroll/scroll-spy.directive.ts"],
       "messages": [
@@ -739,7 +739,7 @@
       "production": "stripped",
       "title": "Sticky header in a container that cannot scroll",
       "page": "core-concepts/error-codes/cngx1034.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1034.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1034.html",
       "status": "active",
       "files": ["projects/common/layout/scroll/sticky-header.directive.ts"],
       "messages": [
@@ -756,7 +756,7 @@
       "production": null,
       "title": "Confirm popover action without an action",
       "page": "core-concepts/error-codes/cngx1035.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1035.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1035.html",
       "status": "retired",
       "files": [],
       "messages": []
@@ -768,7 +768,7 @@
       "production": "stripped",
       "title": "Native Popover API not available",
       "page": "core-concepts/error-codes/cngx1036.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1036.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1036.html",
       "status": "active",
       "files": ["projects/common/popover/popover.directive.ts"],
       "messages": [
@@ -785,7 +785,7 @@
       "production": "stripped",
       "title": "Floating fallback registered without middleware",
       "page": "core-concepts/error-codes/cngx1037.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1037.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1037.html",
       "status": "active",
       "files": ["projects/common/popover/popover.directive.ts"],
       "messages": [
@@ -802,7 +802,7 @@
       "production": "stripped",
       "title": "Stepper control and async click on one element",
       "page": "core-concepts/error-codes/cngx1038.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1038.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1038.html",
       "status": "active",
       "files": [
         "projects/common/stepper/controls/stepper-next.directive.ts",
@@ -826,7 +826,7 @@
       "production": "stripped",
       "title": "More than six steps at one level",
       "page": "core-concepts/error-codes/cngx1039.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1039.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1039.html",
       "status": "active",
       "files": ["projects/common/stepper/presenter.directive.ts"],
       "messages": [
@@ -843,7 +843,7 @@
       "production": "stripped",
       "title": "Commit controller ignored the settle option",
       "page": "core-concepts/error-codes/cngx1040.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1040.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1040.html",
       "status": "active",
       "files": ["projects/common/stepper/presenter.directive.ts"],
       "messages": [
@@ -860,7 +860,7 @@
       "production": "stripped",
       "title": "Feature dropped for a missing `_target`",
       "page": "core-concepts/error-codes/cngx1041.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1041.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1041.html",
       "status": "active",
       "files": [
         "projects/common/button/provide-cngx-button.ts",
@@ -910,7 +910,7 @@
       "production": "stripped",
       "title": "Timeline date accessor produced an invalid date",
       "page": "core-concepts/error-codes/cngx1042.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1042.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1042.html",
       "status": "active",
       "files": ["projects/common/timeline/grouping.ts"],
       "messages": [
@@ -927,7 +927,7 @@
       "production": "stripped",
       "title": "Focusable content in a timeline opposite slot",
       "page": "core-concepts/error-codes/cngx1043.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1043.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1043.html",
       "status": "active",
       "files": ["projects/common/timeline/timeline-item.component.ts"],
       "messages": [
@@ -944,7 +944,7 @@
       "production": "stripped",
       "title": "Standalone chip inside a chip group",
       "page": "core-concepts/error-codes/cngx1044.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1044.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1044.html",
       "status": "active",
       "files": ["projects/common/interactive/chip-interaction/chip-interaction.directive.ts"],
       "messages": [
@@ -961,7 +961,7 @@
       "production": "code-only",
       "title": "Tab or tab link outside a tab group",
       "page": "core-concepts/error-codes/cngx1045.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1045.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1045.html",
       "status": "active",
       "files": [
         "projects/common/tabs/tab-link.directive.ts",
@@ -985,7 +985,7 @@
       "production": "code-only",
       "title": "Step outside a stepper",
       "page": "core-concepts/error-codes/cngx1046.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1046.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1046.html",
       "status": "active",
       "files": ["projects/common/stepper/step.directive.ts"],
       "messages": [
@@ -1002,7 +1002,7 @@
       "production": "code-only",
       "title": "Step group outside a stepper",
       "page": "core-concepts/error-codes/cngx1047.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1047.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1047.html",
       "status": "active",
       "files": ["projects/common/stepper/step-group.directive.ts"],
       "messages": [
@@ -1019,7 +1019,7 @@
       "production": "code-only",
       "title": "Chart layer outside a chart",
       "page": "core-concepts/error-codes/cngx1048.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1048.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1048.html",
       "status": "active",
       "files": ["projects/common/chart/chart/chart-context.ts"],
       "messages": [
@@ -1036,7 +1036,7 @@
       "production": "code-only",
       "title": "Ordinal scale with an empty palette",
       "page": "core-concepts/error-codes/cngx1049.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1049.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1049.html",
       "status": "active",
       "files": ["projects/common/chart/scales/ordinal.ts"],
       "messages": [
@@ -1053,7 +1053,7 @@
       "production": "code-only",
       "title": "Chart buffer capacity is not a positive integer",
       "page": "core-concepts/error-codes/cngx1050.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1050.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1050.html",
       "status": "active",
       "files": ["projects/common/chart/buffer/ring-buffer.ts"],
       "messages": [
@@ -1070,7 +1070,7 @@
       "production": "code-only",
       "title": "Tree controller without a node id function",
       "page": "core-concepts/error-codes/cngx1051.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1051.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1051.html",
       "status": "active",
       "files": ["projects/common/interactive/tree-controller/tree-controller.ts"],
       "messages": [
@@ -1087,7 +1087,7 @@
       "production": "code-only",
       "title": "Button toggle under both a single and a multi group",
       "page": "core-concepts/error-codes/cngx1052.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1052.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1052.html",
       "status": "active",
       "files": ["projects/common/interactive/button-toggle/button-toggle.directive.ts"],
       "messages": [
@@ -1104,7 +1104,7 @@
       "production": "code-only",
       "title": "Button toggle without a group",
       "page": "core-concepts/error-codes/cngx1053.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1053.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1053.html",
       "status": "active",
       "files": ["projects/common/interactive/button-toggle/button-toggle.directive.ts"],
       "messages": [
@@ -1121,7 +1121,7 @@
       "production": "code-only",
       "title": "HTTP response without a body",
       "page": "core-concepts/error-codes/cngx1054.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1054.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1054.html",
       "status": "active",
       "files": ["projects/common/data/async-state/operators.ts"],
       "messages": [
@@ -1138,7 +1138,7 @@
       "production": "code-only",
       "title": "Stepper or tab add-on without its presenter",
       "page": "core-concepts/error-codes/cngx1055.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1055.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1055.html",
       "status": "active",
       "files": [
         "projects/common/stepper/stepper-host.token.ts",
@@ -1162,7 +1162,7 @@
       "production": "stripped",
       "title": "Stepper control without a stepper",
       "page": "core-concepts/error-codes/cngx1056.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1056.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1056.html",
       "status": "active",
       "files": ["projects/common/stepper/warn-stepper-unhosted.ts"],
       "messages": [
@@ -1179,7 +1179,7 @@
       "production": "code-only",
       "title": "Menu radio item outside a menu group",
       "page": "core-concepts/error-codes/cngx1057.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1057.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1057.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu-item-radio.directive.ts"],
       "messages": [
@@ -1196,7 +1196,7 @@
       "production": "stripped",
       "title": "Menu item outside a menu",
       "page": "core-concepts/error-codes/cngx1058.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1058.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1058.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu-item-core.ts"],
       "messages": [
@@ -1213,7 +1213,7 @@
       "production": "code-only",
       "title": "Commit action completed without a decision",
       "page": "core-concepts/error-codes/cngx1059.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1059.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1059.html",
       "status": "active",
       "files": [
         "projects/common/stepper/commit-handler.ts",
@@ -1237,7 +1237,7 @@
       "production": "code-only",
       "title": "Accordion panel outside an accordion",
       "page": "core-concepts/error-codes/cngx1060.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1060.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1060.html",
       "status": "active",
       "files": ["projects/common/interactive/accordion/accordion.token.ts"],
       "messages": [
@@ -1254,7 +1254,7 @@
       "production": "code-only",
       "title": "Breadcrumb item outside a breadcrumb",
       "page": "core-concepts/error-codes/cngx1061.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1061.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1061.html",
       "status": "active",
       "files": ["projects/common/interactive/breadcrumb/breadcrumb.token.ts"],
       "messages": [
@@ -1271,7 +1271,7 @@
       "production": "code-only",
       "title": "Slider thumb outside a range track",
       "page": "core-concepts/error-codes/cngx1062.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1062.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1062.html",
       "status": "active",
       "files": ["projects/common/interactive/slider/range-slider.token.ts"],
       "messages": [
@@ -1288,7 +1288,7 @@
       "production": "code-only",
       "title": "Paginate add-on without a paginate directive",
       "page": "core-concepts/error-codes/cngx1063.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1063.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1063.html",
       "status": "active",
       "files": ["projects/common/data/paginate/inject-paginate.ts"],
       "messages": [
@@ -1305,7 +1305,7 @@
       "production": "stripped",
       "title": "Popover sheet without a name",
       "page": "core-concepts/error-codes/cngx1064.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1064.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1064.html",
       "status": "active",
       "files": ["projects/common/popover/popover-sheet.directive.ts"],
       "messages": [
@@ -1322,7 +1322,7 @@
       "production": "stripped",
       "title": "Popover sheet on an auto popover",
       "page": "core-concepts/error-codes/cngx1065.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1065.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1065.html",
       "status": "active",
       "files": ["projects/common/popover/popover-sheet.directive.ts"],
       "messages": [
@@ -1339,7 +1339,7 @@
       "production": "code-only",
       "title": "Sheet part outside a popover sheet",
       "page": "core-concepts/error-codes/cngx1066.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1066.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1066.html",
       "status": "active",
       "files": ["projects/common/popover/popover-sheet-host.ts"],
       "messages": [
@@ -1356,7 +1356,7 @@
       "production": "code-only",
       "title": "Popover sheet without a popover",
       "page": "core-concepts/error-codes/cngx1067.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1067.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1067.html",
       "status": "active",
       "files": ["projects/common/popover/popover-sheet.directive.ts"],
       "messages": [
@@ -1373,7 +1373,7 @@
       "production": "code-only",
       "title": "Group chip outside a chip group",
       "page": "core-concepts/error-codes/cngx1068.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1068.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1068.html",
       "status": "active",
       "files": ["projects/common/interactive/chip-group/chip-group-host.token.ts"],
       "messages": [
@@ -1390,7 +1390,7 @@
       "production": "stripped",
       "title": "Empty or non-finite pitch domain",
       "page": "core-concepts/error-codes/cngx1069.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1069.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1069.html",
       "status": "active",
       "files": ["projects/common/audio/pitch-mode/audio-pitch.directive.ts"],
       "messages": [
@@ -1407,7 +1407,7 @@
       "production": "stripped",
       "title": "Command source factory returned no source",
       "page": "core-concepts/error-codes/cngx1070.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1070.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1070.html",
       "status": "active",
       "files": ["projects/common/command/provide-commands.ts"],
       "messages": [
@@ -1424,7 +1424,7 @@
       "production": "stripped",
       "title": "Icon button without an accessible name",
       "page": "core-concepts/error-codes/cngx1071.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1071.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1071.html",
       "status": "active",
       "files": ["projects/common/button/button-brain.directive.ts"],
       "messages": [
@@ -1441,7 +1441,7 @@
       "production": "stripped",
       "title": "Button group without an accessible name",
       "page": "core-concepts/error-codes/cngx1072.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1072.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1072.html",
       "status": "active",
       "files": ["projects/common/button/button-group.directive.ts"],
       "messages": [
@@ -1458,7 +1458,7 @@
       "production": "stripped",
       "title": "Split button without a main cngxButton",
       "page": "core-concepts/error-codes/cngx1073.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1073.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1073.html",
       "status": "active",
       "files": ["projects/common/menu-button/split-button.directive.ts"],
       "messages": [
@@ -1475,7 +1475,7 @@
       "production": "stripped",
       "title": "Menu trigger without an ARIA writer",
       "page": "core-concepts/error-codes/cngx1074.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1074.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1074.html",
       "status": "active",
       "files": ["projects/common/interactive/menu/menu-trigger.directive.ts"],
       "messages": [
@@ -1492,7 +1492,7 @@
       "production": "code-only",
       "title": "Button brain without a host descriptor",
       "page": "core-concepts/error-codes/cngx1075.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1075.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1075.html",
       "status": "active",
       "files": ["projects/common/button/button-brain.directive.ts"],
       "messages": [
@@ -1509,7 +1509,7 @@
       "production": "stripped",
       "title": "Push drawer requested as modal",
       "page": "core-concepts/error-codes/cngx1076.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1076.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1076.html",
       "status": "active",
       "files": ["projects/common/layout/drawer/drawer-panel.directive.ts"],
       "messages": [
@@ -1526,7 +1526,7 @@
       "production": "stripped",
       "title": "Two hotkeys tie on one press",
       "page": "core-concepts/error-codes/cngx1077.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1077.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1077.html",
       "status": "active",
       "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
       "messages": [
@@ -1543,7 +1543,7 @@
       "production": "stripped",
       "title": "Hotkey on a browser-reserved combo",
       "page": "core-concepts/error-codes/cngx1078.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1078.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1078.html",
       "status": "active",
       "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
       "messages": [
@@ -1560,7 +1560,7 @@
       "production": "stripped",
       "title": "Hotkey on Ctrl+Alt collides with AltGr",
       "page": "core-concepts/error-codes/cngx1079.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1079.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1079.html",
       "status": "active",
       "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
       "messages": [
@@ -1577,7 +1577,7 @@
       "production": "stripped",
       "title": "Unparseable hotkey combo",
       "page": "core-concepts/error-codes/cngx1080.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1080.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1080.html",
       "status": "active",
       "files": ["projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts"],
       "messages": [
@@ -1594,7 +1594,7 @@
       "production": "stripped",
       "title": "Second popover trigger takes the close listener",
       "page": "core-concepts/error-codes/cngx1081.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1081.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1081.html",
       "status": "active",
       "files": ["projects/common/popover/popover.directive.ts"],
       "messages": [
@@ -1611,7 +1611,7 @@
       "production": "code-only",
       "title": "Action status brain without an async run",
       "page": "core-concepts/error-codes/cngx1082.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1082.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1082.html",
       "status": "active",
       "files": ["projects/common/interactive/action-status/action-status-brain.directive.ts"],
       "messages": [
@@ -1628,7 +1628,7 @@
       "production": "stripped",
       "title": "Unknown filter operator",
       "page": "core-concepts/error-codes/cngx2001.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2001.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2001.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-operators.ts"],
       "messages": [
@@ -1645,7 +1645,7 @@
       "production": "stripped",
       "title": "Filter builder has no fields",
       "page": "core-concepts/error-codes/cngx2002.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2002.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2002.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"],
       "messages": [
@@ -1662,7 +1662,7 @@
       "production": "stripped",
       "title": "Filter value references an unknown field",
       "page": "core-concepts/error-codes/cngx2003.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2003.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2003.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"],
       "messages": [
@@ -1679,7 +1679,7 @@
       "production": "stripped",
       "title": "Filter group exceeds the maximum nesting depth",
       "page": "core-concepts/error-codes/cngx2004.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2004.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2004.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-presenter.directive.ts"],
       "messages": [
@@ -1696,7 +1696,7 @@
       "production": "stripped",
       "title": "cngxPasteTransform stacked on cngxInputMask",
       "page": "core-concepts/error-codes/cngx2005.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2005.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2005.html",
       "status": "active",
       "files": ["projects/forms/input/paste-transform.directive.ts"],
       "messages": [
@@ -1713,7 +1713,7 @@
       "production": "stripped",
       "title": "Input bound through DefaultValueAccessor",
       "page": "core-concepts/error-codes/cngx2006.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2006.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2006.html",
       "status": "active",
       "files": ["projects/forms/input/reactive-forms-channel.ts"],
       "messages": [
@@ -1738,7 +1738,7 @@
       "production": "code-only",
       "title": "Typed control name not found in the form group",
       "page": "core-concepts/error-codes/cngx2007.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2007.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2007.html",
       "status": "active",
       "files": ["projects/forms/controls/typed-control.directive.ts"],
       "messages": [
@@ -1755,7 +1755,7 @@
       "production": "code-only",
       "title": "Chip removal handler without its standard fields",
       "page": "core-concepts/error-codes/cngx2008.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2008.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2008.html",
       "status": "active",
       "files": ["projects/forms/select/shared/chip-removal-handler.ts"],
       "messages": [
@@ -1772,7 +1772,7 @@
       "production": "code-only",
       "title": "Filter tree root replaced by an expression",
       "page": "core-concepts/error-codes/cngx2009.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2009.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2009.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
       "messages": [
@@ -1789,7 +1789,7 @@
       "production": "code-only",
       "title": "Filter path index out of range",
       "page": "core-concepts/error-codes/cngx2010.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2010.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2010.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
       "messages": [
@@ -1806,7 +1806,7 @@
       "production": "code-only",
       "title": "Filter path runs through an expression",
       "page": "core-concepts/error-codes/cngx2011.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2011.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2011.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
       "messages": [
@@ -1827,7 +1827,7 @@
       "production": "code-only",
       "title": "Filter tree root removed",
       "page": "core-concepts/error-codes/cngx2012.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2012.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2012.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.utils.ts"],
       "messages": [
@@ -1844,7 +1844,7 @@
       "production": "code-only",
       "title": "Unknown filter logic",
       "page": "core-concepts/error-codes/cngx2013.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2013.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2013.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder.helpers.ts"],
       "messages": [
@@ -1865,7 +1865,7 @@
       "production": "code-only",
       "title": "Filter group, expression or expression row outside a filter builder",
       "page": "core-concepts/error-codes/cngx2014.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2014.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2014.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-host.token.ts"],
       "messages": [
@@ -1882,7 +1882,7 @@
       "production": "stripped",
       "title": "Field bridge without a form field",
       "page": "core-concepts/error-codes/cngx2015.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2015.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2015.html",
       "status": "active",
       "files": [
         "projects/forms/field/bind-field.directive.ts",
@@ -1916,7 +1916,7 @@
       "production": "code-only",
       "title": "OTP slot outside an OTP input",
       "page": "core-concepts/error-codes/cngx2016.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2016.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2016.html",
       "status": "active",
       "files": ["projects/forms/input/otp-input.directive.ts"],
       "messages": [
@@ -1933,7 +1933,7 @@
       "production": "code-only",
       "title": "Form-field part outside a form field",
       "page": "core-concepts/error-codes/cngx2017.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2017.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2017.html",
       "status": "active",
       "files": [
         "projects/forms/field/inject-form-field-presenter.ts",
@@ -1957,7 +1957,7 @@
       "production": "code-only",
       "title": "Select search outside a select shell",
       "page": "core-concepts/error-codes/cngx2018.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2018.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2018.html",
       "status": "active",
       "files": ["projects/forms/select/declarative/select-search-host.ts"],
       "messages": [
@@ -1974,7 +1974,7 @@
       "production": "code-only",
       "title": "Filter-builder form-field control without a filter builder",
       "page": "core-concepts/error-codes/cngx2019.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2019.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2019.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-form-field-control.directive.ts"],
       "messages": [
@@ -1991,7 +1991,7 @@
       "production": "stripped",
       "title": "More than one main control in a field box",
       "page": "core-concepts/error-codes/cngx2020.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2020.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2020.html",
       "status": "active",
       "files": ["projects/forms/field/field-box.directive.ts"],
       "messages": [
@@ -2008,7 +2008,7 @@
       "production": "stripped",
       "title": "Field-box control is not a direct child",
       "page": "core-concepts/error-codes/cngx2021.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2021.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2021.html",
       "status": "active",
       "files": ["projects/forms/field/field-box.directive.ts"],
       "messages": [
@@ -2025,7 +2025,7 @@
       "production": "stripped",
       "title": "Display-shaped value written to a raw value channel",
       "page": "core-concepts/error-codes/cngx2022.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2022.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2022.html",
       "status": "active",
       "files": [
         "projects/forms/input/input-mask.directive.ts",
@@ -2049,7 +2049,7 @@
       "production": "stripped",
       "title": "Array operator received a non-array value",
       "page": "core-concepts/error-codes/cngx2023.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2023.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2023.html",
       "status": "active",
       "files": ["projects/forms/filter-builder/filter-builder-operators.ts"],
       "messages": [
@@ -2066,7 +2066,7 @@
       "production": "stripped",
       "title": "patchData or clearLocalItems called on the select shell",
       "page": "core-concepts/error-codes/cngx2024.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2024.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2024.html",
       "status": "active",
       "files": ["projects/forms/select/select-shell/select-shell.component.ts"],
       "messages": [
@@ -2087,7 +2087,7 @@
       "production": "code-only",
       "title": "commitAction completed without emitting a value",
       "page": "core-concepts/error-codes/cngx2025.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2025.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2025.html",
       "status": "active",
       "files": ["projects/forms/select/shared/internal/commit-action.runtime.ts"],
       "messages": [
@@ -2104,7 +2104,7 @@
       "production": "stripped",
       "title": "Tree select compareWith set without keyFn",
       "page": "core-concepts/error-codes/cngx2026.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2026.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2026.html",
       "status": "active",
       "files": ["projects/forms/select/tree-select/tree-select.component.ts"],
       "messages": [
@@ -2121,7 +2121,7 @@
       "production": "code-only",
       "title": "quickCreateAction settled without the created item",
       "page": "core-concepts/error-codes/cngx2027.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2027.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2027.html",
       "status": "active",
       "files": ["projects/forms/select/shared/create-commit-handler.ts"],
       "messages": [
@@ -2138,7 +2138,7 @@
       "production": "stripped",
       "title": "Grouped options under a configured virtualization",
       "page": "core-concepts/error-codes/cngx2028.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2028.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2028.html",
       "status": "active",
       "files": ["projects/forms/select/shared/internal/setup-virtualization.ts"],
       "messages": [
@@ -2155,7 +2155,7 @@
       "production": "stripped",
       "title": "Router not set up for a router-sync directive",
       "page": "core-concepts/error-codes/cngx3001.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3001.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3001.html",
       "status": "active",
       "files": [
         "projects/ui/breadcrumb/breadcrumb-router-sync.directive.ts",
@@ -2184,7 +2184,7 @@
       "production": "stripped",
       "title": "No state source for a feedback bridge",
       "page": "core-concepts/error-codes/cngx3002.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3002.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3002.html",
       "status": "active",
       "files": [
         "projects/ui/feedback/alert/alert-on.directive.ts",
@@ -2213,7 +2213,7 @@
       "production": "stripped",
       "title": "Alert overflow label does not contain its visible text",
       "page": "core-concepts/error-codes/cngx3003.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3003.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3003.html",
       "status": "active",
       "files": ["projects/ui/feedback/alert/alert-stack.ts"],
       "messages": [
@@ -2230,7 +2230,7 @@
       "production": "stripped",
       "title": "Raw error text shown as error detail",
       "page": "core-concepts/error-codes/cngx3004.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3004.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3004.html",
       "status": "active",
       "files": ["projects/ui/feedback/config/feedback-config.ts"],
       "messages": [
@@ -2247,7 +2247,7 @@
       "production": "stripped",
       "title": "Mat-tabs decoration retry ceiling reached",
       "page": "core-concepts/error-codes/cngx3005.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3005.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3005.html",
       "status": "active",
       "files": ["projects/ui/mat-tabs/decorations/decoration-projectors.ts"],
       "messages": [
@@ -2264,7 +2264,7 @@
       "production": "stripped",
       "title": "Mat-tabs aggregator slot half-wired",
       "page": "core-concepts/error-codes/cngx3006.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3006.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3006.html",
       "status": "active",
       "files": ["projects/ui/mat-tabs/decorations/half-wired-slot-sink.ts"],
       "messages": [
@@ -2281,7 +2281,7 @@
       "production": "stripped",
       "title": "Mat-tabs overflow could not anchor",
       "page": "core-concepts/error-codes/cngx3007.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3007.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3007.html",
       "status": "active",
       "files": ["projects/ui/mat-tabs/mat-tabs.directive.ts"],
       "messages": [
@@ -2298,7 +2298,7 @@
       "production": "stripped",
       "title": "Action button toasts configured twice",
       "page": "core-concepts/error-codes/cngx3008.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3008.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3008.html",
       "status": "active",
       "files": ["projects/ui/action-button/action-toast.directive.ts"],
       "messages": [
@@ -2315,7 +2315,7 @@
       "production": "stripped",
       "title": "Data-grid-accordion row has more cells than columns",
       "page": "core-concepts/error-codes/cngx3009.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3009.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3009.html",
       "status": "active",
       "files": ["projects/ui/data-grid-accordion/data-grid-accordion.component.ts"],
       "messages": [
@@ -2332,7 +2332,7 @@
       "production": "stripped",
       "title": "Sidenav auto mode without a layout",
       "page": "core-concepts/error-codes/cngx3010.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3010.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3010.html",
       "status": "active",
       "files": ["projects/ui/sidenav/sidenav.ts"],
       "messages": [
@@ -2349,7 +2349,7 @@
       "production": "stripped",
       "title": "Icon-only tabs without an icon template",
       "page": "core-concepts/error-codes/cngx3011.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3011.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3011.html",
       "status": "active",
       "files": ["projects/ui/tabs/tab-group-dev-checks.ts"],
       "messages": [
@@ -2366,7 +2366,7 @@
       "production": "stripped",
       "title": "Tab overflow could not find the tab strip",
       "page": "core-concepts/error-codes/cngx3012.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3012.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3012.html",
       "status": "active",
       "files": ["projects/ui/tabs/tab-overflow.component.ts"],
       "messages": [
@@ -2383,7 +2383,7 @@
       "production": "stripped",
       "title": "Alternate placement ignored in an activity timeline",
       "page": "core-concepts/error-codes/cngx3013.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3013.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3013.html",
       "status": "active",
       "files": ["projects/ui/timeline/timeline.component.ts"],
       "messages": [
@@ -2400,7 +2400,7 @@
       "production": "code-only",
       "title": "Sidenav content outside a sidenav layout",
       "page": "core-concepts/error-codes/cngx3014.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3014.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3014.html",
       "status": "active",
       "files": ["projects/ui/sidenav/sidenav-content.ts"],
       "messages": [
@@ -2417,7 +2417,7 @@
       "production": "code-only",
       "title": "Alert bridge without a CngxAlerter",
       "page": "core-concepts/error-codes/cngx3015.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3015.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3015.html",
       "status": "active",
       "files": ["projects/ui/feedback/alert/alert-on.directive.ts"],
       "messages": [
@@ -2434,7 +2434,7 @@
       "production": "code-only",
       "title": "Toast without a CngxToaster",
       "page": "core-concepts/error-codes/cngx3016.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3016.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3016.html",
       "status": "active",
       "files": [
         "projects/ui/feedback/toast/toast-on.directive.ts",
@@ -2458,7 +2458,7 @@
       "production": "code-only",
       "title": "Banner without a CngxBanner",
       "page": "core-concepts/error-codes/cngx3017.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3017.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3017.html",
       "status": "active",
       "files": [
         "projects/ui/feedback/banner/banner-on.directive.ts",
@@ -2482,7 +2482,7 @@
       "production": "code-only",
       "title": "Paginator segment outside a paginator",
       "page": "core-concepts/error-codes/cngx3018.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3018.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3018.html",
       "status": "active",
       "files": [
         "projects/ui/paginator/paginator-host.token.ts",
@@ -2506,7 +2506,7 @@
       "production": "code-only",
       "title": "Accordion item outside an accordion group",
       "page": "core-concepts/error-codes/cngx3019.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3019.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3019.html",
       "status": "active",
       "files": ["projects/ui/accordion/accordion-item.component.ts"],
       "messages": [
@@ -2523,7 +2523,7 @@
       "production": "code-only",
       "title": "Tab error directive outside a cngxMatTabs group",
       "page": "core-concepts/error-codes/cngx3020.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3020.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3020.html",
       "status": "active",
       "files": ["projects/ui/mat-tabs/mat-tab-error-target.ts"],
       "messages": [
@@ -2540,7 +2540,7 @@
       "production": "code-only",
       "title": "Router sync outside its sidenav or table of contents",
       "page": "core-concepts/error-codes/cngx3021.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3021.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3021.html",
       "status": "active",
       "files": [
         "projects/ui/sidenav/sidenav-router-sync.directive.ts",
@@ -2564,7 +2564,7 @@
       "production": "code-only",
       "title": "Data-grid part outside a data grid",
       "page": "core-concepts/error-codes/cngx3022.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3022.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3022.html",
       "status": "active",
       "files": ["projects/ui/data-grid-accordion/data-grid-accordion.token.ts"],
       "messages": [
@@ -2581,7 +2581,7 @@
       "production": "code-only",
       "title": "Tab overflow outside a tab group",
       "page": "core-concepts/error-codes/cngx3023.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3023.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3023.html",
       "status": "active",
       "files": ["projects/ui/tabs/tab-overflow.component.ts"],
       "messages": [
@@ -2598,7 +2598,7 @@
       "production": "code-only",
       "title": "Breadcrumb overflow menu outside a breadcrumb",
       "page": "core-concepts/error-codes/cngx3024.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3024.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3024.html",
       "status": "active",
       "files": ["projects/ui/breadcrumb/breadcrumb-overflow.component.ts"],
       "messages": [
@@ -2615,7 +2615,7 @@
       "production": "stripped",
       "title": "Tab without a label string",
       "page": "core-concepts/error-codes/cngx3025.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3025.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3025.html",
       "status": "active",
       "files": ["projects/ui/tabs/tab-group-dev-checks.ts"],
       "messages": [
@@ -2632,7 +2632,7 @@
       "production": "stripped",
       "title": "Unknown sidenav width class",
       "page": "core-concepts/error-codes/cngx3026.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3026.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx3026.html",
       "status": "active",
       "files": ["projects/ui/sidenav/sidenav.ts"],
       "messages": [
@@ -2649,7 +2649,7 @@
       "production": "stripped",
       "title": "Treetable column has no header label",
       "page": "core-concepts/error-codes/cngx4001.md",
-      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx4001.html",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx4001.html",
       "status": "active",
       "files": ["projects/data-display/treetable/treetable.component.ts"],
       "messages": [

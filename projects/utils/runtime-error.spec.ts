@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CNGX_ERROR_DOCS_URL, type CngxErrorCode } from './dev-message';
+import { type CngxErrorCode, errorDocsUrl } from './dev-message';
 import { CngxRuntimeError } from './runtime-error';
 
 describe('CngxRuntimeError', () => {
@@ -23,7 +23,7 @@ describe('CngxRuntimeError', () => {
     it('formats the code, the message and the doc link', () => {
       vi.stubGlobal('ngDevMode', true);
       const err = new CngxRuntimeError('CNGX0902', 'm');
-      expect(err.message).toBe(`CNGX0902: m Find more at ${CNGX_ERROR_DOCS_URL}cngx0902.html`);
+      expect(err.message).toBe(`CNGX0902: m Find more at ${errorDocsUrl()}cngx0902.html`);
     });
 
     it('is an Error and a CngxRuntimeError with its code and name', () => {

@@ -35,7 +35,7 @@ export const MANIFEST_PATH = resolve(REPO_ROOT, 'scripts/manifests/error-codes.j
 export const SUMMARY_PATH = resolve(REPO_ROOT, 'core-concepts/summary.json');
 export const PAGES_DIR = resolve(REPO_ROOT, 'core-concepts/error-codes');
 
-export const DOCS_BASE_URL = `${DEFAULT_BASE_URL}/additional-documentation/error-codes/`;
+export const DOCS_BASE_URL = `${DEFAULT_BASE_URL}/main/additional-documentation/error-codes/`;
 
 /** The code range each lib emits in. `0000` and `6000-9999` are never used. */
 export const CODE_RANGES = [
