@@ -298,11 +298,13 @@ describe('injectQueryParamSync', () => {
 
       const fixture = TestBed.createComponent(Outer);
       fixture.detectChanges();
-      await flush();
 
+      // Asserted before any flush: one change-detection pass must already render the hydrated state.
       const host = fixture.debugElement.children[0];
       expect((host.componentInstance as BoundParamHost).state()).toBe(true);
       expect((host.nativeElement as HTMLElement).textContent).toBe('open');
+
+      await flush();
       expect(router.parseUrl(router.url).queryParamMap.get('menu')).toBe('open');
     });
 

@@ -35,7 +35,10 @@ export interface QueryParamSyncOptions<T = boolean> {
  * effect run, not in the call: a `Signal<string>` key backed by an input is
  * read after the input is bound, and in a directive the hydrated state is in
  * place before the caller's view first renders. A read of `state()` in the
- * caller's constructor or `ngOnInit` still sees the un-hydrated value.
+ * caller's constructor or `ngOnInit` still sees the un-hydrated value. Called
+ * from an environment injector (a service, `runInInjectionContext`), the
+ * effects are root effects: `state()` is hydrated on the first application
+ * tick, not when the call returns.
  *
  * Loop-safety (the core of this helper): the reflect effect writes the URL in
  * `untracked()` and skips `navigate` when the serialized `state()` equals the
