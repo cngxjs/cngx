@@ -4,6 +4,7 @@ import {
   CNGX_BUTTON_STATE,
   type CngxButtonHostState,
 } from '@cngx/common/button';
+import { CngxPopoverTrigger } from '@cngx/common/popover';
 import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
 
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
@@ -86,6 +87,7 @@ export class CngxSplitCaret implements CngxButtonHostState {
   private readonly state = inject(CNGX_BUTTON_STATE, { self: true });
   private readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
   private readonly i18n = injectMenuButtonI18n();
+  private readonly trigger = inject(CngxPopoverTrigger, { self: true, optional: true });
 
   /** `true` while the host is the caret of a split (its direct child). */
   readonly isCaret = computed(() => this.split?.caret() === this.state);
@@ -101,6 +103,13 @@ export class CngxSplitCaret implements CngxButtonHostState {
 
   /** The busy note from the language pack (`menuButton.splitMainBusy`). */
   readonly busyNote = computed(() => this.i18n().splitMainBusy);
+
+  /**
+   * The popover of the `CngxPopoverTrigger` co-hosted on this element, or
+   * `null` for a caret host without one. The split reads it to anchor the
+   * menu to the whole group.
+   */
+  readonly popover = computed(() => this.trigger?.popoverRef() ?? null);
 
   // The cause of a refusal that comes from the main: its reason, or the busy
   // note while it runs.

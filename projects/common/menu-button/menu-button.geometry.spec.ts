@@ -1,8 +1,9 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { Component, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxButton, type CngxButtonSize } from '@cngx/common/button';
 import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
+import { provideDirection } from '@cngx/core';
 import { accessibleName, computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -40,7 +41,14 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         </p>
       }
       <p>
-        <button cngxMenuButton class="m-busy" [cngxAsyncClick]="action" [showDelay]="0" [menu]="menu" [popover]="pop">
+        <button
+          cngxMenuButton
+          class="m-busy"
+          [cngxAsyncClick]="action"
+          [showDelay]="0"
+          [menu]="menu"
+          [popover]="pop"
+        >
           Export
         </button>
       </p>
@@ -114,6 +122,44 @@ class CustomCaretHost {}
 })
 class SplitTouchHost {
   readonly sizes: readonly CngxButtonSize[] = ['xs', 'sm', 'md', 'lg'];
+}
+
+@Component({
+  selector: 'cngx-split-button-anchor-host',
+  standalone: true,
+  imports: [CngxButton, CngxIconMenuButton, CngxSplitButton, CngxMenu, CngxMenuItem, CngxPopover],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-popover.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div [attr.dir]="dir()" style="padding: 0 40px">
+      <div cngxSplitButton class="split" aria-label="Publish">
+        <button cngxButton class="main" style="inline-size: 160px">Publish</button>
+        <button cngxIconMenuButton class="caret" [menu]="menu" [popover]="pop"></button>
+      </div>
+      <div
+        cngxPopover
+        #pop="cngxPopover"
+        class="panel"
+        placement="bottom-start"
+        style="width: 120px; height: 40px"
+      >
+        <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+          <li cngxMenuItem value="schedule">Schedule</li>
+        </ul>
+      </div>
+    </div>
+  `,
+})
+class SplitAnchorHost {
+  readonly dir = signal<'ltr' | 'rtl'>('ltr');
+  readonly popover = viewChild.required(CngxPopover);
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -266,4 +312,40 @@ describe('CngxSplitButton geometry: touch', () => {
       expect(caret.width, `${size} caret inline`).toBeGreaterThanOrEqual(44 - 0.5);
     }
   });
+});
+
+describe('CngxSplitButton geometry: menu anchor', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    it(`hangs the menu under the group start edge, not the caret (${dir})`, async () => {
+      // The popover mirrors its placement from CNGX_DIRECTION, not the DOM dir.
+      TestBed.configureTestingModule({ providers: [provideDirection(dir)] });
+      const fixture = TestBed.createComponent(SplitAnchorHost);
+      fixture.componentInstance.dir.set(dir);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      const popover = fixture.componentInstance.popover();
+      popover.show();
+      fixture.detectChanges();
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+      const group = query(mountedRoot, '.split').getBoundingClientRect();
+      const caret = query(mountedRoot, '.caret').getBoundingClientRect();
+      const panel = query(mountedRoot, '.panel').getBoundingClientRect();
+      const groupStart = dir === 'ltr' ? group.left : group.right;
+      const caretStart = dir === 'ltr' ? caret.left : caret.right;
+      const panelStart = dir === 'ltr' ? panel.left : panel.right;
+      expect(Math.abs(groupStart - caretStart)).toBeGreaterThan(40);
+      expect(Math.abs(panelStart - groupStart)).toBeLessThanOrEqual(1);
+      expect(panel.top).toBeGreaterThanOrEqual(group.bottom - 1);
+      popover.hide();
+    });
+  }
 });
