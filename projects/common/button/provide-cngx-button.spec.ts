@@ -1,4 +1,4 @@
-import { Component, Injector } from '@angular/core';
+import { Component, Injector, isSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   CNGX_ACTION_STATUS_CONFIG,
@@ -93,7 +93,8 @@ describe('provideCngxButtonAt', () => {
       providers: provideCngxButtonAt(withActionStatusLabels({ failed: 'Failed' })),
       parent: TestBed.inject(Injector),
     });
-    expect(child.get(CNGX_ACTION_STATUS_CONFIG).labels).toEqual({ failed: 'Failed' });
+    const labels = child.get(CNGX_ACTION_STATUS_CONFIG).labels;
+    expect(isSignal(labels) ? labels() : labels).toEqual({ succeeded: 'Saved', failed: 'Failed' });
   });
 
   it('plants no config without config features', () => {
