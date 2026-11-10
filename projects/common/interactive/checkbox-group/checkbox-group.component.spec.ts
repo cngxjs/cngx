@@ -492,6 +492,52 @@ describe('CngxCheckboxGroup', () => {
       expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
     });
   });
+
+  describe('roving keyboard navigation with a static orientation attribute', () => {
+    @Component({
+      template: `
+        <cngx-checkbox-group label="Picks" orientation="horizontal">
+          <cngx-checkbox>A</cngx-checkbox>
+          <cngx-checkbox>B</cngx-checkbox>
+          <cngx-checkbox>C</cngx-checkbox>
+        </cngx-checkbox-group>
+      `,
+      imports: [CngxCheckboxGroup, CngxCheckbox],
+    })
+    class StaticNavHost {}
+
+    function staticSetup() {
+      const fixture = TestBed.createComponent(StaticNavHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+        .nativeElement as HTMLElement;
+      const checkboxes = fixture.debugElement
+        .queryAll(By.directive(CngxCheckbox))
+        .map((de) => de.nativeElement as HTMLElement);
+      return { fixture, groupEl, checkboxes };
+    }
+
+    function keydown(el: HTMLElement, key: string): void {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    }
+
+    it('ArrowRight advances tabindex ownership and ArrowDown does not', () => {
+      const { fixture, groupEl, checkboxes } = staticSetup();
+
+      keydown(groupEl, 'ArrowDown');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('-1');
+
+      keydown(groupEl, 'ArrowRight');
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(checkboxes[0].getAttribute('tabindex')).toBe('-1');
+      expect(checkboxes[1].getAttribute('tabindex')).toBe('0');
+    });
+  });
 });
 
 const discoveredState = createManualState<string>();
