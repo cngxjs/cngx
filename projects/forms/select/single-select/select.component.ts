@@ -40,7 +40,7 @@ import {
 } from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
@@ -233,8 +233,8 @@ export interface CngxSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelect },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxSelect },
+    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxSelect).panelHost },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxSelect).panelHost },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -719,15 +719,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.localItemsBuffer.clear();
   }
 
-  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
   /** @internal */ protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */ protected readonly activeView = this.core.activeView;
-  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */ protected readonly panelClassList = this.core.panelClassList;
   /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
   /** @internal */ readonly ariaLabels = this.core.ariaLabels;
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
@@ -750,12 +744,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
-  /** @internal */ protected readonly resolvedShowSelectionIndicator =
-    this.core.resolvedShowSelectionIndicator;
-  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
-    this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
-    this.core.resolvedSelectionIndicatorPosition;
   /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */ protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
@@ -765,7 +753,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */ protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
@@ -796,16 +783,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
   readonly isCommitting = this.core.isCommitting;
-  /** @internal - latest commit error. */
-  readonly commitErrorValue = this.core.commitErrorValue;
-
-  /** @internal */
-  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
-  /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.scalarHandler.retryLast();
-  });
 
   /**
    * Currently selected option, resolved against `options`. Structural
@@ -913,11 +890,36 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     onError: (err) => this.commitError.emit(err),
   });
 
-  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ protected readonly isCommittingOption =
-    this.core.panelHostAdapter.isCommittingOption;
+  /**
+   * Object behind `CNGX_SELECT_PANEL_HOST` and `CNGX_SELECT_PANEL_VIEW_HOST`;
+   * the core supplies every shared key.
+   *
+   * @internal
+   */
+  readonly panelHost = this.core.createPanelHost({
+    activeView: this.core.activeView,
+    showInlineError: this.core.showInlineError,
+    isCommitting: this.core.isCommitting,
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.core.makeErrorContext(() => this.handleRetry()),
+    commitErrorContext: this.core.bindCommitRetry(() => {
+      this.hostFocus.refocusOwnerBeforeRemoval();
+      this.scalarHandler.retryLast();
+    }),
+    handleRetry: () => this.handleRetry(),
+    listboxCompareWith: this.listboxCompareWith,
+    activeId: this.activeId,
+    panelOpen: this.panelOpen,
+    patchData: (item) => this.patchData(item),
+    clearLocalItems: () => this.clearLocalItems(),
+    panelRenderer: this.panelRenderer,
+    autoRecycler: this.autoRecycler,
+    actionDirty: this.actionDirty,
+    actionCallbacks: this.actionCallbacks,
+    actionFocusTrapEnabled: this.actionFocusTrapEnabled,
+  });
 
   // `''` counts as no selection: Signal Forms start a string field at '', and
   // the trigger must show that as the placeholder, styled as one.
@@ -1000,29 +1002,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
-  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
-    openOn: () => this.config.openOn,
-    open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
-  });
-
-  /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
 
@@ -1080,15 +1059,27 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+  });
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
+
+  /** @internal */
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 
   // A closed-trigger pick is a pick: with a bound action it must reach the
   // server like a panel pick, or the trigger diverges from the backend.

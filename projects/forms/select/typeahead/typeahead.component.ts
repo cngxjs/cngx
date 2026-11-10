@@ -111,6 +111,7 @@ import { type CngxCommitErrorAnnouncePolicy } from '../shared/commit-error-annou
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
+import { createInputHostHandlers } from '../shared/internal/input-host-handlers';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -242,8 +243,8 @@ export interface CngxTypeaheadChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxTypeahead },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTypeahead },
+    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxTypeahead).panelHost },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxTypeahead).panelHost },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -701,8 +702,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */
   protected readonly flatOptions = this.core.flatOptions;
   /**
    * @internal I9: a first-load error on a CLOSED typeahead surfaces on the
@@ -718,10 +717,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   });
   /** @internal */
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal The inline refresh error stays inside the panel, so a closed panel never carries a `role="alert"` (I9). */
-  protected readonly showInlineError = computed<boolean>(
-    () => this.panelOpen() && this.core.showInlineError(),
-  );
   /** @internal True while a closed typeahead carries a first-load error (I9). */
   protected readonly closedLoadError = computed<boolean>(
     () => !this.panelOpen() && this.core.activeView() === 'error',
@@ -745,8 +740,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     return [base, this.loadErrorId].filter(Boolean).join(' ') || null;
   });
   /** @internal */
-  protected readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal */
   protected readonly panelWidthCss = this.core.panelWidthCss;
@@ -761,14 +754,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
   /** @internal */
-  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
-  /** @internal */
-  protected readonly resolvedSelectionIndicatorVariant =
-    this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */
-  protected readonly resolvedSelectionIndicatorPosition =
-    this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
@@ -778,12 +763,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
-  /** @internal */
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
   protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */
-  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
@@ -805,14 +787,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
   readonly commitErrorValue = this.core.commitErrorValue;
-
-  /** @internal */
-  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
-  /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.scalarHandler.retryLast();
-  });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T>({
@@ -926,14 +900,41 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     onValueWrite: (v) => this.display.writeFromValue(v),
   });
 
-  /** @internal */
-  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */
-  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */
-  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */
-  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /**
+   * Object behind `CNGX_SELECT_PANEL_HOST` and `CNGX_SELECT_PANEL_VIEW_HOST`;
+   * the core supplies every shared key.
+   *
+   * @internal
+   */
+  readonly panelHost = this.core.createPanelHost({
+    isCommitting: this.core.isCommitting,
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.core.makeErrorContext(() => this.handleRetry()),
+    commitErrorContext: this.core.bindCommitRetry(() => {
+      this.hostFocus.refocusOwnerBeforeRemoval();
+      this.scalarHandler.retryLast();
+    }),
+    handleRetry: () => this.handleRetry(),
+    listboxCompareWith: this.listboxCompareWith,
+    activeId: this.activeId,
+    panelOpen: this.panelOpen,
+    patchData: (item) => this.patchData(item),
+    clearLocalItems: () => this.clearLocalItems(),
+    panelRenderer: this.panelRenderer,
+    autoRecycler: this.autoRecycler,
+    searchTerm: this.searchTerm,
+    actionDirty: this.actionDirty,
+    actionCallbacks: this.actionCallbacks,
+    actionFocusTrapEnabled: this.actionFocusTrapEnabled,
+    activeView: this.activeView,
+    // I9: the inline refresh error stays inside the panel, so a closed
+    // panel never carries a `role="alert"`.
+    showInlineError: computed<boolean>(
+      () => this.panelOpen() && this.core.showInlineError(),
+    ),
+  });
 
   protected isEmpty(): boolean {
     return isEmptyScalar(this.value());
@@ -1031,27 +1032,37 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.inputEl()?.nativeElement.focus(options);
   }
 
-  protected handleWrapperClick(): void {
-    if (this.disabled()) {
-      return;
-    }
-    this.focus();
-    if (!this.panelOpen()) {
-      this.open();
-    }
-  }
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  private readonly inputHost = createInputHostHandlers({
+    focusState: this.focusState,
+    hostFocus: this.hostFocus,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+    panelOpen: () => this.panelOpen(),
+    focus: () => this.focus(),
+    inputEl: () => this.inputEl()?.nativeElement,
+    blurLeave: {
+      host: this.hostEl.nativeElement,
+      clearOnBlur: () => this.clearOnBlur(),
+      onLeave: () => this.display.writeFromValue(this.value()),
+    },
+    reloadFn: () => this.retryFn(),
+    retry: () => this.retry.emit(),
+  });
+  /** @internal */
+  protected readonly handleWrapperClick = this.inputHost.handleWrapperClick;
+  /** @internal */
+  protected readonly handleRetry = this.inputHost.handleRetry;
+  /** @internal */
+  protected readonly handleFocus = this.inputHost.handleFocus;
+  /** @internal */
+  protected readonly handleBlur = this.inputHost.handleBlur;
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
-
-  protected handleRetry(): void {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const fn = this.retryFn();
-    if (fn) {
-      fn();
-    }
-    this.retry.emit();
-  }
 
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
@@ -1101,33 +1112,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // needs no entry: the trigger flushes the term on blur and the auto-open is
   // gated on focus.
   private readonly dismissedTerm = signal<string | null>(null);
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
-  }
-
-  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
-
-  protected handleBlur(event?: FocusEvent): void {
-    this.focusState.markBlurred();
-    // Snap input back to `displayWith(value)` when text drifted from
-    // the committed value. Disable via `[clearOnBlur]="false"`.
-    if (!this.clearOnBlur()) {
-      return;
-    }
-    // Focus moving INSIDE the component (a panel Retry button, an option row)
-    // must keep the typed term: the blur races the click, and snapping back
-    // to `displayWith(value)` here would drop the draft before the click runs.
-    const related = event?.relatedTarget as HTMLElement | null;
-    if (related && this.hostEl.nativeElement.contains(related)) {
-      return;
-    }
-    this.display.writeFromValue(this.value());
-  }
 
   /**
    * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown

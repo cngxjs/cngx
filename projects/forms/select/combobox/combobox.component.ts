@@ -120,6 +120,7 @@ import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import { createHostFocusWithin } from '../shared/internal/host-focus-within';
+import { createInputHostHandlers } from '../shared/internal/input-host-handlers';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -273,8 +274,8 @@ export interface CngxComboboxChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxCombobox },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxCombobox },
+    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxCombobox).panelHost },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxCombobox).panelHost },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -851,17 +852,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */
   protected readonly flatOptions = this.core.flatOptions;
   /** @internal */
   protected readonly activeView = this.core.activeView;
   /** @internal */
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */
-  protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */
-  protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal */
@@ -875,14 +870,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */
-  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
-  /** @internal */
-  protected readonly resolvedSelectionIndicatorVariant =
-    this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */
-  protected readonly resolvedSelectionIndicatorPosition =
-    this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
@@ -892,12 +879,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
-  /** @internal */
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
   protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */
-  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
@@ -921,16 +905,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
   readonly isCommitting = this.core.isCommitting;
-  /** @internal - latest commit error. */
-  readonly commitErrorValue = this.core.commitErrorValue;
-
-  /** @internal - errorContext signal (wired once with the retry handler). */
-  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
-  /** @internal - commitErrorContext signal (wired once with retry handler). */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.commitHandler.retryLast();
-  });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({
@@ -1108,11 +1082,37 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     onSyncFinalize: (item, previous) => this.toggleDispatch.finalizeToggle(item, false, previous),
   });
 
-  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ protected readonly isCommittingOption =
-    this.core.panelHostAdapter.isCommittingOption;
+  /**
+   * Object behind `CNGX_SELECT_PANEL_HOST` and `CNGX_SELECT_PANEL_VIEW_HOST`;
+   * the core supplies every shared key.
+   *
+   * @internal
+   */
+  readonly panelHost = this.core.createPanelHost({
+    activeView: this.core.activeView,
+    showInlineError: this.core.showInlineError,
+    isCommitting: this.core.isCommitting,
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.core.makeErrorContext(() => this.handleRetry()),
+    commitErrorContext: this.core.bindCommitRetry(() => {
+      this.hostFocus.refocusOwnerBeforeRemoval();
+      this.commitHandler.retryLast();
+    }),
+    handleRetry: () => this.handleRetry(),
+    listboxCompareWith: this.listboxCompareWith,
+    activeId: this.activeId,
+    panelOpen: this.panelOpen,
+    patchData: (item) => this.patchData(item),
+    clearLocalItems: () => this.clearLocalItems(),
+    panelRenderer: this.panelRenderer,
+    autoRecycler: this.autoRecycler,
+    searchTerm: this.searchTerm,
+    actionDirty: this.actionDirty,
+    actionCallbacks: this.actionCallbacks,
+    actionFocusTrapEnabled: this.actionFocusTrapEnabled,
+  });
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
@@ -1220,36 +1220,31 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Descendants that own their own click; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
+  private readonly inputHost = createInputHostHandlers({
+    focusState: this.focusState,
+    hostFocus: this.hostFocus,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+    panelOpen: () => this.panelOpen(),
+    focus: () => this.focus(),
+    inputEl: () => this.inputEl()?.nativeElement,
+    nestedInteractive: this.nestedInteractive,
+    reloadFn: () => this.retryFn(),
+    retry: () => this.retry.emit(),
+  });
   /** @internal - wrapper click routes focus into the input and opens. */
-  protected handleWrapperClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    const target = event.target as HTMLElement | null;
-    const nested = target?.closest(this.nestedInteractive) as HTMLElement | null;
-    // The own input matches the selector too; a click on it must still open.
-    // Only a genuinely nested control (chip remove, clear button) is left alone.
-    if (nested && nested !== this.inputEl()?.nativeElement) {
-      return;
-    }
-    this.focus();
-    if (!this.panelOpen()) {
-      this.open();
-    }
-  }
+  protected readonly handleWrapperClick = this.inputHost.handleWrapperClick;
+  /** @internal */
+  protected readonly handleRetry = this.inputHost.handleRetry;
+  /** @internal */
+  protected readonly handleFocus = this.inputHost.handleFocus;
+  /** @internal */
+  protected readonly handleBlur = this.inputHost.handleBlur;
 
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
-
-  /** @internal */
-  protected handleRetry(): void {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    const fn = this.retryFn();
-    if (fn) {
-      fn();
-    }
-    this.retry.emit();
-  }
 
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
@@ -1296,19 +1291,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   // needs no entry: the trigger flushes the term on blur and the auto-open is
   // gated on focus.
   private readonly dismissedTerm = signal<string | null>(null);
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
-  }
-
-  /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
 
   /**
    * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`: picks the PageUp/PageDown

@@ -52,7 +52,7 @@ import {
   unresolvedOptionLabel,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { createOptionsStateView } from '../shared/internal/options-state-view';
 import {
   createSelectSheetWiring,
@@ -100,7 +100,6 @@ import { createFieldSync } from '../shared/field-sync';
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectPanelShellTemplates,
-  type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
@@ -272,7 +271,7 @@ export interface CngxTreeSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTreeSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxTreeSelect).panelViewHost },
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: CngxTreeSelect },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
@@ -288,7 +287,7 @@ export interface CngxTreeSelectChange<T = unknown> {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxTreeSelect<T = unknown>
-  implements CngxFormFieldControl, CngxSelectPanelViewHost<T>, CngxTreeSelectPanelHost<T>
+  implements CngxFormFieldControl, CngxTreeSelectPanelHost<T>
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
@@ -690,12 +689,6 @@ export class CngxTreeSelect<T = unknown>
   readonly caretTpl = this.tplRegistry.caret;
   /** @internal */
   readonly clearButtonTpl = this.tplRegistry.clearButton;
-  /** @internal - exposed for the shell's inline-error branch. */
-  readonly errorTpl = this.tplRegistry.error;
-  /** @internal - projected via `*cngxSelectRetryButton`. */
-  readonly retryButtonTpl = this.tplRegistry.retryButton;
-  /** @internal */
-  readonly commitErrorTpl = this.tplRegistry.commitError;
   /** @internal */
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null> = computed(
     () => this.nodeDir()?.templateRef ?? null,
@@ -825,10 +818,6 @@ export class CngxTreeSelect<T = unknown>
   });
   private readonly dispatch = this.commits.dispatch;
 
-  /** @internal */ readonly activeView = this.core.activeView;
-  /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ readonly showInlineError = this.core.showInlineError;
-  /** @internal */ readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */ readonly resolvedId = this.core.resolvedId;
   /** @internal Accessible name of the `role="tree"` panel body. */
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
@@ -915,8 +904,24 @@ export class CngxTreeSelect<T = unknown>
     action: signal<null>(null),
   };
 
-  /** @internal */
-  readonly showCommitError = this.core.showCommitError;
+
+  /**
+   * Object behind `CNGX_SELECT_PANEL_VIEW_HOST`; the core supplies every
+   * shared key.
+   *
+   * @internal
+   */
+  readonly panelViewHost = this.core.createPanelViewHost({
+    activeView: this.core.activeView,
+    showInlineError: this.core.showInlineError,
+    isCommitting: this.core.isCommitting,
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.errorContext,
+    commitErrorContext: this.commitErrorContext,
+    handleRetry: () => this.handleRetry(),
+  });
 
   /** @internal */
   isSelected(value: T): boolean {
@@ -1187,17 +1192,6 @@ export class CngxTreeSelect<T = unknown>
     this.dispatch.singleToggle(node);
   }
 
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
@@ -1329,26 +1323,26 @@ export class CngxTreeSelect<T = unknown>
   private suppressOpenOnFocus = false;
 
   /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
     openOn: () => this.config.openOn,
     open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
   });
 
   /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;

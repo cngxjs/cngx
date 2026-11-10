@@ -104,7 +104,7 @@ import {
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -252,8 +252,8 @@ export interface CngxSelectShellChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelectShell },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxSelectShell },
+    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxSelectShell).panelHost },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxSelectShell).panelHost },
     { provide: CNGX_OPTION_STATUS_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_FILTER_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_INTERACTION_HOST, useExisting: CngxSelectShell },
@@ -848,23 +848,14 @@ export class CngxSelectShell<T = unknown>
     this.searchChild() ? 'fullscreen' : 'sheet',
   );
 
-  protected readonly effectiveOptions = this.core.effectiveOptions;
   protected readonly flatOptions = this.core.flatOptions;
   protected readonly activeView = this.core.activeView;
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  protected readonly showInlineError = this.core.showInlineError;
-  protected readonly skeletonIndices = this.core.skeletonIndices;
   protected readonly panelClassList = this.core.panelClassList;
   protected readonly panelWidthCss = this.core.panelWidthCss;
-  readonly fallbackLabels = this.core.fallbackLabels;
   readonly ariaLabels = this.core.ariaLabels;
   protected readonly resolvedId = this.core.resolvedId;
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
-  protected readonly resolvedSelectionIndicatorVariant =
-    this.core.resolvedSelectionIndicatorVariant;
-  protected readonly resolvedSelectionIndicatorPosition =
-    this.core.resolvedSelectionIndicatorPosition;
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
@@ -874,7 +865,6 @@ export class CngxSelectShell<T = unknown>
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   protected readonly externalActivation = this.core.externalActivation;
-  protected readonly showCommitError = this.core.showCommitError;
 
   /**
    * Virtualisation wire-up. The options are consumer-projected, so no renderer
@@ -902,8 +892,6 @@ export class CngxSelectShell<T = unknown>
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
   readonly commitErrorValue = this.core.commitErrorValue;
-
-  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
 
   /**
    * Routes a failed commit through the family-shared announcer policy.
@@ -962,11 +950,6 @@ export class CngxSelectShell<T = unknown>
       }
     },
     onError: (err) => this.commitError.emit(err),
-  });
-
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.scalarHandler.retryLast();
   });
 
   /**
@@ -1037,19 +1020,38 @@ export class CngxSelectShell<T = unknown>
     return isEmptyScalar(v) ? this.core.resolvedPlaceholder() : unresolvedOptionLabel(v);
   });
 
-  /** @internal */
-  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */
-  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */
-  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */
-  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /**
+   * Object behind `CNGX_SELECT_PANEL_HOST` and `CNGX_SELECT_PANEL_VIEW_HOST`;
+   * the core supplies every shared key.
+   *
+   * @internal
+   */
+  readonly panelHost = this.core.createPanelHost({
+    activeView: this.core.activeView,
+    showInlineError: this.core.showInlineError,
+    isCommitting: this.core.isCommitting,
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.core.makeErrorContext(() => this.handleRetry()),
+    commitErrorContext: this.core.bindCommitRetry(() => {
+      this.hostFocus.refocusOwnerBeforeRemoval();
+      this.scalarHandler.retryLast();
+    }),
+    handleRetry: () => this.handleRetry(),
+    listboxCompareWith: this.listboxCompareWith,
+    activeId: this.activeId,
+    panelOpen: this.panelOpen,
+    patchData: (item) => this.patchData(item),
+    clearLocalItems: () => this.clearLocalItems(),
+    panelRenderer: this.panelRenderer,
+    searchTerm: this.searchTerm,
+    unfilteredCount: computed(() => this.core.unfilteredFlatOptions().length),
+    previousLoadedCount: computed(() => this.flatOptions().length),
+  });
 
   // Satisfies the CNGX_SELECT_PANEL_HOST contract; the panel-shell overlay
   // is deferred so nothing in the current template reads it.
-  protected readonly unfilteredCount = computed(() => this.core.unfilteredFlatOptions().length);
-  protected readonly previousLoadedCount = computed(() => this.flatOptions().length);
 
   /**
    * Panel-host contract member. The shell renders projected `<cngx-option>`
@@ -1233,17 +1235,6 @@ export class CngxSelectShell<T = unknown>
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   // A closed-trigger pick is a pick: with a bound action it must reach the
   // server like a panel pick, or the trigger diverges from the backend.
   private commitClosedPick(option: CngxSelectOptionDef<T>, previous: T | undefined): void {
@@ -1411,24 +1402,24 @@ export class CngxSelectShell<T = unknown>
   private suppressOpenOnFocus = false;
 
   /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
     openOn: () => this.config.openOn,
     open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
   });
 
   /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 }

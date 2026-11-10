@@ -30,13 +30,13 @@ Composition inside a variant component (single-select shape):
 
 The outer `cngxPopover` and `cngxListbox` stay on the variant so the trigger's `[popover]` and `[cngxListboxTrigger]` references resolve. The panel renders only the listbox children, forwards `viewChildren(CngxOption)` to `[explicitOptions]`, and projects an AD-item bundle through `[items]` so `CngxActiveDescendant` can see options that live inside the panel view rather than the listbox's projected content.
 
-The variant must provide `CNGX_SELECT_PANEL_HOST` (typically `useExisting: forwardRef(() => SelfComponent)`) so the panel can resolve `host.activeView()`, `host.flatOptions()`, `host.isSelected(opt)`, the resolved slot templates, the indicator config, and the commit-error context.
+The variant must provide `CNGX_SELECT_PANEL_HOST` (the family builds it with `core.createPanelHost(...)` and provides it via `useFactory`) so the panel can resolve `host.activeView()`, `host.flatOptions()`, `host.isSelected(opt)`, the resolved slot templates, the indicator config, and the commit-error context.
 
 ## DI tokens consumed
 
 | Token | Purpose |
 |-|-|
-| `CNGX_SELECT_PANEL_HOST` | Full option-loop host contract (`CngxSelectPanelHost<T>`). Provided by every flat variant via `useExisting`. |
+| `CNGX_SELECT_PANEL_HOST` | Full option-loop host contract (`CngxSelectPanelHost<T>`). Provided by every flat variant from `core.createPanelHost(...)`. |
 | `CNGX_PANEL_RENDERER_FACTORY` | Pluggable renderer factory. Default identity returns `flatOptions()` verbatim. Recycler renderer (built via `createRecyclerPanelRendererFactory(recycler)`) slices a contiguous window and exposes `offsetBefore` / `offsetAfter` / `setsize` for virtualisation. Grouped lists bypass the renderer. |
 
 The host contract itself is the broader extension point - see `../panel-host.ts` (`CngxSelectPanelHost<T>`, `CngxSelectPanelViewHost<T>`, `CngxSelectPanelShellTemplates<T>`).

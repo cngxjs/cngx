@@ -633,11 +633,11 @@ graph TD
 
 `CngxSelectPanelHost<T>` extends `CngxSelectPanelViewHost<T>`.
 The narrower view-host contract is what the shell reads - keeps the shell value-shape-agnostic so `CngxTreeSelectPanel` and any future panel variant compose uniformly.
-Tree-select provides BOTH tokens with `useExisting: self`.
+Tree-select provides `CNGX_SELECT_PANEL_VIEW_HOST` from `core.createPanelViewHost(...)` and its own `CNGX_TREE_SELECT_PANEL_HOST` with `useExisting: self`.
 
-**Panel-host delegation.** A variant satisfies the `CngxSelectPanelHost` option predicates without re-declaring them. `createSelectCore` exposes `panelHostAdapter`, a stable-identity bundle of `isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption`, and the variant spreads it onto its host surface. The predicates live once in the core; the variant still provides the token (`useExisting`) but delegates the reads, so the per-composite pass-through copies collapse to a single source.
+**Panel-host delegation.** The core builds the panel host. `core.createPanelHost(extras)` merges the keys the core owns (`CngxSelectCorePanelKeys`: async view, indicator resolution, option predicates, commit-error state and the rest) with the composite's `extras`, whose type is `Omit<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys>`, so the compiler names every key the composite still owes (`tpl`, `panelOpen`, `activeId`, `errorContext`, ...). `core.createPanelViewHost(extras)` is the same merge for the narrow contract. A composite provides both tokens from one object with `useFactory: () => inject(Cmp).panelHost`; the core-owned keys no longer need a pass-through field on the component. `activeView`, `showInlineError` and `isCommitting` may be overridden through `extras` (typeahead hides a closed-panel load error, the action variants merge the quick-create commit).
 
-**Shared trigger gesture.** The guard that keeps the click of a focus-opening pointer press from toggling the panel straight back shut lives once in `createOpenOnFocusGesture` (`shared/internal/open-on-focus-gesture.ts`); the button-trigger composites (single, multi, reorderable, tree, shell) wire it instead of each copying the pointerdown/focus/click dance.
+**Shared trigger gesture.** The guard that keeps the click of a focus-opening pointer press from toggling the panel straight back shut lives once in `createOpenOnFocusGesture` (`shared/internal/open-on-focus-gesture.ts`); the button-trigger composites (single, multi, reorderable, tree, shell) reach it through `createButtonTriggerHandlers` (`shared/internal/button-trigger-handlers.ts`) instead of each copying the pointerdown/focus/click dance. The four input-owned composites share their focus, blur, retry and wrapper-click handlers through `createInputHostHandlers` (`shared/internal/input-host-handlers.ts`).
 
 ---
 
@@ -723,7 +723,8 @@ A few representative extension paths.
 1. Build the trigger template; pick the appropriate ARIA pattern.
 2. Instantiate `createSelectCore<T, TCommit>` in a field initialiser.
 3. Provide `CNGX_FORM_FIELD_CONTROL` (`useExisting: self`) and `CNGX_STATEFUL` for transition-bridge integration.
-4. Provide `CNGX_SELECT_PANEL_VIEW_HOST` (and `CNGX_SELECT_PANEL_HOST` if the panel is option-loop-shaped); satisfy the contract.
-5. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory. `createADActivationDispatcher` reads only `CngxActivationDispatcherCore<T>` (`writeBlocked`, `findOption`) from the core, so a composite can hand it the select core or any object with those two members.
-6. Reuse the value-shape glue closest to your variant (`createArrayCommitHandler` for arrays, `createScalarCommitHandler` for singles, `createReorderCommitHandler` for ordered arrays).
-7. Export the component + change-event interface from `public-api.ts`.
+4. Build the panel host in the core: `readonly panelHost = this.core.createPanelHost({...})` for an option-loop panel, `core.createPanelViewHost({...})` otherwise. The extras type names every key the composite still owes; the core fills the rest. Provide both tokens from that object with `useFactory: () => inject(Cmp).panelHost` (only `CNGX_SELECT_PANEL_VIEW_HOST` for a view-host-only panel). Do not re-declare core keys as pass-through fields.
+5. Wire the trigger handlers from the shared helper for the trigger kind: `createButtonTriggerHandlers` for a button trigger, `createInputHostHandlers` for an input-owned trigger (`shared/internal/`).
+6. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory. `createADActivationDispatcher` reads only `CngxActivationDispatcherCore<T>` (`writeBlocked`, `findOption`) from the core, so a composite can hand it the select core or any object with those two members.
+7. Reuse the value-shape glue closest to your variant (`createArrayCommitHandler` for arrays, `createScalarCommitHandler` for singles, `createReorderCommitHandler` for ordered arrays).
+8. Export the component + change-event interface from `public-api.ts`.

@@ -272,11 +272,9 @@ describe('CngxMultiSelect - skeleton', () => {
     fixture.componentInstance.values.set(['red']);
     flush(fixture);
     const multi = fixture.debugElement.query(By.directive(CngxMultiSelect))
-      .componentInstance as CngxMultiSelect<string> & {
-      isSelected: (opt: CngxSelectOptionDef<string>) => boolean;
-    };
-    expect(multi.isSelected(OPTIONS[0])).toBe(true); // red
-    expect(multi.isSelected(OPTIONS[1])).toBe(false); // green
+      .componentInstance as CngxMultiSelect<string>;
+    expect(multi.panelHost.isSelected(OPTIONS[0])).toBe(true); // red
+    expect(multi.panelHost.isSelected(OPTIONS[1])).toBe(false); // green
   });
 
   it('clicking a disabled option does not toggle the value', () => {

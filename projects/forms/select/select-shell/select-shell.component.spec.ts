@@ -77,7 +77,6 @@ function flush(fixture: { detectChanges: () => void }): void {
 
 interface CngxSelectShellInternals {
   readonly flatOptions: () => readonly { value: unknown; label: string; disabled?: boolean }[];
-  readonly effectiveOptions: () => readonly unknown[];
   readonly derivedOptions: () => readonly unknown[];
   readonly adItems: () => readonly { id: string; value: unknown; label: string; disabled: boolean }[];
 }
@@ -392,7 +391,7 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
 
     const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
     const shell = shellDe.componentInstance as CngxSelectShell<string>;
-    const eff = shellInternals(shell).effectiveOptions();
+    const eff = shell.panelHost.effectiveOptions();
 
     expect(eff.length).toBe(3);
     const [first, second, third] = eff;
@@ -424,7 +423,7 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
     let count = 0;
     TestBed.runInInjectionContext(() => {
       effect(() => {
-        shellInternals(shell).effectiveOptions();
+        shell.panelHost.effectiveOptions();
         count++;
       });
     });
@@ -814,14 +813,14 @@ describe('CngxSelectShell - form-field integration', () => {
     expect(resolved).toBe(shellDe.componentInstance);
   });
 
-  it('provides CNGX_SELECT_PANEL_VIEW_HOST via the component', () => {
+  it('provides CNGX_SELECT_PANEL_VIEW_HOST via the built panel host', () => {
     const fixture = TestBed.createComponent(FlatHost);
     fixture.detectChanges();
     flush(fixture);
 
     const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
     const resolved = shellDe.injector.get(CNGX_SELECT_PANEL_VIEW_HOST);
-    expect(resolved).toBe(shellDe.componentInstance);
+    expect(resolved).toBe((shellDe.componentInstance as CngxSelectShell<string>).panelHost);
   });
 
   it('Signal-Forms round-trip: external mutation propagates to value()', () => {

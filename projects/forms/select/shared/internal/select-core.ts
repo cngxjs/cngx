@@ -47,6 +47,7 @@ import {
 import { resolveSelectConfig } from './resolve-config';
 import type { CngxResolvedSelectAriaLabels } from './resolve-labels';
 import type { CngxSelectCommitErrorContext, CngxSelectErrorContext } from '../template-slots';
+import type { CngxSelectPanelHost, CngxSelectPanelViewHost } from '../panel-host';
 
 export type { CngxSelectCompareFn } from '../compare-fn.types';
 
@@ -317,12 +318,90 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
     options: CngxSelectCommitErrorAnnouncerOptions,
   ): (err: unknown, rolledBack?: boolean) => void;
   /**
-   * Bound `isGroup`/`isSelected`/`isIndeterminate`/`isCommittingOption`
-   * for spreading into a variant's `CngxSelectPanelHost`. Stable
-   * identities for the core's lifetime.
+   * Builds the `CNGX_SELECT_PANEL_VIEW_HOST` object: the core-owned keys
+   * ({@link CngxSelectCorePanelKeys} that the view host declares) merged
+   * with the caller's `extras`. Plain closures, no `this`.
    */
-  readonly panelHostAdapter: CngxSelectPanelHostAdapter<T>;
+  createPanelViewHost(extras: CngxSelectPanelViewHostExtras<T>): CngxSelectPanelViewHost<T>;
+  /**
+   * Builds the `CNGX_SELECT_PANEL_HOST` object on the same merge as
+   * {@link createPanelViewHost}, plus the option-loop keys the core owns.
+   * The result also satisfies the view-host token.
+   */
+  createPanelHost(extras: CngxSelectPanelHostExtras<T>): CngxSelectPanelHost<T>;
 }
+
+/**
+ * Panel-host keys the core supplies from its own graph. Everything else on
+ * `CngxSelectPanelHost` is required from the composite by
+ * {@link CngxSelectPanelHostExtras}.
+ *
+ * @internal
+ */
+export type CngxSelectCorePanelKeys =
+  | 'activeView'
+  | 'skeletonIndices'
+  | 'showInlineError'
+  | 'showCommitError'
+  | 'showRefreshIndicator'
+  | 'fallbackLabels'
+  | 'ariaLabels'
+  | 'isCommitting'
+  | 'commitErrorDisplay'
+  | 'effectiveOptions'
+  | 'flatOptions'
+  | 'panelClassList'
+  | 'panelWidthCss'
+  | 'resolvedListboxLabel'
+  | 'resolvedShowSelectionIndicator'
+  | 'resolvedSelectionIndicatorVariant'
+  | 'resolvedSelectionIndicatorPosition'
+  | 'externalActivation'
+  | 'commitErrorValue'
+  | 'isGroup'
+  | 'isSelected'
+  | 'isIndeterminate'
+  | 'isCommittingOption';
+
+/**
+ * Core-owned keys the view host declares.
+ *
+ * @internal
+ */
+export type CngxSelectCoreViewPanelKeys = Extract<
+  CngxSelectCorePanelKeys,
+  keyof CngxSelectPanelViewHost
+>;
+
+/**
+ * Core-owned keys a composite may replace with its own derivation
+ * (typeahead hides a closed-panel load error, action variants merge the
+ * quick-create commit into `isCommitting`). Every composite names all three
+ * in its extras, the core signal where it does not override, so an override
+ * is visible at the call site and an explicit `undefined` fails to compile.
+ *
+ * @internal
+ */
+export type CngxSelectPanelOverrideKeys = 'activeView' | 'showInlineError' | 'isCommitting';
+
+/**
+ * Composite half of {@link CngxSelectCore.createPanelViewHost}.
+ *
+ * @internal
+ */
+export type CngxSelectPanelViewHostExtras<T> = Omit<
+  CngxSelectPanelViewHost<T>,
+  CngxSelectCoreViewPanelKeys
+> &
+  Required<Pick<CngxSelectPanelViewHost<T>, CngxSelectPanelOverrideKeys>>;
+
+/**
+ * Composite half of {@link CngxSelectCore.createPanelHost}.
+ *
+ * @internal
+ */
+export type CngxSelectPanelHostExtras<T> = Omit<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys> &
+  Required<Pick<CngxSelectPanelHost<T>, CngxSelectPanelOverrideKeys>>;
 
 /**
  * Options of {@link CngxSelectCore.createCommitErrorAnnouncer}.
@@ -333,20 +412,6 @@ export interface CngxSelectCommitErrorAnnouncerOptions {
   readonly policy: Signal<CngxCommitErrorAnnouncePolicy>;
   /** Verbose-path sentence. Default {@link CngxSelectCore.commitErrorMessage}. */
   readonly message?: (err: unknown) => string;
-}
-
-/**
- * Pre-bound bundle for {@link CngxSelectCore.panelHostAdapter}.
- *
- * @internal
- */
-export interface CngxSelectPanelHostAdapter<T> {
-  readonly isGroup: (
-    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
-  ) => item is CngxSelectOptionGroupDef<T>;
-  readonly isSelected: (opt: CngxSelectOptionDef<T>) => boolean;
-  readonly isIndeterminate: (opt: CngxSelectOptionDef<T>) => boolean;
-  readonly isCommittingOption: (opt: CngxSelectOptionDef<T>) => boolean;
 }
 
 /**
@@ -898,14 +963,47 @@ export function createSelectCore<T, TCommit>(
     return config.ariaLabels().fieldLabelFallback;
   }
 
-  // Stable identities for the core's lifetime. Adapter unwraps
-  // opt.value for isSelected/isIndeterminate.
-  const panelHostAdapter: CngxSelectPanelHostAdapter<T> = {
+  // Core-owned panel-host keys, built once so every host shares the same
+  // identities. The option predicates unwrap `opt.value`.
+  const panelViewDefaults: Pick<CngxSelectPanelViewHost<T>, CngxSelectCoreViewPanelKeys> = {
+    activeView,
+    skeletonIndices,
+    showInlineError,
+    showCommitError,
+    showRefreshIndicator,
+    fallbackLabels: config.fallbackLabels,
+    ariaLabels: config.ariaLabels,
+    isCommitting,
+    commitErrorDisplay: deps.commitErrorDisplay,
+  };
+  const panelHostDefaults: Pick<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys> = {
+    ...panelViewDefaults,
+    effectiveOptions,
+    flatOptions,
+    panelClassList,
+    panelWidthCss,
+    resolvedListboxLabel,
+    resolvedShowSelectionIndicator,
+    resolvedSelectionIndicatorVariant,
+    resolvedSelectionIndicatorPosition,
+    externalActivation,
+    commitErrorValue,
     isGroup,
     isSelected: (opt) => isSelected(opt.value),
     isIndeterminate: (opt) => isIndeterminate(opt.value),
     isCommittingOption,
   };
+
+  // Extras win, so an override key replaces the core default.
+  function createPanelViewHost(
+    extras: CngxSelectPanelViewHostExtras<T>,
+  ): CngxSelectPanelViewHost<T> {
+    return { ...panelViewDefaults, ...extras };
+  }
+
+  function createPanelHost(extras: CngxSelectPanelHostExtras<T>): CngxSelectPanelHost<T> {
+    return { ...panelHostDefaults, ...extras };
+  }
 
   function announce(
     option: CngxSelectOptionDef<T> | null,
@@ -1006,7 +1104,8 @@ export function createSelectCore<T, TCommit>(
     createFailedMessage,
     createCommitErrorAnnouncer,
     announce,
-    panelHostAdapter,
+    createPanelViewHost,
+    createPanelHost,
   };
   if (typeof ngDevMode !== 'undefined' && ngDevMode) {
     CNGX_DEV_DESCRIPTORS.tag(core, {
