@@ -30,7 +30,7 @@ Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NA
 
 `createSelectCore<T, TCommit>(deps, announcerInputs)` is the heart of every variant. It bundles the pure-derivation signal graph (option model, panel view, ARIA projection, selection, commit infrastructure, announcer hook) into one object that the variant's `@Component` body delegates to.
 
-Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter - everything else flows through this factory. The option predicates a panel host reads (`isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption`) come pre-bound from `core.panelHostAdapter`, so no variant re-declares them.
+Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter - everything else flows through this factory. The panel host comes from `core.createPanelHost(extras)` (`core.createPanelViewHost(extras)` for tree-select): the core fills every key it owns, the variant passes the rest. Tree-select's own `CNGX_TREE_SELECT_PANEL_HOST` and the shell's `CNGX_OPTION_STATUS_HOST` stay `useExisting`.
 
 Internal symbols. None of these is in `public-api.ts`; the variants use them and consumers do not import them:
 
@@ -43,10 +43,20 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 | `cngxSelectDefaultCompare`       | `Object.is`-based default                           |
 | `CngxSelectTriggerAria`          | Bundled ARIA projection for the trigger             |
 | `CngxSelectAnnouncerInputs`      | Per-instance announcer config                       |
-| `panelHostAdapter`               | Stable-identity `isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption` bundle a variant spreads onto its `CngxSelectPanelHost` |
-| `CngxSelectPanelHostAdapter<T>`  | Shape of `panelHostAdapter`                          |
+| `CngxSelectCorePanelKeys`        | Panel-host keys the core supplies                   |
+| `CngxSelectPanelHostExtras<T>`   | `Omit<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys>` plus the override keys; the variant's half of `createPanelHost` |
+| `CngxSelectPanelViewHostExtras<T>` | Same for `createPanelViewHost`                    |
 
 See [`ARCHITECTURE.md` § Core factory](../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
+
+### Trigger handlers
+
+Two internal helpers hold the trigger handlers the composites used to copy. Neither is exported or token-backed; the consumer seams stay `CNGX_TRIGGER_FOCUS_FACTORY` and `CNGX_DISMISS_HANDLER_FACTORY`.
+
+| Helper | Variants | Handlers |
+|-|-|-|
+| `internal/input-host-handlers.ts` (`createInputHostHandlers`) | typeahead, combobox, action-select, action-multi-select | `handleFocus`, `handleBlur`, `handleRetry`, `handleWrapperClick`; the text write-back on blur (`blurLeave`) and the nested-control skip (`nestedInteractive`) are per-variant options |
+| `internal/button-trigger-handlers.ts` (`createButtonTriggerHandlers`) | single, multi, reorderable, tree, shell | `handlePointerDown`, `handleTriggerClick`, `handleFocus`, `handleBlur`, on top of `createOpenOnFocusGesture` |
 
 
 

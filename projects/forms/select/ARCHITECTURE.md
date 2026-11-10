@@ -633,11 +633,11 @@ graph TD
 
 `CngxSelectPanelHost<T>` extends `CngxSelectPanelViewHost<T>`.
 The narrower view-host contract is what the shell reads - keeps the shell value-shape-agnostic so `CngxTreeSelectPanel` and any future panel variant compose uniformly.
-Tree-select provides BOTH tokens with `useExisting: self`.
+Tree-select provides `CNGX_SELECT_PANEL_VIEW_HOST` from `core.createPanelViewHost(...)` and its own `CNGX_TREE_SELECT_PANEL_HOST` with `useExisting: self`.
 
-**Panel-host delegation.** A variant satisfies the `CngxSelectPanelHost` option predicates without re-declaring them. `createSelectCore` exposes `panelHostAdapter`, a stable-identity bundle of `isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption`, and the variant spreads it onto its host surface. The predicates live once in the core; the variant still provides the token (`useExisting`) but delegates the reads, so the per-composite pass-through copies collapse to a single source.
+**Panel-host delegation.** The core builds the panel host. `core.createPanelHost(extras)` merges the keys the core owns (`CngxSelectCorePanelKeys`: async view, indicator resolution, option predicates, commit-error state and the rest) with the composite's `extras`, whose type is `Omit<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys>`, so the compiler names every key the composite still owes (`tpl`, `panelOpen`, `activeId`, `errorContext`, ...). `core.createPanelViewHost(extras)` is the same merge for the narrow contract. A composite provides both tokens from one object with `useFactory: () => inject(Cmp).panelHost`; the core-owned keys no longer need a pass-through field on the component. `activeView`, `showInlineError` and `isCommitting` may be overridden through `extras` (typeahead hides a closed-panel load error, the action variants merge the quick-create commit).
 
-**Shared trigger gesture.** The guard that keeps the click of a focus-opening pointer press from toggling the panel straight back shut lives once in `createOpenOnFocusGesture` (`shared/internal/open-on-focus-gesture.ts`); the button-trigger composites (single, multi, reorderable, tree, shell) wire it instead of each copying the pointerdown/focus/click dance.
+**Shared trigger gesture.** The guard that keeps the click of a focus-opening pointer press from toggling the panel straight back shut lives once in `createOpenOnFocusGesture` (`shared/internal/open-on-focus-gesture.ts`); the button-trigger composites (single, multi, reorderable, tree, shell) reach it through `createButtonTriggerHandlers` (`shared/internal/button-trigger-handlers.ts`) instead of each copying the pointerdown/focus/click dance. The four input-owned composites share their focus, blur, retry and wrapper-click handlers through `createInputHostHandlers` (`shared/internal/input-host-handlers.ts`).
 
 ---
 
