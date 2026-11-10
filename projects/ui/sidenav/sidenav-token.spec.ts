@@ -32,4 +32,22 @@ describe('CNGX_SIDENAV token', () => {
     contract.opened.set(true);
     expect(contract.opened()).toBe(true);
   });
+
+  it('exposes what the layout coordinates on: position, id, overlay state, modality, close()', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const contract = fixture.debugElement
+      .query(By.directive(CngxSidenav))
+      .injector.get(CNGX_SIDENAV);
+
+    expect(contract.position()).toBe('start');
+    expect(contract.id()).toMatch(/^cngx-sidebar/);
+    expect(contract.isOverlay()).toBe(true);
+    expect(contract.modality()).toBe('page');
+    contract.opened.set(true);
+    expect(contract.overlayActive()).toBe(true);
+    contract.close();
+    expect(contract.opened()).toBe(false);
+    expect(contract.overlayActive()).toBe(false);
+  });
 });

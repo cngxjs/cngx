@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: configured vs per-instance hover dwell',
-  subtitle: 'The mini expand-on-hover dwell resolves in three tiers: a per-instance <code>[expandDelay]</code> binding beats a <code>withSidenavHoverDwell(...)</code> cascade default, which beats the atom literal (120ms). Both rails below sit under one <code>provideSidenavConfigAt(withSidenavHoverDwell({ enterDelay: 250 }))</code> scope - the top rail inherits that 250ms dwell, the bottom rail overrides it with <code>[expandDelay]="600"</code>.',
-  description: 'Rest on the top rail: it expands after ~250ms (the scoped cascade default). Rest on the bottom rail: it waits ~600ms (its per-instance binding wins over the same scope). A quick sweep across either leaves it collapsed. Each mini rail shows first-letter initials until it expands - that is CngxNavLink + mini mode, not demo CSS.',
+  subtitle: 'The hover dwell of a collapsed rail resolves in three tiers: a per-instance <code>[expandDelay]</code> binding beats a <code>withSidenavHoverDwell(...)</code> cascade default, which beats the atom literal (120ms). Both rails below sit under one <code>provideSidenavConfigAt(withSidenavHoverDwell({ enterDelay: 250 }))</code> scope - the top rail inherits that 250ms dwell, the bottom rail overrides it with <code>[expandDelay]="600"</code>.',
+  description: 'Rest on the top rail: it expands after ~250ms (the scoped cascade default). Rest on the bottom rail: it waits ~600ms (its per-instance binding wins over the same scope). A quick sweep across either leaves it collapsed. Each collapsed rail shows first-letter initials until it peeks - that is CngxNavLink + the collapsed rail, not demo CSS.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   viewProviders: ['provideSidenavConfigAt(withSidenavHoverDwell({ enterDelay: 250 }))'],
   template: `
   <cngx-sidenav-layout class="demo-sidenav__container" style="height: 180px;">
-    <cngx-sidenav #navConfig="cngxSidenav" position="start" mode="mini" width="200px">
+    <cngx-sidenav #navConfig="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px">
       <cngx-sidenav-header class="demo-sidenav__header">Config</cngx-sidenav-header>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Dashboard</a>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Inbox</a>
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   </cngx-sidenav-layout>
 
   <cngx-sidenav-layout class="demo-sidenav__container" style="height: 180px; margin-top: 1rem;">
-    <cngx-sidenav #navOverride="cngxSidenav" position="start" mode="mini" width="200px" [expandDelay]="600">
+    <cngx-sidenav #navOverride="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px" [expandDelay]="600">
       <cngx-sidenav-header class="demo-sidenav__header">Override</cngx-sidenav-header>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Settings</a>
       <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Help</a>

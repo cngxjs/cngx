@@ -42,6 +42,12 @@ export const CNGX_FOCUSABLE_SELECTOR =
 export interface CngxFocusRestoreDriver {
   /** Whether the surface is engaged; wins over `[cngxFocusRestoreWhile]`. */
   readonly focusRestoreActive: Signal<boolean>;
+  /**
+   * The fallback when the stored element cannot take focus back; wins over
+   * `[focusRestoreFallback]`. Read at restore time, so a composer can derive
+   * it from the DOM (the element that controls the host).
+   */
+  focusRestoreFallback?(): HTMLElement | null;
 }
 
 /** @internal See {@link CngxFocusRestoreDriver}. */
@@ -238,22 +244,24 @@ export class CngxFocusRestore {
   /**
    * Walks the fallback chain:
    * 1. Stored element (if still in DOM and not body/self)
-   * 2. Explicit fallback input
+   * 2. The driver's fallback, else the explicit fallback input
    * 3. Nearest focusable ancestor
    */
   private resolveTarget(): HTMLElement | null {
     const stored = this.storedElement;
-    // Skip body - it signals "nothing meaningful was focused", not a real restore target.
+    // Skip body - it signals "nothing meaningful was focused", not a real
+    // restore target - and anything inside the host, which is the focus
+    // being restored away from (engaged while focus was already inside).
     if (
       stored &&
       stored !== this.doc.body &&
       this.doc.contains(stored) &&
-      stored !== (this.el.nativeElement as HTMLElement)
+      !this.host().contains(stored)
     ) {
       return stored;
     }
 
-    const fallback = this.fallback();
+    const fallback = this.driver()?.focusRestoreFallback?.() ?? this.fallback();
     if (fallback && this.doc.contains(fallback)) {
       return fallback;
     }

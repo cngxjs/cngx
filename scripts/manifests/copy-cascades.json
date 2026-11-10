@@ -199,7 +199,7 @@
     {
       "class": "CngxDrawerSurface",
       "file": "projects/common/layout/drawer/drawer-surface.directive.ts",
-      "line": 296,
+      "line": 306,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -237,7 +237,7 @@
     {
       "class": "CngxSidebar",
       "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 201,
+      "line": 270,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -1035,7 +1035,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 262,
+      "line": 289,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [

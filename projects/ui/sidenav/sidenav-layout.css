@@ -19,6 +19,8 @@
  *
  * - `--ready` - added after first render to enable transitions and
  *   prevent the open-state flash on mount
+ * - `--has-overlay` - an open overlay with `modality` `page` or
+ *   `contained`: the backdrop fades in with the panel slide
  *
  * **Slots**
  *
@@ -33,13 +35,25 @@
  *   palette
  */
 
+/* The panel duration token is registered inherits:false and broadcast only
+   inside cngx-sidenav, so the backdrop (a layout child) derives it from the
+   same motion rung here: the scrim fade and the slide share one clock. */
+@layer cngx.tokens {
+  .cngx-sidenav-backdrop {
+    --cngx-sidenav-transition-duration: var(--cngx-duration-base);
+  }
+}
+
 @layer cngx.components {
   cngx-sidenav-layout {
     display: flex;
     position: relative;
     width: 100%;
     min-height: inherit;
-    overflow: hidden;
+    /* clip, not hidden: a hidden box is still script-scrollable, so the
+       surface's focus move into a rail translated off-canvas would scroll
+       the whole layout by the rail width. clip is never a scroll container. */
+    overflow: clip;
 
     /* Both container properties live here, next to the rule that queries
        them: the NAME is API - an unnamed @container would match the nearest
@@ -54,27 +68,35 @@
     container-name: cngx-sidenav-layout;
   }
 
-  /* The docking threshold. It exists exactly once, here: `<cngx-sidenav>`
-     reads the resolved value of this property and never re-evaluates the
-     condition, so ejecting this stylesheet moves the breakpoint with it.
+  /* The width scale. It exists exactly once, here: `<cngx-sidenav>` reads
+     the resolved value of this property and never re-evaluates a condition,
+     so ejecting this stylesheet moves the thresholds with it. The two rules
+     sit on the shared tier rungs (48rem, 64rem); override both to move them.
 
-     The rule styles the RAIL, not the layout: a @container rule resolves
+     The rules style the RAIL, not the layout: a @container rule resolves
      against an *ancestor* query container of the element it styles, so a
      rule whose subject is the container itself matches nothing. */
   cngx-sidenav-layout > cngx-sidenav {
     /**
-     * Docking flag written on the rail: `1` when the layout is at least 64rem
-     * wide, else `0`. In `auto` mode the sidenav docks (`side`) on `1` and
-     * overlays (`over`) on `0`.
-     * @type <number>
+     * Width class written on the rail: `compact` below 48rem, `medium` from
+     * 48rem, `expanded` from 64rem. In `auto` mode the sidenav is a drawer
+     * in `compact`, a rail with an overlay in `medium` and docked in
+     * `expanded`.
+     * @type <custom-ident>
      * @group Layout
      */
-    --cngx-sidenav-layout-wide: 0;
+    --cngx-sidenav-width-class: compact;
+  }
+
+  @container cngx-sidenav-layout (min-inline-size: 48rem) {
+    cngx-sidenav-layout > cngx-sidenav {
+      --cngx-sidenav-width-class: medium;
+    }
   }
 
   @container cngx-sidenav-layout (min-inline-size: 64rem) {
     cngx-sidenav-layout > cngx-sidenav {
-      --cngx-sidenav-layout-wide: 1;
+      --cngx-sidenav-width-class: expanded;
     }
   }
 
@@ -105,13 +127,37 @@
         var(--cngx-sidenav-transition-easing, ease);
   }
 
+  /* Always rendered: the opacity runs on the panel's duration and easing
+     tokens, so the scrim fades in and out with the slide instead of snapping
+     at t=0. Hidden, it leaves hit-testing once the fade ends. */
   .cngx-sidenav-backdrop {
     position: absolute;
     inset: 0;
     z-index: 1;
     background: var(--cngx-sidenav-backdrop-bg, oklch(0 0 0));
-    opacity: var(--cngx-sidenav-backdrop-opacity, 0.5);
+    opacity: 0;
+    visibility: hidden;
     cursor: pointer;
+  }
+
+  cngx-sidenav-layout.cngx-sidenav-layout--ready > .cngx-sidenav-backdrop {
+    transition:
+      opacity var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
+  }
+
+  cngx-sidenav-layout.cngx-sidenav-layout--has-overlay > .cngx-sidenav-backdrop {
+    opacity: var(--cngx-sidenav-backdrop-opacity, 0.5);
+    visibility: visible;
+  }
+
+  cngx-sidenav-layout.cngx-sidenav-layout--ready.cngx-sidenav-layout--has-overlay
+    > .cngx-sidenav-backdrop {
+    transition:
+      opacity var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s 0s;
   }
 
   @media (prefers-reduced-motion: reduce) {

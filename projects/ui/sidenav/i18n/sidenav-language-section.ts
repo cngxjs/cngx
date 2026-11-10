@@ -22,6 +22,10 @@ export interface CngxSidenavLanguageSection {
    * separator's `aria-valuetext`.
    */
   readonly resizeValueText: CngxMessage;
+  /** Spoken when the toggle hotkey hides the full nav. */
+  readonly collapsedAnnouncement: string;
+  /** Spoken when the toggle hotkey shows the full nav. */
+  readonly expandedAnnouncement: string;
 }
 
 /**
@@ -36,6 +40,8 @@ export const CNGX_SIDENAV_LANGUAGE_EN: CngxSidenavLanguageSection = {
   endRegion: 'Side panel',
   resizeHandle: 'Resize navigation',
   resizeValueText: '{value}',
+  collapsedAnnouncement: 'Navigation collapsed',
+  expandedAnnouncement: 'Navigation expanded',
 };
 
 declare module '@cngx/core/i18n' {

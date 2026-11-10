@@ -25,7 +25,8 @@ export function withSidenavDimensions(
 /**
  * Set the app-wide default keyboard shortcut to toggle the sidenav (e.g.
  * `'mod+b'`, which resolves to `ctrl` on Windows/Linux and `meta` on macOS).
- * Per-instance `[shortcut]` still wins.
+ * The default applies to `position="start"` rails only; an `end` rail toggles
+ * by key only with its own `[shortcut]`. Per-instance `[shortcut]` still wins.
  *
  * ```ts
  * provideSidenavConfig(withSidenavShortcut('mod+b'));
@@ -38,10 +39,11 @@ export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
 }
 
 /**
- * Set the app-wide default mini expand-on-hover dwell - `enterDelay` (ms before
- * the rail expands) and `leaveDelay` (ms before it collapses). Flows into the
- * composed `CngxHoverIntent` via `CNGX_HOVER_INTENT_DEFAULTS`. Per-instance
- * `[enterDelay]` / `[leaveDelay]` still win; the shipped literals (120 / 0)
+ * Set the app-wide default hover dwell of the collapsed rail's peek -
+ * `enterDelay` (ms of hover before the rail peeks) and `leaveDelay` (ms before
+ * the peek ends). Flows into the `CngxHoverIntent` of the composed
+ * `CngxSidebar` via `CNGX_HOVER_INTENT_DEFAULTS`. Per-instance
+ * `[expandDelay]` / `[collapseDelay]` still win; the shipped literals (120 / 0)
  * apply when neither is set. Partial payloads deep-merge, so pass only the key
  * you want to change.
  *
@@ -90,4 +92,24 @@ export function withSidenavLabels(
   labels: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>,
 ): CngxSidenavConfigFeature {
   return { kind: 'labels', payload: { labels } };
+}
+
+/**
+ * Persist each rail's `collapsed` across reloads, in `CNGX_SIDENAV_STORAGE`
+ * (the browser `localStorage` by default) under `<storageKey>:<position>`.
+ * `collapsed` only means something on the docked rail of the `expanded` width
+ * class, so one value per rail is stored, and it survives a pass through
+ * `medium` and `compact`. The stored value seeds an unbound `collapsed` at
+ * construction. A bound `[(collapsed)]` is the consumer's source and is never
+ * overwritten; persist it yourself. The position is read from the static
+ * `position` attribute (`start` when absent).
+ *
+ * ```ts
+ * provideSidenavConfig(withSidenavPersistence());
+ * ```
+ *
+ * @since 0.1.0
+ */
+export function withSidenavPersistence(storageKey = 'cngx-sidenav'): CngxSidenavConfigFeature {
+  return { kind: 'persistence', payload: { storageKey } };
 }

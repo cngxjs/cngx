@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
 import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
 import {
+  CNGX_SIDEBAR_DRIVER,
   CngxSidebar,
   type CngxSidebarCollapsedAs,
+  type CngxSidebarDriver,
   type CngxSidebarSide,
 } from './sidebar.directive';
 
@@ -110,6 +112,23 @@ describe('CngxSidebar', () => {
       set((h) => h.collapsed.set(false));
       expect(el.hasAttribute('inert')).toBe(false);
       expect(el.hasAttribute('aria-hidden')).toBe(false);
+    });
+
+    it('moves focus out before it conceals the host', () => {
+      const { fixture, el, q, set } = setup();
+      document.body.appendChild(fixture.nativeElement);
+      try {
+        set((h) => h.collapsedAs.set('hidden'));
+        q('.inside').focus();
+        expect(el.contains(document.activeElement)).toBe(true);
+
+        set((h) => h.collapsed.set(true));
+        TestBed.flushEffects();
+        expect(el.getAttribute('aria-hidden')).toBe('true');
+        expect(el.contains(document.activeElement)).toBe(false);
+      } finally {
+        fixture.nativeElement.remove();
+      }
     });
   });
 
@@ -333,5 +352,98 @@ describe('CngxSidebar', () => {
       );
       expect(sidebar.peeked()).toBe(false);
     });
+  });
+});
+
+@Directive({
+  selector: '[drivenSidebar]',
+  hostDirectives: [{ directive: CngxSidebar, inputs: ['collapsed'], outputs: ['collapsedChange'] }],
+  providers: [{ provide: CNGX_SIDEBAR_DRIVER, useExisting: DrivenSidebar }],
+})
+class DrivenSidebar implements CngxSidebarDriver {
+  readonly forcedCollapsed = signal(false);
+  readonly forcedAs = signal<CngxSidebarCollapsedAs>('rail');
+  readonly forcedPeek = signal(false);
+  readonly forcedConcealed = signal(false);
+  readonly sidebarCollapsed = this.forcedCollapsed.asReadonly();
+  readonly sidebarCollapsedAs = this.forcedAs.asReadonly();
+  readonly sidebarPeek = this.forcedPeek.asReadonly();
+  readonly sidebarConcealed = this.forcedConcealed.asReadonly();
+  readonly sidebarLabel = signal('Navigation').asReadonly();
+}
+
+@Component({
+  template: `<aside drivenSidebar [(collapsed)]="collapsed"></aside>`,
+  imports: [DrivenSidebar],
+})
+class DrivenHost {
+  readonly collapsed = signal(false);
+}
+
+describe('CngxSidebar driver', () => {
+  function setupDriven() {
+    const fixture = TestBed.createComponent(DrivenHost);
+    fixture.detectChanges();
+    const debug = fixture.debugElement.children[0];
+    const el = debug.nativeElement as HTMLElement;
+    const driver = debug.injector.get(DrivenSidebar);
+    const sidebar = debug.injector.get(CngxSidebar);
+    const flush = () => fixture.detectChanges();
+    return { fixture, el, driver, sidebar, flush };
+  }
+
+  it('renders the driven collapsed state over the bound model', () => {
+    const { fixture, el, driver, sidebar, flush } = setupDriven();
+    fixture.componentInstance.collapsed.set(false);
+    driver.forcedCollapsed.set(true);
+    flush();
+    expect(sidebar.collapsed()).toBe(false);
+    expect(sidebar.state()).toBe('rail');
+    expect(el.getAttribute('data-sidebar-state')).toBe('rail');
+  });
+
+  it('renders the driven collapsed rest and conceals a hidden rest', () => {
+    const { el, driver, sidebar, flush } = setupDriven();
+    driver.forcedCollapsed.set(true);
+    driver.forcedAs.set('hidden');
+    flush();
+    expect(sidebar.state()).toBe('hidden');
+    expect(el.hasAttribute('inert')).toBe(true);
+    expect(el.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('shows a driven peek over a collapsed rest without a hover', () => {
+    const { el, driver, sidebar, flush } = setupDriven();
+    driver.forcedCollapsed.set(true);
+    driver.forcedPeek.set(true);
+    flush();
+    expect(sidebar.peeked()).toBe(true);
+    expect(sidebar.expanded()).toBe(true);
+    expect(el.getAttribute('data-sidebar-state')).toBe('peek');
+    sidebar.unpeek();
+    flush();
+    expect(sidebar.peeked()).toBe(true);
+  });
+
+  it('ignores a driven peek while the rest is expanded', () => {
+    const { driver, sidebar, flush } = setupDriven();
+    driver.forcedPeek.set(true);
+    flush();
+    expect(sidebar.peeked()).toBe(false);
+    expect(sidebar.state()).toBe('expanded');
+  });
+
+  it('conceals an expanded sidebar while the driver says so', () => {
+    const { el, driver, flush } = setupDriven();
+    driver.forcedConcealed.set(true);
+    flush();
+    expect(el.getAttribute('data-sidebar-state')).toBe('expanded');
+    expect(el.hasAttribute('inert')).toBe(true);
+    expect(el.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('names the region with the driven label', () => {
+    const { el } = setupDriven();
+    expect(el.getAttribute('aria-label')).toBe('Navigation');
   });
 });

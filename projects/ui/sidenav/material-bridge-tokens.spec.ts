@@ -88,6 +88,8 @@ $theme: mat.define-theme((
     expect(broadcast![0]).toContain('--cngx-sidenav-header-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-footer-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-backdrop-bg:');
+    expect(broadcast![0]).toContain('--cngx-sidenav-overlay-shadow:');
+    expect(broadcast![0]).toContain('--mat-sys-level1');
   });
 
   it('emits the nav-link tokens on the .cngx-nav-link host class, not nested under the layout', () => {

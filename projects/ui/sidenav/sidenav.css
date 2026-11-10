@@ -1,7 +1,7 @@
 /**
  * @overview
  * Default structural and thematic styles for `CngxSidenav` - the rail
- * itself (surface, borders, slots), the four mode variants, mini-mode,
+ * itself (surface, borders, slots), the mode variants, the collapsed rail,
  * the resize handle, and the nav-link rules the rail applies to
  * `@cngx/common/interactive` nav directives. Shipped via the
  * component's `styleUrl`, so a bare `<cngx-sidenav>` is styled without
@@ -22,6 +22,10 @@
  * - `--start` - left edge; border-right
  * - `--end` - right edge; border-left, flex `order: 2`
  * - `--resizing` - no transitions, `user-select: none`
+ * - `[data-sidebar-state]` - `expanded | rail | hidden | peek`, written by
+ *   the composed `CngxSidebar`: `rail` is the collapsed icon rail
+ *   (`--cngx-sidenav-mini-width`), `peek` grows it to full width over the
+ *   content without shifting it, plus `--cngx-sidenav-expanded-shadow`
  *
  * On `.cngx-nav-group-content`:
  *
@@ -31,12 +35,8 @@
  *
  * Mode classes on `cngx-sidenav`:
  *
- * - `--push` - in flex flow, push content sideways
- * - `--side` - in flex flow, stays visible (no width collapse)
+ * - `--side` - in flex flow; `collapsedAs="hidden"` collapses it to 0 width
  * - `--over` - absolute-positioned, doesn't push content
- * - `--mini` - icon-rail (`--cngx-sidenav-mini-width`); `--expanded`
- *   grows to full width with negative margin so the overlay does
- *   not shift the flex layout, plus `--cngx-sidenav-expanded-shadow`
  *
  * **Slots**
  *
@@ -48,29 +48,29 @@
  *   rail's edge; tinted on hover / drag via
  *   `--cngx-sidenav-resize-handle-color`
  * - `.cngx-nav-link` - nav-link rule with hover / `--active` /
- *   `:focus-visible` states; mini mode hides labels and renders
+ *   `:focus-visible` states; the collapsed rail hides labels and renders
  *   first-letter initials via `[data-initial]::before`
  * - `.cngx-nav-group-content` - grid-rows expand/collapse wrapper
  *   for nested nav groups
  *
- * Mini-mode also hides `[cngxNavLabel]`, `[cngxNavGroup]`, and
+ * The collapsed rail also hides `[cngxNavLabel]`, `[cngxNavGroup]`, and
  * `[cngxNavBadge]`.
  *
  * **Nav-class contract**
  *
  * The rail styles a set of class / attribute hooks emitted by the
  * `@cngx/common/interactive` nav directives. These form a cross-lib
- * contract: rename any hook in `@cngx/common` and mini-mode plus
+ * contract: rename any hook in `@cngx/common` and the collapsed rail plus
  * active-state styling break silently. `sidenav-nav-contract.spec.ts`
  * mounts the real directives inside a `cngx-sidenav` and asserts the
  * hooks still resolve, so a rename fails a test instead. The hooks:
  *
  * - `.cngx-nav-link` / `.cngx-nav-link--active` (`CngxNavLink`)
- * - `[data-initial]` - first-letter initial shown in mini mode
+ * - `[data-initial]` - first-letter initial shown on the collapsed rail
  *   (`CngxNavLink`)
  * - `[cngxNavLabel]` (`CngxNavLabel`), `[cngxNavGroup]`
  *   (`CngxNavGroup`), `[cngxNavBadge]` (`CngxNavBadge`), all hidden
- *   in collapsed mini mode
+ *   on the collapsed rail
  * - `.cngx-nav-group-content` / `--open`, the nested nav-group
  *   expand / collapse wrapper
  *
@@ -138,7 +138,7 @@
   }
 
   /**
-   * Duration of the open / close / mini transitions.
+   * Duration of the open / close / rail-peek transitions.
    *
    * Derives from the `--cngx-duration-base` rung of the motion scale; a
    * `--cngx-duration-*` brand override re-times it library-wide.
@@ -162,7 +162,7 @@
   }
 
   /**
-   * Easing curve of the open / close / mini transitions.
+   * Easing curve of the open / close / rail-peek transitions.
    * @group Motion
    */
   @property --cngx-sidenav-transition-easing {
@@ -172,7 +172,7 @@
   }
 
   /**
-   * Collapsed width in mini mode (icon-rail).
+   * Width of the collapsed rail (icon rail).
    * @group Variant / Mini
    */
   @property --cngx-sidenav-mini-width {
@@ -185,7 +185,7 @@
   }
 
   /**
-   * Drop-shadow applied when the mini-rail expands over content.
+   * Drop-shadow applied while the collapsed rail peeks over content.
    * @group Variant / Mini
    */
   @property --cngx-sidenav-expanded-shadow {
@@ -343,6 +343,18 @@
   }
 
   /**
+   * Drop-shadow of an open overlay rail (the `compact` drawer and the full
+   * nav over the `medium` rail), so it reads as a layer over the content
+   * rather than a third column. Defaults to `--cngx-sidenav-expanded-shadow`.
+   * @group State / Over
+   */
+  @property --cngx-sidenav-overlay-shadow {
+    syntax: '*';
+    inherits: true;
+    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
+  }
+
+  /**
    * Opacity of the mobile backdrop scrim.
    * @group State / Over
    */
@@ -480,7 +492,7 @@
   }
 
   /**
-   * Font-size of the first-letter initial shown in mini mode (when
+   * Font-size of the first-letter initial shown on the collapsed rail (when
    * the full label is hidden).
    * @group Variant / Mini
    */
@@ -504,6 +516,7 @@
     --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+    --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
     --cngx-nav-link-hover-bg: oklch(0 0 0 / 0.04);
     --cngx-nav-link-active-bg: oklch(0 0 0 / 0.08);
     --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
@@ -556,11 +569,10 @@
       visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
   }
 
-  /* Closed state: collapse to 0 width. Excludes side/mini (always visible) and
-     over (slides via transform below, keeps full width so the backdrop sits
-     beside the rail instead of over its footprint during the animation). */
-  cngx-sidenav:not(.cngx-sidenav--open):not(.cngx-sidenav--side):not(.cngx-sidenav--mini):not(.cngx-sidenav--over) {
-    width: 0;
+  /* Hidden rest (`collapsedAs="hidden"`): the composed CngxSidebar writes
+     the 0 inline size, this drops the rail out of view once the width
+     transition ends. The over drawer slides via transform below instead. */
+  cngx-sidenav[data-sidebar-state='hidden'] {
     visibility: hidden;
   }
 
@@ -620,57 +632,47 @@
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--open {
     transform: translateX(0);
     visibility: visible;
+    box-shadow: var(--cngx-sidenav-overlay-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
     transition:
       transform var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
       visibility 0s 0s;
   }
 
-  /* Push/side/mini mode: in flex flow */
-  cngx-sidenav.cngx-sidenav--push,
-  cngx-sidenav.cngx-sidenav--side,
-  cngx-sidenav.cngx-sidenav--mini {
+  /* Side mode: in flex flow */
+  cngx-sidenav.cngx-sidenav--side {
     position: relative;
   }
 
   /*
-   * Mini mode: collapsed icon rail, stays in flex flow. Asymmetric timing -
-   * the collapsed state carries `transition: none`, so *closing* snaps
-   * instantly (the width and the label->initial content swap collapse together,
-   * with no wide-rail-then-shrink jump). The expanded rule below re-adds a
-   * transition so *opening* animates: the label reveals as the rail grows.
+   * Collapsed rail (`data-sidebar-state` from the composed CngxSidebar, which
+   * also writes the inline size and the peek's compensating margin). The rail
+   * stays in flex flow. Asymmetric timing - the rail rest carries
+   * `transition: none`, so ending a peek snaps instantly (the width and the
+   * label->initial content swap collapse together, with no wide-rail-then-
+   * shrink jump). The peek rule below re-adds a transition so a peek animates:
+   * the label reveals as the rail grows.
    */
-  cngx-sidenav.cngx-sidenav--mini {
-    width: var(--cngx-sidenav-mini-width, 56px);
+  cngx-sidenav[data-sidebar-state='rail'] {
     visibility: visible;
     transition: none;
   }
 
   /*
-   * Expanded: grow to full width but compensate with negative margin
-   * so it overlays content without shifting the flex layout.
+   * Peek: full width over the content. The sidebar's negative margin on the
+   * edge facing the content keeps the flex footprint at the rail width.
    */
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded {
-    width: var(--cngx-sidenav-width, 280px);
+  cngx-sidenav[data-sidebar-state='peek'] {
     z-index: 3;
     box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
-    /* Opening only: animate width and the compensating negative margin in
-       lockstep so the flex footprint (width + margin) stays at mini-width every
-       frame - the rail grows *over* the content without shifting it. Closing
-       uses the base rule's `transition: none` for an instant, jump-free snap. */
+    /* Animate width and the compensating negative margin in lockstep so the
+       flex footprint (width + margin) stays at the rail width every frame -
+       the rail grows *over* the content without shifting it. */
     transition:
       width var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
       margin var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease);
-  }
-
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--start {
-    margin-inline-end: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
-  }
-
-  cngx-sidenav.cngx-sidenav--mini.cngx-sidenav--expanded.cngx-sidenav--end {
-    margin-inline-start: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
   }
 
   cngx-sidenav.cngx-sidenav--start {
@@ -684,6 +686,11 @@
     order: 2; /* content first, end sidenav last */
   }
 
+  /* A hidden rest is 0 wide: the edge border would leave a 1px hairline. */
+  cngx-sidenav[data-sidebar-state='hidden'] {
+    border-inline-width: 0;
+  }
+
   .cngx-sidenav__body {
     flex: 1;
     overflow-y: auto;
@@ -692,14 +699,14 @@
     scrollbar-gutter: stable; /* reserve scrollbar space */
   }
 
-  /* In mini mode (collapsed), constrain to mini width */
-  .cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-sidenav__body {
+  /* On the collapsed rail, constrain to the rail width */
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav__body {
     min-width: var(--cngx-sidenav-mini-width, 56px);
   }
 
-  /* Mini mode: truncate header/footer */
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-sidenav-header,
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-sidenav-footer {
+  /* Collapsed rail: truncate header/footer */
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav-header,
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav-footer {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
@@ -707,9 +714,9 @@
     padding: 8px 4px;
   }
 
-  /* Hide section labels and nav group buttons in mini mode */
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) [cngxNavLabel],
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) [cngxNavGroup] {
+  /* Hide section labels and nav group buttons on the collapsed rail */
+  cngx-sidenav[data-sidebar-state='rail'] [cngxNavLabel],
+  cngx-sidenav[data-sidebar-state='rail'] [cngxNavGroup] {
     display: none !important;
   }
 
@@ -780,10 +787,9 @@
   }
 
   /*
-   * Mini-mode nav links: show first-letter initial, hide full text.
-   * Separate rule because .cngx-sidenav--mini is on cngx-sidenav itself.
+   * Collapsed-rail nav links: show first-letter initial, hide full text.
    */
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-nav-link {
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link {
     overflow: hidden;
     text-align: center;
     font-size: 0 !important; /* must beat inline styles */
@@ -791,8 +797,7 @@
     padding: var(--cngx-nav-link-padding, 10px 8px);
   }
 
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded)
-    .cngx-nav-link[data-initial]::before {
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link[data-initial]::before {
     content: attr(data-initial) / '';
     font-size: var(--cngx-nav-link-initial-size, 0.875rem);
     font-weight: 600;
@@ -802,8 +807,8 @@
     line-height: 1.6;
   }
 
-  /* Hide badges in mini mode */
-  cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) [cngxNavBadge] {
+  /* Hide badges on the collapsed rail */
+  cngx-sidenav[data-sidebar-state='rail'] [cngxNavBadge] {
     display: none;
   }
 

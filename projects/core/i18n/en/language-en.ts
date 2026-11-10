@@ -455,6 +455,8 @@ export const CNGX_LANGUAGE_EN = {
     endRegion: 'Side panel',
     resizeHandle: 'Resize navigation',
     resizeValueText: '{value}',
+    collapsedAnnouncement: 'Navigation collapsed',
+    expandedAnnouncement: 'Navigation expanded',
   },
   speak: {
     readAloud: 'Read aloud',

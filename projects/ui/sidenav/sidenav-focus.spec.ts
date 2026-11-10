@@ -14,6 +14,8 @@ import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/co
 
 let mockTrap: {
   enabled: boolean;
+  hasAttached: () => boolean;
+  attachAnchors: ReturnType<typeof vi.fn>;
   focusFirstTabbableElementWhenReady: ReturnType<typeof vi.fn>;
   focusLastTabbableElementWhenReady: ReturnType<typeof vi.fn>;
   destroy: ReturnType<typeof vi.fn>;
@@ -40,7 +42,7 @@ class FocusHost {
 @Component({
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [ariaLabel]="startLabel()">Start</cngx-sidenav>
+      <cngx-sidenav position="start" mode="side" [ariaLabel]="startLabel()">Start</cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
       <cngx-sidenav position="end" mode="over">End</cngx-sidenav>
     </cngx-sidenav-layout>
@@ -63,6 +65,8 @@ describe('CngxSidenav focus management', () => {
   beforeEach(() => {
     mockTrap = {
       enabled: false,
+      hasAttached: () => true,
+      attachAnchors: vi.fn(),
       focusFirstTabbableElementWhenReady: vi.fn(),
       focusLastTabbableElementWhenReady: vi.fn(),
       destroy: vi.fn(),
@@ -99,17 +103,33 @@ describe('CngxSidenav focus management', () => {
     expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalled();
   });
 
-  it('moves focus into the rail without scrolling the layout', () => {
-    // The rail is still translated off-canvas when focus lands; a scrolling
-    // focus() would shift the layout (overflow: hidden is script-scrollable)
-    // by the rail width and drag the content out of the viewport.
+  it('makes the page outside an open overlay inert and releases it on close', () => {
     const { fixture, host } = setup();
+    const outside = fixture.nativeElement.querySelector('.external-trigger') as HTMLElement;
+    const content = fixture.nativeElement.querySelector('cngx-sidenav-content') as HTMLElement;
     host.open.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(mockTrap.focusFirstTabbableElementWhenReady).toHaveBeenCalledWith({
-      preventScroll: true,
-    });
+    expect(content.hasAttribute('inert')).toBe(true);
+    expect(outside.hasAttribute('inert')).toBe(true);
+
+    host.open.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(content.hasAttribute('inert')).toBe(false);
+    expect(outside.hasAttribute('inert')).toBe(false);
+  });
+
+  it('closes the overlay on Escape inside it', () => {
+    const { fixture, host, sidenavEl } = setup();
+    host.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    sidenavEl
+      .querySelector('.nav-first')!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
   });
 
   it('does not enable the trap in side mode even when open', () => {
@@ -153,7 +173,7 @@ describe('CngxSidenav focus management', () => {
   it('stays complementary while docked, open or not', () => {
     const { fixture, host, sidenavEl } = setup();
     host.open.set(true);
-    for (const mode of ['side', 'mini', 'push'] as const) {
+    for (const mode of ['side'] as const) {
       host.mode.set(mode);
       fixture.detectChanges();
       expect(sidenavEl.getAttribute('role')).toBe('complementary');
@@ -162,7 +182,7 @@ describe('CngxSidenav focus management', () => {
 
   it('never sets aria-modal without role="dialog"', () => {
     const { fixture, host, sidenavEl } = setup();
-    for (const mode of ['over', 'push', 'side', 'mini'] as const) {
+    for (const mode of ['over', 'side'] as const) {
       for (const open of [false, true]) {
         host.mode.set(mode);
         host.open.set(open);
@@ -174,37 +194,30 @@ describe('CngxSidenav focus management', () => {
     }
   });
 
-  it('never sets aria-modal in side or mini mode', () => {
+  it('never sets aria-modal on a docked rail', () => {
     const { fixture, host, sidenavEl } = setup();
     host.open.set(true);
 
     host.mode.set('side');
     fixture.detectChanges();
     expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
-
-    host.mode.set('mini');
-    fixture.detectChanges();
-    expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
   });
 
-  it('does not steal focus when a mode switch auto-opens the overlay', () => {
+  it('does not open the overlay or move focus when a pinned mode switches to over', () => {
     const { fixture, host, sidenavEl } = setup();
     host.mode.set('side');
     fixture.detectChanges();
     TestBed.flushEffects();
     mockTrap.focusFirstTabbableElementWhenReady.mockClear();
 
-    // Leaving an always-visible mode (side) for overlay (over) auto-opens the
-    // rail. The trap must engage but focus must not be pulled in - the open was
-    // driven by a viewport change, not a user gesture.
     host.mode.set('over');
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    expect(host.open()).toBe(true);
-    expect(mockTrap.enabled).toBe(true);
+    expect(host.open()).toBe(false);
+    expect(mockTrap.enabled).toBe(false);
     expect(mockTrap.focusFirstTabbableElementWhenReady).not.toHaveBeenCalled();
-    expect(sidenavEl.getAttribute('aria-modal')).toBe('true');
+    expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
   });
 
   it('disables the trap again when the overlay closes', () => {
@@ -221,7 +234,10 @@ describe('CngxSidenav focus management', () => {
   });
 
   it('destroys the trap on teardown', () => {
-    const { fixture } = setup();
+    const { fixture, host } = setup();
+    host.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
     fixture.destroy();
     expect(mockTrap.destroy).toHaveBeenCalled();
   });
@@ -251,8 +267,8 @@ describe('CngxSidenav focus management', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    // Restore is deferred to a microtask so it runs after the close DOM settles.
-    await Promise.resolve();
+    // The surface's CngxFocusRestore returns focus once the close renders.
+    await fixture.whenStable();
     expect(document.activeElement).toBe(trigger);
 
     fixture.nativeElement.remove();
@@ -316,6 +332,24 @@ describe('CngxSidenav accessible name', () => {
     expect(end.getAttribute('aria-label')).toBe('Seitenbereich');
   });
 
+  it('makes the other rail inert while a modal overlay is open (F9)', () => {
+    const { fixture, start, end } = setup();
+    const rail = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))
+      .map((d) => d.injector.get(CngxSidenav))
+      .find((nav) => nav.position() === 'end')!;
+    rail.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(end.getAttribute('aria-modal')).toBe('true');
+    expect(start.hasAttribute('inert')).toBe(true);
+
+    rail.close();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(start.hasAttribute('inert')).toBe(false);
+  });
+
   it('names the open overlay dialog with the same resolved label', () => {
     const { fixture, end } = setup();
     const rail = fixture.debugElement
@@ -326,5 +360,117 @@ describe('CngxSidenav accessible name', () => {
     fixture.detectChanges();
     expect(end.getAttribute('role')).toBe('dialog');
     expect(end.getAttribute('aria-label')).toBe('Side panel');
+  });
+});
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav position="start" mode="side">Start</cngx-sidenav>
+      <cngx-sidenav-content>
+        <button class="order" type="button" [attr.aria-controls]="inspector.id()">Order</button>
+      </cngx-sidenav-content>
+      <cngx-sidenav #inspector position="end" mode="over" modality="none" [(opened)]="open">
+        <button class="inside" type="button">Close</button>
+      </cngx-sidenav>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class InspectorHost {
+  open = signal(false);
+}
+
+describe('CngxSidenav non-modal inspector (S1)', () => {
+  function setup() {
+    TestBed.configureTestingModule({ imports: [InspectorHost] });
+    const fixture = TestBed.createComponent(InspectorHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    return {
+      fixture,
+      host: fixture.componentInstance,
+      layout: root.querySelector('cngx-sidenav-layout') as HTMLElement,
+      content: root.querySelector('cngx-sidenav-content') as HTMLElement,
+      ...railsOf(fixture),
+      order: root.querySelector('.order') as HTMLElement,
+      inside: root.querySelector('.inside') as HTMLElement,
+    };
+  }
+
+  afterEach(() => document.body.replaceChildren());
+
+  it('leaves the page operable: no dialog, no backdrop, no inert', () => {
+    const { layout, content, start, end } = setup();
+    expect(end.getAttribute('role')).not.toBe('dialog');
+    expect(end.hasAttribute('aria-modal')).toBe(false);
+    expect(layout.classList.contains('cngx-sidenav-layout--has-overlay')).toBe(false);
+    expect(content.hasAttribute('inert')).toBe(false);
+    expect(start.hasAttribute('inert')).toBe(false);
+  });
+
+  it('stays open on a press of an element that controls it', () => {
+    const { fixture, host, order } = setup();
+    order.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0 }));
+    fixture.detectChanges();
+    expect(host.open()).toBe(true);
+  });
+
+  it('closes on Escape inside it', () => {
+    const { fixture, host, inside } = setup();
+    inside.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(host.open()).toBe(false);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav [mode]="mode()" [opened]="true">
+        <button class="first" type="button">First</button>
+      </cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class UnresolvedHost {
+  mode = signal<SidenavMode>('auto');
+}
+
+// jsdom resolves no container rule, so the width class stays unresolved here:
+// the state an auto rail is in on its first frames in a browser.
+describe('CngxSidenav surface before the width class resolves', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  function setup(mode: SidenavMode) {
+    TestBed.configureTestingModule({ imports: [UnresolvedHost] });
+    const fixture = TestBed.createComponent(UnresolvedHost);
+    fixture.componentInstance.mode.set(mode);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    return {
+      rail: root.querySelector('cngx-sidenav') as HTMLElement,
+      content: root.querySelector('cngx-sidenav-content') as HTMLElement,
+    };
+  }
+
+  it('holds an open auto overlay off the page modal until the class resolves', () => {
+    const { rail, content } = setup('auto');
+    expect(rail.hasAttribute('aria-modal')).toBe(false);
+    expect(content.hasAttribute('inert')).toBe(false);
+  });
+
+  it('engages a pinned over rail at once', () => {
+    const { rail, content } = setup('over');
+    expect(rail.getAttribute('aria-modal')).toBe('true');
+    expect(content.hasAttribute('inert')).toBe(true);
   });
 });

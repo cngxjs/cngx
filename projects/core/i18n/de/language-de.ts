@@ -451,6 +451,8 @@ export const CNGX_LANGUAGE_DE = {
     endRegion: 'Seitenbereich',
     resizeHandle: 'Navigationsbreite ändern',
     resizeValueText: '{value}',
+    collapsedAnnouncement: 'Navigation eingeklappt',
+    expandedAnnouncement: 'Navigation ausgeklappt',
   },
   speak: {
     readAloud: 'Vorlesen',

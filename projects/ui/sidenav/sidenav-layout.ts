@@ -1,26 +1,28 @@
-import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
-  DestroyRef,
-  effect,
-  inject,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CngxContainer } from '@cngx/common/layout';
-import { fromEvent } from 'rxjs';
-import { CngxSidenav } from './sidenav';
+
+import {
+  CNGX_SIDENAV,
+  CNGX_SIDENAV_LAYOUT,
+  type CngxSidenavContract,
+  type CngxSidenavLayoutCoordinator,
+} from './sidenav-token';
 
 /**
  * Container for one or two `CngxSidenav` panels and a `CngxSidenavContent`.
  *
- * Manages shared backdrop, scroll lock, and click-outside coordination.
- * Supports up to two sidenavs: one `position="start"` and one `position="end"`.
+ * Renders the shared backdrop behind a modal overlay. Focus trap, scroll lock,
+ * `inert` and dismissal on Escape or an outside press belong to each rail's
+ * composed `CngxDrawerSurface`. Supports up to two sidenavs: one
+ * `position="start"` and one `position="end"`.
  *
  * It is also the query container the rails resolve their `'auto'` mode
  * against: the stylesheet declares and names the container
@@ -57,26 +59,28 @@ import { CngxSidenav } from './sidenav';
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./sidenav-layout.css'],
   hostDirectives: [CngxContainer],
+  providers: [{ provide: CNGX_SIDENAV_LAYOUT, useExisting: CngxSidenavLayout }],
   host: {
     '[class.cngx-sidenav-layout]': 'true',
     '[class.cngx-sidenav-layout--ready]': 'ready()',
-    '[class.cngx-sidenav-layout--has-overlay]': 'hasOverlay()',
+    '[class.cngx-sidenav-layout--has-overlay]': 'hasModalOverlay()',
   },
   template: `
     <ng-content select="cngx-sidenav[position=start], cngx-sidenav:not([position])" />
     <ng-content select="cngx-sidenav-content" />
     <ng-content select="cngx-sidenav[position=end]" />
-    @if (hasOverlay()) {
-      <div class="cngx-sidenav-backdrop" (click)="closeAllOverlays()"></div>
-    }
+    <!-- Visual only, always rendered so it fades with the panel: the open
+         rail's surface makes it inert and dismisses on a press outside the
+         rail, so it needs no handler. --has-overlay shows it. -->
+    <div class="cngx-sidenav-backdrop" aria-hidden="true"></div>
   `,
 })
-export class CngxSidenavLayout {
+export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   private readonly readyState = signal(false);
   /** @internal First render done - gates transitions against an open-on-load flash. */
   protected readonly ready = this.readyState.asReadonly();
 
-  private readonly sidenavs = contentChildren(CngxSidenav);
+  private readonly sidenavs = contentChildren(CNGX_SIDENAV);
 
   /** The start-positioned sidenav, if any. */
   readonly startSidenav = computed(
@@ -87,91 +91,33 @@ export class CngxSidenavLayout {
   readonly endSidenav = computed(() => this.sidenavs().find((s) => s.position() === 'end') ?? null);
 
   /** Whether any sidenav is open in overlay mode. */
-  readonly hasOverlay = computed(() => this.sidenavs().some((s) => s.isOverlay() && s.opened()));
+  readonly hasOverlay = computed(() => this.sidenavs().some((s) => s.overlayActive()));
+
+  /** Whether an open overlay takes over the page or the layout (backdrop shown). */
+  readonly hasModalOverlay = computed(() =>
+    this.sidenavs().some((s) => s.overlayActive() && s.modality() !== 'none'),
+  );
 
   constructor() {
-    const doc = inject(DOCUMENT);
-
     // Gate transitions until after first render - prevents open-on-load flash.
     afterNextRender(() => this.readyState.set(true));
-
-    // Dataset ref-counting matches CngxScrollLock so concurrent lock sources
-    // do not clobber each other's restore values. `locked` is a plain
-    // variable, not a signal: the effect only needs to TRACK hasOverlay(),
-    // and a signal read+written in the same effect is the loop-risk shape.
-    const html = doc.documentElement;
-    let locked = false;
-
-    effect(() => {
-      if (this.hasOverlay() && !locked) {
-        if (!html.dataset['cngxPrevOverflow']) {
-          html.dataset['cngxPrevOverflow'] = html.style.overflow;
-          html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
-        }
-        html.style.overflow = 'hidden';
-        html.style.scrollbarGutter = 'stable';
-        locked = true;
-      } else if (!this.hasOverlay() && locked) {
-        html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
-        html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
-        delete html.dataset['cngxPrevOverflow'];
-        delete html.dataset['cngxPrevScrollbarGutter'];
-        locked = false;
-      }
-    });
-
-    inject(DestroyRef).onDestroy(() => {
-      if (locked) {
-        html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
-        html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
-        delete html.dataset['cngxPrevOverflow'];
-        delete html.dataset['cngxPrevScrollbarGutter'];
-      }
-    });
-
-    // Dismiss on pointerdown, not click: an external open-trigger's pointerdown
-    // fires before the click that flips opened(), so hasOverlay() is still false
-    // here at that point and the same-gesture open cannot self-close. A rail's
-    // own toggle (an [aria-controls] naming the rail id) is skipped: dismissing
-    // on its pointerdown would let the following click reopen the rail.
-    fromEvent<PointerEvent>(doc, 'pointerdown')
-      .pipe(takeUntilDestroyed())
-      .subscribe((e) => {
-        if (!this.hasOverlay()) {
-          return;
-        }
-        const target = e.target as Node;
-        const controlledIds = controlledIdsOf(e.target);
-        for (const nav of this.sidenavs()) {
-          if (
-            nav.isOverlay() &&
-            nav.opened() &&
-            !(nav.elementRef.nativeElement as HTMLElement).contains(target) &&
-            !controlledIds.includes(nav.id())
-          ) {
-            nav.close();
-          }
-        }
-      });
   }
 
   /** Closes all sidenavs that are currently in overlay mode. */
   closeAllOverlays(): void {
     for (const nav of this.sidenavs()) {
-      if (nav.isOverlay() && nav.opened()) {
+      if (nav.overlayActive()) {
         nav.close();
       }
     }
   }
-}
 
-/** Ids listed in the `aria-controls` of the nearest controlling ancestor of `target`. */
-function controlledIdsOf(target: EventTarget | null): readonly string[] {
-  const element =
-    target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
-  const controls = element?.closest('[aria-controls]')?.getAttribute('aria-controls');
-  if (!controls) {
-    return [];
+  /** @internal One open overlay per layout: called from a rail's open path. */
+  overlayOpening(rail: CngxSidenavContract): void {
+    for (const nav of this.sidenavs()) {
+      if (nav !== rail && nav.overlayActive()) {
+        nav.close();
+      }
+    }
   }
-  return controls.split(/\s+/).filter(Boolean);
 }
