@@ -376,7 +376,9 @@ export type CngxSelectCoreViewPanelKeys = Extract<
 /**
  * Core-owned keys a composite may replace with its own derivation
  * (typeahead hides a closed-panel load error, action variants merge the
- * quick-create commit into `isCommitting`).
+ * quick-create commit into `isCommitting`). Every composite names all three
+ * in its extras, the core signal where it does not override, so an override
+ * is visible at the call site and an explicit `undefined` fails to compile.
  *
  * @internal
  */
@@ -391,7 +393,7 @@ export type CngxSelectPanelViewHostExtras<T> = Omit<
   CngxSelectPanelViewHost<T>,
   CngxSelectCoreViewPanelKeys
 > &
-  Partial<Pick<CngxSelectPanelViewHost<T>, CngxSelectPanelOverrideKeys>>;
+  Required<Pick<CngxSelectPanelViewHost<T>, CngxSelectPanelOverrideKeys>>;
 
 /**
  * Composite half of {@link CngxSelectCore.createPanelHost}.
@@ -399,7 +401,7 @@ export type CngxSelectPanelViewHostExtras<T> = Omit<
  * @internal
  */
 export type CngxSelectPanelHostExtras<T> = Omit<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys> &
-  Partial<Pick<CngxSelectPanelHost<T>, CngxSelectPanelOverrideKeys>>;
+  Required<Pick<CngxSelectPanelHost<T>, CngxSelectPanelOverrideKeys>>;
 
 /**
  * Options of {@link CngxSelectCore.createCommitErrorAnnouncer}.

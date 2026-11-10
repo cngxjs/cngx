@@ -912,6 +912,9 @@ export class CngxTreeSelect<T = unknown>
    * @internal
    */
   readonly panelViewHost = this.core.createPanelViewHost({
+    activeView: this.core.activeView,
+    showInlineError: this.core.showInlineError,
+    isCommitting: this.core.isCommitting,
     tpl: this.tpl,
     loadingVariant: this.loadingVariant,
     refreshingVariant: this.refreshingVariant,

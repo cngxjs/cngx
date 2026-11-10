@@ -1166,6 +1166,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * @internal
    */
   readonly panelHost = this.core.createPanelHost({
+    activeView: this.core.activeView,
+    showInlineError: this.core.showInlineError,
     tpl: this.tpl,
     loadingVariant: this.loadingVariant,
     refreshingVariant: this.refreshingVariant,

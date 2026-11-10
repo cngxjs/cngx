@@ -907,6 +907,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * @internal
    */
   readonly panelHost = this.core.createPanelHost({
+    isCommitting: this.core.isCommitting,
     tpl: this.tpl,
     loadingVariant: this.loadingVariant,
     refreshingVariant: this.refreshingVariant,
