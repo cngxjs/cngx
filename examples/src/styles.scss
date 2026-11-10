@@ -2713,6 +2713,11 @@ button.chip.demo-chip--copied {
 .demo-app-sidebar .demo-nav__trigger {
   border-inline-start: 3px solid transparent;
 }
+// The nav scroller clips overflow-x, which cuts the inline sides of the
+// reset's outset ring (outline-offset: 3px); draw it inside the row instead.
+.demo-app-sidebar :is(.demo-nav__link, .demo-nav__trigger):focus-visible {
+  outline-offset: -2px;
+}
 
 // Story chrome marks a mode or modality switch on its chip group for one
 // frame; the drawer snaps to the new layout instead of animating the panel
