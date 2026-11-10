@@ -216,26 +216,27 @@ export class CngxActionStatusBrain implements CngxActionStatus {
       this.runState().settled.subscribe((settle) => this.handleOwnSettle(settle));
     });
 
-    const tracker = createTransitionTracker(() => this.status());
-    let boundState = untracked(this.externalState);
+    // One tracked pair, so a swap of the status source (bind, unbind, a new
+    // state) is told apart from a status edge without any held state.
+    const tracker = createTransitionTracker(
+      () => ({ ext: this.externalState(), status: this.status() }),
+      { equal: (a, b) => a.ext === b.ext && a.status === b.status },
+    );
     effect(() => {
       const current = tracker.current();
-      const ext = this.externalState();
-      // Binding or unbinding swaps the status source: no edge. An unbind
-      // also ends the external feedback window, so its text leaves the region.
-      if (ext !== boundState) {
-        const unbound = boundState !== undefined;
-        boundState = ext;
-        if (unbound) {
+      const previous = tracker.previous();
+      if (current.ext !== previous.ext) {
+        // An unbind ends the external feedback window: its text leaves the region.
+        if (previous.ext !== undefined) {
           untracked(() => this.runState().announce(''));
         }
         return;
       }
-      if (current === tracker.previous()) {
+      if (current.status === previous.status) {
         return;
       }
       // Only the edge re-runs this body; everything else is read untracked.
-      untracked(() => this.handleExternalEdge(current));
+      untracked(() => this.handleExternalEdge(current.status));
     });
   }
 
