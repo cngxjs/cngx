@@ -9,7 +9,7 @@ import type { Observable } from 'rxjs';
  * An Observable settles on its first emission; later emissions are ignored.
  * An Observable that completes without emitting (`EMPTY`, a `filter` that
  * drops every value) settles the commit as a `CngxRuntimeError` with code
- * `CNGX2025`, so the panel never stays blocked on a commit
+ * [`CNGX2025`](/error-codes/cngx2025.md), so the panel never stays blocked on a commit
  * that cannot finish. Emit `undefined` before completing when the server
  * has nothing to return. A source that neither emits nor completes stays
  * pending until a newer commit supersedes it.

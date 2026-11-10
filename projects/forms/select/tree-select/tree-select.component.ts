@@ -398,7 +398,7 @@ export class CngxTreeSelect<T = unknown>
    * Equality function that matches values to options. Defaults to
    * `Object.is`. Used only when `keyFn` is unset; the selection controller
    * and the tree index always key by `keyFn`, so a custom `compareWith`
-   * without `keyFn` dev-warns `CNGX2026`.
+   * without `keyFn` dev-warns [`CNGX2026`](/error-codes/cngx2026.md).
    */
   readonly compareWith = input<CngxSelectCompareFn<T>>(
     cngxSelectDefaultCompare as CngxSelectCompareFn<T>,

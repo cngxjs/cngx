@@ -42,7 +42,7 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
 
 ### Dropdown menu (button + popover)
 
-`CngxMenuTrigger` wires a focusable element to the menu and the popover. Co-host `[cngxPopoverTrigger]`: it writes `aria-haspopup`, `aria-expanded` and `aria-controls` (a trigger without it warns `CNGX1074` in development). Activation always closes the menu (menu semantics).
+`CngxMenuTrigger` wires a focusable element to the menu and the popover. Co-host `[cngxPopoverTrigger]`: it writes `aria-haspopup`, `aria-expanded` and `aria-controls` (a trigger without it warns [`CNGX1074`](../../../../core-concepts/error-codes/cngx1074.md) in development). Activation always closes the menu (menu semantics).
 
 ```html
 <button type="button"

@@ -61,7 +61,7 @@ An icon button, an icon menu button and a close button have no visible text, so 
 
 - Put `aria-label` on the host, written as what the button does: "Delete row", "More actions for Invoice 42". Not the glyph ("Trash", "Three dots").
 - A tooltip describes; it does not name. `cngxTooltip` adds a description, the button still needs its own label.
-- A nameless icon button, icon menu button or close button warns `CNGX1071` in development. Inside a split button the caret takes its default name from the menu-button copy, so it needs no label of its own.
+- A nameless icon button, icon menu button or close button warns [`CNGX1071`](error-codes/cngx1071.html) in development. Inside a split button the caret takes its default name from the menu-button copy, so it needs no label of its own.
 - Reuse the same name for the same action across the app. A screen-reader user who learned "More actions" in one table expects it in the next.
 
 ---

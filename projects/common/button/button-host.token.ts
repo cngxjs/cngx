@@ -28,7 +28,7 @@ export interface CngxButtonHostDescriptor {
   };
   /**
    * `true` for a host without visible text. The brain then checks the
-   * accessible name once the app is stable and warns `CNGX1071` without one.
+   * accessible name once the app is stable and warns [`CNGX1071`](/error-codes/cngx1071.md) without one.
    */
   readonly iconOnly?: boolean;
 }

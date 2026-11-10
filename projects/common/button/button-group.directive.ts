@@ -34,7 +34,7 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
  * per button.
  *
  * The host is `role="group"` and needs a name: set `aria-label` or
- * `aria-labelledby`. A group without either warns `CNGX1072` in development
+ * `aria-labelledby`. A group without either warns [`CNGX1072`](/error-codes/cngx1072.md) in development
  * mode. Selection (pressed state) is not this group's job; use
  * `CngxButtonToggleGroup` for that.
  *

@@ -10,7 +10,7 @@ import { CngxRuntimeError } from '@cngx/utils';
  *
  * Must live inside a `[formGroup]` - it injects `FormGroupDirective` non-optionally,
  * so outside one Angular throws `NullInjectorError`. As a fail-fast guard it also
- * throws a `CngxRuntimeError` (`CNGX2007`) when no control matches the given name
+ * throws a `CngxRuntimeError` ([`CNGX2007`](/error-codes/cngx2007.md)) when no control matches the given name
  * in the parent group.
  *
  * Read the resolved control through the `control` signal, via the `exportAs` ref or

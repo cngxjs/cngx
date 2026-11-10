@@ -24,7 +24,7 @@ import { CngxSplitCaret } from './split-caret.directive';
  *
  * Outside a split button the glyph is whatever you project (a kebab icon,
  * an ellipsis) and the name is yours: set `aria-label` (or
- * `aria-labelledby` / `title`); a host without one warns `CNGX1071` in
+ * `aria-labelledby` / `title`); a host without one warns [`CNGX1071`](/error-codes/cngx1071.md) in
  * development mode.
  *
  * As the direct child of a `cngxSplitButton` it renders the caret (the

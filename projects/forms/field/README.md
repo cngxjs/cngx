@@ -170,10 +170,10 @@ touch-target floor raises it to at least 44px. Density scales the padding only, 
 - the box reads its state from its main control, the first direct-child control
   that is not a `cngxPrefix` / `cngxSuffix`, and writes it as `data-invalid`,
   `data-disabled` and `data-readonly`. One main control per box; a second one
-  is ignored (dev mode warns, CNGX2020), and an invalid or disabled affix
+  is ignored (dev mode warns, [`CNGX2020`](../../../core-concepts/error-codes/cngx2020.md)), and an invalid or disabled affix
   picker never changes the box;
 - a control behind a wrapper element is not a direct child and follows the
-  normal cascade (dev mode warns, CNGX2021, when the box has no direct-child
+  normal cascade (dev mode warns, [`CNGX2021`](../../../core-concepts/error-codes/cngx2021.md), when the box has no direct-child
   control at all).
 
 **Composites are their own box.** A component that renders its own controls,

@@ -54,7 +54,7 @@ The idle content and the status labels render stacked in one cell; only the acti
 - **Host directive:** `CngxAsyncClick` (`action`, `feedbackDuration`, `showDelay` and `minDwell` forwarded; `(settled)` re-exported, once per own run with a monotonic `generation`).
 - **Own run or external state:** bind `[action]` (the button runs it) or `[externalState]` (the button reflects a run it does not own). `state.lastUpdated` follows the bound source only, with no fall-through to the own runs.
 - **Core:** `CngxButtonBrain` from `@cngx/common/button`, the same host directive every cngx button renders on. The brain reads the co-hosted run through `CNGX_ASYNC_RUN_STATE`; `CNGX_HOST_INTERACTION_STATE` tells the directive about `[disabled]`, an external run and the announcement text.
-- **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, `CNGX3008`).
+- **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, [`CNGX3008`](../../../core-concepts/error-codes/cngx3008.md)).
 
 ```html
 <button cngxActionButton #btn="cngxActionButton" [action]="save">Save</button>

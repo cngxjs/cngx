@@ -60,8 +60,8 @@ import type {
  * `CNGX_HOST_INTERACTION_STATE` (read by a co-hosted `cngxAsyncClick` or
  * `cngxMenuTrigger`) and `CNGX_DESCRIBED_BY`. An `iconOnly` host is checked
  * for an accessible name once the app is stable; a miss is confirmed on the
- * next stable cycle before it warns `CNGX1071`. A host without
- * `provideButtonHost` throws `CNGX1075`.
+ * next stable cycle before it warns [`CNGX1071`](/error-codes/cngx1071.md). A host without
+ * `provideButtonHost` throws [`CNGX1075`](/error-codes/cngx1075.md).
  *
  * The host template renders the busy layer from `busyVisible()` (the
  * co-hosted runner's gate, or the brain's own gate over a run the host

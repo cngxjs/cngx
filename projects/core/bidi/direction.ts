@@ -18,7 +18,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * are the only two values the reactive graph reasons about. A root
  * `dir="auto"` reports what the browser resolved for `<html>` (its
  * `:dir(rtl)` state); an absent `dir` reports `'ltr'`, and so does an
- * invalid value, with a dev-mode warning (CNGX0006).
+ * invalid value, with a dev-mode warning ([`CNGX0006`](/error-codes/cngx0006.md)).
  *
  * @since 0.1.0
  */

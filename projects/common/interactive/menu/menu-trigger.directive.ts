@@ -97,7 +97,7 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * registers `menu` as the popover's haspopup hint and the menu's id as its
  * controls hint, so `aria-controls` names the `role="menu"` element. A
  * trigger without a co-hosted `[cngxPopoverTrigger]` emits none of the
- * three (dev builds warn `CNGX1074`).
+ * three (dev builds warn [`CNGX1074`](/error-codes/cngx1074.md)).
  *
  * ### Dismissal
  *

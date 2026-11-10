@@ -17,7 +17,7 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * A split button: a main `cngxButton` that runs the default action and a
  * `cngxIconMenuButton` caret that opens the alternatives, framed as one
  * button group. The group carries `role="group"` and needs a name
- * (`aria-label` or `aria-labelledby`, `CNGX1072`); `variant` and `size`
+ * (`aria-label` or `aria-labelledby`, [`CNGX1072`](/error-codes/cngx1072.md)); `variant` and `size`
  * pass to both buttons.
  *
  * The caret derives its state from the main button: while the main action
@@ -35,7 +35,7 @@ import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.t
  * caret is the `cngxIconMenuButton` (or any host on `CngxSplitCaret`), the
  * main action the first other cngx button (`cngxButton`, `cngxIconButton`,
  * `cngxActionButton` or a custom host on `CngxButtonBrain`). Without a main button the directive
- * warns `CNGX1073`. Buttons deeper inside the split, for example in a
+ * warns [`CNGX1073`](/error-codes/cngx1073.md). Buttons deeper inside the split, for example in a
  * projected panel, take neither role.
  *
  * ```html

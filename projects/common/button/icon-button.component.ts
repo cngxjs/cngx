@@ -18,7 +18,7 @@ import { provideButtonHost } from './button-host.token';
  * technology, so nothing projected (alt text, a ligature name, a font
  * glyph) ever becomes the button's name; the name is
  * the consumer's job: set `aria-label` (or `aria-labelledby` / `title`) on
- * the host. A host without any of them warns `CNGX1071` in development mode,
+ * the host. A host without any of them warns [`CNGX1071`](/error-codes/cngx1071.md) in development mode,
  * once the app is stable, so a label bound after the first render counts. A tooltip is a separate,
  * per-icon decision; co-host `[cngxTooltip]` where the icon alone is
  * ambiguous. Its id joins the button's `aria-describedby` through

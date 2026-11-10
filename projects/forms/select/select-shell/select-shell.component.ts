@@ -1045,7 +1045,7 @@ export class CngxSelectShell<T = unknown>
   /**
    * Panel-host contract member. The shell renders projected `<cngx-option>`
    * elements only, so a patched item never reaches the panel; dev mode warns
-   * with CNGX2024. The buffer still feeds value resolution.
+   * with [`CNGX2024`](/error-codes/cngx2024.md). The buffer still feeds value resolution.
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
@@ -1056,7 +1056,7 @@ export class CngxSelectShell<T = unknown>
     }
     this.localItemsBuffer.patch(item);
   }
-  /** Panel-host contract member; see `patchData`. Dev mode warns with CNGX2024. */
+  /** Panel-host contract member; see `patchData`. Dev mode warns with [`CNGX2024`](/error-codes/cngx2024.md). */
   clearLocalItems(): void {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       cngxDevWarn(
