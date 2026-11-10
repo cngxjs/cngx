@@ -67,7 +67,7 @@ Every input is forwarded to one of the four host directives; the button itself d
 Three feedback pathways:
 
 1. **Labels** - `pendingLabel`, `succeededLabel`, `failedLabel` strings, or app-wide via `provideCngxButton(withActionStatusLabels({ ... }))` (`provideCngxButtonAt` in `viewProviders`); a bound label wins, a bound `''` switches the cell off
-2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives, or app-wide via `withActionStatusTemplates({ ... })`; a projected template wins
+2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives, or app-wide via `withActionStatusTemplates({ ... })`; a projected template wins, a bound label beats the app-wide template
 3. **State** - bind `btn.state` to any state consumer
 
 The idle content and the status labels render stacked in one cell; only the active one is visible and part of the button name. The button is always as wide as its widest label, so it never jumps after a run. Without a pending label or template, the idle label stays in place under the busy spinner. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default) and stays for at least `minDwell` (400 ms); override per button with `[showDelay]` / `[minDwell]`. The pending label waits for the same gate, so a fast run goes from the idle label straight to the result without a pending flash in the label or the accessible name. The success and error labels, `aria-busy` and the announcement switch at once.
