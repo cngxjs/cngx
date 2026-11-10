@@ -157,10 +157,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
    */
   readonly errorMessageId = input<string | null>(null);
   /**
-   * Layout direction of the group. `'horizontal'` adds the
-   * `cngx-checkbox-group--horizontal` class. Default `'vertical'`. An explicit binding is also
-   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis; while unbound, the layout is
-   * vertical but the roving axis keeps its own default `'horizontal'`.
+   * Layout direction of the group and the arrow-key axis of the host `CngxRovingTabindex`.
+   * `'horizontal'` adds the `cngx-checkbox-group--horizontal` class and moves focus with
+   * ArrowLeft/ArrowRight; `'vertical'` moves it with ArrowUp/ArrowDown. Unbound, layout and axis
+   * are both vertical; a binding sets both. Default `'vertical'`.
    */
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   /**
@@ -206,7 +206,11 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     keyFn: (v) => this.keyFn()(v),
   });
 
+  private readonly roving = inject(CngxRovingTabindex, { host: true });
+
   constructor() {
+    // Reads the input default here; a bound [orientation] overwrites the axis after construction.
+    this.roving.orientation.set(this.orientation());
     inject(DestroyRef).onDestroy(() => this.controller.destroy());
   }
 
