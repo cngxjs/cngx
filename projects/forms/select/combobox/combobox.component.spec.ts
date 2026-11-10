@@ -35,34 +35,6 @@ import type {
 import { describeChipFit, type ChipFitProjectedHost } from '../shared/__test-helpers/chip-fit';
 import { CngxSelectChipOverflow } from '../shared/template-slots';
 
-// jsdom has no Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
   { value: 'green', label: 'Grün' },
@@ -96,10 +68,6 @@ function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
 }
-
-beforeEach(() => {
-  polyfillPopover();
-});
 
 describe('CngxCombobox - skeleton', () => {
   it('renders role="combobox" on the inner <input> and role="group" on the wrapper', () => {
@@ -339,7 +307,6 @@ describe('filterSelectOptions (helper)', () => {
 describe('CngxCombobox - search + filter', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    polyfillPopover();
   });
 
   it('typing into the input filters the rendered option rows', () => {
@@ -697,7 +664,6 @@ class CommitHost {
 
 describe('CngxCombobox - commit action producer', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [CommitHost] });
   });
 
@@ -969,9 +935,6 @@ describe('CngxCombobox - commit action producer', () => {
 // ── Phase C - a11y audit (nested buttons) ─────────────────────────────
 
 describe('CngxCombobox - a11y', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('never nests a <button> inside another <button>, even with chips + clear + commit spinner', () => {
     @Component({
@@ -1032,9 +995,6 @@ class ComboboxChipTemplateHost {
 }
 
 describe('CngxCombobox - *cngxComboboxChip slot', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('renders the chip template override instead of the default <cngx-chip>', () => {
     const fixture = TestBed.createComponent(ComboboxChipTemplateHost);

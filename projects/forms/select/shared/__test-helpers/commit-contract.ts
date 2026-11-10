@@ -151,33 +151,6 @@ const NODES = [{ value: 'red' }, { value: 'green' }, { value: 'blue' }];
 
 const CLEARED_PHRASE = /selection cleared/i;
 
-// jsdom has no Popover API.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => boolean;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-  };
-  proto.togglePopover = function (this: HTMLElement) {
-    const open = !this.hasAttribute('data-popover-open');
-    if (open) {
-      this.setAttribute('data-popover-open', 'true');
-    } else {
-      this.removeAttribute('data-popover-open');
-    }
-    return open;
-  };
-}
-
 function flush(fixture: ComponentFixture<unknown>): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -280,7 +253,6 @@ export function describeCommitContract(
     }
 
     function mount(mountOpts: MountOptions = {}) {
-      polyfillPopover();
       if (mountOpts.providers) {
         TestBed.configureTestingModule({ providers: [...mountOpts.providers] });
       }
@@ -424,7 +396,6 @@ export function describeCommitContract(
     }
 
     function mountField(seed: string | null) {
-      polyfillPopover();
       fieldSeed = seed;
       const displayWith = host.displayWith ? '[displayWith]="displayWith"' : '';
       TestBed.overrideComponent(FieldHost, {

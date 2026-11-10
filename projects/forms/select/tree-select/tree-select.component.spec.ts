@@ -3,7 +3,7 @@ import { Subject, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
@@ -40,34 +40,6 @@ import type {
   CngxTreeSelectFooterContext,
   CngxTreeSelectNodeCountContext,
 } from './tree-select.model';
-
-// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 interface Row {
   readonly id: string;
@@ -128,7 +100,6 @@ function setup() {
 }
 
 describe('CngxTreeSelect', () => {
-  beforeAll(() => polyfillPopover());
 
   let f: ReturnType<typeof setup>;
   beforeEach(() => {
@@ -617,8 +588,6 @@ describe('CngxTreeSelect - member identity follows keyFn', () => {
     readonly compareWith = signal<CngxSelectCompareFn<Row>>(Object.is);
   }
 
-  beforeEach(() => polyfillPopover());
-
   const flush = (fixture: { detectChanges: () => void }): void => {
     TestBed.flushEffects();
     fixture.detectChanges();
@@ -721,8 +690,6 @@ describe('CngxTreeSelect - toggle commit error announcement', () => {
     };
   }
 
-  beforeEach(() => polyfillPopover());
-
   it.each(['optimistic', 'pessimistic'] as const)(
     'announces a failed %s toggle assertively with the error detail',
     (mode) => {
@@ -783,8 +750,6 @@ describe('CngxTreeSelect - shared core view state', () => {
     };
   }
 
-  beforeEach(() => polyfillPopover());
-
   function mount() {
     const fixture = TestBed.createComponent(StateTreeHost);
     fixture.detectChanges();
@@ -823,7 +788,6 @@ describe('CngxTreeSelect - shared core view state', () => {
 
 describe('CngxTreeSelect - config panel class', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ providers: [provideSelectConfig(withPanelClass('app-panel'))] });
   });
 
@@ -859,8 +823,6 @@ describe('CngxTreeSelect - commit error copy without a label', () => {
       return this.pending.asObservable();
     };
   }
-
-  beforeEach(() => polyfillPopover());
 
   it('names the field label fallback when aria-label is empty', () => {
     const fixture = TestBed.createComponent(UnlabelledTreeHost);
@@ -922,8 +884,6 @@ describe('CngxTreeSelect - commit retry', () => {
       return subject.asObservable();
     };
   }
-
-  beforeEach(() => polyfillPopover());
 
   it.each(['optimistic', 'pessimistic'] as const)(
     'replays the failed %s toggle instead of committing a clear',
@@ -1012,8 +972,6 @@ describe('CngxTreeSelect - per-instance node ids', () => {
     readonly labelFn = (v: Row): string => v.name;
   }
 
-  beforeEach(() => polyfillPopover());
-
   it('never shares a treeitem id or an aria-activedescendant target between two trees', async () => {
     const fixture = TestBed.createComponent(TwoTreesHost);
     const root = fixture.nativeElement as HTMLElement;
@@ -1064,7 +1022,6 @@ describe('CngxTreeSelect - per-instance node ids', () => {
 });
 
 describe('CngxTreeSelect - runtime language switch', () => {
-  beforeAll(() => polyfillPopover());
 
   it('flips the clear label while unbound', () => {
     const labels = signal<CngxSelectAriaLabels>({});
@@ -1119,8 +1076,6 @@ class TreeSummaryHost {
 
 describe('CngxTreeSelect - summary trigger under the touch floor', () => {
   let restore: (() => void) | null = null;
-
-  beforeAll(() => polyfillPopover());
 
   afterEach(() => {
     restore?.();
@@ -1274,7 +1229,6 @@ class TreeOverflowHost {
 }
 
 describe('CngxTreeSelect - one-line chip strip', () => {
-  beforeAll(() => polyfillPopover());
 
   function render() {
     const fixture = TestBed.createComponent(TreeOverflowHost);
@@ -1414,7 +1368,6 @@ function openTree<H>(type: new () => H) {
 }
 
 describe('CngxTreeSelect - parent row counts', () => {
-  beforeAll(() => polyfillPopover());
 
   it('shows selected-of-total on parent rows only, hidden from AT', () => {
     const { fixture, row } = openTree(TreeCountHost);
@@ -1573,7 +1526,6 @@ class FooterTemplateHolder {
 }
 
 describe('CngxTreeSelect - panel footer', () => {
-  beforeAll(() => polyfillPopover());
 
   it('shows the selected count and a clear-all labelled by the clear cascade', () => {
     const { el } = openTree(TreeFooterHost);

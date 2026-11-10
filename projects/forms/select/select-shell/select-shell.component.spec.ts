@@ -68,34 +68,6 @@ import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host'
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
-// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -261,7 +233,6 @@ class ThousandProjectedHost {
 
 describe('CngxSelectShell - stays a plain list at any size', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -316,7 +287,6 @@ class CompareWithShellHost {
 
 describe('CngxSelectShell - opens on the selected option', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -356,7 +326,6 @@ describe('CngxSelectShell - opens on the selected option', () => {
 
 describe('CngxSelectShell - Phase 5 scaffold', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -832,7 +801,6 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
 
 describe('CngxSelectShell - form-field integration', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -905,7 +873,6 @@ describe('CngxSelectShell - form-field integration', () => {
 
 describe('CngxSelectShell - commit action producer', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1072,9 +1039,6 @@ describe('CngxSelectShell - commit action producer', () => {
 });
 
 describe('CngxSelectShell - factory token wiring', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('emits searchTermChange when searchTerm flips after mount', () => {
     const fixture = TestBed.createComponent(FlatHost);
@@ -1188,7 +1152,6 @@ describe('CngxSelectShell - factory token wiring', () => {
 
 describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1520,7 +1483,6 @@ class CityHost {
 
 describe('CngxSelectShell - closed-trigger typeahead locale', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
   });
 
@@ -1573,7 +1535,6 @@ describe('CngxSelectShell - <cngx-select-search> in the mobile sheet', () => {
   }
 
   function setupSearch() {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SearchSheetHost] });
     const fixture = TestBed.createComponent(SearchSheetHost);
     flush(fixture);
@@ -1693,7 +1654,6 @@ describe('CngxSelectShell - live projected option text', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1744,7 +1704,6 @@ describe('CngxSelectShell - empty-string option without a commit action', () => 
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1796,7 +1755,6 @@ describe('CngxSelectShell - searchDebounceMs', () => {
   }
 
   function setup(providers: unknown[], bind?: number) {
-    polyfillPopover();
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [DebounceHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(DebounceHost);

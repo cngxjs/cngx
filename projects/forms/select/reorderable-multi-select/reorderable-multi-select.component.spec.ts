@@ -12,7 +12,7 @@ import { CngxPopoverSheet, type CngxPopoverPresentationRequest } from '@cngx/com
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement, getDebugNode } from '@angular/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { stripBidiIsolates } from '@cngx/testing';
 
@@ -39,33 +39,6 @@ import {
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
-
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'a', label: 'Alpha' },
@@ -211,10 +184,6 @@ function fireKey(
     }),
   );
 }
-
-beforeEach(() => {
-  polyfillPopover();
-});
 
 describe('CngxReorderableMultiSelect - pointer reorder', () => {
   it('drag-right via pointer on the chip body writes reordered values', () => {
@@ -827,10 +796,6 @@ class SummaryHost {
 describe('CngxReorderableMultiSelect - summary trigger under the touch floor', () => {
   let restore: (() => void) | null = null;
 
-  beforeEach(() => {
-    polyfillPopover();
-  });
-
   afterEach(() => {
     restore?.();
     restore = null;
@@ -937,7 +902,6 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
   });
 
   function render(touch = true) {
-    polyfillPopover();
     if (touch) {
       restore = stubTouchFloor();
     }
@@ -1172,7 +1136,6 @@ describe('CngxReorderableMultiSelect - move-glyph cascade', () => {
   }
 
   function renderHost(input: boolean, directive: boolean): HTMLElement {
-    polyfillPopover();
     restore = stubTouchFloor();
     const fixture = TestBed.createComponent(MoveGlyphHost);
     fixture.componentInstance.withInput.set(input);
@@ -1204,7 +1167,6 @@ describe('CngxReorderableMultiSelect - move-glyph cascade', () => {
     configure: (instance: C) => void,
     check: (list: HTMLElement) => void,
   ): void {
-    polyfillPopover();
     restore = stubTouchFloor();
     const holder = TestBed.createComponent(MoveGlyphTemplateHolder);
     holder.detectChanges();

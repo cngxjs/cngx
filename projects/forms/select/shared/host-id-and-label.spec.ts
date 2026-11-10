@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxFormField, CngxLabel } from '@cngx/forms/field';
 
-import { KINDS, NODES, OPTIONS, cleanupRoots, mount, polyfillPopover } from './__test-helpers/review-probe-host';
+import { KINDS, NODES, OPTIONS, cleanupRoots, mount } from './__test-helpers/review-probe-host';
 
 afterEach(() => {
   cleanupRoots();
@@ -31,7 +31,6 @@ describe('explicit aria-label inside a form field', () => {
   afterEach(() => roots.splice(0).forEach((el) => el.remove()));
 
   function mountInField(key: string, extra: string): HTMLElement {
-    polyfillPopover();
     const kind = KINDS[key];
     const inputsExpr = kind.inputs.replace('[options]="options"', '[options]="options()"');
     @Component({ template: '', imports: [] })

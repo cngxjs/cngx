@@ -26,38 +26,6 @@ const TAGS: CngxSelectOptionsInput<Tag> = [
   { value: { id: 't2', name: 'Dev' }, label: 'Dev' },
 ];
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => void;
-  };
-  if (proto.showPopover) {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement): void {
-    this.setAttribute('data-popover-shown', 'true');
-    Object.defineProperty(this, 'matches', {
-      value: (s: string) => s === ':popover-open',
-      configurable: true,
-    });
-  };
-  proto.hidePopover = function (this: HTMLElement): void {
-    this.removeAttribute('data-popover-shown');
-    Object.defineProperty(this, 'matches', {
-      value: (_s: string) => false,
-      configurable: true,
-    });
-  };
-  proto.togglePopover = function (this: HTMLElement): void {
-    if (this.getAttribute('data-popover-shown') === 'true') {
-      proto.hidePopover!.call(this);
-    } else {
-      proto.showPopover!.call(this);
-    }
-  };
-}
-
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -142,7 +110,6 @@ function setup(): {
   select: CngxActionSelect<Tag>;
   input: HTMLInputElement;
 } {
-  polyfillPopover();
   TestBed.configureTestingModule({ imports: [Host] });
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
@@ -535,7 +502,6 @@ describe('CngxActionSelect - first search term after a value write', () => {
     input: HTMLInputElement;
     searchLog: string[];
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [Host] });
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.value.set(initial);
@@ -614,7 +580,6 @@ describe('CngxActionSelect - selected survives a filtering term', () => {
 
   it('keeps the selected option while the term hides it (default compareWith)', () => {
     vi.useFakeTimers();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [DefaultCompareActionHost] });
     const fixture = TestBed.createComponent(DefaultCompareActionHost);
     flush(fixture);
@@ -767,7 +732,6 @@ describe('CngxActionSelect - placeholder falls back to the label', () => {
     fixture: ReturnType<typeof TestBed.createComponent<PlaceholderHost>>;
     input: HTMLInputElement;
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PlaceholderHost] });
     const fixture = TestBed.createComponent(PlaceholderHost);
     flush(fixture);
@@ -804,7 +768,6 @@ describe('CngxActionSelect - openOn config integration', () => {
     select: CngxActionSelect<Tag>;
     input: HTMLInputElement;
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [OpenOnHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(OpenOnHost);
     flush(fixture);
@@ -842,7 +805,6 @@ describe('CngxActionSelect - PageUp/PageDown through CNGX_FLAT_NAV_STRATEGY', ()
   }
 
   function pageDown(providers: unknown[]): number {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PageJumpHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(PageJumpHost);
     flush(fixture);

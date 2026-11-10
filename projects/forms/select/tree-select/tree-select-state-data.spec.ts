@@ -1,39 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createManualState } from '@cngx/common/data';
 import type { CngxTreeNode } from '@cngx/utils';
 
 import { CngxTreeSelect } from './tree-select.component';
-
-// jsdom has no Popover API.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => boolean;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-  };
-  proto.togglePopover = function (this: HTMLElement) {
-    const open = !this.hasAttribute('data-popover-open');
-    if (open) {
-      this.setAttribute('data-popover-open', 'true');
-    } else {
-      this.removeAttribute('data-popover-open');
-    }
-    return open;
-  };
-}
 
 const TREE: readonly CngxTreeNode<string>[] = [
   { value: 'fruit', children: [{ value: 'apple' }, { value: 'pear' }] },
@@ -61,8 +34,6 @@ describe('CngxTreeSelect - nodes from [state] data', () => {
     readonly nodes = signal<readonly CngxTreeNode<string>[]>([]);
     readonly idFn = (v: string): string => v;
   }
-
-  beforeEach(() => polyfillPopover());
 
   function mount() {
     const fixture = TestBed.createComponent(StateOnlyHost);
@@ -126,8 +97,6 @@ describe('CngxTreeSelect - initiallyExpanded with late nodes', () => {
     readonly idFn = (v: string): string => v;
     expand: 'all' | readonly string[] = 'all';
   }
-
-  beforeEach(() => polyfillPopover());
 
   function mount(expand: 'all' | readonly string[]) {
     const fixture = TestBed.createComponent(LateNodesHost);

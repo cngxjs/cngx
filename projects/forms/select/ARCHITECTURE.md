@@ -635,6 +635,10 @@ graph TD
 The narrower view-host contract is what the shell reads - keeps the shell value-shape-agnostic so `CngxTreeSelectPanel` and any future panel variant compose uniformly.
 Tree-select provides BOTH tokens with `useExisting: self`.
 
+**Panel-host delegation.** A variant satisfies the `CngxSelectPanelHost` option predicates without re-declaring them. `createSelectCore` exposes `panelHostAdapter`, a stable-identity bundle of `isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption`, and the variant spreads it onto its host surface. The predicates live once in the core; the variant still provides the token (`useExisting`) but delegates the reads, so the per-composite pass-through copies collapse to a single source.
+
+**Shared trigger gesture.** The guard that keeps the click of a focus-opening pointer press from toggling the panel straight back shut lives once in `createOpenOnFocusGesture` (`shared/internal/open-on-focus-gesture.ts`); the button-trigger composites (single, multi, reorderable, tree, shell) wire it instead of each copying the pointerdown/focus/click dance.
+
 ---
 
 ## Mobile sheet
