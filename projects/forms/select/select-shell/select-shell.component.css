@@ -241,7 +241,9 @@
        A never-rendered row reserves the row's own block floor and padding
        (declarative/option.component.css), and `auto` keeps the real size of
        every row rendered once. A row taller than that, custom content, can
-       land a first jump short. */
+       land a first jump short, and so can an overridden
+       --cngx-select-option-padding: it is a two-value shorthand whose block
+       part CSS cannot extract, so the estimate keeps the default padding. */
     .cngx-select__panel cngx-option {
       content-visibility: auto;
       contain-intrinsic-block-size: auto
