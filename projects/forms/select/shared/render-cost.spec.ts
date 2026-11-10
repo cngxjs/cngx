@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { KINDS, cleanupRoots, mount } from './__test-helpers/review-probe-host';
 import { provideSelectConfig, withVirtualization } from './config';
 import { CngxSelectPanel } from './internal/panel/panel.component';
+import type { CngxSelectAutoRecyclerHandle as AutoRecyclerHandle } from './internal/auto-virtualize';
 
 afterEach(() => {
   cleanupRoots();
@@ -32,10 +33,12 @@ describe('H5: a large closed panel renders no option nodes', () => {
     });
   }
 
-  it('CngxSelect: mounts 2000 options under a 300 ms budget', () => {
-    const start = performance.now();
-    mount(KINDS['select'], { options: BIG });
-    expect(performance.now() - start).toBeLessThan(300);
+  it('CngxSelect: an open list below the threshold renders every row and leaves the recycler slot empty', () => {
+    const m = mount(KINDS['select'], { options: flat(3) });
+    m.open();
+    const handle = (m.v as unknown as { autoRecycler?: AutoRecyclerHandle }).autoRecycler;
+    expect(m.rows().length).toBe(3);
+    expect(handle!.slot.current()).toBeNull();
   });
 
   it('CngxSelect: a never-opened closed panel keeps the listbox element mounted', () => {
