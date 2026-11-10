@@ -75,7 +75,8 @@ function warnUnlabelledDot(
  * </a>
  * ```
  *
- * A visible dot without `ariaLabel` warns in development mode (`CNGX1083`):
+ * A visible dot without `ariaLabel` warns in development mode
+ * ([`CNGX1083`](/error-codes/cngx1083.md)):
  * the host is hidden, so the link name would say nothing about it.
  *
  * @wcag AA

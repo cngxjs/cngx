@@ -392,7 +392,7 @@ export class NavAccordionComponent {
 }
 ```
 
-The Security dot carries `ariaLabel`, so the group name reads "Security Security alerts". A visible dot without `ariaLabel` warns in development mode (`CNGX1083`).
+The Security dot carries `ariaLabel`, so the group name reads "Security Security alerts". A visible dot without `ariaLabel` warns in development mode [`CNGX1083`](../../../../core-concepts/error-codes/cngx1083.md).
 
 ### Hierarchical Sidebar
 
