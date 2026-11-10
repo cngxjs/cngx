@@ -1,5 +1,8 @@
 import {
+  Component,
+  computed,
   EnvironmentInjector,
+  input,
   provideZonelessChangeDetection,
   runInInjectionContext,
   signal,
@@ -114,10 +117,10 @@ describe('injectQueryParamSync', () => {
 
     const state = signal(false);
     run(state, { param: 'nav' });
-
-    expect(state()).toBe(true);
     TestBed.tick();
     await flush();
+
+    expect(state()).toBe(true);
   });
 
   it('no-ops and dev-warns once without provideRouter(...), instead of failing with NG0201', async () => {
@@ -257,5 +260,83 @@ describe('injectQueryParamSync', () => {
     await flush();
 
     expect(errors).toEqual([failure]);
+  });
+
+  describe('with a key bound through an input', () => {
+    @Component({
+      selector: 'cngx-test-bound-param-host',
+      template: '{{ state() ? "open" : "closed" }}',
+    })
+    class BoundParamHost {
+      readonly paramInput = input<string | undefined>(undefined, { alias: 'param' });
+      readonly param = computed(() => this.paramInput() ?? 'nav');
+      readonly state = signal(false);
+
+      constructor() {
+        injectQueryParamSync(this.state, { param: this.param });
+      }
+    }
+
+    @Component({
+      template: '<cngx-test-bound-param-host [param]="key()" />',
+      imports: [BoundParamHost],
+    })
+    class Outer {
+      readonly key = signal('menu');
+    }
+
+    function configure(): Router {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection(), provideRouter([])],
+      });
+      return TestBed.inject(Router);
+    }
+
+    it('hydrates a deep link under the bound key before the first render', async () => {
+      const router = configure();
+      await router.navigate([], { queryParams: { menu: 'open' } });
+
+      const fixture = TestBed.createComponent(Outer);
+      fixture.detectChanges();
+      await flush();
+
+      const host = fixture.debugElement.children[0];
+      expect((host.componentInstance as BoundParamHost).state()).toBe(true);
+      expect((host.nativeElement as HTMLElement).textContent).toBe('open');
+      expect(router.parseUrl(router.url).queryParamMap.get('menu')).toBe('open');
+    });
+
+    it('produces zero navigates on init under a bound key', async () => {
+      const router = configure();
+      await router.navigate([], { queryParams: { menu: 'open' } });
+      const nav = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      const fixture = TestBed.createComponent(Outer);
+      fixture.detectChanges();
+      TestBed.tick();
+      await flush();
+
+      expect(nav).not.toHaveBeenCalled();
+    });
+
+    it('still migrates a later rename of the bound key in one navigate', async () => {
+      const router = configure();
+      await router.navigate([], { queryParams: { menu: 'open' } });
+      const nav = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+      const fixture = TestBed.createComponent(Outer);
+      fixture.detectChanges();
+      TestBed.tick();
+      await flush();
+
+      fixture.componentInstance.key.set('drawer');
+      fixture.detectChanges();
+      TestBed.tick();
+      await flush();
+
+      expect(nav).toHaveBeenCalledTimes(1);
+      const extras = nav.mock.calls[0][1] as NavExtras;
+      expect(extras.queryParams).toEqual({ menu: null, drawer: 'open' });
+    });
   });
 });
