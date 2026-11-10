@@ -8,7 +8,7 @@ Native-feeling single-select dropdown - the closest replacement for `<select>` w
 - The trigger should be a button-style summary, not an inline input.
 - For inline-input single-value autocomplete, reach for [`CngxTypeahead`](../typeahead/README.md) instead.
 
-For the eight-variant decision guide see [`ARCHITECTURE.md`](../ARCHITECTURE.md#pick-your-select-decision-guide).
+For the eight-variant decision guide see [`ARCHITECTURE.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#pick-your-select-decision-guide).
 
 ## Quick start
 
@@ -162,7 +162,7 @@ Drop a `<ng-template>` with one of these directives inside `<cngx-select>` to ov
 | `*cngxSelectOptionError`   | Per-row commit-error glyph                                     |
 | `*cngxSelectSheetHandle`   | Decorative drag handle of the mobile sheet                     |
 
-Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](../ARCHITECTURE.md#template-slot-system).
+Full list with context shapes: [`ARCHITECTURE.md` § Template slot system](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#template-slot-system).
 
 ## Keyboard
 
@@ -191,4 +191,4 @@ bootstrapApplication(App, {
 });
 ```
 
-See [`ARCHITECTURE.md` § Configuration cascade](../ARCHITECTURE.md#configuration-cascade) for the full feature catalog.
+See [`ARCHITECTURE.md` § Configuration cascade](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#configuration-cascade) for the full feature catalog.
