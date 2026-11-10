@@ -541,6 +541,80 @@ describe('CngxDrawerSurface', () => {
       expect(host.dismissed).not.toHaveBeenCalled();
     });
 
+    describe('trailing click of an outside press', () => {
+      function clicks(target: HTMLElement) {
+        const handler = vi.fn();
+        target.addEventListener('click', handler);
+        return handler;
+      }
+
+      it('swallows the click of the gesture that dismissed a page modal', () => {
+        const { host, set, q } = setup();
+        set((h) => h.active.set(true));
+        const opener = q('.opener');
+        const handler = clicks(opener);
+        press(opener);
+        expect(host.dismissed).toHaveBeenCalledTimes(1);
+        set((h) => h.active.set(false));
+        const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+        opener.dispatchEvent(click);
+        expect(handler).not.toHaveBeenCalled();
+        expect(click.defaultPrevented).toBe(true);
+        opener.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+
+      it('lets the click through when the gesture ended without one', () => {
+        const { set, q } = setup();
+        set((h) => h.active.set(true));
+        const opener = q('.opener');
+        const handler = clicks(opener);
+        press(opener);
+        set((h) => h.active.set(false));
+        press(opener);
+        opener.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+
+      it('lets a keyboard click through after the gesture ended without one', () => {
+        const { set, q } = setup();
+        set((h) => h.active.set(true));
+        const opener = q('.opener');
+        const handler = clicks(opener);
+        press(opener);
+        set((h) => h.active.set(false));
+        opener.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        opener.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+
+      it('keeps the click outside a page modal', () => {
+        for (const modality of ['none', 'contained'] as const) {
+          const { host, set, q, fixture } = setup((h) => h.modality.set(modality));
+          set((h) => h.active.set(true));
+          const outside = q('.outside');
+          const handler = clicks(outside);
+          press(outside);
+          expect(host.dismissed).toHaveBeenCalledTimes(1);
+          outside.click();
+          expect(handler).toHaveBeenCalledTimes(1);
+          fixture.destroy();
+        }
+      });
+
+      it('drops the guard when destroyed', () => {
+        const { set, fixture } = setup();
+        set((h) => h.active.set(true));
+        const outside = document.body.appendChild(document.createElement('button'));
+        const handler = clicks(outside);
+        press(outside);
+        fixture.destroy();
+        outside.click();
+        outside.remove();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+    });
+
     it('asks nothing while inactive', () => {
       const { host, q } = setup();
       press(q('.outside'));
