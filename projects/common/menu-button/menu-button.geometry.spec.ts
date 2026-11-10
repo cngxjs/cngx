@@ -7,7 +7,9 @@ import { accessibleName, computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { CngxIconMenuButton } from './icon-menu-button.component';
 import { CngxMenuButton } from './menu-button.component';
+import { CngxSplitButton } from './split-button.directive';
 
 // Runs in a real Chromium (the `test-geometry` target): the menu button must
 // sit on the cngxButton row at every size and keep its caret at 1em of the
@@ -80,6 +82,39 @@ class CustomCaret {}
   `,
 })
 class CustomCaretHost {}
+
+@Component({
+  selector: 'cngx-split-button-touch-host',
+  standalone: true,
+  imports: [CngxButton, CngxIconMenuButton, CngxSplitButton, CngxMenu, CngxMenuItem, CngxPopover],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button-group.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div data-touch="on">
+      @for (size of sizes; track size) {
+        <div cngxSplitButton class="s-{{ size }}" [size]="size" aria-label="Publish">
+          <button cngxButton class="main">Publish</button>
+          <button cngxIconMenuButton class="caret" [menu]="menu" [popover]="pop"></button>
+        </div>
+      }
+      <div cngxPopover #pop="cngxPopover">
+        <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+          <li cngxMenuItem value="schedule">Schedule</li>
+        </ul>
+      </div>
+    </div>
+  `,
+})
+class SplitTouchHost {
+  readonly sizes: readonly CngxButtonSize[] = ['xs', 'sm', 'md', 'lg'];
+}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -206,5 +241,29 @@ describe('CngxMenuButton geometry', () => {
     const { root } = mount('comfortable', 'reduced');
     const caret = query(root, '.m-md .cngx-menu-button__caret');
     expect(computedValue(caret, 'transition-duration')).toBe('0s');
+  });
+});
+
+describe('CngxSplitButton geometry: touch', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  it('floors both halves to the same 44px block size on a coarse pointer', () => {
+    const fixture = TestBed.createComponent(SplitTouchHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+      const split = query(mountedRoot, `.s-${size}`);
+      const main = query(split, '.main').getBoundingClientRect();
+      const caret = query(split, '.caret').getBoundingClientRect();
+      expect(main.height, `${size} main`).toBeGreaterThanOrEqual(44 - 0.5);
+      expect(caret.height, `${size} caret`).toBeCloseTo(main.height, 0);
+      expect(caret.width, `${size} caret inline`).toBeGreaterThanOrEqual(44 - 0.5);
+    }
   });
 });

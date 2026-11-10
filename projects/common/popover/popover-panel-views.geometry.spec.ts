@@ -47,7 +47,7 @@ const SURFACE: Record<PanelView, string> = {
       [empty]="view() === 'empty'"
       style="inset: 0 auto auto 0; inline-size: 280px"
     >
-      <span cngxPopoverHeader>Recent activity</span>
+      <span cngxPopoverHeader>{{ title() }}</span>
       <p cngxPopoverBody>Body content</p>
       <ng-template cngxPopoverLoading>Loading</ng-template>
       <ng-template cngxPopoverError>Could not load</ng-template>
@@ -58,6 +58,7 @@ const SURFACE: Record<PanelView, string> = {
 class ViewsHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
   readonly view = signal<PanelView>('content');
+  readonly title = signal('Recent activity');
 }
 
 let fixture: ComponentFixture<ViewsHost> | null = null;
@@ -121,19 +122,39 @@ describe('CngxPopoverPanel header row across views', () => {
     }
   });
 
-  it('keeps the close button hit area at the --cngx-target-min floor in every view', async () => {
+  it('keeps the close button box at the --cngx-target-min floor in every view', async () => {
     const panel = await mountOpen();
     panel.style.setProperty('--cngx-target-min', '44px');
 
     for (const view of ['loading', 'error', 'empty', 'content'] as const) {
       await enter(view);
-      const close = one(panel, 'button.cngx-popover-panel__close');
-      const hit = getComputedStyle(close, '::before');
-      expect(Number.parseFloat(hit.inlineSize), `${view} hit inline size`).toBeGreaterThanOrEqual(
-        44,
-      );
-      expect(Number.parseFloat(hit.blockSize), `${view} hit block size`).toBeGreaterThanOrEqual(44);
+      const box = one(panel, 'button.cngx-popover-panel__close').getBoundingClientRect();
+      expect(box.width, `${view} close inline size`).toBeGreaterThanOrEqual(44 - 0.5);
+      expect(box.height, `${view} close block size`).toBeGreaterThanOrEqual(44 - 0.5);
     }
+  });
+});
+
+describe('CngxPopoverPanel close floor on touch', () => {
+  it('keeps a long title and the body clear of the floored close box', async () => {
+    const panel = await mountOpen();
+    panel.style.setProperty('--cngx-target-min', '44px');
+    fixture!.componentInstance.title.set(
+      'A long panel title that wraps across the full inline size of the header row',
+    );
+    fixture!.detectChanges();
+    await nextFrame();
+
+    const close = one(panel, 'button.cngx-popover-panel__close').getBoundingClientRect();
+    const title = one(panel, '.cngx-popover-panel__header');
+    const range = document.createRange();
+    range.selectNodeContents(title);
+    const textEnd = Math.max(...Array.from(range.getClientRects(), (r) => r.right));
+    const body = one(panel, '.cngx-popover-panel__body').getBoundingClientRect();
+
+    expect(close.width).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(textEnd).toBeLessThanOrEqual(close.left - 8 + 0.5);
+    expect(body.top).toBeGreaterThanOrEqual(close.bottom - 0.5);
   });
 });
 

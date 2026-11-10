@@ -3,8 +3,8 @@
  * Close-button layer over the icon-button geometry. The host is the native
  * `<button>` and carries `.cngx-button.cngx-icon-button.cngx-close-button`;
  * paint (variant x tone, disabled, busy, contrast, forced colors) comes from
- * the shared `.cngx-button` sheet and the square box plus the `::before` hit
- * area from `.cngx-icon-button`. This sheet only adds what a dismiss
+ * the shared `.cngx-button` sheet and the square box with its touch floor
+ * from `.cngx-icon-button`. This sheet only adds what a dismiss
  * affordance does differently.
  *
  * **State modifiers**
@@ -25,7 +25,8 @@
  * **Inheritance**
  *
  * - box -> `--cngx-icon-button-size` (the `sm` row), overridable through
- *   `--cngx-close-button-size`
+ *   `--cngx-close-button-size`; floors to `--cngx-target-min` on a coarse
+ *   pointer
  * - glyph -> `1.25em` of the button font, overridable through
  *   `--cngx-close-button-icon-size`
  * - radius -> `--cngx-radius-sm`
@@ -107,8 +108,14 @@
   @scope (.cngx-close-button) {
     :scope.cngx-button {
       --cngx-button-radius: var(--cngx-close-button-radius, var(--cngx-radius-sm, 0.25rem));
-      inline-size: var(--cngx-close-button-size, var(--cngx-icon-button-size));
-      block-size: var(--cngx-close-button-size, var(--cngx-icon-button-size));
+      inline-size: max(
+        var(--cngx-close-button-size, var(--cngx-icon-button-size)),
+        var(--cngx-target-min, 0px)
+      );
+      block-size: max(
+        var(--cngx-close-button-size, var(--cngx-icon-button-size)),
+        var(--cngx-target-min, 0px)
+      );
     }
 
     :scope.cngx-button[data-variant='ghost'][data-tone='neutral']:not([aria-disabled='true']) {

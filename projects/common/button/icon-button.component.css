@@ -2,16 +2,15 @@
  * @overview
  * Geometry for `CngxIconButton`. Paint (variant x tone, disabled, busy,
  * forced colors) comes from the shared `.cngx-button` sheet; this sheet only
- * makes the box square and moves the touch floor onto a pseudo-element.
+ * makes the box square and floors it to the touch target.
  *
  * - The box is `line box + 2 * --cngx-button-padding-block + 2 * border` on
  *   both axes, so an `md` icon button is as tall as an `md` button and a
  *   form control, and stays square at every size and density.
- * - `::before` is the hit area: centred, at least `--cngx-target-min` on
- *   both axes (44px on a coarse pointer, 0px and inert on a fine one), so
- *   the icon keeps its design size on touch.
- * - Adjacent icon buttons keep `--cngx-target-gap` between them so the
- *   grown hit areas do not overlap (WCAG 2.5.8).
+ * - The box floors to `--cngx-target-min` on both axes (44px on a coarse
+ *   pointer, 0px and inert on a fine one), so the box is the hit area on
+ *   touch and in either writing direction; the glyph keeps its design size.
+ * - Adjacent icon buttons keep `--cngx-target-gap` between them (WCAG 2.5.8).
  */
 
 @layer cngx.components {
@@ -22,21 +21,11 @@
           var(--cngx-button-padding-block, var(--cngx-space-sm, 8px)) + 2 *
           var(--cngx-button-border-width, 1px)
       );
-      inline-size: var(--cngx-icon-button-size);
-      block-size: var(--cngx-icon-button-size);
+      inline-size: max(var(--cngx-icon-button-size), var(--cngx-target-min, 0px));
+      block-size: max(var(--cngx-icon-button-size), var(--cngx-target-min, 0px));
       min-block-size: 0;
       padding: 0;
       flex-shrink: 0;
-    }
-
-    :scope.cngx-button::before {
-      content: '';
-      position: absolute;
-      inset-block-start: 50%;
-      inset-inline-start: 50%;
-      inline-size: max(100%, var(--cngx-target-min, 0px));
-      block-size: max(100%, var(--cngx-target-min, 0px));
-      transform: translate(-50%, -50%);
     }
 
     .cngx-icon-button__glyph {
