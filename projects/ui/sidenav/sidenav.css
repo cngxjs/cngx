@@ -497,6 +497,42 @@
   }
 
   /**
+   * Colour of the bar on the inline-start edge of the active nav link. SET
+   * from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1
+   * on the active fills; `transparent` drops the bar for a fill-only look.
+   * @group State / Active
+   * @see [[--cngx-color-primary-text]]
+   */
+  @property --cngx-nav-link-active-indicator-color {
+    syntax: '<color>';
+    /* Read on the row's ::before; inherits so the host SET reaches it. */
+    inherits: true;
+    initial-value: oklch(0.54 0.19 50);
+  }
+
+  /**
+   * Inline size of the active indicator bar. SET from `--cngx-space-xs`, so
+   * it follows density; `0` drops the bar.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-indicator-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 3px;
+  }
+
+  /**
+   * Block-axis inset of the active indicator bar from the row's top and
+   * bottom edges. SET from `--cngx-space-sm`.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-indicator-inset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
    * Font-weight of the active nav link.
    * @group State / Active
    */
@@ -623,6 +659,9 @@
       transparent
     );
     --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-nav-link-active-indicator-color: var(--cngx-color-primary-text, oklch(0.54 0.19 50));
+    --cngx-nav-link-active-indicator-size: calc(var(--cngx-space-xs) * 0.75);
+    --cngx-nav-link-active-indicator-inset: var(--cngx-space-sm);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -819,6 +858,7 @@
    * wired by the nav-link-theme.scss Material bridge.
    */
   cngx-sidenav .cngx-nav-link {
+    position: relative;
     display: block;
     padding: var(--cngx-nav-link-padding, 10px 16px);
     text-decoration: none;
@@ -865,6 +905,21 @@
   cngx-sidenav .cngx-nav-link--active:hover {
     color: var(--cngx-nav-link-active-color, currentColor);
     background: var(--cngx-nav-link-active-hover-bg, oklch(0 0 0 / 0.1));
+  }
+
+  /*
+   * Active indicator: a bar on the inline-start edge (logical, so RTL puts it
+   * on the right). Not on the collapsed rail, whose ::before draws the
+   * first-letter initial.
+   */
+  cngx-sidenav:not([data-sidebar-state='rail']) .cngx-nav-link--active::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: var(--cngx-nav-link-active-indicator-inset, 8px);
+    inline-size: var(--cngx-nav-link-active-indicator-size, 3px);
+    border-radius: var(--cngx-nav-link-active-indicator-size, 3px);
+    background: var(--cngx-nav-link-active-indicator-color, currentColor);
   }
 
   /*
@@ -1023,11 +1078,17 @@
    Highlight. The rail's own edge border and the focus outline self-heal, so only
    the active-item tint needs a re-draw. Unlayered + outside @layer beats the
    layered base rule; forced-color-adjust:none opts the control out of the UA
-   background forcing in case CngxNavLink renders a <button>, so Highlight paints. */
+   background forcing in case CngxNavLink renders a <button>, so Highlight paints.
+   The indicator inherits that opt-out (forced-color-adjust is inherited), so it
+   needs an explicit system colour: HighlightText on the Highlight row. */
 @media (forced-colors: active) {
   cngx-sidenav .cngx-nav-link--active {
     forced-color-adjust: none;
     background: Highlight;
     color: HighlightText;
+  }
+
+  cngx-sidenav:not([data-sidebar-state='rail']) .cngx-nav-link--active::before {
+    background: HighlightText;
   }
 }

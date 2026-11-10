@@ -26,7 +26,7 @@ type Fill = (typeof FILLS)[number];
   selector: 'cngx-sidenav-nav-state-host',
   standalone: true,
   imports: [CngxSidenav, CngxNavLink],
-  styleUrls: ['../../core/theming/system-tokens.css'],
+  styleUrls: ['../../core/theming/system-tokens.css', '../../core/theming/density-tokens.css'],
   // Unlayered, so it beats the layered row transition: state reads must not
   // land mid-transition. The transition test mounts without the class.
   styles: ['.still :is(.cngx-nav-link, [cngxNavGroup]) { transition: none; }'],
@@ -55,6 +55,26 @@ type Fill = (typeof FILLS)[number];
     >
       <a cngxNavLink href="#home" class="row-scoped" [active]="true">Home</a>
     </cngx-sidenav>
+    <div dir="rtl">
+      <cngx-sidenav class="rail-rtl" mode="side" [opened]="true" ariaLabel="Right to left">
+        <a cngxNavLink href="#rtl" class="row-rtl" [active]="true">Inbox</a>
+      </cngx-sidenav>
+    </div>
+    <cngx-sidenav
+      class="rail-mini"
+      mode="side"
+      [collapsed]="true"
+      [expandOnHover]="false"
+      ariaLabel="Mini"
+    >
+      <a cngxNavLink href="#mini" class="row-mini" [active]="true">Inbox</a>
+    </cngx-sidenav>
+    <div data-density="compact">
+      <cngx-sidenav class="rail-compact" mode="side" [opened]="true" ariaLabel="Compact">
+        <a cngxNavLink href="#compact" class="row-compact" [active]="true">Inbox</a>
+      </cngx-sidenav>
+    </div>
+    <span class="probe-highlighttext" style="color: HighlightText"></span>
   `,
 })
 class NavStateHost {}
@@ -155,6 +175,9 @@ async function forceStates(selector: string, states: readonly string[]): Promise
   throw new Error(`${selector} is in no document`);
 }
 
+const bar = (el: HTMLElement, property: string): string =>
+  getComputedStyle(el, '::before').getPropertyValue(property);
+
 const forced: string[] = [];
 
 async function force(selector: string, states: readonly string[]): Promise<void> {
@@ -163,6 +186,7 @@ async function force(selector: string, states: readonly string[]): Promise<void>
 }
 
 afterEach(async () => {
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
   for (const selector of forced.splice(0)) {
     await forceStates(selector, []);
   }
@@ -190,6 +214,14 @@ for (const scheme of SCHEMES) {
       }
       for (const fill of ['active', 'active-hover'] as const) {
         expect(contrastRatio(activeInk, fillOver(root, fill))).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
+    it('keeps the active indicator at 3:1 or more on the active fills', () => {
+      const root = mountIn();
+      const indicator = bar(one(root, '.row-active'), 'background-color');
+      for (const fill of ['active', 'active-hover'] as const) {
+        expect(contrastRatio(paint(indicator), fillOver(root, fill))).toBeGreaterThanOrEqual(3);
       }
     });
 
@@ -258,5 +290,54 @@ describe('nav row fills are SET on the host', () => {
     const root = mount();
     expect(fillOf(root, '.row-scoped')).not.toBe(fillOf(root, '.row-active'));
     expect(fillOf(root, '.row-active')).toBe(fillOf(root, '.probe-active'));
+  });
+});
+
+describe('active indicator', () => {
+  it('draws a bar on the inline-start edge of the active row only', () => {
+    const root = mount();
+    const active = one(root, '.row-active');
+    expect(bar(active, 'content')).toBe('""');
+    expect(bar(active, 'position')).toBe('absolute');
+    expect(bar(active, 'left')).toBe('0px');
+    expect(parseFloat(bar(active, 'right'))).toBeGreaterThan(0);
+    expect(bar(one(root, '.row-idle'), 'content')).toBe('none');
+  });
+
+  it('moves the bar to the right edge under dir="rtl"', () => {
+    const root = mount();
+    const row = one(root, '.row-rtl');
+    // A positioned box resolves `left` to pixels, so the far edge shows as a
+    // large offset rather than `auto`.
+    expect(bar(row, 'right')).toBe('0px');
+    expect(parseFloat(bar(row, 'left'))).toBeGreaterThan(0);
+  });
+
+  it('leaves the collapsed rail its initial instead of the bar', () => {
+    const root = mount();
+    expect(one(root, '.rail-mini').getAttribute('data-sidebar-state')).toBe('rail');
+    const row = one(root, '.row-mini');
+    expect(bar(row, 'content')).not.toBe('""');
+    expect(bar(row, 'position')).not.toBe('absolute');
+  });
+
+  it('thins the bar under compact density', () => {
+    const root = mount();
+    const regular = parseFloat(bar(one(root, '.row-active'), 'width'));
+    const compact = parseFloat(bar(one(root, '.row-compact'), 'width'));
+    expect(compact).toBeLessThan(regular);
+  });
+
+  it('paints the bar in HighlightText under forced colors', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mount();
+    const row = one(root, '.row-active');
+    expect(bar(row, 'forced-color-adjust')).toBe('none');
+    expect(bar(row, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    expect(bar(row, 'background-color')).toBe(
+      computedValue(one(root, '.probe-highlighttext'), 'color'),
+    );
   });
 });
