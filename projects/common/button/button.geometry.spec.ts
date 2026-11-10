@@ -402,6 +402,25 @@ describe('CngxButton geometry: busy under forced colors', () => {
   });
 });
 
+describe('CngxButton paint: disabled link under forced colors', () => {
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', { features: [] });
+  });
+
+  it('keeps a transparent background and GrayText ink', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const { root } = mount();
+    const link = query(root, '.d-link');
+    const probe = document.createElement('span');
+    probe.style.color = 'GrayText';
+    root.appendChild(probe);
+    expect(computedValue(link, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(link, 'color')).toBe(computedValue(probe, 'color'));
+  });
+});
+
 describe('CngxButton paint: no hover on aria-disabled', () => {
   const PAINT = ['background-color', 'border-top-color', 'text-decoration-thickness'] as const;
   const paintOf = (el: HTMLElement): Record<string, string> =>

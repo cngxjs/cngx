@@ -819,6 +819,10 @@
     color: GrayText !important;
     border-color: GrayText !important;
   }
+  /* A link is inline text, never a box, disabled or not. */
+  .cngx-button[data-variant='link'][aria-disabled='true'] {
+    background: transparent !important;
+  }
   .cngx-button:focus-visible {
     outline-color: Highlight !important;
   }
