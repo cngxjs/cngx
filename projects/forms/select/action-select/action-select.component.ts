@@ -1149,7 +1149,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   private readonly inputHost = createInputHostHandlers({
     focusState: this.focusState,
-    focusWithin: this.hostFocus,
+    hostFocus: this.hostFocus,
     openOn: () => this.config.openOn,
     open: () => this.open(),
     suppressOpenOnFocus: () => this.suppressOpenOnFocus,
@@ -1162,7 +1162,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       clearOnBlur: () => this.clearOnBlur(),
       onLeave: () => this.display.writeFromValue(this.value()),
     },
-    retryFn: () => this.retryFn(),
+    reloadFn: () => this.retryFn(),
     retry: () => this.retry.emit(),
   });
   /** @internal */

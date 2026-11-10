@@ -50,7 +50,7 @@ describe('createInputHostHandlers', () => {
     const retryFn = o.retryFn === undefined ? null : o.retryFn;
     const opts: CngxInputHostHandlersOptions = {
       focusState: { markFocused, markBlurred },
-      focusWithin: { refocusOwnerBeforeRemoval },
+      hostFocus: { refocusOwnerBeforeRemoval },
       openOn: () => o.mode,
       open,
       suppressOpenOnFocus: () => o.suppressed ?? false,
@@ -63,7 +63,7 @@ describe('createInputHostHandlers', () => {
         o.withBlurLeave === false
           ? undefined
           : { host, clearOnBlur: () => o.clearOnBlur ?? true, onLeave },
-      retryFn: () => retryFn,
+      reloadFn: () => retryFn,
       retry,
     };
     return {

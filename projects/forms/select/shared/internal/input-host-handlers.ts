@@ -15,7 +15,7 @@ export interface CngxInputHostBlurLeave {
 /** @internal */
 export interface CngxInputHostHandlersOptions {
   readonly focusState: Pick<CngxTriggerFocusState, 'markFocused' | 'markBlurred'>;
-  readonly focusWithin: Pick<HostFocusWithin, 'refocusOwnerBeforeRemoval'>;
+  readonly hostFocus: Pick<HostFocusWithin, 'refocusOwnerBeforeRemoval'>;
   /** Current `openOn` mode (read from the resolved select config). */
   readonly openOn: () => 'click' | 'focus' | 'click+focus' | undefined;
   readonly open: () => void;
@@ -34,7 +34,7 @@ export interface CngxInputHostHandlersOptions {
   readonly nestedInteractive?: string;
   /** Without it a blur only marks the trigger blurred. */
   readonly blurLeave?: CngxInputHostBlurLeave;
-  readonly retryFn: () => (() => void) | null;
+  readonly reloadFn: () => (() => void) | null;
   /** Emits the variant's `retry` output. */
   readonly retry: () => void;
 }
@@ -81,8 +81,8 @@ export function createInputHostHandlers(opts: CngxInputHostHandlersOptions): Cng
       leave.onLeave();
     },
     handleRetry(): void {
-      opts.focusWithin.refocusOwnerBeforeRemoval();
-      opts.retryFn()?.();
+      opts.hostFocus.refocusOwnerBeforeRemoval();
+      opts.reloadFn()?.();
       opts.retry();
     },
     handleWrapperClick(event?: MouseEvent): void {

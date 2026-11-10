@@ -1355,7 +1355,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   private readonly inputHost = createInputHostHandlers({
     focusState: this.focusState,
-    focusWithin: this.hostFocus,
+    hostFocus: this.hostFocus,
     openOn: () => this.config.openOn,
     open: () => this.open(),
     suppressOpenOnFocus: () => this.suppressOpenOnFocus,
@@ -1364,7 +1364,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     focus: () => this.focus(),
     inputEl: () => this.inputEl()?.nativeElement,
     nestedInteractive: this.nestedInteractive,
-    retryFn: () => this.retryFn(),
+    reloadFn: () => this.retryFn(),
     retry: () => this.retry.emit(),
   });
   /** @internal */
