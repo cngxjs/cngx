@@ -242,6 +242,7 @@ export interface CngxSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './select.component.html',
   styleUrls: ['../shared/select-base.css', './select.component.css'],

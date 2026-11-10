@@ -287,6 +287,7 @@ export interface CngxSelectShellChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './select-shell.component.html',
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],

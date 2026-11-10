@@ -279,6 +279,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './reorderable-multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './reorderable-multi-select.component.css'],

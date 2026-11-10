@@ -37,6 +37,14 @@ export interface HostFocusWithin {
    */
   handleFocusOut(event: FocusEvent): void;
   /**
+   * Host `(mousedown)` handler. A press on a button that sits in the host
+   * but outside the panel (a chip remove, the clear button) keeps focus where
+   * it is, so a pointer click never moves focus off the owner and never
+   * collapses the panel; the click still runs the button's action. Keyboard
+   * focus moves are untouched.
+   */
+  handleMouseDown(event: MouseEvent): void;
+  /**
    * Moves focus to the owner before a focused control inside the host goes
    * away (chip x, clear, clear-all, retry), so the removal does not drop
    * focus to `body` and read as leaving the field. No-op unless the active
@@ -78,27 +86,18 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
   const focused = signal(false);
   const wrapped = new WeakMap<() => void, () => void>();
 
-  // I6: Tab from the trigger onto a nested interactive control that lives in
-  // the host but outside the open panel (a chip remove, the clear button)
-  // must collapse the panel, so aria-expanded never reads true while focus
-  // sits on that control. Closes through the panel's own hidePopover(), which
-  // runs CngxPopover's full finalize via the native toggle and leaves focus on
-  // the control (no refocus to the owner).
-  const collapseOnNestedInteractiveFocus = (next: EventTarget | null): boolean => {
-    if (!(next instanceof HTMLElement) || next === host || next === opts.owner()) {
+  // A focusable node in the host that is neither the host, the owner, nor
+  // part of the panel (the popover element is a host descendant, also in the
+  // top layer): a chip remove, the clear button.
+  const isNestedControl = (el: Element | null): el is HTMLElement => {
+    if (!(el instanceof HTMLElement) || el === host || el === opts.owner()) {
       return false;
     }
-    if (!host.contains(next)) {
+    if (!host.contains(el)) {
       return false;
     }
-    const panel = host.querySelector<HTMLElement & { hidePopover?: () => void }>(
-      '.cngx-popover--open',
-    );
-    if (!panel || panel.contains(next)) {
-      return false;
-    }
-    panel.hidePopover?.();
-    return true;
+    const panel = el.closest('[popover]');
+    return panel === null || !host.contains(panel);
   };
 
   const refocusOwnerBeforeRemoval = (): void => {
@@ -121,7 +120,12 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       focused.set(true);
     },
     handleFocusOut: (event) => {
-      if (collapseOnNestedInteractiveFocus(event.relatedTarget)) {
+      // I6: Tab from the trigger onto a nested control outside the panel
+      // collapses it, so aria-expanded never reads true while focus sits
+      // there. Through the host's focus-leave close, which honours a pending
+      // commit and the dismiss guard and leaves focus on the control.
+      if (isNestedControl(event.relatedTarget as Element | null)) {
+        opts.close?.();
         return;
       }
       if (!isFocusLeavingHost(event, host) || isBlurInsideOpenPanel(event, host)) {
@@ -131,6 +135,12 @@ export function createHostFocusWithin(opts: HostFocusWithinOptions): HostFocusWi
       opts.onLeave();
       if (event.relatedTarget instanceof Node) {
         opts.close?.();
+      }
+    },
+    handleMouseDown: (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (isNestedControl(target?.closest('button') ?? null)) {
+        event.preventDefault();
       }
     },
     refocusOwnerBeforeRemoval,

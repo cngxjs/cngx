@@ -258,6 +258,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './multi-select.component.css'],

@@ -12,7 +12,7 @@ const close = vi.fn();
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button type="button" class="owner">Trigger</button>
-    <div class="panel cngx-popover--open">
+    <div class="panel cngx-popover--open" popover="manual">
       <input class="search" />
       <span class="header">Header</span>
     </div>
@@ -23,10 +23,11 @@ const close = vi.fn();
   },
 })
 class FocusHost {
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   readonly focus: HostFocusWithin = createHostFocusWithin({
     onLeave,
     close,
-    owner: () => undefined,
+    owner: () => this.el.querySelector<HTMLElement>('.owner') ?? undefined,
     restoreFocus: true,
   });
 }
@@ -71,23 +72,57 @@ describe('createHostFocusWithin', () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 
-  it('collapses the open panel when focus moves onto a nested interactive control outside it', () => {
+  function addChipRemove(host: HTMLElement): HTMLButtonElement {
+    const panel = host.querySelector<HTMLElement>('.panel')!;
+    const chipRemove = document.createElement('button');
+    chipRemove.className = 'chip-remove';
+    host.insertBefore(chipRemove, panel);
+    return chipRemove;
+  }
+
+  it('collapses through the focus-leave close when Tab moves onto a nested control outside the panel', () => {
     const { host, focus } = setup();
     const panel = host.querySelector<HTMLElement & { hidePopover?: () => void }>('.panel')!;
     const hide = vi.fn();
     panel.hidePopover = hide;
-    const chipRemove = document.createElement('button');
-    chipRemove.className = 'chip-remove';
-    host.insertBefore(chipRemove, panel);
+    const chipRemove = addChipRemove(host);
 
     const owner = host.querySelector<HTMLElement>('.owner')!;
     owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
 
     focusOut(owner, chipRemove);
-    expect(hide).toHaveBeenCalledTimes(1);
+    // The host's close honours closeBlocked and shouldBlockDismiss; a direct
+    // hidePopover() would skip both.
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(hide).not.toHaveBeenCalled();
     expect(onLeave).not.toHaveBeenCalled();
-    expect(close).not.toHaveBeenCalled();
     expect(focus.focusedWithin()).toBe(true);
+  });
+
+  it('keeps focus where it is on a mouse press on a nested button outside the panel', () => {
+    const { host, focus } = setup();
+    const chipRemove = addChipRemove(host);
+    const icon = document.createElement('span');
+    chipRemove.append(icon);
+
+    const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    icon.dispatchEvent(press);
+    focus.handleMouseDown(press);
+    expect(press.defaultPrevented).toBe(true);
+  });
+
+  it('leaves a mouse press inside the panel or on the owner untouched', () => {
+    const { host, focus } = setup();
+    const panelButton = document.createElement('button');
+    host.querySelector('.panel')!.append(panelButton);
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+
+    for (const target of [panelButton, owner, host.querySelector<HTMLElement>('.search')!]) {
+      const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      target.dispatchEvent(press);
+      focus.handleMouseDown(press);
+      expect(press.defaultPrevented).toBe(false);
+    }
   });
 
   it('keeps focus within when focus moves from the trigger into the panel', () => {

@@ -281,6 +281,7 @@ export interface CngxComboboxChange<T = unknown> {
     class: 'cngx-combobox',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './combobox.component.html',
   styleUrls: ['../shared/select-base.css', './combobox.component.css'],

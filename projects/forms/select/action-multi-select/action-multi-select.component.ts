@@ -300,6 +300,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     class: 'cngx-action-multi-select',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './action-multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './action-multi-select.component.css'],

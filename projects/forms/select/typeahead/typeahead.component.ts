@@ -250,6 +250,7 @@ export interface CngxTypeaheadChange<T = unknown> {
     class: 'cngx-typeahead',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './typeahead.component.html',
   styleUrls: ['../shared/select-base.css', './typeahead.component.css'],

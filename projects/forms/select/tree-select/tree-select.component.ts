@@ -281,6 +281,7 @@ export interface CngxTreeSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './tree-select.component.html',
   styleUrls: ['../shared/select-base.css', './tree-select.component.css'],
