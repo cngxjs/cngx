@@ -1724,6 +1724,13 @@ button.chip:disabled {
 .cngx-ex-artifact:has(> .demo-sidenav-resizable) {
   --demo-artifact-max-width: none;
 }
+// The full navigation story binds no mode, so its rail follows the layout
+// width class. Capped at 640px the layout stays compact and the rail becomes a
+// modal overlay that makes the rest of the page inert; uncapped it docks from
+// 64rem like an app shell.
+.cngx-ex-artifact:has(> .demo-sidenav-uncapped) {
+  --demo-artifact-max-width: none;
+}
 .demo-sidenav-resizable {
   resize: horizontal;
   overflow: auto;

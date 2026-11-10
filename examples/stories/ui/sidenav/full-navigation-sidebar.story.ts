@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
     </button>
   </div>
 
-  <cngx-sidenav-layout class="demo-sidenav__container">
+  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav-uncapped">
     <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
                   width="240px" [resizable]="true" shortcut="mod+b">
       <cngx-sidenav-header class="demo-sidenav__header">

@@ -10,6 +10,8 @@ test.describe('CngxSidenav layout regressions', () => {
       'data-sidebar-state',
       'expanded',
     );
+    // An open overlay drawer also reports expanded; only a docked rail is side.
+    await expect(page.locator('cngx-sidenav').first()).toHaveClass(/cngx-sidenav--side/);
     const nav = page.locator('cngx-sidenav').first();
     const body = nav.locator('.cngx-sidenav__body');
     await expect(nav).toBeVisible();
@@ -56,6 +58,8 @@ test.describe('CngxSidenav layout regressions', () => {
       'data-sidebar-state',
       'expanded',
     );
+    // An open overlay drawer also reports expanded; only a docked rail is side.
+    await expect(page.locator('cngx-sidenav').first()).toHaveClass(/cngx-sidenav--side/);
     const team = page.getByRole('button', { name: 'Team' });
     const members = page.locator('#team-items').getByText('Members');
     await expect(team).toHaveAttribute('aria-expanded', 'false');
@@ -84,6 +88,8 @@ test.describe('CngxSidenav layout regressions', () => {
       'data-sidebar-state',
       'expanded',
     );
+    // An open overlay drawer also reports expanded; only a docked rail is side.
+    await expect(page.locator('cngx-sidenav').first()).toHaveClass(/cngx-sidenav--side/);
     const team = page.getByRole('button', { name: 'Team' });
     const members = page.locator('#team-items').getByText('Members');
 
