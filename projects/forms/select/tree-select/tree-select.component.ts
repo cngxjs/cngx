@@ -272,7 +272,7 @@ export interface CngxTreeSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTreeSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxTreeSelect).panelViewHost },
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: CngxTreeSelect },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
@@ -917,6 +917,21 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal */
   readonly showCommitError = this.core.showCommitError;
+
+  /**
+   * Object behind `CNGX_SELECT_PANEL_VIEW_HOST`; the core supplies every
+   * shared key.
+   *
+   * @internal
+   */
+  readonly panelViewHost = this.core.createPanelViewHost({
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.errorContext,
+    commitErrorContext: this.commitErrorContext,
+    handleRetry: () => this.handleRetry(),
+  });
 
   /** @internal */
   isSelected(value: T): boolean {

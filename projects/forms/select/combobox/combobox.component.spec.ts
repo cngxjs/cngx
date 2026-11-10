@@ -144,11 +144,9 @@ describe('CngxCombobox - skeleton', () => {
     fixture.componentInstance.values.set(['red']);
     flush(fixture);
     const combo = fixture.debugElement.query(By.directive(CngxCombobox))
-      .componentInstance as CngxCombobox<string> & {
-      isSelected: (opt: CngxSelectOptionDef<string>) => boolean;
-    };
-    expect(combo.isSelected(OPTIONS[0])).toBe(true);
-    expect(combo.isSelected(OPTIONS[1])).toBe(false);
+      .componentInstance as CngxCombobox<string>;
+    expect(combo.panelHost.isSelected(OPTIONS[0])).toBe(true);
+    expect(combo.panelHost.isSelected(OPTIONS[1])).toBe(false);
   });
 
   it('clicking the trigger wrapper opens the panel and focuses the input', () => {

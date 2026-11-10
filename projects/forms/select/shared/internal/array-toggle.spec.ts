@@ -24,7 +24,7 @@ interface CoreMock {
     count: number;
     multi: boolean;
   }>;
-  readonly panelHostAdapter: { isSelected(o: CngxSelectOptionDef<T>): boolean };
+  isSelected(value: T): boolean;
   selected: T[];
   announce(
     option: CngxSelectOptionDef<T> | null,
@@ -56,9 +56,7 @@ function makeHarness(initial: T[] = []): Harness {
     togglingOption: signal<CngxSelectOptionDef<T> | null>(null),
     announceCalls: [],
     selected: [...initial],
-    panelHostAdapter: {
-      isSelected: (o) => coreMock.selected.includes(o.value),
-    },
+    isSelected: (value) => coreMock.selected.includes(value),
     announce(option, action, count, multi): void {
       coreMock.announceCalls.push({ option, action, count, multi });
     },

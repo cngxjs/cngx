@@ -258,8 +258,8 @@ export interface CngxActionSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxActionSelect },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxActionSelect },
+    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxActionSelect).panelHost },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxActionSelect).panelHost },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -791,17 +791,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */
   protected readonly flatOptions = this.core.flatOptions;
   /** @internal */
   protected readonly activeView = this.core.activeView;
   /** @internal */
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */
-  protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */
-  protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */
   protected readonly panelClassList = this.core.panelClassList;
   /** @internal */
@@ -817,14 +811,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
   /** @internal */
-  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
-  /** @internal */
-  protected readonly resolvedSelectionIndicatorVariant =
-    this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */
-  protected readonly resolvedSelectionIndicatorPosition =
-    this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
@@ -837,8 +823,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
   protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */
-  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   /** @internal - disabled or readonly: every write path refuses, the panel still opens. */
@@ -902,14 +886,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   );
   /** @internal */
   readonly commitErrorValue = this.core.commitErrorValue;
-
-  /** @internal */
-  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
-  /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => {
-    this.hostFocus.refocusOwnerBeforeRemoval();
-    this.scalarHandler.retryLast();
-  });
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T>({
@@ -1011,14 +987,39 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     onResetDirty: () => this.actionBridge.reset(),
   });
 
-  /** @internal */
-  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */
-  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */
-  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */
-  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /**
+   * Object behind `CNGX_SELECT_PANEL_HOST` and `CNGX_SELECT_PANEL_VIEW_HOST`;
+   * the core supplies every shared key.
+   *
+   * @internal
+   */
+  readonly panelHost = this.core.createPanelHost({
+    tpl: this.tpl,
+    loadingVariant: this.loadingVariant,
+    refreshingVariant: this.refreshingVariant,
+    errorContext: this.core.makeErrorContext(() => this.handleRetry()),
+    commitErrorContext: this.core.bindCommitRetry(() => {
+      this.hostFocus.refocusOwnerBeforeRemoval();
+      this.scalarHandler.retryLast();
+    }),
+    handleRetry: () => this.handleRetry(),
+    listboxCompareWith: this.listboxCompareWith,
+    activeId: this.activeId,
+    panelOpen: this.panelOpen,
+    patchData: (item) => this.patchData(item),
+    clearLocalItems: () => this.clearLocalItems(),
+    panelRenderer: this.panelRenderer,
+    autoRecycler: this.autoRecycler,
+    searchTerm: this.searchTerm,
+    actionDirty: this.actionDirty,
+    actionCallbacks: this.actionCallbacks,
+    actionFocusTrapEnabled: this.actionFocusTrapEnabled,
+    actionSearchTerm: this.actionSearchTerm,
+    actionPosition: this.actionPosition,
+    actionError: this.actionError,
+    actionValue: this.actionValue,
+    isCommitting: this.isCommitting,
+  });
 
   protected isEmpty(): boolean {
     return isEmptyScalar(this.value());

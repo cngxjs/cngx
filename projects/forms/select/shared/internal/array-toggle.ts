@@ -31,7 +31,7 @@ export interface ArrayToggleDispatchOptions<T> {
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
   readonly commitMode: Signal<CngxSelectCommitMode>;
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
-  /** Source of `togglingOption`, `announce`, `panelHostAdapter.isSelected`. */
+  /** Source of `togglingOption`, `announce`, `isSelected`. */
   readonly core: CngxSelectCore<T, T[]>;
   /** Lazy route into `ArrayCommitHandler.beginToggle`. */
   readonly beginToggle: (
@@ -173,7 +173,7 @@ export function createArrayToggleDispatch<T>(
   };
 
   const handleADActivate = (_value: T, opt: CngxSelectOptionDef<T>): void => {
-    const currentSelected = opts.core.panelHostAdapter.isSelected(opt);
+    const currentSelected = opts.core.isSelected(opt.value);
     const current = opts.values();
     const eq = opts.compareWith();
     const previousValues = currentSelected
