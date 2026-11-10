@@ -132,8 +132,14 @@ export class CngxPanelTrigger {
   /** The resolved target: the explicit reference wins over the provided one. */
   readonly target = computed(() => this.targetInput() ?? this.providedTarget);
 
-  /** Whether the controlled panel is shown. */
-  readonly expanded = computed(() => this.target()?.expanded() ?? false);
+  /**
+   * Whether the controlled panel is shown in its resting state. A peek is
+   * transient pointer presentation, so a peeked target reads as collapsed.
+   */
+  readonly expanded = computed(() => {
+    const target = this.target();
+    return !!target && target.expanded() && !(target.peeked?.() ?? false);
+  });
 
   protected readonly controls = computed(() => {
     const id = this.target()?.id();

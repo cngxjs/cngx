@@ -101,6 +101,21 @@ describe('CngxPanelTrigger', () => {
     expect(q('.text').getAttribute('aria-expanded')).toBe('true');
   });
 
+  it('does not report a peeked target as expanded', () => {
+    const peeked = signal(false);
+    const target = createTarget();
+    const peekable = { ...target, target: { ...target.target, peeked: peeked.asReadonly() } };
+    const { fixture, open, q } = setup(peekable);
+    open.set(true);
+    peeked.set(true);
+    fixture.detectChanges();
+    expect(q('.text').getAttribute('aria-expanded')).toBe('false');
+
+    peeked.set(false);
+    fixture.detectChanges();
+    expect(q('.text').getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('toggles the target on click', () => {
     const { target, q } = setup();
     q('.text').click();
