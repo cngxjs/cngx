@@ -54,29 +54,27 @@ import { CNGX_ACTION_STATUS } from './action-status.token';
     @if (status.hasCell().pending) {
       <span [class]="cellClass()" cngxActionStatusCell="pending">
         @if (status.pendingTemplate(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container *ngTemplateOutlet="tpl" />
         } @else {
-          {{ status.pendingLabel() }}
+          {{ status.pendingText() }}
         }
       </span>
     }
     @if (status.hasCell().success) {
       <span [class]="cellClass()" cngxActionStatusCell="success">
         @if (status.succeededTemplate(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container *ngTemplateOutlet="tpl" />
         } @else {
-          {{ status.succeededLabel() }}
+          {{ status.succeededText() }}
         }
       </span>
     }
     @if (status.hasCell().error) {
       <span [class]="cellClass()" cngxActionStatusCell="error">
         @if (status.failedTemplate(); as tpl) {
-          <ng-container
-            *ngTemplateOutlet="tpl.templateRef; context: { $implicit: status.error() }"
-          />
+          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: status.error() }" />
         } @else {
-          {{ status.failedLabel() }}
+          {{ status.failedText() }}
         }
       </span>
     }

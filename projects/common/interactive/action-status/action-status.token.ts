@@ -1,8 +1,8 @@
-import { InjectionToken, type OutputRef, type Signal } from '@angular/core';
+import { InjectionToken, type OutputRef, type Signal, type TemplateRef } from '@angular/core';
 import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
 import type { CngxAsyncSettle } from '../async-click/async-click.directive';
-import type { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
+import type { CngxActionStatusFailedContext } from './action-status-config';
 
 /**
  * One label cell of an action host: the idle content, or the pending,
@@ -37,11 +37,11 @@ export interface CngxActionOutcome {
  * @relatedTo CngxActionStatus
  */
 export interface CngxActionStatusCells {
-  /** A pending label or `cngxPending` template exists. */
+  /** A pending label or template exists. */
   readonly pending: boolean;
-  /** A succeeded label or `cngxSucceeded` template exists. */
+  /** A succeeded label or template exists. */
   readonly success: boolean;
-  /** A failed label or `cngxFailed` template exists. */
+  /** A failed label or template exists. */
   readonly error: boolean;
 }
 
@@ -70,18 +70,18 @@ export interface CngxActionStatus {
   readonly hasCell: Signal<CngxActionStatusCells>;
   /** The visible, named cell, gated on the busy visual. */
   readonly activeCell: Signal<CngxActionStatusCellKind>;
-  /** Projected `cngxPending` template, if any. */
-  readonly pendingTemplate: Signal<CngxPending | undefined>;
-  /** Projected `cngxSucceeded` template, if any. */
-  readonly succeededTemplate: Signal<CngxSucceeded | undefined>;
-  /** Projected `cngxFailed` template, if any. */
-  readonly failedTemplate: Signal<CngxFailed | undefined>;
-  /** Fallback text of the pending cell. */
-  readonly pendingLabel: Signal<string | undefined>;
-  /** Fallback text of the succeeded cell. */
-  readonly succeededLabel: Signal<string | undefined>;
-  /** Fallback text of the failed cell. */
-  readonly failedLabel: Signal<string | undefined>;
+  /** Template of the pending cell: the projected `cngxPending`, else the config's. */
+  readonly pendingTemplate: Signal<TemplateRef<unknown> | undefined>;
+  /** Template of the succeeded cell: the projected `cngxSucceeded`, else the config's. */
+  readonly succeededTemplate: Signal<TemplateRef<unknown> | undefined>;
+  /** Template of the failed cell: the projected `cngxFailed`, else the config's; gets the error. */
+  readonly failedTemplate: Signal<TemplateRef<CngxActionStatusFailedContext> | undefined>;
+  /** Text of the pending cell without a template: the bound label, else the config / pack label. `''`: none. */
+  readonly pendingText: Signal<string>;
+  /** Text of the succeeded cell without a template. `''`: none. */
+  readonly succeededText: Signal<string>;
+  /** Text of the failed cell without a template. `''`: none. */
+  readonly failedText: Signal<string>;
   /** Emits once per own settle and once per external `success` / `error` edge. */
   readonly outcome: OutputRef<CngxActionOutcome>;
   /**

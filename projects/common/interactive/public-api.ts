@@ -43,6 +43,23 @@ export {
   type CngxActionStatusCells,
   type CngxAnnouncementCover,
 } from './action-status/action-status.token';
+export {
+  CNGX_ACTION_STATUS_CONFIG,
+  injectActionStatusConfig,
+  provideActionStatusConfig,
+  provideActionStatusConfigAt,
+  withActionStatusLabels,
+  withActionStatusTemplates,
+  type CngxActionStatusConfig,
+  type CngxActionStatusConfigFeature,
+  type CngxActionStatusFailedContext,
+  type CngxActionStatusLabels,
+  type CngxActionStatusTemplates,
+} from './action-status/action-status-config';
+export {
+  CNGX_ACTION_STATUS_LANGUAGE_EN,
+  type CngxActionStatusLanguageSection,
+} from './i18n/action-status-language-section';
 export { type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 export { CngxCopyText } from './copy/copy-text.directive';
 export { CngxCopyBlock } from './copy/copy-block';

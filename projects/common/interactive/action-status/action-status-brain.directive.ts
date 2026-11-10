@@ -11,10 +11,12 @@ import {
   output,
   untracked,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
 import {
   buildAsyncStateView,
   createKeyedRegistry,
+  createOverrideMerge,
   createTransitionTracker,
   injectLazySelf,
   resolveSpokenText,
@@ -29,6 +31,11 @@ import { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from '../async-click/asy
 import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
 import { reflectAsyncDisplayStatus } from '../async-status/async-status.directive';
 import { injectInteractiveI18n } from '../i18n/interactive-i18n';
+import {
+  injectActionStatusConfig,
+  injectActionStatusSection,
+  type CngxActionStatusFailedContext,
+} from './action-status-config';
 import {
   CNGX_ACTION_STATUS,
   CNGX_ANNOUNCEMENT_COVER,
@@ -59,6 +66,14 @@ import {
  * announcement follow that state, once per observed `success` / `error`
  * edge; the own runs then speak nothing. Back to idle empties the region.
  *
+ * Each cell resolves its content high to low: the projected `cngxPending` /
+ * `cngxSucceeded` / `cngxFailed`, the `templates` of `CNGX_ACTION_STATUS_CONFIG`,
+ * the bound label, the config `labels`, the actionStatus section of the
+ * language pack. The English pack is empty, so without any of them a state
+ * has no cell; a bound `''` switches a cell off. Set the app-wide defaults
+ * with `provideActionStatusConfig(withActionStatusLabels(...))` or, for a
+ * button app, `provideCngxButton(withActionStatusLabels(...))`.
+ *
  * Needs a co-hosted `CNGX_ASYNC_RUN_STATE` (a `cngxAsyncClick`), read lazily
  * because the runner reads the host interaction state that reads this brain;
  * without one the first read throws `CNGX1082`.
@@ -76,7 +91,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-brain.directive.ts
  * @since 0.1.0
- * @relatedTo CNGX_ACTION_STATUS, CngxActionStatusCell, CNGX_ANNOUNCEMENT_COVER, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed
+ * @relatedTo CNGX_ACTION_STATUS, CNGX_ACTION_STATUS_CONFIG, CngxActionStatusCell, CNGX_ANNOUNCEMENT_COVER, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.
  * @slot cngxFailed Replaces the label when the action fails, once the busy visual releases; gets the error.
@@ -99,6 +114,9 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   private readonly runStateLookup = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
   private readonly covers = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
   private readonly cells = createKeyedRegistry<Element>({ name: 'CngxActionStatusBrain' });
+  private readonly config = injectActionStatusConfig();
+  /** Config labels over the actionStatus section of the active pack. */
+  private readonly labels = createOverrideMerge(injectActionStatusSection(), this.config.labels);
 
   /** SR announcement on success. Falls back to the rendered result cell, the label, the i18n copy. */
   readonly succeededAnnouncement = input<string | undefined>(undefined);
@@ -114,13 +132,17 @@ export class CngxActionStatusBrain implements CngxActionStatus {
    */
   readonly autoAnnounce = input<boolean | undefined>(undefined);
 
-  /** Fallback text while pending (no `cngxPending` template). Shows once the busy visual does. */
+  /**
+   * Text while pending (no `cngxPending` template). Shows once the busy
+   * visual does. Unbound, the `CNGX_ACTION_STATUS_CONFIG` / language pack
+   * label; `''` switches the cell off.
+   */
   readonly pendingLabel = input<string | undefined>(undefined);
 
-  /** Fallback text after success (no `cngxSucceeded` template). */
+  /** Text after success (no `cngxSucceeded` template). Unbound, the config / pack label; `''`: no cell. */
   readonly succeededLabel = input<string | undefined>(undefined);
 
-  /** Fallback text after failure (no `cngxFailed` template). */
+  /** Text after failure (no `cngxFailed` template). Unbound, the config / pack label; `''`: no cell. */
   readonly failedLabel = input<string | undefined>(undefined);
 
   /**
@@ -135,12 +157,32 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   /** Emits once per own settle and once per external `success` / `error` edge. */
   readonly outcome = output<CngxActionOutcome>();
 
-  /** Projected `cngxPending` template, if any. */
-  readonly pendingTemplate = contentChild(CngxPending);
-  /** Projected `cngxSucceeded` template, if any. */
-  readonly succeededTemplate = contentChild(CngxSucceeded);
-  /** Projected `cngxFailed` template, if any. */
-  readonly failedTemplate = contentChild(CngxFailed);
+  private readonly projectedPending = contentChild(CngxPending);
+  private readonly projectedSucceeded = contentChild(CngxSucceeded);
+  private readonly projectedFailed = contentChild(CngxFailed);
+
+  /** Template of the pending cell: the projected `cngxPending`, else the config's. */
+  readonly pendingTemplate: Signal<TemplateRef<unknown> | undefined> = computed(
+    () => this.projectedPending()?.templateRef ?? this.config.templates?.pending,
+  );
+  /** Template of the succeeded cell: the projected `cngxSucceeded`, else the config's. */
+  readonly succeededTemplate: Signal<TemplateRef<unknown> | undefined> = computed(
+    () => this.projectedSucceeded()?.templateRef ?? this.config.templates?.succeeded,
+  );
+  /** Template of the failed cell: the projected `cngxFailed`, else the config's; gets the error. */
+  readonly failedTemplate: Signal<TemplateRef<CngxActionStatusFailedContext> | undefined> =
+    computed(() => this.projectedFailed()?.templateRef ?? this.config.templates?.failed);
+
+  /** Text of the pending cell: the bound label, else the config / pack label. `''`: none. */
+  readonly pendingText: Signal<string> = computed(
+    () => this.pendingLabel() ?? this.labels().pending,
+  );
+  /** Text of the succeeded cell: the bound label, else the config / pack label. `''`: none. */
+  readonly succeededText: Signal<string> = computed(
+    () => this.succeededLabel() ?? this.labels().succeeded,
+  );
+  /** Text of the failed cell: the bound label, else the config / pack label. `''`: none. */
+  readonly failedText: Signal<string> = computed(() => this.failedLabel() ?? this.labels().failed);
 
   /** Effective status: the bound external state (display bucket), else the co-hosted run. */
   readonly status: Signal<AsyncStatus> = computed(() => {
@@ -178,9 +220,9 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   /** Which status cells render: a label or a template for the state. */
   readonly hasCell: Signal<CngxActionStatusCells> = computed(
     () => ({
-      pending: !!this.pendingTemplate() || !!this.pendingLabel(),
-      success: !!this.succeededTemplate() || !!this.succeededLabel(),
-      error: !!this.failedTemplate() || !!this.failedLabel(),
+      pending: !!this.pendingTemplate() || this.pendingText() !== '',
+      success: !!this.succeededTemplate() || this.succeededText() !== '',
+      error: !!this.failedTemplate() || this.failedText() !== '',
     }),
     {
       equal: (a, b) => a.pending === b.pending && a.success === b.success && a.error === b.error,
@@ -265,9 +307,9 @@ export class CngxActionStatusBrain implements CngxActionStatus {
         return rendered;
       }
       if (success) {
-        return this.succeededLabel() ?? this.i18n().asyncClickSucceeded;
+        return this.succeededText() || this.i18n().asyncClickSucceeded;
       }
-      return this.failedLabel() ?? this.i18n().asyncClickFailed;
+      return this.failedText() || this.i18n().asyncClickFailed;
     });
   }
 

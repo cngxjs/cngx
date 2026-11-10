@@ -171,6 +171,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_ACTION_STATUS_CONFIG',
+    kind: 'config',
+    copyKeys: ['labels'],
+    settingsKeys: ['templates'],
+  },
+  {
     token: 'CNGX_MENU_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],

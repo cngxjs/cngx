@@ -81,32 +81,48 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 268,
-      "member": "outcomeText",
-      "enclosing": "untracked",
+      "line": 170,
+      "member": "pendingText",
+      "enclosing": "computed",
       "tiers": [
-        { "kind": "input", "field": "succeededLabel" },
+        { "kind": "input", "field": "pendingLabel" },
         {
           "kind": "bundle",
-          "field": "i18n",
-          "path": ["asyncClickSucceeded"],
-          "token": "CNGX_INTERACTIVE_I18N"
+          "field": "labels",
+          "path": ["pending"],
+          "token": "CNGX_ACTION_STATUS_CONFIG"
         }
       ]
     },
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 270,
-      "member": "outcomeText",
-      "enclosing": "untracked",
+      "line": 174,
+      "member": "succeededText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "succeededLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["succeeded"],
+          "token": "CNGX_ACTION_STATUS_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionStatusBrain",
+      "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+      "line": 177,
+      "member": "failedText",
+      "enclosing": "computed",
       "tiers": [
         { "kind": "input", "field": "failedLabel" },
         {
           "kind": "bundle",
-          "field": "i18n",
-          "path": ["asyncClickFailed"],
-          "token": "CNGX_INTERACTIVE_I18N"
+          "field": "labels",
+          "path": ["failed"],
+          "token": "CNGX_ACTION_STATUS_CONFIG"
         }
       ]
     },

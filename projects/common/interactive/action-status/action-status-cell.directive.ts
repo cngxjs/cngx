@@ -26,7 +26,7 @@ import { CNGX_ACTION_STATUS, type CngxActionStatusCellKind } from './action-stat
  * ```html
  * <span class="my-label" cngxActionStatusCell="idle"><ng-content /></span>
  * @if (status.hasCell().success) {
- *   <span class="my-label" cngxActionStatusCell="success">{{ status.succeededLabel() }}</span>
+ *   <span class="my-label" cngxActionStatusCell="success">{{ status.succeededText() }}</span>
  * }
  * ```
  *
