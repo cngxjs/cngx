@@ -97,6 +97,7 @@ function warnUnlabelledDot(
     '[class.cngx-nav-badge--dot]': "variant() === 'dot'",
     '[class.cngx-nav-badge--status]': "variant() === 'status'",
     '[class.cngx-nav-badge--hidden]': 'isEmpty()',
+    '[attr.hidden]': "isEmpty() ? '' : null",
     'aria-hidden': 'true',
   },
 })
@@ -119,7 +120,11 @@ export class CngxNavBadge implements OnInit {
    */
   readonly ariaLabel = input<string | undefined>(undefined);
 
-  /** Whether the badge should be visually hidden (empty/zero value). */
+  /**
+   * Whether the badge is empty (empty/zero value). An empty badge carries the
+   * `hidden` attribute, so the UA `display: none` hides it without any cngx
+   * stylesheet; a consumer `display` rule on the badge overrides that UA rule.
+   */
   readonly isEmpty = computed(() => {
     const v = this.value();
     return v === null || v === undefined || v === '' || v === 0;

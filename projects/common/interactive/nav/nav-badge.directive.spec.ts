@@ -122,6 +122,24 @@ describe('CngxNavBadge', () => {
     expect(el.classList.contains('cngx-nav-badge--hidden')).toBe(false);
   });
 
+  for (const empty of [null, undefined, '', 0] as const) {
+    it(`sets the hidden attribute for the empty value ${String(empty)}`, () => {
+      const { fixture, el, host } = setup();
+      host.value.set(empty);
+      fixture.detectChanges();
+      expect(el.hasAttribute('hidden')).toBe(true);
+    });
+  }
+
+  it('removes the hidden attribute once the badge has a value', () => {
+    const { fixture, el, host } = setup();
+    host.value.set(0);
+    fixture.detectChanges();
+    host.value.set(4);
+    fixture.detectChanges();
+    expect(el.hasAttribute('hidden')).toBe(false);
+  });
+
   it('isEmpty is true for empty string', () => {
     const { fixture, dir, host } = setup();
     host.value.set('');

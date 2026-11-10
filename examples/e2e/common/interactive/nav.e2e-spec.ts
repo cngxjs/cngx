@@ -17,6 +17,11 @@ test.describe('common/interactive/nav', () => {
     await expect(page.getByRole('link', { name: 'Inbox 12 unread' })).toBeVisible();
     await expect(page.locator('[cngxnavbadge][aria-label]')).toHaveCount(0);
     await expect(page.locator('[cngxnavbadge]:not([aria-hidden="true"])')).toHaveCount(0);
+
+    // Archive holds 0: the empty badge carries `hidden` and renders nothing.
+    const archiveBadge = page.locator('a[cngxnavlink][href="#archive"] [cngxnavbadge]');
+    await expect(archiveBadge).toHaveAttribute('hidden', '');
+    await expect(archiveBadge).toBeHidden();
   });
 
   test('accordion-sections: clicking a section header expands its panel', async ({ page }) => {

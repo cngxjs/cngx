@@ -39,6 +39,6 @@ export const STORY: DemoSpec = {
     </a>
   </nav>
   <p class="demo-nav__note">
-    "Archive" has value 0, so <code>cngx-nav-badge--hidden</code> hides it.
+    "Archive" has value 0, so the badge gets the <code>hidden</code> attribute (and the <code>cngx-nav-badge--hidden</code> hook class).
   </p>`,
 };
