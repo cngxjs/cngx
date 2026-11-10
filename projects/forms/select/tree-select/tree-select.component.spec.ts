@@ -1,6 +1,6 @@
 import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { Subject, type Observable } from 'rxjs';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -14,6 +14,7 @@ import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 import { KINDS as PROBE_KINDS, cleanupRoots as cleanupProbeRoots, mount as probeMount } from '../shared/__test-helpers/review-probe-host';
 import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import { CNGX_SELECT_PANEL_VIEW_HOST, type CngxSelectPanelViewHost } from '../shared/panel-host';
 import { stripBidiIsolates } from '@cngx/testing';
 import {
   CNGX_SELECT_CONFIG,
@@ -758,12 +759,16 @@ describe('CngxTreeSelect - shared core view state', () => {
     return { fixture, tree, host: fixture.componentInstance };
   }
 
+  function viewHostOf(fixture: ComponentFixture<unknown>): CngxSelectPanelViewHost {
+    return fixture.debugElement.query(By.directive(CngxTreeSelect)).injector.get(CNGX_SELECT_PANEL_VIEW_HOST);
+  }
+
   it('shows the refresh indicator on a reload after the first load', () => {
     const { fixture, tree, host } = mount();
     host.state.setSuccess(tree.treeController.flatNodes().map((n) => n.node));
     host.state.set('loading');
     fixture.detectChanges();
-    expect(tree.showRefreshIndicator()).toBe(true);
+    expect(viewHostOf(fixture).showRefreshIndicator()).toBe(true);
   });
 
   it('projects aria-invalid on the trigger after a failed commit under the banner display', () => {
@@ -779,10 +784,10 @@ describe('CngxTreeSelect - shared core view state', () => {
     const { fixture, tree, host } = mount();
     tree.handleSelect(tree.treeController.flatNodes().find((n) => n.value.id === 'b')!);
     fixture.detectChanges();
-    expect(tree.showCommitError()).toBe(true);
+    expect(viewHostOf(fixture).showCommitError()).toBe(true);
     host.display.set('none');
     fixture.detectChanges();
-    expect(tree.showCommitError()).toBe(false);
+    expect(viewHostOf(fixture).showCommitError()).toBe(false);
   });
 });
 

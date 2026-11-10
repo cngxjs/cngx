@@ -722,7 +722,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly flatOptions = this.core.flatOptions;
   /** @internal */ protected readonly panelClassList = this.core.panelClassList;
   /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
   /** @internal */ readonly ariaLabels = this.core.ariaLabels;
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
@@ -784,8 +783,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
   readonly isCommitting = this.core.isCommitting;
-  /** @internal - latest commit error. */
-  readonly commitErrorValue = this.core.commitErrorValue;
 
   /**
    * Currently selected option, resolved against `options`. Structural

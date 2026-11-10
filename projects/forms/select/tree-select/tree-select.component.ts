@@ -100,7 +100,6 @@ import { createFieldSync } from '../shared/field-sync';
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectPanelShellTemplates,
-  type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
@@ -288,7 +287,7 @@ export interface CngxTreeSelectChange<T = unknown> {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxTreeSelect<T = unknown>
-  implements CngxFormFieldControl, CngxSelectPanelViewHost<T>, CngxTreeSelectPanelHost<T>
+  implements CngxFormFieldControl, CngxTreeSelectPanelHost<T>
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
@@ -690,12 +689,6 @@ export class CngxTreeSelect<T = unknown>
   readonly caretTpl = this.tplRegistry.caret;
   /** @internal */
   readonly clearButtonTpl = this.tplRegistry.clearButton;
-  /** @internal - exposed for the shell's inline-error branch. */
-  readonly errorTpl = this.tplRegistry.error;
-  /** @internal - projected via `*cngxSelectRetryButton`. */
-  readonly retryButtonTpl = this.tplRegistry.retryButton;
-  /** @internal */
-  readonly commitErrorTpl = this.tplRegistry.commitError;
   /** @internal */
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null> = computed(
     () => this.nodeDir()?.templateRef ?? null,
@@ -825,10 +818,6 @@ export class CngxTreeSelect<T = unknown>
   });
   private readonly dispatch = this.commits.dispatch;
 
-  /** @internal */ readonly activeView = this.core.activeView;
-  /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ readonly showInlineError = this.core.showInlineError;
-  /** @internal */ readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */ readonly resolvedId = this.core.resolvedId;
   /** @internal Accessible name of the `role="tree"` panel body. */
   readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
@@ -915,8 +904,6 @@ export class CngxTreeSelect<T = unknown>
     action: signal<null>(null),
   };
 
-  /** @internal */
-  readonly showCommitError = this.core.showCommitError;
 
   /**
    * Object behind `CNGX_SELECT_PANEL_VIEW_HOST`; the core supplies every

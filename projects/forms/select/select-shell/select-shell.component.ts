@@ -853,7 +853,6 @@ export class CngxSelectShell<T = unknown>
   protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
   protected readonly panelClassList = this.core.panelClassList;
   protected readonly panelWidthCss = this.core.panelWidthCss;
-  readonly fallbackLabels = this.core.fallbackLabels;
   readonly ariaLabels = this.core.ariaLabels;
   protected readonly resolvedId = this.core.resolvedId;
   protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;

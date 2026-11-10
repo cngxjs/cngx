@@ -872,7 +872,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
-  /** @internal */ readonly commitErrorValue = this.core.commitErrorValue;
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({

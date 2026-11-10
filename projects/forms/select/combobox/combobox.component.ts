@@ -905,8 +905,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
   readonly isCommitting = this.core.isCommitting;
-  /** @internal - latest commit error. */
-  readonly commitErrorValue = this.core.commitErrorValue;
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T[]>({

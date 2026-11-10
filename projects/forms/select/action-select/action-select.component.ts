@@ -802,8 +802,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly panelWidthCss = this.core.panelWidthCss;
   /** @internal */
-  readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */
   readonly ariaLabels = this.core.ariaLabels;
   /** @internal */
   protected readonly resolvedId = this.core.resolvedId;
@@ -885,8 +883,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly isCommitting = computed<boolean>(
     () => this.core.isCommitting() || this.createCommitController.isCommitting(),
   );
-  /** @internal */
-  readonly commitErrorValue = this.core.commitErrorValue;
 
   /** @internal - full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T>({
