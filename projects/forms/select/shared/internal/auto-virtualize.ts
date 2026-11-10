@@ -118,7 +118,19 @@ export function createAutoPanelRenderer<T>(opts: {
         if (!el || top === 0 || height === previous) {
           return;
         }
-        afterNextRender({ write: () => (el.scrollTop = (top * height) / previous) }, { injector });
+        afterNextRender(
+          {
+            write: () => {
+              // A scroll in between (the active-descendant rAF scroll, the
+              // user) already set a fresh position; the scaled one is stale.
+              if (el.scrollTop !== top) {
+                return;
+              }
+              el.scrollTop = (top * height) / previous;
+            },
+          },
+          { injector },
+        );
       };
       afterRenderEffect({
         read: (onCleanup) => {
