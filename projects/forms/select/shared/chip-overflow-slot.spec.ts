@@ -35,32 +35,6 @@ function hiddenValues(hidden: readonly CngxSelectOptionDef<string>[]): string {
   return hidden.map((o) => o.value).join(',');
 }
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => boolean;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-  };
-  proto.togglePopover = function (this: HTMLElement) {
-    const open = this.hasAttribute('data-popover-open');
-    if (open) {
-      this.removeAttribute('data-popover-open');
-    } else {
-      this.setAttribute('data-popover-open', 'true');
-    }
-    return !open;
-  };
-}
-
 @Component({
   template: `
     <cngx-multi-select
@@ -233,7 +207,6 @@ function render(host: Type<unknown>): HTMLElement {
 
 describe('cngxSelectChipOverflow slot', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.resetTestingModule();
   });
 

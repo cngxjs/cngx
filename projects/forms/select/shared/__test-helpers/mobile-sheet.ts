@@ -47,33 +47,6 @@ interface VariantApi {
   readonly closed: { subscribe(fn: () => void): unknown };
 }
 
-// jsdom has no Popover API.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => boolean;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-  };
-  proto.togglePopover = function (this: HTMLElement) {
-    const open = !this.hasAttribute('data-popover-open');
-    if (open) {
-      this.setAttribute('data-popover-open', 'true');
-    } else {
-      this.removeAttribute('data-popover-open');
-    }
-    return open;
-  };
-}
-
 function flush(fixture: ComponentFixture<unknown>): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -124,7 +97,6 @@ export function describeMobileSheet(
     };
 
     function setup() {
-      polyfillPopover();
       spies = { handleClickOutside: vi.fn(), handleSheetClose: vi.fn() };
       TestBed.configureTestingModule({
         providers: [

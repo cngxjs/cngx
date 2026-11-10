@@ -33,38 +33,6 @@ const TAGS: CngxSelectOptionsInput<Tag> = [
   { value: { id: 't3', name: 'QA' }, label: 'QA' },
 ];
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => void;
-  };
-  if (proto.showPopover) {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement): void {
-    this.setAttribute('data-popover-shown', 'true');
-    Object.defineProperty(this, 'matches', {
-      value: (s: string) => s === ':popover-open',
-      configurable: true,
-    });
-  };
-  proto.hidePopover = function (this: HTMLElement): void {
-    this.removeAttribute('data-popover-shown');
-    Object.defineProperty(this, 'matches', {
-      value: (_s: string) => false,
-      configurable: true,
-    });
-  };
-  proto.togglePopover = function (this: HTMLElement): void {
-    if (this.getAttribute('data-popover-shown') === 'true') {
-      proto.hidePopover!.call(this);
-    } else {
-      proto.showPopover!.call(this);
-    }
-  };
-}
-
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -146,7 +114,6 @@ function setup(): {
   host: Host;
   select: CngxActionMultiSelect<Tag>;
 } {
-  polyfillPopover();
   TestBed.configureTestingModule({ imports: [Host] });
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
@@ -507,7 +474,6 @@ describe('CngxActionMultiSelect - summary trigger under the touch floor', () => 
   });
 
   function render(touch: boolean) {
-    polyfillPopover();
     if (touch) {
       restore = stubTouchFloor();
     }
@@ -721,7 +687,6 @@ describe('CngxActionMultiSelect - openOn config integration', () => {
     select: CngxActionMultiSelect<Tag>;
     input: HTMLInputElement;
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [OpenOnHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(OpenOnHost);
     flush(fixture);

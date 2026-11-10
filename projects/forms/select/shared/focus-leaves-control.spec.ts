@@ -2,7 +2,7 @@ import { Component, type Type } from '@angular/core';
 import { Subject } from 'rxjs';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { CngxFormField } from '@cngx/forms/field';
@@ -24,34 +24,6 @@ import { CngxTypeahead } from '../typeahead/typeahead.component';
 import type { CngxSelectCommitAction } from './commit-action.types';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from './option.model';
 import { CngxSelectAction } from './template-slots';
-
-// jsdom does not implement the Popover API - polyfill so the panels can open.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Red' },
@@ -430,9 +402,6 @@ function mountVariant(variant: Variant): Promise<Mounted<FieldHost>> {
 }
 
 describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -487,9 +456,6 @@ describe.each(VARIANTS)('$name focus leaves the control', (variant) => {
 });
 
 describe.each(VARIANTS.filter((v) => v.chipRemove))('$name chip removal', (variant) => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -509,9 +475,6 @@ describe.each(VARIANTS.filter((v) => v.chipRemove))('$name chip removal', (varia
 });
 
 describe.each(VARIANTS.filter((v) => v.inPanel))('$name focusable inside the panel', (variant) => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -533,9 +496,6 @@ describe.each(VARIANTS.filter((v) => v.inPanel))('$name focusable inside the pan
 });
 
 describe.each(VARIANTS.filter((v) => v.inPanel))('$name panel closing from inside', (variant) => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -556,9 +516,6 @@ describe.each(VARIANTS.filter((v) => v.inPanel))('$name panel closing from insid
 });
 
 describe('CngxSelectShell pick from the search input', () => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -588,9 +545,6 @@ describe('CngxSelectShell pick from the search input', () => {
 });
 
 describe('CngxSelect retry inside the panel', () => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -615,9 +569,6 @@ describe('CngxSelect retry inside the panel', () => {
 });
 
 describe('CngxSelect commit-error retry inside the panel', () => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -651,9 +602,6 @@ describe('CngxSelect commit-error retry inside the panel', () => {
 });
 
 describe('CngxTreeSelect tree container', () => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();

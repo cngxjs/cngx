@@ -34,34 +34,6 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { describeChipFit, type ChipFitProjectedHost } from '../shared/__test-helpers/chip-fit';
 import { CngxSelectChipOverflow } from '../shared/template-slots';
 
-// jsdom has no Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
   { value: 'green', label: 'Grün' },
@@ -111,10 +83,6 @@ function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
 }
-
-beforeEach(() => {
-  polyfillPopover();
-});
 
 describe('CngxMultiSelect - skeleton', () => {
   it('renders the placeholder when no value is selected', () => {
@@ -450,7 +418,6 @@ class MultiCommitHost {
 
 describe('CngxMultiSelect - commit action producer', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [MultiCommitHost] });
   });
 
@@ -723,9 +690,6 @@ class ChipTemplateHost {
 }
 
 describe('CngxMultiSelect - chip template + announcer', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('renders chip template override instead of the default pill', () => {
     const fixture = TestBed.createComponent(ChipTemplateHost);
@@ -794,9 +758,6 @@ class TriggerLabelHost {
 }
 
 describe('CngxMultiSelect - trigger label slot', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('renders the trigger-label template instead of the default chip strip', () => {
     const fixture = TestBed.createComponent(TriggerLabelHost);
@@ -848,10 +809,6 @@ class SummaryHost {
 
 describe('CngxMultiSelect - summary trigger under the touch floor', () => {
   let restore: (() => void) | null = null;
-
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     restore?.();
@@ -945,9 +902,6 @@ class ClearButtonHost {
 }
 
 describe('CngxMultiSelect - clear-button / option-pending / option-error slots', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('clear-button slot replaces the default ✕ and routes clear() through commit-aware path', () => {
     const fixture = TestBed.createComponent(ClearButtonHost);
@@ -1083,7 +1037,6 @@ class MultiFormFieldHost {
 
 describe('CngxMultiSelect - form-field integration', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [MultiFormFieldHost] });
   });
 
@@ -1125,9 +1078,6 @@ describe('CngxMultiSelect - form-field integration', () => {
 // ── Phase 3: withAriaLabels integration ────────────────────────────────
 
 describe('CngxMultiSelect - withAriaLabels config override', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   @Component({
     template: `

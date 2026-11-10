@@ -9,21 +9,6 @@ import { provideSelectConfig, withVirtualization } from '../../config';
 import type { CngxSelectOptionDef } from '../../option.model';
 import { CngxSelectOptionLabel } from '../../template-slots';
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.setAttribute('data-popover-open', 'true');
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-    };
-  }
-}
-
 const OPTIONS: CngxSelectOptionDef<number>[] = Array.from({ length: 200 }, (_, i) => ({
   value: i,
   label: `Option ${i}`,
@@ -52,7 +37,6 @@ function flush(fixture: { detectChanges: () => void }): void {
 
 describe('CngxSelectPanel - highlighted option in the label slot', () => {
   beforeEach(() => {
-    polyfillPopover();
     // Identity render: this pass asserts the highlighted option is resolved
     // once per change, not once per row, across all 200 rows. Default
     // virtualization windows a 200-option list, so opt out to keep the full
@@ -111,7 +95,6 @@ class GroupedHost {
 }
 
 describe('CngxSelectPanel - CNGX2028 on open', () => {
-  beforeEach(() => polyfillPopover());
   afterEach(() => vi.restoreAllMocks());
 
   function openGrouped(): unknown[][] {
