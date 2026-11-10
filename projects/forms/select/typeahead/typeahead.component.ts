@@ -778,7 +778,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
   /** @internal */
-  /** @internal */
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
   /** @internal */
   protected readonly externalActivation = this.core.externalActivation;
