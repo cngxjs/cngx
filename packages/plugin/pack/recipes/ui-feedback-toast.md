@@ -1,12 +1,12 @@
 ---
 title: "CngxToastOn: state bridge"
-whenToUse: "Zero-handler integration: a button driven by a CngxAsyncState shows a success or error toast on every terminal transition. No explicit toaster.show() call - the bridge directive reads CNGX_STATEFUL from the host."
+whenToUse: "Zero-handler integration: one [cngxToastOn] on the wrapper watches the CngxAsyncState both buttons drive and shows a success or error toast on every terminal transition. No explicit toaster.show() call. One bridge per state: a second bridge on the same state shows each toast twice (the toaster merges them into one toast with a count)."
 symbols: [CngxToastOn, CngxToastOutlet, CngxToaster, CngxToast]
 ---
 
 # CngxToastOn: state bridge
 
-Zero-handler integration: a button driven by a CngxAsyncState shows a success or error toast on every terminal transition. No explicit toaster.show() call - the bridge directive reads CNGX_STATEFUL from the host.
+Zero-handler integration: one [cngxToastOn] on the wrapper watches the CngxAsyncState both buttons drive and shows a success or error toast on every terminal transition. No explicit toaster.show() call. One bridge per state: a second bridge on the same state shows each toast twice (the toaster merges them into one toast with a count).
 
 ## Symbols
 
@@ -32,15 +32,12 @@ protected simulateError(): void {
 ## Wiring
 
 ```html
-<div class="demo-inline-actions" style="margin-bottom:12px">
-  <button (click)="simulateSave()"
-    [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
-    class="chip" type="button">
+<div class="demo-inline-actions" style="margin-bottom:12px"
+  [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true">
+  <button (click)="simulateSave()" class="chip" type="button">
     {{ saveState.isPending() ? 'Saving...' : 'Save (1.5s)' }}
   </button>
-  <button (click)="simulateError()"
-    [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
-    class="chip" type="button">
+  <button (click)="simulateError()" class="chip" type="button">
     Simulate Error (1.5s)
   </button>
 </div>
