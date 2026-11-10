@@ -635,7 +635,6 @@ describe('CngxActionSelect - keyboard collapse onto the clear button', () => {
     input: HTMLInputElement;
     clear: HTMLButtonElement;
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [ClearableHost] });
     const fixture = TestBed.createComponent(ClearableHost);
     fixture.detectChanges();
