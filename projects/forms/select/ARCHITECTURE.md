@@ -723,7 +723,8 @@ A few representative extension paths.
 1. Build the trigger template; pick the appropriate ARIA pattern.
 2. Instantiate `createSelectCore<T, TCommit>` in a field initialiser.
 3. Provide `CNGX_FORM_FIELD_CONTROL` (`useExisting: self`) and `CNGX_STATEFUL` for transition-bridge integration.
-4. Provide `CNGX_SELECT_PANEL_VIEW_HOST` (and `CNGX_SELECT_PANEL_HOST` if the panel is option-loop-shaped); satisfy the contract.
-5. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory. `createADActivationDispatcher` reads only `CngxActivationDispatcherCore<T>` (`writeBlocked`, `findOption`) from the core, so a composite can hand it the select core or any object with those two members.
-6. Reuse the value-shape glue closest to your variant (`createArrayCommitHandler` for arrays, `createScalarCommitHandler` for singles, `createReorderCommitHandler` for ordered arrays).
-7. Export the component + change-event interface from `public-api.ts`.
+4. Build the panel host in the core: `readonly panelHost = this.core.createPanelHost({...})` for an option-loop panel, `core.createPanelViewHost({...})` otherwise. The extras type names every key the composite still owes; the core fills the rest. Provide both tokens from that object with `useFactory: () => inject(Cmp).panelHost` (only `CNGX_SELECT_PANEL_VIEW_HOST` for a view-host-only panel). Do not re-declare core keys as pass-through fields.
+5. Wire the trigger handlers from the shared helper for the trigger kind: `createButtonTriggerHandlers` for a button trigger, `createInputHostHandlers` for an input-owned trigger (`shared/internal/`).
+6. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory. `createADActivationDispatcher` reads only `CngxActivationDispatcherCore<T>` (`writeBlocked`, `findOption`) from the core, so a composite can hand it the select core or any object with those two members.
+7. Reuse the value-shape glue closest to your variant (`createArrayCommitHandler` for arrays, `createScalarCommitHandler` for singles, `createReorderCommitHandler` for ordered arrays).
+8. Export the component + change-event interface from `public-api.ts`.

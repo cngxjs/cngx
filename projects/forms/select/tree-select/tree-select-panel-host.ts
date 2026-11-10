@@ -14,9 +14,10 @@ import type {
  * this interface first.
  *
  * Loading / empty / error / refreshing / commit-error surfaces flow
- * through `CNGX_SELECT_PANEL_HOST` instead. `CngxTreeSelect` provides
- * both tokens (`useExisting: self`); the interfaces are split so the
- * shell stays value-shape-agnostic.
+ * through `CNGX_SELECT_PANEL_VIEW_HOST` instead, which `CngxTreeSelect`
+ * builds with `core.createPanelViewHost(...)`. This token stays
+ * `useExisting: self`; the interfaces are split so the shell stays
+ * value-shape-agnostic.
  *
  * @internal
  */
@@ -116,9 +117,9 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
 
 /**
  * Injection token for the tree-panel host contract.
- * `CngxTreeSelect` provides `{ useExisting: self }` alongside the
- * flat `CNGX_SELECT_PANEL_HOST` so the shell still sees the shared
- * panel-view surface.
+ * `CngxTreeSelect` provides `{ useExisting: self }`; the shell reads the
+ * shared panel-view surface from `CNGX_SELECT_PANEL_VIEW_HOST`, built by
+ * the select core. `CNGX_SELECT_PANEL_HOST` is not provided.
  *
  * @internal
  */
