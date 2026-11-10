@@ -526,6 +526,14 @@ export class CngxPopover {
    */
   private readonly anchorElementState = signal<HTMLElement | null>(null);
 
+  /**
+   * @internal The implicit anchor ({@link setAnchorElement}) even while an
+   * explicit anchor shadows it. Read by `CngxPopoverSheet` only: its focus
+   * fallback needs a focusable opener when the explicit anchor is a
+   * non-focusable box.
+   */
+  readonly implicitAnchorElement = this.anchorElementState.asReadonly();
+
   /** Explicit anchor slot, claimed by `CngxPopoverAnchor`. */
   private readonly explicitAnchorElementSlot = createSlotRegistry<HTMLElement>();
 

@@ -560,9 +560,11 @@ export class CngxPopoverSheet
     }
   }
 
+  // An explicit anchor can be a non-focusable box; the implicit one (the
+  // trigger) then takes the focus fallback.
   private focusableAnchor(): HTMLElement | null {
-    const anchor = this.popover.anchorElement();
-    return anchor && anchor.tabIndex >= 0 ? anchor : null;
+    const candidates = [this.popover.anchorElement(), this.popover.implicitAnchorElement()];
+    return candidates.find((el): el is HTMLElement => !!el && el.tabIndex >= 0) ?? null;
   }
 
   // iOS Safari does not focus a button on tap (with or without VoiceOver),
