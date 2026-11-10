@@ -50,6 +50,7 @@ import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
+import { createOptionLabelFormatter } from '../shared/internal/option-label-formatter';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -119,7 +120,6 @@ import {
   createSelectCore,
   type CngxSelectCompareFn,
   type CngxSelectCore,
-  unresolvedOptionLabel,
 } from '../shared/internal/select-core';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
@@ -945,20 +945,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
-  /**
-   * The formatter the input text is written through: a bound `displayWith`,
-   * else the label of the matching option, else `String(value)`. Reads the
-   * options, so options that arrive after the value produce a new formatter
-   * and the display binding rewrites the unfocused input.
-   */
-  private readonly resolvedDisplayWith = computed<(value: T) => string>(() => {
-    const bound = this.displayWith();
-    if (bound) {
-      return bound;
-    }
-    this.core.unfilteredFlatOptions();
-    return (v) => this.core.findOption(v)?.label ?? unresolvedOptionLabel(v);
-  });
+  private readonly resolvedDisplayWith = createOptionLabelFormatter(this.displayWith, this.selected);
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
     displayWith: this.resolvedDisplayWith,
