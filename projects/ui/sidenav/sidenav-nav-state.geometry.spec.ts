@@ -75,6 +75,7 @@ type Fill = (typeof FILLS)[number];
       </cngx-sidenav>
     </div>
     <span class="probe-highlighttext" style="color: HighlightText"></span>
+    <span class="probe-highlight" style="color: Highlight"></span>
   `,
 })
 class NavStateHost {}
@@ -225,6 +226,20 @@ for (const scheme of SCHEMES) {
       }
     });
 
+    it('keeps the outer focus ring at 3:1 or more on every fill and on the inner ring', () => {
+      const root = mountIn();
+      const row = one(root, '.row-idle');
+      row.focus();
+      const outer = paint(computedValue(row, 'outline-color'));
+      const surface = computedValue(one(root, '.rail-a'), 'background-color');
+      const inner = computedValue(one(root, '.rail-a'), '--cngx-nav-link-focus-inner-color');
+      expect(contrastRatio(outer, paint(surface))).toBeGreaterThanOrEqual(3);
+      expect(contrastRatio(outer, paint(surface, inner))).toBeGreaterThanOrEqual(3);
+      for (const fill of FILLS) {
+        expect(contrastRatio(outer, fillOver(root, fill))).toBeGreaterThanOrEqual(3);
+      }
+    });
+
     it('moves each fill further from the surface than the one before', () => {
       const root = mountIn();
       const surface = paint(computedValue(one(root, '.rail-a'), 'background-color'));
@@ -339,5 +354,54 @@ describe('active indicator', () => {
     expect(bar(row, 'background-color')).toBe(
       computedValue(one(root, '.probe-highlighttext'), 'color'),
     );
+  });
+});
+
+describe('double focus ring', () => {
+  it('draws an outline and an inset inner ring on a focused row', () => {
+    const root = mount();
+    const row = one(root, '.row-idle');
+    row.focus();
+    expect(row.matches(':focus-visible')).toBe(true);
+    expect(computedValue(row, 'outline-style')).toBe('solid');
+    expect(computedValue(row, 'box-shadow')).toContain('inset');
+  });
+
+  it('gives a focused group head the same rings as a link', () => {
+    const root = mount();
+    const link = one(root, '.row-idle');
+    link.focus();
+    const linkRing = ['outline', 'outline-offset', 'box-shadow'].map((p) => computedValue(link, p));
+    const head = one(root, '.row-group');
+    head.focus();
+    expect(head.matches(':focus-visible')).toBe(true);
+    expect(['outline', 'outline-offset', 'box-shadow'].map((p) => computedValue(head, p))).toEqual(
+      linkRing,
+    );
+  });
+
+  it('draws one HighlightText ring on the focused active row under forced colors', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mount();
+    const active = one(root, '.row-active');
+    active.focus();
+    const ring = computedValue(active, 'outline-color');
+    expect(ring).toBe(computedValue(one(root, '.probe-highlighttext'), 'color'));
+    expect(computedValue(active, 'box-shadow')).toBe('none');
+    expect(
+      contrastRatio(paint(ring), paint(computedValue(one(root, '.probe-highlight'), 'color'))),
+    ).toBeGreaterThanOrEqual(3);
+  });
+
+  it('drops the inner ring on a focused inactive row under forced colors', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mount();
+    const row = one(root, '.row-idle');
+    row.focus();
+    expect(computedValue(row, 'box-shadow')).toBe('none');
   });
 });

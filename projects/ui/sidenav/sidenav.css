@@ -92,7 +92,8 @@
  *   color` -> `--cngx-color-border`
  * - `--cngx-sidenav-resize-handle-color` -> `--cngx-color-primary`
  * - `--cngx-sidenav-resize-handle-focus-outline-color` -> `--cngx-color-primary`
- * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-primary`
+ * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-text`
+ * - `--cngx-nav-link-focus-inner-color` -> `--cngx-sidenav-bg`
  * - `--cngx-nav-link-hover-bg` / `-pressed-bg` / `-active-bg` /
  *   `-active-hover-bg` -> `--cngx-color-primary` at 6 / 12 / 16 / 22 %
  *   over transparent; `--cngx-nav-link-inset` -> `--cngx-space-xs`. All are
@@ -543,16 +544,30 @@
   }
 
   /**
-   * Outline color of the keyboard focus ring on a nav link. Falls
-   * back to `--cngx-color-primary` so the ring picks up the brand
-   * accent.
+   * Outer colour of the double keyboard focus ring on a nav row. SET from
+   * `--cngx-color-text` on the `cngx-sidenav` host, so the ring stays apart
+   * from the active hue on every fill.
    * @group State / Focus
-   * @see [[--cngx-color-primary]]
+   * @see [[--cngx-color-text]]
    */
   @property --cngx-nav-link-focus-outline-color {
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Inner colour of the double keyboard focus ring, drawn inside the outer
+   * ring at the same width. SET from `--cngx-sidenav-bg`, so the outer ring
+   * reads against a band of the rail surface on any fill.
+   * @group State / Focus
+   * @see [[--cngx-sidenav-bg]]
+   */
+  @property --cngx-nav-link-focus-inner-color {
+    syntax: '<color>';
+    /* Read on the row; inherits so the host SET reaches it. */
+    inherits: true;
+    initial-value: oklch(0.97 0.005 250);
   }
 
   /**
@@ -658,7 +673,8 @@
       var(--cngx-color-primary, oklch(0.66 0.19 50)) 22%,
       transparent
     );
-    --cngx-nav-link-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+    --cngx-nav-link-focus-outline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-nav-link-focus-inner-color: var(--cngx-sidenav-bg, oklch(0.97 0.005 250));
     --cngx-nav-link-active-indicator-color: var(--cngx-color-primary-text, oklch(0.54 0.19 50));
     --cngx-nav-link-active-indicator-size: calc(var(--cngx-space-xs) * 0.75);
     --cngx-nav-link-active-indicator-inset: var(--cngx-space-sm);
@@ -923,16 +939,18 @@
   }
 
   /*
-   * Keyboard focus ring on a nav link. Inset offset so a focused
-   * link inside the rail doesn't push its neighbours outward. The
-   * outline rides on `--cngx-color-primary` via the :root delegation,
-   * so the brand accent paints both active state and focus state in
-   * coherent tones.
+   * Double keyboard focus ring on a nav row, inset so a focused row doesn't
+   * push its neighbours. Outer ring: the outline in the text colour. Inner
+   * ring: an inset box-shadow in the rail surface, twice the outline width,
+   * whose outer half the outline covers. The pair reads on every fill and
+   * never depends on the active hue.
    */
-  cngx-sidenav .cngx-nav-link:focus-visible {
+  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]):focus-visible {
     outline: var(--cngx-nav-link-focus-outline-width, 2px) solid
-      var(--cngx-nav-link-focus-outline-color, oklch(0.66 0.19 50));
+      var(--cngx-nav-link-focus-outline-color, oklch(0.2 0.01 250));
     outline-offset: var(--cngx-nav-link-focus-outline-offset, -2px);
+    box-shadow: inset 0 0 0 calc(2 * var(--cngx-nav-link-focus-outline-width, 2px))
+      var(--cngx-nav-link-focus-inner-color, oklch(0.97 0.005 250));
   }
 
   /*
@@ -1075,12 +1093,14 @@
 /* Forced-colors (WHCM): the active nav link signals only with a background tint
    (forced to Canvas) plus a heavier font-weight, so under a forced palette the
    active item is left with weight alone - too weak a lone cue. Re-signal it with
-   Highlight. The rail's own edge border and the focus outline self-heal, so only
-   the active-item tint needs a re-draw. Unlayered + outside @layer beats the
+   Highlight. The rail's own edge border self-heals. Every other row keeps UA
+   forcing (outline to a system colour, box-shadow removed). Unlayered + outside @layer beats the
    layered base rule; forced-color-adjust:none opts the control out of the UA
    background forcing in case CngxNavLink renders a <button>, so Highlight paints.
    The indicator inherits that opt-out (forced-color-adjust is inherited), so it
-   needs an explicit system colour: HighlightText on the Highlight row. */
+   needs an explicit system colour: HighlightText on the Highlight row. The same
+   opt-out leaves the active row's focus rings unforced, so it gets one
+   HighlightText ring and no inner ring. */
 @media (forced-colors: active) {
   cngx-sidenav .cngx-nav-link--active {
     forced-color-adjust: none;
@@ -1090,5 +1110,10 @@
 
   cngx-sidenav:not([data-sidebar-state='rail']) .cngx-nav-link--active::before {
     background: HighlightText;
+  }
+
+  cngx-sidenav .cngx-nav-link--active:focus-visible {
+    outline-color: HighlightText;
+    box-shadow: none;
   }
 }
