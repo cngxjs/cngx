@@ -67,7 +67,7 @@ export class CngxFilterExpressionRow {
    * Index path of the expression node the row edits in the presenter tree. The path is
    * positional: removing an earlier sibling in the same group makes it name a different node.
    * When it does not resolve to an expression, the row renders nothing. The component throws
-   * CNGX2014 when no presenter is above it.
+   * [`CNGX2014`](/error-codes/cngx2014.md) when no presenter is above it.
    */
   readonly path = input.required<readonly number[]>();
 

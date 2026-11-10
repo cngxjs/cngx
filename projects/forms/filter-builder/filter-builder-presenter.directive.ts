@@ -64,7 +64,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * Field descriptors the builder offers: one entry per filterable column, with its key,
    * label, editor type and optional operator list. Required; the presenter builds its field
    * lookup from it. A field key in `value` that no entry matches is not rejected, a dev-mode
-   * warning (CNGX2003) is logged once after first render.
+   * warning ([`CNGX2003`](/error-codes/cngx2003.md)) is logged once after first render.
    */
   readonly fields = input.required<readonly FilterFieldDef<TValue>[]>();
 
@@ -227,7 +227,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Appends `expression` as the last child of the group at `path` (`[]` is the root). It has
    * no nesting cap, unlike `addGroup`, and a `path` that does not resolve to a group throws
-   * (CNGX2010, CNGX2011).
+   * ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
    */
   addExpression(path: readonly number[], expression: FilterExpression): void {
     this.core.addExpression(path, expression);
@@ -271,7 +271,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Sets the logic of the group at `path` and emits one mutation event only when the logic
    * differs. An expression node at `path` is left unchanged, and a `path` that does not
-   * resolve throws (CNGX2010, CNGX2011).
+   * resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
    */
   setLogic(path: readonly number[], logic: FilterLogic): void {
     this.core.setLogic(path, logic);
@@ -279,7 +279,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   /**
    * Flips `negated` on the group at `path`. An expression node at `path` is left unchanged,
-   * and a `path` that does not resolve throws (CNGX2010, CNGX2011).
+   * and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
    */
   toggleNegated(path: readonly number[]): void {
     this.core.toggleNegated(path);
@@ -288,7 +288,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Sets the field key of the expression at `path`, nothing else: the operator and value
    * are kept even when they no longer fit the new field. A group node at `path` is left
-   * unchanged, and a `path` that does not resolve throws (CNGX2010, CNGX2011); the expression
+   * unchanged, and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)); the expression
    * row uses `applyFieldChange` instead.
    */
   setField(path: readonly number[], fieldKey: string): void {
@@ -297,8 +297,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   /**
    * Sets the operator key of the expression at `path`. A group node at `path` is left
-   * unchanged, the value is kept, and a `path` that does not resolve throws (CNGX2010,
-   * CNGX2011).
+   * unchanged, the value is kept, and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md),
+   * [`CNGX2011`](/error-codes/cngx2011.md)).
    */
   setOperator(path: readonly number[], operator: string): void {
     this.core.setOperator(path, operator);
@@ -308,7 +308,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * Applies a field change to the expression at `path` as one tree write and one `set-field`
    * mutation event, so it is announced once. The operator is replaced by `plan.operator` and
    * the value cleared only when `plan.resetValue` is set. A group node at `path` is left
-   * unchanged, and a `path` that does not resolve throws (CNGX2010, CNGX2011).
+   * unchanged, and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
    */
   applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void {
     this.core.applyFieldChange(path, plan);
@@ -317,7 +317,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Sets the value of the expression at `path`. Writing a value equal under `Object.is`, or
    * targeting a group node, changes nothing and emits no mutation event. A `path` that does
-   * not resolve throws (CNGX2010, CNGX2011).
+   * not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
    */
   setValue(path: readonly number[], value: unknown): void {
     this.core.setValue(path, value);

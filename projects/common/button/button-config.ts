@@ -63,7 +63,7 @@ export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButt
  * `_target: 'config'` discriminator routes it through `provideCngxButton`.
  * Build features through `withButtonVariant` / `withButtonTone` /
  * `withButtonSize`: a hand-built object needs `_target: 'config'` too, and
- * `provideCngxButton` drops one without it (`CNGX1041`).
+ * `provideCngxButton` drops one without it ([`CNGX1041`](/error-codes/cngx1041.md)).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0

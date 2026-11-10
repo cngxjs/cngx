@@ -91,7 +91,7 @@ The thresholds live in exactly one place - a `@container` rule block in `sidenav
 }
 ```
 
-`CngxSidenav` reads the resolved value as `widthClass()`; it never evaluates a condition itself. A value outside the three classes renders as `compact` and warns `CNGX3026` in dev mode. To opt out of auto entirely, bind `mode`:
+`CngxSidenav` reads the resolved value as `widthClass()`; it never evaluates a condition itself. A value outside the three classes renders as `compact` and warns [`CNGX3026`](../../../core-concepts/error-codes/cngx3026.md) in dev mode. To opt out of auto entirely, bind `mode`:
 
 ```html
 <!-- always an overlay, whatever the layout width -->

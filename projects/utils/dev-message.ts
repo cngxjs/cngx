@@ -3,7 +3,7 @@ type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 
 /**
  * Shape of a cngx diagnostic code: `CNGX` plus exactly four digits, for example
- * `CNGX0901`. One type for both channels: the console diagnostics written by
+ * [`CNGX0901`](/error-codes/cngx0901.md). One type for both channels: the console diagnostics written by
  * `cngxDevWarn` / `cngxDevError` and the `code` of a thrown
  * `CngxRuntimeError`. The shape is typed here. That every call site passes a
  * literal code in its lib range is checked by

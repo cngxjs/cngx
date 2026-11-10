@@ -18,7 +18,7 @@ import { filter, fromEvent, map, merge, switchMap, takeUntil, tap } from 'rxjs';
 
 /**
  * The item's `data-reorder-index` as a non-negative integer, or `-1`. The
- * gesture handlers and the CNGX1028 check read indexes the same way.
+ * gesture handlers and the [`CNGX1028`](/error-codes/cngx1028.md) check read indexes the same way.
  */
 function parseReorderIndex(el: HTMLElement): number {
   const raw = el.dataset['reorderIndex'];

@@ -26,7 +26,7 @@ export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCo
  * call `inject()`. It is not a `computed`: a factory returning a plain array is
  * frozen at that first call. Return a `Signal` to stay reactive. A factory that
  * returns anything else contributes no commands and warns in dev mode
- * (CNGX1070).
+ * ([`CNGX1070`](/error-codes/cngx1070.md)).
  *
  * The factory must not call `injectCommands()`, directly or through a service
  * it injects at the same level: that reads the registry the factory is still

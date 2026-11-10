@@ -37,7 +37,7 @@ export interface CngxChipGroupHost<T = unknown> {
  * group. Always provided via
  * `{ provide: CNGX_CHIP_GROUP_HOST, useExisting: <Self> }` - never
  * via concrete-class injection. Required on the leaf side: a leaf
- * without a parent throws `CNGX1068` at construction (fail-fast -
+ * without a parent throws [`CNGX1068`](/error-codes/cngx1068.md) at construction (fail-fast -
  * silent dual-source-of-truth would be worse).
  *
  * Standalone chips outside any group use `[cngxChipInteraction]`

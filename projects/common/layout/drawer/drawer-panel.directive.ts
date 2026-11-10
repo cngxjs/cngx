@@ -68,7 +68,7 @@ export type DrawerMode = 'over' | 'push';
  *
  * `push` is never modal: it lays the panel out next to the content, which
  * stays in use; `'page'` or `'contained'` with `push` resolve to `'none'`
- * and warn `CNGX1076` in development.
+ * and warn [`CNGX1076`](/error-codes/cngx1076.md) in development.
  *
  * **Scrim.** The panel renders `cngx-drawer-panel--modal` while its
  * resolved modality is `'page'` or `'contained'` (plus
@@ -166,7 +166,7 @@ export class CngxDrawerPanel implements CngxDrawerSurfaceDriver, OnInit, OnChang
    * With the `cngx-drawer` stylesheet, `'page'` and `'contained'` show a
    * scrim over the `[cngxDrawer]` host. Unbound, it follows the mode: `over`
    * is `'page'`, `push` is `'none'`. `push` never blocks: `'page'` or
-   * `'contained'` with `push` resolve to `'none'` and warn `CNGX1076` in
+   * `'contained'` with `push` resolve to `'none'` and warn [`CNGX1076`](/error-codes/cngx1076.md) in
    * development. See {@link CngxDrawerModality}.
    */
   readonly modality = input<CngxDrawerModality | undefined>(undefined);

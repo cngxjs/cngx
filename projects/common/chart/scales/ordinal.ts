@@ -8,7 +8,7 @@ import { CngxRuntimeError } from '@cngx/utils';
  * @param domain Ordered list of categorical values. Values are matched
  *   by reference equality on lookup.
  * @param colors Palette to cycle through. Must have at least one entry;
- *   an empty palette throws a `CngxRuntimeError` (`CNGX1049`)
+ *   an empty palette throws a `CngxRuntimeError` ([`CNGX1049`](/error-codes/cngx1049.md))
  *   synchronously at construction time.
  * @returns Callable `(v: T) => string` returning the palette entry for
  *   `v`. Lookup of an unknown value returns the palette's first entry.

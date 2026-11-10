@@ -24,7 +24,7 @@ import { CngxChipInGroup } from '@cngx/common/interactive';
 </cngx-multi-chip-group>
 ```
 
-A `[cngxChipInGroup]` outside any chip-group throws `CNGX1068` (a `CngxRuntimeError`) at construction. That is intentional.
+A `[cngxChipInGroup]` outside any chip-group throws [`CNGX1068`](../../../../core-concepts/error-codes/cngx1068.md) (a `CngxRuntimeError`) at construction. That is intentional.
 
 ## Accessibility
 

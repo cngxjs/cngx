@@ -35,7 +35,7 @@ export interface CngxTreeControllerOptions<T> {
    * rather than a positional fallback.
    *
    * Resolution: per-options > app-wide `provideTreeConfig` default >
-   * `CngxRuntimeError` `CNGX1051`. At least one source must provide the
+   * `CngxRuntimeError` [`CNGX1051`](/error-codes/cngx1051.md). At least one source must provide the
    * function.
    */
   readonly nodeIdFn?: (value: T, path: readonly number[]) => string;
@@ -214,7 +214,7 @@ const POST_DESTROY_FALSE: Signal<boolean> = signal(
 ).asReadonly();
 
 /**
- * `String(key)` for the CNGX1030 report, or the `[object X]` tag when the key
+ * `String(key)` for the [`CNGX1030`](/error-codes/cngx1030.md) report, or the `[object X]` tag when the key
  * cannot be converted (a null-prototype object has no `toString`).
  */
 function describeKey(key: unknown): string {

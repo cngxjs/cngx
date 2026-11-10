@@ -43,6 +43,7 @@ import {
   runToolingSection,
   skipGitTagNote,
   stampManifest,
+  stampPlaygroundPins,
   stampRefreshMigration,
   stampSchematicsDist,
   stampToolingChangelog,
@@ -1059,7 +1060,7 @@ describe('stampToolingChangelog', () => {
 });
 
 describe('releaseCommitFiles', () => {
-  it('holds the root, both tooling packages and the plugin mcp pin, each an existing file', () => {
+  it('holds the root, tooling, plugin pin and docs config files, each an existing file', () => {
     const files = releaseCommitFiles();
 
     expect(files).toEqual([
@@ -1072,9 +1073,52 @@ describe('releaseCommitFiles', () => {
       'packages/cli/package-lock.json',
       'packages/cli/CHANGELOG.md',
       'packages/plugin/.mcp.json',
+      '.compodocrc.json',
     ]);
     for (const file of files) {
       expect(() => readFileSync(join(ROOT_DIR, file))).not.toThrow();
+    }
+  });
+});
+
+describe('stampPlaygroundPins', () => {
+  const config = [
+    '{',
+    '    "output": "docs",',
+    '    "playgroundDependencies": {',
+    '        "@cngx/core": "0.1.0-rc.9",',
+    '        "@cngx/data-display": "0.1.0-rc.9",',
+    '        "@angular/material": "^21.2.14"',
+    '    },',
+    '    "exampleUrlBase": "https://example.test/@cngx/core/"',
+    '}',
+    '',
+  ].join('\n');
+
+  it('sets every @cngx playground pin to the release version, the rest byte for byte', () => {
+    expect(stampPlaygroundPins(config, '0.3.0')).toBe(
+      config
+        .replace('"@cngx/core": "0.1.0-rc.9"', '"@cngx/core": "0.3.0"')
+        .replace('"@cngx/data-display": "0.1.0-rc.9"', '"@cngx/data-display": "0.3.0"'),
+    );
+  });
+
+  it('refuses a config without @cngx playground pins', () => {
+    expect(() => stampPlaygroundPins('{ "output": "docs" }\n', '0.3.0')).toThrow(
+      /\.compodocrc\.json has no @cngx pins in playgroundDependencies/,
+    );
+  });
+
+  it('pins every packed lib in the docs config, so a release moves all of them', () => {
+    const text = readFileSync(join(ROOT_DIR, '.compodocrc.json'), 'utf8');
+    const pinned = Object.keys(JSON.parse(text).playgroundDependencies).filter((name) =>
+      name.startsWith('@cngx/'),
+    );
+    const stamped = JSON.parse(stampPlaygroundPins(text, '9.9.9')).playgroundDependencies;
+
+    expect(pinned.sort()).toEqual(PACKED_LIBS.map((lib) => `@cngx/${lib}`).sort());
+    for (const name of pinned) {
+      expect(stamped[name]).toBe('9.9.9');
     }
   });
 });
@@ -1098,6 +1142,10 @@ describe('releaseFinishSteps', () => {
         id: 'tooling-files',
         text: 'stamp packages/{mcp,cli}/CHANGELOG.md with the 0.3.0 section and set the @cngx/mcp pin in packages/plugin/.mcp.json to 0.3.0',
       },
+      {
+        id: 'docs-pins',
+        text: 'set the @cngx/* playgroundDependencies in .compodocrc.json to 0.3.0',
+      },
       { id: 'changelog', text: 'regenerate CHANGELOG.md: npm run changelog -- --tag v0.3.0' },
       { id: 'commit', text: `git add ${releaseCommitFiles().join(' ')} && git commit -m "chore(release): 0.3.0"` },
       { id: 'tag', text: 'git tag v0.3.0 -m "Release v0.3.0"' },
@@ -1109,8 +1157,14 @@ describe('releaseFinishSteps', () => {
   it('drops the tag and push steps and uses the plain changelog refresh with --skip-git-tag', () => {
     const steps = releaseFinishSteps({ nextVersion: '0.3.0', skipGitTag: true });
 
-    expect(steps.map(({ id }) => id)).toEqual(['root-version', 'tooling-files', 'changelog', 'commit']);
-    expect(steps[2].text).toBe('regenerate CHANGELOG.md: npm run changelog');
+    expect(steps.map(({ id }) => id)).toEqual([
+      'root-version',
+      'tooling-files',
+      'docs-pins',
+      'changelog',
+      'commit',
+    ]);
+    expect(steps[3].text).toBe('regenerate CHANGELOG.md: npm run changelog');
     expect(skipGitTagNote()).toContain(`\`${rootChangelogCommand('0.3.0', true)}\``);
   });
 });
@@ -1120,7 +1174,7 @@ describe('releaseFinishFailure', () => {
     const message = releaseFinishFailure({
       nextVersion: '0.3.0',
       skipGitTag: false,
-      done: ['root-version', 'tooling-files', 'changelog'],
+      done: ['root-version', 'tooling-files', 'docs-pins', 'changelog'],
       error: new Error('git commit exited with 1'),
     });
     const steps = releaseFinishSteps({ nextVersion: '0.3.0', skipGitTag: false });
@@ -1128,9 +1182,9 @@ describe('releaseFinishFailure', () => {
     expect(message.split('\n')).toEqual([
       'git commit exited with 1.',
       'Every package is on npm at 0.3.0; --version must stay 0.3.0.',
-      'Done: root-version, tooling-files, changelog.',
+      'Done: root-version, tooling-files, docs-pins, changelog.',
       'Run the rest by hand, in this order:',
-      ...steps.slice(3).map(({ text }) => `  ${text}`),
+      ...steps.slice(4).map(({ text }) => `  ${text}`),
     ]);
   });
 

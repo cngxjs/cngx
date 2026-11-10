@@ -76,7 +76,7 @@ import {
  *
  * Needs a co-hosted `CNGX_ASYNC_RUN_STATE` (a `cngxAsyncClick`), read lazily
  * because the runner reads the host interaction state that reads this brain;
- * without one the first read throws `CNGX1082`.
+ * without one the first read throws [`CNGX1082`](/error-codes/cngx1082.md).
  *
  * ```ts
  * hostDirectives: [
@@ -334,7 +334,7 @@ export class CngxActionStatusBrain implements CngxActionStatus {
     this.cells.unregister(kind, element);
   }
 
-  /** The co-hosted run; throws `CNGX1082` when the host lists no runner. */
+  /** The co-hosted run; throws [`CNGX1082`](/error-codes/cngx1082.md) when the host lists no runner. */
   private runState(): CngxAsyncRunState {
     const run = this.runStateLookup();
     if (run) {

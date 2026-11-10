@@ -93,7 +93,7 @@ The component is skin: template, CSS, `provideButtonHost()` and `provideActionSt
 `provideActionStatusHost()` (`@cngx/common/button`) returns two providers that read tokens, not the class: `CNGX_HOST_INTERACTION_STATE` spreads `CngxButtonBrain.interaction` and adds `CNGX_ACTION_STATUS.announcement`; `CNGX_BUTTON_HOST_STATE` refuses clicks while `CNGX_ACTION_STATUS.externalBusy`. An ejected template on the same four host directives and the two helpers renders every state the component does.
 
 - **Own run or external state:** bind `[action]` (the button runs it) or `[externalState]` (the button reflects a run it does not own). `state.lastUpdated` follows the bound source only, with no fall-through to the own runs.
-- **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, `CNGX3008`).
+- **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, [`CNGX3008`](../../../core-concepts/error-codes/cngx3008.md)).
 
 ```html
 <button cngxActionButton #btn="cngxActionButton" [action]="save">Save</button>

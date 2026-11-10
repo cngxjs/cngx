@@ -450,7 +450,7 @@ function trackFor(track: CngxDgCellTrack | undefined, isPrimary: boolean): strin
 }
 
 /**
- * The number of tracks a `grid-template-columns` string defines, for the CNGX3009
+ * The number of tracks a `grid-template-columns` string defines, for the [`CNGX3009`](/error-codes/cngx3009.md)
  * check: line names are skipped, `repeat(n, ...)` multiplies. `null` when the count
  * is not static (`repeat(auto-fill, ...)`, `subgrid`, `none`), so the check skips it.
  */

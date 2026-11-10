@@ -72,7 +72,7 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
  * technology, so the name is the consumer's copy: set `aria-label` on the
  * host and name the dismissed artifact, not the affordance (`"Close
  * session-expired alert"`, not `"Close"`). A host without `aria-label`,
- * `aria-labelledby` or `title` warns `CNGX1071` in development mode.
+ * `aria-labelledby` or `title` warns [`CNGX1071`](/error-codes/cngx1071.md) in development mode.
  *
  * Shares the button family's state surface: `disabled` renders
  * `aria-disabled` (the button stays focusable and swallows activation) and

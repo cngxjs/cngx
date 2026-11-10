@@ -46,8 +46,8 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  * One main control per box; a second non-affix control is ignored. A click
  * on the box padding focuses the main control, so the whole box is its hit
  * area. In dev mode the box warns once after its first render when it has
- * two main controls (CNGX2020) or no direct-child control but a nested one
- * (CNGX2021).
+ * two main controls ([`CNGX2020`](/error-codes/cngx2020.md)) or no direct-child control but a nested one
+ * ([`CNGX2021`](/error-codes/cngx2021.md)).
  *
  * **Label inside the box.** Besides the control and its affixes, the box
  * takes a {@link CngxLabel} as a direct child: placed there, it renders as an

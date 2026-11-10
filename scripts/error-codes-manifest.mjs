@@ -284,6 +284,19 @@ export async function renderManifest(codes) {
 }
 
 /**
+ * The sidebar child of one code. `title` stays the code, so the page slug and
+ * its URL never follow a reworded title; `label` shows code and title. The
+ * sidebar prints the label as text, so the title's backticks are dropped.
+ */
+function summaryChild({ code, title }) {
+  const file = `error-codes/${code.toLowerCase()}.md`;
+  if (!title) {
+    return { title: code, file };
+  }
+  return { title: code, label: `${code}: ${title.replaceAll('`', '')}`, file };
+}
+
+/**
  * `summary` with its `Error Codes` node replaced by one built from `codes`:
  * kept in place when present, appended when new, dropped when there are no
  * codes. Every other node is left as it is.
@@ -295,10 +308,7 @@ export function withSummaryNode(summary, codes) {
       : {
           title: SUMMARY_NODE_TITLE,
           file: 'error-codes/index.md',
-          children: codes.map(({ code }) => ({
-            title: code,
-            file: `error-codes/${code.toLowerCase()}.md`,
-          })),
+          children: codes.map(summaryChild),
         };
   const index = summary.findIndex((entry) => entry.title === SUMMARY_NODE_TITLE);
   if (index === -1) {

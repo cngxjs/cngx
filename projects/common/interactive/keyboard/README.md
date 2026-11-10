@@ -321,7 +321,7 @@ A press resolves from the focused element outwards through the hotkey scopes tha
 - `[cngxHotkeyScope]` marks a region. `reach: 'focus'` bindings registered below it (and `[shortcutScope]="'self'"` shortcuts on their host) fire only while focus is inside it.
 - `[cngxHotkeyScopeModal]="true"` makes it modal: while focus is inside, global bindings outside it stay quiet. Modal dialogs and drawers provide this scope themselves.
 - `[cngxHotkeyScopeActive]="false"` mutes everything registered below it: the bindings never fire and are not listed, without unregistering.
-- The deeper scope wins when two bindings match one press (intended shadowing, silent). Two matches at the same depth run the later registration and warn CNGX1077 in dev mode.
+- The deeper scope wins when two bindings match one press (intended shadowing, silent). Two matches at the same depth run the later registration and warn [`CNGX1077`](../../../../core-concepts/error-codes/cngx1077.md) in dev mode.
 
 ### Text Entry
 
@@ -331,9 +331,9 @@ The rule is fixed by design and has no per-binding switch: one rule keeps WCAG 2
 
 ### Layout Pitfalls
 
-- AltGr is reported as Ctrl+Alt on Windows and Linux. A press with AltGr held is character input and never matches a `ctrl`, `alt` or `mod` combo, so `ctrl+alt+*` and `mod+alt+*` cannot be pressed on layouts that type through AltGr (German `€`, `@`); registering one warns CNGX1079. Prefer `mod+shift+*`.
+- AltGr is reported as Ctrl+Alt on Windows and Linux. A press with AltGr held is character input and never matches a `ctrl`, `alt` or `mod` combo, so `ctrl+alt+*` and `mod+alt+*` cannot be pressed on layouts that type through AltGr (German `€`, `@`); registering one warns [`CNGX1079`](../../../../core-concepts/error-codes/cngx1079.md). Prefer `mod+shift+*`.
 - `alt` and `shift` combos on letters and digits match the physical key when the layout transformed the character (Option+B is `∫` on macOS, Shift+1 is `!`).
-- Browser-reserved combos (`mod+w`, `mod+t`, `mod+n`, `mod+q`, `ctrl+tab`, `alt+f4` and their Shift variants) reach the browser first; registering one warns CNGX1078. A malformed combo (`ctrl+`, `hyper+k`) never fires and warns CNGX1080.
+- Browser-reserved combos (`mod+w`, `mod+t`, `mod+n`, `mod+q`, `ctrl+tab`, `alt+f4` and their Shift variants) reach the browser first; registering one warns [`CNGX1078`](../../../../core-concepts/error-codes/cngx1078.md). A malformed combo (`ctrl+`, `hyper+k`) never fires and warns [`CNGX1080`](../../../../core-concepts/error-codes/cngx1080.md).
 
 ## Keyboard Shortcut Syntax
 

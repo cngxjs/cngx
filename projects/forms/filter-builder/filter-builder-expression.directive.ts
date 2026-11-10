@@ -47,7 +47,7 @@ export class CngxFilterExpression {
    * Index path of the expression node in the presenter tree, bound as `[cngxFilterExpression]`.
    * The path is positional: removing an earlier sibling in the same group makes it name a
    * different node. When it does not resolve to an expression, `node()` is `null`. The
-   * directive throws CNGX2014 when no presenter is above it.
+   * directive throws [`CNGX2014`](/error-codes/cngx2014.md) when no presenter is above it.
    */
   readonly path = input.required<readonly number[]>({ alias: 'cngxFilterExpression' });
 

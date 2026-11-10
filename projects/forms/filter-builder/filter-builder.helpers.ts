@@ -86,10 +86,10 @@ export function createFilterExpression<TValue = unknown>(
  * (deserialised JSON, presets, persisted snapshots) run this once at the
  * boundary; the presenter already invokes it on initial read and on every
  * external write through `value`. A non-empty group whose `logic` is not
- * `'and'`, `'or'` or `'xor'` throws CNGX2013 here; an empty group never does,
+ * `'and'`, `'or'` or `'xor'` throws [`CNGX2013`](/error-codes/cngx2013.md) here; an empty group never does,
  * because evaluation ignores its `logic`. In the presenter that is its `value`
  * effect, reported through the `ErrorHandler`; the invalid tree stays in
- * `value`, and calling the function that `predicate()` returns throws CNGX2013
+ * `value`, and calling the function that `predicate()` returns throws [`CNGX2013`](/error-codes/cngx2013.md)
  * again when it evaluates that group.
  */
 export function ensureFilterTreeIds(tree: FilterGroup): FilterGroup {

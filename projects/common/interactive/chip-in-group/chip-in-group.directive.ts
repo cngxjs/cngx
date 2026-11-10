@@ -8,7 +8,7 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
  * `@cngx/common/display` and wires `role="option"` semantics that
  * defer all selection mutations to the surrounding chip-group via
  * `CNGX_CHIP_GROUP_HOST`. Required parent (NOT optional): a
- * `[cngxChipInGroup]` outside any group throws `CNGX1068`
+ * `[cngxChipInGroup]` outside any group throws [`CNGX1068`](/error-codes/cngx1068.md)
  * at construction. Standalone interactive chips use
  * `[cngxChipInteraction]` instead.
  *

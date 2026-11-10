@@ -125,7 +125,7 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
 
 /**
  * Inject the parent chart's reactive context. Throws a `CngxRuntimeError`
- * with code `CNGX1048` when the consumer is not mounted as a content child
+ * with code [`CNGX1048`](/error-codes/cngx1048.md) when the consumer is not mounted as a content child
  * of `<cngx-chart>`, in development and production alike. The `selector`
  * argument is the consumer's public selector without brackets (`'cngxLine'`)
  * and names it in the development message.

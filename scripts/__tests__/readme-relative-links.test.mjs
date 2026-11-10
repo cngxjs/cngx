@@ -20,6 +20,7 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const PROJECTS = join(ROOT, 'projects');
+const DOCS_SITE = 'https://cngxjs.github.io/cngx/';
 
 function readmes(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -101,6 +102,17 @@ describe('README relative links', () => {
 
   it('resolves every relative link and anchor to a file and heading', () => {
     expect(README_FILES.flatMap(brokenLinks)).toEqual([]);
+  });
+
+  it('links additional pages relative to their Markdown source', () => {
+    // An absolute URL into the docs site pins the reader to one docs version;
+    // a relative `.md` link works on GitHub and stays in the version on the site.
+    const fixed = README_FILES.flatMap((file) =>
+      links(readFileSync(file, 'utf8'))
+        .filter((href) => href.startsWith(`${DOCS_SITE}additional-documentation/`))
+        .map((href) => `${relative(ROOT, file)}: ${href}`),
+    );
+    expect(fixed).toEqual([]);
   });
 
   it('slugs headings the way GitHub renders them', () => {

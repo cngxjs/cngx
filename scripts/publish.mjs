@@ -27,6 +27,7 @@ const ROOT = resolve(__dirname, '..');
 // a dedicated node script that copies sources to dist/<lib>/.
 const CSS_ONLY_LIBS = new Set(['themes']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
+const DOCS_CONFIG = '.compodocrc.json';
 const SOURCE_MIGRATIONS = join(ROOT, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
 
 function readRootPkg() {
@@ -327,7 +328,28 @@ export function releaseCommitFiles() {
       `packages/${name}/CHANGELOG.md`,
     ]),
     'packages/plugin/.mcp.json',
+    DOCS_CONFIG,
   ];
+}
+
+// The docs config pins the @cngx packages its playgrounds install. A release
+// moves every @cngx pin of `playgroundDependencies` to the release version; the
+// rest of the file stays byte for byte (it is hand-formatted, so no JSON
+// round trip).
+export function stampPlaygroundPins(text, nextVersion) {
+  const block = /("playgroundDependencies"\s*:\s*\{)([^}]*)(\})/.exec(text);
+  const pin = /("@cngx\/[^"]+"\s*:\s*)"[^"]*"/g;
+  if (!block || !pin.test(block[2])) {
+    throw new Error(`${DOCS_CONFIG} has no @cngx pins in playgroundDependencies`);
+  }
+  const stamped = block[2].replace(pin, `$1"${nextVersion}"`);
+  return (
+    text.slice(0, block.index) +
+    block[1] +
+    stamped +
+    block[3] +
+    text.slice(block.index + block[0].length)
+  );
 }
 
 // The root changelog command: the tagging path labels the unreleased commits
@@ -357,6 +379,10 @@ export function releaseFinishSteps({ nextVersion, skipGitTag }) {
       text:
         `stamp packages/{${TOOLING_PACKAGES.join(',')}}/CHANGELOG.md with the ${nextVersion} section ` +
         `and set the @cngx/mcp pin in packages/plugin/.mcp.json to ${nextVersion}`,
+    },
+    {
+      id: 'docs-pins',
+      text: `set the @cngx/* playgroundDependencies in ${DOCS_CONFIG} to ${nextVersion}`,
     },
     { id: 'changelog', text: `regenerate CHANGELOG.md: ${rootChangelogCommand(nextVersion, skipGitTag)}` },
     {
@@ -1053,6 +1079,15 @@ function main() {
       writeFileSync(pluginMcpPath, JSON.stringify(pluginMcp, null, 2) + '\n');
       done.push('tooling-files');
       console.log(`Tooling changelogs and the plugin @cngx/mcp pin updated to ${nextVersion}`);
+
+      // The docs build of this commit installs the packages just published.
+      const docsConfigPath = join(ROOT, DOCS_CONFIG);
+      writeFileSync(
+        docsConfigPath,
+        stampPlaygroundPins(readFileSync(docsConfigPath, 'utf8'), nextVersion),
+      );
+      done.push('docs-pins');
+      console.log(`Playground pins in ${DOCS_CONFIG} updated to ${nextVersion}`);
 
       if (skipGitTag) {
         console.log('\nGit tagging skipped (--skip-git-tag).');

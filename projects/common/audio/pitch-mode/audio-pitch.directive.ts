@@ -56,7 +56,7 @@ export class CngxAudioPitch {
    * Fixed input domain `[lo, hi]` the value is clamped against; `lo > hi`
    * inverts the mapping. An empty domain (`lo === hi`) or one with a `NaN` /
    * infinite end plays the range low for every value and warns in dev mode
-   * (CNGX1069).
+   * ([`CNGX1069`](/error-codes/cngx1069.md)).
    */
   readonly pitchDomain = input.required<[number, number]>();
 

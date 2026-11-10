@@ -37,7 +37,7 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * concrete group class - both with `{ optional: true }`.
  *
  * Exactly one parent must be present; the constructor throws a
- * `CngxRuntimeError` when both (`CNGX1052`) or neither (`CNGX1053`) resolve. The resolved parent is stored as a discriminated
+ * `CngxRuntimeError` when both ([`CNGX1052`](/error-codes/cngx1052.md)) or neither ([`CNGX1053`](/error-codes/cngx1053.md)) resolve. The resolved parent is stored as a discriminated
  * union (`{ mode: 'single' | 'multi'; group }`) so every downstream
  * branch narrows without non-null assertions.
  *

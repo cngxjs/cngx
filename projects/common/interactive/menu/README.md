@@ -42,7 +42,7 @@ A `cngxMenu` with `cngxMenuItem` children. The menu fires `itemActivated` on Ent
 
 ### Dropdown menu (button + popover)
 
-`CngxMenuTrigger` wires a focusable element to the menu and the popover. Co-host `[cngxPopoverTrigger]`: it writes `aria-haspopup`, `aria-expanded` and `aria-controls` (a trigger without it warns `CNGX1074` in development). Activation always closes the menu (menu semantics).
+`CngxMenuTrigger` wires a focusable element to the menu and the popover. Co-host `[cngxPopoverTrigger]`: it writes `aria-haspopup`, `aria-expanded` and `aria-controls` (a trigger without it warns [`CNGX1074`](../../../../core-concepts/error-codes/cngx1074.md) in development). Activation always closes the menu (menu semantics).
 
 ```html
 <button type="button"
@@ -292,7 +292,7 @@ State transitions (submenu open / close, item activated, disabled-item press) ar
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and full token signatures.
-- Which trigger? [Choosing a Trigger](https://cngxjs.github.io/cngx/additional-documentation/choosing-a-trigger.html) separates a menu from a select, a disclosure and a toggle group.
+- Which trigger? [Choosing a Trigger](../../../../core-concepts/choosing-a-trigger.md) separates a menu from a select, a disclosure and a toggle group.
 - Stories:
   - `examples/stories/common/interactive/menu/`
   - `examples/stories/common/interactive/menu-checkable/`

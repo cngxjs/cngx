@@ -514,19 +514,55 @@ describe('error-code manifest generator', () => {
   it('nests one child per code under the Error Codes node, and writes none without codes', () => {
     const summary = [{ title: 'Install', file: 'install.md' }];
     expect(withSummaryNode(summary, [])).toEqual(summary);
-    const next = withSummaryNode(summary, [{ code: 'CNGX0001' }, { code: 'CNGX0901' }]);
+    const next = withSummaryNode(summary, [
+      { code: 'CNGX0001', title: 'Locale is not a BCP 47 tag' },
+      { code: 'CNGX0901', title: 'Tree walk stopped' },
+    ]);
     expect(next).toEqual([
       { title: 'Install', file: 'install.md' },
       {
         title: SUMMARY_NODE_TITLE,
         file: 'error-codes/index.md',
         children: [
-          { title: 'CNGX0001', file: 'error-codes/cngx0001.md' },
-          { title: 'CNGX0901', file: 'error-codes/cngx0901.md' },
+          {
+            title: 'CNGX0001',
+            label: 'CNGX0001: Locale is not a BCP 47 tag',
+            file: 'error-codes/cngx0001.md',
+          },
+          {
+            title: 'CNGX0901',
+            label: 'CNGX0901: Tree walk stopped',
+            file: 'error-codes/cngx0901.md',
+          },
         ],
       },
     ]);
     expect(withSummaryNode(next, [])).toEqual(summary);
+  });
+
+  it('labels a child with code and title, the title as plain text', () => {
+    const [node] = withSummaryNode(
+      [],
+      [{ code: 'CNGX0006', title: 'Invalid `dir` on the document root' }],
+    );
+    expect(node.children).toEqual([
+      {
+        title: 'CNGX0006',
+        label: 'CNGX0006: Invalid dir on the document root',
+        file: 'error-codes/cngx0006.md',
+      },
+    ]);
+  });
+
+  it('keeps the code as title, so the slug and the page URL do not follow the label', () => {
+    const [node] = withSummaryNode([], [{ code: 'CNGX1071', title: 'Two triggers' }]);
+    expect(node.children[0].title).toBe('CNGX1071');
+    expect(node.children[0].file).toBe('error-codes/cngx1071.md');
+  });
+
+  it('writes no label for a code without a title', () => {
+    const [node] = withSummaryNode([], [{ code: 'CNGX0001', title: null }]);
+    expect(node.children).toEqual([{ title: 'CNGX0001', file: 'error-codes/cngx0001.md' }]);
   });
 
   it('keeps the ranges disjoint and inside 0001-5999', () => {
