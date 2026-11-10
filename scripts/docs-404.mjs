@@ -68,6 +68,9 @@ export function render404Html(root = DOCS_ROOT) {
     '<head>',
     '<meta charset="utf-8">',
     '<meta name="robots" content="noindex">',
+    // Without an icon the browser asks for /favicon.ico at the host root,
+    // outside the project site, and logs a second 404.
+    '<link rel="icon" href="data:,">',
     '<title>Page not found - cngx</title>',
     `<script>${script}</script>`,
     '</head>',
