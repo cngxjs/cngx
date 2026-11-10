@@ -118,6 +118,6 @@ Scope the override to a subtree by listing the token in a component's `providers
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and the full strategy / context / action types.
+- [API on compodocx](../../../../README.md) for inputs, outputs, and the full strategy / context / action types.
 - `createTreeController` for the expansion-state owner this directive drives.
 - `CNGX_TREE_CONFIG` / `provideTreeConfig` for app-wide tree defaults (id, label, key, initial expansion, cache bound).

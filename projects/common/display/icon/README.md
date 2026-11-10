@@ -160,6 +160,6 @@ The same applies to any third-party icon component with its own host bindings.
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs and tokens.
+- [API on compodocx](../../../../README.md) for inputs and tokens.
 - Stories: `examples/stories/common/display/icon/`.
 - Used by: `CngxTag`, `CngxBadge`, `CngxChip`, `CngxCloseButton`, every Material bridge that ships a default glyph.

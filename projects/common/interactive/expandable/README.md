@@ -61,6 +61,6 @@ No keyboard handling. The directive is passive by design: in a `treeitem` row, c
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and host bindings.
+- [API on compodocx](../../../../README.md) for inputs, outputs, and host bindings.
 - `CngxDisclosure` in `@cngx/common/interactive` for the self-triggering variant (button or heading that toggles its own state on click / Enter / Space).
 - Stories: `examples/stories/common/interactive/expandable/`.

@@ -62,7 +62,7 @@ Mode (single vs multi) is deliberately absent from the contract. The leaf does n
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for full inputs, outputs, and tokens.
+- [API on compodocx](../../../../README.md) for full inputs, outputs, and tokens.
 - Stories: `examples/stories/common/interactive/chip-group/`.
 - `CngxMultiChipGroup` for multi-pick semantics (sibling of this group).
 - `CngxChipInGroup` for the chip-side `role="option"` integration.

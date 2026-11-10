@@ -54,7 +54,7 @@ Implement this contract to override the gate, for example a test double that pre
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for full input, output, and token reference.
+- [API on compodocx](../../../../README.md) for full input, output, and token reference.
 - `CngxErrorRegistry` for the root registry that drives named scopes programmatically.
 - `CngxErrorAggregator` for grouping per-field errors under a single count.
 - `CngxErrorSource` for contributing errors from a non-form origin.

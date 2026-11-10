@@ -336,7 +336,7 @@ isSelected(id: string) {
 
 ## See Also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../../README.md)
 - [CngxKeyboardShortcut](../keyboard/) - Pair with gestures for keyboard alternatives
 - Demo: `examples/stories/common/gestures-demo/`
 - Tests: `projects/common/interactive/gestures/long-press.directive.spec.ts`

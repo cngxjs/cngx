@@ -70,5 +70,5 @@ The builder memoises on reference identity of `(data, xScale, yScale)`. Two call
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full chart surface.
+- [API on compodocx](../../../../README.md) for the full chart surface.
 - Sibling subfolders: `projects/common/chart/scales/`, `projects/common/chart/layers/`, `projects/common/chart/chart/`.

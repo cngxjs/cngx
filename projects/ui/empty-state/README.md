@@ -83,6 +83,6 @@ The theme mixin provides:
 ## See Also
 
 - [CngxAsyncState](../../core/utils/) - Async state contract
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../README.md)
 - Demo: `examples/stories/ui/empty-state-demo/`
 - Tests: `projects/ui/empty-state/empty-state.component.spec.ts`

@@ -64,6 +64,6 @@ Reach for a preset when the shape is one of the seven above and the data is one 
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, tokens, and per-preset details.
+- [API on compodocx](../../../../README.md) for inputs, tokens, and per-preset details.
 - Primitives: `@cngx/common/chart/chart` (container + context), `@cngx/common/chart/axis`, `@cngx/common/chart/layers`.
 - Stories: `examples/stories/common/chart/`.

@@ -34,6 +34,6 @@ Group-level disable short-circuits selection and removal but does not propagate 
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs and tokens.
+- [API on compodocx](../../../../README.md) for inputs and tokens.
 - `CngxChipGroup`, `CngxMultiChipGroup` - the required parent hosts.
 - `CngxChipInteraction` - standalone variant when no group is present.

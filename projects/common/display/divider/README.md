@@ -77,5 +77,5 @@ That brings in `projects/common/theming/components/cngx-divider.css`, which scop
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs and tokens.
+- [API on compodocx](../../../../README.md) for inputs and tokens.
 - Stories: `examples/stories/common/display/divider/`.

@@ -75,6 +75,6 @@ Accepted debt: a fully-disabled group lets arrow focus transit through its toggl
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and the full token surface.
+- [API on compodocx](../../../../README.md) for inputs, outputs, and the full token surface.
 - Stories: `examples/stories/common/interactive/button-toggle-group/`, `examples/stories/common/interactive/button-multi-toggle-group/`.
 - `CngxToggle` (`@cngx/common/interactive`) for the standalone on/off switch (no group context).
