@@ -43,17 +43,53 @@ describe('CngxNavBadge', () => {
     expect(el.classList.contains('cngx-nav-badge--count')).toBe(false);
   });
 
-  it('is aria-hidden by default (decorative)', () => {
+  it('is aria-hidden without a label', () => {
     const { el } = setup();
     expect(el.getAttribute('aria-hidden')).toBe('true');
+    expect(el.hasAttribute('aria-label')).toBe(false);
   });
 
-  it('removes aria-hidden when ariaLabel is provided', () => {
+  it('stays aria-hidden and never carries aria-label when ariaLabel is set', () => {
     const { fixture, el, host } = setup();
     host.ariaLabel.set('5 unread');
     fixture.detectChanges();
-    expect(el.getAttribute('aria-hidden')).toBeNull();
-    expect(el.getAttribute('aria-label')).toBe('5 unread');
+    expect(el.getAttribute('aria-hidden')).toBe('true');
+    expect(el.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('renders the label as a visually hidden next sibling', () => {
+    const { fixture, el, host } = setup();
+    host.ariaLabel.set('5 unread');
+    fixture.detectChanges();
+    const label = el.nextElementSibling as HTMLElement;
+    expect(label.classList.contains('cngx-sr-only')).toBe(true);
+    expect(label.textContent).toBe('5 unread');
+  });
+
+  it('updates the hidden label when ariaLabel changes', () => {
+    const { fixture, el, host } = setup();
+    host.ariaLabel.set('5 unread');
+    fixture.detectChanges();
+    host.ariaLabel.set('6 unread');
+    fixture.detectChanges();
+    expect(el.nextElementSibling?.textContent).toBe('6 unread');
+  });
+
+  it('empties the hidden label while the badge is empty', () => {
+    const { fixture, el, host } = setup();
+    host.ariaLabel.set('5 unread');
+    fixture.detectChanges();
+    host.value.set(0);
+    fixture.detectChanges();
+    expect(el.nextElementSibling?.textContent).toBe('');
+  });
+
+  it('removes the hidden label when the badge is destroyed', () => {
+    const { fixture, el } = setup();
+    const parent = el.parentElement as HTMLElement;
+    expect(parent.querySelectorAll('.cngx-sr-only').length).toBe(1);
+    fixture.destroy();
+    expect(parent.querySelectorAll('.cngx-sr-only').length).toBe(0);
   });
 
   it('adds hidden class when value is 0', () => {

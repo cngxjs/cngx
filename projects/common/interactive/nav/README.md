@@ -129,7 +129,7 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
 - **ARIA roles:**
   - CngxNavLink: `aria-current="page"` when active
   - CngxNavLabel: Optional `role="heading"` (opt-in)
-  - CngxNavBadge: `aria-hidden="true"` by default; `aria-label` when meaningful
+  - CngxNavBadge: always `aria-hidden="true"`; `ariaLabel` becomes visually hidden text in the link name
   - CngxDisclosure: `aria-expanded`, `aria-controls`
   - CngxNavGroupContent: `inert` while the group is closed
 - **Keyboard interaction:**
@@ -138,7 +138,7 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
   - Navigation: Tab through links, Arrow keys (if using roving tabindex)
 - **Screen reader:**
   - Links announce active state via `aria-current`
-  - Badges announce via `aria-label` when provided
+  - Badges announce their `ariaLabel` as part of the link name ("Inbox 12 unread")
   - Disclosure announces expanded state via `aria-expanded`
 - **Focus management:**
   - All elements are keyboard focusable
