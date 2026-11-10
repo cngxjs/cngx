@@ -236,6 +236,22 @@
       display: contents;
     }
 
+    /* The shell never windows its projected options, so an off-screen option
+       skips layout and paint instead and stays in the DOM and the a11y tree.
+       A never-rendered row reserves the row's own block floor and padding
+       (declarative/option.component.css), and `auto` keeps the real size of
+       every row rendered once. A row taller than that, custom content, can
+       land a first jump short. */
+    .cngx-select__panel cngx-option {
+      content-visibility: auto;
+      contain-intrinsic-block-size: auto
+        max(
+          var(--cngx-select-option-min-height, 0px),
+          var(--cngx-target-min, 0px),
+          calc(1lh + 2 * var(--cngx-space-xs, 0.375rem))
+        );
+    }
+
     .cngx-select-shell__trigger {
       /* Trigger spacing derives from the global scale in the gap and padding
          fallbacks below, so a root [data-density] compacts it. The tokens
