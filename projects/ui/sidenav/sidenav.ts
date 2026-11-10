@@ -309,6 +309,7 @@ export class CngxSidenav
    * when `'mod+<key>'` syntax is used. Unbound, a `start` rail takes the
    * app-wide `withSidenavShortcut` default; an `end` rail registers only a
    * combo bound here, so a dual layout never binds one press to both rails.
+   * Pass an empty string to turn the toggle shortcut off for this rail.
    */
   readonly shortcut = input<string | undefined>(undefined);
 

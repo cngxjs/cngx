@@ -1373,6 +1373,28 @@ describe('CngxSidenav toggle hotkey', () => {
     warn.mockRestore();
   });
 
+  it('turns the app-wide shortcut off for a start rail bound to an empty string', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavShortcut('mod+b'))],
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.componentInstance.shortcut.set('');
+    fixture.detectChanges();
+
+    pressModB();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.open()).toBe(false);
+    expect(warn.mock.calls.some((args) => String(args[0]).startsWith('CNGX1080'))).toBe(false);
+    warn.mockRestore();
+
+    fixture.componentInstance.shortcut.set(undefined);
+    fixture.detectChanges();
+    pressModB();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.open()).toBe(true);
+  });
+
   it('registers an end rail binding only for an explicit [shortcut]', () => {
     TestBed.configureTestingModule({
       providers: [provideSidenavConfig(withSidenavShortcut('mod+b'))],
