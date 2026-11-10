@@ -1,11 +1,9 @@
-import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
 
 import { CngxButtonBrain, provideActionStatusHost, provideButtonHost } from '@cngx/common/button';
 import {
-  CNGX_ACTION_STATUS,
   CngxActionStatusBrain,
-  CngxActionStatusCell,
+  CngxActionStatusStack,
   CngxAsyncClick,
 } from '@cngx/common/interactive';
 
@@ -15,15 +13,16 @@ import {
  * activation guard and `data-busy`; `CngxAsyncClick` runs the action and
  * owns the live region; `CngxActionStatusBrain` picks the visible label
  * cell and the settle announcement. `provideActionStatusHost()` wires the
- * announcement into the region. The host keeps its template, the label
- * cells and its own CSS, including the stack rule the cells need outside
- * the cngx button sheet.
+ * announcement into the region. `CngxActionStatusStack` renders the label
+ * cells on the host's own label span. The host keeps its template and its
+ * own CSS, including the stack rule the cells need outside the cngx button
+ * sheet.
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[demoEjectedAction]',
   standalone: true,
-  imports: [NgTemplateOutlet, CngxActionStatusCell],
+  imports: [CngxActionStatusStack],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -44,31 +43,8 @@ import {
   ],
   host: { class: 'demo-ejected-action' },
   template: `
-    <span class="demo-ejected-action__cells">
-      <span cngxActionStatusCell="idle"><ng-content /></span>
-      @if (status.hasCell().pending) {
-        <span cngxActionStatusCell="pending">{{ status.pendingLabel() }}</span>
-      }
-      @if (status.hasCell().success) {
-        <span cngxActionStatusCell="success">
-          @if (status.succeededTemplate(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else {
-            {{ status.succeededLabel() }}
-          }
-        </span>
-      }
-      @if (status.hasCell().error) {
-        <span cngxActionStatusCell="error">
-          @if (status.failedTemplate(); as tpl) {
-            <ng-container
-              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: status.error() }"
-            />
-          } @else {
-            {{ status.failedLabel() }}
-          }
-        </span>
-      }
+    <span class="demo-ejected-action__cells" cngxActionStatusStack>
+      <ng-content />
     </span>
     @if (brain.disabledReason(); as reason) {
       <span [id]="brain.reasonId" hidden>{{ reason }}</span>
@@ -115,5 +91,4 @@ import {
 })
 export class EjectedAction {
   protected readonly brain = inject(CngxButtonBrain);
-  protected readonly status = inject(CNGX_ACTION_STATUS);
 }
