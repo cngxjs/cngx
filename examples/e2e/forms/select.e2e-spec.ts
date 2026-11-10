@@ -7,7 +7,8 @@ import { routesUnder } from '../_routes';
 
 // Story: forms/select family - single/multi/combobox/
 // typeahead/reorderable/select-shell variants, slots, async, RF/SF, etc.
-// Smoke each route: the story's select element mounts without runtime errors.
+// Smoke each route: the story's select element mounts and its first enabled
+// trigger opens without runtime errors.
 
 /**
  * Element selector per select-family class a story can name in
@@ -52,6 +53,20 @@ test.describe('forms/select', () => {
       await expect(page.locator('header.cngx-ex-intro')).toBeVisible();
       await MOUNT_ON_DEMAND.get(path)?.(page);
       await expect(page.locator(`.cngx-ex-artifact ${selector}`).first()).toBeAttached();
+
+      // Open the first enabled trigger, so the console guard also covers the
+      // open path (row render, recycler, CNGX2028), not only the mount.
+      // Alt+ArrowDown opens every host; a click could land on a chip.
+      const trigger = page
+        .locator('.cngx-ex-artifact [role="combobox"]:not([aria-disabled="true"]):not([aria-readonly="true"])')
+        .filter({ visible: true })
+        .first();
+      if ((await trigger.count()) === 0) {
+        return;
+      }
+      await trigger.focus();
+      await page.keyboard.press('Alt+ArrowDown');
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     });
   }
 });

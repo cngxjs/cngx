@@ -250,6 +250,7 @@ export interface CngxTypeaheadChange<T = unknown> {
     class: 'cngx-typeahead',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './typeahead.component.html',
   styleUrls: ['../shared/select-base.css', './typeahead.component.css'],
@@ -1095,8 +1096,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
-  // Raw input value the user dismissed with Escape or blur while its debounce
-  // was still pending; a term that settles equal to it must not auto-open.
+  // Raw input value the user dismissed with Escape while its debounce was
+  // still pending; a term that settles equal to it must not auto-open. A blur
+  // needs no entry: the trigger flushes the term on blur and the auto-open is
+  // gated on focus.
   private readonly dismissedTerm = signal<string | null>(null);
 
   protected handleFocus(): void {
@@ -1111,9 +1114,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   protected handleBlur(event?: FocusEvent): void {
     this.focusState.markBlurred();
-    // A term still inside its debounce when focus leaves must not reopen the
-    // panel once it settles: mark the raw draft as dismissed.
-    this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
     // Snap input back to `displayWith(value)` when text drifted from
     // the committed value. Disable via `[clearOnBlur]="false"`.
     if (!this.clearOnBlur()) {

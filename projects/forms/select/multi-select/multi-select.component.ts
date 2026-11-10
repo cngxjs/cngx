@@ -258,6 +258,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './multi-select.component.css'],
@@ -1006,11 +1007,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleTriggerClick(): void {
+  protected handleTriggerClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
-    if (this.openOnGesture.consumeClick()) {
+    if (this.openOnGesture.consumeClick(event)) {
       return;
     }
     this.toggle();
@@ -1068,8 +1069,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /** @internal */
-  protected handlePointerDown(): void {
-    this.openOnGesture.handlePointerDown();
+  protected handlePointerDown(event: Event): void {
+    this.openOnGesture.handlePointerDown(event);
   }
 
   protected handleFocus(): void {

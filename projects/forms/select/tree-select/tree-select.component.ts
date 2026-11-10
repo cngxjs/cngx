@@ -281,6 +281,7 @@ export interface CngxTreeSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './tree-select.component.html',
   styleUrls: ['../shared/select-base.css', './tree-select.component.css'],
@@ -1187,11 +1188,11 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /** @internal */
-  protected handleTriggerClick(): void {
+  protected handleTriggerClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
-    if (this.openOnGesture.consumeClick()) {
+    if (this.openOnGesture.consumeClick(event)) {
       return;
     }
     this.toggle();
@@ -1335,8 +1336,8 @@ export class CngxTreeSelect<T = unknown>
   });
 
   /** @internal */
-  protected handlePointerDown(): void {
-    this.openOnGesture.handlePointerDown();
+  protected handlePointerDown(event: Event): void {
+    this.openOnGesture.handlePointerDown(event);
   }
 
   protected handleFocus(): void {

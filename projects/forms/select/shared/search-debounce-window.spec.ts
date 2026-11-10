@@ -63,3 +63,30 @@ describe('search debounce window keeps the filter in step with the keys', () => 
     });
   }
 });
+
+describe('a blur inside the debounce window does not open the panel once the term settles', () => {
+  for (const key of ['combobox', 'typeahead'] as const) {
+    const kind = KINDS[key];
+    it(`${kind.name}: the settled term after a blur leaves the panel closed`, () => {
+      vi.useFakeTimers();
+      const m = mount(kind, { providers: [provideSelectConfig(withSearchDebounce(300))] });
+      const input = m.el.querySelector<HTMLInputElement>('input');
+      if (!input) {
+        expect.fail(`no input for ${kind.name}`);
+      }
+      input!.focus();
+      m.settle();
+      input!.value = 'gr';
+      input!.dispatchEvent(new Event('input', { bubbles: true }));
+      m.settle();
+      expect(m.v.panelOpen(), `${kind.name} closed while typing`).toBe(false);
+
+      // Still inside the debounce window: focus leaves the control.
+      input!.blur();
+      m.settle();
+      vi.advanceTimersByTime(400);
+      m.settle();
+      expect(m.v.panelOpen(), `${kind.name} closed after the term settled`).toBe(false);
+    });
+  }
+});

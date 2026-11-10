@@ -242,6 +242,7 @@ export interface CngxSelectChange<T = unknown> {
     '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './select.component.html',
   styleUrls: ['../shared/select-base.css', './select.component.css'],
@@ -1007,16 +1008,16 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /** @internal */
-  protected handlePointerDown(): void {
-    this.openOnGesture.handlePointerDown();
+  protected handlePointerDown(event: Event): void {
+    this.openOnGesture.handlePointerDown(event);
   }
 
   /** @internal */
-  protected handleTriggerClick(): void {
+  protected handleTriggerClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
-    if (this.openOnGesture.consumeClick()) {
+    if (this.openOnGesture.consumeClick(event)) {
       return;
     }
     this.toggle();

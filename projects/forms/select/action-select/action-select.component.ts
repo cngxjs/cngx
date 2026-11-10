@@ -266,6 +266,7 @@ export interface CngxActionSelectChange<T = unknown> {
     class: 'cngx-action-select',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './action-select.component.html',
   styleUrls: ['../shared/select-base.css', './action-select.component.css'],

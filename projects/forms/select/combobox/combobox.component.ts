@@ -281,6 +281,7 @@ export interface CngxComboboxChange<T = unknown> {
     class: 'cngx-combobox',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './combobox.component.html',
   styleUrls: ['../shared/select-base.css', './combobox.component.css'],
@@ -1290,8 +1291,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
-  // Raw input value the user dismissed with Escape or blur while its debounce
-  // was still pending; a term that settles equal to it must not auto-open.
+  // Raw input value the user dismissed with Escape while its debounce was
+  // still pending; a term that settles equal to it must not auto-open. A blur
+  // needs no entry: the trigger flushes the term on blur and the auto-open is
+  // gated on focus.
   private readonly dismissedTerm = signal<string | null>(null);
 
   protected handleFocus(): void {
@@ -1305,9 +1308,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleBlur(): void {
     this.focusState.markBlurred();
-    // A term still inside its debounce when focus leaves must not reopen the
-    // panel once it settles: mark the raw draft as dismissed.
-    this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
   }
 
   /**

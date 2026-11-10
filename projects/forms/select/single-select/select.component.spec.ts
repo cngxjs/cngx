@@ -263,6 +263,54 @@ describe('CngxSelect - standalone', () => {
     expect(popover.isVisible()).toBe(true);
   });
 
+  function pointerClick(el: HTMLElement): void {
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+  }
+
+  it('toggles on a click after a press on the focused trigger and a keyboard refocus under withOpenOn("focus")', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withOpenOn('focus'))],
+    });
+    const { fixture, select, triggerBtn, popover } = setup();
+    triggerBtn.focus();
+    flush(fixture);
+    select.close();
+    flush(fixture);
+    // A press on the already focused trigger that never clicks (drag off).
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    // Tab away and back: the keyboard focus opens.
+    triggerBtn.blur();
+    triggerBtn.focus();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    // A deliberate click on the focused trigger toggles the panel shut.
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    pointerClick(triggerBtn);
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  it('toggles on a later click after a focus-opening press that never clicked under withOpenOn("focus")', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withOpenOn('focus'))],
+    });
+    const { fixture, select, triggerBtn, popover } = setup();
+    // Press on the unfocused trigger, focus opens, the press never clicks.
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    triggerBtn.focus();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+    select.close();
+    flush(fixture);
+
+    // A later click on the still focused trigger opens the panel.
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    pointerClick(triggerBtn);
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+  });
+
   it('renders the trigger with placeholder when no value is selected', () => {
     const { triggerBtn } = setup();
     expect(triggerBtn.textContent?.trim()).toContain('Bitte wählen');

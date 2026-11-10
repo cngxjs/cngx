@@ -31,26 +31,21 @@ interface ScalarVariant {
   readonly selector: string;
   /** Projected `<cngx-option>` body instead of the `[options]` input. */
   readonly projected: boolean;
-  /** Whether the composite already coerces an empty field value to undefined. */
-  readonly coerces: boolean;
 }
 
 const VARIANTS: readonly ScalarVariant[] = [
-  { name: 'CngxSelect', component: CngxSelect, selector: 'cngx-select', projected: false, coerces: true },
-  { name: 'CngxTypeahead', component: CngxTypeahead, selector: 'cngx-typeahead', projected: false, coerces: true },
-  { name: 'CngxActionSelect', component: CngxActionSelect, selector: 'cngx-action-select', projected: false, coerces: true },
-  { name: 'CngxSelectShell', component: CngxSelectShell, selector: 'cngx-select-shell', projected: true, coerces: true },
+  { name: 'CngxSelect', component: CngxSelect, selector: 'cngx-select', projected: false },
+  { name: 'CngxTypeahead', component: CngxTypeahead, selector: 'cngx-typeahead', projected: false },
+  { name: 'CngxActionSelect', component: CngxActionSelect, selector: 'cngx-action-select', projected: false },
+  { name: 'CngxSelectShell', component: CngxSelectShell, selector: 'cngx-select-shell', projected: true },
 ];
 
 // A26 / A5: a scalar composite bound to a form field whose value is '' or null
-// reads as the empty value, so the component value is coerced to undefined - the
-// same contract typeahead and action-select already honour. Phase 3 shares one
-// coercion helper and flips single-select and shell.
+// reads as the empty value, so the component value is coerced to undefined.
 describe('scalar field coercion', () => {
   for (const variant of VARIANTS) {
     for (const empty of ['empty string', 'null'] as const) {
-      const run = variant.coerces ? it : it.fails;
-      run(`${variant.name}: a field ${empty} reads as undefined`, () => {
+      it(`${variant.name}: a field ${empty} reads as undefined`, () => {
         @Component({ template: '', imports: [] })
         class Host {
           readonly options = signal([{ value: 'red', label: 'Red' }]);
