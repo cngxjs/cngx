@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'One <code>provideCngxButtonAt(withActionStatusLabels(...))</code> gives every action host in scope its pending, succeeded and failed labels; a bound label still wins.',
   description:
-    "The view provides <code>withActionStatusLabels({ pending: 'Working...', succeeded: 'Done', failed: 'Failed' })</code> through <code>provideCngxButtonAt</code>, which routes it to <code>CNGX_ACTION_STATUS_CONFIG</code>. Save binds no label and shows the scoped ones. Publish binds <code>succeededLabel=\"Published\"</code>, so its own label wins over the scope. Archive binds <code>failedLabel=\"\"</code>: an empty label switches its failed cell off, so the button keeps its idle text after the failure while the live region still speaks the i18n copy. The English language pack leaves every label empty, so without a scope or a bound label an action host shows only its content. Labels set app-wide this way, or in a language pack section <code>actionStatus</code>, are copy and follow a language switch when passed as a <code>Signal</code>.",
+    "The view provides <code>withActionStatusLabels({ pending: 'Working...', succeeded: 'Done', failed: 'Failed' })</code> through <code>provideCngxButtonAt</code>, which routes it to <code>CNGX_ACTION_STATUS_CONFIG</code>. Save and Delete bind no label: Save succeeds with the scoped Done, Delete fails with the scoped Failed. Publish binds <code>succeededLabel=\"Published\"</code>, so its own label wins over the scope. Archive binds <code>failedLabel=\"\"</code>: an empty label switches its failed cell off, so the button keeps its idle text after the failure while the live region still speaks the i18n copy. The English language pack leaves every label empty, so without a scope or a bound label an action host shows only its content. Labels set app-wide this way, or in a language pack section <code>actionStatus</code>, are copy and follow a language switch when passed as a <code>Signal</code>.",
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -29,6 +29,7 @@ export const STORY: DemoSpec = {
   <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
     <button cngxActionButton tone="primary" [action]="succeed">Save</button>
     <button cngxActionButton="outline" [action]="succeed" succeededLabel="Published">Publish</button>
+    <button cngxActionButton="outline" tone="danger" [action]="fail">Delete</button>
     <button cngxActionButton="outline" tone="danger" [action]="fail" failedLabel="">Archive</button>
   </div>`,
 };
