@@ -46,6 +46,7 @@ export {
 export {
   CNGX_ACTION_STATUS_CONFIG,
   injectActionStatusConfig,
+  makeActionStatusConfig,
   provideActionStatusConfig,
   provideActionStatusConfigAt,
   withActionStatusLabels,

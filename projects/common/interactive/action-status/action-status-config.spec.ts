@@ -20,6 +20,7 @@ import { CngxSucceeded } from '../async-click/async-status-templates';
 import { CngxActionStatusBrain } from './action-status-brain.directive';
 import {
   CNGX_ACTION_STATUS_CONFIG,
+  makeActionStatusConfig,
   provideActionStatusConfig,
   provideActionStatusConfigAt,
   withActionStatusLabels,
@@ -97,7 +98,9 @@ class Projected {
       provide: CNGX_ACTION_STATUS_CONFIG,
       useFactory: () => {
         const owner = inject(TemplateOwner);
-        return { templates: { succeeded: owner.ok(), failed: owner.failed() } };
+        return makeActionStatusConfig(
+          withActionStatusTemplates({ succeeded: owner.ok(), failed: owner.failed() }),
+        );
       },
     },
   ],
@@ -245,6 +248,18 @@ describe('CNGX_ACTION_STATUS_CONFIG', () => {
       provideActionStatusConfig(withActionStatusLabels({ succeeded: 'Root done' })),
     ]);
     expect(cell('error')).toBe('Scoped failed');
+    expect(cell('success')).toBe('Root done');
+  });
+
+  it('merges labels per key across features of one provider', () => {
+    const { cell } = render(Bare, [
+      provideActionStatusConfig(
+        withActionStatusLabels({ succeeded: 'Done' }),
+        withActionStatusLabels({ failed: 'Failed' }),
+      ),
+    ]);
+    expect(cell('success')).toBe('Done');
+    expect(cell('error')).toBe('Failed');
   });
 
   it('lets a projected template win over a config template', () => {

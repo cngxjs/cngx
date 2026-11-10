@@ -8,6 +8,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 import { createLanguageSection } from '@cngx/core/i18n';
+import { createOverrideMerge } from '@cngx/core/utils';
 
 import {
   CNGX_ACTION_STATUS_LANGUAGE_EN,
@@ -108,8 +109,8 @@ export interface CngxActionStatusConfigFeature {
 
 /**
  * App-wide status labels. Unset keys keep the language pack's label; pass a
- * `Signal` of a partial bundle to switch languages at runtime. A later call
- * replaces the whole bundle.
+ * `Signal` of a partial bundle to switch languages at runtime. Later calls
+ * and scoped configs merge per key over earlier ones.
  *
  * ```ts
  * provideActionStatusConfig(withActionStatusLabels({ pending: 'Saving...', succeeded: 'Saved' }))
@@ -129,13 +130,32 @@ export function withActionStatusLabels(
  * App-wide status cell templates. Merged per key with earlier calls and
  * with the parent scope.
  *
+ * A `TemplateRef` needs a live view, so it cannot sit in a provider array
+ * evaluated at bootstrap. Declare the templates in a holder component
+ * rendered above the action hosts and build the config lazily with
+ * {@link makeActionStatusConfig} in a `useFactory`:
+ *
  * ```ts
- * provideActionStatusConfig(withActionStatusTemplates({ succeeded: savedTpl }))
+ * @Component({
+ *   selector: 'app-action-status-defaults',
+ *   template: `<ng-template #saved>Saved</ng-template>`,
+ * })
+ * export class ActionStatusDefaults {
+ *   readonly saved = viewChild.required<TemplateRef<unknown>>('saved');
+ * }
+ *
+ * // Route- or component-level provider below the rendered holder:
+ * {
+ *   provide: CNGX_ACTION_STATUS_CONFIG,
+ *   useFactory: (holder: ActionStatusDefaults) =>
+ *     makeActionStatusConfig(withActionStatusTemplates({ succeeded: holder.saved() })),
+ *   deps: [ActionStatusDefaults],
+ * }
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
  * @since 0.1.0
- * @relatedTo provideActionStatusConfig
+ * @relatedTo makeActionStatusConfig, provideActionStatusConfig
  */
 export function withActionStatusTemplates(
   templates: CngxActionStatusTemplates,
@@ -143,18 +163,47 @@ export function withActionStatusTemplates(
   return { _target: 'actionStatus', config: { templates } };
 }
 
-/** @internal */
+/** @internal Labels and templates merge per key, the later feature wins. */
 function mergeFeatures(
   base: CngxActionStatusConfig,
   features: readonly CngxActionStatusConfigFeature[],
 ): CngxActionStatusConfig {
   return features.reduce<CngxActionStatusConfig>(
     (acc, f) => ({
-      labels: f.config.labels ?? acc.labels,
+      labels: mergeLabels(acc.labels, f.config.labels),
       templates: { ...acc.templates, ...f.config.templates },
     }),
     base,
   );
+}
+
+/** @internal */
+function mergeLabels(
+  base: CngxActionStatusConfig['labels'],
+  next: CngxActionStatusConfig['labels'],
+): CngxActionStatusConfig['labels'] {
+  if (!next) {
+    return base;
+  }
+  if (!base) {
+    return next;
+  }
+  return createOverrideMerge<Partial<CngxActionStatusLabels>>(base, next);
+}
+
+/**
+ * Build a {@link CngxActionStatusConfig} from `withActionStatus*` features
+ * without registering it, for a `useFactory` that reads templates from a
+ * rendered holder component (see {@link withActionStatusTemplates}).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
+ * @since 0.1.0
+ * @relatedTo withActionStatusTemplates, CNGX_ACTION_STATUS_CONFIG
+ */
+export function makeActionStatusConfig(
+  ...features: CngxActionStatusConfigFeature[]
+): CngxActionStatusConfig {
+  return mergeFeatures({}, features);
 }
 
 /**
@@ -178,14 +227,15 @@ export function provideActionStatusConfig(
     return makeEnvironmentProviders([]);
   }
   return makeEnvironmentProviders([
-    { provide: CNGX_ACTION_STATUS_CONFIG, useValue: mergeFeatures({}, features) },
+    { provide: CNGX_ACTION_STATUS_CONFIG, useValue: makeActionStatusConfig(...features) },
   ]);
 }
 
 /**
  * Component-scoped twin of {@link provideActionStatusConfig} for
  * `viewProviders`. Merges the features on top of the config inherited from
- * the parent injector, so nested scopes cascade.
+ * the parent injector, labels and templates per key, so nested scopes
+ * cascade: a scoped `{ failed }` keeps the parent's `succeeded`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
  * @since 0.1.0
