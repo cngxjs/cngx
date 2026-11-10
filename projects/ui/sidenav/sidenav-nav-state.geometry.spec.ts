@@ -395,6 +395,21 @@ describe('double focus ring', () => {
     ).toBeGreaterThanOrEqual(3);
   });
 
+  it('keeps the ring and the bar off the row edge under forced colors', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mount();
+    const active = one(root, '.row-active');
+    active.focus();
+    const width = parseFloat(computedValue(active, 'outline-width'));
+    const ringInner = -parseFloat(computedValue(active, 'outline-offset'));
+    // A Highlight band between the row edge and the ring, so the ring never meets Canvas.
+    expect(ringInner - width).toBeGreaterThan(0);
+    // The bar starts inside the ring, with Highlight between them.
+    expect(parseFloat(bar(active, 'left'))).toBeGreaterThan(ringInner);
+  });
+
   it('drops the inner ring on a focused inactive row under forced colors', async () => {
     await cdp().send('Emulation.setEmulatedMedia', {
       features: [{ name: 'forced-colors', value: 'active' }],

@@ -1111,12 +1111,20 @@
     color: HighlightText;
   }
 
+  /*
+   * HighlightText next to Canvas does not read, so neither the bar nor the
+   * ring may touch the row edge here: the ring sits one width inside the
+   * edge with a Highlight band around it, and the bar starts one more width
+   * further in, clear of the ring.
+   */
   cngx-sidenav:not([data-sidebar-state='rail']) .cngx-nav-link--active::before {
+    inset-inline-start: calc(3 * var(--cngx-nav-link-focus-outline-width, 2px));
     background: HighlightText;
   }
 
   cngx-sidenav .cngx-nav-link--active:focus-visible {
     outline-color: HighlightText;
+    outline-offset: calc(-2 * var(--cngx-nav-link-focus-outline-width, 2px));
     box-shadow: none;
   }
 }
