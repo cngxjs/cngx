@@ -13,8 +13,7 @@ test.skip(
 );
 
 // Routes for the 2026-11-03 independent-review keyboard, sheet and Tab
-// findings (I1, I2, I4, I6, I10). Red cases are test.fail - the Phase 2-5
-// fixes flip them.
+// findings (I1, I2, I4, I6, I10).
 const ROUTES = {
   select: '/#/forms/select/single-select/standalone',
   multi: '/#/forms/select/multi-select/multi-clearable',
@@ -50,20 +49,16 @@ async function openByClick(page: Page): Promise<Locator> {
 }
 
 // ── I10: Alt+ArrowDown opens the panel on every host. ────────────────────────
-// The button-trigger hosts open through CngxListboxTrigger (fixed in phase 4),
-// the tree through its own trigger handler; the input-trigger hosts are
-// addressed later and stay red.
-const I10_GREEN = new Set(['select', 'multi', 'reorder', 'shell', 'tree']);
+// The key goes to the focus target each host exposes as its combobox: the
+// trigger on the button-led hosts and the tree, the inline input on the
+// input-led hosts.
 test.describe('I10: Alt+ArrowDown opens every select host', () => {
   for (const [key, route] of Object.entries(ROUTES).filter(([k]) => k !== 'allVariants' && k !== 'shellSearch')) {
     test(`${key}: Alt+ArrowDown opens the panel`, async ({ page }) => {
-      if (!I10_GREEN.has(key)) {
-        test.fail();
-      }
       await page.goto(route);
-      const trigger = page.locator('.cngx-ex-artifact .cngx-field-trigger, .cngx-ex-artifact [role="combobox"]').first();
-      await expect(trigger).toBeVisible();
-      await trigger.focus();
+      const target = combobox(page);
+      await expect(target).toBeVisible();
+      await target.focus();
       await page.keyboard.press('Alt+ArrowDown');
       await expect(panel(page)).toBeVisible({ timeout: 1000 });
     });
@@ -94,18 +89,13 @@ test.describe('I1: Escape during the search debounce leaves the panel closed', (
 test.describe('I6: Tab onto an in-host control collapses aria-expanded', () => {
   // A Tab onto an in-host control (chip remove, clear-all) collapses the panel:
   // host-focus-within hides the open panel when focus lands on a nested
-  // interactive control outside it. Verified on the hosts whose demo renders
-  // such a control - reorder, shell and action-multi. The multi-clearable demo
-  // exposes no in-host clear outside the panel (Tab leaves the host), and the
-  // tree-select clear is a panel-footer button (focus stays in the panel, so
-  // aria-expanded correctly stays true); the collapse logic itself is covered
-  // by host-focus-within.spec.ts.
-  const I6_NA = new Set(['multi', 'tree']);
-  for (const key of ['multi', 'reorder', 'tree', 'shell', 'actionMulti'] as const) {
+  // interactive control outside it. Run on the hosts whose demo renders such a
+  // control. The multi-clearable demo exposes no in-host clear outside the
+  // panel (Tab leaves the host), and the tree-select clear is a panel-footer
+  // button (focus stays in the panel, so aria-expanded stays true); the
+  // collapse logic itself is covered by host-focus-within.spec.ts.
+  for (const key of ['reorder', 'shell', 'actionMulti'] as const) {
     test(`${key}: Tab to the next control sets aria-expanded false`, async ({ page }) => {
-      if (I6_NA.has(key)) {
-        test.fail();
-      }
       await page.goto(ROUTES[key]);
       await openByClick(page);
       await expect(combobox(page)).toHaveAttribute('aria-expanded', 'true');
@@ -121,27 +111,28 @@ test.describe('I6: Tab onto an in-host control collapses aria-expanded', () => {
   }
 });
 
-// ── I2: in auto presentation the sheet opens at 390px, flips to an anchored
-// panel at 1024px and back to a sheet at 390px. The flip back must re-home
-// focus inside the sheet; today it does not. ─────────────────────────────────
+// ── I2: in auto presentation the sheet opens on a phone, flips to an
+// anchored panel at 1024px and back to a sheet at 390px. The flip back must
+// re-home focus inside the sheet. ────────────────────────────────────────────
 const I2_OPENERS = {
   'cngx-combobox': 'cngx-combobox input',
   'cngx-action-select': 'cngx-action-select input[role="combobox"]',
 } as const;
 test.describe('I2: a sheet keeps focus inside across a presentation round trip', () => {
+  // The sheet needs a coarse pointer as well as a narrow viewport
+  // (`(pointer: coarse) and (max-width: 48rem)`), so the round trip runs in a
+  // touch phone context; a desktop context never shows the sheet.
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
   for (const [variant, opener] of Object.entries(I2_OPENERS)) {
     test(`${variant}: focus stays in the sheet across a resize`, async ({ page }) => {
-      // The sheet-to-anchored flip at 1024px does not yet dismiss the open
-      // sheet for these input-led variants in the all-variants demo, so the
-      // round trip the re-home needs is unreachable here. The re-home itself
-      // (popover-sheet rehomeFocusIntoSheet) is covered by
-      // popover-sheet.directive.spec.ts; this stays red until the responsive
-      // flip lands for the input-led hosts.
-      test.fail();
-      await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(ROUTES.allVariants);
       await page.locator(opener).first().click();
-      const openSheet = page.locator('.cngx-popover-sheet:not([aria-hidden="true"])');
+      // Only a panel shown as a sheet counts: the panel keeps its
+      // .cngx-popover-sheet class when anchored, and every variant keeps its
+      // panel in the DOM. These input-led variants present as `fullscreen`.
+      const openSheet = page
+        .locator('.cngx-popover-sheet[data-cngx-presentation]:not([data-cngx-presentation="anchored"])')
+        .filter({ visible: true });
       await expect(openSheet.first()).toBeVisible({ timeout: 3000 });
       // Flip to an anchored panel: the sheet is dismissed, the panel stays open.
       await page.setViewportSize({ width: 1024, height: 768 });
@@ -149,8 +140,9 @@ test.describe('I2: a sheet keeps focus inside across a presentation round trip',
       // Flip back to a sheet; the open-focus step must re-home focus into it.
       await page.setViewportSize({ width: 390, height: 844 });
       await expect(openSheet.first()).toBeVisible();
-      const inSheet = await openSheet.first().evaluate((el) => el.contains(document.activeElement));
-      expect(inSheet).toBe(true);
+      await expect
+        .poll(() => openSheet.first().evaluate((el) => el.contains(document.activeElement)))
+        .toBe(true);
     });
   }
 });
