@@ -675,7 +675,10 @@
     );
     --cngx-nav-link-focus-outline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
     --cngx-nav-link-focus-inner-color: var(--cngx-sidenav-bg, oklch(0.97 0.005 250));
-    --cngx-nav-link-active-indicator-color: var(--cngx-color-primary-text, oklch(0.54 0.19 50));
+    --cngx-nav-link-active-indicator-color: var(
+      --cngx-color-primary-text,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
+    );
     --cngx-nav-link-active-indicator-size: calc(var(--cngx-space-xs) * 0.75);
     --cngx-nav-link-active-indicator-inset: var(--cngx-space-sm);
     display: flex;
