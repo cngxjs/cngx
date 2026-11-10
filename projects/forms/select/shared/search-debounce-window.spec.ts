@@ -64,6 +64,61 @@ describe('search debounce window keeps the filter in step with the keys', () => 
   }
 });
 
+// Blue sits between Red and Green so a key that overtakes the deferred first
+// key (moving on the stale rows) lands on a different row than the ordered run.
+const ORDERED_OPTIONS = [
+  { value: 'red', label: 'Red' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'green', label: 'Green' },
+  { value: 'grey', label: 'Grey' },
+];
+
+describe('later keys inside the debounce window run behind the deferred first key', () => {
+  for (const key of INPUT_KEYS) {
+    const kind = KINDS[key];
+
+    function typeGr(m: ReturnType<typeof mount>): HTMLInputElement {
+      m.open();
+      const input = m.el.querySelector<HTMLInputElement>('input');
+      if (!input) {
+        expect.fail(`no input for ${kind.name}`);
+      }
+      input!.value = 'gr';
+      input!.dispatchEvent(new Event('input', { bubbles: true }));
+      m.settle();
+      return input!;
+    }
+
+    it(`${kind.name}: two ArrowDowns without a render between them reach the second filtered row`, () => {
+      vi.useFakeTimers();
+      const m = mount(kind, {
+        options: ORDERED_OPTIONS,
+        providers: [provideSelectConfig(withSearchDebounce(300))],
+      });
+      const input = typeGr(m);
+      // No settle between the keys: a render would run the first deferred key.
+      keydown(input, 'ArrowDown');
+      keydown(input, 'ArrowDown');
+      m.settle();
+      expect(activeLabel(m, input), `${kind.name} active option`).toBe('Grey');
+    });
+
+    it(`${kind.name}: Escape after a deferred key leaves no highlight on the closed panel`, () => {
+      vi.useFakeTimers();
+      const m = mount(kind, {
+        options: ORDERED_OPTIONS,
+        providers: [provideSelectConfig(withSearchDebounce(300))],
+      });
+      const input = typeGr(m);
+      keydown(input, 'ArrowDown');
+      keydown(input, 'Escape');
+      m.settle();
+      expect(m.v.panelOpen(), `${kind.name} closed`).toBe(false);
+      expect(input.getAttribute('aria-activedescendant'), `${kind.name} no highlight`).toBeNull();
+    });
+  }
+});
+
 describe('a blur inside the debounce window does not open the panel once the term settles', () => {
   for (const key of ['combobox', 'typeahead'] as const) {
     const kind = KINDS[key];

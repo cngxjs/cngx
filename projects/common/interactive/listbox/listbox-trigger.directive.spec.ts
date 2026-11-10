@@ -1,4 +1,4 @@
-import { Component, Directive, signal } from '@angular/core';
+import { Component, Directive, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -514,6 +514,99 @@ describe('CngxListboxTrigger - co-located search input', () => {
     expect(press('Enter').defaultPrevented).toBe(true);
     expect(activated).toEqual([active]);
     sub.unsubscribe();
+  });
+});
+
+@Component({
+  template: `
+    <input
+      role="combobox"
+      cngxListboxSearch
+      #search="cngxListboxSearch"
+      [debounceMs]="300"
+      [cngxListboxTrigger]="lb"
+      [popover]="pop"
+      [closeOnSelect]="false"
+    />
+    <div cngxPopover #pop="cngxPopover">
+      <div cngxListbox [label]="'Colors'" #lb="cngxListbox">
+        @for (o of visible(); track o.value) {
+          <div cngxOption [value]="o.value">{{ o.label }}</div>
+        }
+      </div>
+    </div>
+  `,
+  imports: [CngxListbox, CngxOption, CngxListboxTrigger, CngxListboxSearch, CngxPopover],
+})
+class DebouncedSearchHost {
+  private readonly search = viewChild.required(CngxListboxSearch);
+  // Blue sits between Red and Green so a key that overtakes the deferred
+  // first key (moving on the stale rows) lands on a different row.
+  private readonly all = [
+    { value: 'red', label: 'Red' },
+    { value: 'blue', label: 'Blue' },
+    { value: 'green', label: 'Green' },
+    { value: 'grey', label: 'Grey' },
+  ];
+  protected readonly visible = computed(() => {
+    const term = this.search().term().toLowerCase();
+    return this.all.filter((o) => o.label.toLowerCase().includes(term));
+  });
+}
+
+describe('CngxListboxTrigger - keys inside the search debounce window', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [DebouncedSearchHost] });
+  });
+
+  // Keys are dispatched back to back with no tick between them: a tick runs
+  // the afterNextRender callback of the first deferred key.
+  function setup() {
+    const fixture = TestBed.createComponent(DebouncedSearchHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const input = fixture.debugElement.query(By.directive(CngxListboxTrigger))
+      .nativeElement as HTMLInputElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    const key = (k: string): void => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+    };
+    const settle = (): void => {
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+    const type = (term: string): void => {
+      input.value = term;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    // Opened without a highlight, so no active row has to survive the filter.
+    popover.show();
+    settle();
+    return { popover, listbox, key, settle, type };
+  }
+
+  it('runs a second ArrowDown after the deferred first one, on the filtered rows', () => {
+    const { popover, listbox, key, settle, type } = setup();
+    expect(popover.isVisible()).toBe(true);
+    type('gr');
+    key('ArrowDown');
+    key('ArrowDown');
+    settle();
+    expect(listbox.ad.activeValue()).toBe('grey');
+  });
+
+  it('drops the deferred key when Escape closes the panel inside the window', () => {
+    const { popover, listbox, key, settle, type } = setup();
+    type('gr');
+    key('ArrowDown');
+    key('Escape');
+    settle();
+    expect(popover.isVisible()).toBe(false);
+    expect(listbox.ad.activeValue()).toBeNull();
   });
 });
 
