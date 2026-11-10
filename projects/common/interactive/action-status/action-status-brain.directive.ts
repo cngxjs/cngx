@@ -67,9 +67,9 @@ import {
  * edge; the own runs then speak nothing. Back to idle empties the region.
  *
  * Each cell resolves its content high to low: the projected `cngxPending` /
- * `cngxSucceeded` / `cngxFailed`, the `templates` of `CNGX_ACTION_STATUS_CONFIG`,
- * the bound label, the config `labels`, the actionStatus section of the
- * language pack. The English pack is empty, so without any of them a state
+ * `cngxSucceeded` / `cngxFailed`, the bound label, the `templates` of
+ * `CNGX_ACTION_STATUS_CONFIG`, the config `labels`, the actionStatus section
+ * of the language pack. The English pack is empty, so without any of them a state
  * has no cell; a bound `''` switches a cell off. Set the app-wide defaults
  * with `provideActionStatusConfig(withActionStatusLabels(...))` or, for a
  * button app, `provideCngxButton(withActionStatusLabels(...))`.
@@ -161,17 +161,28 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   private readonly projectedSucceeded = contentChild(CngxSucceeded);
   private readonly projectedFailed = contentChild(CngxFailed);
 
-  /** Template of the pending cell: the projected `cngxPending`, else the config's. */
+  /** Template of the pending cell: the projected `cngxPending`, else the config's unless a label is bound. */
   readonly pendingTemplate: Signal<TemplateRef<unknown> | undefined> = computed(
-    () => this.projectedPending()?.templateRef ?? this.config.templates?.pending,
+    () =>
+      this.projectedPending()?.templateRef ??
+      (this.pendingLabel() === undefined ? this.config.templates?.pending : undefined),
   );
-  /** Template of the succeeded cell: the projected `cngxSucceeded`, else the config's. */
+  /** Template of the succeeded cell: the projected `cngxSucceeded`, else the config's unless a label is bound. */
   readonly succeededTemplate: Signal<TemplateRef<unknown> | undefined> = computed(
-    () => this.projectedSucceeded()?.templateRef ?? this.config.templates?.succeeded,
+    () =>
+      this.projectedSucceeded()?.templateRef ??
+      (this.succeededLabel() === undefined ? this.config.templates?.succeeded : undefined),
   );
-  /** Template of the failed cell: the projected `cngxFailed`, else the config's; gets the error. */
+  /**
+   * Template of the failed cell: the projected `cngxFailed`, else the
+   * config's unless a label is bound; gets the error.
+   */
   readonly failedTemplate: Signal<TemplateRef<CngxActionStatusFailedContext> | undefined> =
-    computed(() => this.projectedFailed()?.templateRef ?? this.config.templates?.failed);
+    computed(
+      () =>
+        this.projectedFailed()?.templateRef ??
+        (this.failedLabel() === undefined ? this.config.templates?.failed : undefined),
+    );
 
   /** Text of the pending cell: the bound label, else the config / pack label. `''`: none. */
   readonly pendingText: Signal<string> = computed(

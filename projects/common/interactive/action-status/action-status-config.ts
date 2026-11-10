@@ -39,7 +39,8 @@ export type CngxActionStatusLabels = CngxActionStatusLanguageSection;
 
 /**
  * App-wide status cell templates, used where a host projects no
- * `cngxPending` / `cngxSucceeded` / `cngxFailed`.
+ * `cngxPending` / `cngxSucceeded` / `cngxFailed` and binds no label for the
+ * state.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
  * @since 0.1.0
@@ -60,10 +61,10 @@ export interface CngxActionStatusTemplates {
  *
  * Resolution per cell (high -> low):
  *   1. A projected `cngxPending` / `cngxSucceeded` / `cngxFailed` template.
- *   2. `templates` from `provideActionStatusConfigAt(...)` in a parent
+ *   2. The bound `pendingLabel` / `succeededLabel` / `failedLabel`; a bound
+ *      `''` switches the cell off, also over a config template.
+ *   3. `templates` from `provideActionStatusConfigAt(...)` in a parent
  *      component's `viewProviders`, else `provideActionStatusConfig(...)`.
- *   3. The bound `pendingLabel` / `succeededLabel` / `failedLabel`; a bound
- *      `''` switches the cell off.
  *   4. `labels` from the config, over the actionStatus section of the active
  *      language pack (English: empty, no cell).
  *

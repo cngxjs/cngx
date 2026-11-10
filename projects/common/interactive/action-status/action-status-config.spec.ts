@@ -118,6 +118,35 @@ class TemplateOwner {
     this.outcome === 'success' ? Promise.resolve() : Promise.reject('boom');
 }
 
+/** Config templates for both result cells, but the instance binds its own labels. */
+@Component({
+  imports: [TestConfigHost],
+  viewProviders: [
+    {
+      provide: CNGX_ACTION_STATUS_CONFIG,
+      useFactory: () => {
+        const owner = inject(BoundOverTemplates);
+        return { templates: { succeeded: owner.ok(), failed: owner.failed() } };
+      },
+    },
+  ],
+  template: `
+    <ng-template #ok>Config ok</ng-template>
+    <ng-template #failed>Config err</ng-template>
+    @if (ready()) {
+      <button testConfigHost [action]="action" succeededLabel="Instance" failedLabel="">
+        Save
+      </button>
+    }
+  `,
+})
+class BoundOverTemplates {
+  readonly ready = signal(false);
+  readonly ok = viewChild.required<TemplateRef<unknown>>('ok');
+  readonly failed = viewChild.required<TemplateRef<CngxActionStatusFailedContext>>('failed');
+  readonly action = (): Promise<void> => Promise.resolve();
+}
+
 @Component({
   imports: [TestConfigHost],
   viewProviders: [provideActionStatusConfigAt(withActionStatusLabels({ failed: 'Scoped failed' }))],
@@ -235,6 +264,14 @@ describe('CNGX_ACTION_STATUS_CONFIG', () => {
       flush();
       expect(active()).toBe('Config ok');
     });
+  });
+
+  it('lets a bound label win over a config template and a bound empty label switch it off', () => {
+    const { fixture, cell, flush } = render(BoundOverTemplates);
+    fixture.componentInstance.ready.set(true);
+    flush();
+    expect(cell('success')).toBe('Instance');
+    expect(cell('error')).toBeUndefined();
   });
 
   it('hands the error to the config failed template as $implicit', async () => {
