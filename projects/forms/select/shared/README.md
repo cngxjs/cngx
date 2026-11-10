@@ -30,7 +30,7 @@ Every factory has a corresponding DI token (`Cngx<Name>Factory` type + `CNGX_<NA
 
 `createSelectCore<T, TCommit>(deps, announcerInputs)` is the heart of every variant. It bundles the pure-derivation signal graph (option model, panel view, ARIA projection, selection, commit infrastructure, announcer hook) into one object that the variant's `@Component` body delegates to.
 
-Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter - everything else flows through this factory.
+Every variant calls it once in a field initialiser and stores the returned `CngxSelectCore<T, TCommit>` instance. What stays in the variant body is the trigger template and the value-shape adapter - everything else flows through this factory. The option predicates a panel host reads (`isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption`) come pre-bound from `core.panelHostAdapter`, so no variant re-declares them.
 
 Internal symbols. None of these is in `public-api.ts`; the variants use them and consumers do not import them:
 
@@ -43,6 +43,8 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 | `cngxSelectDefaultCompare`       | `Object.is`-based default                           |
 | `CngxSelectTriggerAria`          | Bundled ARIA projection for the trigger             |
 | `CngxSelectAnnouncerInputs`      | Per-instance announcer config                       |
+| `panelHostAdapter`               | Stable-identity `isGroup` / `isSelected` / `isIndeterminate` / `isCommittingOption` bundle a variant spreads onto its `CngxSelectPanelHost` |
+| `CngxSelectPanelHostAdapter<T>`  | Shape of `panelHostAdapter`                          |
 
 See [`ARCHITECTURE.md` § Core factory](../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 
