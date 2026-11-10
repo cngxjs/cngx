@@ -1,16 +1,13 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
-// Chromium-only: these pins assert keyboard activation, Tab-leave and focus
-// containment. macOS WebKit skips buttons on Tab unless Full Keyboard Access is
-// on and drops focus to body (see e2e/select-a11y-focus.spec.ts), so the Tab,
-// focus and aria-activedescendant contracts diverge there by platform policy,
-// not by a cngx defect. The underlying logic is covered browser-agnostically in
-// the listbox-trigger and select-core unit specs; this file proves the Chromium
-// browser result the 2026-11-03 review observed.
-test.skip(
-  ({ browserName }) => browserName !== 'chromium',
-  'keyboard, Tab-leave and focus containment follow WebKit platform policy; the logic is covered by the unit specs across every environment',
-);
+// Every pin sets focus with focus() or a click, not Tab, so it runs on every
+// engine. Only the pins whose subject is Tab itself or platform focus
+// containment skip WebKit: macOS WebKit skips buttons on Tab unless Full
+// Keyboard Access is on and drops focus to body (see
+// e2e/select-a11y-focus.spec.ts). The aria-activedescendant divergence seen
+// there follows from that focus drop; it is no separate platform policy.
+const WEBKIT_TAB_POLICY =
+  'macOS WebKit skips buttons on Tab and drops focus to body; the logic is covered by the unit specs across every environment';
 
 // Routes for the 2026-11-03 independent-review keyboard, sheet and Tab
 // findings (I1, I2, I4, I6, I10).
@@ -95,7 +92,8 @@ test.describe('I6: Tab onto an in-host control collapses aria-expanded', () => {
   // button (focus stays in the panel, so aria-expanded stays true); the
   // collapse logic itself is covered by host-focus-within.spec.ts.
   for (const key of ['reorder', 'shell', 'actionMulti'] as const) {
-    test(`${key}: Tab to the next control sets aria-expanded false`, async ({ page }) => {
+    test(`${key}: Tab to the next control sets aria-expanded false`, async ({ page, browserName }) => {
+      test.skip(browserName === 'webkit', WEBKIT_TAB_POLICY);
       await page.goto(ROUTES[key]);
       await openByClick(page);
       await expect(combobox(page)).toHaveAttribute('aria-expanded', 'true');
@@ -124,7 +122,8 @@ test.describe('I2: a sheet keeps focus inside across a presentation round trip',
   // touch phone context; a desktop context never shows the sheet.
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
   for (const [variant, opener] of Object.entries(I2_OPENERS)) {
-    test(`${variant}: focus stays in the sheet across a resize`, async ({ page }) => {
+    test(`${variant}: focus stays in the sheet across a resize`, async ({ page, browserName }) => {
+      test.skip(browserName === 'webkit', WEBKIT_TAB_POLICY);
       await page.goto(ROUTES.allVariants);
       await page.locator(opener).first().click();
       // Only a panel shown as a sheet counts: the panel keeps its
