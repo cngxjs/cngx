@@ -194,8 +194,8 @@ export class CngxPopoverAction {
   protected readonly endSlot = contentChild(CngxButtonEnd);
 
   /**
-   * Lifecycle status of the run - `'idle' | 'pending' | 'success' |
-   * 'error'`, from the co-hosted `cngxAsyncClick`. Immediate, not gated.
+   * Effective status - `'idle' | 'pending' | 'success' | 'error'`:
+   * `[externalState]` when bound, else the run. Immediate, not gated.
    */
   readonly status: Signal<AsyncStatus> = this.actionStatus.status;
 
@@ -206,8 +206,9 @@ export class CngxPopoverAction {
   readonly busyVisible: Signal<boolean> = this.brain.busyVisible;
 
   /**
-   * Full `CngxAsyncState` view of the run. Bind it to a state consumer:
-   * `[state]="act.state"` on `cngxToastOn` or `cngxAlertOn`.
+   * `CngxAsyncState` view of the effective lifecycle (`[externalState]` when
+   * bound, else the run). Bind it to a state consumer: `[state]="act.state"`
+   * on `cngxToastOn` or `cngxAlertOn`.
    */
   readonly state: CngxAsyncState<unknown> = this.actionStatus.state;
 }
