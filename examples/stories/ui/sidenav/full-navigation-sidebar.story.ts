@@ -74,7 +74,7 @@ export const STORY: DemoSpec = {
       <button cngxNavGroup #settingsGroup="cngxNavGroup" [controls]="'settings-items'" id="settings-lbl"
               class="demo-sidenav__group" type="button">
         Settings
-        <span class="demo-sidenav__chevron"
+        <span class="demo-sidenav__chevron" aria-hidden="true"
               [style.transform]="settingsGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
       </button>
       <div [cngxNavGroupContent]="settingsGroup">
@@ -92,7 +92,7 @@ export const STORY: DemoSpec = {
       <button cngxNavGroup #teamGroup="cngxNavGroup" [controls]="'team-items'" id="team-lbl"
               class="demo-sidenav__group" type="button">
         Team
-        <span class="demo-sidenav__chevron"
+        <span class="demo-sidenav__chevron" aria-hidden="true"
               [style.transform]="teamGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
       </button>
       <div [cngxNavGroupContent]="teamGroup">

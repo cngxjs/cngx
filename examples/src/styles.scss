@@ -1638,6 +1638,10 @@ button.chip:disabled {
   font-size: 0.6rem;
   transition: transform 0.15s;
 }
+// Mirror the caret under RTL; `scale` composes with the inline rotate.
+.demo-sidenav__chevron:dir(rtl) {
+  scale: -1 1;
+}
 .demo-sidenav__footer {
   padding: 0.75rem 1rem;
   font-size: 0.7rem;
