@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
       <span cngxNavLabel class="demo-sidenav__label">Main</span>
 
       @for (item of [['Dashboard', '/dashboard'], ['Inbox', '/inbox'], ['Calendar', '/calendar']]; track item[1]) {
-        <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === item[1]"
+        <a cngxNavLink class="demo-sidenav__link"
            [active]="activeLink() === item[1]"
            (click)="activeLink.set(item[1]); $event.preventDefault()">
           {{ item[0] }}

@@ -49,20 +49,20 @@ export const STORY: DemoSpec = {
 
       <span cngxNavLabel class="demo-sidenav__label">Main</span>
 
-      <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === '/dashboard'"
+      <a cngxNavLink class="demo-sidenav__link"
          [active]="activeLink() === '/dashboard'"
          (click)="activeLink.set('/dashboard'); $event.preventDefault()">
         Dashboard
       </a>
 
-      <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === '/inbox'"
+      <a cngxNavLink class="demo-sidenav__link"
          [active]="activeLink() === '/inbox'"
          (click)="activeLink.set('/inbox'); $event.preventDefault()">
         Inbox
         <span cngxNavBadge [value]="7" ariaLabel="7 unread" class="demo-sidenav__badge">7</span>
       </a>
 
-      <a cngxNavLink class="demo-sidenav__link" [class.demo-sidenav-active-link]="activeLink() === '/calendar'"
+      <a cngxNavLink class="demo-sidenav__link"
          [active]="activeLink() === '/calendar'"
          (click)="activeLink.set('/calendar'); $event.preventDefault()">
         Calendar
@@ -81,7 +81,6 @@ export const STORY: DemoSpec = {
         <div id="settings-items" role="group" [attr.aria-labelledby]="'settings-lbl'">
           @for (sub of ['General', 'Security', 'Notifications', 'Billing']; track sub) {
             <a cngxNavLink [depth]="1" class="demo-sidenav__link--sub"
-               [class.demo-sidenav-sub-active]="activeLink() === '/settings/' + sub.toLowerCase()"
                [active]="activeLink() === '/settings/' + sub.toLowerCase()"
                (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()">
               {{ sub }}

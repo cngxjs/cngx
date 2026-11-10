@@ -1558,22 +1558,13 @@ button.chip:disabled {
 //   outline-offset: 2px;
 // }
 
-// Demo-specific styles: sidenav-demo. The sidenav demos render their own
-// active-state indicator (brand-coloured left border + tinted background)
-// instead of relying on cngx-sidenav's default neutral active tint. The
-// CSS-var overrides on `.demo-sidenav__container` opt the cngx atom out
-// of its default active styling so the demo's inline `[style.border-
-// left-color]` / `[style.background]` interpolations drive the look.
-// Only the two inheriting tokens work from an ancestor - radius and
-// active-font-weight are registered inherits:false and would need an
-// element-level set on `.cngx-nav-link` to land.
+// Demo-specific styles: sidenav-demo. The library paints the nav row states
+// (fills, active indicator, focus ring); these rules only lay the rows out.
 .demo-sidenav__container {
   height: 420px;
   margin-top: 0.75rem;
   border: 1px solid var(--cngx-color-border);
   border-radius: 6px;
-  --cngx-nav-link-active-bg: transparent;
-  --cngx-nav-link-active-color: inherit;
 }
 .demo-sidenav__container--short {
   height: 320px;
@@ -1600,7 +1591,6 @@ button.chip:disabled {
   text-decoration: none;
   font-size: 0.85rem;
   color: inherit;
-  border-left: 3px solid transparent;
 }
 .demo-sidenav__link--plain {
   display: block;
@@ -1632,13 +1622,13 @@ button.chip:disabled {
   flex-shrink: 0;
 }
 .demo-sidenav__group {
-  width: 100%;
+  // The library insets nav rows by --cngx-nav-link-inset on each side.
+  width: calc(100% - 2 * var(--cngx-nav-link-inset, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
   border: none;
-  background: none;
   cursor: pointer;
   text-align: left;
   font-size: 0.85rem;
@@ -4184,17 +4174,6 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 .demo-stepper-empty p {
   margin: 6px 0 0;
   font-size: 0.9em;
-}
-
-.demo-sidenav-active-link {
-  border-left-color: var(--cngx-color-primary);
-  background: color-mix(in oklch, var(--cngx-color-primary) 8%, transparent);
-  font-weight: 600;
-}
-
-.demo-sidenav-sub-active {
-  color: var(--cngx-color-primary);
-  font-weight: 600;
 }
 
 .demo-async-input {
