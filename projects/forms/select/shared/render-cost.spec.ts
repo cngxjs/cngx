@@ -1,0 +1,84 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { By } from '@angular/platform-browser';
+
+import { KINDS, cleanupRoots, mount } from './__test-helpers/review-probe-host';
+import { provideSelectConfig, withVirtualization } from './config';
+import { CngxSelectPanel } from './internal/panel/panel.component';
+import type { CngxSelectAutoRecyclerHandle as AutoRecyclerHandle } from './internal/auto-virtualize';
+
+afterEach(() => {
+  cleanupRoots();
+  vi.restoreAllMocks();
+});
+
+const flat = (n: number): { value: string; label: string }[] =>
+  Array.from({ length: n }, (_, i) => ({ value: `v${i}`, label: `Opt ${i}` }));
+
+const grouped = (groups: number, per: number): { label: string; children: { value: string; label: string }[] }[] =>
+  Array.from({ length: groups }, (_, g) => ({
+    label: `Group ${g}`,
+    children: Array.from({ length: per }, (_, i) => ({ value: `v${g}-${i}`, label: `Opt ${g}-${i}` })),
+  }));
+
+const BIG = flat(2000);
+const MID = flat(1000);
+
+// ── H5 / OD5: a closed panel renders no option nodes and mounts cheaply. ─────
+describe('H5: a large closed panel renders no option nodes', () => {
+  for (const key of ['select', 'multi', 'combobox'] as const) {
+    it(`${KINDS[key].name}: zero role=option nodes while the panel is closed`, () => {
+      const m = mount(KINDS[key], { options: BIG });
+      expect(m.v.panelOpen()).toBe(false);
+      expect(m.el.querySelectorAll('[role="option"]').length).toBe(0);
+    });
+  }
+
+  it('CngxSelect: an open list below the threshold renders every row and leaves the recycler slot empty', () => {
+    const m = mount(KINDS['select'], { options: flat(3) });
+    m.open();
+    const handle = (m.v as unknown as { autoRecycler?: AutoRecyclerHandle }).autoRecycler;
+    expect(m.rows().length).toBe(3);
+    expect(handle!.slot.current()).toBeNull();
+  });
+
+  it('CngxSelect: a never-opened closed panel keeps the listbox element mounted', () => {
+    const m = mount(KINDS['select'], { options: BIG });
+    expect(m.el.querySelector('[role="listbox"]')).not.toBeNull();
+    expect(m.el.querySelectorAll('[role="option"]').length).toBe(0);
+  });
+
+  it('CngxSelect: renderItems holds a stable array reference across reads once open', () => {
+    const m = mount(KINDS['select'], { options: MID });
+    m.open();
+    const panel = m.fixture.debugElement.query(By.directive(CngxSelectPanel))!
+      .componentInstance as { renderItems: () => unknown };
+    const first = panel.renderItems();
+    m.settle();
+    const second = panel.renderItems();
+    expect(Object.is(first, second)).toBe(true);
+  });
+});
+
+// ── H5 / OD5: a large open panel auto-virtualises instead of rendering all. ──
+describe('OD5: a large open panel renders a bounded row count without explicit virtualization', () => {
+  it('CngxSelect: 1000 options open render far fewer than 1000 rows', () => {
+    const m = mount(KINDS['select'], { options: MID });
+    m.open();
+    expect(m.rows().length).toBeLessThanOrEqual(100);
+  });
+});
+
+// ── A3: grouped options under virtualization fall back and warn CNGX2028. ────
+describe('A3: grouped options with virtualization render no spacer and warn once', () => {
+  it('CngxSelect: no virtual spacer and a single CNGX2028 dev warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const m = mount(KINDS['select'], {
+      options: grouped(20, 50),
+      providers: [provideSelectConfig(withVirtualization({}))],
+    });
+    m.open();
+    expect(m.el.querySelector('.cngx-select__virtual-spacer')).toBeNull();
+    const coded = warn.mock.calls.filter((c) => /^CNGX2028: /.test(String(c[0])));
+    expect(coded.length).toBe(1);
+  });
+});

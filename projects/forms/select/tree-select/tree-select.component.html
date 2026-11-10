@@ -27,7 +27,8 @@
     [attr.aria-required]="aria.required"
     [attr.aria-busy]="aria.busy"
     [attr.aria-readonly]="aria.readonly"
-    (click)="handleTriggerClick()"
+    (pointerdown)="handlePointerDown($event)"
+    (click)="handleTriggerClick($event)"
     (focus)="handleFocus()"
     (blur)="handleBlur()"
     (keydown)="handleTriggerKeydown($event)"
@@ -193,5 +194,8 @@
     <cngx-tree-select-panel />
   </div>
   <span class="cngx-sr-only" [id]="commitErrorId">{{ commitErrorText() }}</span>
+  @if (!panelOpen() && commitErrorText()) {
+    <span class="cngx-select__commit-error-hint" aria-hidden="true">{{ commitErrorText() }}</span>
+  }
   <span class="cngx-sr-only" [id]="disabledReasonId">{{ disabledReasonText() }}</span>
 </div>

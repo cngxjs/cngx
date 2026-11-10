@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxSelect'],
   moduleImports: [
     "import { CngxSelect, type CngxSelectCommitAction, type CngxSelectOptionDef } from '@cngx/forms/select';",
-    "import { delay, of, throwError } from 'rxjs';",
+    "import { delay, of, switchMap, throwError, timer } from 'rxjs';",
   ],
   imports: ['CngxSelect'],
   setup: `protected readonly cities: CngxSelectOptionDef<string>[] = [
@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
   protected readonly shouldFail = signal(false);
   protected readonly commitAction: CngxSelectCommitAction<string> = (intended) =>
     this.shouldFail()
-      ? throwError(() => new Error('Server offline')).pipe(delay(this.delayMs()))
+      ? timer(this.delayMs()).pipe(switchMap(() => throwError(() => new Error('Server offline'))))
       : of(intended).pipe(delay(this.delayMs()));`,
   template: `<div style="max-inline-size: 24rem">
     <cngx-select

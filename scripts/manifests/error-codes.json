@@ -871,11 +871,11 @@
       "messages": [
         {
           "file": "projects/common/button/provide-cngx-button.ts",
-          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
+          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize`, the glyphs through `withButtonCloseIcon` / `withButtonSpinner` and the status defaults through `withActionStatusLabels` / `withActionStatusTemplates`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
         },
         {
           "file": "projects/common/button/provide-cngx-button.ts",
-          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
+          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize`, the glyphs through `withButtonCloseIcon` / `withButtonSpinner` and the status defaults through `withActionStatusLabels` / `withActionStatusTemplates`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
         },
         {
           "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
@@ -1588,6 +1588,40 @@
       ]
     },
     {
+      "code": "CNGX1081",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Second popover trigger takes the close listener",
+      "page": "core-concepts/error-codes/cngx1081.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1081.html",
+      "status": "active",
+      "files": ["projects/common/popover/popover.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/popover/popover.directive.ts",
+          "text": "[cngxPopover] a second CngxPopoverTrigger registered on this popover and replaced the first one. Only the last-registered trigger restores focus on close, so bind one CngxPopoverTrigger per popover."
+        }
+      ]
+    },
+    {
+      "code": "CNGX1082",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Action status brain without an async run",
+      "page": "core-concepts/error-codes/cngx1082.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1082.html",
+      "status": "active",
+      "files": ["projects/common/interactive/action-status/action-status-brain.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+          "text": "[cngxActionStatusBrain] on <${...}> has no co-hosted run. Add CngxAsyncClick to the hostDirectives of the component or directive that declares CngxActionStatusBrain."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
@@ -2098,6 +2132,23 @@
       ]
     },
     {
+      "code": "CNGX2028",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Grouped options under a configured virtualization",
+      "page": "core-concepts/error-codes/cngx2028.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2028.html",
+      "status": "active",
+      "files": ["projects/forms/select/shared/internal/setup-virtualization.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/shared/internal/setup-virtualization.ts",
+          "text": "withVirtualization(): grouped select options ignore the configured virtualization; every option renders and the recycler window is dropped. Flatten the options or drop withVirtualization() for this select."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
@@ -2249,11 +2300,11 @@
       "page": "core-concepts/error-codes/cngx3008.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3008.html",
       "status": "active",
-      "files": ["projects/ui/action-button/action-button.ts"],
+      "files": ["projects/ui/action-button/action-toast.directive.ts"],
       "messages": [
         {
-          "file": "projects/ui/action-button/action-button.ts",
-          "text": "[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
+          "file": "projects/ui/action-button/action-toast.directive.ts",
+          "text": "[cngxActionToast] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
         }
       ]
     },
@@ -2571,6 +2622,23 @@
         {
           "file": "projects/ui/tabs/tab-group-dev-checks.ts",
           "text": "[cngx-tab-group] tab(s) without a [label] string at position ${...}. Announcements, the close button and the overflow list call such a tab \"Tab N\". Bind [label] on every cngxTab, also when a *cngxTabLabel template renders it."
+        }
+      ]
+    },
+    {
+      "code": "CNGX3026",
+      "lib": "ui",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Unknown sidenav width class",
+      "page": "core-concepts/error-codes/cngx3026.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3026.html",
+      "status": "active",
+      "files": ["projects/ui/sidenav/sidenav.ts"],
+      "messages": [
+        {
+          "file": "projects/ui/sidenav/sidenav.ts",
+          "text": "[cngx-sidenav] unknown --cngx-sidenav-width-class \"${...}\"; expected compact, medium or expanded. Rendering as compact."
         }
       ]
     },

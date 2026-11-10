@@ -12,7 +12,7 @@ import { CngxPopoverSheet, type CngxPopoverPresentationRequest } from '@cngx/com
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement, getDebugNode } from '@angular/core';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { stripBidiIsolates } from '@cngx/testing';
 
@@ -39,33 +39,6 @@ import {
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
-
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'a', label: 'Alpha' },
@@ -102,6 +75,22 @@ class Host {
   disabled = false;
   stateLog: string[] = [];
   commitErrors: unknown[] = [];
+}
+
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Empfänger'"
+      [options]="options"
+      [reorderKeyboardModifier]="'ctrl'"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class CtrlModifierHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd']);
 }
 
 function flush(fixture: { detectChanges: () => void }): void {
@@ -196,10 +185,6 @@ function fireKey(
   );
 }
 
-beforeEach(() => {
-  polyfillPopover();
-});
-
 describe('CngxReorderableMultiSelect - pointer reorder', () => {
   it('drag-right via pointer on the chip body writes reordered values', () => {
     const fixture = TestBed.createComponent(Host);
@@ -279,6 +264,32 @@ describe('CngxReorderableMultiSelect - keyboard reorder', () => {
     flush(fixture);
 
     expect(fixture.componentInstance.values()).toEqual(['c', 'a', 'b', 'd']);
+  });
+
+  it('Alt+ArrowDown on a chip reorders and leaves the panel closed', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
+      .componentInstance as CngxReorderableMultiSelect<string>;
+
+    fireKey(chipAt(fixture.nativeElement, 0), 'ArrowDown', { alt: true });
+    flush(fixture);
+
+    expect(fixture.componentInstance.values()).toEqual(['b', 'a', 'c', 'd']);
+    expect(cmp.panelOpen()).toBe(false);
+  });
+
+  it('Alt+ArrowDown still opens the panel when the reorder modifier is not Alt', () => {
+    const fixture = TestBed.createComponent(CtrlModifierHost);
+    flush(fixture);
+    const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
+      .componentInstance as CngxReorderableMultiSelect<string>;
+
+    fireKey(chipAt(fixture.nativeElement, 0), 'ArrowDown', { alt: true });
+    flush(fixture);
+
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(cmp.panelOpen()).toBe(true);
   });
 });
 
@@ -454,7 +465,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     const root = fixture.nativeElement as HTMLElement;
     const strip = chipStrip(root);
     expect(strip.getAttribute('role')).toBe('group');
-    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with Alt/i);
+    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with .*Alt.* \+ arrow keys/i);
   });
 
   it('inline roving: only the active chip has tabindex="0"', () => {
@@ -785,10 +796,6 @@ class SummaryHost {
 describe('CngxReorderableMultiSelect - summary trigger under the touch floor', () => {
   let restore: (() => void) | null = null;
 
-  beforeEach(() => {
-    polyfillPopover();
-  });
-
   afterEach(() => {
     restore?.();
     restore = null;
@@ -895,7 +902,6 @@ describe('CngxReorderableMultiSelect - sorting in the panel under the touch floo
   });
 
   function render(touch = true) {
-    polyfillPopover();
     if (touch) {
       restore = stubTouchFloor();
     }
@@ -1130,7 +1136,6 @@ describe('CngxReorderableMultiSelect - move-glyph cascade', () => {
   }
 
   function renderHost(input: boolean, directive: boolean): HTMLElement {
-    polyfillPopover();
     restore = stubTouchFloor();
     const fixture = TestBed.createComponent(MoveGlyphHost);
     fixture.componentInstance.withInput.set(input);
@@ -1162,7 +1167,6 @@ describe('CngxReorderableMultiSelect - move-glyph cascade', () => {
     configure: (instance: C) => void,
     check: (list: HTMLElement) => void,
   ): void {
-    polyfillPopover();
     restore = stubTouchFloor();
     const holder = TestBed.createComponent(MoveGlyphTemplateHolder);
     holder.detectChanges();

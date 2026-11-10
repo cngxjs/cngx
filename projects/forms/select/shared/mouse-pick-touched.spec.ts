@@ -1,7 +1,7 @@
 import { Component, type Type } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
@@ -16,35 +16,8 @@ import { CngxReorderableMultiSelect } from '../reorderable-multi-select/reordera
 import { CngxSelectShell } from '../select-shell/select-shell.component';
 import { CngxSelect } from '../single-select/select.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
+import { CngxTreeSelect } from '../tree-select/tree-select.component';
 import type { CngxSelectOptionDef } from './option.model';
-
-// jsdom does not implement the Popover API - polyfill so the panels can open.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Red' },
@@ -193,6 +166,25 @@ class SelectShellHost {
   readonly ref: MockFieldRef<string | undefined> = this.mock.ref;
 }
 
+@Component({
+  selector: 'mpt-tree-select',
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-tree-select [label]="'Color'" [nodes]="nodes" [nodeIdFn]="idFn" [labelFn]="labelFn" />
+    </cngx-form-field>
+    <button type="button">Outside</button>
+  `,
+  imports: [CngxFormField, CngxTreeSelect],
+})
+class TreeSelectHost {
+  readonly nodes = [{ value: 'red' }, { value: 'green' }];
+  readonly idFn = (v: string): string => v;
+  readonly labelFn = (v: string): string => (v === 'green' ? 'Green' : v === 'red' ? 'Red' : v);
+  private readonly mock = createMockField<readonly string[]>({ name: 'color', value: [] });
+  readonly field = this.mock.accessor;
+  readonly ref: MockFieldRef<readonly string[]> = this.mock.ref;
+}
+
 interface FieldHost {
   readonly ref: MockFieldRef<unknown>;
 }
@@ -222,6 +214,7 @@ const VARIANTS: readonly Variant[] = [
   },
   { name: 'CngxActionMultiSelect', host: ActionMultiSelectHost, component: CngxActionMultiSelect },
   { name: 'CngxSelectShell', host: SelectShellHost, component: CngxSelectShell },
+  { name: 'CngxTreeSelect', host: TreeSelectHost, component: CngxTreeSelect },
 ];
 
 async function settle(fixture: ComponentFixture<unknown>): Promise<void> {
@@ -258,7 +251,7 @@ async function mount(variant: Variant): Promise<{
       await settle(fixture);
     },
     option: (label) => {
-      const match = Array.from(root.querySelectorAll<HTMLElement>('[role="option"]')).find((el) =>
+      const match = Array.from(root.querySelectorAll<HTMLElement>('[role="option"], [role="treeitem"]')).find((el) =>
         el.textContent?.includes(label),
       );
       if (!match) {
@@ -270,9 +263,6 @@ async function mount(variant: Variant): Promise<{
 }
 
 describe.each(VARIANTS)('$name mouse pick', (variant) => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();
@@ -287,7 +277,14 @@ describe.each(VARIANTS)('$name mouse pick', (variant) => {
     await settle(fixture);
 
     expect(fixture.componentInstance.ref.touched()).toBe(false);
-    expect(document.activeElement).toBe(owner);
+    if (variant.name === 'CngxTreeSelect') {
+      // The tree stays open for further picks, so focus stays inside the
+      // host (on the tree container), not restored to the trigger.
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.contains(document.activeElement)).toBe(true);
+    } else {
+      expect(document.activeElement).toBe(owner);
+    }
   });
 
   it('leaving the field marks it touched', async () => {
@@ -303,9 +300,6 @@ describe.each(VARIANTS)('$name mouse pick', (variant) => {
 });
 
 describe.each(VARIANTS.filter((v) => v.showsLabelInInput))('$name mouse pick label', (variant) => {
-  beforeAll(() => {
-    polyfillPopover();
-  });
 
   afterEach(() => {
     (document.activeElement as HTMLElement | null)?.blur();

@@ -3,8 +3,10 @@ import {
   Directive,
   inject,
   InjectionToken,
+  Injector,
   input,
   output,
+  type Signal,
   signal,
 } from '@angular/core';
 
@@ -36,6 +38,26 @@ export interface CngxHoverIntentDefaults {
  */
 export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefaults>(
   'CNGX_HOVER_INTENT_DEFAULTS',
+);
+
+/**
+ * @internal Lets a directive that composes `CngxHoverIntent` as a host
+ * directive feed the dwell from its own inputs instead of re-exposing
+ * `enterDelay` / `leaveDelay` (a composer of that composer could not expose
+ * them further). Provided by the composer on the same element
+ * (`useExisting`), resolved lazily with `self: true`. An `undefined` delay
+ * falls back to the atom's own input.
+ */
+export interface CngxHoverIntentDriver {
+  /** Dwell in ms before `active` settles to `true`; wins over `[enterDelay]`. */
+  readonly hoverEnterDelay: Signal<number | undefined>;
+  /** Dwell in ms before `active` settles back to `false`; wins over `[leaveDelay]`. */
+  readonly hoverLeaveDelay: Signal<number | undefined>;
+}
+
+/** @internal See {@link CngxHoverIntentDriver}. */
+export const CNGX_HOVER_INTENT_DRIVER = new InjectionToken<CngxHoverIntentDriver>(
+  'CngxHoverIntentDriver',
 );
 
 /**
@@ -105,6 +127,14 @@ export class CngxHoverIntent {
   readonly intentChange = output<boolean>();
 
   private pendingTimer: ReturnType<typeof setTimeout> | undefined;
+  private readonly injector = inject(Injector);
+  private resolvedDriver: CngxHoverIntentDriver | null | undefined = undefined;
+  private driver(): CngxHoverIntentDriver | null {
+    if (this.resolvedDriver === undefined) {
+      this.resolvedDriver = this.injector.get(CNGX_HOVER_INTENT_DRIVER, null, { self: true });
+    }
+    return this.resolvedDriver;
+  }
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.clearPending());
@@ -127,12 +157,12 @@ export class CngxHoverIntent {
    * own listeners, so crossing the gap between the elements never flickers.
    */
   notifyEnter(): void {
-    this.schedule(true, this.enterDelay());
+    this.schedule(true, this.driver()?.hoverEnterDelay() ?? this.enterDelay());
   }
 
   /** Satellite counterpart to {@link notifyEnter} for `pointerleave`. */
   notifyLeave(): void {
-    this.schedule(false, this.leaveDelay());
+    this.schedule(false, this.driver()?.hoverLeaveDelay() ?? this.leaveDelay());
   }
 
   private schedule(target: boolean, delay: number): void {

@@ -13,6 +13,7 @@ import {
   model,
   output,
   signal,
+  untracked,
   viewChild,
   ElementRef,
   type Signal,
@@ -20,6 +21,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   nextUid,
@@ -48,6 +50,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
@@ -265,6 +268,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectChipFitSlot,
     CngxSelectChipFitStrip,
     CngxSelectSummary,
@@ -296,6 +300,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
     class: 'cngx-action-multi-select',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './action-multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './action-multi-select.component.css'],
@@ -339,9 +344,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -986,8 +991,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
 
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
@@ -1142,7 +1150,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValues) => {
       // No dedup - quickCreateAction is intentional, the value is fresh by definition.
-      const next = [...previousValues, option.value];
+      // Merge into the LIVE values, not the dispatch snapshot: chips the user
+      // added or removed while the create was in flight must survive. The
+      // snapshot `previousValues` feeds only the event payload.
+      const live = untracked(this.values);
+      const next = [...live, option.value];
       this.values.set(next);
       // Tag-input UX: clear the term so the next chip can be typed. CngxActionSelect
       // takes the opposite branch and writes displayWith(value) instead.
@@ -1258,6 +1270,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      readonly: this.core.readonly,
       focused: this.focusState.focused,
       open: () => this.open(),
       emit: {
@@ -1334,12 +1347,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   protected readonly handleInputKeydown = this.triggerInput.handleInputKeydown;
   private readonly handleActionCommit = this.triggerInput.handleActionCommit;
 
+  /** Descendants that own their own click; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest('button, .cngx-chip__remove')) {
+    const nested = target?.closest(this.nestedInteractive) as HTMLElement | null;
+    // The own input matches the selector too; a click on it must still open.
+    // Only a genuinely nested control (chip remove, clear button) is left alone.
+    if (nested && nested !== this.inputEl()?.nativeElement) {
       return;
     }
     this.focus();

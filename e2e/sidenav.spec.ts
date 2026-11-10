@@ -18,26 +18,25 @@ test.describe('CngxSidenav layout regressions', () => {
     expect(bodyBox!.width).toBeLessThanOrEqual(navBox!.width + 1);
   });
 
-  test('mini rail expands over content without shifting it', async ({ page }) => {
+  test('a collapsed rail peeks over content without shifting it', async ({ page }) => {
     await page.goto('/#/ui/sidenav/config-hover-dwell');
     const nav = page.locator('cngx-sidenav', { hasText: 'Config' }).first();
     const content = page.locator('cngx-sidenav-content').first();
     await expect(nav).toBeVisible();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
 
     const contentLeftBefore = (await content.boundingBox())!.x;
 
-    // Rest on the rail past the ~250ms scoped dwell so it expands.
+    // Rest on the rail past the ~250ms scoped dwell so it peeks.
     await nav.hover();
-    await expect(nav).toHaveClass(/cngx-sidenav--expanded/, { timeout: 2000 });
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'peek', { timeout: 2000 });
 
-    const navBox = await nav.boundingBox();
+    // The rail actually grows past the 56px rail width (the state flips at
+    // the start of the width transition, so wait for the box)...
+    await expect.poll(async () => (await nav.boundingBox())!.width).toBeGreaterThan(100);
     const contentLeftAfter = (await content.boundingBox())!.x;
 
-    // The rail actually grew past the 56px mini width...
-    expect(navBox!.width).toBeGreaterThan(100);
-    // ...but the negative-margin overlay means content is not pushed right.
-    // Regression guard: cngx gated the overlay margin on `.--mini.--open`, but a
-    // mini rail has no `--open`, so it pushed content instead of overlaying.
+    // ...but the sidebar's negative margin means content is not pushed right.
     expect(Math.abs(contentLeftAfter - contentLeftBefore)).toBeLessThanOrEqual(1);
   });
 
@@ -89,5 +88,64 @@ test.describe('CngxSidenav layout regressions', () => {
     });
     await expect(team).toHaveAttribute('aria-expanded', 'false');
     await expect(team).toBeFocused();
+  });
+
+  test('a non-modal end inspector keeps the list and the start rail operable', async ({ page }) => {
+    // The inspector overlays the end of each row, so press the visible start
+    // of a row: the list stays operable where the inspector does not cover it.
+    const LIST_EDGE = { x: 16, y: 8 };
+    await page.goto('/#/ui/sidenav/dual-sidebar-master-detail');
+    const layout = page.locator('cngx-sidenav-layout').first();
+    const inspector = layout.locator('cngx-sidenav.cngx-sidenav--end');
+    const content = layout.locator('cngx-sidenav-content');
+    const startRail = layout.locator('cngx-sidenav.cngx-sidenav--start');
+
+    await content.getByRole('button', { name: 'Order #1042' }).click({ position: LIST_EDGE });
+    await expect(inspector).toHaveClass(/cngx-sidenav--open/);
+    await expect(inspector.getByRole('heading', { name: 'Order #1042' })).toBeVisible();
+
+    // Non-modal: no dialog role, no backdrop, nothing outside made inert.
+    await expect(inspector).not.toHaveAttribute('aria-modal', 'true');
+    await expect(layout).not.toHaveClass(/cngx-sidenav-layout--has-overlay/);
+    await expect(layout.locator('.cngx-sidenav-backdrop')).toBeHidden();
+    await expect(content).not.toHaveAttribute('inert', '');
+    await expect(startRail).not.toHaveAttribute('inert', '');
+
+    // The list stays clickable: another order swaps the detail in place.
+    await content.getByRole('button', { name: 'Order #1044' }).click({ position: LIST_EDGE });
+    await expect(inspector).toHaveClass(/cngx-sidenav--open/);
+    await expect(inspector.getByRole('heading', { name: 'Order #1044' })).toBeVisible();
+
+    // The start rail stays clickable too (no backdrop intercepts the press);
+    // a press outside a non-modal inspector still asks it to close.
+    await startRail.getByText('Products').click();
+    await expect(inspector).not.toHaveClass(/cngx-sidenav--open/);
+
+    // Escape with focus inside the inspector dismisses it.
+    await content.getByRole('button', { name: 'Order #1043' }).click({ position: LIST_EDGE });
+    await expect(inspector).toHaveClass(/cngx-sidenav--open/);
+    await inspector.getByRole('button', { name: 'Close' }).focus();
+    await page.keyboard.press('Escape');
+    await expect(inspector).not.toHaveClass(/cngx-sidenav--open/);
+  });
+
+  test('the auto-mode drawer starts closed at compact and returns focus to its trigger', async ({
+    page,
+  }) => {
+    await page.goto('/#/ui/sidenav/auto-mode');
+    const nav = page.locator('cngx-sidenav').first();
+    const trigger = page.getByRole('button', { name: 'Toggle navigation' });
+    await page.getByRole('button', { name: 'Width 40rem' }).click();
+    await expect(nav).toHaveClass(/cngx-sidenav--over/);
+    await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
+    await expect(nav).not.toHaveAttribute('aria-modal', 'true');
+
+    await trigger.click();
+    await expect(nav).toHaveClass(/cngx-sidenav--open/);
+    await expect(nav).toHaveAttribute('aria-modal', 'true');
+
+    await page.keyboard.press('Escape');
+    await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
+    await expect(trigger).toBeFocused();
   });
 });

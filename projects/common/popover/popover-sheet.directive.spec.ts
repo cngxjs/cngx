@@ -382,6 +382,21 @@ describe('CngxPopoverSheet', () => {
       expect(document.activeElement).not.toBe(document.body);
       expect(document.activeElement).toBe(q('.opener'));
     });
+
+    it('re-homes focus into the sheet after an anchored round trip while open', () => {
+      const ctx = setup();
+      const { host, flush, panel } = ctx;
+      openFromOpener(ctx);
+      expect(panel.contains(document.activeElement)).toBe(true);
+
+      host.request.set('anchored');
+      flush();
+      expect(panel.contains(document.activeElement)).toBe(false);
+
+      host.request.set('sheet');
+      flush();
+      expect(panel.contains(document.activeElement)).toBe(true);
+    });
   });
 
   describe('misplaced parts', () => {

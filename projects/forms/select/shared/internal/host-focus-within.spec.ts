@@ -12,7 +12,7 @@ const close = vi.fn();
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button type="button" class="owner">Trigger</button>
-    <div class="panel cngx-popover--open">
+    <div class="panel cngx-popover--open" popover="manual">
       <input class="search" />
       <span class="header">Header</span>
     </div>
@@ -23,10 +23,11 @@ const close = vi.fn();
   },
 })
 class FocusHost {
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   readonly focus: HostFocusWithin = createHostFocusWithin({
     onLeave,
     close,
-    owner: () => undefined,
+    owner: () => this.el.querySelector<HTMLElement>('.owner') ?? undefined,
     restoreFocus: true,
   });
 }
@@ -69,6 +70,59 @@ describe('createHostFocusWithin', () => {
     expect(focus.focusedWithin()).toBe(false);
     expect(onLeave).toHaveBeenCalledTimes(1);
     expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  function addChipRemove(host: HTMLElement): HTMLButtonElement {
+    const panel = host.querySelector<HTMLElement>('.panel')!;
+    const chipRemove = document.createElement('button');
+    chipRemove.className = 'chip-remove';
+    host.insertBefore(chipRemove, panel);
+    return chipRemove;
+  }
+
+  it('collapses through the focus-leave close when Tab moves onto a nested control outside the panel', () => {
+    const { host, focus } = setup();
+    const panel = host.querySelector<HTMLElement & { hidePopover?: () => void }>('.panel')!;
+    const hide = vi.fn();
+    panel.hidePopover = hide;
+    const chipRemove = addChipRemove(host);
+
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+    owner.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+
+    focusOut(owner, chipRemove);
+    // The host's close honours closeBlocked and shouldBlockDismiss; a direct
+    // hidePopover() would skip both.
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(hide).not.toHaveBeenCalled();
+    expect(onLeave).not.toHaveBeenCalled();
+    expect(focus.focusedWithin()).toBe(true);
+  });
+
+  it('keeps focus where it is on a mouse press on a nested button outside the panel', () => {
+    const { host, focus } = setup();
+    const chipRemove = addChipRemove(host);
+    const icon = document.createElement('span');
+    chipRemove.append(icon);
+
+    const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    icon.dispatchEvent(press);
+    focus.handleMouseDown(press);
+    expect(press.defaultPrevented).toBe(true);
+  });
+
+  it('leaves a mouse press inside the panel or on the owner untouched', () => {
+    const { host, focus } = setup();
+    const panelButton = document.createElement('button');
+    host.querySelector('.panel')!.append(panelButton);
+    const owner = host.querySelector<HTMLElement>('.owner')!;
+
+    for (const target of [panelButton, owner, host.querySelector<HTMLElement>('.search')!]) {
+      const press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      target.dispatchEvent(press);
+      focus.handleMouseDown(press);
+      expect(press.defaultPrevented).toBe(false);
+    }
   });
 
   it('keeps focus within when focus moves from the trigger into the panel', () => {
@@ -182,5 +236,31 @@ describe('createHostFocusWithin - modal sheet close contract', () => {
     } finally {
       outside.remove();
     }
+  });
+});
+
+// ── B2 (commit 7): focus leaving the host closes an anchored panel even under
+// dismissOn 'escape' - this pins the current behaviour, not a change. ─────────
+import { afterEach as afterEachB2 } from 'vitest';
+import { provideSelectConfig, withDismissOn } from '../config';
+import { KINDS as B2_KINDS, cleanupRoots as b2Cleanup, mount as b2Mount } from '../__test-helpers/review-probe-host';
+
+describe('B2: focus leaving the host closes the anchored panel under dismissOn escape', () => {
+  afterEachB2(() => {
+    b2Cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('closes when focus moves to a control outside the host', () => {
+    const m = b2Mount(B2_KINDS['select'], { providers: [provideSelectConfig(withDismissOn('escape'))] });
+    const trigger = m.el.querySelector<HTMLElement>('.cngx-field-trigger')!;
+    trigger.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    m.open();
+    expect(m.v.panelOpen()).toBe(true);
+
+    const outside = m.fixture.nativeElement.querySelector('.outside-btn') as HTMLElement;
+    trigger.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    m.settle();
+    expect(m.v.panelOpen()).toBe(false);
   });
 });

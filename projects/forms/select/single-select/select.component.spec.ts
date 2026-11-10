@@ -34,7 +34,6 @@ import {
   CNGX_SELECT_CONFIG,
   provideSelectConfig,
   provideSelectConfigAt,
-  withMobileSheet,
   withOpenOn,
   withPanelWidth,
   withLoadingVariant,
@@ -43,34 +42,6 @@ import {
 } from '../shared/config';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
-
-// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
@@ -181,7 +152,6 @@ class PopoverWrappedHost {
 
 describe('CngxSelect - standalone', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost] });
   });
 
@@ -263,6 +233,54 @@ describe('CngxSelect - standalone', () => {
     expect(popover.isVisible()).toBe(true);
   });
 
+  function pointerClick(el: HTMLElement): void {
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+  }
+
+  it('toggles on a click after a press on the focused trigger and a keyboard refocus under withOpenOn("focus")', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withOpenOn('focus'))],
+    });
+    const { fixture, select, triggerBtn, popover } = setup();
+    triggerBtn.focus();
+    flush(fixture);
+    select.close();
+    flush(fixture);
+    // A press on the already focused trigger that never clicks (drag off).
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    // Tab away and back: the keyboard focus opens.
+    triggerBtn.blur();
+    triggerBtn.focus();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    // A deliberate click on the focused trigger toggles the panel shut.
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    pointerClick(triggerBtn);
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  it('toggles on a later click after a focus-opening press that never clicked under withOpenOn("focus")', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withOpenOn('focus'))],
+    });
+    const { fixture, select, triggerBtn, popover } = setup();
+    // Press on the unfocused trigger, focus opens, the press never clicks.
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    triggerBtn.focus();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+    select.close();
+    flush(fixture);
+
+    // A later click on the still focused trigger opens the panel.
+    triggerBtn.dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    pointerClick(triggerBtn);
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+  });
+
   it('renders the trigger with placeholder when no value is selected', () => {
     const { triggerBtn } = setup();
     expect(triggerBtn.textContent?.trim()).toContain('Bitte wählen');
@@ -271,12 +289,17 @@ describe('CngxSelect - standalone', () => {
   });
 
   it('renders one option per entry in options[]', () => {
-    const { listbox } = setup();
+    const { select, listbox, fixture } = setup();
+    // Deferred render (OD5): option rows exist only once the panel opens.
+    select.open();
+    flush(fixture);
     expect(listbox.options().length).toBe(3);
   });
 
   it('renders the selection indicator after the label, at the row end, by default', () => {
-    const { fixture } = setup();
+    const { select, fixture } = setup();
+    select.open();
+    flush(fixture);
     const option = (fixture.nativeElement as HTMLElement).ownerDocument.querySelector<HTMLElement>(
       '.cngx-select__option',
     );
@@ -401,11 +424,26 @@ describe('CngxSelect - standalone', () => {
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
   });
+
+  it('leaves no highlight behind when a click outside closes the panel', () => {
+    const { fixture, select, triggerBtn, listbox, popover } = setup();
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeIndex()).toBeGreaterThanOrEqual(0);
+
+    type WithOutside = { handleClickOutside(): void };
+    (select as unknown as WithOutside).handleClickOutside();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(listbox.ad.activeIndex()).toBe(-1);
+  });
 });
 
 describe('CngxSelect - nested inside a CngxPopover', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PopoverWrappedHost] });
   });
 
@@ -433,7 +471,6 @@ describe('CngxSelect - nested inside a CngxPopover', () => {
 
 describe('CngxSelect - standalone a11y', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneA11yHost] });
   });
 
@@ -494,13 +531,17 @@ describe('CngxSelect - standalone a11y', () => {
 
 describe('CngxSelect - grouped options', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [GroupedHost] });
   });
 
   it('renders optgroup headers and nested options', () => {
     const fixture = TestBed.createComponent(GroupedHost);
     fixture.detectChanges();
+    flush(fixture);
+    // Deferred render (OD5): the option loop renders once the panel opens.
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
     flush(fixture);
     const groupHeaders = fixture.debugElement.nativeElement.querySelectorAll(
       '.cngx-select__group-header',
@@ -526,7 +567,6 @@ describe('CngxSelect - closed typeahead and disabled groups', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [DisabledGroupHost] });
   });
 
@@ -555,7 +595,6 @@ describe('CngxSelect - empty-string option without a commit action', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [EmptyStringHost] });
   });
 
@@ -600,7 +639,6 @@ describe('inject helpers', () => {
 
 describe('CngxSelect - form-field integration', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [FormFieldHost] });
   });
 
@@ -712,7 +750,6 @@ class StateConsumerHost {
 
 describe('CngxSelect - async state consumer', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StateConsumerHost] });
   });
 
@@ -778,7 +815,6 @@ describe('CngxSelect - async state consumer', () => {
       readonly value = signal<string | undefined>(undefined);
     }
     TestBed.resetTestingModule();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SkelCountHost] });
     const fixture = TestBed.createComponent(SkelCountHost);
     fixture.detectChanges();
@@ -808,7 +844,6 @@ describe('CngxSelect - async state consumer', () => {
       readonly value = signal<string | undefined>(undefined);
     }
     TestBed.resetTestingModule();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SpinnerHost] });
     const fixture = TestBed.createComponent(SpinnerHost);
     fixture.detectChanges();
@@ -884,7 +919,6 @@ describe('CngxSelect - async state consumer', () => {
       readonly value = signal<string | undefined>(undefined);
     }
     TestBed.resetTestingModule();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [RefSpinnerHost] });
     const fixture = TestBed.createComponent(RefSpinnerHost);
     fixture.detectChanges();
@@ -917,7 +951,6 @@ describe('CngxSelect - async state consumer', () => {
       readonly value = signal<string | undefined>(undefined);
     }
     TestBed.resetTestingModule();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [RefNoneHost] });
     const fixture = TestBed.createComponent(RefNoneHost);
     fixture.detectChanges();
@@ -972,10 +1005,14 @@ describe('CngxSelect - async state consumer', () => {
       readonly value = signal<string | undefined>(undefined);
     }
     TestBed.resetTestingModule();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StaticOptionsHost] });
     const fixture = TestBed.createComponent(StaticOptionsHost);
     fixture.detectChanges();
+    flush(fixture);
+    // Deferred render (OD5): open before counting the rendered option rows.
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
     flush(fixture);
     const listboxDe = fixture.debugElement.query(By.directive(CngxListbox));
     const lb = listboxDe.injector.get(CngxListbox);
@@ -1022,7 +1059,6 @@ class CommitHost {
 
 describe('CngxSelect - commit action producer', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [CommitHost] });
   });
 
@@ -1309,7 +1345,6 @@ class UnlabelledCommitHost {
 }
 
 describe('CngxSelect - commit error copy without a label', () => {
-  beforeEach(() => polyfillPopover());
 
   it('names the field label fallback when aria-label is empty', () => {
     const fixture = TestBed.createComponent(UnlabelledCommitHost);
@@ -1337,7 +1372,6 @@ describe('CngxSelect - commit error copy without a label', () => {
 });
 
 describe('CngxSelect - announcer', () => {
-  beforeEach(() => polyfillPopover());
 
   it('announces selection changes via the live region', () => {
     TestBed.configureTestingModule({ imports: [AnnouncerHost] });
@@ -1393,7 +1427,6 @@ class AutofocusHost {
 }
 
 describe('CngxSelect - autofocus', () => {
-  beforeEach(() => polyfillPopover());
 
   it('[autofocus]="true" focuses the trigger after first render', async () => {
     TestBed.configureTestingModule({ imports: [AutofocusHost] });
@@ -1431,7 +1464,6 @@ class ConfigCascadeInputHost {
 }
 
 describe('CngxSelect - config cascade (input > component-scope > app-scope > default)', () => {
-  beforeEach(() => polyfillPopover());
 
   it('app-scope provideSelectConfig sets default panelWidth', () => {
     TestBed.configureTestingModule({
@@ -1607,7 +1639,6 @@ class BoundClearHost {
 
 describe('CngxSelect clear button label', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.resetTestingModule();
   });
 
@@ -1656,7 +1687,6 @@ class UnnamedHost {
 
 describe('CngxSelect listbox fallback label', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.resetTestingModule();
   });
 
@@ -1699,7 +1729,11 @@ describe('CngxSelect listbox fallback label', () => {
   });
 });
 
-// ── mobile sheet ─────────────────────────────────────────────────────
+// ── mobile sheet: single-select-only cases ───────────────────────────
+// The cross-variant sheet contract runs from select-mobile-sheet.spec.ts
+// (describeMobileSheet). Only the cases the shared contract does not cover
+// stay here: the anchored Escape path during a pending commit, the
+// openOn='focus' no-reopen guard, and the speak-once/assertive announcement.
 
 @Component({
   template: `
@@ -1731,14 +1765,13 @@ class SheetHost {
   };
 }
 
-describe('CngxSelect - mobile sheet', () => {
+describe('CngxSelect - mobile sheet (single-select)', () => {
   let dismissSpies: {
     handleClickOutside: Mock<() => void>;
     handleSheetClose: Mock<(reason: string) => void>;
   };
 
   function setup(providers: unknown[] = []) {
-    polyfillPopover();
     dismissSpies = { handleClickOutside: vi.fn(), handleSheetClose: vi.fn() };
     TestBed.configureTestingModule({
       imports: [SheetHost],
@@ -1796,97 +1829,6 @@ describe('CngxSelect - mobile sheet', () => {
     };
   }
 
-  it.each(['sheet', 'fullscreen'] as const)(
-    'opens as a modal %s with the internal header named by the label',
-    (presentation) => {
-      const { fixture, host, panel, open } = setup();
-      host.presentation.set(presentation);
-      flush(fixture);
-      open();
-      expect(panel.getAttribute('data-cngx-presentation')).toBe(presentation);
-      expect(panel.getAttribute('role')).toBe('dialog');
-      expect(panel.getAttribute('aria-modal')).toBe('true');
-      expect(panel.firstElementChild?.tagName.toLowerCase()).toBe('cngx-select-sheet-header');
-      const title = panel.querySelector('.cngx-select-sheet-header__title') as HTMLElement;
-      expect(panel.getAttribute('aria-labelledby')).toBe(title.id);
-      expect(title.textContent?.trim()).toBe('Colour');
-      expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('');
-    },
-  );
-
-  it("announces a 'dialog' popup while modal and 'listbox' once anchored", () => {
-    const { fixture, host, select, trigger, open } = setup();
-    host.presentation.set('sheet');
-    flush(fixture);
-    expect(trigger.getAttribute('aria-haspopup')).toBe('dialog');
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    open();
-    expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    select.close();
-    flush(fixture);
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    host.presentation.set('anchored');
-    flush(fixture);
-    expect(trigger.getAttribute('aria-haspopup')).toBe('listbox');
-  });
-
-  it('stays anchored without a request on a desktop viewport', () => {
-    const { fixture, host, panel, open } = setup();
-    host.presentation.set(undefined);
-    flush(fixture);
-    open();
-    expect(panel.getAttribute('data-cngx-presentation')).toBe('anchored');
-    expect(panel.getAttribute('aria-modal')).toBeNull();
-    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe(
-      'anchor-size(width)',
-    );
-  });
-
-  it('withMobileSheet("off") keeps the panel anchored', () => {
-    const { fixture, host, panel, open } = setup([provideSelectConfig(withMobileSheet('off'))]);
-    host.presentation.set(undefined);
-    flush(fixture);
-    open();
-    expect(panel.getAttribute('data-cngx-sheet')).toBe('anchored');
-  });
-
-  it('closes an outside tap through handleSheetClose once and never through the anchored path', () => {
-    const { fixture, el, select, open } = setup();
-    open();
-    const page = fixture.nativeElement.querySelector('.page-btn') as HTMLElement;
-    page.dispatchEvent(new Event('pointerdown', { bubbles: true }));
-    page.click();
-    flush(fixture);
-    expect(dismissSpies.handleSheetClose).toHaveBeenCalledExactlyOnceWith('backdrop');
-    expect(dismissSpies.handleClickOutside).not.toHaveBeenCalled();
-    expect(select.panelOpen()).toBe(false);
-    void el;
-  });
-
-  it('keeps the sheet open on X, swipe, back, outside tap and Escape while a pessimistic commit is pending', () => {
-    const { fixture, host, select, open, pickSecond, sheet, closeButton } = setup();
-    host.mode.set('pessimistic');
-    flush(fixture);
-    open();
-    pickSecond();
-    expect(select.isCommitting()).toBe(true);
-
-    expect(closeButton().getAttribute('aria-disabled')).toBe('true');
-    closeButton().click();
-    sheet().requestClose('swipe');
-    sheet().requestClose('back');
-    const page = fixture.nativeElement.querySelector('.page-btn') as HTMLElement;
-    page.dispatchEvent(new Event('pointerdown', { bubbles: true }));
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    flush(fixture);
-    expect(select.panelOpen()).toBe(true);
-
-    host.pending!.next('green');
-    host.pending!.complete();
-    flush(fixture);
-    expect(select.panelOpen()).toBe(false);
-  });
-
   it('keeps desktop Escape closing during a pessimistic pending commit', () => {
     const { fixture, host, select, open, pickSecond } = setup();
     host.presentation.set('anchored');
@@ -1898,30 +1840,6 @@ describe('CngxSelect - mobile sheet', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     flush(fixture);
     expect(select.panelOpen()).toBe(false);
-  });
-
-  it('moves focus panel -> trigger on X without a body hop and without touching the field', () => {
-    const { fixture, host, trigger, panel, open, closeButton } = setup();
-    open();
-    expect(panel.contains(document.activeElement)).toBe(true);
-
-    // A focusout without a relatedTarget means focus fell to body.
-    const drops: EventTarget[] = [];
-    const log = (event: FocusEvent) => {
-      if (event.relatedTarget === null && event.target) {
-        drops.push(event.target);
-      }
-    };
-    closeButton().focus();
-    document.addEventListener('focusout', log, true);
-    closeButton().click();
-    expect(document.activeElement).toBe(trigger);
-    flush(fixture);
-    document.removeEventListener('focusout', log, true);
-
-    expect(document.activeElement).toBe(trigger);
-    expect(drops).toEqual([]);
-    expect(host.ref.touched()).toBe(false);
   });
 
   it('does not reopen through openOn focus when focus returns to the trigger', () => {
@@ -2009,7 +1927,6 @@ describe('CngxSelect - highlight across an options swap', () => {
   }
 
   it('keeps the highlight on its value or drops it, never on another option', () => {
-    polyfillPopover();
     const fixture = TestBed.createComponent(SwapHost);
     fixture.detectChanges();
     flush(fixture);
@@ -2049,7 +1966,6 @@ describe('CngxSelect - panel row labels across an options swap', () => {
   }
 
   it('a reused row reports the new option label and typeahead matches it', () => {
-    polyfillPopover();
     const fixture = TestBed.createComponent(SwapHost);
     fixture.detectChanges();
     flush(fixture);
@@ -2080,5 +1996,78 @@ describe('CngxSelect - panel row labels across an options swap', () => {
     flush(fixture);
     const ad = de.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
     expect(ad.activeValue()).toBe('teal');
+  });
+});
+
+const CITY_OPTIONS: CngxSelectOptionDef<string>[] = [
+  { value: 'nv', label: 'Nevada' },
+  { value: 'nj', label: 'New Jersey' },
+  { value: 'ny', label: 'New York' },
+  { value: 'oh', label: 'Ohio' },
+];
+
+@Component({
+  template: `<cngx-select [label]="'City'" [options]="options" [(value)]="value" />`,
+  imports: [CngxSelect],
+})
+class CityHost {
+  readonly options = CITY_OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelect - a space inside a running typeahead buffer', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [CityHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(CityHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    return {
+      fixture,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
+      listbox: fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox),
+      popover: fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover),
+    };
+  }
+
+  function type(trigger: HTMLElement, fixture: ComponentFixture<CityHost>, text: string): void {
+    for (const key of text) {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      flush(fixture);
+    }
+  }
+
+  it('reaches New York by typing "new y" on the closed trigger, without opening the panel', () => {
+    const { fixture, triggerBtn, popover } = setup();
+    // Back to back, no change detection in between: both keydown listeners of
+    // the trigger see each key before any render.
+    for (const key of 'new y') {
+      triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    }
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(fixture.componentInstance.value()).toBe('ny');
+  });
+
+  it('reaches New York by typing "new y" with the panel open, without activating an option', () => {
+    const { fixture, triggerBtn, listbox, popover } = setup();
+    triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    type(triggerBtn, fixture, 'new y');
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeValue()).toBe('ny');
+    expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('still opens the panel on a space with no buffer running', () => {
+    const { fixture, triggerBtn, popover } = setup();
+    type(triggerBtn, fixture, ' ');
+    expect(popover.isVisible()).toBe(true);
   });
 });

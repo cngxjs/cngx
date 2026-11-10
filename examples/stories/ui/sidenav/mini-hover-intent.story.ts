@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSidenav: deliberate-dwell mini expand',
-  subtitle: 'The <code>mini</code> rail expands on a debounced hover: sweeping the pointer across the 56px rail never expands it, only resting on it for ~120ms does. The dwell routes through the <code>CngxHoverIntent</code> atom composed as a host directive, so a pass-through on the way to the content area no longer flickers.',
-  description: 'Sweep the pointer quickly across the rail - nothing happens. Rest on it briefly - it expands to full width; move away and it collapses. <code>[expandOnHover]="true"</code> is the on/off switch; the dwell timing is the atom default.',
+  title: 'CngxSidenav: deliberate-dwell rail peek',
+  subtitle: 'A collapsed rail (<code>[collapsed]="true"</code>) peeks on a debounced hover: sweeping the pointer across the 56px rail never expands it, only resting on it for ~120ms does. The dwell comes from the <code>CngxHoverIntent</code> inside the composed <code>CngxSidebar</code>, so a pass-through on the way to the content area does not flicker.',
+  description: 'Sweep the pointer quickly across the rail - nothing happens. Rest on it briefly - it peeks at full width over the content without shifting it; move away and it falls back to the rail. <code>[expandOnHover]="true"</code> is the on/off switch; the dwell timing is the atom default.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly activeLink = signal('/dashboard');`,
   template: `
   <cngx-sidenav-layout class="demo-sidenav__container">
-    <cngx-sidenav #nav="cngxSidenav" position="start" mode="mini" [expandOnHover]="true" width="240px">
+    <cngx-sidenav #nav="cngxSidenav" position="start" mode="side" [collapsed]="true" [expandOnHover]="true" width="240px">
       <cngx-sidenav-header class="demo-sidenav__header">
         Workspace
       </cngx-sidenav-header>
@@ -48,6 +48,6 @@ export const STORY: DemoSpec = {
     Sweep the pointer across the rail without pausing - it stays collapsed. Rest on it for a moment - it expands.
   </p>`,
   templateChrome: `<div class="status-row" style="margin-top: 0.5rem;">
-    <span class="status-badge" [class.active]="nav.expanded()">rail: {{ nav.expanded() ? 'expanded' : 'collapsed' }}</span>
+    <span class="status-badge" [class.active]="nav.expanded()">rail: {{ nav.expanded() ? 'peeking' : 'collapsed' }}</span>
   </div>`,
 };

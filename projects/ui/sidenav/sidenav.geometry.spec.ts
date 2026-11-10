@@ -20,7 +20,13 @@ import { CngxSidenavLayout } from './sidenav-layout';
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav mode="mini" [miniWidth]="'72px'" [expandOnHover]="false" ariaLabel="Nav">
+      <cngx-sidenav
+        mode="side"
+        [collapsed]="true"
+        [miniWidth]="'72px'"
+        [expandOnHover]="false"
+        ariaLabel="Nav"
+      >
         Nav
       </cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
@@ -36,7 +42,7 @@ function mount(): { host: HTMLElement; body: HTMLElement } {
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
-  const host = mountedRoot.querySelector('cngx-sidenav.cngx-sidenav--mini');
+  const host = mountedRoot.querySelector('cngx-sidenav[data-sidebar-state="rail"]');
   const body = host?.querySelector('.cngx-sidenav__body');
   if (!host || !body) {
     throw new Error('mini cngx-sidenav did not render a body');
@@ -55,8 +61,9 @@ afterEach(() => {
 describe('CngxSidenav mini-rail geometry', () => {
   it('collapses to the mini rail without expanding', () => {
     const { host } = mount();
-    expect(host.classList.contains('cngx-sidenav--mini')).toBe(true);
-    expect(host.classList.contains('cngx-sidenav--expanded')).toBe(false);
+    expect(host.getAttribute('data-sidebar-state')).toBe('rail');
+    // 72px rail plus the 1px edge border (content-box sizing).
+    expect(host.getBoundingClientRect().width).toBeCloseTo(73, 0);
   });
 
   it('inherits the configured mini-width down to the collapsed body', () => {
@@ -128,7 +135,7 @@ describe('CngxSidenav RTL geometry (:dir scoping)', () => {
 // This is the suite that proves the plan's central claim, and it can only live
 // here: jsdom evaluates no container query, so every jsdom test of auto mode
 // has to stub the property read. Here the real cascade runs - the layout's
-// @container rule resolves `--cngx-sidenav-layout-wide` on the rail, the
+// @container rule block resolves `--cngx-sidenav-width-class` on the rail, the
 // component reads that value back through CngxContainer.property(), and the
 // resolved mode lands on the host as a class.
 
@@ -189,15 +196,19 @@ describe('CngxSidenav auto mode geometry', () => {
     expect(state.name).toBe('cngx-sidenav-layout');
   });
 
-  it('resolves the docking property on the rail, not on the layout', () => {
+  it('resolves the width class on the rail, switching at exactly 48rem and 64rem', () => {
     const { rail, setWidth } = mountAuto();
-    setWidth('40rem');
-    expect(computedValue(rail, '--cngx-sidenav-layout-wide')).toBe('0');
-    setWidth('80rem');
-    expect(computedValue(rail, '--cngx-sidenav-layout-wide')).toBe('1');
+    setWidth('47.9rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('compact');
+    setWidth('48rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('medium');
+    setWidth('63.9rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('medium');
+    setWidth('64rem');
+    expect(computedValue(rail, '--cngx-sidenav-width-class')).toBe('expanded');
   });
 
-  it('overlays below the threshold and docks at or above it', async () => {
+  it('overlays in compact and docks in medium and expanded', async () => {
     const { rail, setWidth } = mountAuto();
 
     setWidth('40rem');
@@ -205,9 +216,191 @@ describe('CngxSidenav auto mode geometry', () => {
     expect(rail.classList.contains('cngx-sidenav--over')).toBe(true);
     expect(rail.classList.contains('cngx-sidenav--side')).toBe(false);
 
+    setWidth('56rem');
+    await nextFrame();
+    expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
+    expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
+
     setWidth('80rem');
     await nextFrame();
     expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
     expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
+  });
+});
+
+// F7: the surface moves focus into the drawer while it is still translated
+// off-canvas. A script-scrollable layout (overflow: hidden) would scroll by
+// the rail width; overflow: clip is never a scroll container.
+@Component({
+  selector: 'cngx-sidenav-focus-scroll-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout style="inline-size: 30rem; block-size: 20rem">
+      <cngx-sidenav #nav="cngxSidenav" mode="over" ariaLabel="Nav">
+        <a href="#a" class="first">First</a>
+      </cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+})
+class SidenavFocusScrollHost {}
+
+describe('CngxSidenav overlay focus geometry', () => {
+  it('clips the layout, so focusing into the off-canvas drawer cannot scroll it', () => {
+    const fixture = TestBed.createComponent(SidenavFocusScrollHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const layout = mountedRoot.querySelector('cngx-sidenav-layout') as HTMLElement;
+    const rail = mountedRoot.querySelector('cngx-sidenav') as HTMLElement;
+    expect(getComputedStyle(layout).overflowX).toBe('clip');
+
+    // The closed drawer sits translated off the inline-start edge; focusing
+    // into it, or a script scroll, must leave the layout where it is.
+    (rail.querySelector('.first') as HTMLElement).focus({ preventScroll: false });
+    layout.scrollLeft = 200;
+    expect(layout.scrollLeft).toBe(0);
+    fixture.destroy();
+  });
+});
+
+// F11 mechanism: the scrim fades on the panel's duration token, an open
+// overlay casts --cngx-sidenav-overlay-shadow, a hidden rest has no hairline.
+@Component({
+  selector: 'cngx-sidenav-f11-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout style="inline-size: 30rem; block-size: 20rem; --cngx-duration-base: 0.4s">
+      <cngx-sidenav mode="over" ariaLabel="Nav" [opened]="open">Nav</cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+      <cngx-sidenav
+        position="end"
+        mode="side"
+        collapsedAs="hidden"
+        [collapsed]="true"
+        ariaLabel="Inspector"
+        >Inspector</cngx-sidenav
+      >
+    </cngx-sidenav-layout>
+  `,
+})
+class SidenavF11Host {
+  open = false;
+}
+
+describe('CngxSidenav overlay visuals (F11)', () => {
+  function mountF11() {
+    const fixture = TestBed.createComponent(SidenavF11Host);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const root = mountedRoot;
+    return {
+      fixture,
+      backdrop: root.querySelector('.cngx-sidenav-backdrop') as HTMLElement,
+      start: root.querySelector('cngx-sidenav.cngx-sidenav--start') as HTMLElement,
+      end: root.querySelector('cngx-sidenav.cngx-sidenav--end') as HTMLElement,
+    };
+  }
+
+  it('fades the backdrop on the panel duration token instead of snapping', async () => {
+    const { fixture, backdrop, start } = mountF11();
+    await nextFrame();
+    expect(getComputedStyle(backdrop).opacity).toBe('0');
+    const railDuration = getComputedStyle(start)
+      .getPropertyValue('--cngx-sidenav-transition-duration')
+      .trim();
+    expect(railDuration).toBe('0.4s');
+    expect(getComputedStyle(backdrop).transitionDuration.split(',')[0].trim()).toBe(railDuration);
+    fixture.destroy();
+  });
+
+  it('casts the overlay shadow on an open over rail', async () => {
+    const { fixture, start } = mountF11();
+    fixture.componentInstance.open = true;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    await nextFrame();
+    expect(getComputedStyle(start).boxShadow).not.toBe('none');
+    // Close before teardown: the open page-modal surface holds inert on the
+    // page, released on the close edge.
+    fixture.componentInstance.open = false;
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    fixture.destroy();
+  });
+
+  it('leaves no border hairline on a hidden rest', () => {
+    const { fixture, end } = mountF11();
+    expect(end.getAttribute('data-sidebar-state')).toBe('hidden');
+    expect(end.getBoundingClientRect().width).toBe(0);
+    fixture.destroy();
+  });
+});
+
+// A docked rail that narrows into a page-modal drawer while focus is inside
+// stays open (the width-class reset keeps it); the surface engaged with focus
+// already inside, so there is no opener. Close lands on the trigger.
+@Component({
+  selector: 'cngx-sidenav-narrow-under-focus-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <button class="trigger" type="button" [attr.aria-controls]="nav.id()" (click)="nav.toggle()">
+      Toggle navigation
+    </button>
+    <div class="frame" style="inline-size: 70rem">
+      <cngx-sidenav-layout style="block-size: 20rem">
+        <cngx-sidenav #nav [(opened)]="open" ariaLabel="Nav">
+          <button class="link" type="button">Dashboard</button>
+        </cngx-sidenav>
+        <cngx-sidenav-content>Main</cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
+  `,
+})
+class SidenavNarrowUnderFocusHost {
+  open = false;
+}
+
+describe('CngxSidenav focus after an expanded to compact change under focus', () => {
+  it('restores focus to the trigger on Escape', async () => {
+    const fixture = TestBed.createComponent(SidenavNarrowUnderFocusHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const root = mountedRoot;
+    const rail = root.querySelector('cngx-sidenav') as HTMLElement;
+    const link = root.querySelector('.link') as HTMLElement;
+    const trigger = root.querySelector('.trigger') as HTMLElement;
+    for (let i = 0; i < 10 && rail.classList.contains('cngx-sidenav--over'); i++) {
+      await nextFrame();
+      fixture.detectChanges();
+    }
+    expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
+    for (let i = 0; i < 30 && document.activeElement !== link; i++) {
+      link.focus();
+      await nextFrame();
+    }
+    expect(document.activeElement).toBe(link);
+
+    (root.querySelector('.frame') as HTMLElement).style.inlineSize = '30rem';
+    for (let i = 0; i < 20 && rail.getAttribute('aria-modal') !== 'true'; i++) {
+      await nextFrame();
+      fixture.detectChanges();
+    }
+    expect(rail.getAttribute('aria-modal')).toBe('true');
+    expect(rail.contains(document.activeElement)).toBe(true);
+
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    await nextFrame();
+    fixture.detectChanges();
+
+    expect(rail.getAttribute('aria-modal')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    fixture.destroy();
   });
 });

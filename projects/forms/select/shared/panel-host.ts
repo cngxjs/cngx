@@ -36,6 +36,7 @@ import type {
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
 } from './config';
+import type { CngxSelectAutoRecyclerHandle } from './internal/auto-virtualize';
 import type { PanelRenderer as PanelRendererForHost } from './panel-renderer';
 import type {
   CngxSelectOptionDef,
@@ -155,6 +156,14 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
    * @internal
    */
   readonly panelRenderer?: PanelRendererForHost<T>;
+  /**
+   * Handle of the config-driven recycler; the panel template mounts its owner
+   * once a list crosses the threshold. Absent for a consumer renderer and for
+   * `withVirtualization(false)`.
+   *
+   * @internal
+   */
+  readonly autoRecycler?: CngxSelectAutoRecyclerHandle;
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
@@ -169,6 +178,15 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   readonly tpl: CngxSelectTemplateRegistry<T>;
   readonly commitErrorValue: Signal<unknown>;
   readonly activeId: Signal<string | null>;
+  /**
+   * Whether the panel is currently open. The panel body latches on this
+   * to defer rendering option rows until the first open (OD5): a panel
+   * that has never opened renders zero option rows while the listbox
+   * element, its id and `aria-controls` target stay mounted.
+   *
+   * @internal
+   */
+  readonly panelOpen: Signal<boolean>;
   isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
     item is CngxSelectOptionGroupDef<T>;
   isSelected(opt: CngxSelectOptionDef<T>): boolean;

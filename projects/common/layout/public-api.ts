@@ -59,8 +59,10 @@ export {
   type ScrollEdgesHost,
 } from './scroll/scroll-edges-core';
 export {
+  CNGX_SIDEBAR_DRIVER,
   CngxSidebar,
   type CngxSidebarCollapsedAs,
+  type CngxSidebarDriver,
   type CngxSidebarSide,
   type CngxSidebarState,
 } from './sidebar/sidebar.directive';

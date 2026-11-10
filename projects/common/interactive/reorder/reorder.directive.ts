@@ -78,6 +78,45 @@ function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): vo
 export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
 
 /**
+ * Whether a keydown is the keyboard move gesture `CngxReorder` consumes: the
+ * configured modifier together with an arrow key, Home or End. A host that
+ * pairs `CngxReorder` with other keyboard handling (a chip strip inside a
+ * select trigger) uses it to leave exactly that gesture to the reorder.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
+ * @since 0.3.0
+ * @relatedTo CngxReorder
+ */
+export function matchesReorderGesture(
+  event: KeyboardEvent,
+  modifier: CngxReorderModifier,
+): boolean {
+  return modifierDown(event, modifier) && isReorderKey(event.key);
+}
+
+function modifierDown(event: KeyboardEvent, modifier: CngxReorderModifier): boolean {
+  switch (modifier) {
+    case 'ctrl':
+      return event.ctrlKey;
+    case 'alt':
+      return event.altKey;
+    case 'meta':
+      return event.metaKey;
+  }
+}
+
+function isReorderKey(key: string): boolean {
+  return (
+    key === 'ArrowLeft' ||
+    key === 'ArrowRight' ||
+    key === 'ArrowUp' ||
+    key === 'ArrowDown' ||
+    key === 'Home' ||
+    key === 'End'
+  );
+}
+
+/**
  * Payload emitted by `(reordered)` whenever a pointer drag or a modifier +
  * arrow keyboard move settles on a new position.
  *
@@ -391,8 +430,7 @@ export class CngxReorder<T = unknown> {
     fromEvent<KeyboardEvent>(this.hostEl, 'keydown')
       .pipe(
         filter(() => !this.disabled()),
-        filter((e) => this.modifierMatches(e)),
-        filter((e) => this.isReorderKey(e.key)),
+        filter((e) => matchesReorderGesture(e, this.keyboardModifier())),
         tap((e) => {
           const target = e.target as Element | null;
           const itemEl = target?.closest<HTMLElement>(this.itemSelector());
@@ -444,28 +482,6 @@ export class CngxReorder<T = unknown> {
         takeUntilDestroyed(),
       )
       .subscribe();
-  }
-
-  private modifierMatches(event: KeyboardEvent): boolean {
-    switch (this.keyboardModifier()) {
-      case 'ctrl':
-        return event.ctrlKey;
-      case 'alt':
-        return event.altKey;
-      case 'meta':
-        return event.metaKey;
-    }
-  }
-
-  private isReorderKey(key: string): boolean {
-    return (
-      key === 'ArrowLeft' ||
-      key === 'ArrowRight' ||
-      key === 'ArrowUp' ||
-      key === 'ArrowDown' ||
-      key === 'Home' ||
-      key === 'End'
-    );
   }
 
   private emitMove(from: number, to: number, source?: readonly T[]): void {

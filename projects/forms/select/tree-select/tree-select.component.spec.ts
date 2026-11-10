@@ -3,7 +3,7 @@ import { Subject, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
@@ -11,6 +11,7 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { KINDS as PROBE_KINDS, cleanupRoots as cleanupProbeRoots, mount as probeMount } from '../shared/__test-helpers/review-probe-host';
 import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -19,6 +20,7 @@ import {
   makeSelectConfig,
   provideSelectConfig,
   withAriaLabels,
+  withDismissOn,
   withFallbackLabels,
   withPanelClass,
   withTemplates,
@@ -38,34 +40,6 @@ import type {
   CngxTreeSelectFooterContext,
   CngxTreeSelectNodeCountContext,
 } from './tree-select.model';
-
-// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 interface Row {
   readonly id: string;
@@ -126,7 +100,6 @@ function setup() {
 }
 
 describe('CngxTreeSelect', () => {
-  beforeAll(() => polyfillPopover());
 
   let f: ReturnType<typeof setup>;
   beforeEach(() => {
@@ -425,6 +398,27 @@ describe('CngxTreeSelect', () => {
     });
   }
 
+  it('Alt+ArrowDown opens and Alt+ArrowUp closes the panel; other modified keys pass through', () => {
+    const trigger = f.root.querySelector<HTMLElement>('[role="combobox"]')!;
+    const press = (init: KeyboardEventInit): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
+      trigger.dispatchEvent(event);
+      f.fixture.detectChanges();
+      return event;
+    };
+
+    expect(press({ key: 'ArrowUp', altKey: true }).defaultPrevented).toBe(false);
+    expect(f.tree.panelOpen()).toBe(false);
+    expect(press({ key: 'ArrowDown', altKey: true, ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(f.tree.panelOpen()).toBe(false);
+
+    expect(press({ key: 'ArrowDown', altKey: true }).defaultPrevented).toBe(true);
+    expect(f.tree.panelOpen()).toBe(true);
+
+    expect(press({ key: 'ArrowUp', altKey: true }).defaultPrevented).toBe(true);
+    expect(f.tree.panelOpen()).toBe(false);
+  });
+
   it('Escape on the trigger closes the panel when open', () => {
     f.tree.open();
     f.fixture.detectChanges();
@@ -594,8 +588,6 @@ describe('CngxTreeSelect - member identity follows keyFn', () => {
     readonly compareWith = signal<CngxSelectCompareFn<Row>>(Object.is);
   }
 
-  beforeEach(() => polyfillPopover());
-
   const flush = (fixture: { detectChanges: () => void }): void => {
     TestBed.flushEffects();
     fixture.detectChanges();
@@ -698,8 +690,6 @@ describe('CngxTreeSelect - toggle commit error announcement', () => {
     };
   }
 
-  beforeEach(() => polyfillPopover());
-
   it.each(['optimistic', 'pessimistic'] as const)(
     'announces a failed %s toggle assertively with the error detail',
     (mode) => {
@@ -760,8 +750,6 @@ describe('CngxTreeSelect - shared core view state', () => {
     };
   }
 
-  beforeEach(() => polyfillPopover());
-
   function mount() {
     const fixture = TestBed.createComponent(StateTreeHost);
     fixture.detectChanges();
@@ -800,7 +788,6 @@ describe('CngxTreeSelect - shared core view state', () => {
 
 describe('CngxTreeSelect - config panel class', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ providers: [provideSelectConfig(withPanelClass('app-panel'))] });
   });
 
@@ -836,8 +823,6 @@ describe('CngxTreeSelect - commit error copy without a label', () => {
       return this.pending.asObservable();
     };
   }
-
-  beforeEach(() => polyfillPopover());
 
   it('names the field label fallback when aria-label is empty', () => {
     const fixture = TestBed.createComponent(UnlabelledTreeHost);
@@ -899,8 +884,6 @@ describe('CngxTreeSelect - commit retry', () => {
       return subject.asObservable();
     };
   }
-
-  beforeEach(() => polyfillPopover());
 
   it.each(['optimistic', 'pessimistic'] as const)(
     'replays the failed %s toggle instead of committing a clear',
@@ -989,8 +972,6 @@ describe('CngxTreeSelect - per-instance node ids', () => {
     readonly labelFn = (v: Row): string => v.name;
   }
 
-  beforeEach(() => polyfillPopover());
-
   it('never shares a treeitem id or an aria-activedescendant target between two trees', async () => {
     const fixture = TestBed.createComponent(TwoTreesHost);
     const root = fixture.nativeElement as HTMLElement;
@@ -1001,12 +982,16 @@ describe('CngxTreeSelect - per-instance node ids', () => {
       const trees = fixture.debugElement
         .queryAll(By.directive(CngxTreeSelect))
         .map((de) => de.componentInstance as CngxTreeSelect<Row>);
+      // Deferred render (OD5): a tree renders its nodes on its first open and
+      // latches them. Two popover=auto panels can't be open at once, so open
+      // each with a render in between - the first keeps its rows after the
+      // second light-dismisses it.
       for (const t of trees) {
         t.open();
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
       }
-      fixture.detectChanges();
-      TestBed.flushEffects();
-      fixture.detectChanges();
 
       const ids = Array.from(root.querySelectorAll('[role="treeitem"]')).map((el) => el.id);
       expect(ids.length).toBe(8);
@@ -1037,7 +1022,6 @@ describe('CngxTreeSelect - per-instance node ids', () => {
 });
 
 describe('CngxTreeSelect - runtime language switch', () => {
-  beforeAll(() => polyfillPopover());
 
   it('flips the clear label while unbound', () => {
     const labels = signal<CngxSelectAriaLabels>({});
@@ -1092,8 +1076,6 @@ class TreeSummaryHost {
 
 describe('CngxTreeSelect - summary trigger under the touch floor', () => {
   let restore: (() => void) | null = null;
-
-  beforeAll(() => polyfillPopover());
 
   afterEach(() => {
     restore?.();
@@ -1247,7 +1229,6 @@ class TreeOverflowHost {
 }
 
 describe('CngxTreeSelect - one-line chip strip', () => {
-  beforeAll(() => polyfillPopover());
 
   function render() {
     const fixture = TestBed.createComponent(TreeOverflowHost);
@@ -1387,7 +1368,6 @@ function openTree<H>(type: new () => H) {
 }
 
 describe('CngxTreeSelect - parent row counts', () => {
-  beforeAll(() => polyfillPopover());
 
   it('shows selected-of-total on parent rows only, hidden from AT', () => {
     const { fixture, row } = openTree(TreeCountHost);
@@ -1546,7 +1526,6 @@ class FooterTemplateHolder {
 }
 
 describe('CngxTreeSelect - panel footer', () => {
-  beforeAll(() => polyfillPopover());
 
   it('shows the selected count and a clear-all labelled by the clear cascade', () => {
     const { el } = openTree(TreeFooterHost);
@@ -1629,5 +1608,52 @@ describe('CngxTreeSelect - panel footer', () => {
     } finally {
       configFooterTpl = null;
     }
+  });
+});
+
+// ── Review 2 (commit 7): dismiss, aria-multiselectable, PageUp/PageDown. ─────
+describe('CngxTreeSelect - review 2 dismiss and tree keyboard', () => {
+  afterEach(() => {
+    cleanupProbeRoots();
+    vi.restoreAllMocks();
+  });
+
+  function treeEl(root: HTMLElement): HTMLElement {
+    const tree = root.querySelector<HTMLElement>('[role="tree"]');
+    if (!tree) {
+      expect.fail('no role=tree container');
+    }
+    return tree!;
+  }
+
+  // C2: dismissOn 'outside' turns Escape dismissal off, so Escape keeps the tree open.
+  it('Escape keeps the tree open under dismissOn outside', () => {
+    const m = probeMount(PROBE_KINDS['tree'], { providers: [provideSelectConfig(withDismissOn('outside'))] });
+    m.open();
+    expect(m.v.panelOpen()).toBe(true);
+    treeEl(m.el).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    m.settle();
+    expect(m.v.panelOpen()).toBe(true);
+  });
+
+  // I3: the tree announces that several nodes can be selected.
+  it('the role=tree container carries aria-multiselectable="true"', () => {
+    const m = probeMount(PROBE_KINDS['tree']);
+    m.open();
+    expect(treeEl(m.el).getAttribute('aria-multiselectable')).toBe('true');
+  });
+
+  // I10: PageDown moves the active node by a page (clamped to the last node here).
+  it('PageDown moves the active node toward the end', () => {
+    const m = probeMount(PROBE_KINDS['tree']);
+    m.open();
+    const tree = treeEl(m.el);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    m.settle();
+    const first = tree.getAttribute('aria-activedescendant');
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }));
+    m.settle();
+    const after = tree.getAttribute('aria-activedescendant');
+    expect(after).not.toBe(first);
   });
 });

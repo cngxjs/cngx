@@ -396,6 +396,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
     await expect(trigger).toBeVisible();
     await trigger.click();
+    // The first open renders its rows one frame later; an arrow pressed in
+    // that frame has no row to move to. Wait for the rows before driving keys.
+    await expect(page.getByRole('option').first()).toBeVisible();
     await page.keyboard.press('ArrowDown');
     const active = page.locator('.cngx-option--highlighted').first();
     await expect(active).toBeVisible();
@@ -438,7 +441,10 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
     await expect(trigger).toBeVisible();
     await trigger.click();
-    await page.keyboard.press('ArrowDown');
+    // A pointer open highlights the selected option (Team); wait for the rows,
+    // then Home walks the highlight from the first row.
+    await expect(page.getByRole('option', { name: 'Starter' })).toBeVisible();
+    const highlightedOption = page.locator('.cngx-option--highlighted');
     const highlightText = await page.evaluate(() => {
       const probe = document.createElement('span');
       probe.style.color = 'HighlightText';
@@ -447,28 +453,23 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
       probe.remove();
       return value;
     });
-    const highlighted = page.locator('.cngx-option--highlighted .cngx-radio-indicator');
-    await expect(highlighted).toBeVisible();
+    const indicator = highlightedOption.locator('.cngx-radio-indicator');
+    const circleStroke = async () =>
+      (await readAffordance(indicator.locator('.cngx-radio-indicator__circle'))).stroke;
+    const markStroke = async () =>
+      (await readAffordance(indicator.locator('.cngx-radio-indicator__mark'))).stroke;
 
-    // Arrow until the highlight has visited an unchecked and the checked
-    // option; both must paint in the row ink. Paints transition, so poll.
-    const seen = new Set<'checked' | 'unchecked'>();
-    for (let step = 0; step < 4 && seen.size < 2; step++) {
-      const isChecked = await highlighted.evaluate((el) =>
-        el.classList.contains('cngx-radio-indicator--checked'),
-      );
-      await expect
-        .poll(async () => (await readAffordance(highlighted.locator('.cngx-radio-indicator__circle'))).stroke)
-        .toBe(highlightText);
-      if (isChecked) {
-        await expect
-          .poll(async () => (await readAffordance(highlighted.locator('.cngx-radio-indicator__mark'))).stroke)
-          .toBe(highlightText);
-      }
-      seen.add(isChecked ? 'checked' : 'unchecked');
-      await page.keyboard.press('ArrowDown');
-    }
-    expect([...seen].sort()).toEqual(['checked', 'unchecked']);
+    // Paints transition, so poll each row once the highlight has landed on it.
+    await page.keyboard.press('Home');
+    await expect(highlightedOption).toHaveText('Starter');
+    await expect(indicator).not.toHaveClass(/cngx-radio-indicator--checked/);
+    await expect.poll(circleStroke).toBe(highlightText);
+
+    await page.keyboard.press('ArrowDown');
+    await expect(highlightedOption).toHaveText('Team');
+    await expect(indicator).toHaveClass(/cngx-radio-indicator--checked/);
+    await expect.poll(circleStroke).toBe(highlightText);
+    await expect.poll(markStroke).toBe(highlightText);
   });
 
   test('keyboard-active tree node re-signals with Highlight (tint-only node would collapse to Canvas)', async ({ page }) => {

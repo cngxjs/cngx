@@ -1,0 +1,32 @@
+/**
+ * @overview
+ * Structural layout for `CngxActionStatusStack`. The stack element is the
+ * host's label element (`span[cngxActionStatusStack]`, `.cngx-action-status-stack`);
+ * its cells are `.cngx-action-status-cell` children. No paint, only the stack:
+ * the host keeps its own look.
+ *
+ * **Layout**
+ *
+ * - `.cngx-action-status-stack` - one grid cell holding every cell, so the
+ *   host is as wide as its widest label and never jumps after a run
+ * - `.cngx-action-status-cell[data-active]` - the visible, named cell; the
+ *   others are `visibility: hidden` (and `aria-hidden` from
+ *   `[cngxActionStatusCell]`), so they keep their size without showing
+ */
+@layer cngx.components {
+  @scope (.cngx-action-status-stack) {
+    :scope {
+      display: inline-grid;
+      justify-items: center;
+      align-items: center;
+    }
+    :scope > .cngx-action-status-cell {
+      grid-area: 1 / 1;
+      display: inline-flex;
+      align-items: center;
+    }
+    :scope > .cngx-action-status-cell:not([data-active]) {
+      visibility: hidden;
+    }
+  }
+}

@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'One <code>provideSidenavConfigAt(...)</code> in <code>viewProviders</code> moves the sidenav defaults for everything below it: <code>withSidenavDimensions</code> sets the width and the resize bounds, <code>withSidenavShortcut</code> the toggle combo, <code>withSidenavLabels</code> the accessible name of the resize handle. The rail binds none of <code>[width]</code>, <code>[minWidth]</code>, <code>[maxWidth]</code>, <code>[shortcut]</code> or <code>[resizeLabel]</code>.',
   description:
-    'The rail starts at the configured 220px. Drag the handle on its edge, or focus it and press the arrow keys (Home / End jump to the bounds): the width stops at the configured 160px and 320px instead of the library 120px / 600px. Press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>B</kbd> to close and reopen the rail; it runs in <code>push</code> mode because <code>close()</code> is a no-op for the always-visible <code>side</code> and <code>mini</code> rails. A per-instance input still wins over each of these keys; <code>provideSidenavConfig(...)</code> sets the same features app-wide at bootstrap.',
+    'The rail starts at the configured 220px. Drag the handle on its edge, or focus it and press the arrow keys (Home / End jump to the bounds): the width stops at the configured 160px and 320px instead of the library 120px / 600px. Press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>B</kbd> to hide and show the rail: it is docked (<code>mode="side"</code>) with <code>collapsedAs="hidden"</code>, so collapsing takes it to zero width and the content reflows. A per-instance input still wins over each of these keys; <code>provideSidenavConfig(...)</code> sets the same features app-wide at bootstrap.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -29,16 +29,17 @@ export const STORY: DemoSpec = {
       withSidenavLabels({ resizeHandle: 'Resize project list' }),
     )`,
   ],
-  setup: `protected readonly navOpen = signal(true);
+  setup: `protected readonly navCollapsed = signal(false);
   protected readonly projects = ['Website relaunch', 'Mobile app', 'Data platform'];
   protected readonly current = signal('Website relaunch');`,
   template: `  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
     <cngx-sidenav
       #nav="cngxSidenav"
       position="start"
-      mode="push"
+      mode="side"
+      collapsedAs="hidden"
       [resizable]="true"
-      [(opened)]="navOpen"
+      [(collapsed)]="navCollapsed"
       ariaLabel="Projects"
     >
       <cngx-sidenav-header class="demo-sidenav__header">Projects</cngx-sidenav-header>
@@ -69,7 +70,7 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">Shortcut</span>
-      <span class="event-value">{{ sidenavConfig.shortcut }}, rail {{ nav.opened() ? 'open' : 'closed' }}</span>
+      <span class="event-value">{{ sidenavConfig.shortcut }}, rail {{ navCollapsed() ? 'hidden' : 'shown' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Handle name</span>

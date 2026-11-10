@@ -57,12 +57,13 @@ export class ExampleComponent {
 
 ## Overview
 
-`CngxSidenav` is a composable sidebar component that handles drawer behavior, keyboard shortcuts, width-driven mode switching, and optional resize functionality. It coordinates with `CngxSidenavLayout` for backdrop and scroll-lock management.
+`CngxSidenav` is a composable sidebar component that handles drawer behavior, keyboard shortcuts, width-driven mode switching, and optional resize functionality. An open overlay runs on a composed `CngxDrawerSurface` (focus trap, `inert`, scroll lock, dismissal); `CngxSidenavLayout` draws the backdrop.
 
 Key features:
 
-- **Responsive by default:** `mode` is `auto` unless you say otherwise - `side` once the surrounding layout is `64rem` or wider, `over` below that
-- **Mode switching:** bind `mode` to pin one of `over` (overlay), `push` (nudges content), `side` (permanent), `mini` (collapsed icon rail; hover expands after a tunable dwell via `[expandDelay]` / `[collapseDelay]`)
+- **Responsive by default:** `mode` is `auto` unless you say otherwise - it follows the width class of the surrounding layout: a drawer (`over`) below `48rem`, a collapsed rail with the full nav as an overlay from `48rem`, docked (`side`) from `64rem`
+- **Mode switching:** bind `mode` to pin `over` (overlay) or `side` (docked); the former push is `side` with `collapsedAs="hidden"`
+- **Collapsed rail:** `[(collapsed)]` rests a docked rail as an icon rail (`collapsedAs="rail"`, `miniWidth` wide) or hides it (`collapsedAs="hidden"`); a collapsed rail peeks at full width over the content after a tunable hover dwell (`[expandDelay]` / `[collapseDelay]`). The rail is a composed `CngxSidebar` from `@cngx/common/layout`
 - **Two-way binding:** `[(opened)]` synchronizes with external state
 - **Resize:** Optional drag handle with min/max constraints; the separator speaks its position as a percent of the min-max range (`aria-valuetext`, `sidenav` language section)
 - **Keyboard:** Escape closes overlay, configurable global shortcut via `[shortcut]`
@@ -74,17 +75,23 @@ Key features:
 
 The docking decision reads the width of the surrounding `CngxSidenavLayout`, not the width of the window. A rail inside a dashboard pane collapses when that pane is narrow, whatever the browser window is doing.
 
-The threshold lives in exactly one place - a `@container` rule in `sidenav-layout.css` that writes `--cngx-sidenav-layout-wide` on the rail:
+The thresholds live in exactly one place - a `@container` rule block in `sidenav-layout.css` that writes `--cngx-sidenav-width-class` on the rail. Below 48rem the class is `compact` (the rail is a drawer), from 48rem `medium`, from 64rem `expanded` (both dock the rail). Override both rules to move the thresholds:
 
 ```css
-@container cngx-sidenav-layout (min-inline-size: 64rem) {
+@container cngx-sidenav-layout (min-inline-size: 40rem) {
   cngx-sidenav-layout > cngx-sidenav {
-    --cngx-sidenav-layout-wide: 1;
+    --cngx-sidenav-width-class: medium;
+  }
+}
+
+@container cngx-sidenav-layout (min-inline-size: 72rem) {
+  cngx-sidenav-layout > cngx-sidenav {
+    --cngx-sidenav-width-class: expanded;
   }
 }
 ```
 
-`CngxSidenav` reads the resolved value; it never evaluates the condition itself. Override that rule to move the breakpoint. To opt out of auto entirely, bind `mode`:
+`CngxSidenav` reads the resolved value as `widthClass()`; it never evaluates a condition itself. A value outside the three classes renders as `compact` and warns [`CNGX3026`](../../../core-concepts/error-codes/cngx3026.md) in dev mode. To opt out of auto entirely, bind `mode`:
 
 ```html
 <!-- always an overlay, whatever the layout width -->
@@ -97,29 +104,22 @@ See `core-concepts/responsive-by-default.md` for the library-wide contract.
 
 ## External toggle
 
-A hamburger outside the rail toggles it with one button. Name the rail in the button's `aria-controls` and reflect the state in `aria-expanded`:
+A hamburger outside the rail toggles it with one `CngxPanelTrigger` (`@cngx/common/layout`) bound to the rail's `panelTarget`. The trigger sets `aria-controls` and mirrors `expanded` as `aria-expanded`, and `toggle()` follows the width class: it collapses the docked rail in `expanded`, opens the full nav over the rail in `medium` and the drawer in `compact`. A bare `cngxPanelTrigger` inside the rail (a pin or close button) resolves the same target through `CNGX_PANEL_TARGET`.
 
 ```html
-<button
-  type="button"
-  [attr.aria-controls]="nav.id()"
-  [attr.aria-expanded]="nav.opened()"
-  (click)="navOpen.set(!navOpen())"
->
-  Menu
-</button>
+<button type="button" [cngxPanelTrigger]="nav.panelTarget">Menu</button>
 
 <cngx-sidenav-layout>
-  <cngx-sidenav #nav [(opened)]="navOpen">…</cngx-sidenav>
+  <cngx-sidenav #nav="cngxSidenav">…</cngx-sidenav>
   <cngx-sidenav-content>…</cngx-sidenav-content>
 </cngx-sidenav-layout>
 ```
 
-`CngxSidenavLayout` closes an open overlay on any `pointerdown` outside the rail, except inside an element whose `aria-controls` lists the rail's id. Without that attribute the toggle cannot close the overlay: its `pointerdown` dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
+An open overlay closes on any press outside the rail, except inside an element whose `aria-controls` lists the rail's id. A hand-rolled toggle needs that attribute: without it its press dismisses the rail and its `click` reopens it. Every rail has an id: a generated one by default, or the static `id="..."` you set on the host (read it back via `nav.id()`).
 
 ## Configuration
 
-Every dimension default, the toggle shortcut, and the mini hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
+Every dimension default, the toggle shortcut, and the rail hover dwell resolve through a standard cascade. The docking threshold is deliberately not in the cascade - it is a CSS rule (see above), so it travels with the skin. Per-instance bindings always win; unset keys fall back to the library defaults, so an unconfigured `<cngx-sidenav>` behaves exactly as before.
 
 Resolution priority (high to low):
 
@@ -150,18 +150,19 @@ bootstrapApplication(AppComponent, {
 | Feature | Overrides |
 |-|-|
 | `withSidenavDimensions({ width?, miniWidth?, minWidth?, maxWidth? })` | Panel dimensions |
-| `withSidenavShortcut(combo)` | Default toggle shortcut |
-| `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Mini expand/collapse dwell (ms) |
+| `withSidenavShortcut(combo)` | Default toggle shortcut for `position="start"` rails; an `end` rail needs its own `[shortcut]` |
+| `withSidenavHoverDwell({ enterDelay?, leaveDelay? })` | Collapsed-rail peek dwell (ms) |
 | `withSidenavRouterSync({ param })` | Default deep-link query-param key |
+| `withSidenavPersistence(storageKey?)` | Persist each rail's `collapsed` in `CNGX_SIDENAV_STORAGE` under `<storageKey>:<position>`; seeds an unbound `collapsed` |
 
 Read the resolved config in an injection context with `injectSidenavConfig()`. Scope overrides to a sub-tree with `provideSidenavConfigAt(...)` in a component's `viewProviders`.
 
-### Mini hover dwell
+### Rail hover dwell
 
-In `mini` mode the rail expands only after the pointer rests for `expandDelay` ms and collapses after `collapseDelay` ms, so a sweep across the rail never expands it. Both are tunable per instance and app-wide:
+A collapsed rail peeks only after the pointer rests for `expandDelay` ms and the peek ends `collapseDelay` ms after it leaves, so a sweep across the rail never peeks it. Both are tunable per instance and app-wide:
 
 ```html
-<cngx-sidenav mode="mini" [expandDelay]="250" [collapseDelay]="150">...</cngx-sidenav>
+<cngx-sidenav mode="side" [collapsed]="true" [expandDelay]="250" [collapseDelay]="150">...</cngx-sidenav>
 ```
 
 Defaults are `expandDelay` 120ms and `collapseDelay` 0ms (instant collapse). The app-wide default is `withSidenavHoverDwell({ enterDelay, leaveDelay })`; per-instance `[expandDelay]` / `[collapseDelay]` win over it.
@@ -197,22 +198,22 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 ## Accessibility
 
-- **ARIA roles:** The rail is a `role="complementary"` landmark while docked or closed. An open overlay (`over`, including `auto` below the threshold) is a modal dialog instead: `role="dialog"` with `aria-modal="true"`, matching its focus trap, Escape and backdrop. `aria-modal` never appears without `role="dialog"`. In overlay mode, `aria-hidden="true"` when closed.
+- **ARIA roles:** The rail is a `role="complementary"` landmark while docked or closed. An open overlay (`over`, including `auto` below the threshold) is a modal dialog instead: `role="dialog"` with `aria-modal="true"`, matching its focus trap, Escape and backdrop. `aria-modal` never appears without `role="dialog"`. In overlay mode, `aria-hidden="true"` and `inert` when closed. `modality="contained"` keeps the modal inside the layout and `modality="none"` keeps the page operable (no trap, no backdrop, the rail stays a landmark).
 - **Accessible name:** Every rail is named. Resolution: `[ariaLabel]`, then `withSidenavLabels({ startRegion, endRegion })`, then the `sidenav` language section. The default depends on `position`: `Navigation` for `start`, `Side panel` for `end`, so two rails never share one name.
 - **Keyboard interaction:**
   - `Escape` - Closes overlay mode sidenav
-  - Custom shortcut (if configured) - Toggles opened state globally
-- **Screen reader:** The landmark or dialog announces the rail's name; scroll lock prevents reading body content when sidebar is open in overlay.
-- **Focus management:** In overlay (`over`) mode a CDK focus trap keeps Tab within the rail while open, moves focus into the rail on open, and restores focus to the element that opened it on close.
+  - Custom shortcut (if configured) - Runs `toggle()` from anywhere on the page and announces "Navigation expanded" / "Navigation collapsed" (`collapsedAnnouncement` / `expandedAnnouncement` labels, `CNGX_SIDENAV_ANNOUNCER_FACTORY` to swap the announcer). It is a `sidenav.toggle` binding in the app hotkey registry, so it stays quiet while another modal holds focus
+- **Screen reader:** The landmark or dialog announces the rail's name; while a page-modal overlay is open everything outside it is `inert`, so the body content is not reachable.
+- **Focus management:** An open overlay (`modality="page"`) traps Tab within the rail, moves focus into the rail on open, and restores focus to the element that opened it on close. Focus inside a closing drawer is moved out before it turns `aria-hidden`.
 
 ## Composition
 
 `CngxSidenav` composes these atoms internally:
 
-- **Responsive media query:** Inline `matchMedia` listener wired to `mediaMatches` signal
-- **Keyboard shortcut:** Global document listener via `effect(onCleanup)`
-- **Scroll lock:** Coordinate with `CngxSidenavLayout` via `hasOverlay` computed
-- **Resize:** Pointer-capture drag with RAFed position updates
+- **Width class:** the layout's `CngxContainer` publishes `--cngx-sidenav-width-class`
+- **Keyboard shortcut:** `injectHotkeys` binding `sidenav.toggle` in the rail's hotkey scope (`@cngx/common/interactive`)
+- **Overlay:** `CngxDrawerSurface` host directive (focus trap, focus restore, `inert`, scroll lock, Escape / back gesture / outside press), driven per `modality`
+- **Resize:** `CngxResizable` (`@cngx/common/layout`) on the handle: window-splitter ARIA, pointer drag, arrow keys
 - **Mini hover intent:** Debounced expand-on-hover via the composed `CngxHoverIntent` host directive (`@cngx/common/interactive`), reading `CNGX_HOVER_INTENT_DEFAULTS` from the resolved config
 
 

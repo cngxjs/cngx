@@ -1,8 +1,15 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type CngxDrawerModality, CngxDrawerSurface } from './drawer-surface.directive';
+import { CNGX_HOTKEY_SCOPE, CngxHotkeyScope, injectHotkey } from '@cngx/common/interactive';
+
+import {
+  CNGX_DRAWER_SURFACE_DRIVER,
+  type CngxDrawerModality,
+  CngxDrawerSurface,
+  type CngxDrawerSurfaceDriver,
+} from './drawer-surface.directive';
 
 interface FakeWatcher {
   onclose: (() => void) | null;
@@ -82,6 +89,28 @@ class LayeredHost {
   inner = vi.fn();
 }
 
+@Directive({
+  selector: '[drivenSurface]',
+  hostDirectives: [CngxDrawerSurface],
+  providers: [{ provide: CNGX_DRAWER_SURFACE_DRIVER, useExisting: DrivenSurface }],
+})
+class DrivenSurface implements CngxDrawerSurfaceDriver {
+  readonly surfaceActive = signal(false);
+  readonly surfaceModality = signal<CngxDrawerModality>('page');
+  readonly surfaceLabel = signal('Main navigation');
+  surfaceDismiss(): void {
+    this.surfaceActive.set(false);
+  }
+}
+
+@Component({
+  template: `<aside drivenSurface><button>Inside</button></aside>`,
+  imports: [DrivenSurface],
+})
+class DrivenLabelHost {
+  readonly driven = viewChild.required(DrivenSurface);
+}
+
 describe('CngxDrawerSurface', () => {
   let watchers: FakeWatcher[];
 
@@ -105,7 +134,7 @@ describe('CngxDrawerSurface', () => {
       destroy: vi.fn(),
     };
     TestBed.configureTestingModule({
-      imports: [TestHost, StaticNameHost, LayeredHost],
+      imports: [TestHost, StaticNameHost, LayeredHost, DrivenLabelHost],
       providers: [{ provide: FocusTrapFactory, useValue: { create: vi.fn(() => mockTrap) } }],
     });
   });
@@ -349,6 +378,27 @@ describe('CngxDrawerSurface', () => {
       expect(surface.hasAttribute('aria-label')).toBe(false);
     });
 
+    it('takes a driven label in every state instead of the dialog fallback', () => {
+      const fixture = TestBed.createComponent(DrivenLabelHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const aside = (fixture.nativeElement as HTMLElement).querySelector('aside') as HTMLElement;
+      const driven = fixture.componentInstance.driven();
+      expect(aside.getAttribute('aria-label')).toBe('Main navigation');
+
+      driven.surfaceActive.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(aside.getAttribute('role')).toBe('dialog');
+      expect(aside.getAttribute('aria-label')).toBe('Main navigation');
+
+      driven.surfaceLabel.set('Hauptnavigation');
+      driven.surfaceActive.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(aside.getAttribute('aria-label')).toBe('Hauptnavigation');
+    });
+
     it('keeps a static aria-labelledby and a static aria-label', () => {
       const fixture = TestBed.createComponent(StaticNameHost);
       fixture.detectChanges();
@@ -491,6 +541,80 @@ describe('CngxDrawerSurface', () => {
       expect(host.dismissed).not.toHaveBeenCalled();
     });
 
+    describe('trailing click of an outside press', () => {
+      function clicks(target: HTMLElement) {
+        const handler = vi.fn();
+        target.addEventListener('click', handler);
+        return handler;
+      }
+
+      it('swallows the click of the gesture that dismissed a page modal', () => {
+        const { host, set, q } = setup();
+        set((h) => h.active.set(true));
+        const opener = q('.opener');
+        const handler = clicks(opener);
+        press(opener);
+        expect(host.dismissed).toHaveBeenCalledTimes(1);
+        set((h) => h.active.set(false));
+        const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+        opener.dispatchEvent(click);
+        expect(handler).not.toHaveBeenCalled();
+        expect(click.defaultPrevented).toBe(true);
+        opener.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+
+      it('lets the click through when the gesture ended without one', () => {
+        const { set, q } = setup();
+        set((h) => h.active.set(true));
+        const opener = q('.opener');
+        const handler = clicks(opener);
+        press(opener);
+        set((h) => h.active.set(false));
+        press(opener);
+        opener.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+
+      it('lets a keyboard click through after the gesture ended without one', () => {
+        const { set, q } = setup();
+        set((h) => h.active.set(true));
+        const opener = q('.opener');
+        const handler = clicks(opener);
+        press(opener);
+        set((h) => h.active.set(false));
+        opener.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        opener.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+
+      it('keeps the click outside a page modal', () => {
+        for (const modality of ['none', 'contained'] as const) {
+          const { host, set, q, fixture } = setup((h) => h.modality.set(modality));
+          set((h) => h.active.set(true));
+          const outside = q('.outside');
+          const handler = clicks(outside);
+          press(outside);
+          expect(host.dismissed).toHaveBeenCalledTimes(1);
+          outside.click();
+          expect(handler).toHaveBeenCalledTimes(1);
+          fixture.destroy();
+        }
+      });
+
+      it('drops the guard when destroyed', () => {
+        const { set, fixture } = setup();
+        set((h) => h.active.set(true));
+        const outside = document.body.appendChild(document.createElement('button'));
+        const handler = clicks(outside);
+        press(outside);
+        fixture.destroy();
+        outside.click();
+        outside.remove();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+    });
+
     it('asks nothing while inactive', () => {
       const { host, q } = setup();
       press(q('.outside'));
@@ -532,6 +656,20 @@ describe('CngxDrawerSurface', () => {
     expect(document.activeElement).toBe(opener);
   });
 
+  it('restores focus to the controlling element when it engaged with focus already inside', () => {
+    const { host, q, set } = setup();
+    host.dismissed.mockImplementation(() => host.active.set(false));
+    // A docked region that turned modal under focus: no opener outside.
+    q('.inside').focus();
+    set((h) => h.active.set(true));
+
+    q('.inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    set(() => undefined);
+
+    // The first element whose aria-controls names the host, in DOM order.
+    expect(document.activeElement).toBe(q('.inner-controller'));
+  });
+
   it('restores focus to the opener when a page scope is released by an Escape dismissal', () => {
     const { host, q, set } = setup();
     host.dismissed.mockImplementation(() => host.active.set(false));
@@ -545,5 +683,152 @@ describe('CngxDrawerSurface', () => {
 
     expect(q('.sibling').hasAttribute('inert')).toBe(false);
     expect(document.activeElement).toBe(opener);
+  });
+});
+
+// ── Hotkey scope ────────────────────────────────────────────────────────
+
+@Component({
+  selector: 'cngx-test-drawer-hotkey-body',
+  template: `<button type="button" class="drawer-inside">Inside</button>`,
+})
+class DrawerHotkeyBody {
+  readonly scope = inject(CNGX_HOTKEY_SCOPE);
+  readonly fired = signal(0);
+  readonly ref = injectHotkey({
+    id: 'test.drawer.toggle',
+    combo: 'ctrl+b',
+    run: () => this.fired.update((n) => n + 1),
+  });
+}
+
+@Component({
+  selector: 'cngx-test-drawer-muted-body',
+  template: `<button type="button" class="muted-inside">Muted</button>`,
+})
+class DrawerMutedBody {
+  readonly fired = signal(0);
+  readonly ref = injectHotkey({
+    id: 'test.drawer.muted',
+    combo: 'ctrl+m',
+    run: () => this.fired.update((n) => n + 1),
+  });
+}
+
+@Component({
+  template: `
+    <div cngxHotkeyScope #outer="cngxHotkeyScope">
+      <button type="button" class="page-outside">Outside</button>
+      <aside cngxDrawerSurface [active]="active()" [modality]="modality()">
+        <cngx-test-drawer-hotkey-body />
+        <div cngxHotkeyScope [cngxHotkeyScopeActive]="false">
+          <cngx-test-drawer-muted-body />
+        </div>
+      </aside>
+    </div>
+  `,
+  imports: [CngxDrawerSurface, CngxHotkeyScope, DrawerHotkeyBody, DrawerMutedBody],
+})
+class HotkeyDrawerHost {
+  readonly active = signal(false);
+  readonly modality = signal<CngxDrawerModality>('page');
+  readonly outer = viewChild.required(CngxHotkeyScope);
+  readonly surface = viewChild.required(CngxDrawerSurface);
+  readonly body = viewChild.required(DrawerHotkeyBody);
+  readonly muted = viewChild.required(DrawerMutedBody);
+  readonly appFired = signal(0);
+  readonly appRef = injectHotkey({
+    id: 'test.app.save',
+    combo: 'ctrl+s',
+    run: () => this.appFired.update((n) => n + 1),
+  });
+}
+
+describe('CngxDrawerSurface hotkey scope', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'CloseWatcher',
+      class {
+        onclose: (() => void) | null = null;
+        destroy = vi.fn();
+      },
+    );
+    mockTrap = {
+      enabled: false,
+      hasAttached: () => true,
+      attachAnchors: vi.fn(),
+      focusFirstTabbableElementWhenReady: vi.fn(),
+      destroy: vi.fn(),
+    };
+    TestBed.configureTestingModule({
+      providers: [{ provide: FocusTrapFactory, useValue: { create: vi.fn(() => mockTrap) } }],
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.documentElement.style.overflow = '';
+    document.documentElement.style.scrollbarGutter = '';
+  });
+
+  function setupHotkeys() {
+    const fixture = TestBed.createComponent(HotkeyDrawerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    const q = (sel: string) => root.querySelector(sel) as HTMLElement;
+    const set = (fn: (host: HotkeyDrawerHost) => void) => {
+      fn(fixture.componentInstance);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+    return { host: fixture.componentInstance, q, set };
+  }
+
+  function pressCombo(target: Element, key: string): void {
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, cancelable: true }),
+    );
+  }
+
+  it('hands its children the surface scope, parented to the outer scope', () => {
+    const { host } = setupHotkeys();
+    const scope = host.body().scope;
+
+    expect(scope).toBe(host.surface().hotkeyScope);
+    expect(scope.parent).toBe(host.outer().node);
+  });
+
+  it('an engaged page surface blocks app bindings and fires its own inside', () => {
+    const { host, q, set } = setupHotkeys();
+    set((h) => h.active.set(true));
+
+    pressCombo(q('.drawer-inside'), 's');
+    expect(host.appFired()).toBe(0);
+    pressCombo(q('.drawer-inside'), 'b');
+    expect(host.body().fired()).toBe(1);
+  });
+
+  it('fires the drawer binding from outside while the modality is none', () => {
+    const { host, q, set } = setupHotkeys();
+    set((h) => h.modality.set('none'));
+
+    pressCombo(q('.page-outside'), 'b');
+    expect(host.body().fired()).toBe(1);
+
+    set((h) => h.active.set(true));
+    pressCombo(q('.page-outside'), 'b');
+    pressCombo(q('.drawer-inside'), 's');
+    expect(host.body().fired()).toBe(2);
+    expect(host.appFired()).toBe(1);
+  });
+
+  it('mutes content in an inactive scope inside the surface', () => {
+    const { host, q, set } = setupHotkeys();
+    set((h) => h.active.set(true));
+
+    expect(host.muted().ref.muted()).toBe(true);
+    pressCombo(q('.muted-inside'), 'm');
+    expect(host.muted().fired()).toBe(0);
   });
 });

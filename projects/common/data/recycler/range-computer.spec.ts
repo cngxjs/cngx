@@ -157,6 +157,48 @@ describe('computeRange', () => {
     });
   });
 
+  describe('window at the list end', () => {
+    const row = (): number => 32;
+
+    it('loses its trailing rows without maxLead', () => {
+      const result = computeRange(31762, 254, 1000, row, 5);
+      expect(result.end - result.start).toBe(13);
+    });
+
+    it('holds the largest window once it reaches the last item', () => {
+      const result = computeRange(31762, 254, 1000, row, 5, 1, 5, 8);
+      expect(result.start).toBe(1000 - (8 + 1 + 10 + 8));
+      expect(result.end).toBe(1000);
+      expect(result.offsetBefore).toBe(result.start * 32);
+      expect(result.offsetAfter).toBe(0);
+    });
+
+    it('does not depend on the current lead', () => {
+      const still = computeRange(31762, 254, 1000, row, 5, 1, 5, 8);
+      const down = computeRange(31762, 254, 1000, row, 5, 1, 13, 8);
+      const up = computeRange(31762, 254, 1000, row, 13, 1, 5, 8);
+      expect(down.start).toBe(still.start);
+      expect(up.start).toBe(still.start);
+    });
+
+    it('is never smaller than the largest window in the middle of the list', () => {
+      const middle = computeRange(3000, 254, 1000, row, 5, 1, 13, 8);
+      const end = computeRange(31762, 254, 1000, row, 5, 1, 13, 8);
+      expect(end.end - end.start).toBeGreaterThanOrEqual(middle.end - middle.start);
+    });
+
+    it('leaves a window short of the end alone', () => {
+      const plain = computeRange(3000, 254, 1000, row, 5, 1, 5);
+      expect(computeRange(3000, 254, 1000, row, 5, 1, 5, 8)).toEqual(plain);
+    });
+
+    it('stops at the first item in a short list', () => {
+      const result = computeRange(0, 254, 12, row, 5, 1, 5, 8);
+      expect(result.start).toBe(0);
+      expect(result.end).toBe(12);
+    });
+  });
+
   describe('overscan', () => {
     it('should respect overscan=0', () => {
       const result = computeRange(480, 480, 100, 48, 0);

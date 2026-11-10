@@ -73,34 +73,6 @@ const TYPED_MATCHERS = [
   actionMultiWrongValue,
 ];
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => boolean;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-    this.dispatchEvent(new Event('toggle', { bubbles: false }));
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-    this.dispatchEvent(new Event('toggle', { bubbles: false }));
-  };
-  proto.togglePopover = function (this: HTMLElement) {
-    const open = this.hasAttribute('data-popover-open');
-    if (open) {
-      this.removeAttribute('data-popover-open');
-    } else {
-      this.setAttribute('data-popover-open', 'true');
-    }
-    return !open;
-  };
-}
-
 type Searchable = { readonly effectiveMatchFn: Signal<ListboxMatchFn> };
 
 @Component({
@@ -164,7 +136,6 @@ function shellOf<C>(fixture: ComponentFixture<C>): CngxSelectShell<string> {
 
 describe('CngxSelectConfig.searchMatchFn', () => {
   beforeEach(() => {
-    polyfillPopover();
     configMatch.mockClear();
     subtreeMatch.mockClear();
     inputMatch.mockClear();

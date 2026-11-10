@@ -1,8 +1,9 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { of, type Observable } from 'rxjs';
 
+import { CNGX_HOTKEY_REGISTRY, injectHotkey } from '@cngx/common/interactive';
 import { createScrollLock } from '@cngx/common/layout';
 
 import { CngxDialog } from './dialog.directive';
@@ -947,5 +948,112 @@ describe('CngxDialogStack', () => {
 
     dialog.close(true as unknown as never);
     expect(stack.stack().length).toBe(0);
+  });
+});
+
+// ── Hotkey scope ────────────────────────────────────────────────────────
+
+function pressOn(target: Element, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+  target.dispatchEvent(event);
+  return event;
+}
+
+@Component({
+  selector: 'cngx-test-dialog-hotkey-body',
+  template: `<button type="button" id="inside">inside</button>`,
+})
+class DialogHotkeyBody {
+  readonly fired = signal(0);
+  readonly ref = injectHotkey({
+    id: 'test.dialog.submit',
+    combo: 'ctrl+enter',
+    description: 'Submit',
+    run: () => this.fired.update((n) => n + 1),
+  });
+}
+
+@Component({
+  template: `
+    <button type="button" id="outside">outside</button>
+    <dialog cngxDialog [modal]="modal()" #dlg="cngxDialog">
+      <cngx-test-dialog-hotkey-body />
+    </dialog>
+  `,
+  imports: [CngxDialog, DialogHotkeyBody],
+})
+class HotkeyDialogHost {
+  readonly modal = signal(true);
+  readonly dialog = viewChild.required(CngxDialog);
+  readonly body = viewChild.required(DialogHotkeyBody);
+  readonly appFired = signal(0);
+  readonly appRef = injectHotkey({
+    id: 'test.app.save',
+    combo: 'ctrl+s',
+    run: () => this.appFired.update((n) => n + 1),
+  });
+  readonly registry = inject(CNGX_HOTKEY_REGISTRY);
+}
+
+describe('CngxDialog hotkey scope', () => {
+  beforeEach(() => vi.useFakeTimers());
+
+  function setupHotkeys(modal = true) {
+    const fixture = TestBed.createComponent(HotkeyDialogHost);
+    fixture.componentInstance.modal.set(modal);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const dialogEl = fixture.nativeElement.querySelector('dialog') as HTMLDialogElement;
+    stubDialogElement(dialogEl);
+    const host = fixture.componentInstance;
+    const inside = fixture.nativeElement.querySelector('#inside') as HTMLElement;
+    const outside = fixture.nativeElement.querySelector('#outside') as HTMLElement;
+    return { fixture, dialogEl, host, inside, outside };
+  }
+
+  it('blocks app bindings while focus is inside an open modal dialog', () => {
+    const { fixture, dialogEl, host, inside, outside } = setupHotkeys();
+    openFully(fixture, dialogEl);
+
+    pressOn(inside, 's', { ctrlKey: true });
+    expect(host.appFired()).toBe(0);
+
+    pressOn(outside, 's', { ctrlKey: true });
+    expect(host.appFired()).toBe(1);
+  });
+
+  it('fires a global binding inside the dialog while open and mutes it after close', () => {
+    const { fixture, dialogEl, host, inside, outside } = setupHotkeys();
+    const body = host.body();
+    expect(body.ref.muted()).toBe(true);
+
+    pressOn(outside, 'Enter', { ctrlKey: true });
+    expect(body.fired()).toBe(0);
+
+    const dialog = openFully(fixture, dialogEl);
+    expect(body.ref.muted()).toBe(false);
+    pressOn(inside, 'Enter', { ctrlKey: true });
+    expect(body.fired()).toBe(1);
+    expect(
+      host.registry.liveGroupsFor(inside).flatMap((g) => g.bindings.map((b) => b.id)),
+    ).toEqual(['test.dialog.submit']);
+
+    dialog.close(undefined as never);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(body.ref.muted()).toBe(true);
+    pressOn(inside, 'Enter', { ctrlKey: true });
+    pressOn(outside, 'Enter', { ctrlKey: true });
+    expect(body.fired()).toBe(1);
+    expect(host.registry.liveGroupsFor(inside)).toEqual([]);
+  });
+
+  it('a non-modal open dialog blocks nothing', () => {
+    const { fixture, dialogEl, host, inside } = setupHotkeys(false);
+    openFully(fixture, dialogEl);
+
+    pressOn(inside, 's', { ctrlKey: true });
+    expect(host.appFired()).toBe(1);
   });
 });

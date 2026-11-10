@@ -36,7 +36,8 @@ describe('resolveReorderableSelectConfig', () => {
       resolveReorderableSelectConfig(),
     );
     expect(cfg.keyboardModifier).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.keyboardModifier);
-    expect(cfg.ariaLabel()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderHint);
+    expect(cfg.ariaLabel()).toBeUndefined();
+    expect(cfg.reorderHint()('alt').replace(/[\u2068\u2069]/g, "")).toBe('Reorder with Alt + arrow keys');
     expect(cfg.dragHandle).toBe(CNGX_REORDERABLE_SELECT_DEFAULTS.dragHandle);
     expect(cfg.moveGlyph).toBeNull();
     expect(CNGX_REORDERABLE_SELECT_DEFAULTS.moveGlyph).toBeNull();
@@ -54,7 +55,8 @@ describe('resolveReorderableSelectConfig', () => {
     );
     expect(cfg.keyboardModifier).toBe('alt');
     // Non-overridden keys stay at the library default.
-    expect(cfg.ariaLabel()).toBe(CNGX_SELECT_LANGUAGE_EN.reorderHint);
+    expect(cfg.ariaLabel()).toBeUndefined();
+    expect(cfg.reorderHint()('alt').replace(/[\u2068\u2069]/g, "")).toBe('Reorder with Alt + arrow keys');
   });
 
   it('merges multiple features in feature-list order', () => {

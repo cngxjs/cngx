@@ -144,7 +144,7 @@
     {
       "artifact": "pack/recipes/ui-feedback-toast.md",
       "source": "examples/stories/ui/feedback/toast/state-bridge-cngxtoaston.story.ts",
-      "contentHash": "sha256:782fe4947603e776b7bb6fbe9c82fa98f079e36646f11799ff4991c954a050ec"
+      "contentHash": "sha256:fc0c7756ebf36c008bedf001ba99e9adaef3cb5f9955792e1b6320d4d4bdc9f0"
     },
     {
       "artifact": "pack/recipes/ui-mat-tabs-instrumentation.md",
@@ -250,6 +250,11 @@
       "artifact": "pack/recipes/common-button-composition.md",
       "source": "examples/stories/common/button/composition/custom-host.story.ts",
       "contentHash": "sha256:5a6e2358d1b5280e07b03bf3ebf212d08a6b63cac48f51f393da4d9d48a07d19"
+    },
+    {
+      "artifact": "pack/recipes/ui-action-button-async-button.md",
+      "source": "examples/stories/ui/action-button/async-button/ejected-host.story.ts",
+      "contentHash": "sha256:a10cf9a4396d9ba882dea7974a9729c2a7effe2496890948e9e3df55ef9614f2"
     }
   ],
   "theming": {

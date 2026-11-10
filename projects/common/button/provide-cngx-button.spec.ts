@@ -1,5 +1,10 @@
-import { Component, Injector } from '@angular/core';
+import { Component, Injector, isSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  CNGX_ACTION_STATUS_CONFIG,
+  provideActionStatusConfig,
+  withActionStatusLabels,
+} from '@cngx/common/interactive';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -43,6 +48,16 @@ describe('provideCngxButton', () => {
     expect(TestBed.inject(CNGX_BUTTON_SPINNER)).toBe(DemoDots);
   });
 
+  it('routes the action status features to CNGX_ACTION_STATUS_CONFIG', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideCngxButton(withButtonSize('sm'), withActionStatusLabels({ succeeded: 'Saved' })),
+      ],
+    });
+    expect(TestBed.inject(CNGX_BUTTON_CONFIG)).toEqual({ size: 'sm' });
+    expect(TestBed.inject(CNGX_ACTION_STATUS_CONFIG).labels).toEqual({ succeeded: 'Saved' });
+  });
+
   it('drops an unbranded feature with CNGX1041 and keeps the others', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const rogue = { config: { tone: 'danger' } } as unknown as CngxButtonFeature;
@@ -68,6 +83,18 @@ describe('provideCngxButtonAt', () => {
     expect(child.get(CNGX_BUTTON_CONFIG)).toEqual({ size: 'lg', variant: 'ghost' });
     expect(child.get(CNGX_BUTTON_SPINNER)).toBe(DemoDots);
     expect(child.get(CNGX_BUTTON_CLOSE_ICON, null)).toBeNull();
+  });
+
+  it('merges the action status features over the parent scope', () => {
+    TestBed.configureTestingModule({
+      providers: [provideActionStatusConfig(withActionStatusLabels({ succeeded: 'Saved' }))],
+    });
+    const child = Injector.create({
+      providers: provideCngxButtonAt(withActionStatusLabels({ failed: 'Failed' })),
+      parent: TestBed.inject(Injector),
+    });
+    const labels = child.get(CNGX_ACTION_STATUS_CONFIG).labels;
+    expect(isSignal(labels) ? labels() : labels).toEqual({ succeeded: 'Saved', failed: 'Failed' });
   });
 
   it('plants no config without config features', () => {

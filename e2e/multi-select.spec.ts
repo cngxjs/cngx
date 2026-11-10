@@ -81,6 +81,37 @@ test.describe('CngxMultiSelect demo', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('a mouse click on a chip remove keeps the open panel open', async ({ page }) => {
+    await page.goto(R.clearable);
+    const section = ex(page);
+    const trigger = section.locator('cngx-multi-select .cngx-multi-select__trigger').first();
+    const chips = section.locator('cngx-chip');
+    await expect(chips.first()).toBeVisible();
+    const initialCount = await chips.count();
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    await chips.first().locator('.cngx-chip__remove').click();
+    await expect(chips).toHaveCount(initialCount - 1);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('a mouse click on the clear button keeps the open panel open', async ({ page }) => {
+    await page.goto(R.clearable);
+    const section = ex(page);
+    const trigger = section.locator('cngx-multi-select .cngx-multi-select__trigger').first();
+    const clearAll = section.locator('.cngx-multi-select__clear-all');
+    await expect(clearAll).toBeVisible();
+    await trigger.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    await clearAll.click();
+    await expect(clearAll).toHaveCount(0);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
   test('clear-all empties every selected value', async ({ page }) => {
     await page.goto(R.clearable);
     const section = ex(page);

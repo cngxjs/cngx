@@ -1,4 +1,5 @@
-import { InjectionToken } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { inject, InjectionToken } from '@angular/core';
 
 import type { CngxSidenavConfig } from './sidenav.config';
 
@@ -58,4 +59,22 @@ export const CNGX_SIDENAV_DEFAULTS: CngxSidenavConfig = {
 export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_SIDENAV_CONFIG', {
   providedIn: 'root',
   factory: () => CNGX_SIDENAV_DEFAULTS,
+});
+
+/**
+ * Storage backend of `withSidenavPersistence()`. Defaults to the browser
+ * `localStorage`, `null` on the server (nothing is persisted). Override it to
+ * persist elsewhere (`sessionStorage`, a server-backed `Storage` shim):
+ *
+ * ```ts
+ * providers: [{ provide: CNGX_SIDENAV_STORAGE, useFactory: () => sessionStorage }];
+ * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/config/sidenav.config.defaults.ts
+ * @since 0.1.0
+ * @relatedTo withSidenavPersistence
+ */
+export const CNGX_SIDENAV_STORAGE = new InjectionToken<Storage | null>('CNGX_SIDENAV_STORAGE', {
+  providedIn: 'root',
+  factory: () => inject(DOCUMENT).defaultView?.localStorage ?? null,
 });

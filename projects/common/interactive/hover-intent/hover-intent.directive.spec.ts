@@ -1,8 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CNGX_HOVER_INTENT_DEFAULTS, CngxHoverIntent } from './hover-intent.directive';
+import {
+  CNGX_HOVER_INTENT_DEFAULTS,
+  CNGX_HOVER_INTENT_DRIVER,
+  CngxHoverIntent,
+  type CngxHoverIntentDriver,
+} from './hover-intent.directive';
 
 @Component({
   template: `
@@ -202,5 +207,69 @@ describe('CngxHoverIntent DI defaults', () => {
     const { dir } = setup(UnboundHost);
     expect(dir.enterDelay()).toBe(120);
     expect(dir.leaveDelay()).toBe(0);
+  });
+});
+
+@Directive({
+  selector: '[drivenHover]',
+  hostDirectives: [CngxHoverIntent],
+  providers: [{ provide: CNGX_HOVER_INTENT_DRIVER, useExisting: DrivenHover }],
+})
+class DrivenHover implements CngxHoverIntentDriver {
+  readonly enter = signal<number | undefined>(400);
+  readonly leave = signal<number | undefined>(undefined);
+  readonly hoverEnterDelay = this.enter.asReadonly();
+  readonly hoverLeaveDelay = this.leave.asReadonly();
+}
+
+@Component({
+  template: `<div drivenHover>Hover me</div>`,
+  imports: [DrivenHover],
+})
+class DrivenHost {}
+
+describe('CngxHoverIntent driver', () => {
+  beforeEach(() => vi.useFakeTimers());
+
+  function setupDriven() {
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_HOVER_INTENT_DEFAULTS, useValue: { leaveDelay: 50 } }],
+    });
+    const fixture = TestBed.createComponent(DrivenHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.children[0];
+    return {
+      dir: el.injector.get(CngxHoverIntent),
+      driver: el.injector.get(DrivenHover),
+      host: el.nativeElement as HTMLElement,
+    };
+  }
+
+  it('settles on the driven enter delay over the atom input', () => {
+    const { dir, host } = setupDriven();
+    host.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(399);
+    expect(dir.active()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(dir.active()).toBe(true);
+  });
+
+  it('falls back to the atom input and its defaults for an undefined driven delay', () => {
+    const { dir, host } = setupDriven();
+    host.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(400);
+    host.dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(49);
+    expect(dir.active()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(dir.active()).toBe(false);
+  });
+
+  it('reads a changed driven delay on the next pointer edge', () => {
+    const { dir, driver, host } = setupDriven();
+    driver.enter.set(undefined);
+    host.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(120);
+    expect(dir.active()).toBe(true);
   });
 });

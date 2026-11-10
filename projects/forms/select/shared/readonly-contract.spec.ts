@@ -17,33 +17,6 @@ import { CngxSelect } from '../single-select/select.component';
 import { CngxTreeSelect } from '../tree-select/tree-select.component';
 import { CngxTypeahead } from '../typeahead/typeahead.component';
 
-// jsdom has no Popover API.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => boolean;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-  };
-  proto.togglePopover = function (this: HTMLElement) {
-    const open = !this.hasAttribute('data-popover-open');
-    if (open) {
-      this.setAttribute('data-popover-open', 'true');
-    } else {
-      this.removeAttribute('data-popover-open');
-    }
-    return open;
-  };
-}
-
 interface Variant {
   readonly name: string;
   readonly component: Type<unknown>;
@@ -192,7 +165,6 @@ describe.each(VARIANTS)('readonly contract ($name)', (variant) => {
   });
 
   function mount() {
-    polyfillPopover();
     TestBed.overrideComponent(ReadonlyHost, {
       set: {
         template: `
@@ -314,7 +286,6 @@ describe('readonly contract (CngxReorderableMultiSelect reorder)', () => {
   }
 
   it('marks the chip strip reorder group disabled', () => {
-    polyfillPopover();
     const fixture = TestBed.createComponent(ReorderHost);
     fixture.detectChanges();
     flush(fixture);
@@ -343,7 +314,6 @@ describe('readonly contract (CngxTreeSelect footer clear-all)', () => {
   }
 
   it('renders the footer clear-all aria-disabled and refuses it', () => {
-    polyfillPopover();
     const fixture = TestBed.createComponent(TreeFooterHost);
     fixture.detectChanges();
     flush(fixture);

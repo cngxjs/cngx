@@ -32,37 +32,6 @@ const USERS: CngxSelectOptionsInput<User> = [
   { value: { id: 3, name: 'Charlie' }, label: 'Charlie' },
 ];
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => void;
-  };
-  if (!proto.showPopover) {
-    proto.showPopover = function (this: HTMLElement): void {
-      this.setAttribute('data-popover-shown', 'true');
-      Object.defineProperty(this, 'matches', {
-        value: (s: string) => s === ':popover-open',
-        configurable: true,
-      });
-    };
-    proto.hidePopover = function (this: HTMLElement): void {
-      this.removeAttribute('data-popover-shown');
-      Object.defineProperty(this, 'matches', {
-        value: (_s: string) => false,
-        configurable: true,
-      });
-    };
-    proto.togglePopover = function (this: HTMLElement): void {
-      if (this.getAttribute('data-popover-shown') === 'true') {
-        proto.hidePopover!.call(this);
-      } else {
-        proto.showPopover!.call(this);
-      }
-    };
-  }
-}
-
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -142,7 +111,6 @@ class FieldHost {
 
 describe('CngxTypeahead - standalone', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost] });
   });
 
@@ -304,7 +272,6 @@ describe('CngxTypeahead - clear with a commit action', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [ClearCommitHost] });
   });
 
@@ -352,7 +319,6 @@ describe('CngxTypeahead - clear with a commit action', () => {
 
 describe('CngxTypeahead - form-field integration', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [FieldHost] });
   });
 
@@ -406,7 +372,6 @@ describe('CngxTypeahead - clearOnBlur', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [ClearOnBlurHost] });
   });
 
@@ -434,8 +399,6 @@ describe('CngxTypeahead - searchDebounceMs config integration', () => {
   class ConfigHost {
     readonly options: CngxSelectOptionsInput<string> = [{ value: 'a', label: 'A' }];
   }
-
-  beforeEach(() => polyfillPopover());
 
   it('default searchDebounceMs is pulled from CNGX_SELECT_CONFIG (300ms when unset)', () => {
     TestBed.configureTestingModule({ imports: [ConfigHost] });
@@ -479,8 +442,6 @@ describe('CngxTypeahead - openOn config integration', () => {
   class OpenOnHost {
     readonly options: CngxSelectOptionsInput<string> = [{ value: 'a', label: 'A' }];
   }
-
-  beforeEach(() => polyfillPopover());
 
   function setupOpenOn(providers: unknown[]): {
     fixture: ReturnType<typeof TestBed.createComponent<OpenOnHost>>;
@@ -536,8 +497,6 @@ describe('CngxTypeahead - focus moves into the sheet inside the opening call', (
     ];
   }
 
-  beforeEach(() => polyfillPopover());
-
   function setupSheet(providers: unknown[]) {
     TestBed.configureTestingModule({ imports: [SheetFocusHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(SheetFocusHost);
@@ -575,7 +534,6 @@ describe('CngxTypeahead - focus moves into the sheet inside the opening call', (
 
 describe('CngxTypeahead - first search term after a value write', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost] });
   });
 
@@ -664,7 +622,6 @@ class DefaultCompareHost {
 
 describe('CngxTypeahead - selected survives a filtering term', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneHost, DefaultCompareHost] });
   });
 
@@ -739,7 +696,6 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [GlyphHost] });
   });
 
@@ -874,7 +830,6 @@ describe('CngxTypeahead - placeholder falls back to the label', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PlaceholderHost] });
   });
 

@@ -4,6 +4,11 @@ import {
   type Provider,
   type Type,
 } from '@angular/core';
+import {
+  provideActionStatusConfig,
+  provideActionStatusConfigAt,
+  type CngxActionStatusConfigFeature,
+} from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
 
 import {
@@ -41,12 +46,15 @@ export interface CngxButtonSpinnerFeature {
 /**
  * Union of every feature kind {@link provideCngxButton} accepts: config
  * (`CNGX_BUTTON_CONFIG`, the `withButtonVariant` / `withButtonTone` /
- * `withButtonSize` helpers), the close glyph and the busy glyph.
+ * `withButtonSize` helpers), the close glyph, the busy glyph and the action
+ * status defaults (`withActionStatusLabels` / `withActionStatusTemplates`
+ * from `@cngx/common/interactive`).
  */
 export type CngxButtonFeature =
   | CngxButtonConfigFeature
   | CngxButtonCloseIconFeature
-  | CngxButtonSpinnerFeature;
+  | CngxButtonSpinnerFeature
+  | CngxActionStatusConfigFeature;
 
 /**
  * The close glyph of every `cngxCloseButton` in scope, as a
@@ -76,6 +84,7 @@ export function withButtonSpinner(component: Type<unknown>): CngxButtonSpinnerFe
 /** @internal */
 interface PartitionedFeatures {
   readonly config: CngxButtonConfigFeature[];
+  readonly actionStatus: CngxActionStatusConfigFeature[];
   readonly providers: Provider[];
 }
 
@@ -85,10 +94,15 @@ function partitionFeatures(
   caller: 'provideCngxButton' | 'provideCngxButtonAt',
 ): PartitionedFeatures {
   const config: CngxButtonConfigFeature[] = [];
+  const actionStatus: CngxActionStatusConfigFeature[] = [];
   const providers: Provider[] = [];
   for (const feat of features) {
     if (feat._target === 'config') {
       config.push(feat);
+      continue;
+    }
+    if (feat._target === 'actionStatus') {
+      actionStatus.push(feat);
       continue;
     }
     if (feat._target === 'closeIcon') {
@@ -106,7 +120,8 @@ function partitionFeatures(
           'CNGX1041',
           'provideCngxButtonAt(): dropped feature without a `_target` ' +
             'discriminator. Pass config through `withButtonVariant` / `withButtonTone` / ' +
-            '`withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; ' +
+            '`withButtonSize`, the glyphs through `withButtonCloseIcon` / `withButtonSpinner` and the ' +
+            'status defaults through `withActionStatusLabels` / `withActionStatusTemplates`; ' +
             'the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button).',
         );
       } else {
@@ -114,20 +129,22 @@ function partitionFeatures(
           'CNGX1041',
           'provideCngxButton(): dropped feature without a `_target` ' +
             'discriminator. Pass config through `withButtonVariant` / `withButtonTone` / ' +
-            '`withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; ' +
+            '`withButtonSize`, the glyphs through `withButtonCloseIcon` / `withButtonSpinner` and the ' +
+            'status defaults through `withActionStatusLabels` / `withActionStatusTemplates`; ' +
             'the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button).',
         );
       }
     }
   }
-  return { config, providers };
+  return { config, actionStatus, providers };
 }
 
 /**
  * Unified aggregator for the button family. Filters by `_target` and
  * forwards: config features to {@link provideButtonConfig}, the close glyph
  * to {@link provideButtonCloseIcon}, the busy glyph to
- * {@link provideButtonSpinner}. Mirrors `provideCngxStepper` /
+ * {@link provideButtonSpinner}, the action status features to
+ * `provideActionStatusConfig` (`@cngx/common/interactive`). Mirrors `provideCngxStepper` /
  * `provideCngxTabs`. The menu buttons have their own,
  * `provideCngxMenuButton` in `@cngx/common/menu-button`.
  *
@@ -150,18 +167,24 @@ function partitionFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner
+ * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner, provideActionStatusConfig
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButton(...features: readonly CngxButtonFeature[]): EnvironmentProviders {
-  const { config, providers } = partitionFeatures(features, 'provideCngxButton');
-  return makeEnvironmentProviders([provideButtonConfig(...config), ...providers]);
+  const { config, actionStatus, providers } = partitionFeatures(features, 'provideCngxButton');
+  return makeEnvironmentProviders([
+    provideButtonConfig(...config),
+    provideActionStatusConfig(...actionStatus),
+    ...providers,
+  ]);
 }
 
 /**
  * Component-scoped twin of {@link provideCngxButton}. Spread into
  * `viewProviders` or `providers`. Same dispatch semantics; config features
- * merge over the parent scope's config (`provideButtonConfigAt`).
+ * merge over the parent scope's config (`provideButtonConfigAt`), the action
+ * status features over the parent's action status config per key
+ * (`provideActionStatusConfigAt`).
  *
  * ```ts
  * @Component({
@@ -171,10 +194,14 @@ export function provideCngxButton(...features: readonly CngxButtonFeature[]): En
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButton, provideButtonConfigAt
+ * @relatedTo provideCngxButton, provideButtonConfigAt, provideActionStatusConfigAt
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButtonAt(...features: readonly CngxButtonFeature[]): Provider[] {
-  const { config, providers } = partitionFeatures(features, 'provideCngxButtonAt');
-  return [...provideButtonConfigAt(...config), ...providers];
+  const { config, actionStatus, providers } = partitionFeatures(features, 'provideCngxButtonAt');
+  return [
+    ...provideButtonConfigAt(...config),
+    ...provideActionStatusConfigAt(...actionStatus),
+    ...providers,
+  ];
 }

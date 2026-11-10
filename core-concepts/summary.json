@@ -525,6 +525,16 @@
                 "file": "error-codes/cngx1080.md"
             },
             {
+                "title": "CNGX1081",
+                "label": "CNGX1081: Second popover trigger takes the close listener",
+                "file": "error-codes/cngx1081.md"
+            },
+            {
+                "title": "CNGX1082",
+                "label": "CNGX1082: Action status brain without an async run",
+                "file": "error-codes/cngx1082.md"
+            },
+            {
                 "title": "CNGX2001",
                 "label": "CNGX2001: Unknown filter operator",
                 "file": "error-codes/cngx2001.md"
@@ -660,6 +670,11 @@
                 "file": "error-codes/cngx2027.md"
             },
             {
+                "title": "CNGX2028",
+                "label": "CNGX2028: Grouped options under a configured virtualization",
+                "file": "error-codes/cngx2028.md"
+            },
+            {
                 "title": "CNGX3001",
                 "label": "CNGX3001: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx3001.md"
@@ -783,6 +798,11 @@
                 "title": "CNGX3025",
                 "label": "CNGX3025: Tab without a label string",
                 "file": "error-codes/cngx3025.md"
+            },
+            {
+                "title": "CNGX3026",
+                "label": "CNGX3026: Unknown sidenav width class",
+                "file": "error-codes/cngx3026.md"
             },
             {
                 "title": "CNGX4001",

@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 
 import {
+  CNGX_NESTED_INTERACTIVE_SELECTOR,
   CNGX_STATEFUL,
   injectLocale,
   nextUid,
@@ -46,6 +47,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
 
 import {
@@ -250,6 +252,7 @@ export interface CngxComboboxChange<T = unknown> {
     CngxPopoverAnchor,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectChipFitSlot,
     CngxSelectChipFitStrip,
     CngxSelectSummary,
@@ -278,6 +281,7 @@ export interface CngxComboboxChange<T = unknown> {
     class: 'cngx-combobox',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './combobox.component.html',
   styleUrls: ['../shared/select-base.css', './combobox.component.css'],
@@ -327,9 +331,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly idInput = input<string | null>(null, { alias: 'id' });
 
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
@@ -940,8 +944,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
 
   /**
    * Currently selected options. Structural equal on `.value` under
@@ -1165,7 +1172,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
       disabled: this.disabled,
+      readonly: this.core.readonly,
       focused: this.focusState.focused,
+      dismissedTerm: this.dismissedTerm.asReadonly(),
       open: () => this.open(),
       emit: {
         hasEmittedInitial: this.hasEmittedInitial,
@@ -1208,13 +1217,19 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.inputEl()?.nativeElement.focus(options);
   }
 
+  /** Descendants that own their own click; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
+  private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
   /** @internal - wrapper click routes focus into the input and opens. */
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest('button, .cngx-chip__remove')) {
+    const nested = target?.closest(this.nestedInteractive) as HTMLElement | null;
+    // The own input matches the selector too; a click on it must still open.
+    // Only a genuinely nested control (chip remove, clear button) is left alone.
+    if (nested && nested !== this.inputEl()?.nativeElement) {
       return;
     }
     this.focus();
@@ -1276,6 +1291,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  // Raw input value the user dismissed with Escape while its debounce was
+  // still pending; a term that settles equal to it must not auto-open. A blur
+  // needs no entry: the trigger flushes the term on blur and the auto-open is
+  // gated on focus.
+  private readonly dismissedTerm = signal<string | null>(null);
+
   protected handleFocus(): void {
     this.focusState.markFocused();
     const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
@@ -1297,6 +1318,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal - PageUp/PageDown through the flat-nav strategy (default ±10). */
   protected handleInputKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      // Escape closes an open panel and must also cancel a still-pending
+      // debounced open: mark the raw draft as dismissed.
+      this.dismissedTerm.set(this.inputEl()?.nativeElement.value ?? null);
+    } else {
+      // Any other keystroke is fresh intent; let the next settled term open.
+      this.dismissedTerm.set(null);
+    }
     handlePageJumpKey(event, {
       listbox: this.listboxRef(),
       popover: this.popoverRef(),

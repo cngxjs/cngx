@@ -99,8 +99,10 @@ test.describe('CngxCombobox demo', () => {
     // to the first option. Where the caret goes is the platform's key binding
     // (macOS WebKit maps Home to scroll, not to line start), so the spec reads
     // the default-prevented flag after every handler instead of the caret.
+    // ArrowDown settled the pending term and runs after the next render, so
+    // wait for the highlight before reading it.
+    await expect(input).toHaveAttribute('aria-activedescendant', /.+/);
     const activeBefore = await input.getAttribute('aria-activedescendant');
-    expect(activeBefore).not.toBeNull();
     await input.evaluate((el) => {
       el.ownerDocument.addEventListener(
         'keydown',

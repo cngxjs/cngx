@@ -435,7 +435,13 @@ export interface CngxSelectConfig {
    * on a dialog that is being removed.
    */
   readonly restoreFocus?: boolean;
-  /** Dismiss strategy: click outside, Escape, or both. */
+  /**
+   * Dismiss strategy: click outside, Escape, or both. This governs the
+   * pointer and Escape vectors only. Focus leaving the host (Tab navigation
+   * out of the control) always closes the panel, in every mode including
+   * `'escape'`: a panel the user has Tab-navigated away from is no longer
+   * theirs to keep open, and it is not an outside dismissal to suppress.
+   */
   readonly dismissOn?: 'outside' | 'escape' | 'both';
   /**
    * Open strategy: click, focus, or both. Honoured by all nine composites;
@@ -537,7 +543,10 @@ export const CNGX_SELECT_DEFAULTS: Required<
   enterKeyHint: null as 'enter' | 'done' | 'go' | 'next' | 'previous' | 'search' | 'send' | null,
   chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate' | 'fit',
   maxVisibleChips: 3,
-  virtualization: null as CngxSelectVirtualizationConfig | null,
+  // Flat lists auto-virtualize above the threshold by default (OD5 / H5);
+  // `withVirtualization(false)` / `(null)` opts out. Grouped lists bypass
+  // the recycler regardless (CNGX2028).
+  virtualization: { threshold: 200 } as CngxSelectVirtualizationConfig | null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   searchDebounceMs: 300,
@@ -595,8 +604,11 @@ export const CNGX_SELECT_DEFAULTS: Required<
  *   when the payload only exists at injection time (`TemplateRef`s from a
  *   live view, values read from another service).
  *
- * Resolution is nearest-wins: a nested provider replaces an ancestor config for
- * its subtree, it does not deep-merge. The action-select and reorderable
+ * Resolution is nearest-wins per key: `provideSelectConfig` at the root
+ * replaces the whole config, while `provideSelectConfigAt` in a subtree merges
+ * over the parent scope key by key - the keys it sets win, every unset key
+ * inherits, and the deep bundles (`ariaLabels`, `fallbackLabels`, `announcer`,
+ * `templates`) merge per entry. The action-select and reorderable
  * composites layer their own `CNGX_ACTION_SELECT_CONFIG` /
  * `CNGX_REORDERABLE_SELECT_CONFIG` on top of this base.
  *
@@ -715,20 +727,28 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
 }
 
 /**
- * Opts in to recycler virtualisation. `{}` / `true` uses defaults;
- * `null` / `false` falls back to identity. Custom pipelines provide
- * `CNGX_PANEL_RENDERER_FACTORY` directly.
+ * Tunes or opts out of recycler virtualisation. Flat option lists
+ * virtualize above a default `threshold` of 200 with no configuration;
+ * this feature overrides that. `{}` / `true` uses the recycler defaults
+ * (threshold 0, i.e. always virtualize); a config object tunes
+ * `estimateSize` / `overscan` / `threshold`; `false` / `null` opts out to
+ * identity render. Custom pipelines provide `CNGX_PANEL_RENDERER_FACTORY`
+ * directly.
  *
  * ```ts
  * provideSelectConfig(
  *   withVirtualization({ estimateSize: 36, overscan: 8, threshold: 500 }),
  * )
+ * provideSelectConfig(withVirtualization(false)) // opt out
  * ```
+ *
+ * Does not apply to `CngxSelectShell`: its options are projected, so every row
+ * stays in the DOM whatever the config says.
  */
 export function withVirtualization(
-  config: CngxSelectVirtualizationConfig | boolean = true,
+  config: CngxSelectVirtualizationConfig | boolean | null = true,
 ): CngxSelectConfigFeature {
-  const resolved = config === false ? null : config === true ? {} : config;
+  const resolved = config === false || config === null ? null : config === true ? {} : config;
   return feature({ virtualization: resolved });
 }
 
@@ -858,7 +878,10 @@ export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
 }
 
 /**
- * Dismiss strategy for the panel. Default `'both'`.
+ * Dismiss strategy for the panel. Default `'both'`. Controls the pointer and
+ * Escape vectors; focus leaving the host (Tab navigation out of the control)
+ * closes the panel in every mode, `'escape'` included - a Tab-navigation
+ * close is not an outside dismissal, so no `dismissOn` value suppresses it.
  */
 export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectConfigFeature {
   return feature({ dismissOn: mode });
@@ -928,9 +951,9 @@ export function withAriaLabels(
  *
  * Resolution per slot: projected `*cngxSelect...` template -> the
  * nearest provided config's `templates.<slot>` -> built-in default.
- * Like every `CNGX_SELECT_CONFIG` key, the token is nearest-wins
- * across injector levels: an `At`-scope config replaces a root config
- * wholesale for its subtree, it does not inherit root slots.
+ * Like every `CNGX_SELECT_CONFIG` key, an `At`-scope config merges
+ * over the parent scope: the slots it sets win and every slot it
+ * leaves unset inherits the root template.
  *
  * `TemplateRef`s need a live view, so they cannot sit in a static
  * provider array evaluated at bootstrap. Declare the templates in a

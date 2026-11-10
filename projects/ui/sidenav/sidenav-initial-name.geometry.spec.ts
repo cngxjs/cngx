@@ -19,7 +19,13 @@ import { CngxSidenavLayout } from './sidenav-layout';
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxNavLink],
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav mode="mini" [miniWidth]="'72px'" [expandOnHover]="false" ariaLabel="Nav">
+      <cngx-sidenav
+        mode="side"
+        [collapsed]="true"
+        [miniWidth]="'72px'"
+        [expandOnHover]="false"
+        ariaLabel="Nav"
+      >
         <a cngxNavLink class="initial-link" href="#dashboard">Dashboard</a>
       </cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>

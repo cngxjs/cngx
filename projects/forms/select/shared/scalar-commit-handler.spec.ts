@@ -127,10 +127,10 @@ describe('createScalarCommitHandler', () => {
   });
 
   describe('beginCommit - null result', () => {
-    it('keeps a null server result instead of falling back to the intended value', () => {
+    it('treats a null server result as no result and keeps the intended value', () => {
       const action = (() => null) as unknown as CngxSelectCommitAction<T>;
       h.handler.beginCommit('a', undefined, action);
-      expect(h.value()).toBeNull();
+      expect(h.value()).toBe('a');
     });
   });
 
@@ -204,6 +204,33 @@ describe('createScalarCommitHandler', () => {
       });
       handler.beginClear('a', () => undefined);
       expect(cleared).toEqual(['a']);
+    });
+
+    it('routes a server-normalised empty scalar result to onClearFinalize', () => {
+      for (const empty of [null, ''] as unknown[]) {
+        const cleared: (T | undefined)[] = [];
+        const value = signal<T | undefined>('a');
+        const handler = createScalarCommitHandler<T>({
+          value,
+          compareWith: signal<CngxSelectCompareFn<T>>((a, b) => Object.is(a, b)),
+          commitMode: signal<CngxSelectCommitMode>('optimistic'),
+          core: {
+            commitController: createCommitController<T>(),
+            togglingOption: signal(null),
+            findOption: () => null,
+          } as unknown as CngxSelectCore<T, T>,
+          commitAction: signal(null),
+          onCommitFinalize: () => {
+            throw new Error('an empty result must not finalize as a selection');
+          },
+          onClearFinalize: (previous) => cleared.push(previous),
+          onCommitError: () => undefined,
+          onStateChange: () => undefined,
+          onError: () => undefined,
+        });
+        handler.beginClear('a', () => empty as T | undefined);
+        expect(cleared).toEqual(['a']);
+      }
     });
   });
 

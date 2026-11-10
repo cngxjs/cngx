@@ -10,9 +10,10 @@ import type { Observable } from 'rxjs';
  * An Observable that completes without emitting (`EMPTY`, a `filter` that
  * drops every value) settles the commit as a `CngxRuntimeError` with code
  * [`CNGX2025`](/error-codes/cngx2025.md), so the panel never stays blocked on a commit
- * that cannot finish. Emit `undefined` before completing when the server
- * has nothing to return. A source that neither emits nor completes stays
- * pending until a newer commit supersedes it.
+ * that cannot finish. A resolved `null` or `undefined` both mean "no result,
+ * keep the intended value" - an HttpClient 204 resolves `null`, so emit either
+ * when the server has nothing to return. A source that neither emits nor
+ * completes stays pending until a newer commit supersedes it.
  */
 export type CngxSelectCommitAction<T> = (
   intended: T | undefined,

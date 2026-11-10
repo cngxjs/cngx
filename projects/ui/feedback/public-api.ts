@@ -72,6 +72,10 @@ export {
 export { type TimerHoldSource, type TimerSegment } from './internal/pausable-timer';
 export { CngxToastOutlet, type ToastPosition } from './toast/toast-outlet';
 export { CngxToastOn } from './toast/toast-on.directive';
+// `@internal`: the show path `CngxToastOn` shares with `CngxActionToast` in
+// `@cngx/ui/action-button`, exported because ng-packagr has no cross-entry
+// private surface. The declarations carry the tag, so docs skip them.
+export { resolveOutcomeToast, type CngxOutcomeToastInputs } from './toast/outcome-toast';
 export { CngxToast } from './toast/toast.component';
 export {
   CngxAsyncContainer,

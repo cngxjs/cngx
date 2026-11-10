@@ -26,8 +26,11 @@ import {
 } from '@cngx/common/a11y';
 import {
   CNGX_CLICK_OUTSIDE_DRIVER,
+  CNGX_HOTKEY_SCOPE,
   CngxClickOutside,
   type CngxClickOutsideDriver,
+  type CngxHotkeyScopeNode,
+  createHotkeyScope,
 } from '@cngx/common/interactive';
 import { injectWindow } from '@cngx/core/tokens';
 import { createCloseWatcher } from '@cngx/core/utils';
@@ -79,6 +82,12 @@ export interface CngxDrawerSurfaceDriver {
   readonly surfaceLandmarkRole?: Signal<string | null>;
   /** Whether a press outside the host asks for dismissal. Without it, it does. */
   readonly surfaceOutsideDismiss?: Signal<boolean>;
+  /**
+   * Accessible name of the host in every state; wins over `[label]`, the
+   * static `aria-label` and the dialog fallback. For a composer that names
+   * the host itself, so the surface never writes a different name.
+   */
+  readonly surfaceLabel?: Signal<string>;
   /** Called for every dismissal request (Escape, back gesture, outside press). */
   surfaceDismiss(): void;
 }
@@ -165,6 +174,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
     { provide: CNGX_FOCUS_TRAP_DRIVER, useExisting: CngxDrawerSurface },
     { provide: CNGX_FOCUS_RESTORE_DRIVER, useExisting: CngxDrawerSurface },
     { provide: CNGX_CLICK_OUTSIDE_DRIVER, useExisting: CngxDrawerSurface },
+    { provide: CNGX_HOTKEY_SCOPE, useFactory: () => inject(CngxDrawerSurface).hotkeyScope },
   ],
   host: {
     '[attr.role]': 'surfaceRole()',
@@ -236,6 +246,12 @@ export class CngxDrawerSurface
     });
   };
 
+  // Swallows the click that trails the outside press which dismissed an
+  // engaged page modal. iOS Safari fires pointerdown at touchstart but hit
+  // tests the synthesized click again after touchend; by then the dismissal
+  // has dropped `inert` and the click lands on the live opener, reopening it.
+  private releaseTrailingClick: (() => void) | null = null;
+
   private resolvedDriver: CngxDrawerSurfaceDriver | null | undefined = undefined;
   private driver(): CngxDrawerSurfaceDriver | null {
     if (this.resolvedDriver === undefined) {
@@ -256,6 +272,19 @@ export class CngxDrawerSurface
     this.isActive() ? this.resolvedModality() : 'none',
   );
   protected readonly engagedPage = computed(() => this.engagedModality() === 'page');
+
+  /**
+   * @internal Hotkey scope of the surface subtree: modal while engaged as
+   * `'page'` or `'contained'`, so app bindings outside stay quiet while focus
+   * is inside. Always active: the drawer's own bindings (toggle, close) must
+   * fire whether the surface is engaged or not.
+   */
+  readonly hotkeyScope: CngxHotkeyScopeNode = createHotkeyScope({
+    element: this.host,
+    modal: computed(() => this.engagedModality() !== 'none'),
+    parent: inject(CNGX_HOTKEY_SCOPE, { optional: true, skipSelf: true }),
+    destroyRef: inject(DestroyRef),
+  });
   protected readonly surfaceRole = computed(() => {
     if (this.engagedPage()) {
       return 'dialog';
@@ -274,11 +303,15 @@ export class CngxDrawerSurface
    * `aria-label`, else (engaged page modal without a static name)
    * `CNGX_LAYOUT_I18N.drawerDialog`.
    */
-  readonly label = computed<string | undefined>(() =>
-    this.namesWithFallback()
+  readonly label = computed<string | undefined>(() => {
+    const driven = this.driver()?.surfaceLabel;
+    if (driven) {
+      return driven();
+    }
+    return this.namesWithFallback()
       ? (this.labelInput() ?? this.i18n().drawerDialog)
-      : (this.labelInput() ?? this.staticLabel ?? undefined),
-  );
+      : (this.labelInput() ?? this.staticLabel ?? undefined);
+  });
   protected readonly ariaLabel = computed(() => this.label() ?? null);
 
   /** @internal Drives the composed `CngxFocusTrap`. */
@@ -291,6 +324,22 @@ export class CngxDrawerSurface
    * restore then focuses the opener after the render, once it is live.
    */
   readonly focusRestoreActive = this.isActive;
+
+  /**
+   * @internal Drives the composed `CngxFocusRestore`: when the surface was
+   * engaged with focus already inside it (a docked rail that turned into a
+   * drawer), there is no opener to return to, so focus goes to the element
+   * whose `aria-controls` names the host, the same relation an outside press
+   * is exempted by.
+   */
+  focusRestoreFallback(): HTMLElement | null {
+    const id = this.host.id;
+    if (!id) {
+      return null;
+    }
+    const trigger = this.doc.querySelector(`[aria-controls~="${id.replace(/["\\]/g, '\\$&')}"]`);
+    return trigger instanceof HTMLElement && !this.host.contains(trigger) ? trigger : null;
+  }
   // A press on a non-focusable spot inside an engaged surface would drop
   // focus to <body>, out of reach of the host Escape listener (and of the
   // page modal's own boundary). tabindex="-1" keeps focus on the host there,
@@ -314,9 +363,15 @@ export class CngxDrawerSurface
       this.destroyed = true;
       this.clearEscapeKey();
       this.closeWatcher.disarm();
+      this.releaseTrailingClick?.();
     });
 
-    inject(CngxClickOutside, { self: true }).clickOutside.subscribe(() => this.requestDismiss());
+    inject(CngxClickOutside, { self: true }).clickOutside.subscribe(() => {
+      if (untracked(this.engagedPage)) {
+        this.swallowTrailingClick();
+      }
+      this.requestDismiss();
+    });
 
     effect((onCleanup) => {
       if (!this.isActive()) {
@@ -404,6 +459,31 @@ export class CngxDrawerSurface
       this.emitDismiss();
     }
     this.rearmIfEngaged();
+  }
+
+  // One shot: the next click is the trailing one of the dismissing gesture.
+  // A gesture that ends without a click (a scroll, a cancelled touch) is
+  // followed by a pointerdown or a keydown before any later click, so either
+  // drops the guard. Listeners added during the dismissing pointerdown's
+  // bubble phase do not see that same event.
+  private swallowTrailingClick(): void {
+    this.releaseTrailingClick?.();
+    const doc = this.doc;
+    const swallow = (event: Event): void => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      release();
+    };
+    const release = (): void => {
+      doc.removeEventListener('click', swallow, true);
+      doc.removeEventListener('pointerdown', release, true);
+      doc.removeEventListener('keydown', release, true);
+      this.releaseTrailingClick = null;
+    };
+    doc.addEventListener('click', swallow, true);
+    doc.addEventListener('pointerdown', release, true);
+    doc.addEventListener('keydown', release, true);
+    this.releaseTrailingClick = release;
   }
 
   private requestDismiss(): void {

@@ -8,6 +8,7 @@ import {
   inject,
   Injector,
   input,
+  output,
   signal,
   untracked,
   type Signal,
@@ -394,6 +395,22 @@ export class CngxPopover {
   readonly exclusive = input(true);
 
   /**
+   * Emits once each time the popover opens: at the end of `show()`, in the
+   * caller's task, after the native `showPopover()` call. A `show()` that
+   * returns early (already open, no Popover API) emits nothing. Bind it to
+   * react to the open as an event instead of watching `state` in an effect.
+   */
+  readonly opened = output<void>();
+
+  /**
+   * Emits once each time the popover reaches `closed`: after `hide()` (at
+   * the end of the exit transition when there is one) and after the
+   * browser's own light dismiss. A no-op `hide()` and the teardown on
+   * destroy emit nothing.
+   */
+  readonly closed = output<void>();
+
+  /**
    * Programmatic override of {@link exclusive}. `null` (default) defers to the
    * `[exclusive]` input; a boolean wins over it. Lets a composing organism
    * (e.g. a submenu wiring in `@cngx/ui/context-menu`) open a nested panel
@@ -495,6 +512,13 @@ export class CngxPopover {
    * target; cleared on finalize.
    */
   readonly focusOrigin = this.focusOriginState.asReadonly();
+
+  /**
+   * @internal Single close-listener slot, claimed by `CngxPopoverTrigger`
+   * through {@link registerCloseListener}. Last registration wins, like the
+   * implicit anchor slot: one trigger per popover.
+   */
+  private readonly closeListenerSlot = createSlotRegistry<(origin: HTMLElement | null) => void>();
 
   /**
    * Implicit anchor slot, written by `CngxPopoverTrigger` and composing
@@ -702,9 +726,10 @@ export class CngxPopover {
 
     this.destroyRef.onDestroy(() => {
       // finalize() disarms pendingClose; a 'closed' state means it already
-      // ran and the handle is gone.
+      // ran and the handle is gone. An output cannot emit on a destroyed
+      // directive, so the teardown close stays silent.
       if (this.stateSignal() !== 'closed') {
-        this.finalize();
+        this.finalize(false);
       }
     });
 
@@ -777,6 +802,7 @@ export class CngxPopover {
       // getComputedStyle read on this directive's side.
       this.updateArrowOffset();
     });
+    this.opened.emit();
   }
 
   /** Close the popover. No-op if already `closed` or `closing`. */
@@ -895,6 +921,37 @@ export class CngxPopover {
    */
   releaseRestoreFocus(owner: object): void {
     this.restoreFocusClaims.release(owner);
+  }
+
+  /**
+   * @internal Install the listener `finalize()` calls synchronously at the
+   * end of every close, with the {@link focusOrigin} captured before it is
+   * cleared. Runs on every close path (`hide()`, light dismiss), so a close
+   * that lands before the next change detection pass still reaches it.
+   * Replacing a different live listener warns in dev mode (CNGX1081).
+   */
+  registerCloseListener(fn: (origin: HTMLElement | null) => void): void {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      const current = untracked(() => this.closeListenerSlot.current());
+      if (current && current !== fn) {
+        cngxDevWarn(
+          'CNGX1081',
+          '[cngxPopover] a second CngxPopoverTrigger registered on this popover and replaced ' +
+            'the first one. Only the last-registered trigger restores focus on close, so bind ' +
+            'one CngxPopoverTrigger per popover.',
+          this.popoverElement,
+        );
+      }
+    }
+    this.closeListenerSlot.register(fn);
+  }
+
+  /**
+   * @internal Release `fn`. Clears the slot only while `fn` still holds it,
+   * so a stale trigger's teardown leaves a successor registered.
+   */
+  releaseCloseListener(fn: (origin: HTMLElement | null) => void): void {
+    this.closeListenerSlot.unregister(fn);
   }
 
   /**
@@ -1073,7 +1130,8 @@ export class CngxPopover {
     }
   }
 
-  private finalize(): void {
+  private finalize(emit = true): void {
+    const wasClosed = this.stateSignal() === 'closed';
     // Disarm any pending close wait no matter which path got here - the
     // browser's own light dismiss routes through handleToggle straight to
     // finalize(), and a stale armed handle would force-close a reopened
@@ -1084,6 +1142,7 @@ export class CngxPopover {
     openPopovers.delete(this);
     this._arrowOffset.set(null);
     this.resolvedEdgeSignal.set(null);
+    const origin = untracked(() => this.focusOriginState());
     this.focusOriginState.set(null);
     const el = this.popoverElement;
     // Move focus out of the panel BEFORE it flips to aria-hidden (state ->
@@ -1103,5 +1162,9 @@ export class CngxPopover {
       // Element may already be hidden or disconnected
     }
     this.stateSignal.set('closed');
+    untracked(() => this.closeListenerSlot.current()?.(origin));
+    if (emit && !wasClosed) {
+      this.closed.emit();
+    }
   }
 }

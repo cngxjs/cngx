@@ -436,7 +436,16 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     const overscanBefore = overscan + (scrollingDown ? 0 : leadItems);
     const overscanAfter = overscan + (scrollingDown ? leadItems : 0);
 
-    return computeRange(scrollTop, clientHeight, total, size, overscanBefore, cols, overscanAfter);
+    return computeRange(
+      scrollTop,
+      clientHeight,
+      total,
+      size,
+      overscanBefore,
+      cols,
+      overscanAfter,
+      itemsPerViewport,
+    );
   });
 
   const start = computed(() => range().start);
@@ -642,14 +651,18 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (!el) {
       return;
     }
+    // Raw listeners do not get the null reactive consumer Angular gives its own
+    // `(event)` bindings. Focus dropping inside a render pass (a select sheet
+    // removing the listbox tabindex on rotation) runs them synchronously under
+    // that template's consumer, where a bare signal write throws NG0600.
     const handleFocusIn = (e: FocusEvent): void => {
       const target = (e.target as HTMLElement).closest('[data-cngx-recycle-index]');
       if (target) {
-        focusedIndex.set(Number(target.getAttribute('data-cngx-recycle-index')));
+        untracked(() => focusedIndex.set(Number(target.getAttribute('data-cngx-recycle-index'))));
       }
     };
     const handleFocusOut = (): void => {
-      focusedIndex.set(null);
+      untracked(() => focusedIndex.set(null));
     };
     el.addEventListener('focusin', handleFocusIn);
     el.addEventListener('focusout', handleFocusOut);

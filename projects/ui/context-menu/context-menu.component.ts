@@ -75,7 +75,7 @@ import { CNGX_CONTEXT_MENU_PANEL, type CngxContextMenuPanel } from './context-me
     '(keydown)': 'handleKeydown($event)',
   },
   hostDirectives: [
-    { directive: CngxPopover, inputs: ['offset', 'closeOnEscape'] },
+    { directive: CngxPopover, inputs: ['offset', 'closeOnEscape'], outputs: ['opened', 'closed'] },
     { directive: CngxMenu, inputs: ['label: ariaLabel'] },
   ],
   template: `

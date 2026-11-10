@@ -79,6 +79,54 @@
       ]
     },
     {
+      "class": "CngxActionStatusBrain",
+      "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+      "line": 189,
+      "member": "pendingText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "pendingLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["pending"],
+          "token": "CNGX_ACTION_STATUS_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionStatusBrain",
+      "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+      "line": 193,
+      "member": "succeededText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "succeededLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["succeeded"],
+          "token": "CNGX_ACTION_STATUS_CONFIG"
+        }
+      ]
+    },
+    {
+      "class": "CngxActionStatusBrain",
+      "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+      "line": 196,
+      "member": "failedText",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "failedLabel" },
+        {
+          "kind": "bundle",
+          "field": "labels",
+          "path": ["failed"],
+          "token": "CNGX_ACTION_STATUS_CONFIG"
+        }
+      ]
+    },
+    {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
       "line": 470,
@@ -199,7 +247,7 @@
     {
       "class": "CngxDrawerSurface",
       "file": "projects/common/layout/drawer/drawer-surface.directive.ts",
-      "line": 279,
+      "line": 312,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -237,7 +285,7 @@
     {
       "class": "CngxSidebar",
       "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 201,
+      "line": 270,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -285,7 +333,7 @@
     {
       "class": "CngxPopoverPanel",
       "file": "projects/common/popover/popover-panel.component.ts",
-      "line": 291,
+      "line": 292,
       "member": "resolvedLoadingText",
       "enclosing": "computed",
       "tiers": [
@@ -301,7 +349,7 @@
     {
       "class": "CngxPopoverPanel",
       "file": "projects/common/popover/popover-panel.component.ts",
-      "line": 293,
+      "line": 294,
       "member": "resolvedErrorText",
       "enclosing": "computed",
       "tiers": [
@@ -317,7 +365,7 @@
     {
       "class": "CngxPopoverPanel",
       "file": "projects/common/popover/popover-panel.component.ts",
-      "line": 294,
+      "line": 295,
       "member": "resolvedEmptyText",
       "enclosing": "computed",
       "tiers": [
@@ -420,7 +468,7 @@
     {
       "class": "CngxActionMultiSelect",
       "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
-      "line": 418,
+      "line": 423,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -442,7 +490,7 @@
     {
       "class": "CngxActionMultiSelect",
       "file": "projects/forms/select/action-multi-select/action-multi-select.component.ts",
-      "line": 429,
+      "line": 434,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -458,7 +506,7 @@
     {
       "class": "CngxActionSelect",
       "file": "projects/forms/select/action-select/action-select.component.ts",
-      "line": 386,
+      "line": 389,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -480,7 +528,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 462,
+      "line": 466,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -502,7 +550,7 @@
     {
       "class": "CngxCombobox",
       "file": "projects/forms/select/combobox/combobox.component.ts",
-      "line": 474,
+      "line": 478,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -518,7 +566,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 86,
+      "line": 91,
       "member": "resolvedPlaceholder",
       "enclosing": "computed",
       "tiers": [
@@ -534,7 +582,7 @@
     {
       "class": "CngxSelectSearch",
       "file": "projects/forms/select/declarative/select-search.component.ts",
-      "line": 143,
+      "line": 161,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -550,7 +598,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 380,
+      "line": 384,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -572,7 +620,7 @@
     {
       "class": "CngxMultiSelect",
       "file": "projects/forms/select/multi-select/multi-select.component.ts",
-      "line": 391,
+      "line": 395,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -588,7 +636,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 401,
+      "line": 406,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -610,7 +658,7 @@
     {
       "class": "CngxReorderableMultiSelect",
       "file": "projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts",
-      "line": 412,
+      "line": 417,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -626,7 +674,7 @@
     {
       "class": "CngxSelectShell",
       "file": "projects/forms/select/select-shell/select-shell.component.ts",
-      "line": 386,
+      "line": 389,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -648,7 +696,7 @@
     {
       "class": "CngxSelect",
       "file": "projects/forms/select/single-select/select.component.ts",
-      "line": 354,
+      "line": 358,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -670,7 +718,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 495,
+      "line": 497,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -692,7 +740,7 @@
     {
       "class": "CngxTreeSelect",
       "file": "projects/forms/select/tree-select/tree-select.component.ts",
-      "line": 506,
+      "line": 508,
       "member": "resolvedChipRemoveAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -708,7 +756,7 @@
     {
       "class": "CngxTypeahead",
       "file": "projects/forms/select/typeahead/typeahead.component.ts",
-      "line": 375,
+      "line": 382,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -740,39 +788,6 @@
           "field": "copy",
           "path": ["disabledReason"],
           "token": "CNGX_LANGUAGE_PACK"
-        }
-      ]
-    },
-    {
-      "class": "CngxActionButton",
-      "file": "projects/ui/action-button/action-button.ts",
-      "line": 579,
-      "member": "resolveAnnouncement",
-      "enclosing": "untracked",
-      "tiers": [
-        { "kind": "input", "field": "succeededAnnouncement" },
-        { "kind": "input", "field": "succeededLabel" },
-        {
-          "kind": "bundle",
-          "field": "i18n",
-          "path": ["asyncClickSucceeded"],
-          "token": "CNGX_INTERACTIVE_I18N"
-        }
-      ]
-    },
-    {
-      "class": "CngxActionButton",
-      "file": "projects/ui/action-button/action-button.ts",
-      "line": 592,
-      "member": "resolveAnnouncement",
-      "enclosing": "untracked",
-      "tiers": [
-        { "kind": "input", "field": "failedLabel" },
-        {
-          "kind": "bundle",
-          "field": "i18n",
-          "path": ["asyncClickFailed"],
-          "token": "CNGX_INTERACTIVE_I18N"
         }
       ]
     },
@@ -1035,7 +1050,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 262,
+      "line": 289,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [

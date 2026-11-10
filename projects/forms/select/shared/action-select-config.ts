@@ -81,8 +81,9 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 
  * - `provideActionSelectConfigAt(...)` returns `Provider[]` - a component's `providers` / `viewProviders`.
  *
  * Compose from the `with*` features (`withActionAriaLabel`, `withActionPosition`,
- * `withActionPopoverPlacement`). Resolution is nearest-wins: a nested provider
- * replaces an ancestor config for its subtree, it does not deep-merge.
+ * `withActionPopoverPlacement`). `provideActionSelectConfig` at the root
+ * replaces the whole config; `provideActionSelectConfigAt` merges over the
+ * parent scope, key by key - the keys it sets win, unset keys inherit.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts

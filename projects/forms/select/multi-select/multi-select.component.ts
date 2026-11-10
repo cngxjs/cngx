@@ -40,6 +40,7 @@ import {
 
 import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -79,11 +80,12 @@ import {
 } from '../shared/internal/chip-fit-strip.directive';
 import { injectTouchFloorSignal } from '../shared/internal/touch-floor';
 import { sameArrayContents } from '../shared/internal/compare';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import { createTypeaheadController } from '../shared/typeahead-controller';
+import { createTypeaheadController, typeaheadAcceptsKey } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
@@ -228,6 +230,7 @@ export interface CngxMultiSelectChange<T = unknown> {
     CngxSelectChipFitSlot,
     CngxSelectChipFitStrip,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectSummary,
     NgTemplateOutlet,
   ],
@@ -252,9 +255,10 @@ export interface CngxMultiSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-multi-select',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
+    '(mousedown)': 'hostFocus.handleMouseDown($event)',
   },
   templateUrl: './multi-select.component.html',
   styleUrls: ['../shared/select-base.css', './multi-select.component.css'],
@@ -294,9 +298,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -747,7 +751,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * `shared/typeahead-controller`. Match-to-action wiring below is
    * multi-specific (toggle).
    */
-  private readonly typeaheadController = createTypeaheadController<T>({
+  protected readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
@@ -789,8 +793,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
 
   /**
    * Currently selected options. Structural equal on `.value` under
@@ -1000,8 +1007,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleTriggerClick(): void {
+  protected handleTriggerClick(event: MouseEvent): void {
     if (this.disabled()) {
+      return;
+    }
+    if (this.openOnGesture.consumeClick(event)) {
       return;
     }
     this.toggle();
@@ -1051,12 +1061,21 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(event: Event): void {
+    this.openOnGesture.handlePointerDown(event);
+  }
+
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */
@@ -1066,6 +1085,36 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
+  /**
+   * Flat index of the first selected option in list order, `-1` without a
+   * selection. The index space of a windowed listbox, and the order of the
+   * rendered rows.
+   */
+  private selectedFlatIndex(): number {
+    let lowest = -1;
+    for (const v of this.values()) {
+      const index = this.typeaheadController.matchFromValue(v);
+      if (index >= 0 && (lowest < 0 || index < lowest)) {
+        lowest = index;
+      }
+    }
+    return lowest;
+  }
+
+  /**
+   * The panel opens on the first selected option. It runs after an opening
+   * key set its first or last highlight, so it replaces that highlight;
+   * without a selection the key's highlight stands.
+   *
+   * @internal
+   */
+  protected handlePanelOpened(): void {
+    const index = this.selectedFlatIndex();
+    if (index >= 0) {
+      this.listboxRef()?.ad.highlightByIndex(index);
+    }
+  }
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
@@ -1088,7 +1137,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     // Typeahead-while-closed - toggles first matching option.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
-      if (key.length === 1 && /\S/.exec(key)) {
+      if (typeaheadAcceptsKey(key, this.typeaheadController.buffer())) {
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: this.flatOptions(),
@@ -1111,6 +1160,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
           this.typeaheadController.clearBuffer();
           return;
         }
+        if (key === ' ') {
+          // A space inside a running buffer is part of the term, also when it
+          // matches nothing: it must not reach the trigger as an open key.
+          event.preventDefault();
+          return;
+        }
       }
     }
 
@@ -1122,6 +1177,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
+      selectedIndex: () => this.selectedFlatIndex(),
     });
   }
 }

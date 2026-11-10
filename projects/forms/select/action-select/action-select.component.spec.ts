@@ -26,38 +26,6 @@ const TAGS: CngxSelectOptionsInput<Tag> = [
   { value: { id: 't2', name: 'Dev' }, label: 'Dev' },
 ];
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: () => void;
-  };
-  if (proto.showPopover) {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement): void {
-    this.setAttribute('data-popover-shown', 'true');
-    Object.defineProperty(this, 'matches', {
-      value: (s: string) => s === ':popover-open',
-      configurable: true,
-    });
-  };
-  proto.hidePopover = function (this: HTMLElement): void {
-    this.removeAttribute('data-popover-shown');
-    Object.defineProperty(this, 'matches', {
-      value: (_s: string) => false,
-      configurable: true,
-    });
-  };
-  proto.togglePopover = function (this: HTMLElement): void {
-    if (this.getAttribute('data-popover-shown') === 'true') {
-      proto.hidePopover!.call(this);
-    } else {
-      proto.showPopover!.call(this);
-    }
-  };
-}
-
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -142,7 +110,6 @@ function setup(): {
   select: CngxActionSelect<Tag>;
   input: HTMLInputElement;
 } {
-  polyfillPopover();
   TestBed.configureTestingModule({ imports: [Host] });
   const fixture = TestBed.createComponent(Host);
   fixture.detectChanges();
@@ -535,7 +502,6 @@ describe('CngxActionSelect - first search term after a value write', () => {
     input: HTMLInputElement;
     searchLog: string[];
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [Host] });
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.value.set(initial);
@@ -614,7 +580,6 @@ describe('CngxActionSelect - selected survives a filtering term', () => {
 
   it('keeps the selected option while the term hides it (default compareWith)', () => {
     vi.useFakeTimers();
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [DefaultCompareActionHost] });
     const fixture = TestBed.createComponent(DefaultCompareActionHost);
     flush(fixture);
@@ -641,6 +606,77 @@ describe('CngxActionSelect - selected survives a filtering term', () => {
     typeTerm(fixture, 'desi');
     expect(fixture.componentInstance.value()?.id).toBe('t2');
     expect(select.selected()?.label).toBe('Dev');
+  });
+});
+
+@Component({
+  template: `
+    <cngx-action-select
+      [label]="'Tag'"
+      [options]="options"
+      [compareWith]="compareWith"
+      [clearable]="true"
+      [(value)]="value"
+    />
+  `,
+  imports: [CngxActionSelect],
+})
+class ClearableHost {
+  readonly options = TAGS;
+  readonly compareWith: (a: Tag | undefined, b: Tag | undefined) => boolean =
+    (a, b) => (a?.id ?? null) === (b?.id ?? null);
+  readonly value = signal<Tag | undefined>({ id: 't1', name: 'Design' });
+}
+
+describe('CngxActionSelect - keyboard collapse onto the clear button', () => {
+  function setupClearable(): {
+    fixture: ReturnType<typeof TestBed.createComponent<ClearableHost>>;
+    select: CngxActionSelect<Tag>;
+    input: HTMLInputElement;
+    clear: HTMLButtonElement;
+  } {
+    TestBed.configureTestingModule({ imports: [ClearableHost] });
+    const fixture = TestBed.createComponent(ClearableHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxActionSelect));
+    const el = selectDe.nativeElement as HTMLElement;
+    return {
+      fixture,
+      select: selectDe.componentInstance as CngxActionSelect<Tag>,
+      input: el.querySelector('input') as HTMLInputElement,
+      clear: el.querySelector('.cngx-action-select__clear') as HTMLButtonElement,
+    };
+  }
+
+  // A Tab from the input onto the clear button: the focusout of the owner
+  // names the clear button as its related target.
+  function tabOntoClear(input: HTMLInputElement, clear: HTMLButtonElement): void {
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: clear }));
+  }
+
+  it('collapses the open panel when keyboard focus moves onto the clear button', () => {
+    const { fixture, select, input, clear } = setupClearable();
+    expect(clear).not.toBeNull();
+    select.open();
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
+
+    tabOntoClear(input, clear);
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('keeps the panel open on the same move while the action guard is dirty', () => {
+    const { fixture, select, input, clear } = setupClearable();
+    select.open();
+    flush(fixture);
+    select.actionCallbacks().setDirty(true);
+    flush(fixture);
+
+    tabOntoClear(input, clear);
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
   });
 });
 
@@ -695,7 +731,6 @@ describe('CngxActionSelect - placeholder falls back to the label', () => {
     fixture: ReturnType<typeof TestBed.createComponent<PlaceholderHost>>;
     input: HTMLInputElement;
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PlaceholderHost] });
     const fixture = TestBed.createComponent(PlaceholderHost);
     flush(fixture);
@@ -732,7 +767,6 @@ describe('CngxActionSelect - openOn config integration', () => {
     select: CngxActionSelect<Tag>;
     input: HTMLInputElement;
   } {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [OpenOnHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(OpenOnHost);
     flush(fixture);
@@ -770,7 +804,6 @@ describe('CngxActionSelect - PageUp/PageDown through CNGX_FLAT_NAV_STRATEGY', ()
   }
 
   function pageDown(providers: unknown[]): number {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PageJumpHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(PageJumpHost);
     flush(fixture);
@@ -796,3 +829,7 @@ describe('CngxActionSelect - PageUp/PageDown through CNGX_FLAT_NAV_STRATEGY', ()
     expect(onPageJump).toHaveBeenCalledOnce();
   });
 });
+
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+
+describeCommitControllerCascade('CngxActionSelect');

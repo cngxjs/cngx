@@ -68,34 +68,6 @@ import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host'
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
 
-// jsdom does not implement the Popover API - polyfill so CngxPopover can toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -244,9 +216,116 @@ class CommitHost {
   };
 }
 
+@Component({
+  template: `
+    <cngx-select-shell [label]="'Big'" [(value)]="value">
+      @for (i of indices; track i) {
+        <cngx-option [value]="i">Row {{ i }}</cngx-option>
+      }
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class ThousandProjectedHost {
+  readonly value = signal<number | undefined>(undefined);
+  readonly indices = Array.from({ length: 1000 }, (_, i) => i);
+}
+
+describe('CngxSelectShell - stays a plain list at any size', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+  });
+
+  it('leaves virtualCount unbound with 1000 projected options, all rendered, End on the last', () => {
+    const fixture = TestBed.createComponent(ThousandProjectedHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<number>;
+    shell.open();
+    flush(fixture);
+
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox));
+    const ad = listbox.injector.get(CngxListbox).ad;
+    expect(ad.virtualCount()).toBeUndefined();
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('cngx-option').length).toBe(1000);
+    expect(ad.resolvedItems().length).toBe(1000);
+
+    ad.highlightLast();
+    flush(fixture);
+    expect(ad.activeIndex()).toBe(999);
+    expect(ad.activeValue()).toBe(999);
+    expect(ad.pendingHighlight()).toBeNull();
+  });
+});
+
+interface Pet {
+  readonly id: number;
+  readonly name: string;
+}
+
+@Component({
+  template: `
+    <cngx-select-shell [label]="'Pet'" [(value)]="value" [compareWith]="byId">
+      @for (pet of pets; track pet.id) {
+        <cngx-option [value]="pet">{{ pet.name }}</cngx-option>
+      }
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class CompareWithShellHost {
+  readonly pets: Pet[] = [
+    { id: 1, name: 'Ant' },
+    { id: 2, name: 'Bee' },
+    { id: 3, name: 'Cat' },
+  ];
+  // Equal to the third option by id only, never by identity.
+  readonly value = signal<Pet | undefined>({ id: 3, name: 'Cat' });
+  readonly byId = (a: Pet | undefined, b: Pet | undefined): boolean => a?.id === b?.id;
+}
+
+describe('CngxSelectShell - opens on the selected option', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+  });
+
+  it('highlights a model value that equals an option only under compareWith, on every open', () => {
+    const fixture = TestBed.createComponent(CompareWithShellHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<Pet>;
+    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+
+    shell.open();
+    flush(fixture);
+    expect((ad.activeValue() as Pet | null)?.id).toBe(3);
+
+    shell.close();
+    flush(fixture);
+    shell.open();
+    flush(fixture);
+    expect((ad.activeValue() as Pet | null)?.id).toBe(3);
+  });
+
+  it('keeps the first-row highlight of an opening key without a selection', () => {
+    const fixture = TestBed.createComponent(CompareWithShellHost);
+    fixture.componentInstance.value.set(undefined);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = (fixture.nativeElement as HTMLElement).querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    flush(fixture);
+    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
+    expect((ad.activeValue() as Pet | null)?.id).toBe(1);
+  });
+});
+
 describe('CngxSelectShell - Phase 5 scaffold', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -722,7 +801,6 @@ describe('CngxSelectShell - Phase 5 scaffold', () => {
 
 describe('CngxSelectShell - form-field integration', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -795,7 +873,6 @@ describe('CngxSelectShell - form-field integration', () => {
 
 describe('CngxSelectShell - commit action producer', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -962,9 +1039,6 @@ describe('CngxSelectShell - commit action producer', () => {
 });
 
 describe('CngxSelectShell - factory token wiring', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
 
   it('emits searchTermChange when searchTerm flips after mount', () => {
     const fixture = TestBed.createComponent(FlatHost);
@@ -1078,7 +1152,6 @@ describe('CngxSelectShell - factory token wiring', () => {
 
 describe('CngxSelectShell - trigger slot-cascade tier-1', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1410,7 +1483,6 @@ class CityHost {
 
 describe('CngxSelectShell - closed-trigger typeahead locale', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ providers: [provideLocale('tr')] });
   });
 
@@ -1463,7 +1535,6 @@ describe('CngxSelectShell - <cngx-select-search> in the mobile sheet', () => {
   }
 
   function setupSearch() {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SearchSheetHost] });
     const fixture = TestBed.createComponent(SearchSheetHost);
     flush(fixture);
@@ -1583,7 +1654,6 @@ describe('CngxSelectShell - live projected option text', () => {
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1634,7 +1704,6 @@ describe('CngxSelectShell - empty-string option without a commit action', () => 
   }
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({});
   });
 
@@ -1686,7 +1755,6 @@ describe('CngxSelectShell - searchDebounceMs', () => {
   }
 
   function setup(providers: unknown[], bind?: number) {
-    polyfillPopover();
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [DebounceHost], providers: providers as never[] });
     const fixture = TestBed.createComponent(DebounceHost);
@@ -1809,3 +1877,7 @@ describe('CngxSelectShell - searchDebounceMs', () => {
     expect(shell.value()).toBe('green');
   });
 });
+
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
+
+describeCommitControllerCascade('CngxSelectShell');

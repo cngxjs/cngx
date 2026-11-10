@@ -56,6 +56,10 @@ test.describe('CngxSelect demo', () => {
     const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.focus();
     await trigger.click();
+    // OD5 renders the option rows on first open; under the installed fake clock
+    // that render is scheduler-bound, so advance the clock once to flush it
+    // before the first typeahead key resolves against the rows.
+    await page.clock.fastForward(50);
 
     // aria-activedescendant lives on the focused trigger (ARIA 1.2 combobox).
     // The fake clock jumps past the 300ms typeahead buffer between keys so

@@ -60,11 +60,16 @@ import { injectSelectShellSearchHost } from './select-search-host';
       #searchInput
       cngxSearch
       class="cngx-select-search__input"
+      role="combobox"
+      aria-autocomplete="list"
       [value]="host.searchTerm()"
       [debounceMs]="debounceMs()"
       (searchChange)="host.searchTerm.set($event)"
       (keydown)="handleKeydown($event)"
       [attr.aria-label]="resolvedAriaLabel()"
+      [attr.aria-controls]="host.listboxId?.() ?? null"
+      [attr.aria-expanded]="host.panelOpen?.() ?? false"
+      [attr.aria-activedescendant]="activeId()"
       [placeholder]="resolvedPlaceholder()"
       autocomplete="off"
     />
@@ -88,10 +93,22 @@ export class CngxSelectSearch {
 
   /**
    * ARIA label override. Cascade: per-instance `[aria-label]` →
-   * `CNGX_SELECT_CONFIG.ariaLabels.searchInput` → `null` (input
-   * falls back to placeholder for AT naming).
+   * `CNGX_SELECT_CONFIG.ariaLabels.searchInput` (EN `'Search options'`). The
+   * config default is a real string, so the input is named for AT out of the
+   * box; only a config that sets `searchInput` to `null` leaves the input
+   * named by its `placeholder` instead.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  /**
+   * `aria-activedescendant` for the combobox input: the id of the listbox's
+   * highlighted option, or `null` when nothing is highlighted.
+   *
+   * @internal
+   */
+  protected readonly activeId = computed<string | null>(
+    () => this.host.listboxRef()?.ad.activeId() ?? null,
+  );
 
   /** @internal */
   protected readonly host = injectSelectShellSearchHost();
@@ -133,9 +150,10 @@ export class CngxSelectSearch {
   }
 
   /**
-   * Resolved ARIA label per the cascade above. `null` when neither
-   * input nor config sets it - input then exposes only `placeholder`
-   * to AT (native `<input>` default).
+   * Resolved ARIA label per the cascade above: the instance `[aria-label]`
+   * else the config `ariaLabels.searchInput` (EN `'Search options'`). `null`
+   * only when a config explicitly clears `searchInput` - the input then
+   * exposes its `placeholder` to AT (native `<input>` default).
    *
    * @internal
    */
@@ -172,10 +190,14 @@ export class CngxSelectSearch {
     this.forwardKey(event);
   }
 
-  private readonly forwardKey = createListboxKeyForward(this.host.listboxRef, () => {
-    this.host.close();
-    this.host.focus();
-  });
+  private readonly forwardKey = createListboxKeyForward(
+    this.host.listboxRef,
+    () => {
+      this.host.close();
+      this.host.focus();
+    },
+    { homeEnd: 'listbox' },
+  );
 
   // The input keeps the dropped text otherwise: `[value]` re-renders only when
   // `searchTerm` changes, and the dropped write never changes it.

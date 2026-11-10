@@ -5,6 +5,7 @@ import {
   ViewEncapsulation,
   computed,
   inject,
+  linkedSignal,
   viewChildren,
 } from '@angular/core';
 
@@ -12,7 +13,6 @@ import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display'
 import { CngxRecyclerPlaceholder } from '@cngx/common/data';
 import { CngxOption } from '@cngx/common/interactive';
 
-import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../../panel-host';
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../../option.model';
 import type { CngxSelectCheckContext } from '../../template-slots';
@@ -21,11 +21,23 @@ import {
   type PanelRenderer,
 } from '../../panel-renderer';
 import { isCngxSelectOptionGroupDef } from '../../option.model';
+import { CngxSelectAutoRecycler } from '../auto-recycler.directive';
+import { sameArrayContents } from '../compare';
+
+/**
+ * Stable empty slice returned while the panel has never opened. Shared so
+ * the deferred-render branch never allocates and the `renderItems` equal
+ * fn resolves to one reference.
+ */
+const EMPTY_RENDER_ITEMS: readonly unknown[] = [];
 
 /**
  * Panel body for the flat (non-tree) select family. Renders the
- * grouped/flat option loop inside `<cngx-select-panel-shell>`; the
- * shell owns loading / empty / error / refreshing / commit-error.
+ * grouped/flat option loop only; the surrounding
+ * `<cngx-select-panel-shell>` (loading / empty / error / refreshing /
+ * commit-error and the action regions) wraps the `cngxListbox` element
+ * in the variant template, so the chrome stays a sibling of the listbox
+ * rather than a descendant (C4).
  *
  * The outer `<div cngxPopover>` and `<div cngxListbox>` stay on
  * `CngxSelect` so the trigger button's `[popover]` /
@@ -52,7 +64,7 @@ import { isCngxSelectOptionGroupDef } from '../../option.model';
     CngxCheckboxIndicator,
     CngxRadioIndicator,
     CngxRecyclerPlaceholder,
-    CngxSelectPanelShell,
+    CngxSelectAutoRecycler,
     NgTemplateOutlet,
   ],
   host: {
@@ -96,7 +108,43 @@ export class CngxSelectPanel<T = unknown> {
    *
    * @internal
    */
-  protected readonly virtualizer = computed(() => this.renderer.virtualizer ?? null);
+  protected readonly virtualizer = computed(() => {
+    const v = this.renderer.virtualizer;
+    if (!v) {
+      return null;
+    }
+    // Spacers and virtual row indices only while the renderer windows the
+    // list. Below the auto-virtualize threshold the full list renders, so
+    // the panel stays identity-shaped: no spacer divs (which would shift
+    // `:nth-of-type`), no `data-cngx-recycle-index`, no `aria-posinset`.
+    const rendered = this.renderer.renderOptions().length;
+    const total = this.renderer.totalCount?.() ?? rendered;
+    return rendered >= total ? null : v;
+  });
+
+  /**
+   * `true` once the open panel's rendered items contain a group. Read by
+   * the spacer gate - derived from the already computed `renderItems`, never
+   * recomputed inside a render body.
+   *
+   * @internal
+   */
+  protected readonly renderedHasGroup = computed(() =>
+    this.renderItems().some(isCngxSelectOptionGroupDef),
+  );
+
+  /**
+   * Virtualiser for the leading/trailing spacer divs only. Grouped lists
+   * render in full and bypass the renderer, so emitting recycler spacers
+   * around them would reserve scroll height for rows that are all already
+   * in the DOM (C2). A grouped render drops both spacers; the flat path
+   * keeps the windowed `virtualizer()`.
+   *
+   * @internal
+   */
+  protected readonly spacerVirtualizer = computed(() =>
+    this.renderedHasGroup() ? null : this.virtualizer(),
+  );
 
   /**
    * Items iterated by the template. Grouped paths use
@@ -109,15 +157,43 @@ export class CngxSelectPanel<T = unknown> {
    */
   protected readonly renderItems = computed<
     (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[]
-  >(() => {
-    const effective = this.host.effectiveOptions();
-    // Any group → route through `effectiveOptions` as-is. Virtualising
-    // renderers deliberately don't touch grouped lists.
-    const hasGroup = effective.some(isCngxSelectOptionGroupDef);
-    if (hasGroup) {
-      return [...effective];
-    }
-    return [...this.renderer.renderOptions()];
+  >(
+    () => {
+      // Deferred render (OD5): no option rows until the first open. The
+      // listbox element, its id and `aria-controls` target stay mounted
+      // in the variant template - only this loop is empty.
+      if (!this.hasOpened()) {
+        return EMPTY_RENDER_ITEMS as (
+          | CngxSelectOptionDef<T>
+          | CngxSelectOptionGroupDef<T>
+        )[];
+      }
+      const effective = this.host.effectiveOptions();
+      // Any group → route through `effectiveOptions` as-is. Virtualising
+      // renderers deliberately don't touch grouped lists.
+      const hasGroup = effective.some(isCngxSelectOptionGroupDef);
+      if (hasGroup) {
+        return [...effective];
+      }
+      return [...this.renderer.renderOptions()];
+    },
+    // Element-identity equal so the extra `hasOpened` branch and the
+    // fresh spreads above never cascade a new array reference when the
+    // contents are unchanged (reference_signal_architecture).
+    { equal: (a, b) => sameArrayContents(a, b, Object.is) },
+  );
+
+  /**
+   * Latches `true` on the panel's first open and stays true. Option rows
+   * are deferred until then (OD5): a panel that has never opened renders
+   * nothing, which keeps mounting a large closed list cheap. Re-closing
+   * after the first open keeps the rows, so re-open is instant.
+   *
+   * @internal
+   */
+  private readonly hasOpened = linkedSignal<boolean, boolean>({
+    source: () => this.host.panelOpen(),
+    computation: (open, previous) => open || previous?.value === true,
   });
 
   /**

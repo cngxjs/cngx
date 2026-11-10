@@ -42,6 +42,11 @@ export const CNGX_LANGUAGE_DE = {
     disabledReason: 'Dieser Abschnitt ist derzeit nicht verfügbar.',
     errorMessage: 'Dieser Abschnitt konnte nicht geladen werden.',
   },
+  actionStatus: {
+    pending: '',
+    succeeded: '',
+    failed: '',
+  },
   breadcrumb: {
     bar: 'Breadcrumb',
     overflowTrigger: 'Ausgeblendete Pfadeinträge anzeigen',
@@ -436,7 +441,10 @@ export const CNGX_LANGUAGE_DE = {
     },
     announceNoResults: 'Keine Ergebnisse',
     actionGroup: 'Inline-Aktion',
-    reorderHint: 'Mit Alt + Pfeiltasten neu anordnen',
+    reorderHint: 'Mit {modifier} + Pfeiltasten neu anordnen',
+    modifierAlt: 'Alt',
+    modifierCtrl: 'Strg',
+    modifierMeta: 'Cmd',
     reorderListLabel: 'Ausgewählt, in Reihenfolge',
     reorderMoveUp: '{label}: nach oben verschieben',
     reorderMoveDown: '{label}: nach unten verschieben',
@@ -448,6 +456,8 @@ export const CNGX_LANGUAGE_DE = {
     endRegion: 'Seitenbereich',
     resizeHandle: 'Navigationsbreite ändern',
     resizeValueText: '{value}',
+    collapsedAnnouncement: 'Navigation eingeklappt',
+    expandedAnnouncement: 'Navigation ausgeklappt',
   },
   speak: {
     readAloud: 'Vorlesen',

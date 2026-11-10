@@ -12,6 +12,7 @@ import type { AsyncView } from '@cngx/common/data';
 
 import { CngxSelectAnnouncer } from './announcer';
 import type { CngxSelectAriaLabels } from './config';
+import { resolveSelectConfig } from './internal/resolve-config';
 
 /**
  * The filter outcome {@link createSearchEffects} speaks once a typed term
@@ -39,6 +40,12 @@ export interface SearchEffectsOptions {
   readonly searchTerm: Signal<string>;
   readonly panelOpen: Signal<boolean>;
   readonly disabled: Signal<boolean>;
+  /**
+   * `true` while the field is readonly. A readonly host accepts no write, so
+   * a settled term never auto-opens its panel. Omitted defaults to never
+   * readonly.
+   */
+  readonly readonly?: Signal<boolean>;
   /** Typically `() => this.popoverRef()?.show()`. */
   readonly open: () => void;
   /**
@@ -53,6 +60,13 @@ export interface SearchEffectsOptions {
    * the panel.
    */
   readonly focused?: Signal<boolean>;
+  /**
+   * Term the user dismissed with Escape or blur while its debounce was still
+   * pending. A settling term equal to this marker never auto-opens, so an
+   * Escape inside the debounce window keeps the panel shut. Typing a new term
+   * clears it. Omitted means nothing is ever treated as dismissed.
+   */
+  readonly dismissedTerm?: Signal<string | null>;
   /**
    * Optional `searchTermChange` forward. Display-binding variants
    * route through `onUserSearchTerm` and leave this undefined.
@@ -100,8 +114,10 @@ export function createSearchEffects(opts: SearchEffectsOptions): void {
     untracked(() => {
       if (
         term !== '' &&
+        term !== (opts.dismissedTerm?.() ?? null) &&
         !opts.panelOpen() &&
         !opts.disabled() &&
+        !(opts.readonly?.() ?? false) &&
         (opts.focused?.() ?? true) &&
         autoOpenGate()
       ) {
@@ -139,6 +155,7 @@ export function searchResultsFrom(source: {
 /** @internal The filter-outcome announcement of {@link createSearchEffects}. */
 function announceSearchResults(opts: SearchEffectsOptions, results: SearchEffectsResults): void {
   const announcer = inject(CngxSelectAnnouncer);
+  const config = resolveSelectConfig();
   let spokenKey: string | null = null;
   effect(() => {
     const term = opts.searchTerm();
@@ -154,10 +171,14 @@ function announceSearchResults(opts: SearchEffectsOptions, results: SearchEffect
     }
     spokenKey = key;
     untracked(() => {
+      const announcerConfig = config.announcer();
+      if (announcerConfig.enabled === false) {
+        return;
+      }
       const copy = results.ariaLabels();
       announcer.announce(
         count === 0 ? copy.announceNoResults : copy.announceResults(count),
-        'polite',
+        announcerConfig.politeness ?? 'polite',
       );
     });
   });

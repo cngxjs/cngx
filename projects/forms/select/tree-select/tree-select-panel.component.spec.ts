@@ -127,6 +127,7 @@ function makeShellHost(): CngxSelectPanelHost {
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
+    panelOpen: signal(false),
     isGroup: ((..._a: unknown[]) => false) as CngxSelectPanelHost['isGroup'],
     isSelected: () => false,
     isIndeterminate: () => false,
@@ -180,6 +181,13 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly adCompareWith = this.adCompare.asReadonly();
   close(): void {
     /* no-op in the spec harness */
+  }
+
+  readonly escapeEnabledState = signal(true);
+  readonly escapeEnabled = this.escapeEnabledState.asReadonly();
+  readonly escapeClosed = signal(0);
+  escapeClose(): void {
+    this.escapeClosed.update((n) => n + 1);
   }
 
   readonly treeController: CngxTreeController<Row> = TestBed.runInInjectionContext(() =>
@@ -284,13 +292,13 @@ describe('CngxTreeSelectPanel', () => {
     expect(host.lastSelected()).not.toBeNull();
   });
 
-  it('renders a role="tree" container without the aria-selected-model attributes', () => {
+  it('renders a role="tree" container that announces multi-select, no aria-selected model', () => {
     const { root } = setup();
     const tree = root.querySelector('[role="tree"]');
     expect(tree).toBeTruthy();
-    // APG checkbox-tree: per-row aria-checked communicates multi-ness;
-    // aria-multiselectable belongs to the aria-selected model.
-    expect(tree?.hasAttribute('aria-multiselectable')).toBe(false);
+    // I3: the tree announces that several nodes can be selected; per-row
+    // aria-checked still carries the tri-state, no aria-selected model.
+    expect(tree?.getAttribute('aria-multiselectable')).toBe('true');
   });
 
   it('names the role="tree" container from the host listbox label', () => {
@@ -354,7 +362,6 @@ describe('CngxTreeSelectPanel', () => {
     const indicator = itemById('a').querySelector('cngx-checkbox-indicator');
     expect(indicator).toBeTruthy();
     expect(root.querySelector('[aria-selected]')).toBeNull();
-    expect(root.querySelector('[aria-multiselectable]')).toBeNull();
   });
 
   it('twisty click toggles the controller expansion state', () => {

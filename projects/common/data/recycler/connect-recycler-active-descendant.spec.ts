@@ -1,12 +1,16 @@
 import {
+  Component,
   provideZonelessChangeDetection,
   signal,
   type WritableSignal,
   runInInjectionContext,
   Injector,
+  viewChild,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';
 
 import { connectRecyclerToActiveDescendant } from './connect-recycler-active-descendant';
 import type { CngxRecycler } from './recycler';
@@ -107,5 +111,64 @@ describe('connectRecyclerToActiveDescendant', () => {
     // AD cleared the pending state in the same frame - the bridge must not
     // fire a stale scroll.
     expect(scrollToIndex).not.toHaveBeenCalled();
+  });
+});
+
+@Component({
+  imports: [CngxActiveDescendant],
+  template: `<div cngxActiveDescendant [items]="rows()" [virtualCount]="100" [windowStart]="start()"></div>`,
+})
+class BridgeHost {
+  readonly start = signal(0);
+  readonly rows = signal<ActiveDescendantItem[]>(rowsFrom(0));
+  readonly ad = viewChild.required(CngxActiveDescendant);
+  moveWindow(start: number): void {
+    this.start.set(start);
+    this.rows.set(rowsFrom(start));
+  }
+}
+
+function rowsFrom(start: number): ActiveDescendantItem[] {
+  return Array.from({ length: 10 }, (_, i) => ({
+    id: `row-${start + i}`,
+    value: start + i,
+    label: `Row ${start + i}`,
+  }));
+}
+
+describe('connectRecyclerToActiveDescendant - with the real directive', () => {
+  it('scrolls a pending target once, clears it on render and stays away afterwards', () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(BridgeHost);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    const scrollToIndex = vi.fn();
+    runInInjectionContext(TestBed.inject(Injector), () => {
+      connectRecyclerToActiveDescendant(
+        { scrollToIndex } as unknown as CngxRecycler,
+        host.ad(),
+      );
+    });
+    const settle = (): void => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(16);
+    };
+    settle();
+
+    host.ad().highlightLast();
+    settle();
+    expect(host.ad().pendingHighlight()).toBe(99);
+    expect(scrollToIndex).toHaveBeenCalledExactlyOnceWith(99);
+
+    host.moveWindow(90);
+    settle();
+    expect(host.ad().pendingHighlight()).toBeNull();
+    expect(host.ad().activeId()).toBe('row-99');
+
+    host.moveWindow(30);
+    settle();
+    expect(host.ad().pendingHighlight()).toBeNull();
+    expect(scrollToIndex).toHaveBeenCalledTimes(1);
   });
 });

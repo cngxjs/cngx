@@ -238,6 +238,30 @@ export function createMenuTriggerLifecycle(
     keydownTarget = null;
   };
 
+  // The close event of the popover, subscribed once per popover reference and
+  // kept across open cycles: every close, whichever path took it, drops the
+  // highlight in the subscription callback, so an open gesture stored while
+  // the menu had no items never lands on a closed menu.
+  type ClosedOutput = NonNullable<CngxMenuDismissPopoverRef['closed']>;
+  let closedSource: ClosedOutput | null = null;
+  let closedSubscription: { unsubscribe(): void } | null = null;
+
+  const attachClosed = (): void => {
+    const closed = deps.popover().closed ?? null;
+    if (closed === closedSource) {
+      return;
+    }
+    detachClosed();
+    closedSource = closed;
+    closedSubscription = closed?.subscribe(() => deps.menu().ad.resetHighlight()) ?? null;
+  };
+
+  const detachClosed = (): void => {
+    closedSubscription?.unsubscribe();
+    closedSubscription = null;
+    closedSource = null;
+  };
+
   const release = (): void => {
     focusTicket++;
     dismissBinding.detach();
@@ -252,6 +276,7 @@ export function createMenuTriggerLifecycle(
       focusStack.captureFocus();
       dismissBinding.attach();
       attachKeydown();
+      attachClosed();
       scheduleMenuFocus();
     },
     close(): void {
@@ -279,6 +304,7 @@ export function createMenuTriggerLifecycle(
       focusTicket++;
       dismissBinding.detach();
       detachKeydown();
+      detachClosed();
     },
   };
 }

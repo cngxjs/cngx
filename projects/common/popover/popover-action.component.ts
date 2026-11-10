@@ -1,47 +1,28 @@
-import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import { NgComponentOutlet } from '@angular/common';
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
-  DestroyRef,
-  effect,
-  ElementRef,
   inject,
-  input,
-  untracked,
-  viewChild,
   ViewEncapsulation,
+  type Signal,
 } from '@angular/core';
-import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
+  provideActionStatusHost,
   provideButtonHost,
 } from '@cngx/common/button';
 import {
-  CNGX_ASYNC_RUN_STATE,
-  CNGX_HOST_INTERACTION_STATE,
+  CNGX_ACTION_STATUS,
+  CngxActionStatusBrain,
+  CngxActionStatusStack,
   CngxAsyncClick,
-  CngxFailed,
-  CngxPending,
-  CngxSucceeded,
-  injectInteractiveI18n,
-  type CngxAsyncSettle,
-  type CngxHostInteractionState,
 } from '@cngx/common/interactive';
-import {
-  buildAsyncStateView,
-  injectLazySelf,
-  resolveSpokenText,
-  type AsyncStatus,
-  type CngxAsyncState,
-} from '@cngx/core/utils';
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
-import { CngxPopover } from './popover.directive';
+import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive';
 
 /**
  * Async confirm button for a `cngx-popover-panel` footer. A
@@ -58,8 +39,11 @@ import { CngxPopover } from './popover.directive';
  * `aria-describedby`. `aria-busy`, `data-pending` and `data-busy` come from
  * the brain over the co-hosted run.
  *
- * Supports the `cngxPending` / `cngxSucceeded` / `cngxFailed` templates of
- * `CngxActionButton`, or use `status()` + `@switch` for full control. The
+ * Supports the `cngxPending` / `cngxSucceeded` / `cngxFailed` templates and
+ * the `pendingLabel` / `succeededLabel` / `failedLabel` strings of
+ * `CngxActionButton`, or use `status()` + `@switch` for full control.
+ * `[externalState]` reflects a run started elsewhere, `(outcome)` emits once
+ * per own settle and per external `success` / `error` edge. The
  * label follows the busy gate (`CNGX_LOADING_CONFIG.showDelay`, held for
  * `minDwell`; `[showDelay]` / `[minDwell]` per button): while the busy
  * visual shows, through the run and its dwell after the settle, the pending
@@ -72,6 +56,9 @@ import { CngxPopover } from './popover.directive';
  * stays immediate; branch a hand-rolled `@switch` on {@link busyVisible} for
  * the same timing.
  *
+ * The status layer comes from the `CngxActionStatusBrain` host directive
+ * (read through `CNGX_ACTION_STATUS`) and close-on-success from the
+ * `CngxPopoverCloseOnSuccess` host directive; the component is the skin.
  * Each settle is spoken once through the `cngxAsyncClick` live region next
  * to the button: `succeededAnnouncement` / `failedAnnouncement`, else the
  * text of the rendered result template (`aria-hidden` parts skipped; read
@@ -114,7 +101,7 @@ import { CngxPopover } from './popover.directive';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-action.component.ts
  * @since 0.1.0
- * @relatedTo CngxPopoverDismiss, CngxPopoverPanel, CngxPopoverFooter, CngxButtonBrain, CngxAsyncClick
+ * @relatedTo CngxPopoverDismiss, CngxPopoverPanel, CngxPopoverFooter, CngxButtonBrain, CngxAsyncClick, CngxActionStatusBrain, CngxPopoverCloseOnSuccess
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.
  * @slot cngxFailed Replaces the label when the action fails, once the busy visual releases; gets the error.
@@ -128,7 +115,7 @@ import { CngxPopover } from './popover.directive';
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[cngxPopoverAction]',
   standalone: true,
-  imports: [NgComponentOutlet, NgTemplateOutlet],
+  imports: [NgComponentOutlet, CngxActionStatusStack],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxPopoverAction',
@@ -150,65 +137,41 @@ import { CngxPopover } from './popover.directive';
       inputs: ['cngxAsyncClick: action', 'feedbackDuration', 'showDelay', 'minDwell'],
       outputs: ['settled'],
     },
+    {
+      directive: CngxActionStatusBrain,
+      outputs: ['outcome'],
+      inputs: [
+        'succeededAnnouncement',
+        'failedAnnouncement',
+        'autoAnnounce',
+        'pendingLabel',
+        'succeededLabel',
+        'failedLabel',
+        'externalState',
+      ],
+    },
+    { directive: CngxPopoverCloseOnSuccess, inputs: ['closeOnSuccessDelay'] },
   ],
   providers: [
     provideButtonHost('cngxPopoverAction', { defaultVariant: 'outline', fixed: { size: 'sm' } }),
-    // Wins over the brain's entry (host providers beat host-directive
-    // providers); only adds the announcement to the brain's state.
-    {
-      provide: CNGX_HOST_INTERACTION_STATE,
-      useFactory: (): CngxHostInteractionState => inject(CngxPopoverAction).hostInteraction,
-    },
+    provideActionStatusHost(),
   ],
   host: {
     class: 'cngx-button cngx-popover-action',
     '[attr.data-start]': 'startSlot() ? "" : null',
     '[attr.data-end]': 'endSlot() ? "" : null',
-    '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
   },
   template: `
     <ng-content select="[cngxButtonStart]" />
-    <span class="cngx-button__label cngx-popover-action__labels">
-      <span
-        class="cngx-popover-action__label"
-        [attr.data-active]="activeCell() === 'idle' ? '' : null"
-        [attr.aria-hidden]="activeCell() === 'idle' ? null : 'true'"
-        ><ng-content
-      /></span>
-      @if (pendingTpl(); as tpl) {
-        <span
-          class="cngx-popover-action__label"
-          [attr.data-active]="activeCell() === 'pending' ? '' : null"
-          [attr.aria-hidden]="activeCell() === 'pending' ? null : 'true'"
-        >
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
-        </span>
-      }
-      @if (succeededTpl(); as tpl) {
-        <span
-          #succeededCell
-          class="cngx-popover-action__label"
-          [attr.data-active]="activeCell() === 'success' ? '' : null"
-          [attr.aria-hidden]="activeCell() === 'success' ? null : 'true'"
-        >
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
-        </span>
-      }
-      @if (failedTpl(); as tpl) {
-        <span
-          #failedCell
-          class="cngx-popover-action__label"
-          [attr.data-active]="activeCell() === 'error' ? '' : null"
-          [attr.aria-hidden]="activeCell() === 'error' ? null : 'true'"
-        >
-          <ng-container
-            *ngTemplateOutlet="tpl.templateRef; context: { $implicit: state.error() }"
-          />
-        </span>
-      }
+    <span
+      class="cngx-button__label cngx-popover-action__labels"
+      cngxActionStatusStack
+      cellClass="cngx-popover-action__label"
+    >
+      <ng-content />
     </span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.busyVisible() && activeCell() === 'idle') {
+    @if (brain.busyVisible() && actionStatus.activeCell() === 'idle') {
       <span class="cngx-button__busy" aria-hidden="true">
         @if (brain.spinner; as spinner) {
           <ng-container *ngComponentOutlet="spinner" />
@@ -224,214 +187,28 @@ import { CngxPopover } from './popover.directive';
   styleUrls: ['../button/button.component.css', './popover-action.component.css'],
 })
 export class CngxPopoverAction {
-  private readonly popover = inject(CngxPopover, { optional: true });
-  private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
-  private readonly i18n = injectInteractiveI18n();
-  private readonly announcer = inject(CngxLiveAnnouncer);
-  // The co-hosted run is resolved on first read: the runner is created before
-  // this component and injects the CNGX_HOST_INTERACTION_STATE it provides,
-  // so an eager inject here would be a cycle.
-  private readonly runState = injectLazySelf(CNGX_ASYNC_RUN_STATE);
-
-  /** @internal */
   protected readonly brain = inject(CngxButtonBrain);
+  protected readonly actionStatus = inject(CNGX_ACTION_STATUS);
 
   protected readonly startSlot = contentChild(CngxButtonStart);
   protected readonly endSlot = contentChild(CngxButtonEnd);
-  protected readonly pendingTpl = contentChild(CngxPending);
-  protected readonly succeededTpl = contentChild(CngxSucceeded);
-  protected readonly failedTpl = contentChild(CngxFailed);
-
-  private readonly succeededCell = viewChild('succeededCell', { read: ElementRef });
-  private readonly failedCell = viewChild('failedCell', { read: ElementRef });
 
   /**
-   * @internal - the result cell the run's status asks for: `'success'` /
-   * `'error'` while that status holds and its template is projected, else
-   * `null`. Every projected cell stays mounted, `aria-hidden` until it is the
-   * {@link activeCell}, so the settle announcement reads the result text
-   * while the busy visual still holds the pending or idle cell.
+   * Effective status - `'idle' | 'pending' | 'success' | 'error'`:
+   * `[externalState]` when bound, else the run. Immediate, not gated.
    */
-  protected readonly resultCell = computed<'success' | 'error' | null>(() => {
-    const status = this.status();
-    if (status === 'success' && this.succeededTpl()) {
-      return 'success';
-    }
-    if (status === 'error' && this.failedTpl()) {
-      return 'error';
-    }
-    return null;
-  });
-
-  /**
-   * @internal - the visible, named label cell, gated on the busy visual as on
-   * `CngxActionButton`: while it is held (the run and its post-settle dwell)
-   * the `cngxPending` cell shows if one is projected, else the idle label
-   * under the spinner; result cells show only once it releases. A run faster
-   * than the show delay goes from idle to the result with no pending flash.
-   * Any cell but `'idle'` sets `data-status-label`, which keeps the label
-   * visible under `data-busy` and drops the spinner. All cells share one grid
-   * cell, so the button is as wide as its widest label in every state.
-   */
-  protected readonly activeCell = computed<'idle' | 'pending' | 'success' | 'error'>(() => {
-    if (this.brain.busyVisible()) {
-      return this.pendingTpl() ? 'pending' : 'idle';
-    }
-    return this.resultCell() ?? 'idle';
-  });
-
-  /**
-   * SR announcement on success. Falls back to the text of a projected
-   * `cngxSucceeded` template, then `CNGX_INTERACTIVE_I18N.asyncClickSucceeded`.
-   */
-  readonly succeededAnnouncement = input<string | undefined>(undefined);
-
-  /**
-   * SR announcement on failure. Falls back to the text of a projected
-   * `cngxFailed` template, then `CNGX_INTERACTIVE_I18N.asyncClickFailed`.
-   */
-  readonly failedAnnouncement = input<string | undefined>(undefined);
-
-  /**
-   * `false` keeps the `cngxAsyncClick` live region next to the button empty:
-   * it stays in the DOM but receives no text; drive your own region from
-   * `(settled)` then. Unbound or `true`, every settle is spoken.
-   */
-  readonly autoAnnounce = input<boolean | undefined>(undefined);
-
-  /**
-   * Per-instance close-on-success, named after the
-   * `CNGX_POPOVER_PANEL_CONFIG.closeOnSuccessDelay` it overrides. A number
-   * closes the composing popover that many ms after each success, also
-   * without `withCloseOnSuccess()`; `null` keeps this confirm's popover open
-   * although the config closes it; unbound (`undefined`) uses the config.
-   */
-  readonly closeOnSuccessDelay = input<number | null | undefined>(undefined);
-
-  /**
-   * Lifecycle status of the run - `'idle' | 'pending' | 'success' |
-   * 'error'`, from the co-hosted `cngxAsyncClick`. Immediate, not gated.
-   */
-  readonly status = computed<AsyncStatus>(() => this.runState().state.status());
+  readonly status: Signal<AsyncStatus> = this.actionStatus.status;
 
   /**
    * `true` while the busy visual shows: the run after the loading config's
    * show delay, held for its min-dwell.
    */
-  readonly busyVisible = this.brain.busyVisible;
+  readonly busyVisible: Signal<boolean> = this.brain.busyVisible;
 
   /**
-   * Full `CngxAsyncState` view of the run. Bind it to a state consumer:
-   * `[state]="act.state"` on `cngxToastOn` or `cngxAlertOn`.
+   * `CngxAsyncState` view of the effective lifecycle (`[externalState]` when
+   * bound, else the run). Bind it to a state consumer: `[state]="act.state"`
+   * on `cngxToastOn` or `cngxAlertOn`.
    */
-  readonly state: CngxAsyncState<unknown> = buildAsyncStateView<unknown>({
-    status: this.status,
-    data: computed(() => undefined),
-    error: computed(() => this.runState().state.error()),
-    lastUpdated: computed(() => this.runState().state.lastUpdated()),
-  });
-
-  /**
-   * @internal - what the co-hosted `cngxAsyncClick` folds in: the brain's
-   * state plus the announcement, read once per settle after render.
-   */
-  readonly hostInteraction: CngxHostInteractionState = {
-    ...this.brain.interaction,
-    announcement: (settle) => (settle ? this.routeAnnouncement(settle) : ''),
-  };
-
-  private closeOnSuccessTimer: ReturnType<typeof setTimeout> | null = null;
-
-  constructor() {
-    // The runner cannot be read during construction (it injects the host
-    // state this component provides), and a settle needs a click on the
-    // rendered button.
-    afterNextRender(() => {
-      this.runState().settled.subscribe((settle) => this.handleSettled(settle));
-    });
-
-    // A follow-up run cancels a scheduled close, so a re-triggered action
-    // never yanks the panel away mid-interaction.
-    effect(() => {
-      if (this.runState().pending()) {
-        untracked(() => this.clearCloseOnSuccessTimer());
-      }
-    });
-
-    inject(DestroyRef).onDestroy(() => this.clearCloseOnSuccessTimer());
-  }
-
-  /** One settle: re-arms close-on-success (`withCloseOnSuccess()`). */
-  private handleSettled(settle: CngxAsyncSettle): void {
-    this.clearCloseOnSuccessTimer();
-    const delay = this.closeDelayFor(settle);
-    if (delay === undefined) {
-      return;
-    }
-    this.closeOnSuccessTimer = setTimeout(() => {
-      this.closeOnSuccessTimer = null;
-      this.popover?.hide();
-    }, delay);
-  }
-
-  /** The close delay a settle arms, or `undefined` when it closes nothing. */
-  private closeDelayFor(settle: CngxAsyncSettle): number | undefined {
-    if (settle.status !== 'success' || !this.popover) {
-      return undefined;
-    }
-    const delay = untracked(this.closeOnSuccessDelay);
-    if (delay === null) {
-      return undefined;
-    }
-    return delay ?? this.config.closeOnSuccessDelay;
-  }
-
-  /**
-   * Where a settle is spoken. A success that closes the panel goes through
-   * `CngxLiveAnnouncer`, scoped to the popover's parent: the `cngxAsyncClick`
-   * region sits inside the panel, which hides after the close delay (maybe
-   * 0 ms) and can take the text with it before AT reads it. That region gets
-   * `''` for the settle, so it is spoken once.
-   */
-  private routeAnnouncement(settle: CngxAsyncSettle): string {
-    const text = this.resolveAnnouncement(settle.status);
-    if (text === '' || this.closeDelayFor(settle) === undefined) {
-      return text;
-    }
-    const scope = this.popover?.elementRef.nativeElement.parentElement ?? null;
-    untracked(() => this.announcer.announce(text, 'polite', scope));
-    return '';
-  }
-
-  /**
-   * The settle text the region speaks, read once per settle after render:
-   * the explicit announcement, the rendered result template, the i18n copy.
-   */
-  private resolveAnnouncement(status: 'success' | 'error'): string {
-    return untracked(() => {
-      if (this.autoAnnounce() === false) {
-        return '';
-      }
-      const success = status === 'success';
-      const explicit = success ? this.succeededAnnouncement() : this.failedAnnouncement();
-      if (explicit !== undefined) {
-        return explicit;
-      }
-      // The settle's own result cell, always mounted (and aria-hidden while
-      // the busy visual holds); never the pending cell.
-      const cell = success ? this.succeededCell() : this.failedCell();
-      const rendered = cell ? resolveSpokenText(cell.nativeElement as Element) : '';
-      if (rendered !== '') {
-        return rendered;
-      }
-      return success ? this.i18n().asyncClickSucceeded : this.i18n().asyncClickFailed;
-    });
-  }
-
-  private clearCloseOnSuccessTimer(): void {
-    if (this.closeOnSuccessTimer) {
-      clearTimeout(this.closeOnSuccessTimer);
-      this.closeOnSuccessTimer = null;
-    }
-  }
+  readonly state: CngxAsyncState<unknown> = this.actionStatus.state;
 }
