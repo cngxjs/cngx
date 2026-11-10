@@ -1,4 +1,4 @@
-import { DestroyRef, Directive, ElementRef, inject, input } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, inject, input, untracked } from '@angular/core';
 
 import type { CngxSelectSheetTriggerEvents } from './select-sheet-wiring';
 
@@ -23,13 +23,18 @@ export class CngxSelectSheetTrigger {
 
   constructor() {
     const el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-    const onPointerDown = (): void => this.events().handlePointerDown();
-    const onKey = (): void => this.events().handleKey();
-    const onFocus = (): void => this.events().handleFocus();
+    // Raw listeners do not get the null reactive consumer Angular gives its own
+    // `(event)` bindings. An event dispatched inside a render pass (focus dropping
+    // when a template removes the focused element's tabindex, a programmatic
+    // focus()) runs them synchronously under that template's consumer, where the
+    // wiring's signal writes would throw NG0600.
+    const onPointerDown = (): void => untracked(() => this.events().handlePointerDown());
+    const onKey = (): void => untracked(() => this.events().handleKey());
+    const onFocus = (): void => untracked(() => this.events().handleFocus());
     const onFocusOut = (event: FocusEvent): void => {
       const next = event.relatedTarget;
       const leftTrigger = !(next instanceof Node && el.contains(next));
-      this.events().handleFocusOut(event, leftTrigger);
+      untracked(() => this.events().handleFocusOut(event, leftTrigger));
     };
     el.addEventListener('pointerdown', onPointerDown, true);
     el.addEventListener('keydown', onKey, true);

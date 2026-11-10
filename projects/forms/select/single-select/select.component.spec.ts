@@ -271,12 +271,17 @@ describe('CngxSelect - standalone', () => {
   });
 
   it('renders one option per entry in options[]', () => {
-    const { listbox } = setup();
+    const { select, listbox, fixture } = setup();
+    // Deferred render (OD5): option rows exist only once the panel opens.
+    select.open();
+    flush(fixture);
     expect(listbox.options().length).toBe(3);
   });
 
   it('renders the selection indicator after the label, at the row end, by default', () => {
-    const { fixture } = setup();
+    const { select, fixture } = setup();
+    select.open();
+    flush(fixture);
     const option = (fixture.nativeElement as HTMLElement).ownerDocument.querySelector<HTMLElement>(
       '.cngx-select__option',
     );
@@ -401,6 +406,22 @@ describe('CngxSelect - standalone', () => {
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
   });
+
+  it('leaves no highlight behind when a click outside closes the panel', () => {
+    const { fixture, select, triggerBtn, listbox, popover } = setup();
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeIndex()).toBeGreaterThanOrEqual(0);
+
+    type WithOutside = { handleClickOutside(): void };
+    (select as unknown as WithOutside).handleClickOutside();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(listbox.ad.activeIndex()).toBe(-1);
+  });
 });
 
 describe('CngxSelect - nested inside a CngxPopover', () => {
@@ -501,6 +522,11 @@ describe('CngxSelect - grouped options', () => {
   it('renders optgroup headers and nested options', () => {
     const fixture = TestBed.createComponent(GroupedHost);
     fixture.detectChanges();
+    flush(fixture);
+    // Deferred render (OD5): the option loop renders once the panel opens.
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
     flush(fixture);
     const groupHeaders = fixture.debugElement.nativeElement.querySelectorAll(
       '.cngx-select__group-header',
@@ -976,6 +1002,11 @@ describe('CngxSelect - async state consumer', () => {
     TestBed.configureTestingModule({ imports: [StaticOptionsHost] });
     const fixture = TestBed.createComponent(StaticOptionsHost);
     fixture.detectChanges();
+    flush(fixture);
+    // Deferred render (OD5): open before counting the rendered option rows.
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
     flush(fixture);
     const listboxDe = fixture.debugElement.query(By.directive(CngxListbox));
     const lb = listboxDe.injector.get(CngxListbox);
@@ -2080,5 +2111,79 @@ describe('CngxSelect - panel row labels across an options swap', () => {
     flush(fixture);
     const ad = de.query(By.directive(CngxListbox)).injector.get(CngxListbox).ad;
     expect(ad.activeValue()).toBe('teal');
+  });
+});
+
+const CITY_OPTIONS: CngxSelectOptionDef<string>[] = [
+  { value: 'nv', label: 'Nevada' },
+  { value: 'nj', label: 'New Jersey' },
+  { value: 'ny', label: 'New York' },
+  { value: 'oh', label: 'Ohio' },
+];
+
+@Component({
+  template: `<cngx-select [label]="'City'" [options]="options" [(value)]="value" />`,
+  imports: [CngxSelect],
+})
+class CityHost {
+  readonly options = CITY_OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelect - a space inside a running typeahead buffer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [CityHost] });
+  });
+
+  function setup() {
+    const fixture = TestBed.createComponent(CityHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    return {
+      fixture,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
+      listbox: fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox),
+      popover: fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover),
+    };
+  }
+
+  function type(trigger: HTMLElement, fixture: ComponentFixture<CityHost>, text: string): void {
+    for (const key of text) {
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      flush(fixture);
+    }
+  }
+
+  it('reaches New York by typing "new y" on the closed trigger, without opening the panel', () => {
+    const { fixture, triggerBtn, popover } = setup();
+    // Back to back, no change detection in between: both keydown listeners of
+    // the trigger see each key before any render.
+    for (const key of 'new y') {
+      triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    }
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(fixture.componentInstance.value()).toBe('ny');
+  });
+
+  it('reaches New York by typing "new y" with the panel open, without activating an option', () => {
+    const { fixture, triggerBtn, listbox, popover } = setup();
+    triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    type(triggerBtn, fixture, 'new y');
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeValue()).toBe('ny');
+    expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('still opens the panel on a space with no buffer running', () => {
+    const { fixture, triggerBtn, popover } = setup();
+    type(triggerBtn, fixture, ' ');
+    expect(popover.isVisible()).toBe(true);
   });
 });

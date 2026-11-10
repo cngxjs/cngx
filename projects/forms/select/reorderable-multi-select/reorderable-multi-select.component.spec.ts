@@ -104,6 +104,22 @@ class Host {
   commitErrors: unknown[] = [];
 }
 
+@Component({
+  template: `
+    <cngx-reorderable-multi-select
+      [label]="'Empfänger'"
+      [options]="options"
+      [reorderKeyboardModifier]="'ctrl'"
+      [(values)]="values"
+    />
+  `,
+  imports: [CngxReorderableMultiSelect],
+})
+class CtrlModifierHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['a', 'b', 'c', 'd']);
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -280,6 +296,32 @@ describe('CngxReorderableMultiSelect - keyboard reorder', () => {
 
     expect(fixture.componentInstance.values()).toEqual(['c', 'a', 'b', 'd']);
   });
+
+  it('Alt+ArrowDown on a chip reorders and leaves the panel closed', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
+      .componentInstance as CngxReorderableMultiSelect<string>;
+
+    fireKey(chipAt(fixture.nativeElement, 0), 'ArrowDown', { alt: true });
+    flush(fixture);
+
+    expect(fixture.componentInstance.values()).toEqual(['b', 'a', 'c', 'd']);
+    expect(cmp.panelOpen()).toBe(false);
+  });
+
+  it('Alt+ArrowDown still opens the panel when the reorder modifier is not Alt', () => {
+    const fixture = TestBed.createComponent(CtrlModifierHost);
+    flush(fixture);
+    const cmp = fixture.debugElement.query(By.directive(CngxReorderableMultiSelect))
+      .componentInstance as CngxReorderableMultiSelect<string>;
+
+    fireKey(chipAt(fixture.nativeElement, 0), 'ArrowDown', { alt: true });
+    flush(fixture);
+
+    expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
+    expect(cmp.panelOpen()).toBe(true);
+  });
 });
 
 describe('CngxReorderableMultiSelect - trigger keys from interactive descendants', () => {
@@ -454,7 +496,7 @@ describe('CngxReorderableMultiSelect - a11y + surface', () => {
     const root = fixture.nativeElement as HTMLElement;
     const strip = chipStrip(root);
     expect(strip.getAttribute('role')).toBe('group');
-    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with Alt/i);
+    expect(strip.getAttribute('aria-label')).toMatch(/Reorder with .*Alt.* \+ arrow keys/i);
   });
 
   it('inline roving: only the active chip has tabindex="0"', () => {

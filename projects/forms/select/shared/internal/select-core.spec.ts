@@ -415,7 +415,7 @@ describe('createSelectCore - trigger ARIA control hooks', () => {
     expect(core.triggerAria().describedBy).toBeNull();
   });
 
-  it('appends the summary description after the commit-error reference', () => {
+  it('keeps the commit error on aria-errormessage and the summary on aria-describedby', () => {
     const core = coreWith({ summaryDescribedBy: signal('sum-1') });
     core.commitController.begin(
       () => {
@@ -425,7 +425,11 @@ describe('createSelectCore - trigger ARIA control hooks', () => {
       undefined,
       { onSuccess: () => undefined, onError: () => undefined },
     );
-    expect(core.triggerAria().describedBy).toBe(`${core.commitErrorId} sum-1`);
+    // I8: with no field error occupying aria-errormessage, the commit error
+    // rides there alone; aria-describedby carries only the summary, never a
+    // second reference to the same commit-error node.
+    expect(core.triggerAria().errorMessage).toBe(core.commitErrorId);
+    expect(core.triggerAria().describedBy).toBe('sum-1');
   });
 
   it('keeps the triggerAria reference across an unrelated change', () => {

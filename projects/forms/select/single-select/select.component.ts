@@ -40,8 +40,10 @@ import {
 } from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
+import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
+import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -54,7 +56,7 @@ import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import { createTypeaheadController } from '../shared/typeahead-controller';
+import { createTypeaheadController, typeaheadAcceptsKey } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
@@ -82,7 +84,7 @@ import {
 } from '../shared/config';
 import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
-import { isEmptyScalar } from '../shared/internal/compare';
+import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -212,6 +214,7 @@ export interface CngxSelectChange<T = unknown> {
     CngxPopoverSheetInitialFocus,
     CngxPopoverTrigger,
     CngxSelectPanel,
+    CngxSelectPanelShell,
     CngxSelectSheetHeader,
     NgTemplateOutlet,
   ],
@@ -236,7 +239,7 @@ export interface CngxSelectChange<T = unknown> {
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
     class: 'cngx-select',
-    '[id]': 'resolvedId()',
+    '[attr.id]': 'resolvedId() || null',
     '(focusin)': 'hostFocus.handleFocusIn()',
     '(focusout)': 'hostFocus.handleFocusOut($event)',
   },
@@ -278,9 +281,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Host id. Unset, it takes the input id of an enclosing `cngx-form-field`. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
   /**
-   * Accessible name of the trigger. Wins over `label`; inside a
-   * `cngx-form-field` the field label referenced through `aria-labelledby`
-   * takes precedence.
+   * Accessible name of the trigger. Wins over `label`, and inside a
+   * `cngx-form-field` over the field label too; only a consumer
+   * `aria-labelledby` outranks it.
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
   /**
@@ -738,8 +741,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
   /** @internal */
+  readonly autoRecycler = this.virtualSetup.autoRecycler;
+  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
   protected readonly virtualWindowStart = this.virtualSetup.virtualWindowStart;
+  protected readonly virtualTypeaheadItems = this.virtualSetup.virtualTypeaheadItems;
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedPlaceholder = this.core.resolvedPlaceholder;
@@ -770,7 +776,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    * `shared/typeahead-controller`. Printable-key matching, multi-char
    * buffer, debounce-reset, disabled-skip.
    */
-  private readonly typeaheadController = createTypeaheadController<T>({
+  protected readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
     debounceMs: this.typeaheadDebounceInterval,
@@ -962,7 +968,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
-      coerceFromField: (x) => x as T | undefined,
+      coerceFromField: (x) => coerceScalarFromField<T>(x),
     });
   }
 
@@ -993,9 +999,24 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly openOnGesture = createOpenOnFocusGesture({
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    suppress: () => this.suppressOpenOnFocus,
+  });
+
+  /** @internal */
+  protected handlePointerDown(): void {
+    this.openOnGesture.handlePointerDown();
+  }
+
   /** @internal */
   protected handleTriggerClick(): void {
     if (this.disabled()) {
+      return;
+    }
+    if (this.openOnGesture.consumeClick()) {
       return;
     }
     this.toggle();
@@ -1060,10 +1081,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   protected handleFocus(): void {
     this.focusState.markFocused();
-    const openOnFocus = this.config.openOn === 'focus' || this.config.openOn === 'click+focus';
-    if (openOnFocus && !this.suppressOpenOnFocus) {
-      this.open();
-    }
+    this.openOnGesture.handleFocus();
   }
 
   /** @internal */
@@ -1083,6 +1101,29 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
+
+  /**
+   * Flat index of the selected option, `-1` without a selection. The index
+   * space of a windowed listbox, and the order of the rendered rows.
+   */
+  private selectedFlatIndex(): number {
+    const v = this.value();
+    return isEmptyScalar(v) ? -1 : this.typeaheadController.matchFromValue(v);
+  }
+
+  /**
+   * The panel opens on the selected option, as a native `<select>` does. It
+   * runs after an opening key set its first or last highlight, so it replaces
+   * that highlight; without a selection the key's highlight stands.
+   *
+   * @internal
+   */
+  protected handlePanelOpened(): void {
+    const index = this.selectedFlatIndex();
+    if (index >= 0) {
+      this.listboxRef()?.ad.highlightByIndex(index);
+    }
+  }
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
@@ -1107,11 +1148,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // from the current selection so repeat-taps advance through matches.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
-      if (key.length === 1 && /\S/.exec(key)) {
+      if (typeaheadAcceptsKey(key, this.typeaheadController.buffer())) {
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
-        const currentFlatIndex = isEmptyScalar(v) ? -1 : flat.findIndex((o) => eq(o.value, v));
+        const currentFlatIndex = isEmptyScalar(v) ? -1 : this.typeaheadController.matchFromValue(v);
         const action = this.flatNavStrategy.onTypeaheadWhileClosed(
           {
             options: flat,
@@ -1129,6 +1170,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           this.commitClosedPick(action.option, v);
           return;
         }
+        if (key === ' ') {
+          // A space inside a running buffer is part of the term, also when it
+          // matches nothing: it must not reach the trigger as an open key.
+          event.preventDefault();
+          return;
+        }
       }
     }
 
@@ -1140,6 +1187,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       compareWith: this.compareWith,
       disabled: this.disabled,
       typeaheadController: this.typeaheadController,
+      selectedIndex: () => this.selectedFlatIndex(),
     });
   }
 }

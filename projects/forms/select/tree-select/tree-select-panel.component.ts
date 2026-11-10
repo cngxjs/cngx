@@ -5,8 +5,10 @@ import {
   Injector,
   ViewEncapsulation,
   afterNextRender,
+  computed,
   effect,
   inject,
+  linkedSignal,
   untracked,
   viewChild,
   type ElementRef,
@@ -25,7 +27,12 @@ import {
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
 import { CngxTreeSelectFooterBar } from './tree-select-footer.component';
+import { resolvePageJumpTarget } from '../shared/typeahead-controller';
+import { sameArrayContents } from '../shared/internal/compare';
 import type { CngxTreeSelectNodeContext } from './tree-select.model';
+
+/** Stable empty slice returned while the tree panel has never opened. */
+const EMPTY_TREE_NODES: readonly unknown[] = [];
 
 /**
  * Tree-body sibling of `CngxSelectPanel`. Wraps the shared
@@ -123,6 +130,36 @@ export class CngxTreeSelectPanel<T = unknown> {
    * `visibleNodes` emits.
    */
   protected readonly adItems = createTreeAdItems(this.host.treeController);
+
+  /**
+   * Latches `true` on the panel's first open and stays true (OD5). The
+   * tree body renders no rows until then; the `role="tree"` container,
+   * its id and `aria-controls` target stay mounted. Tree-select keeps no
+   * recycler (accepted-debt section 4), but no longer renders a closed
+   * panel's nodes.
+   *
+   * @internal
+   */
+  private readonly hasOpened = linkedSignal<boolean, boolean>({
+    source: () => this.host.panelOpen(),
+    computation: (open, previous) => open || previous?.value === true,
+  });
+
+  /**
+   * Visible nodes iterated by the template, deferred until the first
+   * open. Element-identity equal so the latch branch never cascades a
+   * fresh array reference when the visible set is unchanged
+   * (reference_signal_architecture).
+   *
+   * @internal
+   */
+  protected readonly renderNodes = computed<readonly FlatTreeNode<T>[]>(
+    () =>
+      this.hasOpened()
+        ? this.host.treeController.visibleNodes()
+        : (EMPTY_TREE_NODES as readonly FlatTreeNode<T>[]),
+    { equal: (a, b) => sameArrayContents(a, b, Object.is) },
+  );
 
   /**
    * Per-node memoization:
@@ -289,8 +326,40 @@ export class CngxTreeSelectPanel<T = unknown> {
   }
 
   protected handleEscape(event: Event): void {
+    if (!this.host.escapeEnabled()) {
+      return;
+    }
     event.preventDefault();
-    this.host.close();
+    this.host.escapeClose();
+  }
+
+  /**
+   * PageUp/PageDown jump over the rendered tree rows (`visibleNodes`),
+   * mirroring the flat-nav variants' clamped `±step` jump with
+   * disabled-skip. Highlights the target node via the AD; the key is
+   * left alone (no `preventDefault`) when disabled or the tree is empty.
+   */
+  protected handlePageJump(event: Event, ad: CngxActiveDescendant, direction: 1 | -1): void {
+    if (this.host.disabled()) {
+      return;
+    }
+    const nodes = this.host.treeController.visibleNodes();
+    if (nodes.length === 0) {
+      return;
+    }
+    event.preventDefault();
+    const activeId = ad.activeItem()?.id ?? null;
+    const currentIndex = activeId === null ? -1 : nodes.findIndex((n) => n.id === activeId);
+    const target = resolvePageJumpTarget(
+      nodes,
+      currentIndex,
+      direction,
+      (n) => n.disabled === true,
+    );
+    if (target === null) {
+      return;
+    }
+    ad.highlightByValue(nodes[target].value);
   }
 
   /**

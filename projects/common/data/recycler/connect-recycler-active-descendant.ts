@@ -13,11 +13,10 @@ import type { CngxRecycler } from './recycler';
  * When the AD directive navigates to an item whose index is not in the
  * recycler's rendered range, it sets `pendingHighlight` (via the
  * `virtualCount` path). This helper watches that signal and scrolls
- * the recycler to the target index; AD's own effect observes the
- * resulting DOM update and clears the pending state automatically
- * (see the `pendingHighlightState.set(null)` branch in
- * `CngxActiveDescendant` after a re-render brings the target into the
- * rendered range).
+ * the recycler to the target index; AD clears the pending state on its
+ * own once a re-render brings the target into the rendered range, and
+ * does not raise it again when the window later moves away from an
+ * unchanged highlight, so a scroll by the user is never pulled back.
  *
  * Unlike {@link /projects/common/data/src/recycler/connect-recycler-roving.ts
  * connectRecyclerToRoving}, we don't re-focus a DOM element after the

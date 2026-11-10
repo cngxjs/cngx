@@ -2115,6 +2115,23 @@
       ]
     },
     {
+      "code": "CNGX2028",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Grouped options under a configured virtualization",
+      "page": "core-concepts/error-codes/cngx2028.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx2028.html",
+      "status": "active",
+      "files": ["projects/forms/select/shared/internal/setup-virtualization.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/select/shared/internal/setup-virtualization.ts",
+          "text": "withVirtualization(): grouped select options ignore the configured virtualization; every option renders and the recycler window is dropped. Flatten the options or drop withVirtualization() for this select."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

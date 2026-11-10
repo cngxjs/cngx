@@ -40,11 +40,16 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
 /**
  * Shared frame for every select-family variant. Owns the
  * `host.activeView()` switch (loading / empty / error / refreshing /
- * commit-error / inline-error) and projects the variant body via
- * `<ng-content />` on the default branch.
+ * commit-error / inline-error) and projects the variant body (the
+ * `cngxListbox` / `role="tree"` element) via `<ng-content />`.
  *
- * Default-branch order: inline-error → commit-error banner →
- * refreshing → action-top → body → action-bottom.
+ * The body `<ng-content />` is always mounted so the listbox element,
+ * its id and the trigger's `aria-controls` target stay in the DOM
+ * through every view. Every status, alert and action region renders as
+ * a sibling of the body - never a descendant - so the listbox holds
+ * only option and group rows (C4, `aria-required-children`). Render
+ * order: status → action-top → the loading/empty/error view → inline-error
+ * → commit-error banner → refreshing → body → action-bottom.
  *
  * Action slot renders when `host.tpl.action()` is non-null and
  * `actionPosition()` ≠ `'none'`; view-host omissions fall back to a

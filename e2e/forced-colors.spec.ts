@@ -396,6 +396,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
     await expect(trigger).toBeVisible();
     await trigger.click();
+    // The first open renders its rows one frame later; an arrow pressed in
+    // that frame has no row to move to. Wait for the rows before driving keys.
+    await expect(page.getByRole('option').first()).toBeVisible();
     await page.keyboard.press('ArrowDown');
     const active = page.locator('.cngx-option--highlighted').first();
     await expect(active).toBeVisible();
@@ -438,7 +441,8 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     const trigger = page.locator('.cngx-ex-artifact .cngx-select__trigger').first();
     await expect(trigger).toBeVisible();
     await trigger.click();
-    // A pointer open highlights nothing; wait for the rows before driving keys.
+    // A pointer open highlights the selected option (Team); wait for the rows,
+    // then Home walks the highlight from the first row.
     await expect(page.getByRole('option', { name: 'Starter' })).toBeVisible();
     const highlightedOption = page.locator('.cngx-option--highlighted');
     const highlightText = await page.evaluate(() => {

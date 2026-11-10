@@ -1,6 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { CngxSelectSheetTriggerEvents } from './select-sheet-wiring';
 import { CngxSelectSheetTrigger } from './sheet-trigger.directive';
@@ -17,6 +17,7 @@ import { CngxSelectSheetTrigger } from './sheet-trigger.directive';
 })
 class TriggerHost {
   readonly lead = signal(false);
+  readonly focusOuts = signal(0);
   readonly log: string[] = [];
   seenAtKeydown: boolean | null = null;
   seenAtFocus: boolean | null = null;
@@ -35,6 +36,7 @@ class TriggerHost {
     },
     handleFocusOut: (_event, leftTrigger) => {
       this.log.push(leftTrigger ? 'left' : 'moved');
+      this.focusOuts.update((count) => count + 1);
     },
   };
 }
@@ -77,5 +79,52 @@ describe('CngxSelectSheetTrigger', () => {
       'moved',
       'left',
     ]);
+  });
+
+  describe('events dispatched inside a render pass', () => {
+    // A listener's exception never reaches dispatchEvent's caller; the DOM
+    // reports it on window instead, so that is where NG0600 would surface.
+    const listenerErrors: unknown[] = [];
+    const captureError = (e: ErrorEvent): void => {
+      e.preventDefault();
+      listenerErrors.push(e.error);
+    };
+
+    beforeEach(() => {
+      listenerErrors.length = 0;
+      window.addEventListener('error', captureError);
+    });
+
+    afterEach(() => {
+      window.removeEventListener('error', captureError);
+    });
+
+    // A computed forbids signal writes the same way a template pass does.
+    function dispatchInRenderPass(target: HTMLElement, event: Event): void {
+      computed(() => target.dispatchEvent(event))();
+    }
+
+    it.each([
+      ['focus', () => new FocusEvent('focus')],
+      ['keydown', () => new KeyboardEvent('keydown', { key: 'r', bubbles: true })],
+      ['input', () => new Event('input', { bubbles: true })],
+      ['pointerdown', () => new Event('pointerdown', { bubbles: true })],
+    ])('lets the wiring write a signal on %s', (_type, createEvent) => {
+      const { host, q } = setup();
+
+      dispatchInRenderPass(q('.field'), createEvent());
+
+      expect(listenerErrors).toEqual([]);
+      expect(host.log).toHaveLength(1);
+    });
+
+    it('lets the wiring write a signal on focusout', () => {
+      const { host, q } = setup();
+
+      dispatchInRenderPass(q('.field'), new FocusEvent('focusout', { bubbles: true }));
+
+      expect(listenerErrors).toEqual([]);
+      expect(host.focusOuts()).toBe(1);
+    });
   });
 });

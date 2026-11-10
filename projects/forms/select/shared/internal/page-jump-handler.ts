@@ -9,10 +9,13 @@ import type { CngxSelectCompareFn } from './select-core';
 
 /**
  * Item list and current index a page jump resolves in, in the index space
- * `ad.highlightByIndex` addresses. A virtual panel renders only a window,
- * so `listbox.options()` and the active id would yield a window-relative
- * index; there the full flat list and `ad.activeIndex()` (absolute) are
- * used instead. Without virtualisation the rendered options are the space.
+ * `ad.highlightByIndex` addresses. The full flat list is the space and
+ * `ad.activeIndex()` (absolute) the current index: a virtual panel renders
+ * only a window, and a deferred-render closed panel renders no option rows
+ * at all until its first open (OD5), so `listbox.options()` would be a
+ * window-relative or empty space while a key both opens the panel and
+ * jumps in one gesture. The flat list is always complete and ordered the
+ * same as the rendered rows once they materialise.
  *
  * @internal
  */
@@ -21,7 +24,7 @@ export function resolvePageJumpSpace(
   flatOptions: (() => readonly CngxFlatNavListboxItem[]) | undefined,
 ): { readonly items: readonly CngxFlatNavListboxItem[]; readonly currentIndex: number } {
   const ad = listbox.ad;
-  if (flatOptions && ad.virtualCount() != null) {
+  if (flatOptions) {
     return { items: flatOptions(), currentIndex: ad.activeIndex() };
   }
   const items = listbox.options();
@@ -36,6 +39,7 @@ export function resolvePageJumpSpace(
  */
 const NO_TYPEAHEAD: TypeaheadController<never> = {
   matchFromIndex: () => null,
+  matchFromValue: () => -1,
   clearBuffer: () => undefined,
   buffer: signal('').asReadonly(),
 };
@@ -78,6 +82,36 @@ export interface PageJumpDeps<T> {
  * @internal
  */
 export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>): boolean {
+  return runPageJump(event, {
+    listbox: deps.listbox,
+    popover: deps.popover,
+    strategy: deps.strategy,
+    flatOptions: deps.flatOptions,
+    compareWith: deps.compareWith,
+    disabled: deps.disabled?.() ?? false,
+    typeaheadController: NO_TYPEAHEAD as TypeaheadController<T>,
+  });
+}
+
+/**
+ * Shared page-jump body for both entry points. A missing listbox or popover
+ * leaves the key unhandled - no `preventDefault`, returns `false` - identically
+ * in both, so an anchored and a button-trigger host behave the same (B3).
+ */
+function runPageJump<T>(
+  event: KeyboardEvent,
+  deps: {
+    readonly listbox: CngxListbox<unknown> | undefined;
+    readonly popover: CngxPopover | undefined;
+    readonly strategy: CngxFlatNavStrategy;
+    readonly flatOptions: () => readonly CngxSelectOptionDef<T>[];
+    readonly virtualSpace?: () => readonly CngxFlatNavListboxItem[];
+    readonly compareWith: () => CngxSelectCompareFn<T>;
+    readonly disabled: boolean;
+    readonly typeaheadController: TypeaheadController<T>;
+    readonly selectedIndex?: () => number;
+  },
+): boolean {
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
     return false;
   }
@@ -87,29 +121,46 @@ export function handlePageJumpKey<T>(event: KeyboardEvent, deps: PageJumpDeps<T>
   if (event.ctrlKey || event.metaKey || event.altKey) {
     return false;
   }
+  if (deps.disabled) {
+    return false;
+  }
   const { listbox, popover } = deps;
-  if (!listbox || !popover || deps.disabled?.()) {
+  if (!listbox || !popover) {
     return false;
   }
   event.preventDefault();
-  if (!popover.isVisible()) {
+  const justOpened = !popover.isVisible();
+  if (justOpened) {
     popover.show();
   }
-  const { items, currentIndex } = resolvePageJumpSpace(listbox, deps.flatOptions);
+  const { items, currentIndex } = resolvePageJumpSpace(
+    listbox,
+    deps.virtualSpace ?? deps.flatOptions,
+  );
+  // A key that just opened a deferred-render panel finds no active index yet:
+  // the open highlight of the selected option waits for the rows. The jump
+  // starts from the selected option then, as it does once the rows exist.
+  const startIndex =
+    justOpened && currentIndex < 0 ? (deps.selectedIndex?.() ?? currentIndex) : currentIndex;
   const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
   const action = deps.strategy.onPageJump(
     {
       options: deps.flatOptions(),
       listboxItems: items,
       currentFlatIndex: -1,
-      currentListboxIndex: currentIndex,
+      currentListboxIndex: startIndex,
       compareWith: deps.compareWith(),
       disabled: false,
-      typeaheadController: NO_TYPEAHEAD,
+      typeaheadController: deps.typeaheadController,
     },
     direction,
   );
   if (action.kind === 'highlight') {
+    // A deferred-render panel (OD5) just opened holds no rows yet, so the AD
+    // item space is empty; CngxActiveDescendant keeps the resolved index as
+    // intent and re-applies it once the rows render. An already-open panel
+    // highlights synchronously. The index is resolved against the full flat
+    // list (resolvePageJumpSpace), so it is correct in both cases.
     listbox.ad.highlightByIndex(action.index);
   }
   return true;
@@ -136,6 +187,11 @@ export interface FlatNavPageJumpDeps<T> {
   readonly compareWith: () => CngxSelectCompareFn<T>;
   readonly disabled: () => boolean;
   readonly typeaheadController: TypeaheadController<T>;
+  /**
+   * Flat index of the selected option, `-1` without one. A key that opens the
+   * panel jumps from it while the open highlight still waits for the rows.
+   */
+  readonly selectedIndex?: () => number;
 }
 
 /**
@@ -159,40 +215,15 @@ export function handleFlatNavPageJumpKey<T>(
   if (event.key !== 'PageDown' && event.key !== 'PageUp') {
     return false;
   }
-  if (event.ctrlKey || event.metaKey || event.altKey) {
-    return false;
-  }
-  if (deps.disabled()) {
-    return false;
-  }
-  event.preventDefault();
-  const pop = deps.popover;
-  const lb = deps.listbox;
-  if (!pop || !lb) {
-    return true;
-  }
-  if (!pop.isVisible()) {
-    pop.show();
-  }
-  const { items, currentIndex: currentListboxIndex } = resolvePageJumpSpace(
-    lb,
-    deps.virtualSpace ?? deps.flatOptions,
-  );
-  const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-  const action = deps.strategy.onPageJump(
-    {
-      options: deps.flatOptions(),
-      listboxItems: items,
-      currentFlatIndex: -1,
-      currentListboxIndex,
-      compareWith: deps.compareWith(),
-      disabled: deps.disabled(),
-      typeaheadController: deps.typeaheadController,
-    },
-    direction,
-  );
-  if (action.kind === 'highlight') {
-    lb.ad.highlightByIndex(action.index);
-  }
-  return true;
+  return runPageJump(event, {
+    listbox: deps.listbox,
+    popover: deps.popover,
+    strategy: deps.strategy,
+    flatOptions: deps.flatOptions,
+    virtualSpace: deps.virtualSpace,
+    compareWith: deps.compareWith,
+    disabled: deps.disabled(),
+    typeaheadController: deps.typeaheadController,
+    selectedIndex: deps.selectedIndex,
+  });
 }

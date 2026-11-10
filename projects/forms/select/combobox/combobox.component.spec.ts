@@ -366,6 +366,10 @@ describe('CngxCombobox - search + filter', () => {
     );
     input.focus();
     flush(fixture);
+    // Deferred render (OD5): open the panel so the unfiltered rows exist before
+    // the filter run below reuses the first row's node.
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    flush(fixture);
     const rowBefore = fixture.nativeElement.querySelector('[cngxOption]') as HTMLElement;
     expect(rowBefore.textContent).toContain('Rot');
 

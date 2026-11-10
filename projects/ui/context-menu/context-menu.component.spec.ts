@@ -55,6 +55,19 @@ class TemplateHost {
 })
 class StaticHost {}
 
+@Component({
+  template: `
+    <cngx-context-menu ariaLabel="Events" (opened)="opened = opened + 1" (closed)="closed = closed + 1">
+      <button type="button">Copy</button>
+    </cngx-context-menu>
+  `,
+  imports: [CngxContextMenu],
+})
+class EventsHost {
+  opened = 0;
+  closed = 0;
+}
+
 describe('CngxContextMenu', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -69,6 +82,21 @@ describe('CngxContextMenu', () => {
       .componentInstance as CngxContextMenu<Row>;
     return { fixture, panel };
   }
+
+  it('forwards the popover opened and closed outputs to a binding on the menu', () => {
+    TestBed.configureTestingModule({ imports: [EventsHost] });
+    const fixture = TestBed.createComponent(EventsHost);
+    fixture.detectChanges();
+    const panel = fixture.debugElement.query(By.directive(CngxContextMenu))
+      .componentInstance as CngxContextMenu;
+
+    panel.popover.show();
+    expect(fixture.componentInstance.opened).toBe(1);
+    expect(fixture.componentInstance.closed).toBe(0);
+
+    panel.popover.hide();
+    expect(fixture.componentInstance.closed).toBe(1);
+  });
 
   it('exposes the popover and menu brains as host-scoped instances', () => {
     const { panel } = setupTemplate();

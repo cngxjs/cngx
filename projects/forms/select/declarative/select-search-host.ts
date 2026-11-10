@@ -20,13 +20,17 @@ import type { CngxListbox } from '@cngx/common/interactive';
  *     `0` writes on every keystroke.
  *   - `panelOpen` - optional; whether the host's panel is open. When it
  *     turns `false`, by any close path, the search element drops a debounced
- *     term still waiting for its write.
+ *     term still waiting for its write. Also drives the input's
+ *     `aria-expanded`.
+ *   - `listboxId` - optional; the id of the listbox the input controls, for
+ *     `aria-controls`. Hosts without a stable listbox id omit it.
  */
 export interface CngxSelectShellSearchHost {
   readonly searchTerm: ModelSignal<string>;
   readonly listboxRef: Signal<CngxListbox | undefined>;
   readonly searchDebounceMs?: Signal<number>;
   readonly panelOpen?: Signal<boolean>;
+  readonly listboxId?: Signal<string | null>;
   close(): void;
   focus(): void;
   /**

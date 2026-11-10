@@ -4,6 +4,8 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, test } from 'vitest';
 
 import { CngxPaginate } from '@cngx/common/data';
+import { CngxListbox } from '@cngx/common/interactive';
+import { CngxPopover } from '@cngx/common/popover';
 import { provideLocale } from '@cngx/core/utils';
 import { CNGX_ICON_MORE_HORIZONTAL } from '@cngx/utils';
 
@@ -182,6 +184,66 @@ describe('CngxPaginatorPages', () => {
     popoverDiv?.dispatchEvent(secondClose);
     await settle(fixture);
     expect(document.activeElement).toBe(root.querySelector('.cngx-paginator__more'));
+  });
+});
+
+// jsdom has no Popover API; a minimal stand-in lets CngxPopover toggle.
+function polyfillPopover(): void {
+  const proto = HTMLElement.prototype as unknown as {
+    showPopover?: () => void;
+    hidePopover?: () => void;
+  };
+  if (typeof proto.showPopover === 'function') {
+    return;
+  }
+  proto.showPopover = function (this: HTMLElement) {
+    this.setAttribute('data-popover-open', 'true');
+  };
+  proto.hidePopover = function (this: HTMLElement) {
+    this.removeAttribute('data-popover-open');
+  };
+}
+
+describe('CngxPaginatorPages - ellipsis trigger keyboard', () => {
+  function key(target: HTMLElement, name: string, alt = false): void {
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key: name, altKey: alt, bubbles: true, cancelable: true }),
+    );
+  }
+
+  async function open() {
+    polyfillPopover();
+    const { fixture } = await setup();
+    const root = fixture.nativeElement as HTMLElement;
+    const more = root.querySelector<HTMLElement>('.cngx-paginator__more')!;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
+    const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
+    return { fixture, more, popover, listbox };
+  }
+
+  test('Alt+ArrowDown opens the gap panel and Alt+ArrowUp closes it', async () => {
+    const { fixture, more, popover } = await open();
+    key(more, 'ArrowDown', true);
+    await settle(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    key(more, 'ArrowUp', true);
+    await settle(fixture);
+    expect(popover.isVisible()).toBe(false);
+  });
+
+  test('Escape closes the gap panel and leaves no highlight behind', async () => {
+    const { fixture, more, popover, listbox } = await open();
+    key(more, 'ArrowDown');
+    await settle(fixture);
+    expect(popover.isVisible()).toBe(true);
+    expect(listbox.ad.activeIndex()).toBeGreaterThanOrEqual(0);
+
+    key(more, 'Escape');
+    await settle(fixture);
+    expect(popover.isVisible()).toBe(false);
+    expect(listbox.ad.activeIndex()).toBe(-1);
+    expect(more.hasAttribute('aria-activedescendant')).toBe(false);
   });
 });
 

@@ -6,6 +6,7 @@ import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-acti
 import type { CngxCommitHandlerCore } from './commit-handler-core';
 import type { CngxSelectOptionDef } from './option.model';
 import { commitLedgerFor } from './internal/commit-ledger';
+import { isEmptyScalar } from './internal/compare';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
 
 /**
@@ -185,11 +186,13 @@ export function createScalarCommitHandler<T>(
       onSuccess: (finalValue, confirmedPrevious) => {
         togglingOption.set(null);
         mirrorWrite(finalValue);
-        if (finalValue === undefined && opts.onClearFinalize) {
+        // A clear whose server normalises the result to any empty scalar
+        // (`undefined`, `null`, `''`) still finalizes as a clear.
+        if (isEmptyScalar(finalValue) && opts.onClearFinalize) {
           opts.onClearFinalize(confirmedPrevious);
           return;
         }
-        const opt = finalValue === undefined ? null : opts.core.findOption(finalValue);
+        const opt = isEmptyScalar(finalValue) ? null : opts.core.findOption(finalValue);
         opts.onCommitFinalize(opt, finalValue, confirmedPrevious);
       },
       onError: opts.onError,

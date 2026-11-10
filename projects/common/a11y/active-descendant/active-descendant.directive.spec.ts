@@ -2,6 +2,7 @@ import {
   Component,
   Directive,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -337,6 +338,36 @@ describe('CngxActiveDescendant - typeahead', () => {
     expect(dir.activeItem()?.value).toBe('b');
   });
 
+  it('takes a space into a running term instead of activating', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.options.set([
+      { value: 'nj', label: 'New Jersey' },
+      { value: 'ny', label: 'New York' },
+    ]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const activated: unknown[] = [];
+    dir.activated.subscribe((v) => activated.push(v));
+    const press = (k: string): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key: k, cancelable: true });
+      container.triggerEventHandler('keydown', event);
+      TestBed.flushEffects();
+      return event;
+    };
+    expect(dir.typeaheadActive()).toBe(false);
+    for (const k of 'new') {
+      press(k);
+    }
+    expect(dir.typeaheadActive()).toBe(true);
+    expect(press(' ').defaultPrevented).toBe(true);
+    press('y');
+    expect(dir.activeItem()?.value).toBe('ny');
+    expect(activated).toEqual([]);
+  });
+
   it('chains characters within debounce window', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.componentInstance.options.set([
@@ -483,6 +514,151 @@ describe('CngxActiveDescendant - typeahead', () => {
     // Active is Banana; 'a' must not stick on a match before the wrap point.
     key('a');
     expect(dir.activeItem()?.value).toBe('a');
+  });
+});
+
+/* --- Deferred-render re-apply (non-virtual) ------------------------------ */
+
+// Mirrors the OD5 deferred-render seam: the option rows are gated on a
+// visibility signal, so a highlight gesture can fire while the AD item space
+// is still empty. The gesture must be held as intent and re-applied once the
+// rows render, not lost against the empty space.
+@Component({
+  template: `
+    <div cngxActiveDescendant #ad="cngxActiveDescendant" tabindex="0">
+      @if (visible()) {
+        @for (opt of options; track opt.value) {
+          <div testAdItem [value]="opt.value" [label]="opt.label">{{ opt.label }}</div>
+        }
+      }
+    </div>
+  `,
+  imports: [CngxActiveDescendant, TestAdItem],
+})
+class DeferredItemsHost {
+  readonly visible = signal(false);
+  readonly options = [
+    { value: 'a', label: 'Apple' },
+    { value: 'b', label: 'Banana' },
+    { value: 'c', label: 'Cherry' },
+  ];
+}
+
+describe('CngxActiveDescendant - deferred-render re-apply', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [DeferredItemsHost] });
+  });
+
+  function setupDeferred(): {
+    fixture: ReturnType<typeof TestBed.createComponent<DeferredItemsHost>>;
+    container: ReturnType<typeof TestBed.createComponent<DeferredItemsHost>>['debugElement'];
+    dir: CngxActiveDescendant;
+  } {
+    const fixture = TestBed.createComponent(DeferredItemsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    return { fixture, container, dir: container.injector.get(CngxActiveDescendant) };
+  }
+
+  function render(fixture: ReturnType<typeof setupDeferred>['fixture']): void {
+    fixture.componentInstance.visible.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+  }
+
+  it('stores nothing for an arrow key in an empty list, so later rows carry no highlight', () => {
+    const { fixture, container, dir } = setupDeferred();
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+
+    render(fixture);
+    expect(dir.activeItem()).toBeNull();
+    expect(dir.activeIndex()).toBe(-1);
+  });
+
+  it('drops a stored open gesture once an arrow key moves the highlight', () => {
+    const { fixture, container, dir } = setupDeferred();
+    dir.highlightLast();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+
+    container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+    expect(dir.activeValue()).toBe('b');
+    // The rows going away and coming back no longer re-apply the gesture.
+    fixture.componentInstance.visible.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    render(fixture);
+    expect(dir.activeValue()).not.toBe('c');
+  });
+
+  it('re-resolves an untouched open gesture when the item space empties and refills', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightLast();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+
+    fixture.componentInstance.visible.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+  });
+
+  it('re-applies highlightFirst once the rows arrive', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('a');
+  });
+
+  it('re-applies highlightLast once the rows arrive', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightLast();
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+  });
+
+  it('re-applies highlightByIndex against the populated space', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightByIndex(1);
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('b');
+  });
+
+  it('re-applies highlightByValue against the populated space', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightByValue('c');
+    TestBed.flushEffects();
+    expect(dir.activeItem()).toBeNull();
+    render(fixture);
+    expect(dir.activeValue()).toBe('c');
+  });
+
+  it('resetHighlight drops a gesture still pending a deferred render', () => {
+    const { fixture, dir } = setupDeferred();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    dir.resetHighlight();
+    render(fixture);
+    expect(dir.activeItem()).toBeNull();
+  });
+
+  it('applies a highlight synchronously once the rows are already present', () => {
+    const { fixture, dir } = setupDeferred();
+    render(fixture);
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    expect(dir.activeValue()).toBe('a');
   });
 });
 
@@ -676,6 +852,82 @@ describe('CngxActiveDescendant - virtual window offset', () => {
     expect(host.getAttribute('aria-activedescendant')).toBe('opt-99');
   });
 
+  it('does not re-arm pendingHighlight when the window moves away from the highlight', () => {
+    const { fixture, dir } = setupWindow();
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+    expect(dir.pendingHighlight()).toBeNull();
+
+    for (const start of [60, 80, 20]) {
+      fixture.componentInstance.start.set(start);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(dir.activeIndex()).toBe(45);
+      expect(dir.activeId()).toBeNull();
+      expect(dir.pendingHighlight()).toBeNull();
+    }
+  });
+
+  it('arms pendingHighlight once for End on an unrendered index and clears it on arrival', () => {
+    const { fixture, dir } = setupWindow();
+    const seen: (number | null)[] = [];
+    const watcher = TestBed.runInInjectionContext(() =>
+      effect(() => {
+        seen.push(dir.pendingHighlight());
+      }),
+    );
+    TestBed.flushEffects();
+
+    dir.highlightLast();
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(50);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(90);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.start.set(20);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(seen).toEqual([null, 99, null]);
+    watcher.destroy();
+  });
+
+  it('scrolls the row once on arrival and not again when the window moves on', async () => {
+    const { fixture, dir } = setupWindow();
+    const scroll = vi.fn();
+    const original = HTMLElement.prototype.scrollIntoView;
+    HTMLElement.prototype.scrollIntoView = scroll;
+    const rendered = document.createElement('div');
+    rendered.id = 'opt-99';
+    document.body.appendChild(rendered);
+    try {
+      dir.highlightLast();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(scroll).not.toHaveBeenCalled();
+
+      fixture.componentInstance.start.set(90);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(scroll).toHaveBeenCalledTimes(1);
+
+      fixture.componentInstance.start.set(40);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.componentInstance.start.set(90);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(scroll).toHaveBeenCalledTimes(1);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = original;
+      rendered.remove();
+    }
+  });
+
   it('typeahead matches rendered labels and sets the absolute index', () => {
     const { fixture } = setupWindow();
     const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
@@ -690,7 +942,15 @@ describe('CngxActiveDescendant - virtual window offset', () => {
   });
 });
 
-/* --- Virtual window whose rendered items lag the window start ----------- */
+/* --- Typeahead over the full list of a windowed host -------------------- */
+
+const LETTERS_FULL: ActiveDescendantItem[] = Array.from({ length: 100 }, (_, i) => ({
+  id: '',
+  value: i,
+  // One far-down match for "z", and "m" rows both inside and far past the window.
+  label: i === 90 ? 'Zebra' : i === 41 || i === 70 ? `Mango ${i}` : `Item ${i}`,
+  disabled: i === 70 ? false : undefined,
+}));
 
 @Component({
   template: `
@@ -698,6 +958,92 @@ describe('CngxActiveDescendant - virtual window offset', () => {
       cngxActiveDescendant
       [items]="windowItems()"
       [virtualCount]="100"
+      [windowStart]="40"
+      [typeaheadItems]="full()"
+      (typeaheadMissed)="missed.push($event)"
+      tabindex="0"
+    ></div>
+  `,
+  imports: [CngxActiveDescendant],
+})
+class WindowTypeaheadHost {
+  readonly full = signal<readonly ActiveDescendantItem[] | undefined>(LETTERS_FULL);
+  readonly missed: string[] = [];
+  readonly windowItems = computed<ActiveDescendantItem[]>(() =>
+    LETTERS_FULL.slice(40, 50).map((item, i) => ({ ...item, id: `opt-${40 + i}` })),
+  );
+}
+
+describe('CngxActiveDescendant - typeaheadItems', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [WindowTypeaheadHost] });
+  });
+
+  function setupFull(bound = true) {
+    const fixture = TestBed.createComponent(WindowTypeaheadHost);
+    if (!bound) {
+      fixture.componentInstance.full.set(undefined);
+    }
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const press = (k: string): void => {
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: k }));
+      TestBed.flushEffects();
+    };
+    return { host: fixture.componentInstance, dir, press };
+  }
+
+  it('finds a match outside the rendered window and arms pendingHighlight', () => {
+    const { dir, press } = setupFull();
+    press('z');
+    expect(dir.activeIndex()).toBe(90);
+    expect(dir.activeId()).toBeNull();
+    expect(dir.pendingHighlight()).toBe(90);
+  });
+
+  it('cycles a repeated letter past the window instead of staying inside it', () => {
+    const { dir, press } = setupFull();
+    press('m');
+    expect(dir.activeIndex()).toBe(41);
+    press('m');
+    expect(dir.activeIndex()).toBe(70);
+  });
+
+  it('skips a disabled match of the full list', () => {
+    const { host, dir, press } = setupFull();
+    host.full.set(
+      LETTERS_FULL.map((item) => (item.value === 90 ? { ...item, disabled: true } : item)),
+    );
+    TestBed.flushEffects();
+    press('z');
+    expect(dir.activeIndex()).toBe(-1);
+  });
+
+  it('reports a miss in the full list through typeaheadMissed', () => {
+    const { host, press } = setupFull();
+    press('q');
+    expect(host.missed).toEqual(['q']);
+  });
+
+  it('keeps the rendered window as the search space while unbound', () => {
+    const { host, dir, press } = setupFull(false);
+    press('z');
+    expect(dir.activeIndex()).toBe(-1);
+    expect(host.missed).toEqual(['z']);
+  });
+});
+
+/* --- Virtual window whose rendered items lag the window start ----------- */
+
+@Component({
+  template: `
+    <div
+      cngxActiveDescendant
+      [items]="windowItems()"
+      [virtualCount]="virtualCount()"
       [windowStart]="start()"
       tabindex="0"
     ></div>
@@ -705,6 +1051,7 @@ describe('CngxActiveDescendant - virtual window offset', () => {
   imports: [CngxActiveDescendant],
 })
 class LaggingWindowHost {
+  readonly virtualCount = signal<number | undefined>(100);
   // A recycler moves windowStart first; the rendered items (content
   // children) follow one render later.
   readonly start = signal(40);
@@ -763,6 +1110,91 @@ describe('CngxActiveDescendant - window start leading the rendered items', () =>
       expect(dir.activeIndex()).toBe(next);
       expect(dir.activeId()).toBe(`opt-${next}`);
     }
+  });
+
+  it('keeps the absolute active index when the window moves again while the rows lag', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.start.set(43);
+    settle(fixture);
+    fixture.componentInstance.itemsStart.set(41);
+    settle(fixture);
+    expect(dir.activeIndex()).toBe(45);
+
+    fixture.componentInstance.start.set(60);
+    fixture.componentInstance.itemsStart.set(60);
+    settle(fixture);
+    expect(dir.activeIndex()).toBe(45);
+  });
+
+  it('holds the absolute index, not the value, when the window content changes', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.itemsStart.set(41);
+    settle(fixture);
+
+    expect(dir.activeIndex()).toBe(45);
+    expect(dir.activeId()).toBe('opt-46');
+  });
+
+  it('drops the highlight when a windowed list turns into a plain one', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.virtualCount.set(undefined);
+    settle(fixture);
+
+    expect(dir.activeIndex()).toBe(-1);
+  });
+
+  it('drops the highlight when a search shrinks the windowed list under the same window start', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    const picked: unknown[] = [];
+    dir.activated.subscribe((value) => picked.push(value));
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.virtualCount.set(50);
+    settle(fixture);
+    dir.activateCurrent();
+
+    expect(dir.activeIndex()).toBe(-1);
+    expect(picked).toEqual([]);
+  });
+
+  it('drops the highlight when options arrive and the windowed list grows', () => {
+    const fixture = TestBed.createComponent(LaggingWindowHost);
+    fixture.componentInstance.virtualCount.set(300);
+    settle(fixture);
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const dir = container.injector.get(CngxActiveDescendant);
+    dir.highlightByIndex(45);
+    TestBed.flushEffects();
+
+    fixture.componentInstance.virtualCount.set(400);
+    settle(fixture);
+    expect(dir.activeIndex()).toBe(-1);
+
+    dir.highlightNext();
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(0);
   });
 });
 

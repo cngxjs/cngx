@@ -817,6 +817,57 @@ describe('injectRecycler', () => {
       expect(recycler.lostFocus()).toBeNull();
     });
 
+    describe('focus events inside a render pass', () => {
+      // A listener's exception never reaches dispatchEvent's caller; the DOM
+      // reports it on window instead, so that is where NG0600 would surface.
+      const listenerErrors: unknown[] = [];
+      const captureError = (e: ErrorEvent): void => {
+        e.preventDefault();
+        listenerErrors.push(e.error);
+      };
+
+      beforeEach(() => {
+        listenerErrors.length = 0;
+        window.addEventListener('error', captureError);
+      });
+
+      afterEach(() => {
+        window.removeEventListener('error', captureError);
+      });
+
+      // A computed forbids signal writes the same way a template pass does.
+      function dispatchInRenderPass(target: HTMLElement, type: 'focusin' | 'focusout'): void {
+        computed(() => target.dispatchEvent(new FocusEvent(type, { bubbles: true })))();
+      }
+
+      function appendItem(index: number): HTMLElement {
+        const item = document.createElement('div');
+        item.setAttribute('data-cngx-recycle-index', String(index));
+        mockContainer.appendChild(item);
+        return item;
+      }
+
+      it('survives focus dropping from the scroll container itself', () => {
+        createRecycler();
+
+        dispatchInRenderPass(mockContainer, 'focusout');
+
+        expect(listenerErrors).toEqual([]);
+      });
+
+      it('tracks and clears a focused item without an invalid signal write', () => {
+        const recycler = createRecycler();
+        const item = appendItem(900);
+
+        dispatchInRenderPass(item, 'focusin');
+        expect(recycler.lostFocus()).toEqual({ index: 900 });
+
+        dispatchInRenderPass(item, 'focusout');
+        expect(recycler.lostFocus()).toBeNull();
+        expect(listenerErrors).toEqual([]);
+      });
+    });
+
     it('should accept anchorTo without error', () => {
       const recycler = createRecycler();
       expect(() => recycler.anchorTo(5)).not.toThrow();

@@ -118,6 +118,11 @@ export function createArrayCommitHandler<T>(
     option: CngxSelectOptionDef<T>,
     action: CngxSelectCommitAction<T[]>,
   ): void => {
+    const eq = opts.compareWith();
+    const selected = next.some((v) => eq(v, option.value));
+    // Index the value held before this toggle, so re-adding it on a rollback
+    // restores its slot instead of appending.
+    const previousIndex = previous.findIndex((v) => eq(v, option.value));
     ledger.beginMembers<T[]>({
       ...shared,
       kind: 'toggle',
@@ -125,6 +130,27 @@ export function createArrayCommitHandler<T>(
       previous,
       option,
       action,
+      // A toggle is a one-value membership delta: compose it onto the live
+      // selection so a concurrent commit (a pending quick-create, another
+      // toggle) is never clobbered by this commit's dispatch snapshot.
+      composeOnLive: {
+        selected,
+        apply: (live, keep) => {
+          const has = live.some((v) => eq(v, option.value));
+          if (!keep) {
+            return has ? live.filter((v) => !eq(v, option.value)) : live;
+          }
+          if (has) {
+            return live;
+          }
+          // A restored removal returns to its old slot; a fresh add goes last.
+          if (previousIndex >= 0) {
+            const at = Math.min(previousIndex, live.length);
+            return [...live.slice(0, at), option.value, ...live.slice(at)];
+          }
+          return [...live, option.value];
+        },
+      },
       onReplay: () => togglingOption.set(option),
       onSuccess: (finalValues, confirmedPrevious) => {
         const eq = opts.compareWith();

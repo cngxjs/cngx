@@ -11,6 +11,7 @@ import { describeFieldSkinHost } from '../shared/__test-helpers/field-skin-host'
 import { describeFieldAriaHost } from '../shared/__test-helpers/field-aria-host';
 import { describeSelectBehaviourHost } from '../shared/__test-helpers/select-behaviour-host';
 import { describeMobileSheet } from '../shared/__test-helpers/mobile-sheet';
+import { KINDS as PROBE_KINDS, cleanupRoots as cleanupProbeRoots, mount as probeMount } from '../shared/__test-helpers/review-probe-host';
 import { stubTouchFloor } from '../shared/__test-helpers/touch-floor';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -19,6 +20,7 @@ import {
   makeSelectConfig,
   provideSelectConfig,
   withAriaLabels,
+  withDismissOn,
   withFallbackLabels,
   withPanelClass,
   withTemplates,
@@ -424,6 +426,27 @@ describe('CngxTreeSelect', () => {
       expect(f.host.values().map((v) => v.id)).toEqual(['a2']);
     });
   }
+
+  it('Alt+ArrowDown opens and Alt+ArrowUp closes the panel; other modified keys pass through', () => {
+    const trigger = f.root.querySelector<HTMLElement>('[role="combobox"]')!;
+    const press = (init: KeyboardEventInit): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
+      trigger.dispatchEvent(event);
+      f.fixture.detectChanges();
+      return event;
+    };
+
+    expect(press({ key: 'ArrowUp', altKey: true }).defaultPrevented).toBe(false);
+    expect(f.tree.panelOpen()).toBe(false);
+    expect(press({ key: 'ArrowDown', altKey: true, ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(f.tree.panelOpen()).toBe(false);
+
+    expect(press({ key: 'ArrowDown', altKey: true }).defaultPrevented).toBe(true);
+    expect(f.tree.panelOpen()).toBe(true);
+
+    expect(press({ key: 'ArrowUp', altKey: true }).defaultPrevented).toBe(true);
+    expect(f.tree.panelOpen()).toBe(false);
+  });
 
   it('Escape on the trigger closes the panel when open', () => {
     f.tree.open();
@@ -1001,12 +1024,16 @@ describe('CngxTreeSelect - per-instance node ids', () => {
       const trees = fixture.debugElement
         .queryAll(By.directive(CngxTreeSelect))
         .map((de) => de.componentInstance as CngxTreeSelect<Row>);
+      // Deferred render (OD5): a tree renders its nodes on its first open and
+      // latches them. Two popover=auto panels can't be open at once, so open
+      // each with a render in between - the first keeps its rows after the
+      // second light-dismisses it.
       for (const t of trees) {
         t.open();
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
       }
-      fixture.detectChanges();
-      TestBed.flushEffects();
-      fixture.detectChanges();
 
       const ids = Array.from(root.querySelectorAll('[role="treeitem"]')).map((el) => el.id);
       expect(ids.length).toBe(8);
@@ -1629,5 +1656,52 @@ describe('CngxTreeSelect - panel footer', () => {
     } finally {
       configFooterTpl = null;
     }
+  });
+});
+
+// ── Review 2 (commit 7): dismiss, aria-multiselectable, PageUp/PageDown. ─────
+describe('CngxTreeSelect - review 2 dismiss and tree keyboard', () => {
+  afterEach(() => {
+    cleanupProbeRoots();
+    vi.restoreAllMocks();
+  });
+
+  function treeEl(root: HTMLElement): HTMLElement {
+    const tree = root.querySelector<HTMLElement>('[role="tree"]');
+    if (!tree) {
+      expect.fail('no role=tree container');
+    }
+    return tree!;
+  }
+
+  // C2: dismissOn 'outside' turns Escape dismissal off, so Escape keeps the tree open.
+  it('Escape keeps the tree open under dismissOn outside', () => {
+    const m = probeMount(PROBE_KINDS['tree'], { providers: [provideSelectConfig(withDismissOn('outside'))] });
+    m.open();
+    expect(m.v.panelOpen()).toBe(true);
+    treeEl(m.el).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    m.settle();
+    expect(m.v.panelOpen()).toBe(true);
+  });
+
+  // I3: the tree announces that several nodes can be selected.
+  it('the role=tree container carries aria-multiselectable="true"', () => {
+    const m = probeMount(PROBE_KINDS['tree']);
+    m.open();
+    expect(treeEl(m.el).getAttribute('aria-multiselectable')).toBe('true');
+  });
+
+  // I10: PageDown moves the active node by a page (clamped to the last node here).
+  it('PageDown moves the active node toward the end', () => {
+    const m = probeMount(PROBE_KINDS['tree']);
+    m.open();
+    const tree = treeEl(m.el);
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    m.settle();
+    const first = tree.getAttribute('aria-activedescendant');
+    tree.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true, cancelable: true }));
+    m.settle();
+    const after = tree.getAttribute('aria-activedescendant');
+    expect(after).not.toBe(first);
   });
 });
