@@ -171,6 +171,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_ACTION_STATUS_CONFIG',
+    kind: 'config',
+    copyKeys: ['labels'],
+    settingsKeys: ['templates'],
+  },
+  {
     token: 'CNGX_MENU_CONFIG',
     kind: 'config',
     copyKeys: ['ariaLabels'],
@@ -441,7 +447,9 @@ export const SETTINGS_TOKENS = [
   'CNGX_ACCORDION',
   'CNGX_ACCORDION_GROUP',
   'CNGX_ACTION_HOST_BRIDGE_FACTORY',
+  'CNGX_ACTION_STATUS',
   'CNGX_AD_ITEM',
+  'CNGX_ANNOUNCEMENT_COVER',
   'CNGX_ARRAY_COMMIT_HANDLER_FACTORY',
   'CNGX_ASYNC_RUN_STATE',
   'CNGX_AUDIO_CONFIG',
@@ -698,6 +706,12 @@ export const LIVE_REGIONS = [
     region: 'CngxChart.span(connectionRestoredAnnouncement)',
     spec: 'projects/common/chart/chart/chart.spec.ts',
     testName: 'does not re-announce on a language flip',
+  },
+  {
+    file: 'projects/common/interactive/action-status/action-status-brain.directive.ts',
+    region: 'CngxActionStatusBrain.constructor:effect#1',
+    spec: 'projects/common/interactive/action-status/action-status-brain.directive.spec.ts',
+    testName: 'never re-voices the region on a language flip',
   },
   {
     file: 'projects/common/interactive/copy/copy-block.ts',

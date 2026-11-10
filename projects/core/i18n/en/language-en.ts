@@ -46,6 +46,11 @@ export const CNGX_LANGUAGE_EN = {
     disabledReason: 'This section is currently unavailable.',
     errorMessage: 'This section could not be loaded.',
   },
+  actionStatus: {
+    pending: '',
+    succeeded: '',
+    failed: '',
+  },
   breadcrumb: {
     bar: 'Breadcrumb',
     overflowTrigger: 'Show collapsed breadcrumbs',

@@ -42,6 +42,11 @@ export const CNGX_LANGUAGE_DE = {
     disabledReason: 'Dieser Abschnitt ist derzeit nicht verfügbar.',
     errorMessage: 'Dieser Abschnitt konnte nicht geladen werden.',
   },
+  actionStatus: {
+    pending: '',
+    succeeded: '',
+    failed: '',
+  },
   breadcrumb: {
     bar: 'Breadcrumb',
     overflowTrigger: 'Ausgeblendete Pfadeinträge anzeigen',

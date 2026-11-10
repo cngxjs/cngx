@@ -1,0 +1,388 @@
+import {
+  afterNextRender,
+  computed,
+  contentChild,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  output,
+  untracked,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
+import {
+  buildAsyncStateView,
+  createKeyedRegistry,
+  createOverrideMerge,
+  createTransitionTracker,
+  injectLazySelf,
+  resolveSpokenText,
+  type AsyncStatus,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
+
+import { CngxRuntimeError } from '@cngx/utils';
+
+import type { CngxAsyncSettle } from '../async-click/async-click.directive';
+import { CNGX_ASYNC_RUN_STATE, type CngxAsyncRunState } from '../async-click/async-run-state.token';
+import { CngxFailed, CngxPending, CngxSucceeded } from '../async-click/async-status-templates';
+import { reflectAsyncDisplayStatus } from '../async-status/async-status.directive';
+import { injectInteractiveI18n } from '../i18n/interactive-i18n';
+import {
+  injectActionStatusConfig,
+  injectActionStatusSection,
+  type CngxActionStatusFailedContext,
+} from './action-status-config';
+import {
+  CNGX_ACTION_STATUS,
+  CNGX_ANNOUNCEMENT_COVER,
+  type CngxActionOutcome,
+  type CngxActionStatus,
+  type CngxActionStatusCellKind,
+  type CngxActionStatusCells,
+} from './action-status.token';
+
+/**
+ * Status layer of an action host: the effective status, the stacked label
+ * cells, the settle announcement and the `[externalState]` mode, on top of
+ * a co-hosted `cngxAsyncClick`. A selector-less host directive; the host
+ * component is skin (template, CSS, providers) and reads the brain through
+ * `CNGX_ACTION_STATUS`.
+ *
+ * The brain renders nothing. The host template puts `[cngxActionStatusCell]`
+ * on each label span, so the active cell is visible and named and the
+ * result cells register their rendered text. The host's
+ * `CNGX_HOST_INTERACTION_STATE` provider adds `announcement` from the
+ * contract, so the runner's live region speaks what the host shows, once
+ * per settle: the explicit announcement, then the rendered result cell,
+ * then the label, then `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` /
+ * `asyncClickFailed`. Every co-hosted `CNGX_ANNOUNCEMENT_COVER` (a toast, a
+ * close-on-success) keeps the region empty for an outcome it voices itself.
+ *
+ * With `[externalState]` bound the status, `state`, `outcome` and the
+ * announcement follow that state, once per observed `success` / `error`
+ * edge; the own runs then speak nothing. Back to idle empties the region.
+ *
+ * Each cell resolves its content high to low: the projected `cngxPending` /
+ * `cngxSucceeded` / `cngxFailed`, the bound label, the `templates` of
+ * `CNGX_ACTION_STATUS_CONFIG`, the config `labels`, the actionStatus section
+ * of the language pack. The English pack is empty, so without any of them a state
+ * has no cell; a bound `''` switches a cell off. Set the app-wide defaults
+ * with `provideActionStatusConfig(withActionStatusLabels(...))` or, for a
+ * button app, `provideCngxButton(withActionStatusLabels(...))`.
+ *
+ * Needs a co-hosted `CNGX_ASYNC_RUN_STATE` (a `cngxAsyncClick`), read lazily
+ * because the runner reads the host interaction state that reads this brain;
+ * without one the first read throws `CNGX1082`.
+ *
+ * ```ts
+ * hostDirectives: [
+ *   CngxButtonBrain,
+ *   { directive: CngxAsyncClick, inputs: ['cngxAsyncClick: action'] },
+ *   { directive: CngxActionStatusBrain, inputs: ['succeededLabel', 'failedLabel'] },
+ * ],
+ * // A button host gets both host providers from @cngx/common/button.
+ * providers: [provideButtonHost('appSave', { defaultVariant: 'solid' }), provideActionStatusHost()],
+ * ```
+ *
+ * @wcag AA
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-brain.directive.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_ACTION_STATUS, CNGX_ACTION_STATUS_CONFIG, CngxActionStatusCell, CNGX_ANNOUNCEMENT_COVER, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed
+ * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
+ * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.
+ * @slot cngxFailed Replaces the label when the action fails, once the busy visual releases; gets the error.
+ * <example-url>/#/ui/action-button/async-button/ejected-host</example-url>
+ * @axis level molecule
+ */
+@Directive({
+  standalone: true,
+  exportAs: 'cngxActionStatusBrain',
+  providers: [{ provide: CNGX_ACTION_STATUS, useExisting: CngxActionStatusBrain }],
+  host: {
+    '[attr.data-status]': 'status()',
+    '[attr.data-status-label]': 'activeCell() === "idle" ? null : ""',
+  },
+})
+export class CngxActionStatusBrain implements CngxActionStatus {
+  private readonly i18n = injectInteractiveI18n();
+  private readonly injector = inject(Injector);
+  private readonly element = inject<ElementRef<Element>>(ElementRef).nativeElement;
+  private readonly runStateLookup = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
+  private readonly covers = injectLazySelf(CNGX_ANNOUNCEMENT_COVER, { optional: true });
+  private readonly cells = createKeyedRegistry<Element>({ name: 'CngxActionStatusBrain' });
+  private readonly config = injectActionStatusConfig();
+  /** Config labels over the actionStatus section of the active pack. */
+  private readonly labels = createOverrideMerge(injectActionStatusSection(), this.config.labels);
+
+  /** SR announcement on success. Falls back to the rendered result cell, the label, the i18n copy. */
+  readonly succeededAnnouncement = input<string | undefined>(undefined);
+
+  /** SR announcement on failure. Falls back to the rendered result cell, the label, the i18n copy. */
+  readonly failedAnnouncement = input<string | undefined>(undefined);
+
+  /**
+   * What the runner's live region speaks. Unbound, every outcome except one
+   * a co-hosted `CNGX_ANNOUNCEMENT_COVER` voices itself. `true` lets a cover
+   * decide that it stands down (the toast does). `false` keeps the region
+   * empty: it stays in the DOM but receives no text.
+   */
+  readonly autoAnnounce = input<boolean | undefined>(undefined);
+
+  /**
+   * Text while pending (no `cngxPending` template). Shows once the busy
+   * visual does. Unbound, the `CNGX_ACTION_STATUS_CONFIG` / language pack
+   * label; `''` switches the cell off.
+   */
+  readonly pendingLabel = input<string | undefined>(undefined);
+
+  /** Text after success (no `cngxSucceeded` template). Unbound, the config / pack label; `''`: no cell. */
+  readonly succeededLabel = input<string | undefined>(undefined);
+
+  /** Text after failure (no `cngxFailed` template). Unbound, the config / pack label; `''`: no cell. */
+  readonly failedLabel = input<string | undefined>(undefined);
+
+  /**
+   * An external async state to reflect. Bound, the status, `state`,
+   * `outcome` and the announcement follow it (once per observed `success` /
+   * `error` edge; binding or swapping a state, also mid-life, is not an
+   * edge), and the own runs speak nothing. Unbinding empties the region.
+   * Exclusive with the host's own runs.
+   */
+  readonly externalState = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** Emits once per own settle and once per external `success` / `error` edge. */
+  readonly outcome = output<CngxActionOutcome>();
+
+  private readonly projectedPending = contentChild(CngxPending);
+  private readonly projectedSucceeded = contentChild(CngxSucceeded);
+  private readonly projectedFailed = contentChild(CngxFailed);
+
+  /** Template of the pending cell: the projected `cngxPending`, else the config's unless a label is bound. */
+  readonly pendingTemplate: Signal<TemplateRef<unknown> | undefined> = computed(
+    () =>
+      this.projectedPending()?.templateRef ??
+      (this.pendingLabel() === undefined ? this.config.templates?.pending : undefined),
+  );
+  /** Template of the succeeded cell: the projected `cngxSucceeded`, else the config's unless a label is bound. */
+  readonly succeededTemplate: Signal<TemplateRef<unknown> | undefined> = computed(
+    () =>
+      this.projectedSucceeded()?.templateRef ??
+      (this.succeededLabel() === undefined ? this.config.templates?.succeeded : undefined),
+  );
+  /**
+   * Template of the failed cell: the projected `cngxFailed`, else the
+   * config's unless a label is bound; gets the error.
+   */
+  readonly failedTemplate: Signal<TemplateRef<CngxActionStatusFailedContext> | undefined> =
+    computed(
+      () =>
+        this.projectedFailed()?.templateRef ??
+        (this.failedLabel() === undefined ? this.config.templates?.failed : undefined),
+    );
+
+  /** Text of the pending cell: the bound label, else the config / pack label. `''`: none. */
+  readonly pendingText: Signal<string> = computed(
+    () => this.pendingLabel() ?? this.labels().pending,
+  );
+  /** Text of the succeeded cell: the bound label, else the config / pack label. `''`: none. */
+  readonly succeededText: Signal<string> = computed(
+    () => this.succeededLabel() ?? this.labels().succeeded,
+  );
+  /** Text of the failed cell: the bound label, else the config / pack label. `''`: none. */
+  readonly failedText: Signal<string> = computed(() => this.failedLabel() ?? this.labels().failed);
+
+  /** Effective status: the bound external state (display bucket), else the co-hosted run. */
+  readonly status: Signal<AsyncStatus> = computed(() => {
+    const ext = this.externalState();
+    if (ext) {
+      return reflectAsyncDisplayStatus(ext);
+    }
+    return this.runState().state.status();
+  });
+
+  /** Effective error: the bound external state's, else the co-hosted run's. */
+  readonly error: Signal<unknown> = computed(() => {
+    const ext = this.externalState();
+    return ext ? ext.error() : this.runState().state.error();
+  });
+
+  /** `true` while a bound external state is pending. */
+  readonly externalBusy: Signal<boolean> = computed(
+    () => this.externalState() !== undefined && this.status() === 'pending',
+  );
+
+  private readonly lastUpdated = computed(() => {
+    const ext = this.externalState();
+    return ext ? ext.lastUpdated() : this.runState().state.lastUpdated();
+  });
+
+  /** Full `CngxAsyncState` view of the effective lifecycle, one source per mode. */
+  readonly state: CngxAsyncState<unknown> = buildAsyncStateView<unknown>({
+    status: this.status,
+    data: computed(() => undefined),
+    error: this.error,
+    lastUpdated: this.lastUpdated,
+  });
+
+  /** Which status cells render: a label or a template for the state. */
+  readonly hasCell: Signal<CngxActionStatusCells> = computed(
+    () => ({
+      pending: !!this.pendingTemplate() || this.pendingText() !== '',
+      success: !!this.succeededTemplate() || this.succeededText() !== '',
+      error: !!this.failedTemplate() || this.failedText() !== '',
+    }),
+    {
+      equal: (a, b) => a.pending === b.pending && a.success === b.success && a.error === b.error,
+    },
+  );
+
+  /**
+   * The visible, named cell, gated on the runner's busy visual: while it is
+   * held (the run and its dwell) the pending cell if there is one, else idle
+   * under the spinner; the result cells only once it releases. A run faster
+   * than the show delay goes idle -> result with no pending flash.
+   */
+  readonly activeCell: Signal<CngxActionStatusCellKind> = computed(() => {
+    const cells = this.hasCell();
+    if (this.runState().busyVisible()) {
+      return cells.pending ? 'pending' : 'idle';
+    }
+    const status = this.status();
+    if (status === 'success' && cells.success) {
+      return 'success';
+    }
+    if (status === 'error' && cells.error) {
+      return 'error';
+    }
+    return 'idle';
+  });
+
+  constructor() {
+    // The runner cannot be read during construction (it injects the host
+    // interaction state that reads this brain), and a settle needs a click
+    // on the rendered host.
+    afterNextRender(() => {
+      this.runState().settled.subscribe((settle) => this.handleOwnSettle(settle));
+    });
+
+    // One tracked pair, so a swap of the status source (bind, unbind, a new
+    // state) is told apart from a status edge without any held state.
+    const tracker = createTransitionTracker(
+      () => ({ ext: this.externalState(), status: this.status() }),
+      { equal: (a, b) => a.ext === b.ext && a.status === b.status },
+    );
+    effect(() => {
+      const current = tracker.current();
+      const previous = tracker.previous();
+      if (current.ext !== previous.ext) {
+        // An unbind ends the external feedback window: its text leaves the region.
+        if (previous.ext !== undefined) {
+          untracked(() => this.runState().announce(''));
+        }
+        return;
+      }
+      if (current.status === previous.status) {
+        return;
+      }
+      // Only the edge re-runs this body; everything else is read untracked.
+      untracked(() => this.handleExternalEdge(current.status));
+    });
+  }
+
+  /**
+   * What the runner's region speaks for one own settle: `''` without a settle,
+   * while an external state is bound, under `autoAnnounce` `false` and for a
+   * covered outcome. The host's `CNGX_HOST_INTERACTION_STATE` provider passes it on.
+   */
+  readonly announcement = (settle?: CngxAsyncSettle): string =>
+    settle && !untracked(this.externalState) ? this.resolveAnnouncement(settle.status) : '';
+
+  /** The text an outcome speaks before any cover; `''` under `autoAnnounce` `false`. */
+  outcomeText(status: 'success' | 'error'): string {
+    return untracked(() => {
+      if (this.autoAnnounce() === false) {
+        return '';
+      }
+      const success = status === 'success';
+      const explicit = success ? this.succeededAnnouncement() : this.failedAnnouncement();
+      if (explicit !== undefined) {
+        return explicit;
+      }
+      const cell = this.cells.get(status);
+      const rendered = cell ? resolveSpokenText(cell) : '';
+      if (rendered !== '') {
+        return rendered;
+      }
+      if (success) {
+        return this.succeededText() || this.i18n().asyncClickSucceeded;
+      }
+      return this.failedText() || this.i18n().asyncClickFailed;
+    });
+  }
+
+  /** Registers the rendered element of a result cell (called by `CngxActionStatusCell`). */
+  registerCell(kind: 'success' | 'error', element: Element): void {
+    this.cells.register(kind, element);
+  }
+
+  /** Removes a result cell registration while `element` still holds it. */
+  unregisterCell(kind: 'success' | 'error', element: Element): void {
+    this.cells.unregister(kind, element);
+  }
+
+  /** The co-hosted run; throws `CNGX1082` when the host lists no runner. */
+  private runState(): CngxAsyncRunState {
+    const run = this.runStateLookup();
+    if (run) {
+      return run;
+    }
+    const tag = this.element.tagName.toLowerCase();
+    throw new CngxRuntimeError(
+      'CNGX1082',
+      typeof ngDevMode !== 'undefined' &&
+        ngDevMode &&
+        `[cngxActionStatusBrain] on <${tag}> has no co-hosted run. Add CngxAsyncClick to the hostDirectives of the component or directive that declares CngxActionStatusBrain.`,
+    );
+  }
+
+  private resolveAnnouncement(status: 'success' | 'error'): string {
+    const text = this.outcomeText(status);
+    if (text === '' || untracked(() => this.covers()?.some((c) => c.covers(status)))) {
+      return '';
+    }
+    return text;
+  }
+
+  private handleOwnSettle(settle: CngxAsyncSettle): void {
+    if (untracked(this.externalState)) {
+      return;
+    }
+    this.outcome.emit({ status: settle.status, error: settle.error });
+  }
+
+  private handleExternalEdge(status: AsyncStatus): void {
+    if (!this.externalState()) {
+      return;
+    }
+    // Back to idle closes the feedback window: empty the region so no stale
+    // outcome stays readable, as the runner does for its own runs.
+    if (status === 'idle') {
+      this.runState().announce('');
+      return;
+    }
+    if (status !== 'success' && status !== 'error') {
+      return;
+    }
+    this.outcome.emit({ status, error: this.error() });
+    // After render, so a projected failed template shows the new error
+    // before its text is read. The edge status, not the status at render.
+    afterNextRender(
+      { write: () => this.runState().announce(this.resolveAnnouncement(status)) },
+      { injector: this.injector },
+    );
+  }
+}

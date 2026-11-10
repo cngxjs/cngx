@@ -366,7 +366,7 @@ All three are implemented on top of `createTransitionTracker(() => effectiveStat
 
 CNGX ships three, all as **attribute directives** (live in `@cngx/ui/feedback`):
 
-- `[cngxToastOn]` - fires a `CngxToaster.show(...)` on transition to `success` or `error`. Inputs: `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration` (default `'persistent'`).
+- `[cngxToastOn]` - fires a `CngxToaster.show(...)` on transition to `success` or `error`. Inputs: `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration` (unbound, `CngxToaster` resolves both: `withToasts({ defaultDuration })` for success, `'persistent'` for errors).
 - `[cngxAlertOn]` - pushes an alert into the nearest `CngxAlertStack` (scoped via the `alertScope` input). Fires on `success` and/or `error` depending on which message inputs are set.
 - `[cngxBannerOn]` - calls `CngxBanner.show(...)` with a required `bannerId` dedup key on transition to `error`; dismisses the same `bannerId` on transition to `success` or `idle`.
 

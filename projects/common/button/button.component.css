@@ -37,6 +37,9 @@
  *   label instead of the spinner (`CngxActionButton`, `CngxPopoverAction`)
  *   sets `data-status-label`, and `.cngx-button__label` stays at
  *   `opacity: 1` while the other children keep the busy fade
+ * - `.cngx-button__label` with `[cngxActionStatusStack]` - the status cells
+ *   of an action host; the stack's own sheet puts them in one grid cell, so
+ *   the button is as wide as its widest label
  * - `[data-start]` / `[data-end]` - a filled slot trims the padding on its
  *   side
  *
@@ -457,14 +460,26 @@
        the strong rung, so its label clears 4.5:1 in both schemes. */
     :scope[data-tone='primary'] {
       --cngx-button-tone: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      --cngx-button-tone-text: var(--cngx-color-primary-text, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h));
-      --cngx-button-tone-fill: var(--cngx-color-primary-strong, oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h));
+      --cngx-button-tone-text: var(
+        --cngx-color-primary-text,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
+      );
+      --cngx-button-tone-fill: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
       --cngx-button-on-tone: var(--cngx-color-on-primary-strong, oklch(1 0 0));
     }
     :scope[data-tone='danger'] {
       --cngx-button-tone: var(--cngx-color-danger, oklch(0.6 0.18 25));
-      --cngx-button-tone-text: var(--cngx-color-danger-text, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h));
-      --cngx-button-tone-fill: var(--cngx-color-danger-strong, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h));
+      --cngx-button-tone-text: var(
+        --cngx-color-danger-text,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+      );
+      --cngx-button-tone-fill: var(
+        --cngx-color-danger-strong,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+      );
       --cngx-button-on-tone: var(--cngx-color-on-danger-strong, oklch(1 0 0));
     }
 
@@ -477,12 +492,14 @@
     :scope[data-variant='solid']:hover {
       background: color-mix(
         in oklch,
-        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor)) calc(100% - var(--cngx-button-hover-layer)),
+        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
+          calc(100% - var(--cngx-button-hover-layer)),
         var(--cngx-button-hover-shade, oklch(0 0 0))
       );
       border-color: color-mix(
         in oklch,
-        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor)) calc(100% - var(--cngx-button-hover-layer)),
+        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
+          calc(100% - var(--cngx-button-hover-layer)),
         var(--cngx-button-hover-shade, oklch(0 0 0))
       );
     }
@@ -490,12 +507,20 @@
        text colour, not a fill in the text colour. The loud action is
        tone="primary". */
     :scope[data-variant='solid'][data-tone='neutral'] {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 10%, var(--cngx-color-surface, Canvas));
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) 10%,
+        var(--cngx-color-surface, Canvas)
+      );
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
       color: var(--cngx-button-tone-text, currentColor);
     }
     :scope[data-variant='solid'][data-tone='neutral']:hover {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 15%, var(--cngx-color-surface, Canvas));
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) 15%,
+        var(--cngx-color-surface, Canvas)
+      );
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
     }
     /* The three --cngx-button-secondary-* hooks are unset by default; a theme
@@ -517,7 +542,11 @@
     :scope[data-variant='secondary'][data-tone='neutral'] {
       background: var(
         --cngx-button-secondary-bg,
-        color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 5%), transparent)
+        color-mix(
+          in oklch,
+          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 5%),
+          transparent
+        )
       );
     }
     :scope[data-variant='secondary'][data-tone='neutral']:hover {
@@ -560,16 +589,20 @@
     :scope[data-variant='solid']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
       background: color-mix(
         in oklch,
-        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor)) calc(100% - var(--cngx-button-pressed-layer)),
+        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
+          calc(100% - var(--cngx-button-pressed-layer)),
         var(--cngx-button-hover-shade)
       );
       border-color: color-mix(
         in oklch,
-        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor)) calc(100% - var(--cngx-button-pressed-layer)),
+        var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
+          calc(100% - var(--cngx-button-pressed-layer)),
         var(--cngx-button-hover-shade)
       );
     }
-    :scope[data-variant='solid'][data-tone='neutral']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+    :scope[data-variant='solid'][data-tone='neutral']:is(:active, .cngx-pressed):not(
+        [aria-disabled='true']
+      ) {
       background: color-mix(
         in oklch,
         var(--cngx-button-tone, currentColor) 20%,
@@ -583,7 +616,9 @@
         color-mix(in oklch, var(--cngx-button-tone, currentColor) 24%, transparent)
       );
     }
-    :scope[data-variant='secondary'][data-tone='neutral']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
+    :scope[data-variant='secondary'][data-tone='neutral']:is(:active, .cngx-pressed):not(
+        [aria-disabled='true']
+      ) {
       background: var(
         --cngx-button-secondary-bg-pressed,
         color-mix(
@@ -596,7 +631,11 @@
     :scope:is([data-variant='outline'], [data-variant='ghost']):is(:active, .cngx-pressed):not(
         [aria-disabled='true']
       ) {
-      background: color-mix(in oklch, var(--cngx-button-tone, currentColor) var(--cngx-button-pressed-wash), transparent);
+      background: color-mix(
+        in oklch,
+        var(--cngx-button-tone, currentColor) var(--cngx-button-pressed-wash),
+        transparent
+      );
     }
     :scope[data-variant='link']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
       text-decoration-thickness: var(--cngx-button-link-hover-thickness, 2px);
@@ -609,15 +648,25 @@
       color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 38%, transparent);
       cursor: not-allowed;
     }
-    :scope[aria-disabled='true']:not([data-busy], [data-pending]):is([data-variant='solid'], [data-variant='secondary']) {
+    :scope[aria-disabled='true']:not([data-busy], [data-pending]):is(
+        [data-variant='solid'],
+        [data-variant='secondary']
+      ) {
       background: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 8%, transparent);
       border-color: transparent;
     }
     :scope[aria-disabled='true']:not([data-busy], [data-pending])[data-variant='outline'] {
       background: transparent;
-      border-color: color-mix(in oklab, var(--cngx-color-text, oklch(0.2 0.01 250)) 20%, transparent);
+      border-color: color-mix(
+        in oklab,
+        var(--cngx-color-text, oklch(0.2 0.01 250)) 20%,
+        transparent
+      );
     }
-    :scope[aria-disabled='true']:not([data-busy], [data-pending]):is([data-variant='ghost'], [data-variant='link']) {
+    :scope[aria-disabled='true']:not([data-busy], [data-pending]):is(
+        [data-variant='ghost'],
+        [data-variant='link']
+      ) {
       background: transparent;
     }
 
@@ -675,7 +724,8 @@
 
     /* Stronger chrome on the more-contrast axis: outline borders take the
        tone text, ghost buttons gain a border. */
-    [data-contrast='more'] :scope:is([data-variant='outline'], [data-variant='solid'][data-tone='neutral']) {
+    [data-contrast='more']
+      :scope:is([data-variant='outline'], [data-variant='solid'][data-tone='neutral']) {
       border-color: var(--cngx-button-tone-text, currentColor);
     }
     [data-contrast='more'] :scope[data-variant='ghost'] {

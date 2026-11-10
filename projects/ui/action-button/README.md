@@ -28,14 +28,46 @@ export class ExampleComponent {
 }
 ```
 
+## Inputs
+
+Every input is forwarded to one of the four host directives; the button itself declares none.
+
+|Input|Forwarded to|Default|
+|-|-|-|
+|`cngxActionButton` (variant)|`CngxButtonBrain`|`solid`, then group / config|
+|`tone`|`CngxButtonBrain`|config, then `neutral`|
+|`size`|`CngxButtonBrain`|group / config, then `md`|
+|`disabled`|`CngxButtonBrain`|`false`|
+|`disabledReason`|`CngxButtonBrain`|`undefined`|
+|`cngxDescribedBy`|`CngxButtonBrain`|`null`|
+|`type`|`CngxButtonBrain`|`'button'`|
+|`action`|`CngxAsyncClick` (`cngxAsyncClick`)|required for own runs|
+|`feedbackDuration`|`CngxAsyncClick`|`2000` ms|
+|`showDelay`|`CngxAsyncClick`|`CNGX_LOADING_CONFIG.showDelay` (120 ms)|
+|`minDwell`|`CngxAsyncClick`|`CNGX_LOADING_CONFIG.minDwell` (400 ms)|
+|`pendingLabel`|`CngxActionStatusBrain`|`undefined` (config label, else the language pack; English: the idle label under the spinner)|
+|`succeededLabel`|`CngxActionStatusBrain`|`undefined` (config label, else the language pack)|
+|`failedLabel`|`CngxActionStatusBrain`|`undefined` (config label, else the language pack)|
+|`succeededAnnouncement`|`CngxActionStatusBrain`|rendered cell, label, then `asyncClickSucceeded`|
+|`failedAnnouncement`|`CngxActionStatusBrain`|rendered cell, label, then `asyncClickFailed`|
+|`autoAnnounce`|`CngxActionStatusBrain`|`undefined` (speaks unless a toast covers)|
+|`externalState`|`CngxActionStatusBrain`|`undefined` (own runs)|
+|`toastSuccess`|`CngxActionToast`|`undefined`|
+|`toastError`|`CngxActionToast`|`undefined`|
+|`toastErrorDetail`|`CngxActionToast`|`false`|
+|`toastSuccessDuration`|`CngxActionToast`|`withToasts({ defaultDuration })`, else `5000` ms|
+|`toastErrorDuration`|`CngxActionToast`|toaster default: `'persistent'`|
+
+`(settled)` is re-exported from `CngxAsyncClick` (own runs only); `(outcome)` from `CngxActionStatusBrain` emits once per own settle and once per `[externalState]` `success` / `error` edge. The class exposes `status()`, `busyVisible()` and `state` (same surface as `CngxPopoverAction`); the full status layer is `inject(CNGX_ACTION_STATUS)` on the button's injector.
+
 ## Overview
 
 `button[cngxActionButton]` is an attribute component on the native `<button>`. `CngxAsyncClick` runs as a host directive on the same element, so the button carries `aria-busy`, the async state classes and the click guard itself; every attribute you write lands on the real button. The visual axes are the `CngxButton` ones: `cngxActionButton="outline"` binds the variant, `tone` and `size` are inputs, and `provideButtonConfig` / a button group apply as for `cngxButton`.
 
 Three feedback pathways:
 
-1. **Labels** - `pendingLabel`, `succeededLabel`, `failedLabel` strings
-2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives
+1. **Labels** - `pendingLabel`, `succeededLabel`, `failedLabel` strings, or app-wide via `provideCngxButton(withActionStatusLabels({ ... }))` (`provideCngxButtonAt` in `viewProviders`); a bound label wins, a bound `''` switches the cell off
+2. **Template slots** - `cngxPending`, `cngxSucceeded`, `cngxFailed` directives, or app-wide via `withActionStatusTemplates({ ... })`; a projected template wins, a bound label beats the app-wide template
 3. **State** - bind `btn.state` to any state consumer
 
 The idle content and the status labels render stacked in one cell; only the active one is visible and part of the button name. The button is always as wide as its widest label, so it never jumps after a run. Without a pending label or template, the idle label stays in place under the busy spinner. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default) and stays for at least `minDwell` (400 ms); override per button with `[showDelay]` / `[minDwell]`. The pending label waits for the same gate, so a fast run goes from the idle label straight to the result without a pending flash in the label or the accessible name. The success and error labels, `aria-busy` and the announcement switch at once.
@@ -45,15 +77,22 @@ The idle content and the status labels render stacked in one cell; only the acti
 - **Name:** the visible label is the name; inactive labels are `aria-hidden`.
 - **Busy:** `aria-busy` while the action (or a bound `[externalState]`) is pending; the button is `aria-disabled` and swallows clicks until it settles.
 - **Disabled says why:** `[disabled]` renders `aria-disabled="true"` (the button stays focusable) and `disabledReason` is referenced through `aria-describedby` while disabled.
-- **Announcements:** the `cngxAsyncClick` live region next to the button gets one write per settle, also for two runs that settle before change detection (both writes land in the same render pass; whether a screen reader voices both depends on the assistive technology). An external `[externalState]` success or failure is spoken once per observed edge. The text matches what the button shows: success `succeededAnnouncement` -> `succeededLabel` -> the `CNGX_INTERACTIVE_I18N` default; failure `failedAnnouncement` -> the rendered `cngxFailed` text (`aria-hidden` parts skipped) -> `failedLabel` -> the default. The region is written after the render that follows the settle. A language switch never re-voices a shown announcement.
-- **Toast and region:** an outcome a shown toast already announces (`toastSuccess` / `toastError` set and a `CngxToaster` provided) is not spoken by the region too. With only `toastError`, a success is still spoken. `[autoAnnounce]="true"` speaks next to the toast. `[autoAnnounce]="false"` keeps the region silent: it stays next to the button but receives no text, so drive your own region from `(settled)`. The input takes `boolean | undefined`; it belongs to the button and is not forwarded to `cngxAsyncClick`.
+- **Announcements:** the `cngxAsyncClick` live region next to the button gets one write per settle, also for two runs that settle before change detection (both writes land in the same render pass; whether a screen reader voices both depends on the assistive technology). An external `[externalState]` success or failure is spoken once per observed edge. The text matches what the button shows, the same order for both outcomes: `succeededAnnouncement` / `failedAnnouncement` -> the rendered result cell (`cngxSucceeded` / `cngxFailed` text with `aria-hidden` parts skipped, else the label) -> `succeededLabel` / `failedLabel` -> the `CNGX_INTERACTIVE_I18N` default. The region is written after the render that follows the settle. A language switch never re-voices a shown announcement.
+- **Toast and region:** an outcome a shown toast already announces (`toastSuccess` / `toastError` set and a `CngxToaster` provided) is not spoken by the region too. With only `toastError`, a success is still spoken. `[autoAnnounce]="true"` speaks next to the toast. `[autoAnnounce]="false"` keeps the region silent: it stays next to the button but receives no text, so drive your own region from `(settled)`. The input takes `boolean | undefined`; it is forwarded to `CngxActionStatusBrain`, not to `cngxAsyncClick`.
 - **Keyboard:** native button; `Enter` / `Space` run the action, focus stays on the button.
 
 ## Composition
 
-- **Host directive:** `CngxAsyncClick` (`action`, `feedbackDuration`, `showDelay` and `minDwell` forwarded; `(settled)` re-exported, once per own run with a monotonic `generation`).
+The component is skin: template, CSS, `provideButtonHost()` and `provideActionStatusHost()`. Four host directives do the work:
+
+- **`CngxButtonBrain`** (`@cngx/common/button`): `variant`, `tone`, `size`, `disabled`, `disabledReason`, `cngxDescribedBy`, `type`. The same brain every cngx button renders on.
+- **`CngxAsyncClick`** (`@cngx/common/interactive`): `action`, `feedbackDuration`, `showDelay`, `minDwell`; `(settled)` re-exported, once per own run with a monotonic `generation`. Owns the live region next to the button.
+- **`CngxActionStatusBrain`** (`@cngx/common/interactive`): `pendingLabel`, `succeededLabel`, `failedLabel`, `succeededAnnouncement`, `failedAnnouncement`, `autoAnnounce`, `externalState`; `(outcome)` re-exported. Status, label cells and the announcement, read through `CNGX_ACTION_STATUS`. The template renders the cells with `CngxActionStatusStack` on the `.cngx-button__label` span (`cellClass="cngx-action-button__label"`), each cell a `[cngxActionStatusCell]`; an ejected host does the same.
+- **`CngxActionToast`** (`@cngx/ui/action-button`): `toastSuccess`, `toastError`, `toastErrorDetail`, `toastSuccessDuration`, `toastErrorDuration`. One toast per outcome; covers a toasted outcome through `CNGX_ANNOUNCEMENT_COVER`.
+
+`provideActionStatusHost()` (`@cngx/common/button`) returns two providers that read tokens, not the class: `CNGX_HOST_INTERACTION_STATE` spreads `CngxButtonBrain.interaction` and adds `CNGX_ACTION_STATUS.announcement`; `CNGX_BUTTON_HOST_STATE` refuses clicks while `CNGX_ACTION_STATUS.externalBusy`. An ejected template on the same four host directives and the two helpers renders every state the component does.
+
 - **Own run or external state:** bind `[action]` (the button runs it) or `[externalState]` (the button reflects a run it does not own). `state.lastUpdated` follows the bound source only, with no fall-through to the own runs.
-- **Core:** `CngxButtonBrain` from `@cngx/common/button`, the same host directive every cngx button renders on. The brain reads the co-hosted run through `CNGX_ASYNC_RUN_STATE`; `CNGX_HOST_INTERACTION_STATE` tells the directive about `[disabled]`, an external run and the announcement text.
 - **Combines with:** `CngxPending`, `CngxSucceeded`, `CngxFailed`; `CngxToaster` for toast integration; `[cngxToastOn]` on the same element as an alternative to the toast inputs (not both, `CNGX3008`).
 
 ```html

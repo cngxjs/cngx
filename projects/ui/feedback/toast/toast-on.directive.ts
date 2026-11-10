@@ -5,6 +5,7 @@ import { cngxDevError, CngxRuntimeError } from '@cngx/utils';
 import { injectErrorDetail } from '../config/feedback-config';
 import { injectFeedbackI18n } from '../config/feedback-i18n';
 import { createStateBridge } from '../internal/state-bridge';
+import { resolveOutcomeToast } from './outcome-toast';
 import { CngxToaster } from './toast.service';
 
 /**
@@ -92,11 +93,17 @@ export class CngxToastOn {
    */
   readonly toastErrorDetail = input<boolean>(false);
 
-  /** Duration for success toasts in ms. */
-  readonly toastSuccessDuration = input<number>(3000);
+  /**
+   * Duration for success toasts in ms. Unbound, `CngxToaster` resolves it:
+   * `withToasts({ defaultDuration })`, else 5000 ms.
+   */
+  readonly toastSuccessDuration = input<number | undefined>(undefined);
 
-  /** Duration for error toasts - `'persistent'` means manual dismiss only. */
-  readonly toastErrorDuration = input<number | 'persistent'>('persistent');
+  /**
+   * Duration for error toasts; `'persistent'` means manual dismiss only.
+   * Unbound, `CngxToaster` resolves it (an error toast stays until dismissed).
+   */
+  readonly toastErrorDuration = input<number | 'persistent' | undefined>(undefined);
 
   constructor() {
     if (!this.toast) {
@@ -132,29 +139,18 @@ export class CngxToastOn {
           return;
         }
 
-        if (status === 'success') {
-          const msg = this.toastSuccess();
-          if (msg) {
-            this.toastService.show({
-              message: msg,
-              severity: 'success',
-              duration: this.toastSuccessDuration(),
-            });
-          }
+        if (status !== 'success' && status !== 'error') {
+          return;
         }
-
-        if (status === 'error') {
-          const msg = this.toastError();
-          if (msg) {
-            const err = s.error();
-            const detail =
-              this.toastErrorDetail() && err != null ? this.errorDetail(err) : undefined;
-            this.toastService.show({
-              message: detail ? this.i18n().errorWithDetail(msg, detail) : msg,
-              severity: 'error',
-              duration: this.toastErrorDuration(),
-            });
-          }
+        const toast = resolveOutcomeToast(
+          this,
+          status,
+          status === 'error' ? s.error() : undefined,
+          this.errorDetail,
+          this.i18n(),
+        );
+        if (toast) {
+          this.toastService.show(toast);
         }
       },
     );

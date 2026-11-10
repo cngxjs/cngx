@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxToastOn: state bridge',
   subtitle: 'Bind a <code>CngxAsyncState</code> - fires toast automatically on <code>success</code> or <code>error</code> transitions.',
-  description: 'Zero-handler integration: a button driven by a <code>CngxAsyncState</code> shows a success or error toast on every terminal transition. No explicit <code>toaster.show()</code> call - the bridge directive reads <code>CNGX_STATEFUL</code> from the host.',
+  description: 'Zero-handler integration: one <code>[cngxToastOn]</code> on the wrapper watches the <code>CngxAsyncState</code> both buttons drive and shows a success or error toast on every terminal transition. No explicit <code>toaster.show()</code> call. One bridge per state: a second bridge on the same state shows each toast twice (the toaster merges them into one toast with a count).',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -26,15 +26,12 @@ export const STORY: DemoSpec = {
     this.saveState.set('pending');
     setTimeout(() => this.saveState.setError('Network timeout'), 1500);
   }`,
-  template: `  <div class="demo-inline-actions" style="margin-bottom:12px">
-    <button (click)="simulateSave()"
-      [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
-      class="chip" type="button">
+  template: `  <div class="demo-inline-actions" style="margin-bottom:12px"
+    [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true">
+    <button (click)="simulateSave()" class="chip" type="button">
       {{ saveState.isPending() ? 'Saving...' : 'Save (1.5s)' }}
     </button>
-    <button (click)="simulateError()"
-      [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
-      class="chip" type="button">
+    <button (click)="simulateError()" class="chip" type="button">
       Simulate Error (1.5s)
     </button>
   </div>`,

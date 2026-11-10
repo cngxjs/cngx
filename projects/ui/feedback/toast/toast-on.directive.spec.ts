@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CNGX_STATEFUL, type CngxStateful } from '@cngx/core/utils';
 import { stripBidiIsolates } from '@cngx/testing';
 
-import { provideFeedback, withErrorDetail } from '../config/feedback-config';
+import { provideFeedback, withErrorDetail, withToasts } from '../config/feedback-config';
 
 import { provideToasts, CngxToaster } from './toast.service';
 import { CngxToastOn } from './toast-on.directive';
@@ -69,6 +69,26 @@ describe('CngxToastOn', () => {
 
     expect(toaster.toasts().length).toBe(1);
     expect(toaster.toasts()[0].config.message).toBe('Saved');
+  });
+
+  it('leaves unbound durations to the toaster config', () => {
+    TestBed.configureTestingModule({
+      imports: [ExplicitHost],
+      providers: [provideFeedback(withToasts({ defaultDuration: 1234 }))],
+    });
+    const toaster = TestBed.inject(CngxToaster);
+    const fixture = TestBed.createComponent(ExplicitHost);
+    fixture.detectChanges();
+    TestBed.tick();
+
+    const state = fixture.componentInstance.state()!;
+    state.setSuccess('ok');
+    TestBed.tick();
+    expect(toaster.toasts()[0].config.duration).toBe(1234);
+
+    state.setError(new Error('x'));
+    TestBed.tick();
+    expect(toaster.toasts()[0].config.duration).toBe('persistent');
   });
 
   it('falls back to CNGX_STATEFUL when no state input is bound', () => {

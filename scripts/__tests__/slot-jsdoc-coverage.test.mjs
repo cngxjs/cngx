@@ -22,7 +22,10 @@ import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
  * Asserted, in both directions:
  *   - every queried slot attr has a `@slot <attr>` tag on the host, unless the
  *     host-attr pair is listed in {@link EXEMPT};
- *   - every `@slot <attr>` tag names an attr the host queries;
+ *   - every `@slot <attr>` tag names an attr the host queries, itself or
+ *     through a directive it lists in `hostDirectives` (bare identifier or
+ *     `{ directive: X }`, resolved transitively): the slot is projected into
+ *     the host, so its page documents it;
  *   - {@link EXEMPT} is empty: no host queries a slot it does not render. A
  *     future row must still be a real query without a `@slot` tag (rendering
  *     the slot means deleting its row);
@@ -80,6 +83,42 @@ function selectorOf(call) {
     }
   }
   return undefined;
+}
+
+/**
+ * Class names a decorator lists in `hostDirectives`: `X` or `{ directive: X }`.
+ *
+ * @param {ts.CallExpression} call
+ */
+function hostDirectivesOf(call) {
+  const meta = call.arguments[0];
+  if (!meta || !ts.isObjectLiteralExpression(meta)) {
+    return [];
+  }
+  const prop = meta.properties.find(
+    (p) =>
+      ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'hostDirectives',
+  );
+  if (!prop || !ts.isArrayLiteralExpression(prop.initializer)) {
+    return [];
+  }
+  const names = [];
+  for (const element of prop.initializer.elements) {
+    if (ts.isIdentifier(element)) {
+      names.push(element.text);
+      continue;
+    }
+    if (!ts.isObjectLiteralExpression(element)) {
+      continue;
+    }
+    const directive = element.properties.find(
+      (p) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === 'directive',
+    );
+    if (directive && ts.isIdentifier(directive.initializer)) {
+      names.push(directive.initializer.text);
+    }
+  }
+  return names;
 }
 
 /**
@@ -155,7 +194,7 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
 
   /** className -> attrs */
   const slotDirectives = new Map();
-  /** @type {{ path: string, node: ts.ClassDeclaration }[]} */
+  /** @type {{ path: string, node: ts.ClassDeclaration, hostDirectives: string[] }[]} */
   const hosts = [];
 
   for (const { path, sf } of parsed) {
@@ -163,7 +202,7 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
       if (ts.isClassDeclaration(node) && node.name) {
         const decorator = decoratorOf(node, new Set(['Component', 'Directive']));
         if (decorator) {
-          hosts.push({ path, node });
+          hosts.push({ path, node, hostDirectives: hostDirectivesOf(decorator.call) });
           const selector = decorator.name === 'Directive' ? selectorOf(decorator.call) : undefined;
           const attrs = selector ? [...selector.matchAll(SLOT_SELECTOR)].map((m) => m[1]) : [];
           if (attrs.length > 0) {
@@ -184,8 +223,9 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
   const exempted = [];
   const exemptWithSlot = [];
 
-  for (const { path, node } of hosts) {
-    const host = node.name.text;
+  /** className -> attrs the class queries itself */
+  const ownQueries = new Map();
+  for (const { node } of hosts) {
     const queried = new Set();
     const visit = (child) => {
       if (ts.isCallExpression(child) && isSlotQueryCall(child)) {
@@ -197,6 +237,27 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
       ts.forEachChild(child, visit);
     };
     node.members.forEach(visit);
+    ownQueries.set(node.name.text, queried);
+  }
+  const hostDirectivesByClass = new Map(hosts.map((h) => [h.node.name.text, h.hostDirectives]));
+  /** Attrs the listed host directives query, transitively. */
+  const viaHostDirectives = (name, seen = new Set()) => {
+    const attrs = new Set();
+    for (const directive of hostDirectivesByClass.get(name) ?? []) {
+      if (seen.has(directive)) {
+        continue;
+      }
+      seen.add(directive);
+      (ownQueries.get(directive) ?? new Set()).forEach((attr) => attrs.add(attr));
+      viaHostDirectives(directive, seen).forEach((attr) => attrs.add(attr));
+    }
+    return attrs;
+  };
+
+  for (const { path, node } of hosts) {
+    const host = node.name.text;
+    const queried = ownQueries.get(host);
+    const inherited = viaHostDirectives(host);
 
     const tags = new Set(slotTagsOf(node));
     for (const attr of queried) {
@@ -214,7 +275,7 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
       }
     }
     for (const attr of tags) {
-      if (!queried.has(attr)) {
+      if (!queried.has(attr) && !inherited.has(attr)) {
         stale.push({ path, host, attr });
       }
     }
@@ -328,6 +389,47 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
   it('reports a stale @slot line', () => {
     const result = scan(host('', '* @slot cngxFoo Replaces foo.'));
     expect(attrs(result.stale)).toEqual(['CngxHost:cngxFoo']);
+  });
+
+  const brainFile = {
+    path: 'projects/x/brain.ts',
+    text: `
+      @Directive({ standalone: true })
+      export class CngxInner { readonly foo = contentChild(CngxFoo); }
+      @Directive({ standalone: true, hostDirectives: [CngxInner] })
+      export class CngxBrain {}
+    `,
+  };
+  const hostWith = (hostDirectives, jsdoc) => ({
+    path: 'projects/x/host.component.ts',
+    text: `
+      /**
+       * Host.
+       ${jsdoc}
+       */
+      @Component({ selector: 'cngx-host', template: '', hostDirectives: ${hostDirectives} })
+      export class CngxHost {}
+    `,
+  });
+
+  it('accepts a @slot line for a slot a listed host directive queries, transitively', () => {
+    for (const listed of ['[CngxBrain]', "[{ directive: CngxBrain, inputs: ['x'] }]"]) {
+      const result = scanSlotCoverage(
+        [slotFile, brainFile, hostWith(listed, '* @slot cngxFoo Foo.')],
+        {
+          exempt: [],
+        },
+      );
+      expect(result.stale).toEqual([]);
+    }
+  });
+
+  it('still reports a @slot line no listed host directive queries', () => {
+    const result = scanSlotCoverage(
+      [slotFile, brainFile, hostWith('[CngxBrain]', '* @slot cngxBar Bar.')],
+      { exempt: [] },
+    );
+    expect(attrs(result.stale)).toEqual(['CngxHost:cngxBar']);
   });
 
   it('accepts an exempted pair without a @slot line', () => {

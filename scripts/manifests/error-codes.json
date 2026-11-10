@@ -871,11 +871,11 @@
       "messages": [
         {
           "file": "projects/common/button/provide-cngx-button.ts",
-          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
+          "text": "provideCngxButton(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize`, the glyphs through `withButtonCloseIcon` / `withButtonSpinner` and the status defaults through `withActionStatusLabels` / `withActionStatusTemplates`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
         },
         {
           "file": "projects/common/button/provide-cngx-button.ts",
-          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize` and the glyphs through `withButtonCloseIcon` / `withButtonSpinner`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
+          "text": "provideCngxButtonAt(): dropped feature without a `_target` discriminator. Pass config through `withButtonVariant` / `withButtonTone` / `withButtonSize`, the glyphs through `withButtonCloseIcon` / `withButtonSpinner` and the status defaults through `withActionStatusLabels` / `withActionStatusTemplates`; the caret goes through `withButtonCaretIcon` in `provideCngxMenuButton` (@cngx/common/menu-button)."
         },
         {
           "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
@@ -1605,6 +1605,23 @@
       ]
     },
     {
+      "code": "CNGX1082",
+      "lib": "common",
+      "severity": "throw",
+      "production": "code-only",
+      "title": "Action status brain without an async run",
+      "page": "core-concepts/error-codes/cngx1082.md",
+      "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1082.html",
+      "status": "active",
+      "files": ["projects/common/interactive/action-status/action-status-brain.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
+          "text": "[cngxActionStatusBrain] on <${...}> has no co-hosted run. Add CngxAsyncClick to the hostDirectives of the component or directive that declares CngxActionStatusBrain."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
@@ -2283,11 +2300,11 @@
       "page": "core-concepts/error-codes/cngx3008.md",
       "url": "https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx3008.html",
       "status": "active",
-      "files": ["projects/ui/action-button/action-button.ts"],
+      "files": ["projects/ui/action-button/action-toast.directive.ts"],
       "messages": [
         {
-          "file": "projects/ui/action-button/action-button.ts",
-          "text": "[cngxActionButton] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
+          "file": "projects/ui/action-button/action-toast.directive.ts",
+          "text": "[cngxActionToast] [toastSuccess]/[toastError] inputs and [cngxToastOn] on the same element will fire duplicate toasts. Use one or the other."
         }
       ]
     },
