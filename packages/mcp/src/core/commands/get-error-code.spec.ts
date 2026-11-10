@@ -11,7 +11,7 @@ import {
   type ExplainErrorPayload,
 } from './get-error-code.js';
 
-const DOCS_BASE = 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/';
+const DOCS_BASE = 'https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/';
 
 function entry(overrides: Partial<ErrorCodeEntry> & Pick<ErrorCodeEntry, 'code'>): ErrorCodeEntry {
   return {

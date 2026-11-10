@@ -51,6 +51,10 @@ release (`cngx://provenance` and `groundedVersion` name the one that answered).
 
 ### Changed
 
+- The bundled snapshot and the `error-codes.json` release asset link error
+  codes to the docs of that release (`/cngx/v<version>/`), and the snapshot
+  links examples to its examples build (`/cngx/examples/v<version>`). A
+  prerelease keeps the links to `main`.
 - The tarball ships the MIT license text (`LICENSE`).
 - Released in lockstep with the cngx libraries through `publish:*`: one
   version for the libs, `@cngx/mcp` and `@cngx/cli`, published in the same run.
