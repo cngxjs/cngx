@@ -2713,6 +2713,13 @@ button.chip.demo-chip--copied {
 .demo-app-sidebar .demo-nav__trigger {
   border-inline-start: 3px solid transparent;
 }
+// Forced colors would turn the transparent spacer bar into a CanvasText bar
+// on every group trigger; pin it to Canvas like the demo-nav links.
+@media (forced-colors: active) {
+  .demo-app-sidebar .demo-nav__trigger {
+    border-inline-start-color: Canvas;
+  }
+}
 // The nav scroller clips overflow-x, which cuts the inline sides of the
 // reset's outset ring (outline-offset: 3px); draw it inside the row instead.
 .demo-app-sidebar :is(.demo-nav__link, .demo-nav__trigger):focus-visible {
