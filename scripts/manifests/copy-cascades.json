@@ -81,7 +81,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 178,
+      "line": 189,
       "member": "pendingText",
       "enclosing": "computed",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 182,
+      "line": 193,
       "member": "succeededText",
       "enclosing": "computed",
       "tiers": [
@@ -113,7 +113,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 185,
+      "line": 196,
       "member": "failedText",
       "enclosing": "computed",
       "tiers": [
