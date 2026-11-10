@@ -14,9 +14,8 @@ import {
  * owns the live region; `CngxActionStatusBrain` picks the visible label
  * cell and the settle announcement. `provideActionStatusHost()` wires the
  * announcement into the region. `CngxActionStatusStack` renders the label
- * cells on the host's own label span. The host keeps its template and its
- * own CSS, including the stack rule the cells need outside the cngx button
- * sheet.
+ * cells on the host's own label span and ships the one-grid-cell stack
+ * rule. The host keeps its template and its own look.
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
@@ -43,7 +42,7 @@ import {
   ],
   host: { class: 'demo-ejected-action' },
   template: `
-    <span class="demo-ejected-action__cells" cngxActionStatusStack>
+    <span cngxActionStatusStack>
       <ng-content />
     </span>
     @if (brain.disabledReason(); as reason) {
@@ -69,18 +68,6 @@ import {
     .demo-ejected-action[aria-disabled='true']:not([data-busy], [data-pending]) {
       color: var(--cngx-color-text-muted, #6b7280);
       cursor: not-allowed;
-    }
-    /* The stack the cngx button sheet ships: one grid cell, widest label wins. */
-    .demo-ejected-action__cells {
-      display: inline-grid;
-      align-items: center;
-      justify-items: center;
-    }
-    .demo-ejected-action .cngx-action-status-cell {
-      grid-area: 1 / 1;
-    }
-    .demo-ejected-action .cngx-action-status-cell:not([data-active]) {
-      visibility: hidden;
     }
     @media (forced-colors: active) {
       .demo-ejected-action {
