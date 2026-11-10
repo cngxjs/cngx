@@ -5,7 +5,13 @@ import {
   type CngxActionOutcome,
   type CngxAnnouncementCover,
 } from '@cngx/common/interactive';
-import { CngxToastOn, CngxToaster, injectErrorDetail, injectFeedbackI18n } from '@cngx/ui/feedback';
+import {
+  CngxToastOn,
+  CngxToaster,
+  injectErrorDetail,
+  injectFeedbackI18n,
+  resolveOutcomeToast,
+} from '@cngx/ui/feedback';
 import { cngxDevWarn } from '@cngx/utils';
 
 /**
@@ -110,26 +116,9 @@ export class CngxActionToast implements CngxAnnouncementCover {
     if (!this.toaster) {
       return;
     }
-    if (status === 'success') {
-      const msg = this.toastSuccess();
-      if (msg) {
-        this.toaster.show({
-          message: msg,
-          severity: 'success',
-          duration: this.toastSuccessDuration(),
-        });
-      }
-      return;
+    const toast = resolveOutcomeToast(this, status, error, this.errorDetail, this.feedbackI18n());
+    if (toast) {
+      this.toaster.show(toast);
     }
-    const msg = this.toastError();
-    if (!msg) {
-      return;
-    }
-    const detail = this.toastErrorDetail() && error != null ? this.errorDetail(error) : undefined;
-    this.toaster.show({
-      message: detail ? this.feedbackI18n().errorWithDetail(msg, detail) : msg,
-      severity: 'error',
-      duration: this.toastErrorDuration(),
-    });
   }
 }
