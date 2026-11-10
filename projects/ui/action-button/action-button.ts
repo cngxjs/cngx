@@ -1,4 +1,4 @@
-import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,7 +17,7 @@ import {
 import {
   CNGX_ACTION_STATUS,
   CngxActionStatusBrain,
-  CngxActionStatusCell,
+  CngxActionStatusStack,
   CngxAsyncClick,
 } from '@cngx/common/interactive';
 import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
@@ -83,7 +83,7 @@ import { CngxActionToast } from './action-toast.directive';
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[cngxActionButton]',
   standalone: true,
-  imports: [NgComponentOutlet, NgTemplateOutlet, CngxActionStatusCell],
+  imports: [NgComponentOutlet, CngxActionStatusStack],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxActionButton',
@@ -140,37 +140,12 @@ import { CngxActionToast } from './action-toast.directive';
   },
   template: `
     <ng-content select="[cngxButtonStart]" />
-    <span class="cngx-button__label cngx-action-button__labels">
-      <span class="cngx-action-button__label" cngxActionStatusCell="idle"><ng-content /></span>
-      @if (actionStatus.hasCell().pending) {
-        <span class="cngx-action-button__label" cngxActionStatusCell="pending">
-          @if (actionStatus.pendingTemplate(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else {
-            {{ actionStatus.pendingLabel() }}
-          }
-        </span>
-      }
-      @if (actionStatus.hasCell().success) {
-        <span class="cngx-action-button__label" cngxActionStatusCell="success">
-          @if (actionStatus.succeededTemplate(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else {
-            {{ actionStatus.succeededLabel() }}
-          }
-        </span>
-      }
-      @if (actionStatus.hasCell().error) {
-        <span class="cngx-action-button__label" cngxActionStatusCell="error">
-          @if (actionStatus.failedTemplate(); as tpl) {
-            <ng-container
-              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: actionStatus.error() }"
-            />
-          } @else {
-            {{ actionStatus.failedLabel() }}
-          }
-        </span>
-      }
+    <span
+      class="cngx-button__label cngx-action-button__labels"
+      cngxActionStatusStack
+      cellClass="cngx-action-button__label"
+    >
+      <ng-content />
     </span>
     <ng-content select="[cngxButtonEnd]" />
     @if (brain.busyVisible() && actionStatus.activeCell() === 'idle') {
