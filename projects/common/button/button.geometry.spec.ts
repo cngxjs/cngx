@@ -80,6 +80,14 @@ type Density = 'comfortable' | 'compact' | 'spacious';
           >docs</a
         >
       </p>
+      <p style="--cngx-button-transition: 0s">
+        <button cngxButton tone="primary" class="d-solid" [disabled]="true">Save</button>
+        <button cngxButton="outline" class="d-outline" [disabled]="true">Save</button>
+        <a cngxButton="link" class="d-link" href="#docs" [disabled]="true">docs</a>
+        <button cngxButton tone="primary" class="d-pending" [cngxAsyncClick]="action" [showDelay]="600000">
+          Save
+        </button>
+      </p>
     </div>
   `,
 })
@@ -391,6 +399,48 @@ describe('CngxButton geometry: busy under forced colors', () => {
     const btn = query(root, '.b-busy');
     await startRun(fixture, btn);
     expect(await accessibleName('.b-busy')).toBe('Save changes');
+  });
+});
+
+describe('CngxButton paint: no hover on aria-disabled', () => {
+  const PAINT = ['background-color', 'border-top-color', 'text-decoration-thickness'] as const;
+  const paintOf = (el: HTMLElement): Record<string, string> =>
+    Object.fromEntries(PAINT.map((p) => [p, computedValue(el, p)]));
+
+  afterEach(async () => {
+    await cdp().send('Emulation.setEmulatedMedia', { features: [] });
+  });
+
+  async function hoverAll(forced: boolean): Promise<void> {
+    if (forced) {
+      await cdp().send('Emulation.setEmulatedMedia', {
+        features: [{ name: 'forced-colors', value: 'active' }],
+      });
+    }
+    const { fixture, root } = mount();
+    const pending = query(root, '.d-pending');
+    pending.click();
+    fixture.detectChanges();
+    expect(pending.getAttribute('aria-disabled')).toBe('true');
+
+    for (const selector of ['.d-solid', '.d-outline', '.d-link', '.d-pending']) {
+      const btn = query(root, selector);
+      const rest = paintOf(btn);
+      await userEvent.hover(btn);
+      expect(paintOf(btn), selector).toEqual(rest);
+      await userEvent.unhover(btn);
+    }
+  }
+
+  it('keeps the rest paint of a disabled solid, outline and link and a pending run on hover', async () => {
+    await hoverAll(false);
+  });
+
+  it('keeps the rest edge under forced colors on hover', async () => {
+    await hoverAll(true);
+    expect(computedValue(query(mountedRoot!, '.d-solid'), 'border-top-color')).toBe(
+      computedValue(query(mountedRoot!, '.d-outline'), 'border-top-color'),
+    );
   });
 });
 

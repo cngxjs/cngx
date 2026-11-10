@@ -18,7 +18,8 @@
  * **State modifiers**
  *
  * - `:hover` - the variant's surface mixed towards the tone (solid primary
- *   and danger: `--cngx-button-hover-layer` of `--cngx-button-hover-shade`)
+ *   and danger: `--cngx-button-hover-layer` of `--cngx-button-hover-shade`);
+ *   never on an `aria-disabled` (or busy) button
  * - `:active` / `.cngx-pressed` - pressed: the same mix one step stronger
  *   (`--cngx-button-pressed-layer`, `--cngx-button-pressed-wash`,
  *   `--cngx-button-neutral-tint-pressed`); `.cngx-pressed` is the class `cngxPressable`
@@ -489,7 +490,7 @@
       border-color: var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor));
       color: var(--cngx-button-on-tone, Canvas);
     }
-    :scope[data-variant='solid']:hover {
+    :scope[data-variant='solid']:hover:not([aria-disabled='true']) {
       background: color-mix(
         in oklch,
         var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))
@@ -515,7 +516,7 @@
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
       color: var(--cngx-button-tone-text, currentColor);
     }
-    :scope[data-variant='solid'][data-tone='neutral']:hover {
+    :scope[data-variant='solid'][data-tone='neutral']:hover:not([aria-disabled='true']) {
       background: color-mix(
         in oklch,
         var(--cngx-button-tone, currentColor) 15%,
@@ -532,7 +533,7 @@
       );
       color: var(--cngx-button-secondary-color, var(--cngx-button-tone-text, currentColor));
     }
-    :scope[data-variant='secondary']:hover {
+    :scope[data-variant='secondary']:hover:not([aria-disabled='true']) {
       background: var(
         --cngx-button-secondary-bg-hover,
         color-mix(in oklch, var(--cngx-button-tone, currentColor) 18%, transparent)
@@ -549,7 +550,7 @@
         )
       );
     }
-    :scope[data-variant='secondary'][data-tone='neutral']:hover {
+    :scope[data-variant='secondary'][data-tone='neutral']:hover:not([aria-disabled='true']) {
       background: var(
         --cngx-button-secondary-bg-hover,
         color-mix(
@@ -567,7 +568,7 @@
     :scope[data-variant='outline']:not([data-tone='neutral']) {
       border-color: color-mix(in oklch, var(--cngx-button-tone, currentColor) 60%, transparent);
     }
-    :scope:is([data-variant='outline'], [data-variant='ghost']):hover {
+    :scope:is([data-variant='outline'], [data-variant='ghost']):hover:not([aria-disabled='true']) {
       background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 8%, transparent);
     }
     :scope[data-variant='link'] {
@@ -580,14 +581,14 @@
       text-underline-offset: 0.15em;
       vertical-align: baseline;
     }
-    :scope[data-variant='link']:hover {
+    :scope[data-variant='link']:hover:not([aria-disabled='true']) {
       text-decoration-thickness: var(--cngx-button-link-hover-thickness, 2px);
     }
 
     /* Pressed: the hover mix one step stronger, on `:active` and on the
        `.cngx-pressed` class cngxPressable sets on pointerdown (a touch press
        paints without the :active lag). An aria-disabled (or busy) button
-       never shows it. A link keeps the hover underline while pressed. */
+       never shows it, nor the hover. A link keeps the hover underline while pressed. */
     :scope[data-variant='solid']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
       background: color-mix(
         in oklch,
@@ -774,7 +775,7 @@
     background: transparent !important;
     color: LinkText !important;
   }
-  .cngx-button:hover {
+  .cngx-button:hover:not([aria-disabled='true']) {
     border-color: Highlight !important;
   }
   .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']) {
@@ -782,7 +783,9 @@
     color: HighlightText !important;
     border-color: Highlight !important;
   }
-  .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']):hover {
+  .cngx-button[data-variant='solid']:is([data-tone='primary'], [data-tone='danger']):hover:not(
+      [aria-disabled='true']
+    ) {
     border-color: ButtonText !important;
   }
   /* Pressed, so a press still reads once the tone mix is gone: ButtonFace
