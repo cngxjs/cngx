@@ -124,3 +124,92 @@ describe('select auto virtualization, default config', () => {
     expect(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop).toBeLessThanOrEqual(1);
   });
 });
+
+// Coarse-pointer rows: the touch-target floor makes every option 44px while
+// the old fixed estimate assumed 32px, so the unrendered rest under-counted.
+describe('select auto virtualization at 44px rows', () => {
+  async function mountTall(value?: string) {
+    const fixture = TestBed.createComponent(Host);
+    root = fixture.nativeElement as HTMLElement;
+    root.style.setProperty('--cngx-target-min', '44px');
+    document.body.appendChild(root);
+    fixture.componentInstance.options.set(optionsOf(1000));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    if (value !== undefined) {
+      fixture.componentInstance.select().value.set(value);
+    }
+    fixture.componentInstance.select().open();
+    const settle = async (): Promise<void> => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      await frames(4);
+      fixture.detectChanges();
+    };
+    await settle();
+    const scroller = root.querySelector<HTMLElement>('.cngx-select__panel')!;
+    const rendered = () => Array.from(root!.querySelectorAll<HTMLElement>('.cngx-select__option'));
+    return { fixture, settle, scroller, rendered };
+  }
+
+  /** Whether a row sits at least partly inside the scroller's visible box. */
+  const inView = (scroller: HTMLElement, row: HTMLElement): boolean => {
+    const s = scroller.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    return r.bottom > s.top && r.top < s.bottom;
+  };
+
+  /** Label of the row under the scroller's top edge. */
+  const topRow = (scroller: HTMLElement): string | undefined => {
+    const edge = scroller.getBoundingClientRect().top + 1;
+    const rows = Array.from(root!.querySelectorAll<HTMLElement>('.cngx-select__option'));
+    const row = rows.find((r) => {
+      const box = r.getBoundingClientRect();
+      return box.top <= edge && box.bottom > edge;
+    });
+    return row?.textContent?.trim();
+  };
+
+  it('lands on the last option in one jump and keeps the scroll height', async () => {
+    const { settle, scroller, rendered } = await mountTall();
+    expect(rendered()[0].getBoundingClientRect().height).toBe(44);
+    const before = scroller.scrollHeight;
+
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+
+    expect(scroller.scrollHeight).toBe(before);
+    const last = rendered().at(-1)!;
+    expect(last.textContent).toContain('Option 999');
+    expect(inView(scroller, last)).toBe(true);
+  });
+
+  it('opens on option 800 with option 800 in view', async () => {
+    const { settle, scroller, rendered } = await mountTall('o800');
+    await settle();
+    const row = rendered().find((r) => /Option 800$/.test(r.textContent?.trim() ?? ''));
+    expect(row).toBeDefined();
+    expect(inView(scroller, row!)).toBe(true);
+  });
+
+  it('re-measures a row height change after the window has moved', async () => {
+    const { settle, scroller } = await mountTall();
+    scroller.scrollTop = 500 * 44;
+    await settle();
+    expect(scroller.scrollHeight).toBeGreaterThan(1000 * 44 - 44);
+    const before = topRow(scroller);
+    expect(before).toMatch(/^Option (499|500)$/);
+
+    root!.style.setProperty('--cngx-target-min', '0px');
+    await settle();
+    await settle();
+
+    const row = root!.querySelector<HTMLElement>('.cngx-select__option')!;
+    const height = row.getBoundingClientRect().height;
+    expect(height).toBeLessThan(44);
+    // Panel padding and border sit on top of the rows: allow two rows of slack.
+    expect(Math.abs(scroller.scrollHeight - 1000 * height)).toBeLessThanOrEqual(2 * height);
+    expect(topRow(scroller)).toBe(before);
+  });
+});
