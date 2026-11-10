@@ -40,7 +40,7 @@ import {
 } from '@cngx/common/popover';
 
 import { injectSelectCopy } from '../i18n/select-i18n';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
@@ -1002,29 +1002,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
-  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
-    openOn: () => this.config.openOn,
-    open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
-  });
-
-  /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
 
@@ -1082,15 +1059,27 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
 
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
+    openOn: () => this.config.openOn,
+    open: () => this.open(),
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
+  });
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
+
+  /** @internal */
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 
   // A closed-trigger pick is a pick: with a bound action it must reach the
   // server like a panel pick, or the trigger diverges from the backend.

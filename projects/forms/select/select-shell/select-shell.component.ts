@@ -104,7 +104,7 @@ import {
 import { CngxSelectSearch } from '../declarative/select-search.component';
 import { resolveSearchMatch, resolveSelectConfig } from '../shared/internal/resolve-config';
 import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -1233,17 +1233,6 @@ export class CngxSelectShell<T = unknown>
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   // A closed-trigger pick is a pick: with a bound action it must reach the
   // server like a panel pick, or the trigger diverges from the backend.
   private commitClosedPick(option: CngxSelectOptionDef<T>, previous: T | undefined): void {
@@ -1411,24 +1400,24 @@ export class CngxSelectShell<T = unknown>
   private suppressOpenOnFocus = false;
 
   /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
     openOn: () => this.config.openOn,
     open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
   });
 
   /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 }

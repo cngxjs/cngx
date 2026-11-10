@@ -52,7 +52,7 @@ import {
   unresolvedOptionLabel,
   type CngxSelectCore,
 } from '../shared/internal/select-core';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { createOptionsStateView } from '../shared/internal/options-state-view';
 import {
   createSelectSheetWiring,
@@ -1202,17 +1202,6 @@ export class CngxTreeSelect<T = unknown>
     this.dispatch.singleToggle(node);
   }
 
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
 
@@ -1344,26 +1333,26 @@ export class CngxTreeSelect<T = unknown>
   private suppressOpenOnFocus = false;
 
   /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
     openOn: () => this.config.openOn,
     open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
   });
 
   /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;

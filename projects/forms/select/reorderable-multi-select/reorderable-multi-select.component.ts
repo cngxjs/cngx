@@ -81,7 +81,7 @@ import {
   type CngxChipRemovalHandler,
 } from '../shared/chip-removal-handler';
 import { createArrayToggleDispatch } from '../shared/internal/array-toggle';
-import { createOpenOnFocusGesture } from '../shared/internal/open-on-focus-gesture';
+import { createButtonTriggerHandlers } from '../shared/internal/button-trigger-handlers';
 import { handleFlatNavPageJumpKey } from '../shared/internal/page-jump-handler';
 import { sameArrayContents } from '../shared/internal/compare';
 import { CngxSelectReorderList } from '../shared/internal/reorder-list/reorder-list.component';
@@ -1154,17 +1154,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.triggerBtn()?.nativeElement.focus(options);
   }
 
-  /** @internal */
-  protected handleTriggerClick(event: MouseEvent): void {
-    if (this.disabled()) {
-      return;
-    }
-    if (this.openOnGesture.consumeClick(event)) {
-      return;
-    }
-    this.toggle();
-  }
-
   /** @internal - click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = this.sheetWiring.handleClickOutside;
 
@@ -1210,26 +1199,26 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   private suppressOpenOnFocus = false;
 
   /** @internal openOn-focus gesture guard (`project-openon-focus-click-toggle`). */
-  private readonly openOnGesture = createOpenOnFocusGesture({
+  private readonly buttonTrigger = createButtonTriggerHandlers({
+    focusState: this.focusState,
     openOn: () => this.config.openOn,
     open: () => this.open(),
-    suppress: () => this.suppressOpenOnFocus,
+    toggle: () => this.toggle(),
+    suppressOpenOnFocus: () => this.suppressOpenOnFocus,
+    disabled: () => this.disabled(),
   });
 
   /** @internal */
-  protected handlePointerDown(event: Event): void {
-    this.openOnGesture.handlePointerDown(event);
-  }
-
-  protected handleFocus(): void {
-    this.focusState.markFocused();
-    this.openOnGesture.handleFocus();
-  }
+  protected readonly handlePointerDown = this.buttonTrigger.handlePointerDown;
 
   /** @internal */
-  protected handleBlur(): void {
-    this.focusState.markBlurred();
-  }
+  protected readonly handleTriggerClick = this.buttonTrigger.handleTriggerClick;
+
+  /** @internal */
+  protected readonly handleFocus = this.buttonTrigger.handleFocus;
+
+  /** @internal */
+  protected readonly handleBlur = this.buttonTrigger.handleBlur;
 
   /** Descendants that own Enter / Space; `CNGX_NESTED_INTERACTIVE_SELECTOR`. */
   private readonly nestedInteractive = inject(CNGX_NESTED_INTERACTIVE_SELECTOR);
