@@ -41,7 +41,17 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
   releaseControls(owner: object): void;
   claimRestoreFocus(owner: object, value: boolean): void;
   releaseRestoreFocus(owner: object): void;
+  claimPositionTryFallbacks(owner: object, value: typeof MENU_TRY_FALLBACKS): void;
+  releasePositionTryFallbacks(owner: object): void;
 }
+
+// Block flip first: a menu hangs below its trigger and clips at the viewport
+// bottom far more often than at an inline edge.
+const MENU_TRY_FALLBACKS = Object.freeze([
+  'flip-block',
+  'flip-inline',
+  'flip-block flip-inline',
+] as const);
 
 /**
  * Trigger atom for dropdown menus.
@@ -98,6 +108,11 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * controls hint, so `aria-controls` names the `role="menu"` element. A
  * trigger without a co-hosted `[cngxPopoverTrigger]` emits none of the
  * three (dev builds warn [`CNGX1074`](/error-codes/cngx1074.md)).
+ *
+ * The trigger also claims a `position-try-fallbacks` chain on the popover
+ * (`flip-block, flip-inline, flip-block flip-inline`), so a menu without
+ * room below opens above its trigger. A `[positionTryFallbacks]` bound on
+ * the popover wins; bind `[]` to keep the menu on its placement.
  *
  * ### Dismissal
  *
@@ -203,11 +218,13 @@ export class CngxMenuTrigger {
         pop.claimHaspopup(this, 'menu');
         pop.claimControls(this, menu.id);
         pop.claimRestoreFocus(this, false);
+        pop.claimPositionTryFallbacks(this, MENU_TRY_FALLBACKS);
       });
       onCleanup(() => {
         pop.releaseHaspopup(this);
         pop.releaseControls(this);
         pop.releaseRestoreFocus(this);
+        pop.releasePositionTryFallbacks(this);
       });
     });
     effect(() => {

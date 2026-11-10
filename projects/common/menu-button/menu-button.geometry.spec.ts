@@ -162,6 +162,40 @@ class SplitAnchorHost {
   readonly popover = viewChild.required(CngxPopover);
 }
 
+@Component({
+  selector: 'cngx-split-button-flip-host',
+  standalone: true,
+  imports: [CngxButton, CngxIconMenuButton, CngxSplitButton, CngxMenu, CngxMenuItem, CngxPopover],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-popover.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div
+      cngxSplitButton
+      class="split"
+      aria-label="Publish"
+      style="position: fixed; inset-block-end: 8px; inset-inline-start: 40px"
+    >
+      <button cngxButton>Publish</button>
+      <button cngxIconMenuButton class="caret" [menu]="menu" [popover]="pop"></button>
+    </div>
+    <div cngxPopover #pop="cngxPopover" class="panel" placement="bottom-end" style="height: 160px">
+      <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="schedule">Schedule</li>
+      </ul>
+    </div>
+  `,
+})
+class SplitFlipHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
 let mountedRoot: HTMLElement | null = null;
 
 function mount(density: Density = 'comfortable', motion: 'reduced' | null = null) {
@@ -348,4 +382,30 @@ describe('CngxSplitButton geometry: menu anchor', () => {
       popover.hide();
     });
   }
+});
+
+describe('CngxSplitButton geometry: menu flip', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  it('opens the menu above the group when the viewport has no room below', async () => {
+    const fixture = TestBed.createComponent(SplitFlipHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const popover = fixture.componentInstance.popover();
+    popover.show();
+    fixture.detectChanges();
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+    const group = query(mountedRoot, '.split').getBoundingClientRect();
+    const panel = query(mountedRoot, '.panel').getBoundingClientRect();
+    expect(panel.bottom).toBeLessThanOrEqual(group.top + 1);
+    expect(panel.top).toBeGreaterThanOrEqual(0);
+    popover.hide();
+  });
 });
