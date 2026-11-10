@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -11,6 +11,22 @@ import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
 import { CngxCheckboxGroup } from './checkbox-group.component';
 
 const POOL: readonly string[] = ['a', 'b', 'c'];
+
+function navSetup<H>(hostType: Type<H>) {
+  const fixture = TestBed.createComponent(hostType);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+    .nativeElement as HTMLElement;
+  const checkboxes = fixture.debugElement
+    .queryAll(By.directive(CngxCheckbox))
+    .map((de) => de.nativeElement as HTMLElement);
+  return { fixture, host: fixture.componentInstance, groupEl, checkboxes };
+}
+
+function keydown(el: HTMLElement, key: string): void {
+  el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+}
 
 @Component({
   template: `
@@ -37,7 +53,8 @@ class Host {
       [value]="group.allSelected()"
       [indeterminate]="group.someSelected()"
       (valueChange)="group.toggleAll()"
-    >Select all</cngx-checkbox>
+      >Select all</cngx-checkbox
+    >
     <cngx-checkbox-group
       #group="cngxCheckboxGroup"
       label="Pool"
@@ -268,7 +285,9 @@ describe('CngxCheckboxGroup', () => {
   describe('aria-invalid + aria-errormessage symmetric semantics', () => {
     it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
       @Component({
-        template: `<cngx-checkbox-group [allValues]="vs"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        template: `<cngx-checkbox-group [allValues]="vs"
+          ><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group
+        >`,
         imports: [CngxCheckboxGroup, CngxCheckbox],
         providers: [
           {
@@ -292,7 +311,12 @@ describe('CngxCheckboxGroup', () => {
 
     it('aria-errormessage emits errorMessageId when invalid()', () => {
       @Component({
-        template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        template: `<cngx-checkbox-group
+          [allValues]="vs"
+          [errorMessageId]="msgId()"
+          [(invalid)]="bad"
+          ><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group
+        >`,
         imports: [CngxCheckboxGroup, CngxCheckbox],
       })
       class MsgHost {
@@ -309,7 +333,12 @@ describe('CngxCheckboxGroup', () => {
 
     it('aria-errormessage is null when neither invalid() nor errorState() is set', () => {
       @Component({
-        template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        template: `<cngx-checkbox-group
+          [allValues]="vs"
+          [errorMessageId]="msgId()"
+          [(invalid)]="bad"
+          ><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group
+        >`,
         imports: [CngxCheckboxGroup, CngxCheckbox],
       })
       class MsgHost {
@@ -345,24 +374,8 @@ describe('CngxCheckboxGroup', () => {
       orientation = signal<'horizontal' | 'vertical'>('vertical');
     }
 
-    function navSetup() {
-      const fixture = TestBed.createComponent(NavHost);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
-        .nativeElement as HTMLElement;
-      const checkboxes = fixture.debugElement
-        .queryAll(By.directive(CngxCheckbox))
-        .map((de) => de.nativeElement as HTMLElement);
-      return { fixture, host: fixture.componentInstance, groupEl, checkboxes };
-    }
-
-    function keydown(el: HTMLElement, key: string): void {
-      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
-    }
-
     it('ArrowDown advances tabindex ownership to the next leaf (vertical orientation)', () => {
-      const { fixture, groupEl, checkboxes } = navSetup();
+      const { fixture, groupEl, checkboxes } = navSetup(NavHost);
       expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
 
       keydown(groupEl, 'ArrowDown');
@@ -374,7 +387,7 @@ describe('CngxCheckboxGroup', () => {
     });
 
     it('ArrowUp moves tabindex ownership to the previous leaf', () => {
-      const { fixture, groupEl, checkboxes } = navSetup();
+      const { fixture, groupEl, checkboxes } = navSetup(NavHost);
       keydown(groupEl, 'ArrowDown');
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -389,7 +402,7 @@ describe('CngxCheckboxGroup', () => {
     });
 
     it('Home / End jump to first / last leaf', () => {
-      const { fixture, groupEl, checkboxes } = navSetup();
+      const { fixture, groupEl, checkboxes } = navSetup(NavHost);
       keydown(groupEl, 'End');
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -402,7 +415,7 @@ describe('CngxCheckboxGroup', () => {
     });
 
     it('disabled leaf is skipped by arrow nav (parallel to radio-group precedent)', () => {
-      const { fixture, host, groupEl, checkboxes } = navSetup();
+      const { fixture, host, groupEl, checkboxes } = navSetup(NavHost);
       host.bOff.set(true);
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -417,7 +430,7 @@ describe('CngxCheckboxGroup', () => {
     });
 
     it('horizontal orientation activates ArrowRight / ArrowLeft and ignores ArrowDown / ArrowUp', () => {
-      const { fixture, host, groupEl, checkboxes } = navSetup();
+      const { fixture, host, groupEl, checkboxes } = navSetup(NavHost);
       host.orientation.set('horizontal');
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -453,24 +466,8 @@ describe('CngxCheckboxGroup', () => {
     })
     class UnboundNavHost {}
 
-    function unboundSetup() {
-      const fixture = TestBed.createComponent(UnboundNavHost);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
-        .nativeElement as HTMLElement;
-      const checkboxes = fixture.debugElement
-        .queryAll(By.directive(CngxCheckbox))
-        .map((de) => de.nativeElement as HTMLElement);
-      return { fixture, groupEl, checkboxes };
-    }
-
-    function keydown(el: HTMLElement, key: string): void {
-      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
-    }
-
     it('ArrowDown advances tabindex ownership on the default vertical layout', () => {
-      const { fixture, groupEl, checkboxes } = unboundSetup();
+      const { fixture, groupEl, checkboxes } = navSetup(UnboundNavHost);
       expect(checkboxes[0].getAttribute('tabindex')).toBe('0');
 
       keydown(groupEl, 'ArrowDown');
@@ -482,7 +479,7 @@ describe('CngxCheckboxGroup', () => {
     });
 
     it('ArrowRight does not move tabindex ownership on the default vertical layout', () => {
-      const { fixture, groupEl, checkboxes } = unboundSetup();
+      const { fixture, groupEl, checkboxes } = navSetup(UnboundNavHost);
 
       keydown(groupEl, 'ArrowRight');
       fixture.detectChanges();
@@ -493,7 +490,7 @@ describe('CngxCheckboxGroup', () => {
     });
   });
 
-  describe('roving keyboard navigation with a static orientation attribute', () => {
+  describe('roving keyboard navigation with a horizontal orientation set at creation', () => {
     @Component({
       template: `
         <cngx-checkbox-group label="Picks" orientation="horizontal">
@@ -506,24 +503,23 @@ describe('CngxCheckboxGroup', () => {
     })
     class StaticNavHost {}
 
-    function staticSetup() {
-      const fixture = TestBed.createComponent(StaticNavHost);
-      fixture.detectChanges();
-      TestBed.flushEffects();
-      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
-        .nativeElement as HTMLElement;
-      const checkboxes = fixture.debugElement
-        .queryAll(By.directive(CngxCheckbox))
-        .map((de) => de.nativeElement as HTMLElement);
-      return { fixture, groupEl, checkboxes };
-    }
+    @Component({
+      template: `
+        <cngx-checkbox-group label="Picks" [orientation]="'horizontal'">
+          <cngx-checkbox>A</cngx-checkbox>
+          <cngx-checkbox>B</cngx-checkbox>
+          <cngx-checkbox>C</cngx-checkbox>
+        </cngx-checkbox-group>
+      `,
+      imports: [CngxCheckboxGroup, CngxCheckbox],
+    })
+    class BoundNavHost {}
 
-    function keydown(el: HTMLElement, key: string): void {
-      el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
-    }
-
-    it('ArrowRight advances tabindex ownership and ArrowDown does not', () => {
-      const { fixture, groupEl, checkboxes } = staticSetup();
+    it.each([
+      { form: 'static attribute', host: StaticNavHost },
+      { form: 'initial [orientation] binding', host: BoundNavHost },
+    ])('$form: ArrowRight advances tabindex ownership and ArrowDown does not', ({ host }) => {
+      const { fixture, groupEl, checkboxes } = navSetup(host);
 
       keydown(groupEl, 'ArrowDown');
       fixture.detectChanges();
@@ -570,7 +566,8 @@ describe('CngxCheckboxGroup stateful discovery', () => {
     discoveredState.reset();
     const fixture = TestBed.createComponent(DiscoveryHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBeNull();
 
     discoveredState.set('loading');
@@ -583,7 +580,8 @@ describe('CngxCheckboxGroup stateful discovery', () => {
     discoveredState.set('loading');
     const fixture = TestBed.createComponent(DiscoveryOverrideHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBeNull();
 
     fixture.componentInstance.inputState.set('loading');
@@ -596,7 +594,8 @@ describe('CngxCheckboxGroup stateful discovery', () => {
     discoveredState.set('loading');
     const fixture = TestBed.createComponent(DiscoveryBareAttrHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('aria-busy')).toBe('true');
     discoveredState.reset();
   });
