@@ -1,9 +1,10 @@
 import {
   type ElementRef,
   type Signal,
+  DestroyRef,
   Injector,
+  afterEveryRender,
   afterNextRender,
-  afterRenderEffect,
   computed,
   inject,
   linkedSignal,
@@ -95,7 +96,9 @@ export function createAutoPanelRenderer<T>(opts: {
       totalCount: (): number => opts.flatOptions().length,
       // Floor at 1px - a 0/negative estimate would divide the scroll range
       // by zero downstream and explode the computed window.
-      estimateSize: computed(() => Math.max(1, vConfig.estimateSize ?? measured() ?? FALLBACK_ROW_SIZE)),
+      estimateSize: computed(() =>
+        Math.max(1, vConfig.estimateSize ?? measured() ?? FALLBACK_ROW_SIZE),
+      ),
       overscan: vConfig.overscan ?? 5,
       scrollDebounce: vConfig.scrollDebounce,
     });
@@ -132,27 +135,39 @@ export function createAutoPanelRenderer<T>(opts: {
           { injector },
         );
       };
-      afterRenderEffect({
-        read: (onCleanup) => {
-          // A window move can destroy the observed row; re-target a live one.
-          recycler.start();
-          recycler.end();
-          const row = scrollElement.nativeElement?.querySelector<HTMLElement>(
-            '[data-cngx-recycle-index]',
-          );
+      // Every render, not a tracked effect: the window signals derive from the
+      // estimate this probe writes, so tracking them would re-run the probe on
+      // its own write. The observer follows the first row node and is only
+      // replaced when a window move puts a different node first.
+      let observed: HTMLElement | null = null;
+      let stopObserving: (() => void) | null = null;
+      const release = (): void => {
+        stopObserving?.();
+        stopObserving = null;
+        observed = null;
+      };
+      afterEveryRender({
+        read: () => {
+          const row =
+            scrollElement.nativeElement?.querySelector<HTMLElement>('[data-cngx-recycle-index]') ??
+            null;
+          if (row === observed) {
+            return;
+          }
+          release();
           if (!row) {
             return;
           }
+          observed = row;
           // Synchronous first write: the active-descendant scroll runs in a
           // requestAnimationFrame, before ResizeObserver delivery in a frame.
           write(row.getBoundingClientRect().height);
-          onCleanup(
-            observeResize(row.ownerDocument.defaultView, row, 'border-box', (entry) =>
-              write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height),
-            ),
+          stopObserving = observeResize(row.ownerDocument.defaultView, row, 'border-box', (entry) =>
+            write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height),
           );
         },
       });
+      inject(DestroyRef).onDestroy(release);
     }
     return recycler;
   };
