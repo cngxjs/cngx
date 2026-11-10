@@ -398,8 +398,8 @@ export class CngxSidenav
 
   /**
    * Whether the full nav is shown: the overlay while `opened`, a
-   * docked rail while not `collapsed` or while it peeks. What a trigger's
-   * `aria-expanded` mirrors.
+   * docked rail while not `collapsed` or while it peeks. A trigger's
+   * `aria-expanded` mirrors it outside a peek (`panelTarget.peeked`).
    */
   readonly expanded = computed(() => {
     if (this.isOverlay()) {
@@ -461,12 +461,15 @@ export class CngxSidenav
    * (and `CNGX_PANEL_TARGET` inside the rail). One trigger works in every
    * width class: `toggle()` flips `collapsed` on the docked rail and opens or
    * closes the overlay over the `medium` rail and the `compact` drawer;
-   * `expanded` is what the trigger's `aria-expanded` mirrors. `mode` reads
-   * `over` while `opened` shows the rail as an overlay, else `inline`.
+   * `expanded` is "the full nav is shown", and a hover peek of the docked rail
+   * is reported through `peeked`, so the trigger's `aria-expanded` keeps the
+   * resting state. `mode` reads `over` while `opened` shows the rail as an
+   * overlay, else `inline`.
    */
   readonly panelTarget: CngxPanelTarget = {
     id: this.id,
     expanded: this.expanded,
+    peeked: computed(() => !this.isOverlay() && this.sidebar.peeked()),
     toggle: () => this.toggle(),
     peek: () => this.peek(),
     mode: computed<CngxPanelMode>(() => (this.isOverlay() ? 'over' : 'inline')),
