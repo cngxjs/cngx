@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
@@ -9,11 +10,34 @@ import {
   type OnInit,
   Renderer2,
 } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 
 /**
  * Visual variant for the nav badge.
  */
 export type NavBadgeVariant = 'count' | 'dot' | 'status';
+
+// Module scope on purpose: the production build drops an unused top-level
+// function with its cngxDevWarn import, but not one nested in a closure.
+/** Dev-only check for a visible dot that adds nothing to the link name. */
+function warnUnlabelledDot(
+  variant: NavBadgeVariant,
+  label: string | undefined,
+  empty: boolean,
+  host: HTMLElement,
+): void {
+  if (!(typeof ngDevMode !== 'undefined' && ngDevMode)) {
+    return;
+  }
+  if (variant !== 'dot' || label || empty) {
+    return;
+  }
+  cngxDevWarn(
+    'CNGX1083',
+    '[cngxNavBadge] a dot badge without ariaLabel adds nothing to the link name, so assistive technology never hears what the dot means; set [ariaLabel].',
+    host,
+  );
+}
 
 /**
  * Inline badge for navigation items - shows counts, dots, or status indicators.
@@ -45,8 +69,14 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  *
  * ### Dot indicator
  * ```html
- * <a cngxNavLink>Updates <span cngxNavBadge variant="dot" [value]="1"></span></a>
+ * <a cngxNavLink>
+ *   Updates
+ *   <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New updates"></span>
+ * </a>
  * ```
+ *
+ * A visible dot without `ariaLabel` warns in development mode (`CNGX1083`):
+ * the host is hidden, so the link name would say nothing about it.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-badge.directive.ts
@@ -109,6 +139,12 @@ export class CngxNavBadge implements OnInit {
         this.labelEl.textContent = text;
       }
     });
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      // Inputs are bound by the first render.
+      afterNextRender(() =>
+        warnUnlabelledDot(this.variant(), this.ariaLabel(), this.isEmpty(), this.hostEl),
+      );
+    }
   }
 
   ngOnInit(): void {

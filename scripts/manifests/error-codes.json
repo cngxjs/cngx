@@ -1622,6 +1622,23 @@
       ]
     },
     {
+      "code": "CNGX1083",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Dot nav badge without a label",
+      "page": "core-concepts/error-codes/cngx1083.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1083.html",
+      "status": "active",
+      "files": ["projects/common/interactive/nav/nav-badge.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/nav/nav-badge.directive.ts",
+          "text": "[cngxNavBadge] a dot badge without ariaLabel adds nothing to the link name, so assistive technology never hears what the dot means; set [ariaLabel]."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxNavBadge } from './nav-badge.directive';
 
 @Component({
@@ -15,6 +15,17 @@ class TestHost {
   variant = signal<'count' | 'dot' | 'status'>('count');
   ariaLabel = signal<string | undefined>(undefined);
 }
+
+@Component({
+  template: `
+    <span class="unlabelled-dot" cngxNavBadge variant="dot" [value]="1"></span>
+    <span class="labelled-dot" cngxNavBadge variant="dot" [value]="1" ariaLabel="New"></span>
+    <span class="empty-dot" cngxNavBadge variant="dot" [value]="0"></span>
+    <span class="count" cngxNavBadge [value]="3">3</span>
+  `,
+  imports: [CngxNavBadge],
+})
+class WarnHost {}
 
 describe('CngxNavBadge', () => {
   function setup() {
@@ -116,5 +127,16 @@ describe('CngxNavBadge', () => {
     host.value.set('');
     fixture.detectChanges();
     expect(dir.isEmpty()).toBe(true);
+  });
+
+  it('warns once, for the visible dot without a label only', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(WarnHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const warnings = warnSpy.mock.calls.filter((call) => /^CNGX1083: /.test(String(call[0])));
+    expect(warnings.length).toBe(1);
+    expect(warnings[0]).toContain(fixture.nativeElement.querySelector('.unlabelled-dot'));
+    warnSpy.mockRestore();
   });
 });
