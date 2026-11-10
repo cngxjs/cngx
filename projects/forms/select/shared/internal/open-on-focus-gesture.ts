@@ -4,14 +4,14 @@
  * One pointer press on a closed trigger fires `pointerdown`, then `focus`,
  * then `click`. Under `openOn: 'focus'` (or `'click+focus'`) the focus opens
  * the panel, so the click that belongs to the same press must not run
- * `toggle()` and snap it straight back closed. This guard marks the gesture
- * on the focus that a pointerdown preceded and swallows exactly that one
- * click; a keyboard focus (no pointerdown) and a later deliberate click both
- * toggle normally.
+ * `toggle()` and snap it straight back closed. The press itself decides: a
+ * press that starts on an unfocused trigger in a focus-open mode owns the
+ * focus-open, so its click is swallowed. Every press overwrites that answer,
+ * and a keyboard click (`detail === 0`) is never swallowed, so no flag
+ * outlives the gesture it belongs to.
  *
  * Shared by the five button-trigger composites (single, multi, reorderable,
- * tree, shell); `Phase 7` folds the call sites into the button-trigger
- * factory.
+ * tree, shell).
  */
 export interface CngxOpenOnFocusGestureOptions {
   /** Current `openOn` mode (read from the resolved select config). */
@@ -26,40 +26,37 @@ export interface CngxOpenOnFocusGestureOptions {
 }
 
 export interface CngxOpenOnFocusGesture {
-  /** Bind to the trigger's `(pointerdown)`. */
-  handlePointerDown(): void;
+  /** Bind to the trigger's `(pointerdown)` with `$event`. */
+  handlePointerDown(event: Event): void;
   /** Call from the trigger's focus handler; opens when `openOn` includes focus. */
   handleFocus(): void;
-  /** `true` once for the click of a pointer-initiated focus-open; else `false`. */
-  consumeClick(): boolean;
+  /** `true` for the click of a press that focus-opened the panel; else `false`. */
+  consumeClick(event: MouseEvent): boolean;
+}
+
+function isFocusOpenMode(mode: 'click' | 'focus' | 'click+focus' | undefined): boolean {
+  return mode === 'focus' || mode === 'click+focus';
 }
 
 export function createOpenOnFocusGesture(
   opts: CngxOpenOnFocusGestureOptions,
 ): CngxOpenOnFocusGesture {
-  let pointerInitiated = false;
-  let skipNextClick = false;
+  let pressOpensOnFocus = false;
   return {
-    handlePointerDown(): void {
-      pointerInitiated = true;
+    handlePointerDown(event: Event): void {
+      const trigger = event.currentTarget as Element | null;
+      const focused = trigger?.ownerDocument.activeElement === trigger;
+      pressOpensOnFocus = !focused && isFocusOpenMode(opts.openOn());
     },
     handleFocus(): void {
-      const mode = opts.openOn();
-      const openOnFocus = mode === 'focus' || mode === 'click+focus';
-      if (openOnFocus && !(opts.suppress?.() ?? false)) {
+      if (isFocusOpenMode(opts.openOn()) && !(opts.suppress?.() ?? false)) {
         opts.open();
-        if (pointerInitiated) {
-          skipNextClick = true;
-        }
       }
-      pointerInitiated = false;
     },
-    consumeClick(): boolean {
-      if (skipNextClick) {
-        skipNextClick = false;
-        return true;
-      }
-      return false;
+    consumeClick(event: MouseEvent): boolean {
+      const swallow = pressOpensOnFocus && event.detail !== 0;
+      pressOpensOnFocus = false;
+      return swallow;
     },
   };
 }

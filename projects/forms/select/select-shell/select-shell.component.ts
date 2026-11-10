@@ -1233,11 +1233,11 @@ export class CngxSelectShell<T = unknown>
   }
 
   /** @internal */
-  protected handleTriggerClick(): void {
+  protected handleTriggerClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
-    if (this.openOnGesture.consumeClick()) {
+    if (this.openOnGesture.consumeClick(event)) {
       return;
     }
     this.toggle();
@@ -1417,8 +1417,8 @@ export class CngxSelectShell<T = unknown>
   });
 
   /** @internal */
-  protected handlePointerDown(): void {
-    this.openOnGesture.handlePointerDown();
+  protected handlePointerDown(event: Event): void {
+    this.openOnGesture.handlePointerDown(event);
   }
 
   protected handleFocus(): void {

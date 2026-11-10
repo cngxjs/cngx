@@ -27,7 +27,7 @@ export function describeOpenOnFocusClick(kind: Kind): void {
         trigger.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
         trigger.dispatchEvent(new FocusEvent('focus'));
         m.settle();
-        trigger.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        trigger.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
         m.settle();
 
         const opened = m.events.filter((e) => e.name === 'openedChange' && e.payload === true);
