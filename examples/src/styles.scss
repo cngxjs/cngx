@@ -2199,10 +2199,10 @@ button.chip.demo-chip--copied {
   font-weight: 600;
 }
 .demo-nav__link--indent-1 {
-  padding-left: calc(1rem + 12px);
+  padding-inline-start: calc(1rem + 12px);
 }
 .demo-nav__link--indent-2 {
-  padding-left: calc(1rem + 24px);
+  padding-inline-start: calc(1rem + 24px);
 }
 .demo-nav__divider {
   margin: 0.5rem 1rem;
