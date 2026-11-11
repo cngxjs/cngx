@@ -11,9 +11,9 @@ import { CNGX_TABS_LANGUAGE_EN, type CngxTabsLanguageSection } from './tabs-lang
  */
 export interface CngxTabsI18n {
   /**
-   * Last tier of the tab-group `aria-label`. It only applies when
-   * `CNGX_TABS_CONFIG.ariaLabels.tabsRegion` is unset; that key defaults
-   * to `'Tabs'`, so localise the landmark through `withTabsAriaLabels(...)`.
+   * Default accessible name of the tab group. An explicit
+   * `CNGX_TABS_CONFIG.ariaLabels.tabsRegion` (set through
+   * `withTabsAriaLabels(...)`) overrides it when set; it has no default.
    */
   readonly tabsLabel: string;
   readonly selectedTab: (label: string, position: number, count: number) => string;

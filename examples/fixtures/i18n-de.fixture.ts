@@ -3,7 +3,7 @@ import { provideLocaleAt } from '@cngx/core/utils';
 import { provideKpiI18n, withKpiI18nLabels } from '@cngx/common/data';
 import { provideDisplayI18n, withDisplayI18nLabels } from '@cngx/common/display';
 import type { CngxStepperAriaLabels, CngxStepperFallbackLabels, CngxStepperI18nOverrides } from '@cngx/common/stepper';
-import type { CngxTabsAriaLabels, CngxTabsFallbackLabels, CngxTabsI18n } from '@cngx/common/tabs';
+import type { CngxTabsFallbackLabels, CngxTabsI18n } from '@cngx/common/tabs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/interactive';
 import {
   provideTreetableAt,
@@ -139,7 +139,6 @@ export const TABS_DE: Partial<CngxTabsI18n> = {
   commitRolledBackTo: (originLabel) => `Änderungen nicht gespeichert - zurück zu „${originLabel}".`,
 };
 
-export const TABS_ARIA_DE: CngxTabsAriaLabels = { tabsRegion: 'Reiter' };
 export const TABS_FALLBACK_DE: CngxTabsFallbackLabels = {
   tabRoleDescription: 'Reiterliste',
   tabPanelRoleDescription: 'Reiterinhalt',
@@ -341,7 +340,6 @@ export const DEMO_FLOW_LABELS = computed(() =>
       },
 );
 export const DEMO_TABS_LABELS = computed<Partial<CngxTabsI18n>>(() => (isDe() ? TABS_DE : {}));
-export const DEMO_TABS_ARIA_LABELS = computed<CngxTabsAriaLabels>(() => (isDe() ? TABS_ARIA_DE : {}));
 export const DEMO_TABS_FALLBACK_LABELS = computed<CngxTabsFallbackLabels>(() =>
   isDe() ? TABS_FALLBACK_DE : {},
 );

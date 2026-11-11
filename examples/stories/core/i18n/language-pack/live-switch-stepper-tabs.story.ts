@@ -13,17 +13,17 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxStepper', 'CngxStep', 'CngxTabGroup', 'CngxTab'],
   moduleImports: [
     "import { CngxStep, provideStepperConfigAt, provideStepperI18n, withStepperAriaLabels, withStepperFallbackLabels, withStepperI18nLabels, type CngxStepperCommitAction } from '@cngx/common/stepper';",
-    "import { CngxTab, CngxTabContent, provideTabsConfigAt, provideTabsI18n, withTabsAriaLabels, withTabsFallbackLabels, withTabsI18nLabels, type CngxTabsCommitAction } from '@cngx/common/tabs';",
+    "import { CngxTab, CngxTabContent, provideTabsConfigAt, provideTabsI18n, withTabsFallbackLabels, withTabsI18nLabels, type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { CngxStepper } from '@cngx/ui/stepper';",
     "import { CngxTabGroup } from '@cngx/ui/tabs';",
-    "import { DEMO_FLOW_LABELS, DEMO_LANG, DEMO_STEPPER_ARIA_LABELS, DEMO_STEPPER_FALLBACK_LABELS, DEMO_STEPPER_LABELS, DEMO_TABS_ARIA_LABELS, DEMO_TABS_FALLBACK_LABELS, DEMO_TABS_LABELS } from '../../../../fixtures';",
+    "import { DEMO_FLOW_LABELS, DEMO_LANG, DEMO_STEPPER_ARIA_LABELS, DEMO_STEPPER_FALLBACK_LABELS, DEMO_STEPPER_LABELS, DEMO_TABS_FALLBACK_LABELS, DEMO_TABS_LABELS } from '../../../../fixtures';",
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxTabGroup', 'CngxTab', 'CngxTabContent'],
   viewProviders: [
     'provideStepperI18n(withStepperI18nLabels(DEMO_STEPPER_LABELS))',
     '...provideStepperConfigAt(withStepperAriaLabels(DEMO_STEPPER_ARIA_LABELS), withStepperFallbackLabels(DEMO_STEPPER_FALLBACK_LABELS))',
     'provideTabsI18n(withTabsI18nLabels(DEMO_TABS_LABELS))',
-    '...provideTabsConfigAt(withTabsAriaLabels(DEMO_TABS_ARIA_LABELS), withTabsFallbackLabels(DEMO_TABS_FALLBACK_LABELS))',
+    '...provideTabsConfigAt(withTabsFallbackLabels(DEMO_TABS_FALLBACK_LABELS))',
   ],
   setup: `protected readonly labels = DEMO_FLOW_LABELS;
   private readonly delay = (): Promise<boolean> =>

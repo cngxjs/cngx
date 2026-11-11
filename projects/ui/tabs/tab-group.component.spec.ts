@@ -12,6 +12,12 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 
 import {
   CNGX_TAB_GROUP_HOST,
@@ -347,6 +353,67 @@ describe('CngxTabGroup organism', () => {
       'cngx-tab-group',
     ) as HTMLElement;
     expect(host.getAttribute('aria-label')).toBe('Reiter');
+  });
+
+  it('aria-label falls back to i18n.tabsLabel when no ariaLabels.tabsRegion is configured', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group>
+          <div cngxTab [label]="'A'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class I18nLabelHost {}
+    const fixture = TestBed.createComponent(I18nLabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Bereiche');
+  });
+
+  it('aria-label follows a language-pack switch through tabs.tabsLabel', () => {
+    TestBed.resetTestingModule();
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group>
+          <div cngxTab [label]="'A'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class PackLabelHost {}
+    const fixture = TestBed.createComponent(PackLabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Tabs');
+
+    pack.set({ locale: 'de', tabs: { tabsLabel: 'Reiter' } });
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Reiter');
+
+    pack.set(undefined);
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Tabs');
   });
 
   it('aria-labelledby on host suppresses aria-label', () => {

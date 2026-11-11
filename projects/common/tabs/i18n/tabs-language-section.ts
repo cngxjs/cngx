@@ -11,9 +11,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * @relatedTo CNGX_TABS_I18N, CNGX_TABS_CONFIG
  */
 export interface CngxTabsLanguageSection {
-  /** Accessible name of the tab-group landmark. */
-  readonly tabsRegion: string;
-  /** Last-tier tab-group label, used when `tabsRegion` is unset. */
+  /** Accessible name of the tab group. */
   readonly tabsLabel: string;
   /** `aria-roledescription` of the tablist. */
   readonly tabRoleDescription: string;
@@ -77,7 +75,6 @@ export interface CngxTabsLanguageSection {
  * @relatedTo CNGX_TABS_I18N, CNGX_TABS_CONFIG
  */
 export const CNGX_TABS_LANGUAGE_EN: CngxTabsLanguageSection = {
-  tabsRegion: 'Tabs',
   tabsLabel: 'Tabs',
   tabRoleDescription: 'tab list',
   tabPanelRoleDescription: 'tab panel',
