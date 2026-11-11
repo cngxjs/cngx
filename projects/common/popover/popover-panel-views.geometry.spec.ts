@@ -156,6 +156,18 @@ describe('CngxPopoverPanel close floor on touch', () => {
     expect(textEnd).toBeLessThanOrEqual(close.left - 8 + 0.5);
     expect(body.top).toBeGreaterThanOrEqual(close.bottom - 0.5);
   });
+
+  it('ends the header row below the close box under a panel padding override', async () => {
+    const panel = await mountOpen();
+    panel.style.setProperty('--cngx-target-min', '44px');
+    panel.style.setProperty('--cngx-popover-panel-padding', '4px');
+    await nextFrame();
+
+    const close = one(panel, 'button.cngx-popover-panel__close').getBoundingClientRect();
+    const row = one(panel, '.cngx-popover-panel__header-row').getBoundingClientRect();
+
+    expect(row.bottom).toBeGreaterThanOrEqual(close.bottom - 0.5);
+  });
 });
 
 describe('CngxPopoverPanel state copy contrast', () => {
