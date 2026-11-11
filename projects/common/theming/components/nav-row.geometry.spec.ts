@@ -2,10 +2,21 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxNavBadge, CngxNavGroup, CngxNavLabel, CngxNavLink } from '@cngx/common/interactive';
-import { computedValue, contrastRatio, oklabOf, parkPointer } from '@cngx/testing/geometry';
+import {
+  accessibleName,
+  computedValue,
+  contrastRatio,
+  oklabOf,
+  parkPointer,
+} from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cdp, userEvent } from 'vitest/browser';
+import { cdp } from 'vitest/browser';
+
+import { CngxNavBadge } from '../../interactive/nav/nav-badge.directive';
+import { CngxNavGroup } from '../../interactive/nav/nav-group.directive';
+import { CngxNavIcon } from '../../interactive/nav/nav-icon.directive';
+import { CngxNavLabel } from '../../interactive/nav/nav-label.directive';
+import { CngxNavLink } from '../../interactive/nav/nav-link.directive';
 
 // Runs in a real Chromium (the `test-geometry` target) against the working-tree
 // cngx-nav.css and the system tokens, with the rows in a plain <nav> and no
@@ -21,7 +32,7 @@ type Fill = (typeof FILLS)[number];
 @Component({
   selector: 'cngx-nav-row-host',
   standalone: true,
-  imports: [CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge],
+  imports: [CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge, CngxNavIcon],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -52,6 +63,10 @@ type Fill = (typeof FILLS)[number];
         Team
       </button>
       <a cngxNavLink href="#nested" [depth]="1" class="row-nested">Nested</a>
+      <a cngxNavLink href="#starred" class="row-icon">
+        <span cngxNavIcon class="icon-starred">S</span>
+        Starred
+      </a>
     </nav>
     <span class="probe-hover" style="background-color: var(--cngx-nav-link-hover-bg)"></span>
     <span class="probe-pressed" style="background-color: var(--cngx-nav-link-pressed-bg)"></span>
@@ -146,8 +161,10 @@ function documentsOf(node: DomNode): DomNode[] {
   return [...(node.contentDocument ? [node.contentDocument] : []), ...nested.flatMap(documentsOf)];
 }
 
-// Force real pseudo-classes over CDP; `:active` cannot be held by userEvent.
-// The spec runs in the runner iframe, so the lookup walks nested documents.
+// Force real pseudo-classes over CDP; `:active` cannot be held by userEvent,
+// and userEvent.hover cannot find a row: its locator computes the name in JS
+// and reads the letter's `content: attr(data-initial) / ''` into it. The spec
+// runs in the runner iframe, so the lookup walks nested documents.
 async function forceStates(selector: string, states: readonly string[]): Promise<void> {
   const session = cdp();
   await session.send('DOM.enable');
@@ -171,11 +188,15 @@ async function forceStates(selector: string, states: readonly string[]): Promise
   throw new Error(`${selector} is in no document`);
 }
 
-const bar = (el: HTMLElement, property: string): string =>
+const letter = (el: HTMLElement, property: string): string =>
   getComputedStyle(el, '::before').getPropertyValue(property);
 
-const chevron = (el: HTMLElement, property: string): string =>
+// The active bar and the group chevron both live on ::after (links have no
+// chevron, group heads no bar).
+const bar = (el: HTMLElement, property: string): string =>
   getComputedStyle(el, '::after').getPropertyValue(property);
+
+const chevron = bar;
 
 const forced: string[] = [];
 
@@ -274,7 +295,7 @@ describe('nav row shape', () => {
   it('paints a group head transparent at rest and with the hover fill under the pointer', async () => {
     const root = mount();
     expect(bg(root, '.row-group')).toBe('rgba(0, 0, 0, 0)');
-    await userEvent.hover(one(root, '.row-group'));
+    await force('.row-group', ['hover']);
     expect(fillOf(root, '.row-group')).toBe(fillOf(root, '.probe-hover'));
   });
 
@@ -294,13 +315,13 @@ describe('nav row state precedence', () => {
 
   it('paints the hover fill on an inactive row under the pointer', async () => {
     const root = mount();
-    await userEvent.hover(one(root, '.row-idle'));
+    await force('.row-idle', ['hover']);
     expect(fillOf(root, '.row-idle')).toBe(fillOf(root, '.probe-hover'));
   });
 
   it('paints active+hover, not hover, on the active row under the pointer', async () => {
     const root = mount();
-    await userEvent.hover(one(root, '.row-active'));
+    await force('.row-active', ['hover']);
     expect(fillOf(root, '.row-active')).toBe(fillOf(root, '.probe-active-hover'));
   });
 
@@ -365,6 +386,59 @@ describe('active indicator', () => {
     const regular = parseFloat(bar(one(root, '.row-active'), 'width'));
     const compact = parseFloat(bar(one(root, '.row-compact'), 'width'));
     expect(compact).toBeLessThan(regular);
+  });
+});
+
+describe('icon box and letter fallback', () => {
+  const iconX = (root: ParentNode): number =>
+    one(root, '.icon-starred').getBoundingClientRect().left;
+  const letterX = (root: ParentNode, selector: string): number => {
+    const row = one(root, selector);
+    return row.getBoundingClientRect().left + parseFloat(computedValue(row, 'padding-left'));
+  };
+
+  it('puts the icon and the letter at the same x', () => {
+    const root = mount();
+    expect(Math.abs(iconX(root) - letterX(root, '.row-idle'))).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(iconX(root) - letterX(root, '.row-group'))).toBeLessThanOrEqual(0.5);
+  });
+
+  it('sizes the icon and the letter to the same box', () => {
+    const root = mount();
+    const icon = one(root, '.icon-starred').getBoundingClientRect();
+    const row = one(root, '.row-idle');
+    expect(parseFloat(letter(row, 'width'))).toBeCloseTo(icon.width, 1);
+    expect(parseFloat(letter(row, 'height'))).toBeCloseTo(icon.height, 1);
+  });
+
+  it('draws the letter as a round filled badge on rows and group heads without an icon', () => {
+    const root = mount();
+    for (const selector of ['.row-idle', '.row-group']) {
+      const row = one(root, selector);
+      expect(letter(row, 'content')).toContain(row.dataset['initial']);
+      expect(letter(row, 'border-top-left-radius')).toBe('50%');
+      expect(letter(row, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    }
+  });
+
+  it('draws no letter on a row with an icon', () => {
+    const root = mount();
+    expect(letter(one(root, '.row-icon'), 'content')).toBe('none');
+  });
+
+  it('keeps the letter and the icon out of the accessible name', async () => {
+    const root = mount();
+    expect(one(root, '.icon-starred').getAttribute('aria-hidden')).toBe('true');
+    expect((await accessibleName('.row-idle'))?.trim()).toBe('Drafts');
+    expect((await accessibleName('.row-icon'))?.trim()).toBe('Starred');
+  });
+
+  it('paints both the bar and the letter on an active letter row', () => {
+    const root = mount();
+    const row = one(root, '.row-active');
+    expect(letter(row, 'content')).toContain('I');
+    expect(bar(row, 'content')).toBe('""');
+    expect(bar(row, 'position')).toBe('absolute');
   });
 });
 

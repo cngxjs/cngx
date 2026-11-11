@@ -17,11 +17,22 @@
  * - `.cngx-nav-badge` (`CngxNavBadge`) with `--count`, `--dot`, `--status`
  * - `.cngx-nav-group-content` (`CngxNavGroupContent`) - grid-rows expand
  *   and collapse wrapper; it needs one child
+ * - `.cngx-nav-icon` (`CngxNavIcon`) - icon slot of a row or group head
+ *
+ * **Row geometry**
+ *
+ * One flex row: inline-start padding, the icon box
+ * (`--cngx-nav-icon-size`), the gap (`--cngx-nav-icon-gap`), the label
+ * text, then a trailing badge or the group chevron. The icon box sits at the
+ * same x on every row. A row or group head without `.cngx-nav-icon` draws its
+ * first letter (`data-initial`, written by the directive) as a round filled
+ * badge in that box; `content: attr(data-initial) / ''` keeps the letter out
+ * of the accessible name. Icon and letter paint in `--cngx-nav-link-ink`.
  *
  * **State modifiers**
  *
  * - `.cngx-nav-link--active` - active fill, heavier weight, indicator bar on
- *   the inline-start edge
+ *   the inline-start edge (`::after`, so it coexists with the letter)
  * - `.cngx-nav-group--open` - the group chevron turns to point down
  * - `.cngx-nav-group-content--open` - grid rows `0fr -> 1fr`
  *
@@ -291,14 +302,44 @@
   }
 
   /**
-   * Font-size of the first-letter initial shown on the collapsed rail (when
-   * the full label is hidden).
+   * Font-size of the first-letter fallback drawn in the icon box of a row
+   * without `[cngxNavIcon]`.
    * @group Variant / Mini
    */
   @property --cngx-nav-link-initial-size {
     syntax: '*';
     inherits: false;
     initial-value: 0.875rem;
+  }
+
+  /**
+   * Inline and block size of the icon box at the start of every row. Unset by
+   * default (falls back to `1.25rem`).
+   * @group Layout
+   */
+  @property --cngx-nav-icon-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Gap between the icon box and the row label. Unset by default (falls back
+   * to `--cngx-space-sm`, so it follows `[data-density]`).
+   * @group Layout
+   */
+  @property --cngx-nav-icon-gap {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Ink of the icon and of the letter fallback, independent of the label
+   * text colour. Unset by default (falls back to `currentColor`).
+   * @group Surface
+   */
+  @property --cngx-nav-link-ink {
+    syntax: '*';
+    inherits: true;
   }
 
   /**
@@ -466,14 +507,16 @@
   }
 
   .cngx-nav-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
   }
 
   /* A group head is a <button>: drop the UA box and stretch it like a link. */
   .cngx-nav-group {
     display: flex;
     align-items: center;
-    gap: var(--cngx-space-sm, 8px);
+    gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
     inline-size: -webkit-fill-available;
     inline-size: stretch;
     border: 0;
@@ -505,9 +548,37 @@
     background: var(--cngx-nav-link-active-hover-bg, oklch(0 0 0 / 0.1));
   }
 
+  /* Icon box: the projected icon, or the first letter on a row without one. */
+  .cngx-nav-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--cngx-nav-icon-size, 1.25rem);
+    block-size: var(--cngx-nav-icon-size, 1.25rem);
+    color: var(--cngx-nav-link-ink, currentColor);
+  }
+
+  :is(.cngx-nav-link, .cngx-nav-group)[data-initial]:not(:has(> .cngx-nav-icon))::before {
+    content: attr(data-initial) / '';
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    inline-size: var(--cngx-nav-icon-size, 1.25rem);
+    block-size: var(--cngx-nav-icon-size, 1.25rem);
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--cngx-nav-link-ink, currentColor) 14%, transparent);
+    color: var(--cngx-nav-link-ink, currentColor);
+    font-size: var(--cngx-nav-link-initial-size, 0.875rem);
+    font-weight: 600;
+    line-height: 1;
+  }
+
   /* Active indicator: a bar on the inline-start edge (logical, so RTL puts it
-     on the right). */
-  .cngx-nav-link--active::before {
+     on the right). On ::after, so it coexists with the letter on ::before. */
+  .cngx-nav-link--active::after {
     content: '';
     position: absolute;
     inset-inline-start: 0;
@@ -647,7 +718,7 @@
      ring may touch the row edge: the ring sits one width inside the edge with
      a Highlight band around it, and the bar starts one more width further in,
      clear of the ring. */
-  .cngx-nav-link--active::before {
+  .cngx-nav-link--active::after {
     inset-inline-start: calc(3 * var(--cngx-nav-link-focus-outline-width, 2px));
     background: HighlightText;
   }

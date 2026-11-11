@@ -2,6 +2,7 @@ import { DestroyRef, Directive, effect, ElementRef, inject, input, untracked } f
 import { CngxDisclosure } from './disclosure.directive';
 import { CNGX_NAV_CONFIG, CNGX_NAV_DEFAULTS } from './nav-config';
 import { CngxNavGroupRegistry } from './nav-group-registry';
+import { injectNavInitial } from './nav-initial';
 
 /**
  * Navigation accordion group - a collapsible section in a sidebar nav.
@@ -115,6 +116,7 @@ export class CngxNavGroup {
   }
 
   constructor() {
+    injectNavInitial(this.host);
     this.registry?.register(this);
     inject(DestroyRef).onDestroy(() => this.registry?.unregister(this));
 

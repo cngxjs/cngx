@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideLocale } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 import { CngxNavGroup } from './nav-group.directive';
 import { provideNavConfig, withNavAnimation, withNavIndent } from './nav-config';
@@ -104,5 +105,34 @@ describe('CngxNavGroup', () => {
     expect(content).not.toBeNull();
     expect(content.nativeElement.getAttribute('role')).toBe('group');
     expect(content.nativeElement.getAttribute('aria-labelledby')).toBe('group-label');
+  });
+});
+
+@Component({
+  template: `
+    <button cngxNavGroup type="button" class="derived">{{ text() }}</button>
+    <button cngxNavGroup type="button" class="consumer" data-initial="X">Settings</button>
+  `,
+  imports: [CngxNavGroup],
+})
+class InitialHost {
+  readonly text = signal('istanbul');
+}
+
+describe('CngxNavGroup initial', () => {
+  function headOf(selector: string, locale?: string): HTMLElement {
+    TestBed.configureTestingModule({ providers: locale ? [provideLocale(locale)] : [] });
+    const fixture = TestBed.createComponent(InitialHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    return fixture.nativeElement.querySelector(selector) as HTMLElement;
+  }
+
+  it('writes the first letter of the head text, uppercased with the app locale', () => {
+    expect(headOf('.derived', 'tr').dataset['initial']).toBe('İ');
+  });
+
+  it('keeps a data-initial the consumer set', () => {
+    expect(headOf('.consumer').dataset['initial']).toBe('X');
   });
 });
