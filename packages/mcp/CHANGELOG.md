@@ -85,6 +85,9 @@ release (`cngx://provenance` and `groundedVersion` name the one that answered).
 - A release fetched through `version` links its examples to the examples build
   of that release (`/cngx/examples/v<version>`), like the bundled snapshot; it
   linked them to `main`. A prerelease keeps the links to `main`.
+- `cngx://llms-full` of a final release links its examples to the examples
+  build of that release (`/cngx/examples/v<version>`), like `exampleUrls`; it
+  linked them to `main`. A prerelease keeps the links to `main`.
 - `migrate_usage` reports the selector change of an inferred entry rename.
 - `get_config` lists providers and features in code-point order, not locale
   order.
