@@ -100,7 +100,7 @@ export const STORY: DemoSpec = {
       </div>
 
       <cngx-sidenav-footer class="demo-sidenav__footer">
-        Workspace v2.1
+        <span class="demo-sidenav__footer-name">Workspace</span> v2.1
       </cngx-sidenav-footer>
     </cngx-sidenav>
 

@@ -1597,7 +1597,10 @@ cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__header {
   justify-content: center;
   padding-inline: 0;
 }
-cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__brand-name {
+cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__footer {
+  padding-inline: 0;
+}
+cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sidenav__footer-name) {
   position: absolute;
   width: 1px;
   height: 1px;

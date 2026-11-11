@@ -32,6 +32,25 @@ test.describe('ui/sidenav', () => {
     await expect(header).toMatchAriaSnapshot('- text: Config');
   });
 
+  test('full-navigation-sidebar: the rail footer shows the version inside the rail', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await gotoDemo(page, 'ui/sidenav/full-navigation-sidebar');
+    const nav = page.locator('cngx-sidenav').first();
+    await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    await page.mouse.move(1500, 850);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+
+    const footer = nav.locator('cngx-sidenav-footer');
+    // The visible text fits the rail, so the footer does not clip it.
+    const fits = await footer.evaluate((el) => el.scrollWidth <= el.clientWidth);
+    expect(fits).toBe(true);
+    const nameBox = await footer.locator('.demo-sidenav__footer-name').boundingBox();
+    expect(nameBox?.width ?? 0).toBeLessThanOrEqual(1);
+    await expect(footer).toMatchAriaSnapshot('- text: Workspace v2.1');
+  });
+
   test('full-navigation-sidebar: a rail row is as tall as the expanded row', async ({ page }) => {
     await page.setViewportSize({ width: 1600, height: 900 });
     await gotoDemo(page, 'ui/sidenav/full-navigation-sidebar');
