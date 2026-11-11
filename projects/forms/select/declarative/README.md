@@ -88,7 +88,7 @@ The eight data-driven composites consume options as a data array via `[options]`
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, exposed signals, and tokens.
+- [API reference](https://cngxjs.github.io/cngx/) for inputs, exposed signals, and tokens.
 - Sibling READMEs for the eight data-driven composites: [`CngxSelect`](../single-select/README.md), [`CngxMultiSelect`](../multi-select/README.md), [`CngxCombobox`](../combobox/README.md), [`CngxTypeahead`](../typeahead/README.md), [`CngxTreeSelect`](../tree-select/README.md), [`CngxReorderableMultiSelect`](../reorderable-multi-select/README.md), [`CngxActionSelect`](../action-select/README.md), [`CngxActionMultiSelect`](../action-multi-select/README.md).
 - [`CngxSelectShell`](../select-shell/README.md) - the projection-mode host these elements were built for.
 - Stories: `examples/stories/forms/select/select-shell/` and `examples/stories/forms/select/declarative/assemble-it-yourself.story.ts`.
