@@ -429,4 +429,22 @@ describe('createContextMenuTriggerCore', () => {
     );
     core.destroy();
   });
+
+  it('claims again on every open so a shared panel takes the chain of the trigger that opened it', () => {
+    const optOut = build({ menuConfig: withTryFallbacks([])(DEFAULT_MENU_CONFIG) });
+    const flips = build();
+
+    optOut.handleContextMenu(mouse());
+    popover.hide();
+    flips.handleContextMenu(mouse());
+    popover.hide();
+    optOut.handleContextMenu(mouse());
+
+    const calls = popover.claimPositionTryFallbacks.mock.calls;
+    expect(calls).toHaveLength(3);
+    expect(calls[2]).toEqual([calls[0][0], []]);
+    expect(popover.releasePositionTryFallbacks).not.toHaveBeenCalled();
+    optOut.destroy();
+    flips.destroy();
+  });
 });

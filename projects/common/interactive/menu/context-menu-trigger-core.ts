@@ -201,16 +201,17 @@ export function createContextMenuTriggerCore(
   });
 
   let virtualAnchor: HTMLElement | null = null;
-  // Owner of the flip-chain claim, and the popover that holds it; a swapped
-  // popover reference moves the claim on the next open.
+  // Owner of the flip-chain claim, and the popover that holds it. Every open
+  // claims again: the newest claim wins, so a panel shared by triggers in
+  // different config scopes takes the chain of the trigger that opened it. A
+  // swapped popover reference drops the claim on the old one.
   const claimOwner = {};
   let claimedOn: CngxContextMenuTriggerPopoverRef | null = null;
 
   const claimTryFallbacks = (popover: CngxContextMenuTriggerPopoverRef): void => {
-    if (claimedOn === popover) {
-      return;
+    if (claimedOn && claimedOn !== popover) {
+      claimedOn.releasePositionTryFallbacks(claimOwner);
     }
-    claimedOn?.releasePositionTryFallbacks(claimOwner);
     popover.claimPositionTryFallbacks(claimOwner, deps.menuConfig.tryFallbacks);
     claimedOn = popover;
   };
