@@ -18,7 +18,7 @@ export const STORY: DemoSpec = {
   imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuTrigger', 'CngxPopover', 'CngxPopoverTrigger'],
   viewProviders: ['provideMenuConfigAt(withTryFallbacks([]))'],
   setup: `protected readonly flipChain = CNGX_MENU_TRY_FALLBACKS;`,
-  template: `  <div class="button-row" style="padding-block-start: 60vh">
+  template: `  <div style="display: flex; gap: 12px; padding-block-start: 60vh">
     <button
       type="button"
       [cngxMenuTrigger]="stayMenu"
