@@ -173,7 +173,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  *
  * Reorder commits bypass `ArrayCommitHandler.beginToggle` (its
  * `sameArrayContents` guard would skip same-membership reorders) and
- * drive the commit controller directly.
+ * record kind `reorder` on the commit ledger with order-sensitive
+ * equality.
  *
  * Slot tiers: `cngxSelectCheck`, `cngxSelectCaret`, `cngxSelectOptgroup`,
  * `cngxSelectPlaceholder`, `cngxSelectEmpty`, `cngxSelectLoading`,
@@ -270,8 +271,14 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxReorderableMultiSelect).panelHost },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxReorderableMultiSelect).panelHost },
+    {
+      provide: CNGX_SELECT_PANEL_HOST,
+      useFactory: () => inject(CngxReorderableMultiSelect).panelHost,
+    },
+    {
+      provide: CNGX_SELECT_PANEL_VIEW_HOST,
+      useFactory: () => inject(CngxReorderableMultiSelect).panelHost,
+    },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {

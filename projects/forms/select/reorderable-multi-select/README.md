@@ -61,7 +61,7 @@ protected readonly commitAction: CngxSelectCommitAction<string[]> = (intended) =
 />
 ```
 
-Reorder paths bypass `ArrayCommitHandler.beginToggle` (whose `sameArrayContents` guard would skip same-membership changes) and talk to the commit controller directly.
+Reorder paths bypass `ArrayCommitHandler.beginToggle` (whose `sameArrayContents` guard would skip same-membership changes) and record kind `reorder` on the commit ledger with order-sensitive equality.
 The chip strip freezes during a commit in flight (`reorderDisabled = disabled() || isCommitting()`) to prevent racing moves.
 
 ### Chip drag-handle override
