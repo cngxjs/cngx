@@ -72,7 +72,6 @@ function partitionFeatures(
  *   providers: [
  *     provideCngxTabs(
  *       withTabsDefaultOrientation('vertical'),
- *       withTabsAriaLabels({ tabsRegion: 'Bereiche' }),
  *       withTabsI18nLabels({ tabsLabel: 'Bereiche', moreTabsLabel: (n) => `${n} mehr` }),
  *       withTabOverflowStabilizeMs(150),
  *     ),

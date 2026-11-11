@@ -23,12 +23,12 @@ import type { CngxTabIconContext } from './slots/tab-icon.directive';
 import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 /**
- * Aria-label overrides for the tab-group landmark region. \
+ * Aria-label overrides for the tab group (`role="group"`). \
  * Empty by default (the group is named by `CngxTabsI18n.tabsLabel`);
  * consumers override via {@link withTabsAriaLabels}.
  *
  * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
- * {@link CngxTabsI18n}, not here - landmark naming and SR phrasing
+ * {@link CngxTabsI18n}, not here - group naming and SR phrasing
  * stay on separate override paths.
  */
 export interface CngxTabsAriaLabels {
