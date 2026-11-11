@@ -93,11 +93,15 @@ Mutually exclusive with `*cngxMultiSelectChip`.
 
 ### Typeahead-while-closed (toggle on keystroke)
 
-Every printable key while the panel is closed toggles the first matching option (add/remove). Configurable via:
+Every printable key while the panel is closed toggles the first matching option (add/remove). On by default; turn it off with:
 
 ```typescript
-provideCngxSelect(withTypeaheadWhileClosed(true));
+provideCngxSelect(withTypeaheadWhileClosed(false));
 ```
+
+### Chip remove name and clear event
+
+`[chipRemoveAriaLabel]` names the remove button on each chip, combined with the chip label; unset, it reads `ariaLabels.chipRemove`. `(cleared)` emits when the clear button empties the selection, together with `selectionChange`.
 
 ## Mobile sheet
 

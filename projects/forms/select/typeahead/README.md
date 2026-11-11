@@ -63,6 +63,8 @@ Unfocused, the input shows the committed value as text:
 
 Bind `displayWith` when the value is a server id or object the current options may not contain, for example a server-driven search that drops the selected entry.
 
+`[clearOnBlur]` (default `true`) rewrites the input from the committed value when focus leaves and drops unfinished search text. `[searchDebounceMs]` (default from `withSearchDebounce`, 300) delays the filter and `searchTermChange`. `[inputMode]` and `[enterKeyHint]` set the soft-keyboard hints. `(cleared)` emits when the clear button empties the value.
+
 ## Common patterns
 
 ### Server-driven autocomplete
@@ -168,5 +170,5 @@ All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cng
 |-|-|
 | Printable key       | Filter; auto-opens the panel                                   |
 | `Arrow Down` / `Up` | Move highlight                                                 |
-| `Enter`             | Pick highlighted option (closes panel - `closeOnSelect: true`) |
+| `Enter`             | Pick highlighted option and close the panel                    |
 | `Escape`            | Close panel; clear pending input on second press               |

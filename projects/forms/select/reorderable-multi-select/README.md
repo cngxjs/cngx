@@ -62,6 +62,7 @@ protected readonly commitAction: CngxSelectCommitAction<string[]> = (intended) =
 ```
 
 Reorder paths bypass `ArrayCommitHandler.beginToggle` (whose `sameArrayContents` guard would skip same-membership changes) and record kind `reorder` on the commit ledger with order-sensitive equality.
+`(reordered)` fires after `selectionChange` with the same payload for position changes only; with `commitAction` bound it fires on commit success only.
 The chip strip freezes during a commit in flight (`reorderDisabled = disabled() || isCommitting()`) to prevent racing moves.
 
 ### Chip drag-handle override
@@ -164,7 +165,9 @@ drag cancels without commit; pointer release commits.
 ```typescript
 import {
   provideCngxSelect,
+  withReorderAriaLabel,
   withReorderKeyboardModifier,
+  withReorderListLabels,
   withReorderStripFreeze,
   withDefaultDragHandle,
   withDefaultMoveGlyph,
@@ -174,6 +177,8 @@ bootstrapApplication(App, {
   providers: [
     provideCngxSelect(
       withReorderKeyboardModifier('meta'),
+      withReorderAriaLabel('Sort the selected tags'), // chip-strip name
+      withReorderListLabels({ listLabel: 'Order of the selected tags' }), // touch reorder list copy
       withReorderStripFreeze(true),
       withDefaultDragHandle(myDragHandleTemplate),
       withDefaultMoveGlyph(myMoveGlyphTemplate),

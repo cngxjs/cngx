@@ -73,7 +73,15 @@ In a multi-value panel whose rows show their checkbox, a selected row has no fil
 
 To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); the `select` section covers every string below.
 
-Library defaults are English. Override on the per-instance level through ARIA-label inputs, or globally via `withAriaLabels` and `withFallbackLabels` features in the `provideCngxSelect(...)` aggregator.
+Library defaults are English. Override on the per-instance level through ARIA-label inputs, or globally via `withAriaLabels` and `withFallbackLabels` features in the `provideCngxSelect(...)` aggregator; `provideCngxSelectAt(...)` scopes the same features to one component's `viewProviders`. `CNGX_SELECT_LANGUAGE_EN` is the English `select` section, typed `CngxSelectLanguageSection`; a translated pack fills the same shape.
+
+## Programmatic API
+
+Every composite exposes `open()`, `close()`, `toggle()` and `focus()`. All but `CngxTreeSelect` add `patchData(option)`, which appends an option to the local buffer until the server list contains it, and `clearLocalItems()`. Signatures are in the **API** tab.
+
+## Appearance
+
+Every composite hosts `CngxFieldSkinHost` from `@cngx/forms/field` as `[skin]` (`'outline'`, `'fill'`, `'bare'`). Unset, it follows the surrounding field's `[skin]`, then `withFieldSkin(...)`.
 
 ## See also
 

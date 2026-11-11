@@ -53,6 +53,8 @@ export class StackPicker {
 }
 ```
 
+`[labelFn]` sets the display label per node (default `node.label ?? String(value)`). `[keyFn]` is the membership key of the selection; object values that arrive as fresh instances need it. `[chipRemoveAriaLabel]` names the remove button on each chip.
+
 ## Forms integration
 
 Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs bidirectionally with `(values)`.
@@ -184,6 +186,8 @@ Tokens added for the tree skin, all with fallbacks (full list in the Theming tab
 | `--cngx-tree-select-footer-gap` / `-padding` / `-border` | spacing / border tokens | Footer layout |
 | `--cngx-tree-select-chip-remove-gap` | `0px` | Extra space before a chip's remove button |
 
+Glyph inputs on the default node row: `[twistyGlyph]` (both states unless `[twistyOpenGlyph]` is set), `[twistyOpenGlyph]`, and `[checkGlyph]` / `[dashGlyph]` forwarded to the row's checkbox indicator. `*cngxTreeSelectNode` replaces the whole row and ignores them.
+
 The anchored panel aligns to the trigger's inline-start edge and grows toward inline-end; it flips when the viewport has no room.
 
 ## Default changes in 0.1.0
@@ -214,7 +218,7 @@ on the trigger.
 
 ## Limitations
 
-The flat panels (`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`) support virtualisation via `CNGX_PANEL_RENDERER_FACTORY` + `injectRecycler`.
+Flat option lists virtualise by default above 200 rows (`withVirtualization` tunes it; `CngxSelectShell` never does).
 Tree virtualisation is **not implemented** - the recycler contract conflicts with expand-state mutations.
 
 Config keys the tree does not read:

@@ -44,7 +44,7 @@ export class TagCombo {
 
 ## Forms integration
 
-Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The bound `Field<T[]>` syncs bidirectionally with `(values)`.
+Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The bound `Field<T[]>` syncs with the `[(values)]` model.
 
 ## Common patterns
 
@@ -122,6 +122,13 @@ Wired natively - pressing Backspace in an empty input triggers the same commit-a
 ```
 
 Both slot directives accept the same context: `{ disabled, focused, panelOpen }`.
+
+### Inputs worth knowing
+
+- `[closeOnSelect]` (default `false`) closes the panel after a pick.
+- `[searchDebounceMs]` (default from `withSearchDebounce`, 300) delays the filter and `searchTermChange`; `0` updates on every keystroke.
+- `[inputMode]` and `[enterKeyHint]` set the soft-keyboard hints of the input (`withInputMode`, `withEnterKeyHint`).
+- `[chipRemoveAriaLabel]` names the remove button on each chip; `(cleared)` emits when the clear button empties the selection.
 
 ## Mobile sheet
 

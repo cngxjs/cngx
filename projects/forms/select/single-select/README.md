@@ -8,7 +8,7 @@ Native-feeling single-select dropdown - the closest replacement for `<select>` w
 - The trigger should be a button-style summary, not an inline input.
 - For inline-input single-value autocomplete, reach for [`CngxTypeahead`](../typeahead/README.md) instead.
 
-For the eight-variant decision guide see [`ARCHITECTURE.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#pick-your-select-decision-guide).
+For the decision guide see [`ARCHITECTURE.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#pick-your-select-decision-guide).
 
 ## Quick start
 
@@ -91,7 +91,7 @@ protected readonly state = createManualState<CngxSelectOptionDef<string>[]>();
 <cngx-select [options]="[]" [state]="state" [retryFn]="reload" [(value)]="value" />
 ```
 
-The panel automatically renders `loading → success → empty / error → refreshing` views based on the manual-state machine. Override the visuals via the `loadingVariant` and `refreshingVariant` config keys (`'skeleton' | 'spinner' | 'bar' | 'text'`).
+The panel automatically renders `loading → success → empty / error → refreshing` views based on the manual-state machine. Override the visuals via the `loadingVariant` (`'skeleton' | 'spinner' | 'bar' | 'text'`) and `refreshingVariant` (`'bar' | 'spinner' | 'dots' | 'none'`) config keys.
 
 ### Async write with `[commitAction]`
 
