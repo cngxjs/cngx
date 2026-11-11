@@ -91,7 +91,7 @@ describe('theme-system', () => {
     const fallbacks = declarations.filter((d) => MAT_SYS_HEX_FALLBACK.test(d));
     expect(fallbacks.length).toBeGreaterThan(0);
     for (const declaration of fallbacks) {
-      expect(declaration).toMatch(/^--cngx-(sidenav|nav-link)-/);
+      expect(declaration).toMatch(/^--cngx-(sidenav|nav-link|nav-header|nav-footer)-/);
     }
   });
 
