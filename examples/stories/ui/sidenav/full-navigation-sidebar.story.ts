@@ -37,7 +37,8 @@ export const STORY: DemoSpec = {
     <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
                   width="240px" [resizable]="true" shortcut="mod+b">
       <cngx-sidenav-header class="demo-sidenav__header">
-        Workspace
+        <span class="demo-sidenav__brand-mark" aria-hidden="true">W</span>
+        <span class="demo-sidenav__brand-name">Workspace</span>
       </cngx-sidenav-header>
 
       <span cngxNavLabel class="demo-sidenav__label">Main</span>

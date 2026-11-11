@@ -1570,9 +1570,43 @@ button.chip:disabled {
   height: 320px;
 }
 .demo-sidenav__header {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 0.5rem);
   padding: 1rem;
   font-size: 1rem;
   font-weight: 700;
+}
+// The rail clips the header to its width (sidenav-header.ts), so the header
+// leads with a mark that fits the rail; the name leaves the flow on the rail
+// but stays in the accessible name.
+.demo-sidenav__brand-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--demo-sidenav-brand-mark-size, 1.5rem);
+  block-size: var(--demo-sidenav-brand-mark-size, 1.5rem);
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-primary, #4a8cff);
+  color: var(--cngx-color-on-primary, #ffffff);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__header {
+  justify-content: center;
+  padding-inline: 0;
+}
+cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__brand-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
 }
 .demo-sidenav__label {
   display: block;
