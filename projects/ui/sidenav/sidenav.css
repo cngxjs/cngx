@@ -828,6 +828,11 @@
   /* On the collapsed rail, constrain to the rail width */
   cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav__body {
     min-width: var(--cngx-sidenav-mini-width, 56px);
+    /* A reserved classic scrollbar gutter would take a quarter of the rail and
+       push every row off centre. The rail still scrolls by wheel, touch and
+       focus. */
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
   }
 
   /* Collapsed rail: truncate header/footer */
@@ -902,7 +907,7 @@
       color var(--cngx-duration-fast, 150ms);
   }
 
-  cngx-sidenav:not([data-sidebar-state='rail']) :is(.cngx-nav-link, [cngxNavGroup]) {
+  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]) {
     margin-inline: var(--cngx-nav-link-inset, 4px);
   }
 

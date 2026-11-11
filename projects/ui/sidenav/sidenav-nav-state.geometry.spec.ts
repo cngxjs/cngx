@@ -384,6 +384,20 @@ describe('rail row height', () => {
       Math.abs(height(root, '.row-mini-compact') - height(root, '.row-compact')),
     ).toBeLessThanOrEqual(0.5);
   });
+
+  it('centres a rail row in the rail, with no scrollbar gutter on one side', () => {
+    const root = mount();
+    const rail = one(root, '.rail-mini').getBoundingClientRect();
+    const row = one(root, '.row-mini').getBoundingClientRect();
+    const start = row.left - rail.left;
+    const end = rail.right - row.right;
+    expect(Math.abs(start - end)).toBeLessThanOrEqual(1);
+    // The same inset as an expanded row.
+    const expanded = one(root, '.row-active').getBoundingClientRect();
+    const expandedStart =
+      expanded.left - one(root, '.row-active').parentElement!.getBoundingClientRect().left;
+    expect(Math.abs(start - expandedStart)).toBeLessThanOrEqual(0.5);
+  });
 });
 
 describe('double focus ring', () => {
