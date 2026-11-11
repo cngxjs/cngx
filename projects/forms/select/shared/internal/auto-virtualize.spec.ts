@@ -103,10 +103,9 @@ describe('createAutoPanelRenderer - estimateSize clamp', () => {
     expect(renderer.virtualizer!.offsetAfter()).toBeGreaterThan(0);
   });
 
-  it('keeps the 32px default when estimateSize is unset', () => {
-    const renderer = makeRenderer({});
-    // 500px viewport / 32px estimate + overscan - a small window.
-    expect(renderer.renderOptions().length).toBeLessThan(100);
+  it('keeps the 32px fallback when estimateSize is unset and no row is measured', () => {
+    const fallback = makeRenderer({}).renderOptions().length;
+    expect(fallback).toBe(makeRenderer({ estimateSize: 32 }).renderOptions().length);
   });
 });
 
@@ -342,5 +341,67 @@ describe('createAutoPanelRenderer - row probe', () => {
       [first, { box: 'border-box' }],
     ]);
     expect(renderer.renderOptions().length).toBeLessThan(windowAt40);
+  });
+
+  function windowFor(virtualization: CngxSelectVirtualizationConfig, rows: HTMLElement[] = []) {
+    const box = document.createElement('div');
+    Object.defineProperty(box, 'clientHeight', { value: 500, configurable: true });
+    box.append(...rows);
+    document.body.appendChild(box);
+    const { renderer, handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: box,
+      virtualization,
+    });
+    mountRecycler(handle);
+    render();
+    const length = renderer.renderOptions().length;
+    box.remove();
+    return length;
+  }
+
+  it('sizes the window from a measured 40px row like an explicit 40px estimate', () => {
+    expect(windowFor({}, [row(0, 40)])).toBe(windowFor({ estimateSize: 40 }));
+    expect(windowFor({ estimateSize: 40 })).not.toBe(windowFor({ estimateSize: 32 }));
+  });
+
+  it('observes no row and keeps an explicit estimateSize', () => {
+    const length = windowFor({ estimateSize: 40 }, [row(0, 60)]);
+    expect(rowObserves()).toEqual([]);
+    expect(length).toBe(windowFor({ estimateSize: 40 }));
+  });
+
+  it('ignores a row height of 0 and a resize to 0', () => {
+    const { renderer, handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: container,
+      virtualization: {},
+    });
+    container.appendChild(row(0, 0));
+    mountRecycler(handle);
+    render();
+    const fallback = windowFor({ estimateSize: 32 });
+    expect(renderer.renderOptions().length).toBe(fallback);
+
+    ro.triggerResize({ borderBoxSize: [{ blockSize: 0, inlineSize: 0 }] });
+    render();
+    expect(renderer.renderOptions().length).toBe(fallback);
+  });
+
+  it('disconnects the row observer when the recycler is destroyed', () => {
+    const { handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: container,
+      virtualization: {},
+    });
+    container.appendChild(row(0, 40));
+    mountRecycler(handle);
+    render();
+    expect(rowObserves()).toHaveLength(1);
+    expect(ro.disconnect).not.toHaveBeenCalled();
+
+    // One for the recycler's scroll element, one for the measured row.
+    TestBed.resetTestingModule();
+    expect(ro.disconnect).toHaveBeenCalledTimes(2);
   });
 });

@@ -102,14 +102,11 @@ async function jumpAndSettle(panel: Locator, top: number): Promise<SettledScroll
 }
 
 /**
- * A sheet row is taller than the recycler's estimate, so the first jump can land
- * short once the window has grown: the last row is there, no bounce, and the
- * second jump arrives. Anchored rows match the estimate and arrive at once.
+ * One jump arrives at the end: the recycler estimate is the measured row height,
+ * so the unrendered rest is counted right in the sheet as well as anchored.
  */
-async function expectJumpReachesEnd(panel: Locator, jumps: 1 | 2): Promise<void> {
-  const first = await jumpAndSettle(panel, 1_000_000);
-  expect(first.lastRow).toContain('Item 999');
-  const settled = jumps === 2 ? await jumpAndSettle(panel, 1_000_000) : first;
+async function expectJumpReachesEnd(panel: Locator): Promise<void> {
+  const settled = await jumpAndSettle(panel, 1_000_000);
   expect(settled.lastRow).toContain('Item 999');
   expect(settled.rowsInView).toBeGreaterThan(0);
   expect(
@@ -117,14 +114,14 @@ async function expectJumpReachesEnd(panel: Locator, jumps: 1 | 2): Promise<void>
   ).toBeLessThanOrEqual(1);
 }
 
-async function expectJumpsBackFromEnd(panel: Locator, jumps: 1 | 2): Promise<void> {
-  await expectJumpReachesEnd(panel, jumps);
+async function expectJumpsBackFromEnd(panel: Locator): Promise<void> {
+  await expectJumpReachesEnd(panel);
   const atStart = await jumpAndSettle(panel, 0);
   expect(atStart.scrollTop).toBe(0);
   expect(atStart.firstRow).toContain('Item 0');
   expect(atStart.rowsInView).toBeGreaterThan(0);
 
-  await expectJumpReachesEnd(panel, jumps);
+  await expectJumpReachesEnd(panel);
   const middle = Math.floor(atStart.scrollHeight / 2);
   const atMiddle = await jumpAndSettle(panel, middle);
   expect(Math.abs(atMiddle.scrollTop - middle)).toBeLessThan(2);
@@ -202,7 +199,7 @@ test.describe('select family at the default threshold, desktop', () => {
         await page.goto(ALL);
         const panel = await openPanel(page, host);
         await expectScrollHolds(panel, 3000);
-        await expectJumpsBackFromEnd(panel, 1);
+        await expectJumpsBackFromEnd(panel);
       });
     });
   }
@@ -294,13 +291,13 @@ test.describe('select family at the default threshold, phone', () => {
         await expectScrollHolds(panel, 3000);
         await expect(rowsOf(panel).first()).not.toContainText('Item 0');
 
-        await expectJumpReachesEnd(panel, 2);
+        await expectJumpReachesEnd(panel);
       });
 
       test('jumps back from the end to the start and the middle hold', async ({ page }) => {
         await page.goto(ALL);
         const panel = await openPanel(page, host, 'tap');
-        await expectJumpsBackFromEnd(panel, 2);
+        await expectJumpsBackFromEnd(panel);
       });
 
       test('survives a sheet rotation without a console error', async ({ page }) => {

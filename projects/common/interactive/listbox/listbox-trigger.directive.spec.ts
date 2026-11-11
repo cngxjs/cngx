@@ -599,6 +599,16 @@ describe('CngxListboxTrigger - keys inside the search debounce window', () => {
     expect(listbox.ad.activeValue()).toBe('grey');
   });
 
+  it('runs an Enter after the deferred ArrowDown, on the filtered row it highlighted', () => {
+    const { listbox, key, settle, type } = setup();
+    type('gr');
+    key('ArrowDown');
+    key('Enter');
+    settle();
+    expect(listbox.ad.activeValue()).toBe('green');
+    expect(listbox.value()).toBe('green');
+  });
+
   it('drops the deferred key when Escape closes the panel inside the window', () => {
     const { popover, listbox, key, settle, type } = setup();
     type('gr');
