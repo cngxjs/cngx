@@ -297,7 +297,7 @@ export {
   CngxMenuItemSuffix,
 } from './menu/menu-item-slot.directives';
 export { CngxMenuItemSubmenu } from './menu/menu-item-submenu.directive';
-export { CNGX_SUBMENU_TRY_FALLBACKS } from './menu/submenu-defaults';
+export { CNGX_MENU_TRY_FALLBACKS, CNGX_SUBMENU_TRY_FALLBACKS } from './menu/submenu-defaults';
 export { CngxMenuItemCheckbox } from './menu/menu-item-checkbox.directive';
 export { CNGX_MENU_ITEM_OWN_INDICATOR } from './menu/menu-item-indicator';
 export { CngxMenuItemRadio } from './menu/menu-item-radio.directive';
@@ -339,6 +339,7 @@ export {
   withDismissOnScroll,
   withSubmenuCloseDelay,
   withSubmenuOpenDelay,
+  withTryFallbacks,
   withTypeaheadDebounce,
 } from './menu/menu-config-features';
 export {

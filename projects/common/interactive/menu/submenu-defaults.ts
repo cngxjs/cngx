@@ -37,3 +37,17 @@ export const CNGX_SUBMENU_TRY_FALLBACKS = Object.freeze([
   'flip-block',
   'flip-block flip-inline',
 ] as const);
+
+/**
+ * Default `position-try-fallbacks` chain a `CngxMenuTrigger` claims on its
+ * popover ({@link CngxMenuConfig.tryFallbacks}). Block flip first: a menu
+ * hangs below its trigger and clips at the viewport bottom far more often
+ * than at an inline edge. A `[positionTryFallbacks]` bound on the popover
+ * wins over the claim; replace or drop the chain app-wide or per scope via
+ * `withTryFallbacks`.
+ */
+export const CNGX_MENU_TRY_FALLBACKS = Object.freeze([
+  'flip-block',
+  'flip-inline',
+  'flip-block flip-inline',
+] as const);

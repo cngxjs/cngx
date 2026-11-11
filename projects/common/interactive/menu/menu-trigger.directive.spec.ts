@@ -15,12 +15,13 @@ import {
   createMenuFocusStack,
   type CngxMenuFocusStack,
 } from './menu-focus-stack';
-import { provideMenuConfig } from './menu-config';
+import { CNGX_MENU_CONFIG, DEFAULT_MENU_CONFIG, provideMenuConfig } from './menu-config';
 import {
   withDismissOnBlur,
   withDismissOnFocusOut,
   withDismissOnOutsideClick,
   withDismissOnScroll,
+  withTryFallbacks,
 } from './menu-config-features';
 import { CngxMenuTrigger } from './menu-trigger.directive';
 import { CngxMenuItem } from './menu-item.directive';
@@ -168,6 +169,22 @@ describe('CngxMenuTrigger', () => {
     expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe(
       'flip-block, flip-inline, flip-block flip-inline',
     );
+  });
+
+  it('claims the chain the menu config resolves', () => {
+    TestBed.overrideProvider(CNGX_MENU_CONFIG, {
+      useValue: { ...DEFAULT_MENU_CONFIG, tryFallbacks: ['flip-inline'] },
+    });
+    const { popover } = setup();
+    const popoverEl = popover.elementRef.nativeElement as HTMLElement;
+    expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+  });
+
+  it('writes no chain when the menu config opts out with an empty list', () => {
+    TestBed.configureTestingModule({ providers: [provideMenuConfig(withTryFallbacks([]))] });
+    const { popover } = setup();
+    const popoverEl = popover.elementRef.nativeElement as HTMLElement;
+    expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
   });
 
   it('lets a consumer-bound fallback chain win over the menu chain', () => {
