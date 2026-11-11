@@ -24,7 +24,7 @@ import { type CngxTreeSelectFooterContext } from './tree-select.model';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-footer.directive.ts
  * @since 0.1.0
- * @relatedTo CngxTreeSelect, CngxSelectClearButton, withTemplates
+ * @relatedTo CngxTreeSelect, CngxSelectClearButton
  */
 @Directive({
   selector: 'ng-template[cngxTreeSelectFooter]',

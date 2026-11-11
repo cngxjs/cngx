@@ -29,8 +29,6 @@ import { resolveReorderableSelectConfig } from './reorderable-select-config';
  *   );
  * }
  * ```
- *
- * @relatedTo withAriaLabels, withFallbackLabels
  */
 export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
   return resolveSelectConfig();
@@ -54,8 +52,6 @@ export function injectSelectAnnouncer(): CngxSelectAnnouncer {
  * library defaults. Always fully populated - never `null`. Injection
  * context required. Sibling of {@link injectSelectConfig} for the
  * `CngxActionSelect` / `CngxActionMultiSelect` composites.
- *
- * @relatedTo CngxActionSelect, CngxActionMultiSelect
  */
 export function injectActionSelectConfig(): ReturnType<typeof resolveActionSelectConfig> {
   return resolveActionSelectConfig();
@@ -66,8 +62,6 @@ export function injectActionSelectConfig(): ReturnType<typeof resolveActionSelec
  * with library defaults. Always fully populated - never `null`. Injection
  * context required. Sibling of {@link injectSelectConfig} for the
  * `CngxReorderableMultiSelect` composite.
- *
- * @relatedTo CngxReorderableMultiSelect
  */
 export function injectReorderableSelectConfig(): ReturnType<typeof resolveReorderableSelectConfig> {
   return resolveReorderableSelectConfig();

@@ -640,8 +640,6 @@ function feature(config: Partial<CngxSelectConfig>): CngxSelectConfigFeature {
 
 /**
  * Panel width: `'trigger'` (match), fixed px number, or `null` (natural).
- *
- * @relatedTo provideSelectConfig
  */
 export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelectConfigFeature {
   return feature({ panelWidth: width });
@@ -649,8 +647,6 @@ export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelec
 
 /**
  * First-load indicator variant. Default `'spinner'`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelectConfigFeature {
   return feature({ loadingVariant: variant });
@@ -658,8 +654,6 @@ export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelec
 
 /**
  * Sets `skeletonRowCount`. Default `3`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
   return feature({ skeletonRowCount: count });
@@ -667,8 +661,6 @@ export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
 
 /**
  * Sets the refreshing indicator. Default `'bar'`. `'none'` suppresses.
- *
- * @relatedTo provideSelectConfig
  */
 export function withRefreshingVariant(
   variant: CngxSelectRefreshingVariant,
@@ -678,8 +670,6 @@ export function withRefreshingVariant(
 
 /**
  * Default `[commitAction]` error surface. Default `'banner'`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withCommitErrorDisplay(
   display: CngxSelectCommitErrorDisplay,
@@ -690,8 +680,6 @@ export function withCommitErrorDisplay(
 /**
  * Forces the scalar-commit error-announce policy. `null` restores each
  * variant's baseline.
- *
- * @relatedTo provideSelectConfig
  */
 export function withCommitErrorAnnouncePolicy(
   policy: CngxCommitErrorAnnouncePolicy | null,
@@ -702,8 +690,6 @@ export function withCommitErrorAnnouncePolicy(
 /**
  * Default popover placement for flat variants. Default `'bottom'`.
  * Action organisms use `withActionPopoverPlacement`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withPopoverPlacement(placement: PopoverPlacement): CngxSelectConfigFeature {
   return feature({ popoverPlacement: placement });
@@ -711,8 +697,6 @@ export function withPopoverPlacement(placement: PopoverPlacement): CngxSelectCon
 
 /**
  * Sets `inputmode` for input-trigger variants. Default `'search'`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withInputMode(
   mode: NonNullable<CngxSelectConfig['inputMode']>,
@@ -723,8 +707,6 @@ export function withInputMode(
 /**
  * Forces `enterkeyhint` across input-trigger variants. `null` restores
  * each variant's baseline.
- *
- * @relatedTo provideSelectConfig
  */
 export function withEnterKeyHint(
   hint: NonNullable<CngxSelectConfig['enterKeyHint']> | null,
@@ -735,8 +717,6 @@ export function withEnterKeyHint(
 /**
  * Sets the chip-strip overflow mode. Default `'wrap'`. `'fit'` keeps one row
  * and folds the chips that do not fit the trigger into the `+N` badge.
- *
- * @relatedTo provideSelectConfig
  */
 export function withChipOverflow(
   mode: NonNullable<CngxSelectConfig['chipOverflow']>,
@@ -747,8 +727,6 @@ export function withChipOverflow(
 /**
  * Sets `maxVisibleChips` for truncate mode. Default `3`. Values below 1
  * resolve to 1, fractions are floored, non-finite values fall back to 3.
- *
- * @relatedTo provideSelectConfig
  */
 export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
   return feature({ maxVisibleChips: count });
@@ -772,8 +750,6 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
  *
  * Does not apply to `CngxSelectShell`: its options are projected, so every row
  * stays in the DOM whatever the config says.
- *
- * @relatedTo provideSelectConfig
  */
 export function withVirtualization(
   config: CngxSelectVirtualizationConfig | boolean | null = true,
@@ -802,8 +778,6 @@ export function withVirtualization(
  *   ],
  * });
  * ```
- *
- * @relatedTo provideSelectConfig
  */
 export function withFallbackLabels(
   labels: CngxSelectFallbackLabels | Signal<CngxSelectFallbackLabels>,
@@ -813,8 +787,6 @@ export function withFallbackLabels(
 
 /**
  * Class list applied to every select panel.
- *
- * @relatedTo provideSelectConfig
  */
 export function withPanelClass(panelClass: string | readonly string[]): CngxSelectConfigFeature {
   return feature({ panelClass });
@@ -824,8 +796,6 @@ export function withPanelClass(panelClass: string | readonly string[]): CngxSele
  * Sets `typeaheadDebounceInterval` in ms: the closed-trigger typeahead buffer
  * window of the button-trigger variants. Default `300`. The search debounce of
  * the input variants is `withSearchDebounce`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
   return feature({ typeaheadDebounceInterval: ms });
@@ -841,8 +811,6 @@ export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
  * ```ts
  * provideSelectConfig(withSearchDebounce(150));
  * ```
- *
- * @relatedTo provideSelectConfig
  */
 export function withSearchDebounce(ms: number): CngxSelectConfigFeature {
   return feature({ searchDebounceMs: ms });
@@ -850,8 +818,6 @@ export function withSearchDebounce(ms: number): CngxSelectConfigFeature {
 
 /**
  * Typeahead-while-closed (native `<select>` parity). Default `true`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeature {
   return feature({ typeaheadWhileClosed: enabled });
@@ -868,8 +834,6 @@ export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeat
  *   withSearchMatchFn((option, term) => option.label.startsWith(term)),
  * );
  * ```
- *
- * @relatedTo provideSelectConfig
  */
 export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfigFeature {
   return feature({ searchMatchFn: fn });
@@ -878,8 +842,6 @@ export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfi
 /**
  * Whether the selected-option checkmark is rendered at all. Default `true`.
  * `CngxTreeSelect` ignores it and always renders its node checkbox.
- *
- * @relatedTo provideSelectConfig
  */
 export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showSelectionIndicator: enabled });
@@ -888,8 +850,6 @@ export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeatur
 /**
  * Sets the selection-indicator position: `'after'` (default) at the row end,
  * `'before'` ahead of the label.
- *
- * @relatedTo provideSelectConfig
  */
 export function withSelectionIndicatorPosition(
   position: CngxSelectSelectionIndicatorPosition,
@@ -900,8 +860,6 @@ export function withSelectionIndicatorPosition(
 /**
  * Sets the selection-indicator glyph. Default `'auto'`. `CngxTreeSelect`
  * ignores it and always renders its node checkbox.
- *
- * @relatedTo provideSelectConfig
  */
 export function withSelectionIndicatorVariant(
   variant: CngxSelectSelectionIndicatorVariant,
@@ -911,8 +869,6 @@ export function withSelectionIndicatorVariant(
 
 /**
  * Whether the trigger's dropdown caret glyph is rendered. Default `true`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withCaret(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showCaret: enabled });
@@ -922,8 +878,6 @@ export function withCaret(enabled: boolean): CngxSelectConfigFeature {
  * Whether the trigger is re-focused after the anchored popover closes.
  * Default `true`. The modal mobile sheet ignores it: closing a modal dialog
  * always returns focus to its opener.
- *
- * @relatedTo provideSelectConfig
  */
 export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
   return feature({ restoreFocus: enabled });
@@ -934,8 +888,6 @@ export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
  * Escape vectors; focus leaving the host (Tab navigation out of the control)
  * closes the panel in every mode, `'escape'` included - a Tab-navigation
  * close is not an outside dismissal, so no `dismissOn` value suppresses it.
- *
- * @relatedTo provideSelectConfig
  */
 export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectConfigFeature {
   return feature({ dismissOn: mode });
@@ -948,7 +900,7 @@ export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectCo
  * `[presentation]` wins.
  *
  * @since 0.1.0
- * @relatedTo CngxPopoverSheet, provideSelectConfig
+ * @relatedTo CngxPopoverSheet
  * <example-url>/#/forms/select/mobile-sheet/opt-out</example-url>
  */
 export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSelectConfigFeature {
@@ -958,8 +910,6 @@ export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSele
 /**
  * Open strategy for the trigger, honoured by all nine composites; the input
  * variants open on focus of their text input. Default `'click'`.
- *
- * @relatedTo provideSelectConfig
  */
 export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFeature {
   return feature({ openOn: mode });
@@ -968,8 +918,6 @@ export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFe
 /**
  * Configure the live-region announcer used for selection changes. Pass a
  * `Signal` to swap the formatter on a runtime language switch.
- *
- * @relatedTo provideSelectConfig
  */
 export function withAnnouncer(
   config: CngxSelectAnnouncerConfig | Signal<CngxSelectAnnouncerConfig>,
@@ -993,8 +941,6 @@ export function withAnnouncer(
  *   ],
  * });
  * ```
- *
- * @relatedTo provideSelectConfig
  */
 export function withAriaLabels(
   labels: CngxSelectAriaLabels | Signal<CngxSelectAriaLabels>,
@@ -1037,7 +983,6 @@ export function withAriaLabels(
  *   deps: [SelectDefaults],
  * }
  * ```
- * @relatedTo provideSelectConfig, makeSelectConfig
  */
 export function withTemplates(
   templates: NonNullable<CngxSelectConfig['templates']>,

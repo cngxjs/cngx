@@ -138,8 +138,6 @@ function feature(config: Partial<CngxReorderableSelectConfig>): CngxReorderableS
 
 /**
  * Sets the keyboard modifier gating reorder moves.
- *
- * @relatedTo provideReorderableSelectConfig
  */
 export function withReorderKeyboardModifier(
   modifier: CngxReorderModifier,
@@ -150,8 +148,6 @@ export function withReorderKeyboardModifier(
 /**
  * Sets the chip-strip ARIA label. Pass a `Signal` to follow a runtime
  * language switch.
- *
- * @relatedTo provideReorderableSelectConfig
  */
 export function withReorderAriaLabel(
   label: string | Signal<string>,
@@ -165,8 +161,6 @@ export function withReorderAriaLabel(
  * the reasons the end buttons are unavailable. Each key takes a value or a
  * `Signal`, so a runtime language switch reaches it; unset keys keep the
  * `select` language section.
- *
- * @relatedTo provideReorderableSelectConfig
  */
 export function withReorderListLabels(
   labels: Pick<
@@ -179,8 +173,6 @@ export function withReorderListLabels(
 
 /**
  * Sets the default drag-handle glyph app-wide via `TemplateRef<void>`.
- *
- * @relatedTo provideReorderableSelectConfig
  */
 export function withDefaultDragHandle(
   template: TemplateRef<void> | null,
@@ -192,8 +184,6 @@ export function withDefaultDragHandle(
  * Sets the default move-up / move-down glyph of the touch reorder list
  * app-wide via `TemplateRef<CngxMultiSelectMoveGlyphContext>`; the context
  * carries the `direction`. `null` keeps the default triangles.
- *
- * @relatedTo provideReorderableSelectConfig
  */
 export function withDefaultMoveGlyph(
   template: TemplateRef<CngxMultiSelectMoveGlyphContext> | null,
@@ -204,8 +194,6 @@ export function withDefaultMoveGlyph(
 /**
  * Sets strip-freeze-on-commit. `false` lets reorders supersede in-flight
  * commits via the commit-controller's supersede semantics.
- *
- * @relatedTo provideReorderableSelectConfig
  */
 export function withReorderStripFreeze(freeze: boolean): CngxReorderableSelectConfigFeature {
   return feature({ freezeStripOnCommit: freeze });
