@@ -479,7 +479,8 @@ export class CngxPopover {
   /**
    * Programmatic override of {@link positionTryFallbacks}, paired with
    * {@link placementOverride} so a submenu wiring installs the flip chain too.
-   * `null` (default) defers to the `[positionTryFallbacks]` input.
+   * `null` (default) defers to the `[positionTryFallbacks]` input, then to
+   * the last live composer claim ({@link claimPositionTryFallbacks}).
    */
   private readonly positionTryFallbacksOverrideState = signal<
     readonly PopoverPositionTryFallback[] | null
@@ -1015,7 +1016,8 @@ export class CngxPopover {
 
   /**
    * @internal Install or clear the programmatic {@link positionTryFallbacks}
-   * override. `null` defers back to the `[positionTryFallbacks]` input.
+   * override. `null` defers back to the `[positionTryFallbacks]` input, then
+   * to the last live composer claim.
    */
   setPositionTryFallbacksOverride(value: readonly PopoverPositionTryFallback[] | null): void {
     this.positionTryFallbacksOverrideState.set(value);
