@@ -306,7 +306,7 @@ Consumers override via:
 
 The reorderable chip drag handle has no glyph fallback: `*cngxMultiSelectChipHandle` wins over `[chipDragHandle]` (app-wide default via `withDefaultDragHandle`), and with neither no grip renders. The move buttons of the touch reorder list follow the same shape: `*cngxMultiSelectMoveGlyph` wins over `[moveGlyph]` (app-wide default via `withDefaultMoveGlyph`), and with neither the list draws its default triangles. The projected glyph sits in an `aria-hidden` wrapper and gets `{ $implicit, direction }`.
 
-The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component - we assume consumers bring their own design system.
+The mobile sheet header renders its buttons with `CngxButton` / `CngxCloseButton` from `@cngx/common/button`. Every other glyph comes from the `@cngx/utils` icon set; consumers replace any of them through the slots above.
 
 ---
 
@@ -665,16 +665,16 @@ On a coarse, narrow viewport every variant opens its panel as a modal sheet inst
 
 ## Class size and decompose strategy
 
-Each composite's `*.component.ts` file runs from roughly 1080 to 1410 lines (730 to 940 lines without comments), depending on value-shape complexity.
+Each composite's `*.component.ts` file runs past a thousand lines, depending on value-shape complexity.
 Sub-200-LOC targets are structurally unreachable under the locked patterns (no inheritance, no abstract base classes).
 The 18 DI tokens + the slot system ARE the real decompose strategy: they eliminate cross-variant duplication and let consumers swap implementations.
 
 **Atomic-decompose contract.** Each variant is decompose-ready:
 
 - Thin `@Component` declaration.
-- `hostDirectives: []` minimal - most variants use only the popover trigger directives.
+- `hostDirectives` carries only `CngxFieldSkinHost` (the `[skin]` input); the popover trigger sits in the template.
 - DI-token contracts for every internal logic block.
-- CSS split: `select-base.css` (structural, family-shared) +`<variant>.component.css` (trigger skin). The schematic can eject the trigger skin into the consumer's project while keeping the base styles linked from the library.
+- CSS split: `select-base.css` (structural, family-shared) + `<variant>.component.css` (trigger skin).
 
 **What is genuinely variant-specific** and does NOT factor out:
 

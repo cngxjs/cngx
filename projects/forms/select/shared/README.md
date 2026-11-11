@@ -548,7 +548,6 @@ Family-shared structural CSS. Panel frame, option rows, skeleton shimmer (`prefe
 All values are `--cngx-*` CSS custom properties with sensible fallbacks.
 
 Variant-specific trigger skin lives next to each variant in `<variant>.component.css` and is `styleUrls`-linked alongside this file.
-The schematic can eject the trigger skin into the consumer's project while keeping `select-base.css` linked from the library.
 
 
 
