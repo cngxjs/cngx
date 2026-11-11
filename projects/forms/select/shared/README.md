@@ -80,9 +80,7 @@ Callable as `runCommitAction<T>(action, intended, handlers)`; returns a `CngxCom
 
 ### `commit-controller.token.ts`
 
-Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncState<T | undefined>` slot, the monotonic `commitId` for supersede semantics, the `intendedValue` signal driving the option-row spinner, and the `begin(action, intended, previous, handlers)`
-
-- `cancel()` API.
+Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncState<T | undefined>` slot, the monotonic `commitId` for supersede semantics, the `intendedValue` signal driving the option-row spinner, and the `begin(action, intended, previous, handlers)` + `cancel()` API.
 
 | Symbol | Purpose |
 |-|-|
@@ -92,7 +90,7 @@ Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncSta
 | `CngxSelectCommitControllerFactory`     | DI factory type                           |
 | `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | DI token                                  |
 
-Override the token to wrap the controller with retry-with-backoff, offline queues, or telemetry - every variant picks up the override without a fork.
+Override the token to wrap the controller; every variant picks up the override without a fork.
 
 ### `commit-handler-core.ts`
 
@@ -178,9 +176,7 @@ announce channel, see [`ARCHITECTURE.md` § Commit-action lifecycle](../ARCHITEC
 
 ### `chip-removal-handler.ts`
 
-Per-chip ✕ click + Backspace-on-empty handler. Owns the disabled-guard
-
-- `[...values()]` snapshot + `compareWith`-filtered next array + commit/sync branch dispatch + WeakMap closure cache (so `removeFor(item)` returns stable identity across CD cycles).
+Per-chip remove click + Backspace-on-empty handler. Owns the disabled-guard, the `[...values()]` snapshot + `compareWith`-filtered next array + commit/sync branch dispatch + WeakMap closure cache (so `removeFor(item)` returns stable identity across CD cycles).
 
 `removeOverride` escape hatch lets `CngxTreeSelect` keep its tree-aware mutation path while still using the WeakMap caching + disabled-guard.
 
@@ -417,8 +413,7 @@ trigger-label directives have **no** config tier: they are projected per instanc
 only. They live outside the shared registry queries, so an app-wide default would
 need a per-variant registry extension, and no consumer has asked for app-wide
 chip / node / affix defaults. The reorderable drag handle is the exception - it
-has its own config tier through `withDefaultDragHandle`. Tracked as accepted debt
-(select-family register, section 8).
+has its own config tier through `withDefaultDragHandle`.
 
 ### `template-registry.ts`
 
@@ -564,7 +559,7 @@ Internal helpers. `handleFlatNavPageJumpKey` serves the button-trigger variants;
 ### `select-base.css`
 
 Family-shared structural CSS. Panel frame, option rows, skeleton shimmer (`prefers-reduced-motion`-aware), spinner / loading-bar / refreshing-spinner / dots animations, option-row commit feedback, panel- level error surfaces, chip strip layout (shared by `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`'s clear button surface, `CngxReorderableMultiSelect`, `CngxActionMultiSelect`, `CngxTreeSelect`), chip drag/drop styles for reorder.
-All values are `--cngx-*` CSS custom properties with sensible fallbacks.
+All values are `--cngx-*` CSS custom properties with fallbacks.
 
 Variant-specific trigger skin lives next to each variant in `<variant>.component.css` and is `styleUrls`-linked alongside this file.
 

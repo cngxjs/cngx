@@ -1,9 +1,9 @@
 # `@cngx/forms/select` - Architecture
 
 > The nine-composite select family - eight data-driven variants (single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select) plus the declarative `<cngx-select-shell>`.
-> Same commit machinery, same async-state machine, same slot system, nine different value-shape × trigger × option-source combinations.
+> They share one commit machinery, async-state machine and slot system, and differ in value shape, trigger and option source.
 
-This document is the canonical entry point for understanding how the family is composed, where to override behaviour, and which variant to reach for.
+This document explains how the family is composed and where to override behaviour.
 For day-to-day API reference (inputs, outputs, signals, CSS variables) see the compodoc output (`npm run docs:serve`) or the in-source JSDoc.
 
 ---
@@ -203,12 +203,12 @@ Every shared factory has a corresponding DI token - providers can swap the defau
 | `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`       | `createLocalItemsBuffer`       | Quick-create local-items persistence                        |
 | `CNGX_PANEL_RENDERER_FACTORY`           | `createIdentityPanelRenderer`  | Panel render strategy (default = identity, opt-in recycler) |
 | `CNGX_PROJECTED_OPTION_MODEL_FACTORY`   | `createProjectedOptionModel`   | Option model for projected `<cngx-option>` children (shell) |
-| `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`     | `createChipRemovalHandler`     | Chip ✕ disabled-guard + commit branch + WeakMap closure     |
+| `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`     | `createChipRemovalHandler`     | Chip remove disabled-guard + commit branch + WeakMap closure |
 | `CNGX_FLAT_NAV_STRATEGY`                | `createDefaultFlatNavStrategy` | PageUp/Down + typeahead-while-closed policy                 |
 
 `CNGX_SELECTION_CONTROLLER_FACTORY` (`createSelectionController`, from `@cngx/core/utils`) is the multi-mode membership engine. The core and the tree variant inject it; it is a core token, so it is not counted in the table above.
 
-All eighteen tokens are `providedIn: 'root'` with sensible defaults, overrideable per-component via `viewProviders`.
+All eighteen tokens are `providedIn: 'root'` with library defaults, overrideable per-component via `viewProviders`.
 The override never breaks because the factory shape is captured in a `Cngx<Name>Factory` type alias - overrides match the exact signature.
 
 ---
@@ -562,7 +562,7 @@ and keyboard browsing read `disabled()` only. Clear buttons and chip
 remove affordances are not rendered while writes are blocked.
 
 **Live ARIA on the trigger**: `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage` come from `core.triggerAria`. `aria-expanded`, `aria-haspopup` and `aria-controls` have one writer, `CngxPopoverTrigger`: the template binds `[haspopup]="sheetWiring.triggerHaspopup()"` and `[controls]="sheetWiring.triggerControls()"` (the listbox / tree id while anchored, `'dialog'` and the sheet id while modal).
-All are reactive computeds - they always reflect the current state, never go stale.
+All are reactive computeds.
 
 **TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav + Home/End + typeahead) composed with `CngxHierarchicalNav` (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
 Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.

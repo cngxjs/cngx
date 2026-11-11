@@ -91,7 +91,7 @@ On a fine pointer the strip stays on one line: the first `maxVisibleChips` displ
 
 Each parent row shows a muted selected-of-total count at its inline end (`2/3`) once a descendant is selected; descendants of every level count. The count is `aria-hidden`, since `aria-checked` (`true` / `mixed` / `false`) already carries the state. `*cngxTreeSelectNodeCount` replaces it and renders for every parent, zero included.
 
-Below the tree the panel shows a footer with the selected count and a clear-all button. Clear-all runs the commit-aware clear (announcement, `cleared`, `selectionChange`) and keeps focus in the panel. It shows whether or not `[clearable]` is set (that input governs the trigger ✕ only); with nothing selected it is `aria-disabled` and described by the count. Its label follows the trigger clear button: `clearButtonAriaLabel`, then `CNGX_SELECT_CONFIG.ariaLabels.clearButton`, then the `select.resetSelection` copy. `*cngxTreeSelectFooter` replaces the footer.
+Below the tree the panel shows a footer with the selected count and a clear-all button. Clear-all runs the commit-aware clear (announcement, `cleared`, `selectionChange`) and keeps focus in the panel. It shows whether or not `[clearable]` is set (that input governs the trigger clear button only); with nothing selected it is `aria-disabled` and described by the count. Its label follows the trigger clear button: `clearButtonAriaLabel`, then `CNGX_SELECT_CONFIG.ariaLabels.clearButton`, then the `select.resetSelection` copy. `*cngxTreeSelectFooter` replaces the footer.
 
 ### Custom node-row rendering
 
@@ -196,7 +196,7 @@ Not migratable by a schematic; each has a way back.
 
 | Change | Before | Way back |
 |-|-|-|
-| A fully selected subtree shows one chip (`chipDisplay` `'parents'` with `cascadeChildren`); removing it clears the subtree | Parent chip plus every child chip; chip ✕ always single-deselect | `chipDisplay="all"`: every value gets a chip and each ✕ deselects one value |
+| A fully selected subtree shows one chip (`chipDisplay` `'parents'` with `cascadeChildren`); removing it clears the subtree | Parent chip plus every child chip; chip remove always single-deselect | `chipDisplay="all"`: every value gets a chip and each chip remove deselects one value |
 | The chip strip stays on one line with a `+N` chip after `maxVisibleChips` | Every chip, wrapping onto more lines | Raise `[maxVisibleChips]` to show more chips on the line, or project `*cngxTreeSelectTriggerLabel` for a custom (also wrapping) strip |
 | Under the touch floor a finger tap on a parent row expands it | A tap on the row selected the subtree | Tap the checkbox to select; `[cngxTouchTarget]="'off'"` on an ancestor drops the floor and the row tap, or a projected `*cngxTreeSelectNode` row owns its click |
 | A checked row has no fill; the checkbox and a heavier label weight carry the selection (also under the Material bridge) | Selected rows were filled | `--cngx-tree-select-node-selected-bg` sets a fill again |

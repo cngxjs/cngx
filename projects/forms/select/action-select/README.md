@@ -1,7 +1,7 @@
 # CngxActionSelect
 
 Single-value variant of [`CngxTypeahead`](../typeahead/README.md) that hosts an inline action workflow inside the panel.
-The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel - the slot context exposes `commit()` / `close()` / `isPending` / `dirty` / `retry()` / `error` so consumer markup orchestrates the inline workflow declaratively.
+The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel; the slot context is listed under [Action slot context](#action-slot-context).
 
 ## When to use
 
@@ -114,7 +114,7 @@ The `*cngxSelectAction` template receives a context object with:
   </div>
   } @else {
   <button type="button" [disabled]="!term || pending" (click)="commit()">
-    @if (pending) { ⏳ } @else { + Create "{{ term }}" }
+    @if (pending) { Creating... } @else { + Create "{{ term }}" }
   </button>
   }
 </ng-template>

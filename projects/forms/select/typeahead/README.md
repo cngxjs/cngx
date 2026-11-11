@@ -144,7 +144,7 @@ Optimistic mode closes the panel and writes immediately; rolls back on error and
 ```html
 <cngx-typeahead [options]="users" [displayWith]="display" [(value)]="value">
   <ng-template cngxSelectInputPrefix>
-    <span aria-hidden="true">🔍</span>
+    <span aria-hidden="true">Search</span>
   </ng-template>
 </cngx-typeahead>
 ```

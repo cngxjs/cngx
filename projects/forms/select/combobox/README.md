@@ -1,13 +1,13 @@
 # CngxCombobox
 
-Multi-value tag picker with an inline `<input role="combobox">` -type to filter, pick to commit.
+Multi-value tag picker with an inline `<input role="combobox">`. Type to filter, pick to commit.
 Same chip strip as [`CngxMultiSelect`](../multi-select/README.md), but the trigger lets users narrow the option list with live search.
 
 ## When to use
 
 - Selecting multiple values from a long list where typeahead matters.
 - Server-driven autocomplete that returns a candidate list per keystroke.
-- A "tag input" experience: chips on the left, free-text input on the right.
+- A tag input: chips, then a free-text input.
 
 For single-value autocomplete reach for [`CngxTypeahead`](../typeahead/README.md).
 For a button trigger reach for [`CngxMultiSelect`](../multi-select/README.md).
@@ -106,14 +106,14 @@ The chip strip is suppressed; the search input stays visible next to the summary
 
 ### Backspace-on-empty removes the trailing chip
 
-Wired natively - pressing Backspace in an empty input triggers the same commit-aware path as the chip ✕ button.
+Wired natively - pressing Backspace in an empty input triggers the same commit-aware path as the chip remove button.
 
 ### Input adornments
 
 ```html
 <cngx-combobox [options]="tags" [(values)]="values">
   <ng-template cngxSelectInputPrefix>
-    <span aria-hidden="true">🔍</span>
+    <span aria-hidden="true">Search</span>
   </ng-template>
   <ng-template cngxSelectInputSuffix let-pending="panelOpen">
     @if (pending) { <span aria-hidden="true">▾</span> }
