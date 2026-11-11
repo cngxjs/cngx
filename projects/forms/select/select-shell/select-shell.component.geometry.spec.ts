@@ -134,11 +134,15 @@ describe('CngxSelectShell geometry', () => {
   });
 });
 
-// 1000 projected options at the 44px touch floor: off-screen rows skip layout
-// and paint (content-visibility) yet stay in the DOM and the a11y tree, and
-// scrolling, keyboard reach and the active-row chrome still behave.
+// 1000 projected options at the 44px touch floor: the shell never windows, so
+// every row stays in the DOM and the a11y tree, and scrolling, keyboard reach
+// and the active-row chrome still behave.
 describe('CngxSelectShell with 1000 projected options', () => {
-  async function mountMany(value?: number, targetMin: string | null = '44px') {
+  async function mountMany(
+    value?: number,
+    targetMin: string | null = '44px',
+    beforeOpen?: (root: HTMLElement) => void,
+  ) {
     const fixture = TestBed.createComponent(ManyHost);
     mountedRoot = fixture.nativeElement as HTMLElement;
     if (targetMin !== null) {
@@ -150,6 +154,7 @@ describe('CngxSelectShell with 1000 projected options', () => {
     }
     fixture.detectChanges();
     await fixture.whenStable();
+    beforeOpen?.(mountedRoot);
     fixture.componentInstance.shell().open();
     const settle = async (): Promise<void> => {
       fixture.detectChanges();
@@ -171,29 +176,76 @@ describe('CngxSelectShell with 1000 projected options', () => {
     return r.height > 0 && r.bottom > s.top && r.top < s.bottom;
   };
 
-  it('keeps all 1000 options in the tree with off-screen ones skipped, not collapsed', async () => {
+  const fullyInView = (scroller: HTMLElement, row: HTMLElement): boolean => {
+    const s = scroller.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    return r.height > 0 && r.top >= s.top - 0.5 && r.bottom <= s.bottom + 0.5;
+  };
+
+  const pressEnd = (root: HTMLElement): void => {
+    query(root, '.cngx-select-shell__trigger').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }),
+    );
+  };
+
+  // No touch floor: a 44px floor would hold two text lines and hide the
+  // difference between a one-line estimate and the real row.
+  it('End onto a 2-line row is fully in view after 30 frames and after a second End', async () => {
+    const { root, settle, scroller, options } = await mountMany(undefined, null);
+    for (const row of options().slice(900)) {
+      row.innerHTML = `Line one ${row.id}<br>Line two`;
+    }
+    await settle();
+    pressEnd(root);
+    await settle();
+    await frames(30);
+    const last = options()[999];
+    expect(fullyInView(scroller, last)).toBe(true);
+    pressEnd(root);
+    await settle();
+    expect(fullyInView(scroller, last)).toBe(true);
+  });
+
+  it('after every row rendered once, a root font-size change then End keeps the active option in view', async () => {
+    const { root, settle, scroller, options } = await mountMany(undefined, null);
+    const html = document.documentElement;
+    try {
+      for (let top = 0; top <= scroller.scrollHeight; top += 200) {
+        scroller.scrollTop = top;
+        await frames(2);
+      }
+      scroller.scrollTop = scroller.scrollHeight / 2;
+      await frames(2);
+      html.style.fontSize = '20px';
+      await frames(4);
+      pressEnd(root);
+      await settle();
+      await frames(30);
+      expect(fullyInView(scroller, options()[999])).toBe(true);
+    } finally {
+      html.style.fontSize = '';
+    }
+  });
+
+  it('keeps the panel inline size when a long label far down the list scrolls into view', async () => {
+    const { settle, scroller, options } = await mountMany(undefined, '44px', (root) => {
+      const row = root.querySelectorAll<HTMLElement>('cngx-option')[900];
+      row.textContent = 'Quarterly revenue by region and product line';
+    });
+    const before = scroller.getBoundingClientRect().width;
+    options()[900].scrollIntoView({ block: 'center' });
+    await settle();
+    expect(scroller.getBoundingClientRect().width).toBe(before);
+  });
+
+  it('keeps all 1000 options in the tree with off-screen ones laid out, not collapsed', async () => {
     const { scroller, options } = await mountMany();
     const all = options();
     expect(all.length).toBe(1000);
     const far = all[900];
     expect(inView(scroller, far)).toBe(false);
-    expect(computedValue(far, 'content-visibility')).toBe('auto');
     expect(far.getBoundingClientRect().height).toBeGreaterThan(0);
   });
-
-  // A skipped row that differs from a rendered one shifts the list once the
-  // rows around a mid-list target render, and the target leaves the view.
-  for (const targetMin of [null, '44px']) {
-    it(`sizes a skipped row like a rendered one (target-min ${targetMin ?? 'unset'})`, async () => {
-      const { scroller, options } = await mountMany(undefined, targetMin);
-      const all = options();
-      const rendered = all[0];
-      const skipped = all[900];
-      expect(inView(scroller, rendered)).toBe(true);
-      expect(inView(scroller, skipped)).toBe(false);
-      expect(skipped.getBoundingClientRect().height).toBe(rendered.getBoundingClientRect().height);
-    });
-  }
 
   it('shows the last option after a jump to the end', async () => {
     const { settle, scroller, options } = await mountMany();
@@ -218,8 +270,7 @@ describe('CngxSelectShell with 1000 projected options', () => {
     expect(inView(scroller, last)).toBe(true);
   });
 
-  // Paint containment clips at the row box: the active-row tint and every
-  // painted part of the row must sit inside it.
+  // The active-row tint and every painted part of the row sit inside the row box.
   it('paints the highlight and the row chrome inside the active option box', async () => {
     const { settle, scroller, options } = await mountMany(500);
     await settle();
