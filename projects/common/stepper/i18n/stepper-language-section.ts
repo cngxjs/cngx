@@ -25,7 +25,7 @@ export interface CngxStepperStatusLanguage {
  * @relatedTo CNGX_STEPPER_I18N, CNGX_STEPPER_CONFIG
  */
 export interface CngxStepperLanguageSection {
-  /** Accessible name of the stepper; last-tier role description. */
+  /** Accessible name of the stepper. */
   readonly stepperLabel: string;
   /** `aria-roledescription` of the stepper organism. */
   readonly stepRoleDescription: string;

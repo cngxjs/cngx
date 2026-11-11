@@ -26,10 +26,7 @@ export type CngxStepperStatusLabels = CngxStepperStatusLanguage;
 export interface CngxStepperI18n {
   /**
    * Accessible name of the stepper; only a per-instance `[aria-label]` or
-   * `[aria-labelledby]` overrides it. Also the last tier of the organism's
-   * `aria-roledescription`, which applies only while
-   * `fallbackLabels.stepRoleDescription` (default `'stepper'`) is unset;
-   * localise that through `withStepperFallbackLabels(...)`.
+   * `[aria-labelledby]` overrides it.
    */
   readonly stepperLabel: string;
   /**

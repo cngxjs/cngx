@@ -47,6 +47,7 @@ import {
   type CngxStepperSkin,
   CngxStepRejection,
   CNGX_STEPPER_HOST,
+  CNGX_STEPPER_LANGUAGE_EN,
   CngxStepperCount,
   createStepperAccname,
   createStepperAnnouncementBuilders,
@@ -295,9 +296,13 @@ export class CngxStepper implements CngxStepPanelHost {
 
   private readonly fallbackLabels = coerceSignal(this.config.fallbackLabels);
 
-  /** Stepper landmark role-description with config + i18n cascade. */
+  /**
+   * Stepper landmark role-description: config `fallbackLabels`, then the
+   * library default. Never the stepper name, which is the accessible name.
+   */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.fallbackLabels()?.stepRoleDescription ?? this.i18n().stepperLabel,
+    () =>
+      this.fallbackLabels()?.stepRoleDescription ?? CNGX_STEPPER_LANGUAGE_EN.stepRoleDescription,
   );
 
   /** Resolved skin / connectors / mobile-indicator host attrs (Level-2 cascade helper). */

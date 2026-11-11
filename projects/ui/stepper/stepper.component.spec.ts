@@ -19,6 +19,7 @@ import {
 import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 
 import {
+  CNGX_STEPPER_CONFIG,
   CngxStep,
   CngxStepGroup,
   CngxStepIndicator,
@@ -860,6 +861,35 @@ describe('CngxStepper organism', () => {
     fixture.detectChanges();
     const group = fixture.nativeElement.querySelector('.cngx-stepper__group-header') as HTMLElement;
     expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
+  });
+
+  it('aria-label and aria-roledescription do not collide under a config without fallbackLabels', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper>
+          <div cngxStep label="A"></div>
+        </cngx-stepper>
+      `,
+    })
+    class CollisionHost {}
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        // A hand-written config value carries no fallbackLabels; the
+        // roledescription must fall back to the default 'stepper', never
+        // to the localised stepper name.
+        { provide: CNGX_STEPPER_CONFIG, useValue: {} },
+        provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Bestellschritte' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(CollisionHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Bestellschritte');
+    expect(host.getAttribute('aria-roledescription')).toBe('stepper');
+    expect(host.getAttribute('aria-label')).not.toBe(host.getAttribute('aria-roledescription'));
   });
 
   it('organism stepsOnly is reference-stable across shape-stable re-emits (flatStepsEqual)', () => {

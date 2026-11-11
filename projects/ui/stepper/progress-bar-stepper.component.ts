@@ -16,6 +16,7 @@ import {
   CngxStepperEmpty,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  CNGX_STEPPER_LANGUAGE_EN,
   createStepperAccname,
   createStepperStateView,
   injectStepperConfig,
@@ -109,9 +110,13 @@ export class CngxProgressBarStepper {
 
   private readonly fallbackLabels = coerceSignal(this.config.fallbackLabels);
 
-  /** Landmark role-description with config + i18n cascade, mirroring `<cngx-stepper>`. */
+  /**
+   * Landmark role-description mirroring `<cngx-stepper>`: config
+   * `fallbackLabels`, then the library default, never the stepper name.
+   */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.fallbackLabels()?.stepRoleDescription ?? this.i18n().stepperLabel,
+    () =>
+      this.fallbackLabels()?.stepRoleDescription ?? CNGX_STEPPER_LANGUAGE_EN.stepRoleDescription,
   );
 
   private readonly emptySlot = contentChild(CngxStepperEmpty);

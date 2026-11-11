@@ -4,6 +4,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  CNGX_STEPPER_CONFIG,
   CngxStep,
   CngxStepperEmpty,
   provideStepperConfig,
@@ -201,6 +202,21 @@ describe('CngxProgressBarStepper', () => {
       const fixture = TestBed.createComponent(UnlabelledHost);
       fixture.detectChanges();
       expect(hostEl(fixture).getAttribute('aria-roledescription')).toBe('wizard');
+    });
+
+    it('a config without fallbackLabels keeps the roledescription apart from the name', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          { provide: CNGX_STEPPER_CONFIG, useValue: {} },
+          provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Bestellschritte' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      const host = hostEl(fixture);
+      expect(host.getAttribute('aria-label')).toBe('Bestellschritte');
+      expect(host.getAttribute('aria-roledescription')).toBe('stepper');
     });
   });
 
