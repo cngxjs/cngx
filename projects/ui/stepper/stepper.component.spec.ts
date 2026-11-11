@@ -10,7 +10,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { provideCngxI18n, withDocumentLanguage, withPartialPack } from '@cngx/core/i18n';
+import {
+  provideCngxI18n,
+  withDocumentLanguage,
+  withPartialPack,
+  type CngxActiveLanguagePack,
+} from '@cngx/core/i18n';
 import { createResizeObserverMock, stripBidiIsolates } from '@cngx/testing';
 
 import {
@@ -22,7 +27,6 @@ import {
   type CngxStepperCommitAction,
   provideStepperConfig,
   provideStepperI18n,
-  withStepperAriaLabels,
   withStepperFallbackLabels,
   CngxStepError,
   withStepperDensity,
@@ -810,30 +814,7 @@ describe('CngxStepper organism', () => {
     expect(hoverRule![0]).toMatch(/:not\(\[aria-disabled='true'\]\)/);
   });
 
-  it('host aria-label falls back to CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion when no input bound', () => {
-    @Component({
-      standalone: true,
-      imports: [CngxStepper, CngxStep],
-      template: `
-        <cngx-stepper>
-          <div cngxStep label="A"></div>
-        </cngx-stepper>
-      `,
-    })
-    class NoLabelHost {}
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Order Wizard' })),
-      ],
-    });
-    const fixture = TestBed.createComponent(NoLabelHost);
-    fixture.detectChanges();
-    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
-    expect(host.getAttribute('aria-label')).toBe('Order Wizard');
-  });
-
-  it('host aria-label falls back to i18n.stepperLabel when ariaLabels.stepperRegion is explicitly cleared', () => {
+  it('host aria-label falls back to i18n.stepperLabel when no input is bound', () => {
     @Component({
       standalone: true,
       imports: [CngxStepper, CngxStep],
@@ -847,10 +828,6 @@ describe('CngxStepper organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        // Override clears stepperRegion so the cascade falls through
-        // to the i18n bundle. Without this override the library
-        // default 'Steps' for ariaLabels.stepperRegion wins.
-        provideStepperConfig(withStepperAriaLabels({ stepperRegion: undefined })),
         provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Schrittfolge' })),
       ],
     });
@@ -2492,10 +2469,12 @@ describe('CngxStepper config copy switch', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideStepperConfig(
-          withStepperAriaLabels(
-            computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {})),
+        provideStepperI18n(
+          withStepperI18nLabels(
+            computed(() => (lang() === 'de' ? { stepperLabel: 'Schrittfolge' } : {})),
           ),
+        ),
+        provideStepperConfig(
           withStepperFallbackLabels(
             computed(() =>
               lang() === 'de'
@@ -2519,6 +2498,29 @@ describe('CngxStepper config copy switch', () => {
     expect(host.getAttribute('aria-label')).toBe('Schrittfolge');
     expect(host.getAttribute('aria-roledescription')).toBe('Schritte');
     expect(group.getAttribute('aria-roledescription')).toBe('Schrittgruppe');
+  });
+
+  it('aria-label follows a language-pack switch through stepper.stepperLabel', () => {
+    TestBed.resetTestingModule();
+    const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxI18n(withPartialPack(pack), withDocumentLanguage('off')),
+      ],
+    });
+    const fixture = TestBed.createComponent(LabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Steps');
+
+    pack.set({ locale: 'de', stepper: { stepperLabel: 'Bestellschritte' } });
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Bestellschritte');
+
+    pack.set(undefined);
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-label')).toBe('Steps');
   });
 });
 

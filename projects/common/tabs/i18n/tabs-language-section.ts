@@ -4,7 +4,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * The tabs section of a {@link CngxLanguagePack}: the copy of
  * `@cngx/common/tabs` and of the tab organisms in `@cngx/ui/tabs` and
  * `@cngx/ui/mat-tabs`. It feeds `CNGX_TABS_I18N` and the copy keys of
- * `CNGX_TABS_CONFIG` (`ariaLabels`, `fallbackLabels`). Messages use `{name}`
+ * `CNGX_TABS_CONFIG` (`fallbackLabels`). Messages use `{name}`
  * placeholders; a plural message picks its form from `{count}`.
  *
  * @since 0.1.0

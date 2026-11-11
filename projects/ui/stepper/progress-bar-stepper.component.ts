@@ -82,8 +82,8 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
 export class CngxProgressBarStepper {
   /**
    * Accessible name of the stepper host, bound as `[aria-label]`. Resolution order: this input,
-   * then `ariaLabels.stepperRegion` from the stepper config, then the `stepperLabel` string of
-   * the stepper i18n bundle. Ignored while a non-empty `[aria-labelledby]` is set.
+   * then the `stepperLabel` string of the stepper i18n bundle. Ignored while a non-empty
+   * `[aria-labelledby]` is set.
    */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   /**
@@ -100,11 +100,10 @@ export class CngxProgressBarStepper {
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
 
-  /** Shared accname cascade (input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`). */
+  /** Shared accname cascade (input → `i18n.stepperLabel`). */
   protected readonly resolvedAriaLabel = createStepperAccname({
     ariaLabel: this.ariaLabel,
     ariaLabelledBy: this.ariaLabelledBy,
-    config: this.config,
     i18n: this.i18n,
   });
 

@@ -69,7 +69,6 @@ export { CngxStepperRouterSync } from './router-sync.directive';
 
 export {
   CNGX_STEPPER_CONFIG,
-  type CngxStepperAriaLabels,
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperDensity,
@@ -86,7 +85,6 @@ export {
   provideStepperConfigAt,
   withStepperDefaultOrientation,
   withStepperDensity,
-  withStepperAriaLabels,
   withStepperCommitMode,
   withStepperConnectors,
   withStepperFallbackLabels,

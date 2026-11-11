@@ -7,8 +7,6 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { coerceSignal } from '@cngx/core/utils';
-
 import {
   CNGX_STEPPER_I18N,
   withStepperI18nLabels,
@@ -23,7 +21,6 @@ import {
   CNGX_STEPPER_CONFIG,
   injectStepperConfig,
   withStepperDefaultOrientation,
-  withStepperAriaLabels,
   withStepperLinear,
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
@@ -41,7 +38,6 @@ describe('provideCngxStepper', () => {
         provideCngxStepper(
           withStepperDefaultOrientation('vertical'),
           withStepperLinear(true),
-          withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
           withStepperI18nLabels({
             stepperLabel: 'Schrittfolge',
             previousStep: 'Vorheriger',
@@ -53,7 +49,6 @@ describe('provideCngxStepper', () => {
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.defaultLinear).toBe(true);
-    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Schrittfolge');
     expect(i18n().stepperLabel).toBe('Schrittfolge');
     expect(i18n().previousStep).toBe('Vorheriger');
   });

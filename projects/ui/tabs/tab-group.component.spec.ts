@@ -36,7 +36,6 @@ import {
   withTabErrorBadgeTemplate,
   withTabIconTemplate,
   type CngxTabIconContext,
-  withTabsAriaLabels,
   withTabsDefaultOrientation,
   withTabsFallbackLabels,
   withTabsI18nLabels,
@@ -329,33 +328,7 @@ describe('CngxTabGroup organism', () => {
     expect(tablist.getAttribute('aria-orientation')).toBe('vertical');
   });
 
-  it('aria-label resolves Input → ariaLabels.tabsRegion config → i18n.tabsLabel', () => {
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideTabsConfig(withTabsAriaLabels({ tabsRegion: 'Reiter' })),
-      ],
-    });
-    @Component({
-      standalone: true,
-      imports: [CngxTabGroup, CngxTab],
-      template: `
-        <cngx-tab-group>
-          <div cngxTab [label]="'A'"></div>
-        </cngx-tab-group>
-      `,
-    })
-    class NoLabelHost {}
-    const fixture = TestBed.createComponent(NoLabelHost);
-    fixture.detectChanges();
-    const host = fixture.nativeElement.querySelector(
-      'cngx-tab-group',
-    ) as HTMLElement;
-    expect(host.getAttribute('aria-label')).toBe('Reiter');
-  });
-
-  it('aria-label falls back to i18n.tabsLabel when no ariaLabels.tabsRegion is configured', () => {
+  it('aria-label falls back to i18n.tabsLabel when no input is bound', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -1343,19 +1316,15 @@ describe('CngxTabGroup organism', () => {
     expect(host.getAttribute('aria-roledescription')).toBe('tab list');
   });
 
-  it('aria-label and aria-roledescription do not collide when tabsRegion is localised', () => {
+  it('aria-label and aria-roledescription do not collide when tabsLabel is localised', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        // Consumer localises the tabs landmark name - aria-label
-        // resolves through `ariaLabels.tabsRegion`. aria-roledescription
-        // must NOT pick up the same string; it stays at the W3C default
-        // 'tab list'. Pre-fix, when `fallbackLabels.tabRoleDescription`
-        // was unset (hand-rolled config bypassing `with*`), the
-        // role-description cascade fell through to `i18n.tabsLabel` and
-        // collapsed onto 'Bereiche' - Pillar 2 silent collision.
-        provideCngxTabs(withTabsAriaLabels({ tabsRegion: 'Bereiche' })),
+        // Consumer localises the tab group name through `i18n.tabsLabel`.
+        // aria-roledescription must NOT pick up the same string; it stays
+        // at the W3C default 'tab list' (Pillar 2: no silent collision).
+        provideCngxTabs(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
       ],
     });
     @Component({
@@ -1391,16 +1360,13 @@ describe('CngxTabGroup organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsConfig(withTabsAriaLabels({ tabsRegion: 'Bereiche' })),
         provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
         // Override the resolved CNGX_TABS_CONFIG with one that has
         // `fallbackLabels` cleared - simulates a hand-rolled provider
         // that bypassed `withTabsFallbackLabels`.
         {
           provide: CNGX_TABS_CONFIG,
-          useValue: {
-            ariaLabels: { tabsRegion: 'Bereiche' },
-          },
+          useValue: {},
         },
       ],
     });

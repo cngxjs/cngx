@@ -77,7 +77,6 @@ function partitionFeatures(
  *     provideCngxStepper(
  *       withStepperDefaultOrientation('vertical'),
  *       withStepperLinear(true),
- *       withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
  *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge', previousStep: 'Vorheriger' }),
  *     ),
  *   ],

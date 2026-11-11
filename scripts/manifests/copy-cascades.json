@@ -413,17 +413,11 @@
     {
       "class": null,
       "file": "projects/common/stepper/stepper-host-attrs.ts",
-      "line": 95,
+      "line": 90,
       "member": "createStepperAccname",
       "enclosing": "computed",
       "tiers": [
         { "kind": "input", "field": "ariaLabel" },
-        {
-          "kind": "bundle",
-          "field": "ariaLabels",
-          "path": ["stepperRegion"],
-          "token": "CNGX_STEPPER_CONFIG"
-        },
         {
           "kind": "bundle",
           "field": "inputs",
@@ -435,17 +429,11 @@
     {
       "class": null,
       "file": "projects/common/tabs/announcements/tab-group-announcements.ts",
-      "line": 185,
+      "line": 184,
       "member": "createTabGroupAnnouncements.resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [
         { "kind": "input", "field": "ariaLabel" },
-        {
-          "kind": "bundle",
-          "field": "ariaLabels",
-          "path": ["tabsRegion"],
-          "token": "CNGX_TABS_CONFIG"
-        },
         { "kind": "bundle", "field": "i18n", "path": ["tabsLabel"], "token": "CNGX_TABS_I18N" }
       ]
     },

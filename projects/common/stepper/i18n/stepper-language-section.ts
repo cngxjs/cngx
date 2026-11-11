@@ -18,16 +18,14 @@ export interface CngxStepperStatusLanguage {
  * The stepper section of a {@link CngxLanguagePack}: the copy of
  * `@cngx/common/stepper` and of the steppers in `@cngx/ui/stepper` and
  * `@cngx/ui/mat-stepper`. It feeds `CNGX_STEPPER_I18N` and the copy keys of
- * `CNGX_STEPPER_CONFIG` (`ariaLabels`, `fallbackLabels`). Messages use
+ * `CNGX_STEPPER_CONFIG` (`fallbackLabels`). Messages use
  * `{name}` placeholders; a plural message picks its form from `{count}`.
  *
  * @since 0.1.0
  * @relatedTo CNGX_STEPPER_I18N, CNGX_STEPPER_CONFIG
  */
 export interface CngxStepperLanguageSection {
-  /** Accessible name of the stepper landmark. */
-  readonly stepperRegion: string;
-  /** Last-tier landmark label and role description, used when the config keys are unset. */
+  /** Accessible name of the stepper; last-tier role description. */
   readonly stepperLabel: string;
   /** `aria-roledescription` of the stepper organism. */
   readonly stepRoleDescription: string;
@@ -79,7 +77,6 @@ export interface CngxStepperLanguageSection {
  * @relatedTo CNGX_STEPPER_I18N
  */
 export const CNGX_STEPPER_LANGUAGE_EN: CngxStepperLanguageSection = {
-  stepperRegion: 'Steps',
   stepperLabel: 'Steps',
   stepRoleDescription: 'stepper',
   stepIndicatorRoleDescription: 'step indicator',

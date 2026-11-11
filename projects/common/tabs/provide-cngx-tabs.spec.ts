@@ -7,8 +7,6 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { coerceSignal } from '@cngx/core/utils';
-
 import {
   CNGX_TABS_I18N,
   withTabsI18nLabels,
@@ -24,7 +22,6 @@ import {
   injectTabsConfig,
   withTabsDefaultOrientation,
   withTabOverflowStabilizeMs,
-  withTabsAriaLabels,
   type CngxTabsConfig,
   type CngxTabsConfigFeature,
 } from './tabs-config';
@@ -42,7 +39,6 @@ describe('provideCngxTabs', () => {
         provideCngxTabs(
           withTabsDefaultOrientation('vertical'),
           withTabOverflowStabilizeMs(150),
-          withTabsAriaLabels({ tabsRegion: 'Bereiche' }),
           withTabsI18nLabels({
             tabsLabel: 'Bereiche',
             moreTabsLabel: (n) => `${n} mehr`,
@@ -54,7 +50,6 @@ describe('provideCngxTabs', () => {
     const i18n = TestBed.inject(CNGX_TABS_I18N);
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.overflowStabilizeMs).toBe(150);
-    expect(coerceSignal(cfg.ariaLabels)()?.tabsRegion).toBe('Bereiche');
     expect(i18n().tabsLabel).toBe('Bereiche');
     expect(i18n().moreTabsLabel(3)).toBe('3 mehr');
   });

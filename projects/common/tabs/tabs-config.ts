@@ -23,26 +23,6 @@ import type { CngxTabIconContext } from './slots/tab-icon.directive';
 import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 /**
- * Aria-label overrides for the tab group (`role="group"`). \
- * Empty by default (the group is named by `CngxTabsI18n.tabsLabel`);
- * consumers override via {@link withTabsAriaLabels}.
- *
- * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
- * {@link CngxTabsI18n}, not here - group naming and SR phrasing
- * stay on separate override paths.
- */
-export interface CngxTabsAriaLabels {
-  /**
-   * Accessible name for the tab-group wrapper (`role="group"`), read by
-   * AT when focus enters the region. No default: unset, the group is named
-   * by `CngxTabsI18n.tabsLabel`; when set, it wins over that label. Ignored
-   * when a per-instance `[aria-label]` / `[aria-labelledby]` is bound
-   * (those win).
-   */
-  readonly tabsRegion?: string;
-}
-
-/**
  * Fallback labels for derived strings (role descriptions, badge SR
  * announcements). Library defaults are English; consumers override
  * per locale.
@@ -257,8 +237,6 @@ export interface CngxTabsConfig {
    * {@link withTabsAddable}.
    */
   readonly addable?: boolean;
-  /** Landmark labels; a `Signal` switches the language at runtime. */
-  readonly ariaLabels?: CngxTabsAriaLabels | Signal<CngxTabsAriaLabels>;
   /** Role descriptions; a `Signal` switches the language at runtime. */
   readonly fallbackLabels?: CngxTabsFallbackLabels | Signal<CngxTabsFallbackLabels>;
   /**
@@ -291,7 +269,6 @@ export interface CngxTabsConfig {
 export const TABS_CONFIG_DEFAULTS: Required<
   Omit<
     CngxTabsConfig,
-    | 'ariaLabels'
     | 'fallbackLabels'
     | 'templates'
     | 'routeMatch'
@@ -304,7 +281,6 @@ export const TABS_CONFIG_DEFAULTS: Required<
     | 'addable'
   >
 > & {
-  ariaLabels: CngxTabsAriaLabels;
   fallbackLabels: Required<CngxTabsFallbackLabels>;
   templates: CngxTabsTemplates;
 } = {
@@ -317,7 +293,6 @@ export const TABS_CONFIG_DEFAULTS: Required<
   // for both organisms, and pinning one here would silently flip the
   // other. linkAriaCurrent defaults at the link, not here.
   linkAriaCurrent: 'page',
-  ariaLabels: {},
   fallbackLabels: {
     // W3C ARIA tablist convention - kept distinct from
     // `i18n.tabsLabel` so AT doesn't read the same string twice
@@ -549,21 +524,6 @@ export function withTabsAddable(addable: boolean): CngxTabsConfigFeature {
 const NO_LABELS: object = {};
 
 /**
- * Merge ARIA labels into the cascade. The keys have no library default:
- * an unset `tabsRegion` leaves the group named by `CngxTabsI18n.tabsLabel`.
- * Per-instance overrides on the tab group still win.
- * Pass a `Signal` to switch the language at runtime.
- */
-export function withTabsAriaLabels(
-  labels: CngxTabsAriaLabels | Signal<CngxTabsAriaLabels>,
-): CngxTabsConfigFeature {
-  return defineTabsConfigFeature((cfg) => ({
-    ...cfg,
-    ariaLabels: createOverrideMerge<CngxTabsAriaLabels>(cfg.ariaLabels ?? NO_LABELS, labels),
-  }));
-}
-
-/**
  * Merge the tablist / tab-panel `aria-roledescription` fallbacks into the
  * cascade. Keys not provided keep their library defaults. Pass a `Signal`
  * to switch the language at runtime.
@@ -726,9 +686,6 @@ function tabsConfigDefaultsFromPack(): CngxTabsConfig {
   const language = injectTabsLanguage();
   return {
     ...TABS_CONFIG_DEFAULTS,
-    // No pack default: an unset `tabsRegion` lets `CngxTabsI18n.tabsLabel`
-    // name the group. Still a Signal, so `ariaLabels` always holds one here.
-    ariaLabels: computed((): CngxTabsAriaLabels => NO_LABELS),
     fallbackLabels: computed(
       () => ({
         tabRoleDescription: language().tabRoleDescription,

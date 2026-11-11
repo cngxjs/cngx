@@ -470,7 +470,6 @@ export const CNGX_LANGUAGE_DE = {
     emptyFallback: 'Keine Daten',
   },
   stepper: {
-    stepperRegion: 'Schritte',
     stepperLabel: 'Schritte',
     stepRoleDescription: 'Schrittfolge',
     stepIndicatorRoleDescription: 'Schrittanzeige',

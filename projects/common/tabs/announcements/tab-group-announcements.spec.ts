@@ -8,7 +8,6 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import {
   CNGX_TABS_CONFIG,
   provideTabsConfig,
-  withTabsAriaLabels,
   withTabsFallbackLabels,
   type CngxTabsConfig,
 } from '../tabs-config';
@@ -276,8 +275,10 @@ describe('createTabGroupAnnouncements - config copy switch', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
+        provideTabsI18n(
+          withTabsI18nLabels(computed(() => (lang() === 'de' ? { tabsLabel: 'Reiter' } : {}))),
+        ),
         provideTabsConfig(
-          withTabsAriaLabels(computed(() => (lang() === 'de' ? { tabsRegion: 'Reiter' } : {}))),
           withTabsFallbackLabels(
             computed(() =>
               lang() === 'de'
