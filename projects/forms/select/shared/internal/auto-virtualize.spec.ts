@@ -285,6 +285,8 @@ describe('createAutoPanelRenderer - row probe', () => {
     expect(rowObserves()).toEqual([[first, { box: 'border-box' }]]);
     const windowAt40 = renderer.renderOptions().length;
 
+    // A sizing change (text scale) behind the resize, not new row content.
+    first.style.fontSize = '20px';
     ro.triggerResize({ borderBoxSize: [{ blockSize: 50, inlineSize: 0 }] });
     render();
     expect(renderer.renderOptions().length).toBeLessThan(windowAt40);
@@ -292,7 +294,7 @@ describe('createAutoPanelRenderer - row probe', () => {
     expect(ro.disconnect).not.toHaveBeenCalled();
   });
 
-  it('moves the observer when a different row node comes first', () => {
+  it('keeps the observer when a different row node comes first', () => {
     const { handle } = build({
       flatOptions: signal(items(TOTAL)),
       popover: container,
@@ -307,11 +309,8 @@ describe('createAutoPanelRenderer - row probe', () => {
     const next = row(12, 40);
     container.appendChild(next);
     render();
-    expect(ro.disconnect).toHaveBeenCalledTimes(1);
-    expect(rowObserves()).toEqual([
-      [first, { box: 'border-box' }],
-      [next, { box: 'border-box' }],
-    ]);
+    expect(ro.disconnect).not.toHaveBeenCalled();
+    expect(rowObserves()).toEqual([[first, { box: 'border-box' }]]);
   });
 
   it('probes nothing while the panel is closed and measures again on the next open', () => {

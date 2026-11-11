@@ -104,12 +104,23 @@ export function createAutoPanelRenderer<T>(opts: {
     });
     if (vConfig.estimateSize === undefined) {
       const injector = inject(Injector);
-      // A new row height moves every offset by the same factor, so scaling
-      // scrollTop keeps the same row at the top: an open scroll applied at the
-      // old estimate, and a density or text-scale flip while scrolled. Exact
-      // because the select never calls recycler.measure(): item tops stay
-      // i * estimate. The write waits for the render that resizes the spacers,
-      // otherwise a grown target clamps to the old scroll height.
+      // Scroll offset of the first row: panel padding and any region above the
+      // listbox do not scale with the row height.
+      const rowsOffset = (el: HTMLElement): number => {
+        const listbox = opts.listboxElement?.();
+        if (!listbox || !el.contains(listbox)) {
+          return 0;
+        }
+        const top = el.getBoundingClientRect().top + el.clientTop;
+        return listbox.getBoundingClientRect().top - top + el.scrollTop;
+      };
+      // A new row height moves every row offset by the same factor, so scaling
+      // the scroll distance into the rows keeps the same row at the top: an
+      // open scroll applied at the old estimate, and a density or text-scale
+      // flip while scrolled. Exact because the select never calls
+      // recycler.measure(): item tops stay i * estimate. The write waits for the
+      // render that resizes the spacers, otherwise a grown target clamps to the
+      // old scroll height.
       const write = (height: number): void => {
         const previous = untracked(measured) ?? FALLBACK_ROW_SIZE;
         if (!(height > 0) || height === untracked(measured)) {
@@ -121,6 +132,10 @@ export function createAutoPanelRenderer<T>(opts: {
         if (!el || top === 0 || height === previous) {
           return;
         }
+        const offset = rowsOffset(el);
+        if (top <= offset) {
+          return;
+        }
         afterNextRender(
           {
             write: () => {
@@ -129,16 +144,30 @@ export function createAutoPanelRenderer<T>(opts: {
               if (el.scrollTop !== top) {
                 return;
               }
-              el.scrollTop = (top * height) / previous;
+              el.scrollTop = offset + ((top - offset) * height) / previous;
             },
           },
           { injector },
         );
       };
+      // What density, text scale and the touch-target axis change on a row. The
+      // rows are tracked by position, so a window move hands the measured node
+      // another option: a resize with none of these changed is new content
+      // (a taller custom row), not a new row height.
+      const sizing = (row: HTMLElement): string => {
+        const style = getComputedStyle(row);
+        return [
+          style.fontSize,
+          style.lineHeight,
+          style.paddingBlockStart,
+          style.paddingBlockEnd,
+          style.minBlockSize,
+        ].join('|');
+      };
       // Every render, not a tracked effect: the window signals derive from the
       // estimate this probe writes, so tracking them would re-run the probe on
-      // its own write. The observer follows the first row node and is only
-      // replaced when a window move puts a different node first.
+      // its own write. One row per open is measured; after that only a sizing
+      // change of that row is.
       let observed: HTMLElement | null = null;
       let stopObserving: (() => void) | null = null;
       const release = (): void => {
@@ -154,23 +183,28 @@ export function createAutoPanelRenderer<T>(opts: {
             release();
             return;
           }
+          if (observed) {
+            return;
+          }
           const row =
             scrollElement.nativeElement?.querySelector<HTMLElement>('[data-cngx-recycle-index]') ??
             null;
-          if (row === observed) {
-            return;
-          }
-          release();
           if (!row) {
             return;
           }
           observed = row;
+          let measuredSizing = sizing(row);
           // Synchronous first write: the active-descendant scroll runs in a
           // requestAnimationFrame, before ResizeObserver delivery in a frame.
           write(row.getBoundingClientRect().height);
-          stopObserving = observeResize(row.ownerDocument.defaultView, row, 'border-box', (entry) =>
-            write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height),
-          );
+          stopObserving = observeResize(row.ownerDocument.defaultView, row, 'border-box', (entry) => {
+            const next = sizing(row);
+            if (next === measuredSizing) {
+              return;
+            }
+            measuredSizing = next;
+            write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height);
+          });
         },
       });
       inject(DestroyRef).onDestroy(release);

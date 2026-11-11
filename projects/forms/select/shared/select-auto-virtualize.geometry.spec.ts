@@ -212,4 +212,34 @@ describe('select auto virtualization at 44px rows', () => {
     expect(Math.abs(scroller.scrollHeight - 1000 * height)).toBeLessThanOrEqual(2 * height);
     expect(topRow(scroller)).toBe(before);
   });
+
+  // Stand-in for an optionLabel template with an optional second line: every
+  // tenth row is taller. The estimate comes from one row per open, so no scroll
+  // position jumps and the extent only moves by the tall rows inside the
+  // rendered window (fewer than one row height), never by a new estimate.
+  it('keeps the scroll height and position over 40 scroll steps with mixed row heights', async () => {
+    const style = document.createElement('style');
+    style.textContent = `.cngx-select__option[data-cngx-recycle-index$='5']::after {
+      content: ''; display: block; block-size: 46px;
+    }`;
+    document.head.appendChild(style);
+    try {
+      const { settle, scroller } = await mountTall();
+      const heights = new Set<number>();
+      const jumps: string[] = [];
+      for (let step = 1; step <= 40; step++) {
+        const target = step * 97;
+        scroller.scrollTop = target;
+        await settle();
+        heights.add(scroller.scrollHeight);
+        if (Math.abs(scroller.scrollTop - target) > 1) {
+          jumps.push(`${target} -> ${scroller.scrollTop}`);
+        }
+      }
+      expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(44);
+      expect(jumps).toEqual([]);
+    } finally {
+      style.remove();
+    }
+  });
 });
