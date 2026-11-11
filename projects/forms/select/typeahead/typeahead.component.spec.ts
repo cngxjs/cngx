@@ -61,8 +61,8 @@ function flush(fixture: { detectChanges: () => void }): void {
 class StandaloneHost {
   readonly label = 'User';
   readonly options = USERS;
-  readonly compareWith: (a: User | undefined, b: User | undefined) => boolean =
-    (a, b) => (a?.id ?? NaN) === (b?.id ?? NaN);
+  readonly compareWith: (a: User | undefined, b: User | undefined) => boolean = (a, b) =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
   readonly displayWith: (u: User) => string = (u) => u.name;
   readonly clearOnBlur = true;
   readonly clearable = false;
@@ -86,11 +86,7 @@ class StandaloneHost {
 @Component({
   template: `
     <cngx-form-field [field]="field">
-      <cngx-typeahead
-        [label]="'Farbe'"
-        [options]="options"
-        [displayWith]="displayWith"
-      />
+      <cngx-typeahead [label]="'Farbe'" [options]="options" [displayWith]="displayWith" />
     </cngx-form-field>
   `,
   imports: [CngxFormField, CngxTypeahead],
@@ -124,7 +120,9 @@ describe('CngxTypeahead - standalone', () => {
     flush(fixture);
     const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
       .componentInstance as CngxTypeahead<User>;
-    const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLInputElement;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
     return { fixture, host: fixture.componentInstance, typeahead, input };
   }
 
@@ -227,7 +225,10 @@ describe('CngxTypeahead - standalone', () => {
     const { fixture, host, typeahead } = setup();
     host.value.set({ id: 2, name: 'Bob' });
     flush(fixture);
-    const events: Array<{ value: { name: string } | undefined; previousValue?: { name: string } | undefined }> = [];
+    const events: Array<{
+      value: { name: string } | undefined;
+      previousValue?: { name: string } | undefined;
+    }> = [];
     typeahead.selectionChange.subscribe((e) =>
       events.push({ value: e.value, previousValue: e.previousValue }),
     );
@@ -333,7 +334,9 @@ describe('CngxTypeahead - form-field integration', () => {
   it('displays displayWith(value) in the input (upper-cased via custom formatter)', () => {
     const fixture = TestBed.createComponent(FieldHost);
     flush(fixture);
-    const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLInputElement;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
     expect(input.value).toBe('RED');
   });
 
@@ -344,7 +347,9 @@ describe('CngxTypeahead - form-field integration', () => {
     flush(fixture);
     const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
       .componentInstance as CngxTypeahead<string>;
-    const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLInputElement;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
     expect(typeahead.value()).toBe('green');
     expect(input.value).toBe('GREEN');
   });
@@ -378,7 +383,9 @@ describe('CngxTypeahead - clearOnBlur', () => {
   it('on blur with stray text, clearOnBlur=true restores displayWith(value)', () => {
     const fixture = TestBed.createComponent(ClearOnBlurHost);
     flush(fixture);
-    const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLInputElement;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
     expect(input.value).toBe('Alice');
     // User types stray text without picking an option.
     input.value = 'zzz-stray';
@@ -467,9 +474,7 @@ describe('CngxTypeahead - openOn config integration', () => {
   });
 
   it('opens the panel on input focus with withOpenOn("focus")', () => {
-    const { fixture, typeahead, input } = setupOpenOn([
-      provideSelectConfig(withOpenOn('focus')),
-    ]);
+    const { fixture, typeahead, input } = setupOpenOn([provideSelectConfig(withOpenOn('focus'))]);
     input.dispatchEvent(new Event('focus'));
     flush(fixture);
     expect(typeahead.panelOpen()).toBe(true);
@@ -702,7 +707,9 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
   it('default clear button renders the built-in clear icon', () => {
     const fixture = TestBed.createComponent(GlyphHost);
     flush(fixture);
-    const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
+    const clearBtn = fixture.nativeElement.querySelector(
+      'button.cngx-typeahead__clear',
+    ) as HTMLElement;
     const icon = clearBtn.querySelector('svg.cngx-icon-svg');
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
     expect(icon?.querySelector('path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
@@ -715,7 +722,9 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
     flush(fixture);
     fixture.componentInstance.activeClear.set(fixture.componentInstance.clearTpl());
     flush(fixture);
-    const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
+    const clearBtn = fixture.nativeElement.querySelector(
+      'button.cngx-typeahead__clear',
+    ) as HTMLElement;
     expect(clearBtn.querySelector('[data-custom="clear"]')).not.toBeNull();
     expect(clearBtn.textContent?.trim()).toBe('🗑');
     expect(clearBtn.getAttribute('aria-label')).toBe('Reset selection');
@@ -737,7 +746,9 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
     flush(fixture);
     fixture.componentInstance.activeClear.set(null);
     flush(fixture);
-    const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
+    const clearBtn = fixture.nativeElement.querySelector(
+      'button.cngx-typeahead__clear',
+    ) as HTMLElement;
     expect(clearBtn.querySelector('[data-custom="clear"]')).toBeNull();
     expect(clearBtn.querySelector('svg.cngx-icon-svg path')?.getAttribute('d')).toBe(CNGX_ICON_X.d);
   });
@@ -763,16 +774,24 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
     TestBed.configureTestingModule({ imports: [SlotHost] });
     const fixture = TestBed.createComponent(SlotHost);
     flush(fixture);
-    const prefixContent = fixture.nativeElement.querySelector('[data-slot="prefix"]') as HTMLElement;
-    const suffixContent = fixture.nativeElement.querySelector('[data-slot="suffix"]') as HTMLElement;
+    const prefixContent = fixture.nativeElement.querySelector(
+      '[data-slot="prefix"]',
+    ) as HTMLElement;
+    const suffixContent = fixture.nativeElement.querySelector(
+      '[data-slot="suffix"]',
+    ) as HTMLElement;
     expect(prefixContent).not.toBeNull();
     expect(suffixContent).not.toBeNull();
     expect(prefixContent.textContent).toBe('P');
     expect(suffixContent.textContent).toBe('S');
     // Wrapper spans are direct children of the trigger; the projected
     // templates live inside those spans.
-    const prefixWrapper = fixture.nativeElement.querySelector('.cngx-typeahead__prefix') as HTMLElement;
-    const suffixWrapper = fixture.nativeElement.querySelector('.cngx-typeahead__suffix') as HTMLElement;
+    const prefixWrapper = fixture.nativeElement.querySelector(
+      '.cngx-typeahead__prefix',
+    ) as HTMLElement;
+    const suffixWrapper = fixture.nativeElement.querySelector(
+      '.cngx-typeahead__suffix',
+    ) as HTMLElement;
     const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLElement;
     const children = Array.from(input.parentElement!.children);
     expect(children.indexOf(prefixWrapper)).toBeLessThan(children.indexOf(input));
@@ -782,8 +801,11 @@ describe('CngxTypeahead - glyph inputs + input prefix/suffix', () => {
 
 describeCommitControllerCascade('CngxTypeahead');
 
-describeFieldSkinHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', () =>
-  createMockField({ name: 'pick' }).accessor,
+describeFieldSkinHost(
+  'CngxTypeahead',
+  CngxTypeahead,
+  'cngx-typeahead',
+  () => createMockField({ name: 'pick' }).accessor,
 );
 
 describeFieldAriaHost('CngxTypeahead', CngxTypeahead, 'cngx-typeahead', {
@@ -831,7 +853,9 @@ describe('CngxTypeahead - input text shows the option label', () => {
     flush(fixture);
     const instance = fixture.debugElement.query(By.directive(CngxTypeahead))
       .componentInstance as CngxTypeahead<string>;
-    const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLInputElement;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-typeahead__input',
+    ) as HTMLInputElement;
     return { fixture, host: fixture.componentInstance, instance, input };
   }
 

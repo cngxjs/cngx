@@ -23,7 +23,8 @@ const PANEL_HOSTS: readonly Host[] = [
 const SHELL: Host = { region: 'CngxSelectShell', tag: 'cngx-select-shell', led: 'button' };
 const BUTTON_LED: readonly Host[] = [...PANEL_HOSTS, SHELL].filter((h) => h.led === 'button');
 
-const section = (page: Page, host: Host): Locator => page.getByRole('region', { name: host.region });
+const section = (page: Page, host: Host): Locator =>
+  page.getByRole('region', { name: host.region });
 const triggerOf = (page: Page, host: Host): Locator =>
   section(page, host).locator(`${host.tag} [role="combobox"]`).first();
 const panelOf = (page: Page, host: Host): Locator =>
@@ -31,7 +32,11 @@ const panelOf = (page: Page, host: Host): Locator =>
 const rowsOf = (panel: Locator): Locator => panel.locator('[role="option"]');
 const highlightOf = (panel: Locator): Locator => panel.locator('.cngx-option--highlighted');
 
-async function openPanel(page: Page, host: Host, gesture: 'click' | 'tap' = 'click'): Promise<Locator> {
+async function openPanel(
+  page: Page,
+  host: Host,
+  gesture: 'click' | 'tap' = 'click',
+): Promise<Locator> {
   const trigger = triggerOf(page, host);
   await trigger[gesture]();
   await expect(trigger).toHaveAttribute('aria-expanded', 'true');
@@ -260,7 +265,9 @@ test.describe('select family at the default threshold, desktop', () => {
     });
   }
 
-  test('a grouped list renders in full, holds its scroll and logs no CNGX2028', async ({ page }) => {
+  test('a grouped list renders in full, holds its scroll and logs no CNGX2028', async ({
+    page,
+  }) => {
     const problems = trackConsoleProblems(page);
     await page.goto(GROUPED);
     const trigger = page.locator('cngx-select [role="combobox"]').first();

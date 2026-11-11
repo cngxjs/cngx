@@ -53,6 +53,16 @@ export class UserPicker {
 
 Identical to [`CngxSelect`](../single-select/README.md#forms-integration). Bind `Field<T>` (Signal Forms) or use `adaptFormControl` for RF.
 
+## Input text
+
+Unfocused, the input shows the committed value as text:
+
+- a bound `displayWith` formats it;
+- unbound, the input shows the label last resolved for the value. A refetch that renames the option updates the text, a result set that no longer contains the option keeps it;
+- a value no option has matched yet shows `String(value)`.
+
+Bind `displayWith` when the value is a server id or object the current options may not contain, for example a server-driven search that drops the selected entry.
+
 ## Common patterns
 
 ### Server-driven autocomplete

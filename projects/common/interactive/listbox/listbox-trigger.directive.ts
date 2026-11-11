@@ -259,8 +259,7 @@ export class CngxListboxTrigger<T = unknown> {
       const buffer = this.typeaheadBuffer();
       const termRunning = key === ' ' && buffer !== undefined && buffer() !== '';
       const openKeys =
-        key === 'ArrowDown' ||
-        (!this.search && (key === 'Enter' || (key === ' ' && !termRunning)));
+        key === 'ArrowDown' || (!this.search && (key === 'Enter' || (key === ' ' && !termRunning)));
       if (openKeys) {
         event.preventDefault();
         this.listbox().ad.highlightFirst();

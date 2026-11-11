@@ -180,7 +180,9 @@ describe('injectRecycler', () => {
       });
       expect(warn).toHaveBeenCalledOnce();
       expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/^CNGX1012: injectRecycler\(\): estimateSize as a function with 20000 items/),
+        expect.stringMatching(
+          /^CNGX1012: injectRecycler\(\): estimateSize as a function with 20000 items/,
+        ),
       );
       warn.mockRestore();
     });
@@ -759,7 +761,11 @@ describe('injectRecycler', () => {
         estimateSize: 100,
         layout: 'grid',
       });
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1011: injectRecycler\(\): layout: "grid" requires explicit `columns`/));
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^CNGX1011: injectRecycler\(\): layout: "grid" requires explicit `columns`/,
+        ),
+      );
       // Still functional - degrades to single-column list
       expect(recycler.start()).toBe(0);
       errorSpy.mockRestore();

@@ -1,4 +1,10 @@
-import { Component, signal, type EnvironmentProviders, type Provider, type Type } from '@angular/core';
+import {
+  Component,
+  signal,
+  type EnvironmentProviders,
+  type Provider,
+  type Type,
+} from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxSwipeDismiss } from '@cngx/common/interactive';
@@ -60,7 +66,10 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * presentation and header shape, one close path per outside tap, the
  * pessimistic-pending block on every close vector, focus back to the
  * trigger without a body hop or a touched field, and announcements spoken
- * from the sheet region only.
+ * from the sheet region only. On every variant it also pins that desktop
+ * Escape still closes during a pessimistic pending commit, and that focus
+ * coming back to the trigger does not reopen the panel through
+ * `openOn: 'focus'`.
  *
  * @internal
  */

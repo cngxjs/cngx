@@ -18,7 +18,8 @@ const ROUTES = {
   typeahead: '/#/forms/select/typeahead/typeahead-single-value-async-autocomplete',
   actionSelect: '/#/forms/select/action-select/basic-sync-quick-create',
   actionMulti: '/#/forms/select/action-multi-select/basic',
-  reorder: '/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede',
+  reorder:
+    '/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede',
   tree: '/#/forms/select/tree-select/basic-single-level-toggle',
   shell: '/#/forms/select/select-shell/basic-flat-declarative-options',
   shellSearch: '/#/forms/select/select-shell/search-declarative-cngx-select-search',
@@ -30,7 +31,9 @@ function combobox(page: Page): Locator {
 }
 
 function panel(page: Page): Locator {
-  return page.locator('.cngx-ex-artifact [role="listbox"], .cngx-ex-artifact [role="tree"]').first();
+  return page
+    .locator('.cngx-ex-artifact [role="listbox"], .cngx-ex-artifact [role="tree"]')
+    .first();
 }
 
 async function openByClick(page: Page): Promise<Locator> {
@@ -50,7 +53,9 @@ async function openByClick(page: Page): Promise<Locator> {
 // trigger on the button-led hosts and the tree, the inline input on the
 // input-led hosts.
 test.describe('I10: Alt+ArrowDown opens every select host', () => {
-  for (const [key, route] of Object.entries(ROUTES).filter(([k]) => k !== 'allVariants' && k !== 'shellSearch')) {
+  for (const [key, route] of Object.entries(ROUTES).filter(
+    ([k]) => k !== 'allVariants' && k !== 'shellSearch',
+  )) {
     test(`${key}: Alt+ArrowDown opens the panel`, async ({ page }) => {
       await page.goto(route);
       const target = combobox(page);
@@ -92,7 +97,10 @@ test.describe('I6: Tab onto an in-host control collapses aria-expanded', () => {
   // button (focus stays in the panel, so aria-expanded stays true); the
   // collapse logic itself is covered by host-focus-within.spec.ts.
   for (const key of ['reorder', 'shell', 'actionMulti'] as const) {
-    test(`${key}: Tab to the next control sets aria-expanded false`, async ({ page, browserName }) => {
+    test(`${key}: Tab to the next control sets aria-expanded false`, async ({
+      page,
+      browserName,
+    }) => {
       test.skip(browserName === 'webkit', WEBKIT_TAB_POLICY);
       await page.goto(ROUTES[key]);
       await openByClick(page);
@@ -130,7 +138,9 @@ test.describe('I2: a sheet keeps focus inside across a presentation round trip',
       // .cngx-popover-sheet class when anchored, and every variant keeps its
       // panel in the DOM. These input-led variants present as `fullscreen`.
       const openSheet = page
-        .locator('.cngx-popover-sheet[data-cngx-presentation]:not([data-cngx-presentation="anchored"])')
+        .locator(
+          '.cngx-popover-sheet[data-cngx-presentation]:not([data-cngx-presentation="anchored"])',
+        )
         .filter({ visible: true });
       await expect(openSheet.first()).toBeVisible({ timeout: 3000 });
       // Flip to an anchored panel: the sheet is dismissed, the panel stays open.

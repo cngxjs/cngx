@@ -64,13 +64,7 @@ function flush(fixture: { detectChanges: () => void }): void {
         >
           Create "{{ term }}"
         </button>
-        <button
-          type="button"
-          class="mark-dirty"
-          (click)="setDirty(true)"
-        >
-          dirty
-        </button>
+        <button type="button" class="mark-dirty" (click)="setDirty(true)">dirty</button>
       </ng-template>
     </cngx-action-select>
   `,
@@ -78,8 +72,8 @@ function flush(fixture: { detectChanges: () => void }): void {
 })
 class Host {
   readonly options = signal<CngxSelectOptionsInput<Tag>>(TAGS);
-  readonly compareWith: (a: Tag | undefined, b: Tag | undefined) => boolean =
-    (a, b) => (a?.id ?? null) === (b?.id ?? null);
+  readonly compareWith: (a: Tag | undefined, b: Tag | undefined) => boolean = (a, b) =>
+    (a?.id ?? null) === (b?.id ?? null);
   readonly displayWith: (t: Tag) => string = (t) => t.name;
   readonly quickCreateAction = signal<CngxSelectCreateAction<Tag> | null>(null);
   readonly closeOnCreate = signal(true);
@@ -219,7 +213,7 @@ describe('CngxActionSelect - quick-create flow', () => {
     expect(select.selected()).not.toBeNull();
   });
 
-  it("honours closeOnCreate - default true closes the panel on success", () => {
+  it('honours closeOnCreate - default true closes the panel on success', () => {
     const { fixture, select } = setup();
     fixture.componentInstance.quickCreateAction.set(() => ({ id: 'p', name: 'Purple' }));
     select.open();
@@ -230,7 +224,7 @@ describe('CngxActionSelect - quick-create flow', () => {
     expect(select.panelOpen()).toBe(false);
   });
 
-  it("honours closeOnCreate=false - panel stays open after a successful create", () => {
+  it('honours closeOnCreate=false - panel stays open after a successful create', () => {
     const { fixture, host, select } = setup();
     host.closeOnCreate.set(false);
     host.quickCreateAction.set(() => ({ id: 'p', name: 'Purple' }));
@@ -623,8 +617,8 @@ describe('CngxActionSelect - selected survives a filtering term', () => {
 })
 class ClearableHost {
   readonly options = TAGS;
-  readonly compareWith: (a: Tag | undefined, b: Tag | undefined) => boolean =
-    (a, b) => (a?.id ?? null) === (b?.id ?? null);
+  readonly compareWith: (a: Tag | undefined, b: Tag | undefined) => boolean = (a, b) =>
+    (a?.id ?? null) === (b?.id ?? null);
   readonly value = signal<Tag | undefined>({ id: 't1', name: 'Design' });
 }
 
@@ -680,8 +674,11 @@ describe('CngxActionSelect - keyboard collapse onto the clear button', () => {
   });
 });
 
-describeFieldSkinHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', () =>
-  createMockField({ name: 'pick' }).accessor,
+describeFieldSkinHost(
+  'CngxActionSelect',
+  CngxActionSelect,
+  'cngx-action-select',
+  () => createMockField({ name: 'pick' }).accessor,
 );
 
 describeFieldAriaHost('CngxActionSelect', CngxActionSelect, 'cngx-action-select', {
@@ -890,7 +887,9 @@ describe('CngxActionSelect - openOn config integration', () => {
     flush(fixture);
     const select = fixture.debugElement.query(By.directive(CngxActionSelect))
       .componentInstance as CngxActionSelect<Tag>;
-    const input = fixture.nativeElement.querySelector('input.cngx-action-select__input') as HTMLInputElement;
+    const input = fixture.nativeElement.querySelector(
+      'input.cngx-action-select__input',
+    ) as HTMLInputElement;
     return { fixture, select, input };
   }
 

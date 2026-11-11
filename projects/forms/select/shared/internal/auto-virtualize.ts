@@ -80,8 +80,7 @@ export function createAutoPanelRenderer<T>(opts: {
   const threshold = Math.max(0, vConfig.threshold ?? 0);
 
   const needed = linkedSignal<boolean, boolean>({
-    source: () =>
-      threshold <= 0 || (!opts.hasGroup() && opts.flatOptions().length >= threshold),
+    source: () => threshold <= 0 || (!opts.hasGroup() && opts.flatOptions().length >= threshold),
     computation: (crossed, previous) => crossed || previous?.value === true,
   });
 
@@ -197,14 +196,19 @@ export function createAutoPanelRenderer<T>(opts: {
           // Synchronous first write: the active-descendant scroll runs in a
           // requestAnimationFrame, before ResizeObserver delivery in a frame.
           write(row.getBoundingClientRect().height);
-          stopObserving = observeResize(row.ownerDocument.defaultView, row, 'border-box', (entry) => {
-            const next = sizing(row);
-            if (next === measuredSizing) {
-              return;
-            }
-            measuredSizing = next;
-            write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height);
-          });
+          stopObserving = observeResize(
+            row.ownerDocument.defaultView,
+            row,
+            'border-box',
+            (entry) => {
+              const next = sizing(row);
+              if (next === measuredSizing) {
+                return;
+              }
+              measuredSizing = next;
+              write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height);
+            },
+          );
         },
       });
       inject(DestroyRef).onDestroy(release);

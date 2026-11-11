@@ -335,8 +335,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /**
    * Formats a value into the input text. The input is rewritten through it
    * after a commit, a rollback, a clear and a blur. Unbound, the input shows
-   * the label of the matching option, or `String(value)` when no option
-   * matches.
+   * the label last resolved for the committed value: a refetch that renames
+   * the option updates it, a result set without the option keeps it. A value
+   * no option ever matched shows `String(value)`; bind `displayWith` when
+   * the value is a server id the options may not contain.
    */
   readonly displayWith = input<((value: T) => string) | undefined>(undefined);
   /**

@@ -151,7 +151,9 @@ describe('createActionTriggerInput', () => {
       h.trigger.handleTriggerEnter(safari);
       expect(h.dispatchLog).toEqual([]);
 
-      h.trigger.handleTriggerEnter(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+      h.trigger.handleTriggerEnter(
+        new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }),
+      );
       expect(h.dispatchLog).toEqual([[{ label: 'にほん' }, 'にほん', undefined]]);
     });
   });

@@ -121,7 +121,9 @@ describe('select auto virtualization, default config', () => {
     expect(rows()).toBeGreaterThanOrEqual(inMiddle);
     const rendered = root!.querySelectorAll('.cngx-select__option');
     expect(rendered[rendered.length - 1].textContent).toContain('Option 999');
-    expect(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop).toBeLessThanOrEqual(1);
+    expect(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop).toBeLessThanOrEqual(
+      1,
+    );
   });
 });
 

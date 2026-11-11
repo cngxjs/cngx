@@ -295,7 +295,10 @@ export interface CngxActionMultiSelectChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxActionMultiSelect).panelHost },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxActionMultiSelect).panelHost },
+    {
+      provide: CNGX_SELECT_PANEL_VIEW_HOST,
+      useFactory: () => inject(CngxActionMultiSelect).panelHost,
+    },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -1417,5 +1420,4 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   // True only inside the lifecycle emitter's post-close focus restore -
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
-
 }
