@@ -1724,32 +1724,6 @@ cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__brand-name {
   display: flex;
   gap: 0.5rem;
 }
-.demo-sidenav__themes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-.demo-sidenav__theme-label {
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cngx-color-text-muted);
-}
-.demo-sidenav__theme-label--inset {
-  padding: 0.5rem 0.5rem 0;
-}
-.demo-sidenav__theme-panel {
-  height: 300px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-.demo-sidenav__theme-panel--dark {
-  background: var(--cngx-color-surface);
-  color: var(--cngx-color-text);
-  border-radius: 6px;
-}
 // Demo-only resizable frame for the sidenav auto-mode story. Auto mode docks
 // at a 64rem layout width, past the 640px artifact cap, so the artifact that
 // holds this frame drops the cap and the frame resizes freely across the

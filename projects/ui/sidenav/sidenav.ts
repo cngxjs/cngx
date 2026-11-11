@@ -123,7 +123,6 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
  * <example-url>/#/ui/sidenav/auto-mode</example-url>
  * <example-url>/#/ui/sidenav/dual-sidebar-master-detail</example-url>
  * <example-url>/#/ui/sidenav/full-navigation-sidebar</example-url>
- * <example-url>/#/ui/sidenav/material-theming-light-vs-dark</example-url>
  * @axis level organism
  */
 @Component({
