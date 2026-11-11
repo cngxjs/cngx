@@ -29,12 +29,14 @@ function build(opts: {
   hasGroup?: Signal<boolean>;
   presentation?: Signal<CngxPopoverPresentation>;
   listbox?: HTMLElement;
+  open?: Signal<boolean>;
 }): { renderer: PanelRenderer<number>; handle: CngxSelectAutoRecyclerHandle } {
   const { renderer, autoRecycler } = createAutoPanelRenderer<number>({
     flatOptions: opts.flatOptions,
     hasGroup: opts.hasGroup ?? signal(false),
     popoverRef: signal<CngxPopover | undefined>({
       elementRef: { nativeElement: opts.popover },
+      isVisible: opts.open ?? signal(true),
     } as unknown as CngxPopover),
     virtualization: opts.virtualization,
     presentation: opts.presentation,
@@ -310,5 +312,36 @@ describe('createAutoPanelRenderer - row probe', () => {
       [first, { box: 'border-box' }],
       [next, { box: 'border-box' }],
     ]);
+  });
+
+  it('probes nothing while the panel is closed and measures again on the next open', () => {
+    const open = signal(true);
+    const { renderer, handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: container,
+      virtualization: {},
+      open,
+    });
+    const first = row(0, 40);
+    container.appendChild(first);
+    mountRecycler(handle);
+    render();
+    const windowAt40 = renderer.renderOptions().length;
+
+    open.set(false);
+    render();
+    expect(ro.disconnect).toHaveBeenCalledTimes(1);
+    first.getBoundingClientRect = () => ({ height: 50 }) as DOMRect;
+    render();
+    expect(rowObserves()).toEqual([[first, { box: 'border-box' }]]);
+    expect(renderer.renderOptions().length).toBe(windowAt40);
+
+    open.set(true);
+    render();
+    expect(rowObserves()).toEqual([
+      [first, { box: 'border-box' }],
+      [first, { box: 'border-box' }],
+    ]);
+    expect(renderer.renderOptions().length).toBeLessThan(windowAt40);
   });
 });

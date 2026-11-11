@@ -148,6 +148,12 @@ export function createAutoPanelRenderer<T>(opts: {
       };
       afterEveryRender({
         read: () => {
+          // A latched recycler outlives the open panel; a closed one probes
+          // nothing, and the next open measures a fresh first row.
+          if (!opts.popoverRef()?.isVisible()) {
+            release();
+            return;
+          }
           const row =
             scrollElement.nativeElement?.querySelector<HTMLElement>('[data-cngx-recycle-index]') ??
             null;
