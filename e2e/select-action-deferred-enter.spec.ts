@@ -5,11 +5,13 @@ const COMBOBOX = 'input[role=combobox]:not(.cngx-select-sheet-header__input)';
 /**
  * Types `text` and sends `keys` as one burst from inside the page, so no
  * render runs between them: the first navigation key settles the debounced
- * term and every later key joins its deferral.
+ * term and every later key joins its deferral. The deferred keys and any
+ * quick-create run within the next renders, so the readout after 20 frames
+ * is the end state, not a frame in between.
  */
-async function burst(page: Page, text: string, keys: readonly string[]): Promise<void> {
-  await page.evaluate(
-    ([selector, term, sequence]) => {
+async function burst(page: Page, text: string, keys: readonly string[]): Promise<string[]> {
+  return page.evaluate(
+    async ([selector, term, sequence]) => {
       const input = document.querySelector<HTMLInputElement>(selector as string);
       if (!input) {
         throw new Error(`no ${selector as string}`);
@@ -21,6 +23,10 @@ async function burst(page: Page, text: string, keys: readonly string[]): Promise
       for (const key of sequence as string[]) {
         input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
       }
+      for (let frame = 0; frame < 20; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+      return [...document.querySelectorAll('.event-value')].map((e) => e.textContent?.trim() ?? '');
     },
     [COMBOBOX, text, keys] as const,
   );
@@ -34,14 +40,11 @@ test.describe('a deferred Enter on an action host commits only the highlighted o
     const input = page.locator(COMBOBOX).first();
     await input.click();
     await expect(input).toHaveAttribute('aria-expanded', 'true');
-    const values = page.locator('.event-value').first();
-    await expect(values).toHaveText('design');
+    await expect(page.locator('.event-value').first()).toHaveText('design');
 
-    await burst(page, 'e', ['ArrowDown', 'ArrowDown', 'Enter']);
+    const [values] = await burst(page, 'e', ['ArrowDown', 'ArrowDown', 'Enter']);
 
-    await expect(values).toHaveText('design, development');
-    await page.waitForTimeout(600);
-    await expect(values).toHaveText('design, development');
+    expect(values).toBe('design, development');
   });
 
   test('action-select: d, ArrowDown, ArrowDown, Enter picks the option and creates nothing', async ({
@@ -51,13 +54,9 @@ test.describe('a deferred Enter on an action host commits only the highlighted o
     const input = page.locator('.cngx-action-select__input').first();
     await input.click();
     await expect(input).toHaveAttribute('aria-expanded', 'true');
-    const name = page.locator('.event-value').first();
 
-    await burst(page, 'd', ['ArrowDown', 'ArrowDown', 'Enter']);
+    const [name, id] = await burst(page, 'd', ['ArrowDown', 'ArrowDown', 'Enter']);
 
-    await expect(name).toHaveText('Development');
-    await page.waitForTimeout(600);
-    await expect(name).toHaveText('Development');
-    await expect(page.locator('.event-value').nth(1)).toHaveText('t2');
+    expect([name, id]).toEqual(['Development', 't2']);
   });
 });
