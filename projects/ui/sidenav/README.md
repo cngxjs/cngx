@@ -64,6 +64,8 @@ Key features:
 
 The sidenav projects `cngx-nav-header` / `[cngxNavHeader]` above its scrolling body and `cngx-nav-footer` / `[cngxNavFooter]` below it. Header, footer and the `cngxNavLink` / `cngxNavGroup` / `cngxNavLabel` / `cngxNavBadge` rows are the nav atoms of `@cngx/common/interactive`, skinned by `cngx-nav.css`, which `@cngx/themes/cngx.css` loads. The sidenav only SETs their tokens on its host (fills, focus ring, inset, padding, header and footer borders), so the same rows look the same in a `cngxSidebar` or a plain `<nav>`.
 
+The row tokens, the icon slot and its letter fallback, and the header, footer, mark and name slots are documented in the [nav atoms README](../../common/interactive/nav/README.md#theming).
+
 ## Container, not viewport
 
 The docking decision reads the width of the surrounding `CngxSidenavLayout`, not the width of the window. A rail inside a dashboard pane collapses when that pane is narrow, whatever the browser window is doing.
