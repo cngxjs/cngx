@@ -963,7 +963,6 @@
     overflow: hidden;
     text-align: center;
     font-size: 0 !important; /* must beat inline styles */
-    line-height: 1;
     padding: var(--cngx-nav-link-padding, 10px 8px);
   }
 
@@ -974,7 +973,6 @@
     display: inline-block;
     width: var(--cngx-nav-link-initial-size, 0.875rem);
     text-align: center;
-    line-height: 1.6;
   }
 
   /* Hide badges on the collapsed rail */

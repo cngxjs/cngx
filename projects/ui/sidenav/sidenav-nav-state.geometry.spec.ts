@@ -73,6 +73,15 @@ type Fill = (typeof FILLS)[number];
       <cngx-sidenav class="rail-compact" mode="side" [opened]="true" ariaLabel="Compact">
         <a cngxNavLink href="#compact" class="row-compact" [active]="true">Inbox</a>
       </cngx-sidenav>
+      <cngx-sidenav
+        class="rail-mini-compact"
+        mode="side"
+        [collapsed]="true"
+        [expandOnHover]="false"
+        ariaLabel="Mini compact"
+      >
+        <a cngxNavLink href="#mini-compact" class="row-mini-compact" [active]="true">Inbox</a>
+      </cngx-sidenav>
     </div>
     <span class="probe-highlighttext" style="color: HighlightText"></span>
     <span class="probe-highlight" style="color: Highlight"></span>
@@ -104,8 +113,7 @@ const bg = (root: ParentNode, selector: string): string =>
 
 // Computed colours come back as oklch or oklab depending on how they were
 // produced; compare their rasterised paint over white instead of the strings.
-const fillOf = (root: ParentNode, selector: string): string =>
-  paint('white', bg(root, selector));
+const fillOf = (root: ParentNode, selector: string): string => paint('white', bg(root, selector));
 
 // Paint the colours bottom-up into a 1px canvas and read the pixel back: this
 // resolves oklch / color-mix to sRGB and composites the translucent row fill
@@ -354,6 +362,27 @@ describe('active indicator', () => {
     expect(bar(row, 'background-color')).toBe(
       computedValue(one(root, '.probe-highlighttext'), 'color'),
     );
+  });
+});
+
+describe('rail row height', () => {
+  const height = (root: ParentNode, selector: string): number =>
+    one(root, selector).getBoundingClientRect().height;
+
+  it('keeps a rail row as tall as an expanded row at comfortable density', () => {
+    const root = mount();
+    expect(one(root, '.rail-mini').getAttribute('data-sidebar-state')).toBe('rail');
+    expect(Math.abs(height(root, '.row-mini') - height(root, '.row-active'))).toBeLessThanOrEqual(
+      0.5,
+    );
+  });
+
+  it('keeps a rail row as tall as an expanded row at compact density', () => {
+    const root = mount();
+    expect(one(root, '.rail-mini-compact').getAttribute('data-sidebar-state')).toBe('rail');
+    expect(
+      Math.abs(height(root, '.row-mini-compact') - height(root, '.row-compact')),
+    ).toBeLessThanOrEqual(0.5);
   });
 });
 
