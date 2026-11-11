@@ -238,20 +238,14 @@
 
     /* The shell never windows its projected options, so an off-screen option
        skips layout and paint instead and stays in the DOM and the a11y tree.
-       A never-rendered row reserves the row's own block floor and padding
-       (declarative/option.component.css), and `auto` keeps the real size of
-       every row rendered once. A row taller than that, custom content, can
-       land a first jump short, and so can an overridden
-       --cngx-select-option-padding: it is a two-value shorthand whose block
-       part CSS cannot extract, so the estimate keeps the default padding. */
+       The estimate is the content only, one text line: a skipped row keeps
+       its real box, so padding and the block floor
+       (declarative/option.component.css) apply as on a rendered row. `auto`
+       keeps the real size of every row rendered once. A row taller than one
+       line, custom content, can land a first jump short. */
     .cngx-select__panel cngx-option {
       content-visibility: auto;
-      contain-intrinsic-block-size: auto
-        max(
-          var(--cngx-select-option-min-height, 0px),
-          var(--cngx-target-min, 0px),
-          calc(1lh + 2 * var(--cngx-space-xs, 0.375rem))
-        );
+      contain-intrinsic-block-size: auto 1lh;
     }
 
     .cngx-select-shell__trigger {

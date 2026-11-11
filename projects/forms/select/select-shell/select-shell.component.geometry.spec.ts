@@ -138,10 +138,12 @@ describe('CngxSelectShell geometry', () => {
 // and paint (content-visibility) yet stay in the DOM and the a11y tree, and
 // scrolling, keyboard reach and the active-row chrome still behave.
 describe('CngxSelectShell with 1000 projected options', () => {
-  async function mountMany(value?: number) {
+  async function mountMany(value?: number, targetMin: string | null = '44px') {
     const fixture = TestBed.createComponent(ManyHost);
     mountedRoot = fixture.nativeElement as HTMLElement;
-    mountedRoot.style.setProperty('--cngx-target-min', '44px');
+    if (targetMin !== null) {
+      mountedRoot.style.setProperty('--cngx-target-min', targetMin);
+    }
     document.body.appendChild(mountedRoot);
     if (value !== undefined) {
       fixture.componentInstance.value.set(value);
@@ -179,6 +181,20 @@ describe('CngxSelectShell with 1000 projected options', () => {
     expect(far.getBoundingClientRect().height).toBeGreaterThan(0);
   });
 
+  // A skipped row that differs from a rendered one shifts the list once the
+  // rows around a mid-list target render, and the target leaves the view.
+  for (const targetMin of [null, '44px']) {
+    it(`sizes a skipped row like a rendered one (target-min ${targetMin ?? 'unset'})`, async () => {
+      const { scroller, options } = await mountMany(undefined, targetMin);
+      const all = options();
+      const rendered = all[0];
+      const skipped = all[900];
+      expect(inView(scroller, rendered)).toBe(true);
+      expect(inView(scroller, skipped)).toBe(false);
+      expect(skipped.getBoundingClientRect().height).toBe(rendered.getBoundingClientRect().height);
+    });
+  }
+
   it('shows the last option after a jump to the end', async () => {
     const { settle, scroller, options } = await mountMany();
     scroller.scrollTop = scroller.scrollHeight;
@@ -191,10 +207,14 @@ describe('CngxSelectShell with 1000 projected options', () => {
   it('scrolls a far option reached by keyboard into view', async () => {
     const { root, settle, scroller, options } = await mountMany();
     const trigger = query(root, '.cngx-select-shell__trigger');
-    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }));
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }),
+    );
     await settle();
     const last = options()[999];
-    expect(root.querySelector('[aria-activedescendant]')?.getAttribute('aria-activedescendant')).toBe(last.id);
+    expect(
+      root.querySelector('[aria-activedescendant]')?.getAttribute('aria-activedescendant'),
+    ).toBe(last.id);
     expect(inView(scroller, last)).toBe(true);
   });
 
