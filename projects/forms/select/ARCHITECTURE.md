@@ -175,7 +175,7 @@ What stays in the variant body:
 
 - The trigger-element template.
 - The value-shape adapter (single sets `value.set(v)`; multi calls
-  `toggleOptionByUser(opt)`; tree calls `singleToggle(node)` /
+  `ArrayCommitHandler.beginToggle(...)`; tree calls `singleToggle(node)` /
   `cascadeToggle(node)`; reorderable handles position moves).
 - Variant-specific output emissions (`selectionChange`,
   `optionToggled`, `cleared`, `reordered`).
@@ -191,7 +191,7 @@ Every shared factory has a corresponding DI token - providers can swap the defau
 | `CNGX_SCALAR_COMMIT_HANDLER_FACTORY`    | `createScalarCommitHandler`    | ActionSelect commit flow                                    |
 | `CNGX_REORDER_COMMIT_HANDLER_FACTORY`   | `createReorderCommitHandler`   | Reorderable position-move commits                           |
 | `CNGX_CREATE_COMMIT_HANDLER_FACTORY`    | `createCreateCommitHandler`    | Action-host quick-create commit flow                        |
-| `CNGX_DISPLAY_BINDING_FACTORY`          | `createDisplayBinding`         | Typeahead value ↔ input-text binding                        |
+| `CNGX_DISPLAY_BINDING_FACTORY`          | `createDisplayBinding`         | Typeahead / ActionSelect value ↔ input-text binding         |
 | `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`   | `createCommitErrorAnnouncer`   | Scalar commit-error AT announce policy                      |
 | `CNGX_TRIGGER_FOCUS_FACTORY`            | `createTriggerFocusState`      | Shared focus-state slot                                     |
 | `CNGX_TEMPLATE_REGISTRY_FACTORY`        | `createTemplateRegistry`       | Three-stage template-slot cascade                           |
@@ -293,7 +293,7 @@ sequenceDiagram
 ```
 
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
-Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
+Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry({...})`. The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
 ### Default glyphs
 
@@ -523,8 +523,8 @@ callback no-ops. Consecutive picks therefore never race.
 
 - `'banner'` (default) - `*cngxSelectCommitError` slot or a default alert banner above the option list.
 - `'inline'` - a per-row `*cngxSelectOptionError` glyph on the failed option (visual-only, AT feedback via `announcer.announce(..., 'assertive')`).
-- `'none'` - no built-in UI; bridge via `<cngx-toast-on />`,
-  `<cngx-banner-on />`, or any `CNGX_STATEFUL`-aware transition component on the host.
+- `'none'` - no built-in UI; bridge via `[cngxToastOn]`,
+  `[cngxBannerOn]`, or any `CNGX_STATEFUL`-aware transition component on the host.
 
 The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges work with zero additional wiring.
 
@@ -555,12 +555,9 @@ remove affordances are not rendered while writes are blocked.
 **Live ARIA on the trigger**: `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage` come from `core.triggerAria`. `aria-expanded`, `aria-haspopup` and `aria-controls` have one writer, `CngxPopoverTrigger`: the template binds `[haspopup]="sheetWiring.triggerHaspopup()"` and `[controls]="sheetWiring.triggerControls()"` (the listbox / tree id while anchored, `'dialog'` and the sheet id while modal).
 All are reactive computeds - they always reflect the current state, never go stale.
 
-**TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav)
-
-- Home/End + typeahead) composed with `CngxHierarchicalNav`
-  (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
-  Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
-  The treeitem is the one AT channel: the row checkbox and the parent-row count (`2/3`) are `aria-hidden`, because `aria-checked` already carries what they show. Under the touch floor the checkbox wrapper is the selection tap target and a pointer tap on the row expands a parent: the row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row (`rowTapExpands` on `CNGX_TREE_SELECT_PANEL_HOST`, read from the touch-floor signal). Every other activation, including a screen reader's double tap (a click without pointer events), runs `handleSelect`; AT expands through `aria-expanded`. The footer clear-all is `aria-disabled` and described by the count while nothing is selected, so it keeps focus instead of dropping it to `body`.
+**TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav + Home/End + typeahead) composed with `CngxHierarchicalNav` (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
+Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
+The treeitem is the one AT channel: the row checkbox and the parent-row count (`2/3`) are `aria-hidden`, because `aria-checked` already carries what they show. Under the touch floor the checkbox wrapper is the selection tap target and a pointer tap on the row expands a parent: the row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row (`rowTapExpands` on `CNGX_TREE_SELECT_PANEL_HOST`, read from the touch-floor signal). Every other activation, including a screen reader's double tap (a click without pointer events), runs `handleSelect`; AT expands through `aria-expanded`. The footer clear-all is `aria-disabled` and described by the count while nothing is selected, so it keeps focus instead of dropping it to `body`.
 
 **Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces selection changes through a global polite live region. While a mobile sheet is modal and open, the variant's `CngxScopedSelectAnnouncer` speaks through the region inside the sheet instead (see [Mobile sheet](#mobile-sheet)).
 `CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.
@@ -601,7 +598,7 @@ protected readonly rfField = adaptFormControl(
 
 Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">` exactly as for native Signal Forms.
 
-`createFieldSync` (in `projects/forms/field/field-sync.ts`, exported from `@cngx/forms/field`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes. The select family reaches it through `shared/field-sync.ts`, which gates the sync on `CNGX_SELECT_DISABLE_FIELD_SYNC`: a subtree can opt out of value-sync (while keeping the disabled / focused / errorState bridge) by providing that token truthy - used by composites like `CngxFilterBuilderFormFieldControl` that are themselves the form-field control, so their inner selects never sync the composite's object value.
+`createFieldSync` (in `projects/forms/field/field-sync.ts`, exported from `@cngx/forms/field`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes. The select family reaches it through `shared/field-sync.ts` (re-exported from `@cngx/forms/select` as `createFieldSync`, `CNGX_SELECT_DISABLE_FIELD_SYNC` and `FieldSyncOptions`), which gates the sync on `CNGX_SELECT_DISABLE_FIELD_SYNC`: a subtree can opt out of value-sync (while keeping the disabled / focused / errorState bridge) by providing that token truthy - used by composites like `CngxFilterBuilderFormFieldControl` that are themselves the form-field control, so their inner selects never sync the composite's object value.
 
 ### Why the select family has no ControlValueAccessor
 
@@ -679,7 +676,7 @@ The 18 DI tokens + the slot system ARE the real decompose strategy: they elimina
 **What is genuinely variant-specific** and does NOT factor out:
 
 - Trigger template markup (button vs input vs chip-strip-with-input).
-- Public API surface (single `value` vs `values: T[]` vs `treeValues`).
+- Public API surface (single `value` vs multi and tree `values: T[]`).
 - AD-activation glue (the activated payload's shape varies).
 - Field-sync wiring (single owns scalar `value`; multi/tree own arrays; typeahead owns `value + display.writeFromValue` integration).
 
