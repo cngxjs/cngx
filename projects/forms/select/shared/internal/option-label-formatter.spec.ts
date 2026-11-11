@@ -1,4 +1,4 @@
-import { computed, signal } from '@angular/core';
+import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxSelectOptionDef } from '../option.model';
@@ -9,10 +9,12 @@ type Opt = CngxSelectOptionDef<string>;
 function setup(initial: readonly Opt[], value: string) {
   const options = signal<readonly Opt[]>(initial);
   const displayWith = signal<((v: string) => string) | undefined>(undefined);
-  const selected = computed<Opt | null>(() => options().find((o) => o.value === value) ?? null, {
-    equal: (a, b) => a === b || (a !== null && b !== null && a.value === b.value),
-  });
-  const formatter = createOptionLabelFormatter(displayWith, selected);
+  const formatter = createOptionLabelFormatter<string>(
+    displayWith,
+    signal(value),
+    (v) => options().find((o) => o.value === v) ?? null,
+    signal((a: string | undefined, b: string | undefined) => a === b),
+  );
   return { options, displayWith, formatter };
 }
 
@@ -48,5 +50,16 @@ describe('createOptionLabelFormatter', () => {
     expect(formatter()('red')).toBe('red');
     options.set([{ value: 'red', label: 'Red' }]);
     expect(formatter()('red')).toBe('Red');
+  });
+
+  it('looks up an argument that is not the committed value', () => {
+    const { formatter } = setup(
+      [
+        { value: 'red', label: 'Red' },
+        { value: 'blue', label: 'Blue' },
+      ],
+      'red',
+    );
+    expect(formatter()('blue')).toBe('Blue');
   });
 });

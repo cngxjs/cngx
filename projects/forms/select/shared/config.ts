@@ -227,7 +227,13 @@ export interface CngxSelectAriaLabels {
  * per-index `estimateSize`, or grid layout.
  */
 export interface CngxSelectVirtualizationConfig {
-  /** Item height in px. Default `32`. */
+  /**
+   * Item height in px. Unset (the default), the recycler measures the first
+   * option row once per open and again when that row's sizing changes
+   * (density, text scale, touch target), with `32` only until a row is
+   * measured. A set value turns measuring and the scroll rescale off, so a
+   * value below the real row height under-counts the unrendered rows.
+   */
   readonly estimateSize?: number;
   /** Rows outside the viewport. Default `5`. */
   readonly overscan?: number;

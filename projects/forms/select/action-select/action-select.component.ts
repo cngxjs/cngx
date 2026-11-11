@@ -8,6 +8,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -334,8 +335,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /**
    * Formats a value into the input text. The input is rewritten through it
    * after a commit, a rollback, a clear and a blur. Unbound, the input shows
-   * the label of the matching option, or `String(value)` when no option
-   * matches.
+   * the label last resolved for the committed value: a refetch that renames
+   * the option updates it, a result set without the option keeps it. A value
+   * no option ever matched shows `String(value)`; bind `displayWith` when
+   * the value is a server id the options may not contain.
    */
   readonly displayWith = input<((value: T) => string) | undefined>(undefined);
   /**
@@ -912,12 +915,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       if (isEmptyScalar(v)) {
         return null;
       }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        return map.get(v as unknown) ?? null;
-      }
-      const eq = this.compareWith();
-      return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+      return this.findOption(v);
     },
     {
       equal: (a, b) => {
@@ -932,6 +930,16 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
+  /** The option for `v` in the current options, by `compareWith`; not equality-guarded. */
+  private findOption(v: T): CngxSelectOptionDef<T> | null {
+    const map = this.core.valueToOptionMap();
+    if (map) {
+      return map.get(v as unknown) ?? null;
+    }
+    const eq = this.compareWith();
+    return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+  }
+
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
@@ -945,7 +953,12 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
-  private readonly resolvedDisplayWith = createOptionLabelFormatter(this.displayWith, this.selected);
+  private readonly resolvedDisplayWith = createOptionLabelFormatter(
+    this.displayWith,
+    this.value,
+    (v) => this.findOption(v),
+    this.compareWith,
+  );
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
     displayWith: this.resolvedDisplayWith,
@@ -1144,6 +1157,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
+    injector: inject(Injector),
   });
 
   /** @internal - Enter-to-quick-create (see createActionTriggerInput). */

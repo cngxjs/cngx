@@ -121,6 +121,37 @@ describe('injectRecycler', () => {
     });
   });
 
+  describe('fast-scroll lead', () => {
+    // The lead cap is one viewport of items, measured in the row estimate: a
+    // signal estimate must count 700 / 44 = 16 rows, not 700 / (700 / 8) = 8.
+    function startAtEnd(estimateSize: number | (() => number)): number {
+      const el = document.createElement('div');
+      Object.defineProperty(el, 'clientHeight', { value: 700, configurable: true });
+      Object.defineProperty(el, 'scrollTop', { value: 0, writable: true, configurable: true });
+      el.scrollTo = vi.fn();
+      document.body.appendChild(el);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: el,
+          totalCount: () => 1000,
+          estimateSize: estimateSize as number,
+        });
+      });
+      TestBed.flushEffects();
+      el.scrollTop = 1000 * 44 - 700;
+      el.dispatchEvent(new Event('scroll'));
+      TestBed.flushEffects();
+      const start = recycler.start();
+      el.remove();
+      return start;
+    }
+
+    it('counts a signal estimate like the same numeric one at the end of the list', () => {
+      expect(startAtEnd(signal(44))).toBe(startAtEnd(44));
+    });
+  });
+
   describe('estimateSize dev warning', () => {
     it('does not warn for a reactive Signal estimate at large counts', () => {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -149,7 +180,9 @@ describe('injectRecycler', () => {
       });
       expect(warn).toHaveBeenCalledOnce();
       expect(warn).toHaveBeenCalledWith(
-        expect.stringMatching(/^CNGX1012: injectRecycler\(\): estimateSize as a function with 20000 items/),
+        expect.stringMatching(
+          /^CNGX1012: injectRecycler\(\): estimateSize as a function with 20000 items/,
+        ),
       );
       warn.mockRestore();
     });
@@ -728,7 +761,11 @@ describe('injectRecycler', () => {
         estimateSize: 100,
         layout: 'grid',
       });
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1011: injectRecycler\(\): layout: "grid" requires explicit `columns`/));
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^CNGX1011: injectRecycler\(\): layout: "grid" requires explicit `columns`/,
+        ),
+      );
       // Still functional - degrades to single-column list
       expect(recycler.start()).toBe(0);
       errorSpy.mockRestore();

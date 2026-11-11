@@ -570,7 +570,9 @@ describe('CngxSelect - closed typeahead and disabled groups', () => {
     fixture.detectChanges();
     flush(fixture);
     const trigger = fixture.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
-    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }));
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }),
+    );
     flush(fixture);
     expect(fixture.componentInstance.value()).toBe('green');
   });
@@ -1340,7 +1342,6 @@ class UnlabelledCommitHost {
 }
 
 describe('CngxSelect - commit error copy without a label', () => {
-
   it('names the field label fallback when aria-label is empty', () => {
     const fixture = TestBed.createComponent(UnlabelledCommitHost);
     fixture.detectChanges();
@@ -1367,7 +1368,6 @@ describe('CngxSelect - commit error copy without a label', () => {
 });
 
 describe('CngxSelect - announcer', () => {
-
   it('announces selection changes via the live region', () => {
     TestBed.configureTestingModule({ imports: [AnnouncerHost] });
     const announcer = TestBed.inject(CngxSelectAnnouncer);
@@ -1422,7 +1422,6 @@ class AutofocusHost {
 }
 
 describe('CngxSelect - autofocus', () => {
-
   it('[autofocus]="true" focuses the trigger after first render', async () => {
     TestBed.configureTestingModule({ imports: [AutofocusHost] });
     const fixture = TestBed.createComponent(AutofocusHost);
@@ -1459,7 +1458,6 @@ class ConfigCascadeInputHost {
 }
 
 describe('CngxSelect - config cascade (input > component-scope > app-scope > default)', () => {
-
   it('app-scope provideSelectConfig sets default panelWidth', () => {
     TestBed.configureTestingModule({
       imports: [ConfigCascadeHost],
@@ -1728,9 +1726,9 @@ describe('CngxSelect listbox fallback label', () => {
 // The cross-variant sheet contract runs from select-mobile-sheet.spec.ts
 // (describeMobileSheet), including the anchored Escape path during a pending
 // commit and the openOn='focus' no-reopen guard. The speak-once/assertive
-// announcement stays here: the family speaks a typeahead commit error softly
-// (select-family-accepted-debt.md §1, Divergenz-Matrix, Error-Announcement),
-// so the assertive sheet error is not a cross-variant contract.
+// announcement stays here: the single select speaks the commit error message
+// assertively, the typeahead only a soft change announcement, so the assertive
+// sheet error is not a cross-variant contract.
 
 @Component({
   template: `
@@ -1842,7 +1840,11 @@ describeSelectBehaviourHost('CngxSelect', CngxSelect, 'cngx-select', {
 
 describe('CngxSelect - highlight across an options swap', () => {
   @Component({
-    template: `<cngx-select [label]="'Colour'" [options]="options()" [presentation]="'anchored'" />`,
+    template: `<cngx-select
+      [label]="'Colour'"
+      [options]="options()"
+      [presentation]="'anchored'"
+    />`,
     imports: [CngxSelect],
   })
   class SwapHost {
@@ -1882,7 +1884,11 @@ describe('CngxSelect - highlight across an options swap', () => {
 
 describe('CngxSelect - panel row labels across an options swap', () => {
   @Component({
-    template: `<cngx-select [label]="'Colour'" [options]="options()" [presentation]="'anchored'" />`,
+    template: `<cngx-select
+      [label]="'Colour'"
+      [options]="options()"
+      [presentation]="'anchored'"
+    />`,
     imports: [CngxSelect],
   })
   class SwapHost {
@@ -1973,7 +1979,9 @@ describe('CngxSelect - a space inside a running typeahead buffer', () => {
     // Back to back, no change detection in between: both keydown listeners of
     // the trigger see each key before any render.
     for (const key of 'new y') {
-      triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      triggerBtn.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
     }
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
@@ -1982,7 +1990,9 @@ describe('CngxSelect - a space inside a running typeahead buffer', () => {
 
   it('reaches New York by typing "new y" with the panel open, without activating an option', () => {
     const { fixture, triggerBtn, listbox, popover } = setup();
-    triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+    );
     flush(fixture);
     expect(popover.isVisible()).toBe(true);
 

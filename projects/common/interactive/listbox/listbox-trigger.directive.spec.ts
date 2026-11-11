@@ -15,12 +15,7 @@ import { CngxOption } from './option.directive';
 
 @Component({
   template: `
-    <button
-      type="button"
-      [cngxListboxTrigger]="lb"
-      [popover]="pop"
-      #trigger="cngxListboxTrigger"
-    >
+    <button type="button" [cngxListboxTrigger]="lb" [popover]="pop" #trigger="cngxListboxTrigger">
       Select
     </button>
     <div cngxPopover #pop="cngxPopover" [closeOnEscape]="escape()">
@@ -200,7 +195,9 @@ describe('CngxListboxTrigger', () => {
     const fixture = TestBed.createComponent(DeferredTriggerHost);
     fixture.detectChanges();
     TestBed.flushEffects();
-    const ad = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxActiveDescendant);
+    const ad = fixture.debugElement
+      .query(By.directive(CngxListbox))
+      .injector.get(CngxActiveDescendant);
     const triggerEl = fixture.debugElement.query(By.directive(CngxListboxTrigger))
       .nativeElement as HTMLElement;
 
@@ -226,7 +223,11 @@ describe('CngxListboxTrigger', () => {
     // An arrow key inside an open panel is a step, not an open gesture: with no
     // rows there is nothing to step to, and nothing is kept for later rows.
     popover.show();
-    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      bubbles: true,
+      cancelable: true,
+    });
     triggerEl.dispatchEvent(event);
     expect(ad.activeItem()).toBeNull();
 
@@ -572,7 +573,9 @@ describe('CngxListboxTrigger - keys inside the search debounce window', () => {
     const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
     const listbox = fixture.debugElement.query(By.directive(CngxListbox)).injector.get(CngxListbox);
     const key = (k: string): void => {
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+      input.dispatchEvent(
+        new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }),
+      );
     };
     const settle = (): void => {
       TestBed.flushEffects();
@@ -599,6 +602,16 @@ describe('CngxListboxTrigger - keys inside the search debounce window', () => {
     expect(listbox.ad.activeValue()).toBe('grey');
   });
 
+  it('runs an Enter after the deferred ArrowDown, on the filtered row it highlighted', () => {
+    const { listbox, key, settle, type } = setup();
+    type('gr');
+    key('ArrowDown');
+    key('Enter');
+    settle();
+    expect(listbox.ad.activeValue()).toBe('green');
+    expect(listbox.value()).toBe('green');
+  });
+
   it('drops the deferred key when Escape closes the panel inside the window', () => {
     const { popover, listbox, key, settle, type } = setup();
     type('gr');
@@ -622,9 +635,13 @@ class ProbeHostState {}
 
 @Component({
   template: `
-    <button type="button" id="stated" probeHostState [cngxListboxTrigger]="lb" [popover]="pop">A</button>
+    <button type="button" id="stated" probeHostState [cngxListboxTrigger]="lb" [popover]="pop">
+      A
+    </button>
     <button type="button" id="native" disabled [cngxListboxTrigger]="lb" [popover]="pop">B</button>
-    <button type="button" id="aria" aria-disabled="true" [cngxListboxTrigger]="lb" [popover]="pop">C</button>
+    <button type="button" id="aria" aria-disabled="true" [cngxListboxTrigger]="lb" [popover]="pop">
+      C
+    </button>
     <div cngxPopover #pop="cngxPopover">
       <div cngxListbox [label]="'Colors'" tabindex="0" #lb="cngxListbox">
         <div cngxOption value="red">Red</div>
@@ -652,7 +669,8 @@ describe('CngxListboxTrigger on a blocked host', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     fixture.detectChanges();
-    const el = (id: string) => fixture.debugElement.query(By.css(`#${id}`)).nativeElement as HTMLElement;
+    const el = (id: string) =>
+      fixture.debugElement.query(By.css(`#${id}`)).nativeElement as HTMLElement;
     const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
     return { el, popover };
   }
@@ -663,7 +681,9 @@ describe('CngxListboxTrigger on a blocked host', () => {
     it(`${id}: no opening key opens the listbox`, () => {
       const { el, popover } = setup();
       for (const key of OPEN_KEYS) {
-        el(id).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+        el(id).dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
         TestBed.flushEffects();
         expect(popover.isVisible()).toBe(false);
       }
@@ -675,7 +695,9 @@ describe('CngxListboxTrigger on a blocked host', () => {
     stateDisabled.set(true);
     TestBed.flushEffects();
     for (const key of OPEN_KEYS) {
-      el('stated').dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      el('stated').dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
       TestBed.flushEffects();
       expect(popover.isVisible()).toBe(false);
     }
@@ -731,7 +753,11 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
     TestBed.configureTestingModule({ imports: [TriggerHost, InputComboHost] });
   });
 
-  function setupButton(): { triggerEl: HTMLElement; popover: CngxPopover; ad: CngxActiveDescendant } {
+  function setupButton(): {
+    triggerEl: HTMLElement;
+    popover: CngxPopover;
+    ad: CngxActiveDescendant;
+  } {
     const fixture = TestBed.createComponent(TriggerHost);
     fixture.detectChanges();
     TestBed.flushEffects();
@@ -764,7 +790,9 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
   it('Alt+ArrowDown opens the panel without moving the highlight', () => {
     const { triggerEl, popover, ad } = setupButton();
     triggerEl.focus();
-    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, altKey: true }));
+    triggerEl.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, altKey: true }),
+    );
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(true);
     expect(ad.activeItem()).toBeNull();
@@ -775,7 +803,9 @@ describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', ()
     const { triggerEl, popover } = setupButton();
     popover.show();
     TestBed.flushEffects();
-    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, altKey: true }));
+    triggerEl.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, altKey: true }),
+    );
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(false);
   });
@@ -890,7 +920,13 @@ const hostBuffer = signal('');
 
 @Component({
   template: `
-    <button type="button" id="bound" [cngxListboxTrigger]="lb" [popover]="pop" [typeaheadBuffer]="buffer">
+    <button
+      type="button"
+      id="bound"
+      [cngxListboxTrigger]="lb"
+      [popover]="pop"
+      [typeaheadBuffer]="buffer"
+    >
       A
     </button>
     <button type="button" id="unbound" [cngxListboxTrigger]="lb" [popover]="pop">B</button>

@@ -157,9 +157,9 @@ export interface CngxTypeaheadChange<T = unknown> {
 
 /**
  * Single-value async autocomplete. Inline `<input role="combobox">`
- * with `aria-autocomplete="list"`. Input text is driven by
- * {@link CngxTypeahead.displayWith}; `clearOnBlur` restores the last
- * committed display on stray keystrokes.
+ * with `aria-autocomplete="list"`. The input shows the committed value
+ * through {@link CngxTypeahead.displayWith}, else the option label;
+ * `clearOnBlur` restores that text on stray keystrokes.
  *
  * Stateless graph in {@link createSelectCore}; this component is a
  * thin scalar-value adapter.
@@ -330,8 +330,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /**
    * Formats a value into the input text. The input is rewritten through it
    * after a commit, a rollback, a clear and a blur. Unbound, the input shows
-   * the label of the matching option, or `String(value)` when no option
-   * matches.
+   * the label last resolved for the committed value: a refetch that renames
+   * the option updates it, a result set without the option keeps it. A value
+   * no option ever matched shows `String(value)`; bind `displayWith` when
+   * the value is a server id the options may not contain.
    */
   readonly displayWith = input<((value: T) => string) | undefined>(undefined);
   /**
@@ -823,12 +825,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       if (isEmptyScalar(v)) {
         return null;
       }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        return map.get(v as unknown) ?? null;
-      }
-      const eq = this.compareWith();
-      return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+      return this.findOption(v);
     },
     {
       equal: (a, b) => {
@@ -843,6 +840,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     },
   );
 
+  /** The option for `v` in the current options, by `compareWith`; not equality-guarded. */
+  private findOption(v: T): CngxSelectOptionDef<T> | null {
+    const map = this.core.valueToOptionMap();
+    if (map) {
+      return map.get(v as unknown) ?? null;
+    }
+    const eq = this.compareWith();
+    return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+  }
+
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
@@ -851,7 +858,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
-  private readonly resolvedDisplayWith = createOptionLabelFormatter(this.displayWith, this.selected);
+  private readonly resolvedDisplayWith = createOptionLabelFormatter(
+    this.displayWith,
+    this.value,
+    (v) => this.findOption(v),
+    this.compareWith,
+  );
   /**
    * Value ↔ input-text reconciliation. Owns `writingFromValue`,
    * skipInitial-aware `searchTermChange` forwarding, imperative
@@ -938,9 +950,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     activeView: this.activeView,
     // I9: the inline refresh error stays inside the panel, so a closed
     // panel never carries a `role="alert"`.
-    showInlineError: computed<boolean>(
-      () => this.panelOpen() && this.core.showInlineError(),
-    ),
+    showInlineError: computed<boolean>(() => this.panelOpen() && this.core.showInlineError()),
   });
 
   protected isEmpty(): boolean {

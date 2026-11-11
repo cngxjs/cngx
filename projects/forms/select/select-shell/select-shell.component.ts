@@ -869,9 +869,7 @@ export class CngxSelectShell<T = unknown>
   /**
    * Virtualisation wire-up. The options are consumer-projected, so no renderer
    * slice can take a row out of the DOM and `virtualization` config does not
-   * apply: the shell never windows and AD sees a plain list at any size.
-   * Off-screen projected options skip layout and paint through CSS
-   * (`content-visibility` in the shell stylesheet). A
+   * apply: the shell never windows and AD sees a plain list at any size. A
    * `CNGX_PANEL_RENDERER_FACTORY` override still routes through here.
    */
   private readonly virtualSetup = setupVirtualization<T, T>({
