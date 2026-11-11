@@ -1050,7 +1050,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 289,
+      "line": 288,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [
