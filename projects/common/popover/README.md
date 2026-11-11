@@ -79,6 +79,8 @@ Bind `[restoreFocus]="false"` on a panel's trigger to keep focus where the brows
 
 Composers hint the trigger through owner-keyed claims on `CngxPopover`: `claimHaspopup(owner, value)`, `claimControls(owner, idSignal)` and `claimRestoreFocus(owner, value)`, each with a `release*(owner)` partner called on destroy. With several composers on one popover (a panel around a menu), the last live claim wins and a release removes only that owner's claim.
 
+The popover itself reads one more claim: `claimPositionTryFallbacks(owner, chain)` / `releasePositionTryFallbacks(owner)` supplies the `position-try-fallbacks` chain when no `[positionTryFallbacks]` is bound. The menu and context-menu triggers claim `CngxMenuConfig.tryFallbacks` this way, so a clipped menu flips. A bound `[positionTryFallbacks]="[]"` still opts the popover out.
+
 ## Popover Panel
 
 Rich popover molecule with header/body/footer slots, variant styling, arrow, close button, and async action buttons.
