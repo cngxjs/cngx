@@ -72,7 +72,7 @@ export interface CngxMenuConfig {
    */
   readonly dismissOnFocusOut: boolean;
   /**
-   * CSS `<try-tactic>` chain the menu trigger claims as the popover's
+   * CSS `<try-tactic>` chain the menu and context-menu triggers claim as the popover's
    * `position-try-fallbacks`, so a menu without room flips instead of
    * overflowing the viewport. A `[positionTryFallbacks]` bound on the
    * popover wins; an empty list claims nothing. Default

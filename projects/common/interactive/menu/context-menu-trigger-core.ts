@@ -28,6 +28,14 @@ export interface CngxContextMenuTriggerPopoverRef extends CngxMenuDismissPopover
    * the browser's CSS Anchor Positioning expects on the anchor element.
    */
   readonly id: () => string;
+  /**
+   * Owner-keyed `position-try-fallbacks` hint. The core claims
+   * `CngxMenuConfig.tryFallbacks` before each open, so a context menu near
+   * the viewport edge flips like a `CngxMenuTrigger` menu; a bound
+   * `[positionTryFallbacks]` or an override still wins.
+   */
+  claimPositionTryFallbacks(owner: object, value: readonly string[]): void;
+  releasePositionTryFallbacks(owner: object): void;
 }
 
 /**
@@ -193,6 +201,19 @@ export function createContextMenuTriggerCore(
   });
 
   let virtualAnchor: HTMLElement | null = null;
+  // Owner of the flip-chain claim, and the popover that holds it; a swapped
+  // popover reference moves the claim on the next open.
+  const claimOwner = {};
+  let claimedOn: CngxContextMenuTriggerPopoverRef | null = null;
+
+  const claimTryFallbacks = (popover: CngxContextMenuTriggerPopoverRef): void => {
+    if (claimedOn === popover) {
+      return;
+    }
+    claimedOn?.releasePositionTryFallbacks(claimOwner);
+    popover.claimPositionTryFallbacks(claimOwner, deps.menuConfig.tryFallbacks);
+    claimedOn = popover;
+  };
 
   const ensureVirtualAnchor = (): HTMLElement => {
     if (virtualAnchor) {
@@ -223,6 +244,7 @@ export function createContextMenuTriggerCore(
     anchor.style.left = `${x}px`;
     anchor.style.top = `${y}px`;
     anchor.style.setProperty('anchor-name', `--cngx-pop-${deps.popover().id()}`);
+    claimTryFallbacks(deps.popover());
     deps.popover().setAnchorElement(anchor);
     if (!deps.popover().isVisible()) {
       deps.popover().show();
@@ -291,6 +313,8 @@ export function createContextMenuTriggerCore(
       lifecycle.standDown();
     },
     destroy(): void {
+      claimedOn?.releasePositionTryFallbacks(claimOwner);
+      claimedOn = null;
       removeVirtualAnchor();
       lifecycle.destroy();
     },

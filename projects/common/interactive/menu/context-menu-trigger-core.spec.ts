@@ -1,5 +1,5 @@
 import { computed, signal } from '@angular/core';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import type { CngxActiveDescendant } from '@cngx/common/a11y';
 
@@ -13,12 +13,14 @@ import type {
 } from './dismiss-handler';
 import { createMenuFocusStack, type CngxMenuFocusStack } from './menu-focus-stack';
 import { DEFAULT_MENU_CONFIG } from './menu-config';
-import { withAriaLabels } from './menu-config-features';
+import { withAriaLabels, withTryFallbacks } from './menu-config-features';
 import type { CngxMenuHost } from './menu-host.token';
 import { createW3CMenuStrategy } from './menu-nav-strategy';
 
 function mockPopover(): CngxContextMenuTriggerPopoverRef & {
   show: ReturnType<typeof vi.fn>;
+  claimPositionTryFallbacks: Mock<(owner: object, value: readonly string[]) => void>;
+  releasePositionTryFallbacks: Mock<(owner: object) => void>;
   visible: ReturnType<typeof signal<boolean>>;
 } {
   const visible = signal(false);
@@ -31,6 +33,8 @@ function mockPopover(): CngxContextMenuTriggerPopoverRef & {
     elementRef: { nativeElement: document.createElement('div') },
     setAnchorElement: vi.fn(),
     id: () => 'test',
+    claimPositionTryFallbacks: vi.fn<(owner: object, value: readonly string[]) => void>(),
+    releasePositionTryFallbacks: vi.fn<(owner: object) => void>(),
   };
 }
 
@@ -375,5 +379,54 @@ describe('createContextMenuTriggerCore', () => {
 
     core.destroy();
     expect(listeners.size).toBe(0);
+  });
+
+  it('claims the configured flip chain before the menu shows and releases it on destroy', () => {
+    const order: string[] = [];
+    popover.claimPositionTryFallbacks.mockImplementation(() => order.push('claim'));
+    popover.show.mockImplementation(() => {
+      order.push('show');
+      popover.visible.set(true);
+    });
+    const core = build();
+
+    core.handleContextMenu(mouse());
+    expect(popover.claimPositionTryFallbacks).toHaveBeenCalledWith(
+      expect.anything(),
+      DEFAULT_MENU_CONFIG.tryFallbacks,
+    );
+    expect(order).toEqual(['claim', 'show']);
+
+    const owner = popover.claimPositionTryFallbacks.mock.calls[0][0];
+    core.destroy();
+    expect(popover.releasePositionTryFallbacks).toHaveBeenCalledWith(owner);
+  });
+
+  it('claims an empty chain when the scope opts out of flipping', () => {
+    const core = build({ menuConfig: withTryFallbacks([])(DEFAULT_MENU_CONFIG) });
+
+    core.handleContextMenu(mouse());
+    expect(popover.claimPositionTryFallbacks).toHaveBeenCalledWith(expect.anything(), []);
+    core.destroy();
+  });
+
+  it('moves the claim when the popover reference changes between opens', () => {
+    const first = popover;
+    const second = mockPopover();
+    let current = first;
+    const core = build({ popover: () => current });
+
+    core.handleContextMenu(mouse());
+    first.hide();
+    current = second;
+    core.handleContextMenu(mouse());
+
+    const owner = first.claimPositionTryFallbacks.mock.calls[0][0];
+    expect(first.releasePositionTryFallbacks).toHaveBeenCalledWith(owner);
+    expect(second.claimPositionTryFallbacks).toHaveBeenCalledWith(
+      owner,
+      DEFAULT_MENU_CONFIG.tryFallbacks,
+    );
+    core.destroy();
   });
 });
