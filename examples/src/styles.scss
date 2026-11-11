@@ -1670,14 +1670,6 @@ cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sid
   font-size: 0.85rem;
   color: inherit;
 }
-.demo-sidenav__chevron {
-  font-size: 0.6rem;
-  transition: transform 0.15s;
-}
-// Mirror the caret under RTL; `scale` composes with the inline rotate.
-.demo-sidenav__chevron:dir(rtl) {
-  scale: -1 1;
-}
 .demo-sidenav__footer {
   padding: 0.75rem 1rem;
   font-size: 0.7rem;
@@ -2238,10 +2230,6 @@ button.chip.demo-chip--copied {
   font-size: 0.875rem;
   color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
 }
-.demo-nav__caret {
-  font-size: 0.75rem;
-  transition: transform 0.15s ease;
-}
 .demo-nav__badge--count {
   padding: 0.1em 0.5em;
   min-width: 1.2em;
@@ -2688,7 +2676,7 @@ button.chip.demo-chip--copied {
 .demo-app-sidebar__meta small {
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }
-.demo-app-sidebar[data-sidebar-state='rail'] :is(.demo-app-sidebar__label, .demo-nav__label, .demo-nav__caret) {
+.demo-app-sidebar[data-sidebar-state='rail'] :is(.demo-app-sidebar__label, .demo-nav__label) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2699,14 +2687,15 @@ button.chip.demo-chip--copied {
   padding: 0;
   margin: -1px;
 }
+// The library draws the group chevron; the rail has no room for it.
+.demo-app-sidebar[data-sidebar-state='rail'] .demo-nav__trigger::after {
+  display: none;
+}
 .demo-app-sidebar[data-sidebar-state='peek'] {
   box-shadow: var(--cngx-shadow-md, 0 4px 16px rgb(0 0 0 / 0.12));
 }
 .demo-nav__trigger.demo-nav__link--icon {
   justify-content: flex-start;
-}
-.demo-nav__trigger .demo-nav__caret {
-  margin-inline-start: auto;
 }
 
 // The rail hides the label, so the row keeps one line box of height on its

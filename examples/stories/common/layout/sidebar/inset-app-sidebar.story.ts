@@ -63,8 +63,6 @@ export const STORY: DemoSpec = {
                   [enabled]="!appSidebar.expanded()">
             <cngx-icon size="sm"><mat-icon>{{ group.icon }}</mat-icon></cngx-icon>
             <span class="demo-app-sidebar__label">{{ group.label }}</span>
-            <span class="demo-nav__caret" aria-hidden="true"
-                  [style.transform]="navGroup.disclosure.opened() ? 'rotate(90deg)' : null">&#9654;</span>
           </button>
           @if (navGroup.disclosure.opened() && appSidebar.expanded()) {
             <div [id]="group.id + '-items'" role="group" [attr.aria-labelledby]="group.id + '-trigger'">

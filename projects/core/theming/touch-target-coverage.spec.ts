@@ -48,6 +48,7 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/common/theming/components/cngx-button-toggle.css', note: 'segmented toggle button' },
   { file: 'projects/common/theming/components/cngx-listbox.css', note: 'listbox option row' },
   { file: 'projects/common/theming/components/cngx-menu.css', note: 'menu item hosts' },
+  { file: 'projects/common/theming/components/cngx-nav.css', note: 'nav rows and group heads' },
   { file: 'projects/common/theming/components/cngx-breadcrumb.css', note: 'breadcrumb item / link' },
   { file: 'projects/common/theming/components/cngx-accordion.css', note: 'accordion header' },
   // @cngx/common - card
@@ -230,7 +231,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(55);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(56);
   });
 });
 
