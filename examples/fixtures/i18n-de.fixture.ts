@@ -2,7 +2,7 @@ import { computed, signal, type Provider } from '@angular/core';
 import { provideLocaleAt } from '@cngx/core/utils';
 import { provideKpiI18n, withKpiI18nLabels } from '@cngx/common/data';
 import { provideDisplayI18n, withDisplayI18nLabels } from '@cngx/common/display';
-import type { CngxStepperAriaLabels, CngxStepperFallbackLabels, CngxStepperI18nOverrides } from '@cngx/common/stepper';
+import type { CngxStepperFallbackLabels, CngxStepperI18nOverrides } from '@cngx/common/stepper';
 import type { CngxTabsFallbackLabels, CngxTabsI18n } from '@cngx/common/tabs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '@cngx/common/interactive';
 import {
@@ -103,7 +103,7 @@ export const TIMELINE_DE = { emptyFallback: 'Noch keine Ereignisse.', timelineRe
 
 /** German stepper copy for the stepper / tabs live-switch story. */
 export const STEPPER_DE: CngxStepperI18nOverrides = {
-  stepperLabel: 'Schrittfolge',
+  stepperLabel: 'Bestellschritte',
   stepIndicatorRoleDescription: 'Schrittanzeige',
   selectedStep: (label, position, count) => `Schritt ${position} von ${count}: ${label}`,
   stepHasErrors: (count) => `${count} Fehler`,
@@ -118,7 +118,6 @@ export const STEPPER_DE: CngxStepperI18nOverrides = {
   groupSummaryProgress: (completed, total) => `${completed} von ${total} Schritten erledigt`,
 };
 
-export const STEPPER_ARIA_DE: CngxStepperAriaLabels = { stepperRegion: 'Bestellschritte' };
 export const STEPPER_FALLBACK_DE: CngxStepperFallbackLabels = {
   groupRoleDescription: 'Schrittgruppe',
   stepRoleDescription: 'Schrittfolge',
@@ -313,9 +312,6 @@ export const DEMO_CHART_LABELS = computed(() => (isDe() ? CHART_DE : {}));
 export const DEMO_LAYOUT_LABELS = computed(() => (isDe() ? LAYOUT_DE : {}));
 export const DEMO_TIMELINE_LABELS = computed(() => (isDe() ? TIMELINE_DE : {}));
 export const DEMO_STEPPER_LABELS = computed<CngxStepperI18nOverrides>(() => (isDe() ? STEPPER_DE : {}));
-export const DEMO_STEPPER_ARIA_LABELS = computed<CngxStepperAriaLabels>(() =>
-  isDe() ? STEPPER_ARIA_DE : {},
-);
 export const DEMO_STEPPER_FALLBACK_LABELS = computed<CngxStepperFallbackLabels>(() =>
   isDe() ? STEPPER_FALLBACK_DE : {},
 );
