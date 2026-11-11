@@ -30,7 +30,7 @@ export function createOptionLabelFormatter<T>(
   >({
     source: () => {
       const current = value();
-      const option = isEmptyScalar(current) ? null : findOption(current as T);
+      const option = isEmptyScalar(current) ? null : findOption(current);
       return { value: current, label: option?.label ?? null };
     },
     computation: (source, previous) => {
