@@ -248,7 +248,7 @@ export function withStepperI18nLabels(
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideStepperI18n(
- *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge', previousStep: 'Vorheriger' }),
+ *       withStepperI18nLabels({ stepperLabel: 'Bestellschritte', previousStep: 'Vorheriger' }),
  *     ),
  *   ],
  * });

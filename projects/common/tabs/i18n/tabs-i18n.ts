@@ -178,8 +178,9 @@ function defineTabsI18nFeature(
 /**
  * Override i18n labels via a partial bundle - unset keys keep the
  * language pack's copy, or the English default. Same shape as
- * `withTabsFallbackLabels` so `provideCngxTabs` composes both
- * surfaces uniformly. Pass a `Signal` to switch the language at runtime.
+ * `withTabsFallbackLabels`, so `provideCngxTabs` composes the i18n and
+ * the config feature uniformly. Pass a `Signal` to switch the language
+ * at runtime.
  */
 export function withTabsI18nLabels(
   overrides: Partial<CngxTabsI18n> | Signal<Partial<CngxTabsI18n>>,

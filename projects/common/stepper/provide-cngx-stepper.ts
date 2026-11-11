@@ -77,7 +77,7 @@ function partitionFeatures(
  *     provideCngxStepper(
  *       withStepperDefaultOrientation('vertical'),
  *       withStepperLinear(true),
- *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge', previousStep: 'Vorheriger' }),
+ *       withStepperI18nLabels({ stepperLabel: 'Bestellschritte', previousStep: 'Vorheriger' }),
  *     ),
  *   ],
  * });
@@ -105,7 +105,7 @@ export function provideCngxStepper(
  *   viewProviders: [
  *     ...provideCngxStepperAt(
  *       withStepperDefaultOrientation('vertical'),
- *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge' }),
+ *       withStepperI18nLabels({ stepperLabel: 'Bestellschritte' }),
  *     ),
  *   ],
  * })
