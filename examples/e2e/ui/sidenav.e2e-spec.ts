@@ -31,4 +31,21 @@ test.describe('ui/sidenav', () => {
     // The mark is aria-hidden; the clipped name still reaches the AX tree.
     await expect(header).toMatchAriaSnapshot('- text: Config');
   });
+
+  test('full-navigation-sidebar: a rail row is as tall as the expanded row', async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await gotoDemo(page, 'ui/sidenav/full-navigation-sidebar');
+    const nav = page.locator('cngx-sidenav').first();
+    const row = nav.locator('a.cngx-nav-link').first();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'expanded');
+    const expanded = (await row.boundingBox())?.height ?? 0;
+
+    await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    await page.mouse.move(1500, 850);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+    const rail = (await row.boundingBox())?.height ?? 0;
+
+    expect(expanded).toBeGreaterThan(0);
+    expect(Math.abs(rail - expanded)).toBeLessThanOrEqual(0.5);
+  });
 });

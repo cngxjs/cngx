@@ -1623,7 +1623,6 @@ cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__brand-name {
   justify-content: space-between;
   padding: 0.5rem 1rem;
   text-decoration: none;
-  font-size: 0.85rem;
   color: inherit;
 }
 .demo-sidenav__link--plain {
@@ -2733,10 +2732,15 @@ button.chip.demo-chip--copied {
   margin-inline-start: auto;
 }
 
+// The rail hides the label, so the row keeps one line box of height on its
+// own: 1lh plus the 0.5rem block padding that .demo-nav__link and
+// .demo-nav__trigger share. The rows are border-box, and content-box would
+// push the width: 100% group triggers past the rail.
 .demo-nav__link--icon {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-block-size: calc(1lh + 2 * 0.5rem);
   white-space: nowrap;
 }
 // Sidebar entry icons sit on the 16px box (1rem, the dense icon tier) and
