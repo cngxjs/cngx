@@ -1,3 +1,7 @@
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, relative, resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { normalizeDashes } from '../normalize-dashes.mjs';
@@ -17,5 +21,29 @@ describe('normalizeDashes', () => {
 
   it('replaces every dash and leaves a plain hyphen alone', () => {
     expect(normalizeDashes(`a ${EM} b ${EN} c - d`)).toBe('a - b - c - d');
+  });
+});
+
+const PROJECTS = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'projects');
+
+function walkStyles(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir)) {
+    const full = resolve(dir, entry);
+    if (statSync(full).isDirectory()) {
+      out.push(...walkStyles(full));
+    } else if (/\.s?css$/.test(entry)) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+describe('stylesheets under projects/', () => {
+  it('carry no em dash, comments included', () => {
+    const offenders = walkStyles(PROJECTS)
+      .filter((full) => readFileSync(full, 'utf8').includes(EM))
+      .map((full) => relative(PROJECTS, full).replaceAll('\\', '/'));
+    expect(offenders).toEqual([]);
   });
 });
