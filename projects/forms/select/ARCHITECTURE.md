@@ -515,6 +515,14 @@ Observable that completes without a value settles as an error
 commit that has nothing to return; a quick-create commit that resolves
 `undefined` settles the same way (`CNGX2027`).
 
+**Deferred Enter on the action hosts.** Enter on the input of
+`CngxActionSelect` / `CngxActionMultiSelect` creates from the typed term
+only with no option highlighted, a bound `quickCreateAction` and a
+non-empty term. While the term is still debouncing, `CngxListboxTrigger`
+settles it, prevents the Enter and runs the key after the next render;
+the quick-create check then runs once, after the deferred keys, and only
+while the panel is still open.
+
 **Supersede semantics.** Every `begin(...)` increments a monotonic
 `commitId`. Outcome callbacks check their captured id against the
 current counter; if a newer commit started in the meantime, the
