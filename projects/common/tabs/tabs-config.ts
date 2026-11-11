@@ -24,8 +24,8 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
 
 /**
  * Aria-label overrides for the tab-group landmark region. \
- * Library defaults are English; consumers override via
- * {@link withTabsAriaLabels}.
+ * Empty by default (the group is named by `CngxTabsI18n.tabsLabel`);
+ * consumers override via {@link withTabsAriaLabels}.
  *
  * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
  * {@link CngxTabsI18n}, not here - landmark naming and SR phrasing
@@ -34,9 +34,10 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
 export interface CngxTabsAriaLabels {
   /**
    * Accessible name for the tab-group wrapper (`role="group"`), read by
-   * AT when focus enters the region. Default `'Tabs'`. Ignored when a
-   * per-instance `[aria-label]` / `[aria-labelledby]` is bound (those
-   * win).
+   * AT when focus enters the region. No default: unset, the group is named
+   * by `CngxTabsI18n.tabsLabel`; when set, it wins over that label. Ignored
+   * when a per-instance `[aria-label]` / `[aria-labelledby]` is bound
+   * (those win).
    */
   readonly tabsRegion?: string;
 }
@@ -316,9 +317,7 @@ export const TABS_CONFIG_DEFAULTS: Required<
   // for both organisms, and pinning one here would silently flip the
   // other. linkAriaCurrent defaults at the link, not here.
   linkAriaCurrent: 'page',
-  ariaLabels: {
-    tabsRegion: CNGX_TABS_LANGUAGE_EN.tabsRegion,
-  },
+  ariaLabels: {},
   fallbackLabels: {
     // W3C ARIA tablist convention - kept distinct from
     // `i18n.tabsLabel` so AT doesn't read the same string twice
@@ -548,6 +547,7 @@ export function withTabsAddable(addable: boolean): CngxTabsConfigFeature {
 
 /** @internal - shared empty base, so label merges over an unset key memoize. */
 const NO_LABELS: object = {};
+const NO_ARIA_LABELS: CngxTabsAriaLabels = {};
 
 /**
  * Merge ARIA labels into the cascade. Keys not provided keep their
@@ -726,7 +726,9 @@ function tabsConfigDefaultsFromPack(): CngxTabsConfig {
   const language = injectTabsLanguage();
   return {
     ...TABS_CONFIG_DEFAULTS,
-    ariaLabels: computed(() => ({ tabsRegion: language().tabsRegion }), { equal: recordEqual }),
+    // No pack default: an unset `tabsRegion` lets `CngxTabsI18n.tabsLabel`
+    // name the group. Still a Signal, so `ariaLabels` always holds one here.
+    ariaLabels: computed((): CngxTabsAriaLabels => NO_ARIA_LABELS),
     fallbackLabels: computed(
       () => ({
         tabRoleDescription: language().tabRoleDescription,

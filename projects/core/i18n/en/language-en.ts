@@ -515,7 +515,6 @@ export const CNGX_LANGUAGE_EN = {
     stepFallbackLabel: 'Step {id}',
   },
   tabs: {
-    tabsRegion: 'Tabs',
     tabsLabel: 'Tabs',
     tabRoleDescription: 'tab list',
     tabPanelRoleDescription: 'tab panel',

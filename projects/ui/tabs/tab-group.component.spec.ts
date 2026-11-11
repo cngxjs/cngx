@@ -349,6 +349,32 @@ describe('CngxTabGroup organism', () => {
     expect(host.getAttribute('aria-label')).toBe('Reiter');
   });
 
+  it('aria-label falls back to i18n.tabsLabel when no ariaLabels.tabsRegion is configured', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideCngxTabs(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group>
+          <div cngxTab [label]="'A'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class I18nLabelHost {}
+    const fixture = TestBed.createComponent(I18nLabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Bereiche');
+  });
+
   it('aria-labelledby on host suppresses aria-label', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
