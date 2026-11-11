@@ -9,7 +9,7 @@ import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
 
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
 import { CNGX_SPLIT_BUTTON } from './split-button.token';
-import { CNGX_SPLIT_CARET } from './split-caret.token';
+import { CNGX_SPLIT_CARET, type CngxSplitCaretRole } from './split-caret.token';
 
 /**
  * The caret role of a `cngxSplitButton`, as a host directive. A button host
@@ -78,8 +78,8 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
   standalone: true,
   exportAs: 'cngxSplitCaret',
   providers: [
-    // Same instance as CNGX_BUTTON_STATE, so the split compares main and caret as states.
-    { provide: CNGX_SPLIT_CARET, useExisting: CNGX_BUTTON_STATE },
+    // The same CNGX_BUTTON_STATE instance, so the split compares main and caret as states.
+    { provide: CNGX_SPLIT_CARET, useFactory: splitCaretRole },
     { provide: CNGX_BUTTON_HOST_STATE, useExisting: CngxSplitCaret },
   ],
 })
@@ -87,7 +87,6 @@ export class CngxSplitCaret implements CngxButtonHostState {
   private readonly state = inject(CNGX_BUTTON_STATE, { self: true });
   private readonly split = inject(CNGX_SPLIT_BUTTON, { optional: true });
   private readonly i18n = injectMenuButtonI18n();
-  private readonly trigger = inject(CngxPopoverTrigger, { self: true, optional: true });
 
   /** `true` while the host is the caret of a split (its direct child). */
   readonly isCaret = computed(() => this.split?.caret() === this.state);
@@ -104,13 +103,6 @@ export class CngxSplitCaret implements CngxButtonHostState {
   /** The busy note from the language pack (`menuButton.splitMainBusy`). */
   readonly busyNote = computed(() => this.i18n().splitMainBusy);
 
-  /**
-   * The popover of the `CngxPopoverTrigger` co-hosted on this element, or
-   * `null` for a caret host without one. The split reads it to anchor the
-   * menu to the whole group.
-   */
-  readonly popover = computed(() => this.trigger?.popoverRef() ?? null);
-
   // The cause of a refusal that comes from the main: its reason, or the busy
   // note while it runs.
   private readonly mainDescriptionIds = computed(() => {
@@ -124,4 +116,12 @@ export class CngxSplitCaret implements CngxButtonHostState {
   constructor() {
     injectDescribedByContribution(this.busyNoteId, this.mainDescriptionIds);
   }
+}
+
+function splitCaretRole(): CngxSplitCaretRole {
+  const trigger = inject(CngxPopoverTrigger, { self: true, optional: true });
+  return {
+    state: inject(CNGX_BUTTON_STATE, { self: true }),
+    popover: computed(() => trigger?.popoverRef() ?? null),
+  };
 }
