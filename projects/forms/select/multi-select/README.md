@@ -136,7 +136,7 @@ Under the touch floor the chip strip becomes a one-line summary: the placeholder
 
 ## Template slots
 
-All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` (single only), plus:
+All [`CngxSelect` slots](../single-select/README.md#template-slots) except `*cngxSelectTriggerLabel` (single and shell), plus:
 
 | Slot | Replaces |
 |-|-|

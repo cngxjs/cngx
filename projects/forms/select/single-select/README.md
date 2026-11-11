@@ -157,7 +157,7 @@ Drop a `<ng-template>` with one of these directives inside `<cngx-select>` to ov
 | `*cngxSelectLoadingGlyph`  | Inner glyph of spinner / bar / dots                            |
 | `*cngxSelectClearButton`   | Clear-all (✕) button                                           |
 | `*cngxSelectOptionLabel`   | Per-row label markup                                           |
-| `*cngxSelectTriggerLabel`  | Trigger summary (single-select only)                           |
+| `*cngxSelectTriggerLabel`  | Trigger summary (single-select and shell)                      |
 | `*cngxSelectOptionPending` | Per-row commit-pending glyph                                   |
 | `*cngxSelectOptionError`   | Per-row commit-error glyph                                     |
 | `*cngxSelectSheetHandle`   | Decorative drag handle of the mobile sheet                     |

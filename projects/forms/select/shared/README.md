@@ -394,12 +394,14 @@ Plus the variant-specific slots (also defined here):
 
 | Directive | Variant |
 |-|-|
-| `CngxSelectTriggerLabel<T>`                                 | single only         |
-| `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
-| `CngxMultiSelectChipHandle`                                 | reorderable only    |
-| `CngxMultiSelectMoveGlyph`                                  | reorderable only    |
-| `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
-| `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
+| `CngxSelectTriggerLabel<T>` | single, shell |
+| `CngxMultiSelectChip<T>` | multi, reorderable, action-multi |
+| `CngxMultiSelectTriggerLabel<T>` | multi, reorderable |
+| `CngxMultiSelectChipHandle` | reorderable only |
+| `CngxMultiSelectMoveGlyph` | reorderable only |
+| `CngxComboboxChip<T>` | combobox |
+| `CngxComboboxTriggerLabel<T>` | combobox, action-multi |
+| `CngxSelectChipOverflow<T>` | multi, combobox, action-multi, tree |
 
 **Config-tier asymmetry.** `CngxSelectConfig.templates` (and `withTemplates`)
 carries only the shared registry slots - the ones `createTemplateRegistry`

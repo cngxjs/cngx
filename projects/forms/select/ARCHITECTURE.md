@@ -68,7 +68,8 @@ The family is **decompose-ready** - every `@Component` is a thin declaration del
 | `CngxActionMultiSelect`      | `T[]`            | `<input>` + chips + action panel            | flat listbox + action slot | combobox + listbox |
 | `CngxSelectShell`            | `T \| undefined` | `<div role="combobox">`                     | projected `<cngx-option>` children, optional `<cngx-select-search>` | combobox + listbox |
 
-Each composite provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All nine share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` differs from `CngxSelect` only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
+Each composite provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All nine share the shared slot registry, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` differs from `CngxSelect` only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
+The option-row slots (`*cngxSelectCheck`, `*cngxSelectOptgroup`, `*cngxSelectOptionLabel`) exist only on the seven flat option-loop hosts, not on the shell or the tree.
 What differs is the _value-shape adapter_ on top of `createSelectCore` and the _trigger-element template_.
 
 ---
@@ -239,20 +240,20 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 | `*cngxSelectOptionPending`                          | Per-row commit-pending glyph            | `{ option }`                                                           |
 | `*cngxSelectOptionError`                            | Per-row commit-error glyph              | `{ option, error }`                                                    |
 | `*cngxSelectAction`                                 | Action panel slot (action-\* variants)  | `{ searchTerm, commit, close, isPending, dirty, retry, error, value }` |
-| `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }`                                     |
+| `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (input-led variants: combobox, typeahead, action-select, action-multi) | `{ disabled, focused, panelOpen }` |
 | `*cngxSelectSheetHandle` | Decorative drag handle of the mobile sheet (inside an `aria-hidden` wrapper) | `{ presentation, dragging }` |
 
 `disabled` in the `*cngxSelectRetryButton` context is `true` only on the commit-error surface while the retried commit is pending (the variant's `isCommitting()`), so an override button can turn itself `aria-disabled` instead of starting a second retry. The load and inline refresh-error surfaces retry a load and always pass `false`.
 
 Variant-specific slots that complement the table above:
 
-- `*cngxSelectTriggerLabel` (single only)
-- `*cngxMultiSelectChip` (multi + reorderable)
+- `*cngxSelectTriggerLabel` (single + shell)
+- `*cngxMultiSelectChip` (multi + reorderable + action-multi)
 - `*cngxMultiSelectChipHandle` (reorderable only - drag-handle override)
 - `*cngxMultiSelectMoveGlyph` (reorderable only - move-button glyph of the touch reorder list)
-- `*cngxMultiSelectTriggerLabel` (multi)
+- `*cngxMultiSelectTriggerLabel` (multi + reorderable)
 - `*cngxComboboxChip` (combobox)
-- `*cngxComboboxTriggerLabel` (combobox)
+- `*cngxComboboxTriggerLabel` (combobox + action-multi)
 - `*cngxSelectChipOverflow` (multi + combobox + action-multi - `+N` overflow badge under `chipOverflow: 'truncate'` or `'fit'`; tree - the `+N` chip of its always one-line strip)
 - `*cngxTreeSelectNode` (tree - node row override)
 - `*cngxTreeSelectChip` (tree)
