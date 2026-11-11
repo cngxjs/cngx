@@ -8,6 +8,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -1144,6 +1145,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
+    injector: inject(Injector),
   });
 
   /** @internal - Enter-to-quick-create (see createActionTriggerInput). */

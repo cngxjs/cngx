@@ -8,6 +8,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -1342,6 +1343,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
+    injector: inject(Injector),
   });
 
   /** @internal - Enter-to-quick-create, tag-input UX: type, Enter, chip appears. */

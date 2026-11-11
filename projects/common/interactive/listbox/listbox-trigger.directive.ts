@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  type AfterRenderRef,
   computed,
   Directive,
   ElementRef,
@@ -27,6 +28,11 @@ import { CngxListboxSearch } from './listbox-search.directive';
  */
 interface PopoverController {
   readonly isVisible: () => boolean;
+  /**
+   * Lifecycle state of the popover (`CngxPopover.state`). When present, a
+   * deferred key runs only while it is neither `closing` nor `closed`.
+   */
+  readonly state?: () => 'closed' | 'opening' | 'open' | 'closing';
   show(): void;
   hide(): void;
   /**
@@ -152,8 +158,8 @@ export class CngxListboxTrigger<T = unknown> {
   /** The co-located debounce owner, present whenever `search` is. Used to settle a pending term. */
   private readonly searchCtrl = inject(CngxSearch, { optional: true, self: true });
   private readonly injector = inject(Injector);
-  /** Set while a key deferred behind a settling search term waits for its render. */
-  private deferredKeyPending = false;
+  /** Keys deferred behind a settling search term, waiting for their render. */
+  private readonly deferredKeys = new Set<AfterRenderRef>();
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
@@ -170,7 +176,10 @@ export class CngxListboxTrigger<T = unknown> {
     // the close event resets the highlight for those as well.
     onPopoverClosed(
       () => this.popover(),
-      () => this.listbox().ad.resetHighlight(),
+      () => {
+        this.cancelDeferredKeys();
+        this.listbox().ad.resetHighlight();
+      },
     );
   }
 
@@ -276,9 +285,14 @@ export class CngxListboxTrigger<T = unknown> {
     // pressed before that render finds no pending term but still joins the
     // deferral, so it runs after the first key (afterNextRender keeps
     // registration order) instead of overtaking it on the stale rows.
+    // A deferred Enter is prevented at once, so a consumer's Enter handler on
+    // the same element sees `defaultPrevented` and has to wait for the run,
+    // and an Enter that ends up with no active option still loses the form's
+    // implicit submit. PageUp and PageDown do not join: the input hosts
+    // handle them in their own keydown, outside this trigger.
     if (this.searchCtrl && this.isNavOrActivate(key)) {
       const settled = this.searchCtrl.flush();
-      if (settled || this.deferredKeyPending) {
+      if (settled || this.deferredKeys.size > 0) {
         event.preventDefault();
         this.deferKey(key);
         return;
@@ -289,16 +303,37 @@ export class CngxListboxTrigger<T = unknown> {
 
   /** Runs a navigation or activation key after the next render, while the panel is still open. */
   private deferKey(key: string): void {
-    this.deferredKeyPending = true;
-    afterNextRender(
+    const ref = afterNextRender(
       () => {
-        this.deferredKeyPending = false;
-        if (this.isOpen()) {
+        this.deferredKeys.delete(ref);
+        if (this.isOpenNotClosing()) {
           this.runOpenKey(key, null);
         }
       },
       { injector: this.injector },
     );
+    this.deferredKeys.add(ref);
+  }
+
+  /** Drops every deferred key; a closed panel runs none of them. */
+  private cancelDeferredKeys(): void {
+    for (const ref of this.deferredKeys) {
+      ref.destroy();
+    }
+    this.deferredKeys.clear();
+  }
+
+  /**
+   * Open and not on its way out. `opening` counts as open: the popover stays
+   * there until its first frame, and a key typed right after the open lands
+   * in it.
+   */
+  private isOpenNotClosing(): boolean {
+    const state = this.popover().state?.();
+    if (state === undefined) {
+      return this.isOpen();
+    }
+    return state === 'open' || state === 'opening';
   }
 
   /** Whether `key` navigates or activates the open listbox. */
@@ -325,6 +360,7 @@ export class CngxListboxTrigger<T = unknown> {
    * cannot observe the close itself, so the trigger owns the reset.
    */
   private closePanel(): void {
+    this.cancelDeferredKeys();
     this.popover().hide();
     this.listbox().ad.resetHighlight();
   }

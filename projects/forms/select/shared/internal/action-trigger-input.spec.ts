@@ -1,4 +1,4 @@
-import { signal, type ElementRef } from '@angular/core';
+import { Injector, signal, type ElementRef } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createDefaultFlatNavStrategy } from '../flat-nav-strategy';
@@ -43,6 +43,8 @@ function makeHarness(): Harness {
     hasQuickCreateAction: () => h.hasAction,
     snapshotPrevious: () => h.previous,
     dispatch: (draft, term, previous) => h.dispatchLog.push([draft, term, previous]),
+    // The deferred Enter path is covered by search-debounce-window.spec.ts.
+    injector: Injector.NULL,
   });
   return h;
 }

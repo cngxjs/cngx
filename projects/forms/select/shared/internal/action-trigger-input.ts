@@ -1,4 +1,4 @@
-import type { ElementRef, Signal } from '@angular/core';
+import { afterNextRender, type ElementRef, type Injector, type Signal } from '@angular/core';
 
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
@@ -32,6 +32,8 @@ export interface ActionTriggerInputDeps<Prev, T = unknown> {
   readonly snapshotPrevious: () => Prev;
   /** Route into `CreateCommitHandler.dispatch`. */
   readonly dispatch: (draft: { readonly label: string }, term: string, previous: Prev) => void;
+  /** Schedules the quick-create check behind an Enter the trigger deferred. */
+  readonly injector: Injector;
 }
 
 /**
@@ -43,8 +45,10 @@ export interface ActionTriggerInput {
   /**
    * Enter on the trigger input. With no active AD item, a bound
    * `quickCreateAction`, and a non-empty term, fires the create flow
-   * (type-and-Enter UX). If an AD item is active, `CngxListboxTrigger`
-   * already activated it; this is a no-op.
+   * (type-and-Enter UX). An Enter `CngxListboxTrigger` already took
+   * (`defaultPrevented`: it activated the active item, or deferred the key
+   * behind a settling term) decides after the next render instead, once the
+   * deferred keys ran, and only while the panel is still open.
    */
   readonly handleTriggerEnter: (event: Event) => void;
   /** PageUp/PageDown through the flat-nav strategy (default ±10 option jump). */
@@ -95,8 +99,27 @@ export function createActionTriggerInput<Prev, T = unknown>(
     if (event instanceof KeyboardEvent && (event.isComposing || event.keyCode === 229)) {
       return;
     }
-    const ad = deps.listbox()?.ad;
-    if (ad?.activeItem()) {
+    if (event.defaultPrevented) {
+      afterNextRender(
+        () => {
+          if (isPanelOpen()) {
+            createFromTerm(null);
+          }
+        },
+        { injector: deps.injector },
+      );
+      return;
+    }
+    createFromTerm(event);
+  };
+
+  const isPanelOpen = (): boolean => {
+    const state = deps.popover()?.state();
+    return state === 'open' || state === 'opening';
+  };
+
+  const createFromTerm = (event: Event | null): void => {
+    if (deps.listbox()?.ad.activeItem()) {
       return;
     }
     if (!deps.hasQuickCreateAction()) {
@@ -106,7 +129,7 @@ export function createActionTriggerInput<Prev, T = unknown>(
     if (term === '') {
       return;
     }
-    event.preventDefault();
+    event?.preventDefault();
     handleActionCommit();
   };
 
