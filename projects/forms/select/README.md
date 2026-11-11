@@ -29,7 +29,7 @@ Bind `[state]` and the panel switches between skeleton, content, refresh, empty 
 
 Every variant provides `CNGX_STATEFUL`, so descendant transition bridges (`[cngxToastOn]`, `[cngxBannerOn]`, `[cngxAlertOn]`) find the commit state without an explicit binding.
 
-Every controller (selection, commit, display binding, focus, chip removal, navigation strategy, template registry) ships behind a factory token; override it in `viewProviders` to replace the behaviour without forking the component. [`ARCHITECTURE.md`](ARCHITECTURE.md#di-factory-tokens-18) lists the tokens.
+Every controller (selection, commit, display binding, focus, chip removal, navigation strategy, template registry) ships behind a factory token; override it in `viewProviders` to replace the behaviour without forking the component. [`ARCHITECTURE.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#di-factory-tokens-18) lists the tokens.
 
 ## A11y
 
