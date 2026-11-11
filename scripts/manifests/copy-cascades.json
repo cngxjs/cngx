@@ -506,7 +506,7 @@
     {
       "class": "CngxActionSelect",
       "file": "projects/forms/select/action-select/action-select.component.ts",
-      "line": 390,
+      "line": 394,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [
@@ -756,7 +756,7 @@
     {
       "class": "CngxTypeahead",
       "file": "projects/forms/select/typeahead/typeahead.component.ts",
-      "line": 383,
+      "line": 389,
       "member": "resolvedClearButtonAriaLabel",
       "enclosing": "computed",
       "tiers": [

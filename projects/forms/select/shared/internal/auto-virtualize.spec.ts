@@ -1,4 +1,4 @@
-import { signal, type Signal } from '@angular/core';
+import { Component, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createResizeObserverMock } from '@cngx/testing';
@@ -29,12 +29,14 @@ function build(opts: {
   hasGroup?: Signal<boolean>;
   presentation?: Signal<CngxPopoverPresentation>;
   listbox?: HTMLElement;
+  open?: Signal<boolean>;
 }): { renderer: PanelRenderer<number>; handle: CngxSelectAutoRecyclerHandle } {
   const { renderer, autoRecycler } = createAutoPanelRenderer<number>({
     flatOptions: opts.flatOptions,
     hasGroup: opts.hasGroup ?? signal(false),
     popoverRef: signal<CngxPopover | undefined>({
       elementRef: { nativeElement: opts.popover },
+      isVisible: opts.open ?? signal(true),
     } as unknown as CngxPopover),
     virtualization: opts.virtualization,
     presentation: opts.presentation,
@@ -227,5 +229,119 @@ describe('createAutoPanelRenderer - recycler handle', () => {
   it('latches from construction without a threshold, whatever the list size', () => {
     const { handle } = build({ flatOptions: signal(items(1)), popover, virtualization: {} });
     expect(handle.needed()).toBe(true);
+  });
+});
+
+describe('createAutoPanelRenderer - row probe', () => {
+  let container: HTMLDivElement;
+  let ro: ReturnType<typeof createResizeObserverMock>;
+
+  beforeEach(() => {
+    ro = createResizeObserverMock();
+    ro.install(window);
+    container = document.createElement('div');
+    Object.defineProperty(container, 'clientHeight', { value: 500, configurable: true });
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    container.remove();
+    vi.unstubAllGlobals();
+  });
+
+  @Component({ template: '' })
+  class RenderTick {}
+
+  /** A view refresh, the way a recycler window move re-renders the panel. */
+  function render(): void {
+    const fixture = TestBed.createComponent(RenderTick);
+    fixture.componentRef.changeDetectorRef.markForCheck();
+    TestBed.tick();
+  }
+
+  function rowObserves(): readonly unknown[] {
+    return ro.observe.mock.calls.filter(([el]) =>
+      (el as Element).hasAttribute('data-cngx-recycle-index'),
+    );
+  }
+
+  function row(index: number, height: number): HTMLElement {
+    const el = document.createElement('div');
+    el.setAttribute('data-cngx-recycle-index', String(index));
+    el.getBoundingClientRect = () => ({ height }) as DOMRect;
+    return el;
+  }
+
+  it('keeps one observer on the first row while its own estimate changes', () => {
+    const { renderer, handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: container,
+      virtualization: {},
+    });
+    const first = row(0, 40);
+    container.appendChild(first);
+    mountRecycler(handle);
+    render();
+    expect(rowObserves()).toEqual([[first, { box: 'border-box' }]]);
+    const windowAt40 = renderer.renderOptions().length;
+
+    ro.triggerResize({ borderBoxSize: [{ blockSize: 50, inlineSize: 0 }] });
+    render();
+    expect(renderer.renderOptions().length).toBeLessThan(windowAt40);
+    expect(rowObserves()).toEqual([[first, { box: 'border-box' }]]);
+    expect(ro.disconnect).not.toHaveBeenCalled();
+  });
+
+  it('moves the observer when a different row node comes first', () => {
+    const { handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: container,
+      virtualization: {},
+    });
+    const first = row(0, 40);
+    container.appendChild(first);
+    mountRecycler(handle);
+    render();
+
+    first.remove();
+    const next = row(12, 40);
+    container.appendChild(next);
+    render();
+    expect(ro.disconnect).toHaveBeenCalledTimes(1);
+    expect(rowObserves()).toEqual([
+      [first, { box: 'border-box' }],
+      [next, { box: 'border-box' }],
+    ]);
+  });
+
+  it('probes nothing while the panel is closed and measures again on the next open', () => {
+    const open = signal(true);
+    const { renderer, handle } = build({
+      flatOptions: signal(items(TOTAL)),
+      popover: container,
+      virtualization: {},
+      open,
+    });
+    const first = row(0, 40);
+    container.appendChild(first);
+    mountRecycler(handle);
+    render();
+    const windowAt40 = renderer.renderOptions().length;
+
+    open.set(false);
+    render();
+    expect(ro.disconnect).toHaveBeenCalledTimes(1);
+    first.getBoundingClientRect = () => ({ height: 50 }) as DOMRect;
+    render();
+    expect(rowObserves()).toEqual([[first, { box: 'border-box' }]]);
+    expect(renderer.renderOptions().length).toBe(windowAt40);
+
+    open.set(true);
+    render();
+    expect(rowObserves()).toEqual([
+      [first, { box: 'border-box' }],
+      [first, { box: 'border-box' }],
+    ]);
+    expect(renderer.renderOptions().length).toBeLessThan(windowAt40);
   });
 });

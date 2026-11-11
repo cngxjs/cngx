@@ -1,11 +1,19 @@
 import {
   type ElementRef,
   type Signal,
+  DestroyRef,
+  Injector,
+  afterEveryRender,
+  afterNextRender,
   computed,
+  inject,
   linkedSignal,
+  signal,
+  untracked,
 } from '@angular/core';
 
 import { type CngxRecycler, injectRecycler } from '@cngx/common/data';
+import { observeResize } from '@cngx/common/layout';
 import type { CngxPopover, CngxPopoverPresentation } from '@cngx/common/popover';
 import { createSlotRegistry, type SlotRegistry } from '@cngx/core/utils';
 
@@ -14,6 +22,9 @@ import type { CngxSelectOptionDef } from '../option.model';
 import type { PanelRenderer, PanelRendererInput } from '../panel-renderer';
 import { createRecyclerPanelRendererFactory } from '../recycler-panel-renderer';
 import type { CngxSelectVirtualizationConfig } from '../config';
+
+/** Row estimate until the first option row is measured. */
+const FALLBACK_ROW_SIZE = 32;
 
 /**
  * What `cngx-select-panel` needs to own the auto recycler's lifetime: the
@@ -74,16 +85,98 @@ export function createAutoPanelRenderer<T>(opts: {
     computation: (crossed, previous) => crossed || previous?.value === true,
   });
 
-  const create = (): CngxRecycler =>
-    injectRecycler({
+  const create = (): CngxRecycler => {
+    // One measured option row drives the uniform estimate: row height follows
+    // the touch-target axis, density, text scale and consumer tokens, and a
+    // fixed guess under-counts the unrendered rest, so a jump to the end grows
+    // the list under the applied scroll. An explicit consumer estimate wins.
+    const measured = signal<number | null>(null);
+    const recycler = injectRecycler({
       scrollElement,
       totalCount: (): number => opts.flatOptions().length,
       // Floor at 1px - a 0/negative estimate would divide the scroll range
       // by zero downstream and explode the computed window.
-      estimateSize: Math.max(1, vConfig.estimateSize ?? 32),
+      estimateSize: computed(() =>
+        Math.max(1, vConfig.estimateSize ?? measured() ?? FALLBACK_ROW_SIZE),
+      ),
       overscan: vConfig.overscan ?? 5,
       scrollDebounce: vConfig.scrollDebounce,
     });
+    if (vConfig.estimateSize === undefined) {
+      const injector = inject(Injector);
+      // A new row height moves every offset by the same factor, so scaling
+      // scrollTop keeps the same row at the top: an open scroll applied at the
+      // old estimate, and a density or text-scale flip while scrolled. Exact
+      // because the select never calls recycler.measure(): item tops stay
+      // i * estimate. The write waits for the render that resizes the spacers,
+      // otherwise a grown target clamps to the old scroll height.
+      const write = (height: number): void => {
+        const previous = untracked(measured) ?? FALLBACK_ROW_SIZE;
+        if (!(height > 0) || height === untracked(measured)) {
+          return;
+        }
+        measured.set(height);
+        const el = scrollElement.nativeElement;
+        const top = el?.scrollTop ?? 0;
+        if (!el || top === 0 || height === previous) {
+          return;
+        }
+        afterNextRender(
+          {
+            write: () => {
+              // A scroll in between (the active-descendant rAF scroll, the
+              // user) already set a fresh position; the scaled one is stale.
+              if (el.scrollTop !== top) {
+                return;
+              }
+              el.scrollTop = (top * height) / previous;
+            },
+          },
+          { injector },
+        );
+      };
+      // Every render, not a tracked effect: the window signals derive from the
+      // estimate this probe writes, so tracking them would re-run the probe on
+      // its own write. The observer follows the first row node and is only
+      // replaced when a window move puts a different node first.
+      let observed: HTMLElement | null = null;
+      let stopObserving: (() => void) | null = null;
+      const release = (): void => {
+        stopObserving?.();
+        stopObserving = null;
+        observed = null;
+      };
+      afterEveryRender({
+        read: () => {
+          // A latched recycler outlives the open panel; a closed one probes
+          // nothing, and the next open measures a fresh first row.
+          if (!opts.popoverRef()?.isVisible()) {
+            release();
+            return;
+          }
+          const row =
+            scrollElement.nativeElement?.querySelector<HTMLElement>('[data-cngx-recycle-index]') ??
+            null;
+          if (row === observed) {
+            return;
+          }
+          release();
+          if (!row) {
+            return;
+          }
+          observed = row;
+          // Synchronous first write: the active-descendant scroll runs in a
+          // requestAnimationFrame, before ResizeObserver delivery in a frame.
+          write(row.getBoundingClientRect().height);
+          stopObserving = observeResize(row.ownerDocument.defaultView, row, 'border-box', (entry) =>
+            write(entry.borderBoxSize?.[0]?.blockSize ?? row.getBoundingClientRect().height),
+          );
+        },
+      });
+      inject(DestroyRef).onDestroy(release);
+    }
+    return recycler;
+  };
 
   const slot = createSlotRegistry<CngxRecycler>();
 

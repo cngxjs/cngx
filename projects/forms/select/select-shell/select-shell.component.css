@@ -236,6 +236,18 @@
       display: contents;
     }
 
+    /* The shell never windows its projected options, so an off-screen option
+       skips layout and paint instead and stays in the DOM and the a11y tree.
+       The estimate is the content only, one text line: a skipped row keeps
+       its real box, so padding and the block floor
+       (declarative/option.component.css) apply as on a rendered row. `auto`
+       keeps the real size of every row rendered once. A row taller than one
+       line, custom content, can land a first jump short. */
+    .cngx-select__panel cngx-option {
+      content-visibility: auto;
+      contain-intrinsic-block-size: auto 1lh;
+    }
+
     .cngx-select-shell__trigger {
       /* Trigger spacing derives from the global scale in the gap and padding
          fallbacks below, so a root [data-density] compacts it. The tokens

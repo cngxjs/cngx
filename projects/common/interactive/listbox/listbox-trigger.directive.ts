@@ -152,6 +152,8 @@ export class CngxListboxTrigger<T = unknown> {
   /** The co-located debounce owner, present whenever `search` is. Used to settle a pending term. */
   private readonly searchCtrl = inject(CngxSearch, { optional: true, self: true });
   private readonly injector = inject(Injector);
+  /** Set while a key deferred behind a settling search term waits for its render. */
+  private deferredKeyPending = false;
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** A disabled `cngxButton` stays focusable, so keydown still reaches the trigger. */
@@ -270,20 +272,33 @@ export class CngxListboxTrigger<T = unknown> {
     // the listbox reflects the filtered options - the stale-filter rule the
     // declarative search already applies. A button trigger has no co-located
     // search, so this never fires for it. A panel closed before that render
-    // (Escape inside the debounce window) gets no deferred key.
-    if (this.searchCtrl && this.isNavOrActivate(key) && this.searchCtrl.flush()) {
-      event.preventDefault();
-      afterNextRender(
-        () => {
-          if (this.isOpen()) {
-            this.runOpenKey(key, null);
-          }
-        },
-        { injector: this.injector },
-      );
-      return;
+    // (Escape inside the debounce window) gets no deferred key. A later key
+    // pressed before that render finds no pending term but still joins the
+    // deferral, so it runs after the first key (afterNextRender keeps
+    // registration order) instead of overtaking it on the stale rows.
+    if (this.searchCtrl && this.isNavOrActivate(key)) {
+      const settled = this.searchCtrl.flush();
+      if (settled || this.deferredKeyPending) {
+        event.preventDefault();
+        this.deferKey(key);
+        return;
+      }
     }
     this.runOpenKey(key, event);
+  }
+
+  /** Runs a navigation or activation key after the next render, while the panel is still open. */
+  private deferKey(key: string): void {
+    this.deferredKeyPending = true;
+    afterNextRender(
+      () => {
+        this.deferredKeyPending = false;
+        if (this.isOpen()) {
+          this.runOpenKey(key, null);
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   /** Whether `key` navigates or activates the open listbox. */

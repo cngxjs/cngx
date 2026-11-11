@@ -50,6 +50,7 @@ import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
+import { createOptionLabelFormatter } from '../shared/internal/option-label-formatter';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -332,12 +333,15 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Formats a value into the input text. The input is rewritten through it
-   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
+   * after a commit, a rollback, a clear and a blur. Unbound, the input shows
+   * the label of the matching option, or `String(value)` when no option
+   * matches.
    */
-  readonly displayWith = input<(value: T) => string>(String);
+  readonly displayWith = input<((value: T) => string) | undefined>(undefined);
   /**
-   * Rewrites the input from the committed value when focus leaves the control,
-   * dropping unfinished search text. Defaults to `true`.
+   * Rewrites the input from the committed value (`displayWith`, else the
+   * option label) when focus leaves the control, dropping unfinished search
+   * text. Defaults to `true`.
    */
   readonly clearOnBlur = input<boolean>(true);
   /**
@@ -941,9 +945,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
+  private readonly resolvedDisplayWith = createOptionLabelFormatter(this.displayWith, this.selected);
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
-    displayWith: this.displayWith,
+    displayWith: this.resolvedDisplayWith,
     focused: this.focusState.focused,
     inputEl: this.inputEl,
     searchRef: this.searchInputRef,
