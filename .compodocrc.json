@@ -8,7 +8,6 @@
     "customLogo": "./brand/cngx-lockup-full-on-light.svg",
     "customLogoDark": "./brand/cngx-lockup-full-on-dark.svg",
     "shikiTheme": "github-light:github-dark",
-    "multiVersion": false,
     "includes": "core-concepts",
     "includesName": "Core Concepts",
     "aiGeneratedNote": "Drafted with AI assistance ({value}) and reviewed by a maintainer.",

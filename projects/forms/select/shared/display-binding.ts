@@ -17,6 +17,11 @@ import { isEmptyScalar } from './internal/compare';
 export interface DisplayBindingOptions<T> {
   /** Committed value, mirrored into the input as display text while unfocused. */
   readonly value: Signal<T | undefined>;
+  /**
+   * Formatter for the input text. Tracked: a new formatter rewrites the
+   * unfocused input even when the value is unchanged, so a source should
+   * hand out a new function only when the text it produces changes.
+   */
   readonly displayWith: Signal<(v: T) => string>;
   /** Value→input writes only fire while `false` so typing isn't clobbered. */
   readonly focused: Signal<boolean>;

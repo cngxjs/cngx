@@ -399,18 +399,26 @@ export function releaseFinishSteps({ nextVersion, skipGitTag }) {
   ];
 }
 
+// The docs site deploys on a push to main and builds every kept release tag.
+// Named while the push of HEAD is left: a push that cannot land deploys nothing.
+export const DOCS_DEPLOY_NOTE =
+  'Pushing HEAD to main deploys the docs of this release; if HEAD cannot be pushed, ' +
+  'run `gh workflow run deploy-docs.yml --ref main` once the tag is pushed.';
+
 // A failure after every package reached npm: names what is done and the
 // steps left to run by hand.
 export function releaseFinishFailure({ nextVersion, skipGitTag, done, error }) {
   const steps = releaseFinishSteps({ nextVersion, skipGitTag });
   const left = steps.filter(({ id }) => !done.includes(id));
   const finished = steps.filter(({ id }) => done.includes(id));
+  const pushLeft = left.some(({ id }) => id === 'push');
   return [
     `${error.message}.`,
     `Every package is on npm at ${nextVersion}; --version must stay ${nextVersion}.`,
     `Done: ${finished.length > 0 ? finished.map(({ id }) => id).join(', ') : 'none of the release steps'}.`,
     'Run the rest by hand, in this order:',
     ...left.map(({ text }) => `  ${text}`),
+    ...(pushLeft ? [DOCS_DEPLOY_NOTE] : []),
   ].join('\n');
 }
 

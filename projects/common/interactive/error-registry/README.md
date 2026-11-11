@@ -87,7 +87,7 @@ Registration is keyed by name. Re-registering a different instance under an exis
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full signal and method surface.
+- [API on compodocx](../../../../README.md) for the full signal and method surface.
 - `CngxErrorScope` (`[cngxErrorScope]`) - the DOM-side reveal flag.
 - `CngxErrorAggregator` (`[cngxErrorAggregator]`) - rolls many sources into one count.
 - `CngxErrorSource` (`[cngxErrorSource]`) - reports one condition into a scope.

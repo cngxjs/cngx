@@ -28,6 +28,13 @@ import { describe, expect, it } from 'vitest';
  * property IS set by an ancestor component is allowlisted with that reason.
  * A sentinel or `inherit` fallback is consistent with the initial and passes.
  *
+ * Rules C to E cover the forms component stylesheets (`projects/forms/**`)
+ * only. Rule C - a `--mat-sys-*` read: Material system tokens belong to the
+ * theme bridges in `projects/themes/**`. Rule D - a raw hex colour: a colour
+ * is a token read with a fallback. Rule E - a `var()` with no fallback on a
+ * token the default palette does not define: unset, the declaration computes
+ * to its initial value, so the read needs a fallback or a stated reason.
+ *
  * The allowlist is an exact-set ratchet: a new offender fails, and a row that
  * no longer matches fails as stale, so every closed defect removes its row.
  */
@@ -145,6 +152,35 @@ export function deadSentinelFallbacks(source, sentinels) {
   return [...found];
 }
 
+/** Rule C: every `--mat-sys-*` name read or set in one stylesheet. */
+export function materialSystemReads(source) {
+  return [...new Set([...source.matchAll(/--mat-sys-[a-z0-9-]+/g)].map((m) => m[0]))];
+}
+
+/** Rule D: every raw hex colour literal in one stylesheet. */
+export function rawHexColours(source) {
+  return [
+    ...new Set([...source.matchAll(/#[0-9a-f]{3,8}(?![\w-])/gi)].map((m) => m[0].toLowerCase())),
+  ];
+}
+
+/**
+ * Rule E: `var()` reads with no fallback of a name that neither the palette
+ * nor the stylesheet itself sets (a private `--_*` token set in the same file
+ * passes).
+ */
+export function undefinedReadsWithoutFallback(source, defined) {
+  const local = new Set([...source.matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]));
+  const found = new Set();
+  for (const body of varBodies(source)) {
+    const { name, fallback } = splitVarBody(body);
+    if (fallback === null && !defined.has(name) && !local.has(name)) {
+      found.add(name);
+    }
+  }
+  return [...found];
+}
+
 // --- repo scan ---------------------------------------------------------------
 
 function walkCss(dir) {
@@ -201,6 +237,18 @@ function repoOffenders() {
     }
     for (const token of deadSentinelFallbacks(source, SENTINEL_PROPERTIES)) {
       rows.push({ rule: 'B', token, file: rel });
+    }
+    if (!rel.startsWith('projects/forms/')) {
+      continue;
+    }
+    for (const token of materialSystemReads(source)) {
+      rows.push({ rule: 'C', token, file: rel });
+    }
+    for (const token of rawHexColours(source)) {
+      rows.push({ rule: 'D', token, file: rel });
+    }
+    for (const token of undefinedReadsWithoutFallback(source, DEFINED)) {
+      rows.push({ rule: 'E', token, file: rel });
     }
   }
   return rows;
@@ -388,6 +436,13 @@ const ALLOWLIST = [
     reason:
       'the mat-tabs bridge SETS the property; without it transparent paints instead of the strip background; out of feature area, follow-up',
   },
+  {
+    rule: 'E',
+    token: '--cngx-field-bare-inline-size',
+    file: 'projects/forms/select/shared/select-base.css',
+    reason:
+      'no fallback by design: unset, inline-size computes to auto and a bare select keeps its content width (pinned in select-base.css.spec.ts)',
+  },
 ];
 
 // --- the suite ---------------------------------------------------------------
@@ -445,6 +500,31 @@ describe('Rule B - dead fallback on a sentinel registration', () => {
       '--a, var(--p, oklch(1 0 0))',
       '--p, oklch(1 0 0)',
     ]);
+  });
+});
+
+describe('Rules C to E - forms component stylesheets', () => {
+  it('Rule C flags a Material system token read', () => {
+    expect(materialSystemReads('.a { color: var(--mat-sys-primary, currentColor); }')).toEqual([
+      '--mat-sys-primary',
+    ]);
+  });
+
+  it('Rule D flags a raw hex colour and passes ids and token names', () => {
+    expect(rawHexColours('.a { color: #FF0000; b: #abc; } #main { --x-1abc: 0; }')).toEqual([
+      '#ff0000',
+      '#abc',
+    ]);
+  });
+
+  it('Rule E flags a bare read of an undefined name and passes palette reads and fallbacks', () => {
+    const defined = new Set(['--cngx-color-primary']);
+    expect(
+      undefinedReadsWithoutFallback(
+        '.a { --_w: 1px; a: var(--cngx-review-probe); b: var(--cngx-color-primary); c: var(--cngx-x, 1px); d: var(--_w); }',
+        defined,
+      ),
+    ).toEqual(['--cngx-review-probe']);
   });
 });
 

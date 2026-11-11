@@ -1,4 +1,10 @@
-import { Component, signal, type Type } from '@angular/core';
+import {
+  Component,
+  signal,
+  type EnvironmentProviders,
+  type Provider,
+  type Type,
+} from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxSwipeDismiss } from '@cngx/common/interactive';
@@ -9,6 +15,7 @@ import { describe, expect, it, vi, type Mock } from 'vitest';
 
 import { CngxSelectAnnouncer } from '../announcer';
 import type { CngxSelectCommitMode } from '../commit-action.types';
+import { provideSelectConfig, withOpenOn } from '../config';
 import {
   CNGX_DISMISS_HANDLER_FACTORY,
   createDismissHandler,
@@ -59,7 +66,10 @@ function flush(fixture: ComponentFixture<unknown>): void {
  * presentation and header shape, one close path per outside tap, the
  * pessimistic-pending block on every close vector, focus back to the
  * trigger without a body hop or a touched field, and announcements spoken
- * from the sheet region only.
+ * from the sheet region only. On every variant it also pins that desktop
+ * Escape still closes during a pessimistic pending commit, and that focus
+ * coming back to the trigger does not reopen the panel through
+ * `openOn: 'focus'`.
  *
  * @internal
  */
@@ -96,10 +106,11 @@ export function describeMobileSheet(
       handleSheetClose: Mock<(reason: string) => void>;
     };
 
-    function setup() {
+    function setup(extraProviders: readonly (Provider | EnvironmentProviders)[] = []) {
       spies = { handleClickOutside: vi.fn(), handleSheetClose: vi.fn() };
       TestBed.configureTestingModule({
         providers: [
+          ...extraProviders,
           {
             provide: CNGX_DISMISS_HANDLER_FACTORY,
             useValue: (o: Parameters<typeof createDismissHandler>[0]): DismissHandler => {
@@ -256,6 +267,30 @@ export function describeMobileSheet(
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       flush(fixture);
       expect(variant.panelOpen()).toBe(true);
+    });
+
+    it('keeps desktop Escape closing during a pessimistic pending commit', () => {
+      const { fixture, host, variant, open, pickSecond } = setup();
+      host.presentation.set('anchored');
+      host.mode.set('pessimistic');
+      flush(fixture);
+      open();
+      pickSecond();
+      expect(variant.isCommitting()).toBe(true);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      flush(fixture);
+      expect(variant.panelOpen()).toBe(false);
+    });
+
+    it('does not reopen through openOn focus when focus returns to the trigger', () => {
+      const { fixture, el, variant, open, x } = setup([provideSelectConfig(withOpenOn('focus'))]);
+      const trigger = el.querySelector<HTMLElement>('[role="combobox"]')!;
+      open();
+      expect(variant.panelOpen()).toBe(true);
+      x().click();
+      flush(fixture);
+      expect(document.activeElement).toBe(trigger);
+      expect(variant.panelOpen()).toBe(false);
     });
 
     it('returns focus panel -> trigger on X without a body drop or a touched field', () => {

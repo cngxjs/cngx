@@ -29,7 +29,7 @@ const CLI_VERSION = (JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')) as { version
 // cli's bundled index is augmented in memory (the shared fixture file stays
 // block-less, which loader.spec's absent-block case relies on).
 const ERROR_CODE_BLOCK = {
-  docsBaseUrl: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/',
+  docsBaseUrl: 'https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/',
   ranges: [{ lib: 'core', from: 1, to: 899 }],
   codes: [
     {
@@ -39,7 +39,7 @@ const ERROR_CODE_BLOCK = {
       production: 'stripped',
       title: 'Locale is not a BCP 47 tag',
       status: 'active',
-      url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx0001.html',
+      url: 'https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0001.html',
       messages: ['formatMessage(): not a BCP 47 locale'],
       body: '## Locale is not a BCP 47 tag\n\nUse a BCP 47 tag.',
     },
@@ -434,7 +434,7 @@ describe('version and snapshot resolution', () => {
         code: 'CNGX5999',
         lib: null,
         nearest: [],
-        url: 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx5999.html',
+        url: 'https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx5999.html',
       },
     },
   };

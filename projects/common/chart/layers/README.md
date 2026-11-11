@@ -81,7 +81,7 @@ Chromium keeps author colours inside SVG under forced colors, so every layer opt
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, accessors, and tokens.
+- [API on compodocx](../../../../README.md) for inputs, accessors, and tokens.
 - `@cngx/common/chart/axis` for tick rendering and axis positioning.
 - `@cngx/common/chart/scales` for the scale factories (`createLinearScale`, `createTimeScale`, `createBandScale`, `createOrdinalScale`).
 - `@cngx/common/chart/path` for the shared path builder used by `[cngxLine]` and `[cngxArea]`.

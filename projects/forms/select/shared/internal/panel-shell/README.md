@@ -52,6 +52,6 @@ Non-default branches (`skeleton`, `empty`, `none`, `error`) bypass the body enti
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the host contract and template slots.
+- [API on compodocx](../../../../../../README.md) for the host contract and template slots.
 - `select/shared/panel/` for the flat option-loop body that sits inside this shell.
 - `@cngx/forms/select/shared` for the wider infrastructure overview.

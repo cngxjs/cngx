@@ -292,7 +292,7 @@ State transitions (submenu open / close, item activated, disabled-item press) ar
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and full token signatures.
+- [API on compodocx](../../../../README.md) for inputs, outputs, and full token signatures.
 - Which trigger? [Choosing a Trigger](../../../../core-concepts/choosing-a-trigger.md) separates a menu from a select, a disclosure and a toggle group.
 - Stories:
   - `examples/stories/common/interactive/menu/`

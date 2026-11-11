@@ -56,5 +56,5 @@ The aggregator projector emits a half-wired diagnostic when exactly one of `*cng
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for slot contexts, tokens, and the config-feature surface.
+- [API on compodocx](../../../../README.md) for slot contexts, tokens, and the config-feature surface.
 - `@cngx/ui/mat-tabs` entry README for the directive contract, sticky-error skin, and smart overflow.

@@ -23,7 +23,8 @@ const PANEL_HOSTS: readonly Host[] = [
 const SHELL: Host = { region: 'CngxSelectShell', tag: 'cngx-select-shell', led: 'button' };
 const BUTTON_LED: readonly Host[] = [...PANEL_HOSTS, SHELL].filter((h) => h.led === 'button');
 
-const section = (page: Page, host: Host): Locator => page.getByRole('region', { name: host.region });
+const section = (page: Page, host: Host): Locator =>
+  page.getByRole('region', { name: host.region });
 const triggerOf = (page: Page, host: Host): Locator =>
   section(page, host).locator(`${host.tag} [role="combobox"]`).first();
 const panelOf = (page: Page, host: Host): Locator =>
@@ -31,7 +32,11 @@ const panelOf = (page: Page, host: Host): Locator =>
 const rowsOf = (panel: Locator): Locator => panel.locator('[role="option"]');
 const highlightOf = (panel: Locator): Locator => panel.locator('.cngx-option--highlighted');
 
-async function openPanel(page: Page, host: Host, gesture: 'click' | 'tap' = 'click'): Promise<Locator> {
+async function openPanel(
+  page: Page,
+  host: Host,
+  gesture: 'click' | 'tap' = 'click',
+): Promise<Locator> {
   const trigger = triggerOf(page, host);
   await trigger[gesture]();
   await expect(trigger).toHaveAttribute('aria-expanded', 'true');
@@ -102,14 +107,11 @@ async function jumpAndSettle(panel: Locator, top: number): Promise<SettledScroll
 }
 
 /**
- * A sheet row is taller than the recycler's estimate, so the first jump can land
- * short once the window has grown: the last row is there, no bounce, and the
- * second jump arrives. Anchored rows match the estimate and arrive at once.
+ * One jump arrives at the end: the recycler estimate is the measured row height,
+ * so the unrendered rest is counted right in the sheet as well as anchored.
  */
-async function expectJumpReachesEnd(panel: Locator, jumps: 1 | 2): Promise<void> {
-  const first = await jumpAndSettle(panel, 1_000_000);
-  expect(first.lastRow).toContain('Item 999');
-  const settled = jumps === 2 ? await jumpAndSettle(panel, 1_000_000) : first;
+async function expectJumpReachesEnd(panel: Locator): Promise<void> {
+  const settled = await jumpAndSettle(panel, 1_000_000);
   expect(settled.lastRow).toContain('Item 999');
   expect(settled.rowsInView).toBeGreaterThan(0);
   expect(
@@ -117,14 +119,14 @@ async function expectJumpReachesEnd(panel: Locator, jumps: 1 | 2): Promise<void>
   ).toBeLessThanOrEqual(1);
 }
 
-async function expectJumpsBackFromEnd(panel: Locator, jumps: 1 | 2): Promise<void> {
-  await expectJumpReachesEnd(panel, jumps);
+async function expectJumpsBackFromEnd(panel: Locator): Promise<void> {
+  await expectJumpReachesEnd(panel);
   const atStart = await jumpAndSettle(panel, 0);
   expect(atStart.scrollTop).toBe(0);
   expect(atStart.firstRow).toContain('Item 0');
   expect(atStart.rowsInView).toBeGreaterThan(0);
 
-  await expectJumpReachesEnd(panel, jumps);
+  await expectJumpReachesEnd(panel);
   const middle = Math.floor(atStart.scrollHeight / 2);
   const atMiddle = await jumpAndSettle(panel, middle);
   expect(Math.abs(atMiddle.scrollTop - middle)).toBeLessThan(2);
@@ -202,7 +204,7 @@ test.describe('select family at the default threshold, desktop', () => {
         await page.goto(ALL);
         const panel = await openPanel(page, host);
         await expectScrollHolds(panel, 3000);
-        await expectJumpsBackFromEnd(panel, 1);
+        await expectJumpsBackFromEnd(panel);
       });
     });
   }
@@ -263,7 +265,9 @@ test.describe('select family at the default threshold, desktop', () => {
     });
   }
 
-  test('a grouped list renders in full, holds its scroll and logs no CNGX2028', async ({ page }) => {
+  test('a grouped list renders in full, holds its scroll and logs no CNGX2028', async ({
+    page,
+  }) => {
     const problems = trackConsoleProblems(page);
     await page.goto(GROUPED);
     const trigger = page.locator('cngx-select [role="combobox"]').first();
@@ -294,13 +298,13 @@ test.describe('select family at the default threshold, phone', () => {
         await expectScrollHolds(panel, 3000);
         await expect(rowsOf(panel).first()).not.toContainText('Item 0');
 
-        await expectJumpReachesEnd(panel, 2);
+        await expectJumpReachesEnd(panel);
       });
 
       test('jumps back from the end to the start and the middle hold', async ({ page }) => {
         await page.goto(ALL);
         const panel = await openPanel(page, host, 'tap');
-        await expectJumpsBackFromEnd(panel, 2);
+        await expectJumpsBackFromEnd(panel);
       });
 
       test('survives a sheet rotation without a console error', async ({ page }) => {

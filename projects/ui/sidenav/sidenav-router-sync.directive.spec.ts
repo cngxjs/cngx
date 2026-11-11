@@ -68,6 +68,31 @@ describe('CngxSidenavRouterSync', () => {
     expect(sidenavOf(fixture).opened()).toBe(true);
   });
 
+  it('hydrates a deep link under a statically bound [param] and keeps it in the URL', async () => {
+    @Component({
+      template: `<cngx-sidenav cngxSidenavRouterSync [mode]="'over'" param="menu">x</cngx-sidenav>`,
+      imports: [CngxSidenav, CngxSidenavRouterSync],
+    })
+    class StaticParamHost {}
+
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const router = TestBed.inject(Router);
+    await router.navigate([], { queryParams: { menu: 'open' } });
+
+    const fixture = TestBed.createComponent(StaticParamHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+    await flush();
+
+    const sidenav = fixture.debugElement.query(By.directive(CngxSidenav))
+      .componentInstance as CngxSidenav;
+    expect(sidenav.opened()).toBe(true);
+    const query = router.parseUrl(router.url).queryParamMap;
+    expect(query.get('menu')).toBe('open');
+    expect(query.has('nav')).toBe(false);
+  });
+
   it('removes the param when the sidenav closes', async () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const router = TestBed.inject(Router);

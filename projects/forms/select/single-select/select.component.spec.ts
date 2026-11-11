@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
@@ -25,11 +25,6 @@ import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-help
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { stripBidiIsolates } from '@cngx/testing';
 import { CNGX_SELECT_LANGUAGE_EN } from '../i18n/select-language-section';
-import {
-  CNGX_DISMISS_HANDLER_FACTORY,
-  createDismissHandler,
-  type DismissHandler,
-} from '../shared/dismiss-handler';
 import {
   CNGX_SELECT_CONFIG,
   provideSelectConfig,
@@ -575,7 +570,9 @@ describe('CngxSelect - closed typeahead and disabled groups', () => {
     fixture.detectChanges();
     flush(fixture);
     const trigger = fixture.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
-    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }));
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'g', bubbles: true, cancelable: true }),
+    );
     flush(fixture);
     expect(fixture.componentInstance.value()).toBe('green');
   });
@@ -1345,7 +1342,6 @@ class UnlabelledCommitHost {
 }
 
 describe('CngxSelect - commit error copy without a label', () => {
-
   it('names the field label fallback when aria-label is empty', () => {
     const fixture = TestBed.createComponent(UnlabelledCommitHost);
     fixture.detectChanges();
@@ -1372,7 +1368,6 @@ describe('CngxSelect - commit error copy without a label', () => {
 });
 
 describe('CngxSelect - announcer', () => {
-
   it('announces selection changes via the live region', () => {
     TestBed.configureTestingModule({ imports: [AnnouncerHost] });
     const announcer = TestBed.inject(CngxSelectAnnouncer);
@@ -1427,7 +1422,6 @@ class AutofocusHost {
 }
 
 describe('CngxSelect - autofocus', () => {
-
   it('[autofocus]="true" focuses the trigger after first render', async () => {
     TestBed.configureTestingModule({ imports: [AutofocusHost] });
     const fixture = TestBed.createComponent(AutofocusHost);
@@ -1464,7 +1458,6 @@ class ConfigCascadeInputHost {
 }
 
 describe('CngxSelect - config cascade (input > component-scope > app-scope > default)', () => {
-
   it('app-scope provideSelectConfig sets default panelWidth', () => {
     TestBed.configureTestingModule({
       imports: [ConfigCascadeHost],
@@ -1729,11 +1722,13 @@ describe('CngxSelect listbox fallback label', () => {
   });
 });
 
-// ── mobile sheet: single-select-only cases ───────────────────────────
+// ── mobile sheet: single-select-only case ────────────────────────────
 // The cross-variant sheet contract runs from select-mobile-sheet.spec.ts
-// (describeMobileSheet). Only the cases the shared contract does not cover
-// stay here: the anchored Escape path during a pending commit, the
-// openOn='focus' no-reopen guard, and the speak-once/assertive announcement.
+// (describeMobileSheet), including the anchored Escape path during a pending
+// commit and the openOn='focus' no-reopen guard. The speak-once/assertive
+// announcement stays here: the single select speaks the commit error message
+// assertively, the typeahead only a soft change announcement, so the assertive
+// sheet error is not a cross-variant contract.
 
 @Component({
   template: `
@@ -1766,43 +1761,14 @@ class SheetHost {
 }
 
 describe('CngxSelect - mobile sheet (single-select)', () => {
-  let dismissSpies: {
-    handleClickOutside: Mock<() => void>;
-    handleSheetClose: Mock<(reason: string) => void>;
-  };
-
-  function setup(providers: unknown[] = []) {
-    dismissSpies = { handleClickOutside: vi.fn(), handleSheetClose: vi.fn() };
-    TestBed.configureTestingModule({
-      imports: [SheetHost],
-      providers: [
-        {
-          provide: CNGX_DISMISS_HANDLER_FACTORY,
-          useValue: (opts: Parameters<typeof createDismissHandler>[0]): DismissHandler => {
-            const real = createDismissHandler(opts);
-            return {
-              handleClickOutside: () => {
-                dismissSpies.handleClickOutside();
-                real.handleClickOutside();
-              },
-              handleSheetClose: (reason) => {
-                dismissSpies.handleSheetClose(reason);
-                real.handleSheetClose?.(reason);
-              },
-            };
-          },
-        },
-        ...(providers as never[]),
-      ],
-    });
+  function setup() {
+    TestBed.configureTestingModule({ imports: [SheetHost] });
     const fixture = TestBed.createComponent(SheetHost);
     fixture.detectChanges();
     flush(fixture);
     const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
     const el = selectDe.nativeElement as HTMLElement;
-    const select = selectDe.componentInstance as CngxSelect<string>;
     const trigger = el.querySelector('.cngx-select__trigger') as HTMLElement;
-    const panel = el.querySelector('.cngx-select__panel') as HTMLElement;
     const sheet = () =>
       selectDe.query(By.directive(CngxPopoverSheet)).injector.get(CngxPopoverSheet);
     const open = () => {
@@ -1814,49 +1780,8 @@ describe('CngxSelect - mobile sheet (single-select)', () => {
       (el.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement).click();
       flush(fixture);
     };
-    const closeButton = () => el.querySelector('.cngx-select-sheet-header__close') as HTMLElement;
-    return {
-      fixture,
-      host: fixture.componentInstance,
-      el,
-      select,
-      trigger,
-      panel,
-      sheet,
-      open,
-      pickSecond,
-      closeButton,
-    };
+    return { fixture, host: fixture.componentInstance, sheet, open, pickSecond };
   }
-
-  it('keeps desktop Escape closing during a pessimistic pending commit', () => {
-    const { fixture, host, select, open, pickSecond } = setup();
-    host.presentation.set('anchored');
-    host.mode.set('pessimistic');
-    flush(fixture);
-    open();
-    pickSecond();
-    expect(select.isCommitting()).toBe(true);
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    flush(fixture);
-    expect(select.panelOpen()).toBe(false);
-  });
-
-  it('does not reopen through openOn focus when focus returns to the trigger', () => {
-    const { fixture, select, trigger, open, closeButton } = setup([
-      provideSelectConfig(withOpenOn('focus')),
-    ]);
-    open();
-    if (!select.panelOpen()) {
-      trigger.click();
-      flush(fixture);
-    }
-    expect(select.panelOpen()).toBe(true);
-    closeButton().click();
-    flush(fixture);
-    expect(document.activeElement).toBe(trigger);
-    expect(select.panelOpen()).toBe(false);
-  });
 
   it('speaks a pick once, and a commit error assertively from the sheet region only', () => {
     const { fixture, host, open, pickSecond, sheet } = setup();
@@ -1915,7 +1840,11 @@ describeSelectBehaviourHost('CngxSelect', CngxSelect, 'cngx-select', {
 
 describe('CngxSelect - highlight across an options swap', () => {
   @Component({
-    template: `<cngx-select [label]="'Colour'" [options]="options()" [presentation]="'anchored'" />`,
+    template: `<cngx-select
+      [label]="'Colour'"
+      [options]="options()"
+      [presentation]="'anchored'"
+    />`,
     imports: [CngxSelect],
   })
   class SwapHost {
@@ -1955,7 +1884,11 @@ describe('CngxSelect - highlight across an options swap', () => {
 
 describe('CngxSelect - panel row labels across an options swap', () => {
   @Component({
-    template: `<cngx-select [label]="'Colour'" [options]="options()" [presentation]="'anchored'" />`,
+    template: `<cngx-select
+      [label]="'Colour'"
+      [options]="options()"
+      [presentation]="'anchored'"
+    />`,
     imports: [CngxSelect],
   })
   class SwapHost {
@@ -2046,7 +1979,9 @@ describe('CngxSelect - a space inside a running typeahead buffer', () => {
     // Back to back, no change detection in between: both keydown listeners of
     // the trigger see each key before any render.
     for (const key of 'new y') {
-      triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      triggerBtn.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
     }
     flush(fixture);
     expect(popover.isVisible()).toBe(false);
@@ -2055,7 +1990,9 @@ describe('CngxSelect - a space inside a running typeahead buffer', () => {
 
   it('reaches New York by typing "new y" with the panel open, without activating an option', () => {
     const { fixture, triggerBtn, listbox, popover } = setup();
-    triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    triggerBtn.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+    );
     flush(fixture);
     expect(popover.isVisible()).toBe(true);
 

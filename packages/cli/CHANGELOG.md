@@ -60,6 +60,10 @@ another release.
 
 ### Changed
 
+- The bundled snapshot and the `error-codes.json` release asset link error
+  codes to the docs of that release (`/cngx/v<version>/`), and the snapshot
+  links examples to its examples build (`/cngx/examples/v<version>`). A
+  prerelease keeps the links to `main`.
 - Released in lockstep with the cngx libraries through `publish:*`: one
   version for the libs, `@cngx/mcp` and `@cngx/cli`, published in the same run.
 - `cngx doctor` requires `@cngx/doctor` 0.3 (missing-directory and

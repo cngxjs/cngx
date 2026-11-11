@@ -56,7 +56,7 @@ Labels are projected via `<ng-content>` and sit inside `.cngx-checkbox__label`. 
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full signal surface.
+- [API on compodocx](../../../../README.md) for the full signal surface.
 - Stories: `examples/stories/common/interactive/checkbox/`.
 - `CngxCheckboxGroup` for multi-value selection, `allValues` / `toggleAll`, and the select-all master pattern.
 - `CngxCheckboxIndicator` (`@cngx/common/display`) for the visual atom this component composes.

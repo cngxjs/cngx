@@ -50,6 +50,6 @@ The supplied `idSeed` is a `nextUid` closure - process-wide monotonic, so `${id}
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full factory signature, DI token, and `MaterialPrivateSurfaces` members.
+- [API on compodocx](../../../../README.md) for the full factory signature, DI token, and `MaterialPrivateSurfaces` members.
 - `@cngx/common/tabs` - the headless presenter brain that consumes `CngxTabHandle`.
 - `@cngx/ui/mat-tabs` - the directive package this bridge is part of (`[cngxMatTabs]`, `[cngxMatTabError]`, overflow adapter, registry).

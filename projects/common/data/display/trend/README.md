@@ -57,7 +57,7 @@ Pairs naturally with `CngxMetric` inside a card header for "value plus direction
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs and tokens.
+- [API on compodocx](../../../../../README.md) for inputs and tokens.
 - Stories: `examples/stories/common/data/trend/`.
 - `CngxMetric` for the formatted-figure counterpart.
 - `--cngx-color-success` / `--cngx-color-danger` foundation tokens drive the up / down colors by default.

@@ -31,6 +31,7 @@ import {
   prepareToolingRelease,
   publishOrder,
   releaseFinishFailure,
+  DOCS_DEPLOY_NOTE,
   releaseFinishSteps,
   rootChangelogCommand,
   REFRESH_FACTORY,
@@ -1185,7 +1186,36 @@ describe('releaseFinishFailure', () => {
       'Done: root-version, tooling-files, docs-pins, changelog.',
       'Run the rest by hand, in this order:',
       ...steps.slice(4).map(({ text }) => `  ${text}`),
+      DOCS_DEPLOY_NOTE,
     ]);
+  });
+
+  it('names the docs deploy only while the push of HEAD is left', () => {
+    const tagged = [
+      'root-version',
+      'tooling-files',
+      'docs-pins',
+      'changelog',
+      'commit',
+      'tag',
+      'push-tag',
+    ];
+    const pending = releaseFinishFailure({
+      nextVersion: '0.3.0',
+      skipGitTag: false,
+      done: tagged,
+      error: new Error('git push origin HEAD exited with 1'),
+    });
+    expect(pending.split('\n').at(-1)).toBe(DOCS_DEPLOY_NOTE);
+    expect(DOCS_DEPLOY_NOTE).toContain('gh workflow run deploy-docs.yml --ref main');
+
+    const pushed = releaseFinishFailure({
+      nextVersion: '0.3.0',
+      skipGitTag: false,
+      done: [...tagged, 'push'],
+      error: new Error('late failure'),
+    });
+    expect(pushed).not.toContain(DOCS_DEPLOY_NOTE);
   });
 
   it('lists every step when the first one fails', () => {
@@ -1194,6 +1224,7 @@ describe('releaseFinishFailure', () => {
     expect(message).toContain('Done: none of the release steps.');
     expect(message).toContain('  set "version" in package.json to 0.3.0');
     expect(message).not.toContain('git tag');
+    expect(message).not.toContain(DOCS_DEPLOY_NOTE);
   });
 });
 

@@ -836,7 +836,7 @@ describe('composite surface: input-host handlers', () => {
         const outside = m.fixture.nativeElement.querySelector('.outside-btn') as HTMLElement;
         blur(inputOf(m), outside);
         m.settle();
-        expect(inputOf(m).value).toBe('red');
+        expect(inputOf(m).value).toBe('Red');
       });
 
       it('keeps the typed term when focus moves to a node inside the host', () => {
@@ -855,7 +855,7 @@ describe('composite surface: input-host handlers', () => {
         typeInto(m, 'xyz');
         blur(inputOf(m), null);
         m.settle();
-        expect(inputOf(m).value).toBe('red');
+        expect(inputOf(m).value).toBe('Red');
       });
     });
   }

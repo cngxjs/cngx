@@ -62,7 +62,7 @@ Both forms emit `role="switch"`. Do not put the directive on a native `<button>`
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full input / output / token surface.
+- [API on compodocx](../../../../README.md) for the full input / output / token surface.
 - Stories: `examples/stories/common/interactive/toggle/`.
 - `CngxCheckbox` for selection semantics inside a list or form (tri-state capable, no `role="switch"`).
 - `CngxButtonToggle` and `CngxButtonToggleGroup` for grouped exclusive (radio-like) or multi selection rendered as a button bar.

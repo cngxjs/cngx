@@ -96,7 +96,7 @@ A label-only chip with no interactivity gets no hover affordance.
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, and the full token list.
+- [API on compodocx](../../../../README.md) for inputs, outputs, and the full token list.
 - Stories: `examples/stories/common/display/chip/`.
 - `CngxTag` - the applied, non-removable counterpart.
 - Primary consumers: `CngxMultiSelect`, `CngxCombobox`, `CngxChipInput`, filter-chips.

@@ -17,7 +17,7 @@ import {
 } from '../mcp-snapshot.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const DOCS_BASE = 'https://cngxjs.github.io/cngx/additional-documentation/error-codes/';
+const DOCS_BASE = 'https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/';
 
 const BASE = 'https://cngxjs.github.io/cngx/examples';
 const LOCAL = 'http://localhost:4200/#/ui/feedback/toast/basic';
@@ -70,6 +70,14 @@ describe('parseSnapshotArgs', () => {
   it('stamps an explicit release version over the root version', () => {
     expect(parseSnapshotArgs(['--cngx-version=0.3.0'], '0.1.0-rc.9').cngxVersion).toBe('0.3.0');
     expect(parseSnapshotArgs(['--cngx-version=0.3.0-rc.1'], '0.1.0-rc.9').cngxVersion).toBe('0.3.0-rc.1');
+  });
+
+  it('points a final release at its own examples build, a prerelease at main', () => {
+    expect(parseSnapshotArgs(['--cngx-version=0.3.0'], '0.1.0-rc.9').baseUrl).toBe(
+      `${BASE}/v0.3.0`,
+    );
+    expect(parseSnapshotArgs([], '0.3.0').baseUrl).toBe(`${BASE}/v0.3.0`);
+    expect(parseSnapshotArgs(['--cngx-version=0.3.0-rc.1'], '0.1.0').baseUrl).toBe(BASE);
   });
 
   it('refuses a malformed release version', () => {
@@ -153,7 +161,7 @@ describe('buildErrorCodeBlock', () => {
       'core-concepts/error-codes/cngx0001.md': '<!-- @aiGenerated Claude -->\n\n# CNGX0001\n\n## Title one\n\nBody.\n',
     };
 
-    const block = buildErrorCodeBlock(manifest, (page) => pages[page]);
+    const block = buildErrorCodeBlock(manifest, (page) => pages[page], '0.1.0-rc.9');
 
     expect(block.schemaVersion).toBe(3);
     expect(block.docsBaseUrl).toBe('https://docs.test/error-codes/');
@@ -176,10 +184,48 @@ describe('buildErrorCodeBlock', () => {
     expect(entry).not.toHaveProperty('page');
   });
 
+  it('links a final release to the docs of that version, a prerelease to main', () => {
+    const manifest = {
+      schemaVersion: 3,
+      docsBaseUrl: DOCS_BASE,
+      ranges: [],
+      codes: [
+        {
+          code: 'CNGX0001',
+          lib: 'core',
+          severity: 'warn',
+          production: 'stripped',
+          title: 'Title one',
+          page: 'p.md',
+          url: `${DOCS_BASE}cngx0001.html`,
+          status: 'active',
+          files: [],
+          messages: [],
+        },
+      ],
+    };
+    const readPage = () => '# CNGX0001\n\n## Title one\n\nSee [CNGX0002](cngx0002.html).\n';
+    const release = 'https://cngxjs.github.io/cngx/v0.3.0/additional-documentation/error-codes/';
+
+    const block = buildErrorCodeBlock(manifest, readPage, '0.3.0');
+    expect(block.docsBaseUrl).toBe(release);
+    expect(block.codes[0].url).toBe(`${release}cngx0001.html`);
+    expect(block.codes[0].body).toContain(`[CNGX0002](${release}cngx0002.html)`);
+
+    const pre = buildErrorCodeBlock(manifest, readPage, '0.3.0-rc.1');
+    expect(pre.docsBaseUrl).toBe(DOCS_BASE);
+    expect(pre.codes[0].url).toBe(`${DOCS_BASE}cngx0001.html`);
+    expect(pre.codes[0].body).toContain(`[CNGX0002](${DOCS_BASE}cngx0002.html)`);
+  });
+
   it('builds a non-empty, marker-free body for every code over the real manifest', () => {
     const manifest = JSON.parse(readFileSync(join(ROOT, 'scripts/manifests/error-codes.json'), 'utf8'));
 
-    const block = buildErrorCodeBlock(manifest, (page) => readFileSync(join(ROOT, page), 'utf8'));
+    const block = buildErrorCodeBlock(
+      manifest,
+      (page) => readFileSync(join(ROOT, page), 'utf8'),
+      '0.1.0-rc.9',
+    );
 
     expect(block.codes).toHaveLength(manifest.codes.length);
     for (const entry of block.codes) {
