@@ -807,6 +807,7 @@ describe('CngxTypeahead - input text shows the option label', () => {
         [label]="'Colour'"
         [options]="options()"
         [displayWith]="format()"
+        [clearOnBlur]="clearOnBlur()"
         [(value)]="value"
       />
     `,
@@ -819,6 +820,7 @@ describe('CngxTypeahead - input text shows the option label', () => {
     ]);
     readonly value = signal<string | undefined>(undefined);
     readonly format = signal<((v: string) => string) | undefined>(undefined);
+    readonly clearOnBlur = signal(true);
   }
 
   function setup(init: (host: LabelHost) => void = () => undefined) {
@@ -871,6 +873,46 @@ describe('CngxTypeahead - input text shows the option label', () => {
   it('writes String(value) for a value no option matches', () => {
     const { input } = setup((h) => h.value.set('blue'));
     expect(input.value).toBe('blue');
+  });
+
+  it('rewrites the input when a refetch renames the option of the value', () => {
+    const { fixture, host, input } = setup((h) => h.value.set('red'));
+    expect(input.value).toBe('Red');
+    host.options.set([
+      { value: 'red', label: 'Crimson' },
+      { value: 'green', label: 'Green' },
+    ]);
+    flush(fixture);
+    expect(input.value).toBe('Crimson');
+  });
+
+  it('keeps a kept term when a refetch drops the option of the value', () => {
+    const { fixture, host, input } = setup((h) => {
+      h.value.set('red');
+      h.clearOnBlur.set(false);
+    });
+    input.focus();
+    input.value = 'zz';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.blur();
+    flush(fixture);
+    expect(input.value).toBe('zz');
+    host.options.set([{ value: 'green', label: 'Green' }]);
+    flush(fixture);
+    expect(input.value).toBe('zz');
+  });
+
+  it('keeps the last resolved label when a search drops the option of the value', () => {
+    const { fixture, host, input } = setup((h) => h.value.set('red'));
+    expect(input.value).toBe('Red');
+    input.focus();
+    input.value = 'mun';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    host.options.set([{ value: 'green', label: 'Green' }]);
+    flush(fixture);
+    input.blur();
+    flush(fixture);
+    expect(input.value).toBe('Red');
   });
 });
 

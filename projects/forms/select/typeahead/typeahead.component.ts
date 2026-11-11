@@ -823,12 +823,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       if (isEmptyScalar(v)) {
         return null;
       }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        return map.get(v as unknown) ?? null;
-      }
-      const eq = this.compareWith();
-      return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+      return this.findOption(v);
     },
     {
       equal: (a, b) => {
@@ -843,6 +838,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     },
   );
 
+  /** The option for `v` in the current options, by `compareWith`; not equality-guarded. */
+  private findOption(v: T): CngxSelectOptionDef<T> | null {
+    const map = this.core.valueToOptionMap();
+    if (map) {
+      return map.get(v as unknown) ?? null;
+    }
+    const eq = this.compareWith();
+    return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+  }
+
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
@@ -851,7 +856,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
-  private readonly resolvedDisplayWith = createOptionLabelFormatter(this.displayWith, this.selected);
+  private readonly resolvedDisplayWith = createOptionLabelFormatter(
+    this.displayWith,
+    this.value,
+    (v) => this.findOption(v),
+    this.compareWith,
+  );
   /**
    * Value ↔ input-text reconciliation. Owns `writingFromValue`,
    * skipInitial-aware `searchTermChange` forwarding, imperative
