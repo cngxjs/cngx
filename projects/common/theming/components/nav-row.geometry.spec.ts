@@ -13,10 +13,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
 import { CngxNavBadge } from '../../interactive/nav/nav-badge.directive';
+import { CngxNavFooter } from '../../interactive/nav/nav-footer.directive';
 import { CngxNavGroup } from '../../interactive/nav/nav-group.directive';
+import { CngxNavHeader } from '../../interactive/nav/nav-header.directive';
 import { CngxNavIcon } from '../../interactive/nav/nav-icon.directive';
 import { CngxNavLabel } from '../../interactive/nav/nav-label.directive';
 import { CngxNavLink } from '../../interactive/nav/nav-link.directive';
+import { CngxNavMark } from '../../interactive/nav/nav-mark.directive';
+import { CngxNavName } from '../../interactive/nav/nav-name.directive';
 
 // Runs in a real Chromium (the `test-geometry` target) against the working-tree
 // cngx-nav.css and the system tokens, with the rows in a plain <nav> and no
@@ -32,7 +36,17 @@ type Fill = (typeof FILLS)[number];
 @Component({
   selector: 'cngx-nav-row-host',
   standalone: true,
-  imports: [CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge, CngxNavIcon],
+  imports: [
+    CngxNavLink,
+    CngxNavGroup,
+    CngxNavLabel,
+    CngxNavBadge,
+    CngxNavIcon,
+    CngxNavHeader,
+    CngxNavFooter,
+    CngxNavMark,
+    CngxNavName,
+  ],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -48,6 +62,10 @@ type Fill = (typeof FILLS)[number];
   encapsulation: ViewEncapsulation.None,
   template: `
     <nav class="surface nav-a" aria-label="Primary">
+      <cngx-nav-header class="header">
+        <span cngxNavMark class="header-mark">A</span>
+        <span cngxNavName class="header-name">Acme</span>
+      </cngx-nav-header>
       <span cngxNavLabel class="label-main">Main</span>
       <a cngxNavLink href="#inbox" class="row-active" [active]="true">Inbox</a>
       <a cngxNavLink href="#drafts" class="row-idle">
@@ -67,6 +85,10 @@ type Fill = (typeof FILLS)[number];
         <span cngxNavIcon class="icon-starred">S</span>
         Starred
       </a>
+      <cngx-nav-footer class="footer">
+        <span cngxNavMark class="footer-mark">JD</span>
+        <span cngxNavName class="footer-name">Jane Doe with a name far too long for any nav</span>
+      </cngx-nav-footer>
     </nav>
     <span class="probe-hover" style="background-color: var(--cngx-nav-link-hover-bg)"></span>
     <span class="probe-pressed" style="background-color: var(--cngx-nav-link-pressed-bg)"></span>
@@ -439,6 +461,63 @@ describe('icon box and letter fallback', () => {
     expect(letter(row, 'content')).toContain('I');
     expect(bar(row, 'content')).toBe('""');
     expect(bar(row, 'position')).toBe('absolute');
+  });
+});
+
+describe('header and footer slots', () => {
+  it('puts the header and footer marks at the row icon x', () => {
+    const root = mount();
+    const row = one(root, '.row-idle');
+    const rowIconX =
+      row.getBoundingClientRect().left + parseFloat(computedValue(row, 'padding-left'));
+    for (const selector of ['.header-mark', '.footer-mark']) {
+      expect(
+        Math.abs(one(root, selector).getBoundingClientRect().left - rowIconX),
+      ).toBeLessThanOrEqual(0.5);
+    }
+  });
+
+  it('sizes a mark to the icon box', () => {
+    const root = mount();
+    const icon = one(root, '.icon-starred').getBoundingClientRect();
+    const mark = one(root, '.header-mark').getBoundingClientRect();
+    expect(mark.width).toBeCloseTo(icon.width, 1);
+    expect(mark.height).toBeCloseTo(icon.height, 1);
+  });
+
+  it('starts the name at the row label x', () => {
+    const root = mount();
+    const label = one(root, '.icon-starred').getBoundingClientRect().right;
+    const gap = parseFloat(computedValue(one(root, '.row-icon'), 'column-gap'));
+    expect(
+      Math.abs(one(root, '.header-name').getBoundingClientRect().left - (label + gap)),
+    ).toBeLessThanOrEqual(0.5);
+  });
+
+  it('truncates a long name inside the footer', () => {
+    const root = mount();
+    const name = one(root, '.footer-name');
+    expect(computedValue(name, 'text-overflow')).toBe('ellipsis');
+    expect(name.getBoundingClientRect().right).toBeLessThanOrEqual(
+      one(root, '.footer').getBoundingClientRect().right,
+    );
+  });
+
+  it('keeps the mark out of the accessible name of its region', () => {
+    const root = mount();
+    expect(one(root, '.header-mark').getAttribute('aria-hidden')).toBe('true');
+    expect(one(root, '.header-name').hasAttribute('aria-hidden')).toBe(false);
+  });
+
+  it('draws the header and footer dividers in the foundation border colour', () => {
+    const root = mount();
+    const header = one(root, '.header');
+    const footer = one(root, '.footer');
+    expect(computedValue(header, 'border-bottom-style')).toBe('solid');
+    expect(computedValue(footer, 'border-top-style')).toBe('solid');
+    expect(computedValue(header, 'border-bottom-color')).toBe(
+      computedValue(footer, 'border-top-color'),
+    );
   });
 });
 

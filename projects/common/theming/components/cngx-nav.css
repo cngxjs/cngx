@@ -18,6 +18,11 @@
  * - `.cngx-nav-group-content` (`CngxNavGroupContent`) - grid-rows expand
  *   and collapse wrapper; it needs one child
  * - `.cngx-nav-icon` (`CngxNavIcon`) - icon slot of a row or group head
+ * - `.cngx-nav-header` (`CngxNavHeader`), `.cngx-nav-footer`
+ *   (`CngxNavFooter`) - top and bottom regions of a nav container
+ * - `.cngx-nav-mark` (`CngxNavMark`) - logo or avatar in the icon box of a
+ *   header or footer, at the row icon x; `.cngx-nav-name` (`CngxNavName`) -
+ *   the name next to it, at the row label x, truncated with an ellipsis
  *
  * **Row geometry**
  *
@@ -65,6 +70,8 @@
  * - `--cngx-nav-link-inset` -> `--cngx-space-xs`
  * - `--cngx-nav-link-padding` -> `--cngx-space-sm` `--cngx-space-md`
  * - `--cngx-nav-label-color` -> `--cngx-color-text-muted`
+ * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color` ->
+ *   `--cngx-color-border`
  * - `--cngx-nav-badge-bg` / `-color` -> `--cngx-color-primary-strong` /
  *   `--cngx-color-on-primary-strong`
  *
@@ -85,7 +92,7 @@
  *
  * - `@cngx/themes/material/nav-link-theme` - Material 3 nav row palette
  *
- * @themes CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge, CngxNavGroupContent
+ * @themes CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge, CngxNavGroupContent, CngxNavIcon, CngxNavHeader, CngxNavFooter, CngxNavMark, CngxNavName
  */
 
 @layer cngx.tokens {
@@ -343,6 +350,89 @@
   }
 
   /**
+   * Block padding of the header. Unset by default (falls back to
+   * `--cngx-space-md`). The inline padding is derived from the row geometry,
+   * so the mark lines up with the row icons.
+   * @group Layout
+   */
+  @property --cngx-nav-header-padding-block {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background of the header.
+   * @group Surface
+   */
+  @property --cngx-nav-header-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Colour of the divider under the header.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-header-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /**
+   * Font-size of the header.
+   * @group Typography
+   */
+  @property --cngx-nav-header-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Block padding of the footer. Unset by default (falls back to
+   * `--cngx-space-md`).
+   * @group Layout
+   */
+  @property --cngx-nav-footer-padding-block {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background of the footer.
+   * @group Surface
+   */
+  @property --cngx-nav-footer-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Colour of the divider above the footer.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-footer-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /**
+   * Font-size of the footer.
+   * @group Typography
+   */
+  @property --cngx-nav-footer-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
    * Text colour of a section label.
    * @group Typography
    * @see [[--cngx-color-text-muted]]
@@ -459,6 +549,8 @@
       oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
     );
     --cngx-nav-label-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-nav-header-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-nav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-nav-badge-bg: var(--cngx-color-primary-strong, oklch(0.54 0.19 50));
     --cngx-nav-badge-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   }
@@ -680,6 +772,54 @@
     border: 1px solid currentColor;
     border-radius: 999px;
     color: var(--cngx-nav-label-color, currentColor);
+  }
+
+  /* Header and footer: the inline padding is the row inset plus the row
+     padding, so a mark lands in the icon box at the row icon x. */
+  .cngx-nav-header,
+  .cngx-nav-footer {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
+    box-sizing: border-box;
+    padding-inline: calc(var(--cngx-nav-link-inset, 4px) + var(--cngx-space-md, 16px));
+  }
+
+  .cngx-nav-header {
+    padding-block: var(--cngx-nav-header-padding-block, var(--cngx-space-md, 16px));
+    border-block-end: 1px solid var(--cngx-nav-header-border-color, oklch(0.89 0 0));
+    background: var(--cngx-nav-header-bg, transparent);
+    font-size: var(--cngx-nav-header-font-size, 0.875rem);
+    font-weight: 600;
+  }
+
+  .cngx-nav-footer {
+    margin-block-start: auto;
+    padding-block: var(--cngx-nav-footer-padding-block, var(--cngx-space-md, 16px));
+    border-block-start: 1px solid var(--cngx-nav-footer-border-color, oklch(0.89 0 0));
+    background: var(--cngx-nav-footer-bg, transparent);
+    font-size: var(--cngx-nav-footer-font-size, 0.75rem);
+    /* De-emphasis by colour (muted text), never opacity. */
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  }
+
+  .cngx-nav-mark {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--cngx-nav-icon-size, 1.25rem);
+    block-size: var(--cngx-nav-icon-size, 1.25rem);
+    overflow: hidden;
+    color: var(--cngx-nav-link-ink, currentColor);
+  }
+
+  .cngx-nav-name {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Group content: grid-rows 0fr -> 1fr; one wrapper child required. */
