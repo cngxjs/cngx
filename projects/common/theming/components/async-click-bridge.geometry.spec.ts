@@ -151,23 +151,37 @@ describe('async-click state under forced colors', () => {
     return mount();
   }
 
-  it('marks a settled success with a 2px solid border on a bare host', async () => {
+  it('marks a settled success with a 2px solid outline on a bare host', async () => {
     const el = await settle(one(await forced(), '.ok'), 'cngx-async--success');
-    expect(computedValue(el, 'border-top-style')).toBe('solid');
-    expect(computedValue(el, 'border-top-width')).toBe('2px');
+    expect(computedValue(el, 'outline-style')).toBe('solid');
+    expect(computedValue(el, 'outline-width')).toBe('2px');
   });
 
-  it('marks a settled failure with a 2px dashed border on a bare host', async () => {
+  it('marks a settled failure with a 2px dashed outline on a bare host', async () => {
     const el = await settle(one(await forced(), '.fail'), 'cngx-async--error');
-    expect(computedValue(el, 'border-top-style')).toBe('dashed');
-    expect(computedValue(el, 'border-top-width')).toBe('2px');
+    expect(computedValue(el, 'outline-style')).toBe('dashed');
+    expect(computedValue(el, 'outline-width')).toBe('2px');
+  });
+
+  it('keeps the bare host box size when the cue appears', async () => {
+    const root = await forced();
+    for (const [selector, stateClass] of [
+      ['.ok', 'cngx-async--success'],
+      ['.fail', 'cngx-async--error'],
+    ] as const) {
+      const el = one(root, selector);
+      const before = el.getBoundingClientRect();
+      await settle(el, stateClass);
+      const after = el.getBoundingClientRect();
+      expect([after.width, after.height], selector).toEqual([before.width, before.height]);
+    }
   });
 
   it('leaves a cngxButton host edge untouched', async () => {
     const root = await forced();
     const el = await settle(one(root, '.btn-ok'), 'cngx-async--success');
     const ref = one(root, '.ref');
-    for (const prop of ['border-top-style', 'border-top-width']) {
+    for (const prop of ['border-top-style', 'border-top-width', 'outline-style']) {
       expect(computedValue(el, prop), prop).toBe(computedValue(ref, prop));
     }
   });

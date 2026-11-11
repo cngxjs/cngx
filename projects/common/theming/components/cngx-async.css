@@ -30,9 +30,9 @@
  *   it; `aria-busy` is immediate. `--success` / `--error` wait until the
  *   gate releases, so a host never wears two modifiers
  * - `--success` - success-tinted surface, border, text; under forced colors
- *   a 2px solid border
+ *   a 2px solid outline
  * - `--error` - danger-tinted surface, border, text; under forced colors a
- *   2px dashed border
+ *   2px dashed outline
  *
  * **Inheritance**
  *
@@ -207,13 +207,16 @@
   }
 }
 
-/* Forced colors drop the tints, so success and error differ by the border's
- * width and style; its colour is left to the UA's system colour. */
+/* Forced colors drop the tints, so success and error differ by an outline's
+ * style; its colour is left to the UA's system colour. An outline takes no
+ * layout space, so the host keeps its box size when the cue appears. */
 @media (forced-colors: active) {
   .cngx-async--success:not(:where(.cngx-button)) {
-    border: 2px solid;
+    outline: 2px solid;
+    outline-offset: -2px;
   }
   .cngx-async--error:not(:where(.cngx-button)) {
-    border: 2px dashed;
+    outline: 2px dashed;
+    outline-offset: -2px;
   }
 }
