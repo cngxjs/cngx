@@ -7,11 +7,12 @@
  * via the layout component's `styleUrl`; under `encapsulation: None`
  * these rules match globally.
  *
- * The rail itself (surface, borders, slots, mode variants, mini-mode,
- * resize handle, nav-link rules) and every `--cngx-sidenav-*` /
- * `--cngx-nav-link-*` token live in `sidenav.css`, shipped by
- * `CngxSidenav`, so a bare `<cngx-sidenav>` is styled without a layout
- * wrapper.
+ * The rail itself (surface, borders, mode variants, mini-mode, resize
+ * handle) and every `--cngx-sidenav-*` token live in `sidenav.css`,
+ * shipped by `CngxSidenav`, so a bare `<cngx-sidenav>` is styled without a
+ * layout wrapper. The nav rows, header and footer and every `--cngx-nav-*`
+ * token live in `cngx-nav.css` (`@cngx/common/theming/components`), loaded
+ * by `cngx.css`.
  *
  * **State modifiers**
  *

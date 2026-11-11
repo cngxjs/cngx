@@ -106,9 +106,12 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
  * ```html
  * <cngx-sidenav-layout>
  *   <cngx-sidenav position="start" [(opened)]="navOpen">
- *     <cngx-sidenav-header>Logo</cngx-sidenav-header>
+ *     <cngx-nav-header>
+ *       <span cngxNavMark>A</span>
+ *       <span cngxNavName>Acme</span>
+ *     </cngx-nav-header>
  *     <a cngxNavLink [active]="true">Dashboard</a>
- *     <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
+ *     <cngx-nav-footer>v1.0</cngx-nav-footer>
  *   </cngx-sidenav>
  *   <cngx-sidenav-content>
  *     <router-outlet />
@@ -119,7 +122,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav.ts
  * @since 0.1.0
- * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
+ * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxNavHeader, CngxNavFooter
  * <example-url>/#/ui/sidenav/auto-mode</example-url>
  * <example-url>/#/ui/sidenav/dual-sidebar-master-detail</example-url>
  * <example-url>/#/ui/sidenav/full-navigation-sidebar</example-url>
@@ -186,11 +189,11 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
   },
   imports: [CngxResizable],
   template: `
-    <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
+    <ng-content select="cngx-nav-header, [cngxNavHeader]" />
     <div class="cngx-sidenav__body">
       <ng-content />
     </div>
-    <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
+    <ng-content select="cngx-nav-footer, [cngxNavFooter]" />
     <!-- Only at full width: a collapsed rail or peek has a fixed width, and a
          drag there would leave a stale width on the rail. -->
     @if (resizable() && sidebar.state() === 'expanded') {

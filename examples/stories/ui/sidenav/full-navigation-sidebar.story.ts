@@ -17,11 +17,12 @@ export const STORY: DemoSpec = {
     'CngxSidenavContent',
   ],
   moduleImports: [
-    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from \'@cngx/ui\';',
+    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from \'@cngx/ui\';',
+    'import { CngxNavHeader, CngxNavFooter } from \'@cngx/common/interactive\';',
     'import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavGroupContent, CngxNavBadge } from \'@cngx/common\';',
     'import { CngxPanelTrigger } from \'@cngx/common/layout\';',
   ],
-  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxSidenavHeader', 'CngxSidenavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge', 'CngxPanelTrigger'],
+  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavHeader', 'CngxNavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge', 'CngxPanelTrigger'],
   setup: `protected readonly navOpen = signal(true);
   protected readonly navCollapsed = signal(false);
   protected readonly activeLink = signal('/dashboard');
@@ -36,10 +37,10 @@ export const STORY: DemoSpec = {
   <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav-uncapped">
     <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
                   width="240px" [resizable]="true" shortcut="mod+b">
-      <cngx-sidenav-header class="demo-sidenav__header">
+      <cngx-nav-header class="demo-sidenav__header">
         <span class="demo-sidenav__brand-mark" aria-hidden="true">W</span>
         <span class="demo-sidenav__brand-name">Workspace</span>
-      </cngx-sidenav-header>
+      </cngx-nav-header>
 
       <span cngxNavLabel class="demo-sidenav__label">Main</span>
 
@@ -95,9 +96,9 @@ export const STORY: DemoSpec = {
         </div>
       </div>
 
-      <cngx-sidenav-footer class="demo-sidenav__footer">
+      <cngx-nav-footer class="demo-sidenav__footer">
         <span class="demo-sidenav__footer-name">Workspace</span> v2.1
-      </cngx-sidenav-footer>
+      </cngx-nav-footer>
     </cngx-sidenav>
 
     <cngx-sidenav-content class="demo-sidenav__content">

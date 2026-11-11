@@ -2,15 +2,16 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxNavLink } from '@cngx/common/interactive';
+import { CngxNavGroup, CngxNavLink } from '@cngx/common/interactive';
 import { computedValue, contrastRatio, oklabOf, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
-import { cdp, userEvent } from 'vitest/browser';
+import { cdp } from 'vitest/browser';
 
 import { CngxSidenav } from './sidenav';
 
 // Runs in a real Chromium (the `test-geometry` target) against the working-tree
-// sidenav.css and the system tokens. The nav rows paint five states in one
+// sidenav.css, the nav row skin (cngx-nav.css, which cngx.css loads) and the
+// system tokens. The nav rows paint five states in one
 // shape: rest (transparent), hover, pressed, active, active+hover, each fill a
 // primary tint over transparent that composites over the rail surface. Pins the
 // contrast floors (row text >= 4.5:1 on every fill), the fill order (each step
@@ -25,8 +26,13 @@ type Fill = (typeof FILLS)[number];
 @Component({
   selector: 'cngx-sidenav-nav-state-host',
   standalone: true,
-  imports: [CngxSidenav, CngxNavLink],
-  styleUrls: ['../../core/theming/system-tokens.css', '../../core/theming/density-tokens.css'],
+  imports: [CngxSidenav, CngxNavLink, CngxNavGroup],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/density-tokens.css',
+    '../../common/theming/components/cngx-nav.css',
+  ],
   // Unlayered, so it beats the layered row transition: state reads must not
   // land mid-transition. The transition test mounts without the class.
   styles: ['.still :is(.cngx-nav-link, [cngxNavGroup]) { transition: none; }'],
@@ -159,7 +165,9 @@ function documentsOf(node: DomNode): DomNode[] {
   return [...(node.contentDocument ? [node.contentDocument] : []), ...nested.flatMap(documentsOf)];
 }
 
-// Force real pseudo-classes over CDP; `:active` cannot be held by userEvent.
+// Force real pseudo-classes over CDP; `:active` cannot be held by userEvent,
+// and userEvent.hover cannot find a row: its locator computes the name in JS
+// and reads the letter's `content: attr(data-initial) / ''` into it.
 // The node lookup mirrors accessibleName(): the spec runs in the runner iframe.
 async function forceStates(selector: string, states: readonly string[]): Promise<void> {
   const session = cdp();
@@ -184,8 +192,9 @@ async function forceStates(selector: string, states: readonly string[]): Promise
   throw new Error(`${selector} is in no document`);
 }
 
+// The active bar sits on ::after; ::before is the letter fallback.
 const bar = (el: HTMLElement, property: string): string =>
-  getComputedStyle(el, '::before').getPropertyValue(property);
+  getComputedStyle(el, '::after').getPropertyValue(property);
 
 const forced: string[] = [];
 
@@ -272,7 +281,7 @@ describe('nav row shape', () => {
   it('paints a group head transparent at rest and with the hover fill under the pointer', async () => {
     const root = mount();
     expect(bg(root, '.row-group')).toBe('rgba(0, 0, 0, 0)');
-    await userEvent.hover(one(root, '.row-group'));
+    await force('.row-group', ['hover']);
     expect(fillOf(root, '.row-group')).toBe(fillOf(root, '.probe-hover'));
   });
 });
@@ -285,13 +294,13 @@ describe('nav row state precedence', () => {
 
   it('paints the hover fill on an inactive row under the pointer', async () => {
     const root = mount();
-    await userEvent.hover(one(root, '.row-idle'));
+    await force('.row-idle', ['hover']);
     expect(fillOf(root, '.row-idle')).toBe(fillOf(root, '.probe-hover'));
   });
 
   it('paints active+hover, not hover, on the active row under the pointer', async () => {
     const root = mount();
-    await userEvent.hover(one(root, '.row-active'));
+    await force('.row-active', ['hover']);
     expect(fillOf(root, '.row-active')).toBe(fillOf(root, '.probe-active-hover'));
   });
 
@@ -336,12 +345,13 @@ describe('active indicator', () => {
     expect(parseFloat(bar(row, 'left'))).toBeGreaterThan(0);
   });
 
-  it('leaves the collapsed rail its initial instead of the bar', () => {
+  it('keeps both the letter and the bar on the collapsed rail', () => {
     const root = mount();
     expect(one(root, '.rail-mini').getAttribute('data-sidebar-state')).toBe('rail');
     const row = one(root, '.row-mini');
-    expect(bar(row, 'content')).not.toBe('""');
-    expect(bar(row, 'position')).not.toBe('absolute');
+    expect(getComputedStyle(row, '::before').content).toContain('I');
+    expect(bar(row, 'content')).toBe('""');
+    expect(bar(row, 'position')).toBe('absolute');
   });
 
   it('thins the bar under compact density', () => {
@@ -461,5 +471,31 @@ describe('double focus ring', () => {
     const row = one(root, '.row-idle');
     row.focus();
     expect(computedValue(row, 'box-shadow')).toBe('none');
+  });
+});
+
+@Component({
+  selector: 'cngx-sidenav-bare-host',
+  standalone: true,
+  imports: [CngxSidenav, CngxNavLink],
+  styleUrls: ['../../core/theming/system-tokens.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <cngx-sidenav mode="side" [opened]="true" ariaLabel="Bare">
+      <a cngxNavLink href="#bare" class="row-bare" [active]="true">Inbox</a>
+    </cngx-sidenav>
+  `,
+})
+class BareSidenavHost {}
+
+describe('nav row skin source', () => {
+  it('leaves rows unstyled in a sidenav without cngx-nav.css', () => {
+    const fixture = TestBed.createComponent(BareSidenavHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const row = one(mountedRoot, '.row-bare');
+    expect(computedValue(row, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(bar(row, 'content')).toBe('none');
   });
 });

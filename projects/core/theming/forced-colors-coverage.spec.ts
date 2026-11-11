@@ -155,10 +155,6 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // colour, so all links drew the active rail; rest rail pinned to Canvas,
   // active rail re-drawn in Highlight.
   'projects/ui/toc/toc.component.css',
-  // @cngx/ui/sidenav (Phase D) - the active nav link signals with a background
-  // tint + weight only (rail edge + focus outline self-heal); re-signalled with
-  // Highlight. The expanded-rail box-shadow is decorative over the edge border.
-  'projects/ui/sidenav/sidenav.css',
   // @cngx/data-display/treetable (Phase E) - the selected row's `--selected`
   // tint is its only selection signal and collapses to Canvas under WHCM;
   // re-signalled with Highlight/HighlightText. The `--focused` keyboard cursor
@@ -206,6 +202,10 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/core/theming/forced-colors.css',
     note: 'the word "box-shadow" appears only in the @overview contract prose describing the WHCM forcing; the net itself is the forced-color-adjust baseline, not an affordance',
+  },
+  {
+    file: 'projects/ui/sidenav/sidenav.css',
+    note: 'the peek and overlay box-shadows are decorative over the rail edge border, which self-heals; the active nav row forced-colors block moved to cngx-nav.css with the row skin',
   },
   {
     file: 'projects/common/popover/popover-panel.component.css',
@@ -331,7 +331,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(54);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(53);
   });
 });
 

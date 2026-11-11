@@ -8,7 +8,7 @@ import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). Quiet chrome without a
 // state de-emphasises by colour, never opacity: the empty-state default icon
-// and the sidenav footer take the muted text colour, and the stat-card error
+// and the nav footer take the muted text colour, and the stat-card error
 // icon keeps its danger colour at full strength.
 //
 // The empty-state icon colour is a registered <color> token SET at :root, so
@@ -24,7 +24,7 @@ const SCHEMES = ['light', 'dark'] as const;
     '../core/theming/system-tokens.css',
     './empty-state/empty-state.component.css',
     './stat-card/stat-card.component.css',
-    './sidenav/sidenav.css',
+    '../common/theming/components/cngx-nav.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -40,7 +40,7 @@ const SCHEMES = ['light', 'dark'] as const;
             <span class="cngx-stat-card__error-icon error-icon">!</span>
           </div>
         </div>
-        <div class="cngx-sidenav-footer footer">Workspace v2.1</div>
+        <div class="cngx-nav-footer footer">Workspace v2.1</div>
         <span class="probe-muted" style="color: var(--cngx-color-text-muted)"></span>
         <span
           class="probe-danger"
@@ -104,7 +104,7 @@ describe.each(SCHEMES)('quiet de-emphasis by colour, %s', (scheme) => {
     );
   });
 
-  it('paints the sidenav footer in the muted colour at full opacity', () => {
+  it('paints the nav footer in the muted colour at full opacity', () => {
     const root = mount();
     const footer = at(root, '.footer');
     expect(effectiveOpacity(footer)).toBe(1);

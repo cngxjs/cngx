@@ -18,15 +18,11 @@
     $_on-surface: mat.get-theme-color($theme, on-surface);
     $_outline: mat.get-theme-color($theme, outline-variant);
     $_scrim: mat.get-theme-color($theme, scrim);
-    $_surface-low: mat.get-theme-color($theme, surface-container-low);
 
     --cngx-sidenav-bg: var(--mat-sys-surface-container, #{$_surface});
     --cngx-sidenav-color: var(--mat-sys-on-surface, #{$_on-surface});
     --cngx-sidenav-border-color: var(--mat-sys-outline-variant, #{$_outline});
     --cngx-sidenav-backdrop-bg: var(--mat-sys-scrim, #{$_scrim});
-    --cngx-sidenav-header-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
-    --cngx-sidenav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
-    --cngx-sidenav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
     // M3 modal navigation drawer: elevation level 1.
     --cngx-sidenav-overlay-shadow: var(
       --mat-sys-level1,
@@ -38,28 +34,22 @@
     --cngx-sidenav-color: rgba(0, 0, 0, 0.87);
     --cngx-sidenav-border-color: rgba(0, 0, 0, 0.12);
     --cngx-sidenav-backdrop-bg: rgba(0, 0, 0, 1);
-    --cngx-sidenav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
-    --cngx-sidenav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
-    --cngx-sidenav-footer-border-color: rgba(0, 0, 0, 0.12);
-  }
-}
-
-@mixin typography($theme) {
-  @if mat.get-theme-version($theme) == 1 {
-    --cngx-sidenav-header-font-size: var(--mat-sys-title-small-size, 0.875rem);
-    --cngx-sidenav-footer-font-size: var(--mat-sys-body-small-size, 0.75rem);
   }
 }
 
 @mixin theme($theme) {
-  // Host + descendants broadcast (select-theme precedent): the
-  // header/footer/backdrop tokens are registered inherits:false in
-  // sidenav.css and are read on the .cngx-sidenav-header / -footer /
-  // -backdrop descendants - a layout-host-only set resolves to the
+  // Host + descendants broadcast (select-theme precedent): the backdrop
+  // tokens are registered inherits:false in sidenav.css and are read on the
+  // -backdrop descendant - a layout-host-only set resolves to the
   // initial-value there.
   @include bridge.on(bridge.broadcast(cngx-sidenav-layout)) {
     @include color($theme);
-    @include typography($theme);
+  }
+
+  // Set + consumed on the nav header and footer slots (cngx-nav.css): their
+  // bg and font-size tokens are registered inherits:false.
+  @include bridge.on('.cngx-nav-header, .cngx-nav-footer') {
+    @include nav-link.slots($theme);
   }
 
   // Set + consumed on the same element ([cngxNavLink] hosts the

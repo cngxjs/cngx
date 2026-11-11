@@ -81,17 +81,31 @@ $theme: mat.define-theme((
     return compileThemeEntry(entry);
   }
 
-  it('broadcasts the layout tokens to host + descendants (inherits:false header/footer/backdrop)', () => {
+  it('broadcasts the layout tokens to host + descendants (inherits:false backdrop)', () => {
     const css = compiledTheme();
     const broadcast = css.match(
       /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*\)\s*\{[^}]*\}/,
     );
     expect(broadcast).not.toBeNull();
-    expect(broadcast![0]).toContain('--cngx-sidenav-header-bg:');
-    expect(broadcast![0]).toContain('--cngx-sidenav-footer-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-backdrop-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-overlay-shadow:');
     expect(broadcast![0]).toContain('--mat-sys-level1');
+  });
+
+  it('emits the nav header and footer tokens on the slot hosts (inherits:false bg and type)', () => {
+    const css = compiledTheme();
+    const slots = css.match(/:where\(\.cngx-nav-header, \.cngx-nav-footer\)\s*\{[^}]*\}/);
+    expect(slots).not.toBeNull();
+    for (const token of [
+      '--cngx-nav-header-bg:',
+      '--cngx-nav-footer-bg:',
+      '--cngx-nav-footer-border-color:',
+      '--cngx-nav-header-font-size:',
+      '--cngx-nav-footer-font-size:',
+    ]) {
+      expect(slots![0]).toContain(token);
+    }
+    expect(css).not.toMatch(/--cngx-sidenav-(header|footer)-/);
   });
 
   it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {

@@ -5,36 +5,25 @@ Declarative sidebar component. Responsive out of the box: the rail docks beside 
 ## Import
 
 ```typescript
-import {
-  CngxSidenav,
-  CngxSidenavLayout,
-  CngxSidenavContent,
-  CngxSidenavHeader,
-  CngxSidenavFooter,
-} from '@cngx/ui';
+import { CngxSidenav, CngxSidenavLayout, CngxSidenavContent } from '@cngx/ui';
+import { CngxNavHeader, CngxNavFooter, CngxNavLink } from '@cngx/common/interactive';
 ```
 
 ## Quick Start
 
 ```typescript
 import { Component, signal } from '@angular/core';
-import { CngxNavLink } from '@cngx/common';
-import {
-  CngxSidenav,
-  CngxSidenavLayout,
-  CngxSidenavContent,
-  CngxSidenavHeader,
-  CngxSidenavFooter,
-} from '@cngx/ui';
+import { CngxNavFooter, CngxNavHeader, CngxNavLink } from '@cngx/common/interactive';
+import { CngxSidenav, CngxSidenavLayout, CngxSidenavContent } from '@cngx/ui';
 
 @Component({
   selector: 'app-example',
   template: `
     <cngx-sidenav-layout>
       <cngx-sidenav position="start" [(opened)]="navOpen">
-        <cngx-sidenav-header>Logo</cngx-sidenav-header>
+        <cngx-nav-header>Logo</cngx-nav-header>
         <a cngxNavLink [active]="true">Dashboard</a>
-        <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
+        <cngx-nav-footer>v1.0</cngx-nav-footer>
       </cngx-sidenav>
       <cngx-sidenav-content>
         <router-outlet />
@@ -45,8 +34,8 @@ import {
     CngxSidenav,
     CngxSidenavLayout,
     CngxSidenavContent,
-    CngxSidenavHeader,
-    CngxSidenavFooter,
+    CngxNavHeader,
+    CngxNavFooter,
     CngxNavLink,
   ],
 })
@@ -70,6 +59,10 @@ Key features:
 - **RTL-aware:** `position="start"` / `"end"` flip logically in RTL
 - **Deep-linking:** persist open state to a URL query param via `[cngxSidenavRouterSync]` (see [Deep-linking](#deep-linking-router-sync))
 - **App-wide defaults:** `CNGX_SIDENAV_CONFIG` cascade for dimensions, shortcut, hover dwell, and router-sync param (see [Configuration](#configuration))
+
+## Header, footer and rows
+
+The sidenav projects `cngx-nav-header` / `[cngxNavHeader]` above its scrolling body and `cngx-nav-footer` / `[cngxNavFooter]` below it. Header, footer and the `cngxNavLink` / `cngxNavGroup` / `cngxNavLabel` / `cngxNavBadge` rows are the nav atoms of `@cngx/common/interactive`, skinned by `cngx-nav.css`, which `@cngx/themes/cngx.css` loads. The sidenav only SETs their tokens on its host (fills, focus ring, inset, padding, header and footer borders), so the same rows look the same in a `cngxSidebar` or a plain `<nav>`.
 
 ## Container, not viewport
 

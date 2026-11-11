@@ -57,6 +57,36 @@
   --cngx-nav-link-active-font-weight: 500;
 }
 
+// Nav header and footer slots (`CngxNavHeader` / `CngxNavFooter`). Emitted
+// on the slot hosts: the bg and font-size tokens are registered
+// inherits:false in cngx-nav.css and read on the slot itself.
+@mixin slot-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    $_outline: mat.get-theme-color($theme, outline-variant);
+    $_surface-low: mat.get-theme-color($theme, surface-container-low);
+
+    --cngx-nav-header-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-nav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-nav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
+  } @else {
+    --cngx-nav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-nav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-nav-footer-border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+@mixin slot-typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-header-font-size: var(--mat-sys-title-small-size, 0.875rem);
+    --cngx-nav-footer-font-size: var(--mat-sys-body-small-size, 0.75rem);
+  }
+}
+
+@mixin slots($theme) {
+  @include slot-color($theme);
+  @include slot-typography($theme);
+}
+
 // No density mixin: the row padding is SET from the --cngx-space-* scale on
 // the cngx-sidenav host, and density-bridge.scss maps Material density onto
 // that scale like every scale-derived component.

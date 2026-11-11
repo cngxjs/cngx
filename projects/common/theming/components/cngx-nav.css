@@ -129,7 +129,7 @@
   }
 
   /**
-   * Inline inset of each nav row from the rail edges (expanded rail only).
+   * Inline inset of each nav row from the container edges.
    * SET from `--cngx-space-xs` at the root; a container may SET its own.
    * @group Layout
    */
@@ -311,7 +311,7 @@
   /**
    * Font-size of the first-letter fallback drawn in the icon box of a row
    * without `[cngxNavIcon]`.
-   * @group Variant / Mini
+   * @group Typography
    */
   @property --cngx-nav-link-initial-size {
     syntax: '*';
@@ -471,7 +471,7 @@
   @property --cngx-nav-badge-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.54 0.19 50);
+    initial-value: oklch(0.58 0.19 50);
   }
 
   /**
@@ -551,7 +551,10 @@
     --cngx-nav-label-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
     --cngx-nav-header-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-nav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
-    --cngx-nav-badge-bg: var(--cngx-color-primary-strong, oklch(0.54 0.19 50));
+    --cngx-nav-badge-bg: var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    );
     --cngx-nav-badge-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   }
 
@@ -755,7 +758,7 @@
     block-size: 1.25rem;
     padding-inline: var(--cngx-space-xs, 4px);
     border-radius: 999px;
-    background: var(--cngx-nav-badge-bg, oklch(0.54 0.19 50));
+    background: var(--cngx-nav-badge-bg, oklch(0.58 0.19 50));
     color: var(--cngx-nav-badge-color, oklch(1 0 0));
   }
 
@@ -763,7 +766,7 @@
     inline-size: var(--cngx-nav-badge-dot-size, 8px);
     block-size: var(--cngx-nav-badge-dot-size, 8px);
     border-radius: 50%;
-    background: var(--cngx-nav-badge-bg, oklch(0.54 0.19 50));
+    background: var(--cngx-nav-badge-bg, oklch(0.58 0.19 50));
   }
 
   .cngx-nav-badge--status {

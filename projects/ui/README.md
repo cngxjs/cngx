@@ -240,10 +240,10 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 <cngx-sidenav-layout>
   <cngx-sidenav position="start" [(opened)]="navOpen" mode="side"
                 [resizable]="true" shortcut="mod+b" width="240px">
-    <cngx-sidenav-header>Workspace</cngx-sidenav-header>
+    <cngx-nav-header>Workspace</cngx-nav-header>
     <a cngxNavLink [active]="true">Dashboard</a>
     <a cngxNavLink>Settings</a>
-    <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
+    <cngx-nav-footer>v1.0</cngx-nav-footer>
   </cngx-sidenav>
   <cngx-sidenav-content>
     <router-outlet />
@@ -274,7 +274,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 **CngxSidenav signals:** `opened` (model), `expanded` (full nav shown), `widthClass`, `effectiveMode`, `resizing`, `isOverlay`
 **Methods:** `open()`, `close()`, `toggle()`
 
-**Slot components:** `CngxSidenavHeader`, `CngxSidenavFooter` (projected into named slots)
+**Slots:** `CngxNavHeader`, `CngxNavFooter` from `@cngx/common/interactive` (projected above and below the body; skinned by `cngx-nav.css`)
 **Layout:** `CngxSidenavLayout` (container, width class, backdrop), `CngxSidenavContent` (main area)
 
 **CSS Custom Properties:**
@@ -286,9 +286,9 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `--cngx-sidenav-bg` | M3 surface-container | Background |
 | `--cngx-sidenav-color` | M3 on-surface | Text color |
 | `--cngx-sidenav-border-color` | M3 outline-variant | Border color |
-| `--cngx-sidenav-padding` | density-dependent | Header/footer padding |
-| `--cngx-sidenav-header-bg` | M3 surface-container-low | Header background |
-| `--cngx-sidenav-footer-bg` | M3 surface-container-low | Footer background |
+| `--cngx-sidenav-padding` | density-dependent | Header/footer block padding |
+| `--cngx-nav-header-bg` | M3 surface-container-low | Header background (nav atom token) |
+| `--cngx-nav-footer-bg` | M3 surface-container-low | Footer background (nav atom token) |
 | `--cngx-sidenav-backdrop-bg` | M3 scrim | Backdrop color |
 | `--cngx-sidenav-backdrop-opacity` | `0.5` | Backdrop opacity |
 | `--cngx-sidenav-transition-duration` | `0.25s` | Animation duration |

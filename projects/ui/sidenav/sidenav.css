@@ -1,9 +1,11 @@
 /**
  * @overview
  * Default structural and thematic styles for `CngxSidenav` - the rail
- * itself (surface, borders, slots), the mode variants, the collapsed rail,
- * the resize handle, and the nav-link rules the rail applies to
- * `@cngx/common/interactive` nav directives. Shipped via the
+ * itself (surface, borders, body), the mode variants, the collapsed rail
+ * and the resize handle. The nav rows, header and footer it holds are
+ * skinned by the nav atoms (`cngx-nav.css` in
+ * `@cngx/common/theming/components`, loaded by `cngx.css`); this file only
+ * SETs their tokens on the host and adds the collapsed-rail rules. Shipped via the
  * component's `styleUrl`, so a bare `<cngx-sidenav>` is styled without
  * a `CngxSidenavLayout` wrapper. Under `encapsulation: None` the
  * `cngx-sidenav` tag and its descendants match globally; the
@@ -41,30 +43,16 @@
  * **Slots**
  *
  * - `.cngx-sidenav__body` - scrollable rail content
- * - `.cngx-sidenav-header` - sticky top slot, border-bottom
- * - `.cngx-sidenav-footer` - sticky bottom slot, border-top, muted
- *   text colour
+ * - `cngx-nav-header` / `cngx-nav-footer` (`CngxNavHeader` /
+ *   `CngxNavFooter`) - projected above and below the body; skinned by
+ *   `cngx-nav.css`
  * - `.cngx-sidenav__resize-handle` - col-resize drag bar on the
  *   rail's edge; tinted on hover / drag via
  *   `--cngx-sidenav-resize-handle-color`
- * - `.cngx-nav-link` - nav-link rule; with `[cngxNavGroup]` heads it
- *   shares one row shape (radius, inline inset, graded fills, focus ring);
- *   the collapsed rail hides labels and renders first-letter initials via
- *   `[data-initial]::before`
  *
- * **Nav row states**
- *
- * Rest (transparent), hover, pressed (`:active`), active
- * (`.cngx-nav-link--active`) and active+hover, each a stronger fill than the
- * one before: hover < pressed < active < active+hover. Active beats hover and
- * pressed; hovering or pressing the active row paints active+hover. Only
- * background and colour transition (the global reduced-motion net collapses
- * them).
- * - `.cngx-nav-group-content` - grid-rows expand/collapse wrapper
- *   for nested nav groups
- *
- * The collapsed rail also hides `[cngxNavLabel]`, `[cngxNavGroup]`, and
- * `[cngxNavBadge]`.
+ * The collapsed rail hides the row label text, `[cngxNavLabel]`,
+ * `[cngxNavGroup]` and `[cngxNavBadge]`; the row icon or its letter
+ * fallback stays.
  *
  * **Nav-class contract**
  *
@@ -75,21 +63,22 @@
  * mounts the real directives inside a `cngx-sidenav` and asserts the
  * hooks still resolve, so a rename fails a test instead. The hooks:
  *
- * - `.cngx-nav-link` / `.cngx-nav-link--active` (`CngxNavLink`)
- * - `[data-initial]` - first-letter initial shown on the collapsed rail
- *   (`CngxNavLink`)
+ * - `.cngx-nav-link` (`CngxNavLink`), its label text hidden on the
+ *   collapsed rail
  * - `[cngxNavLabel]` (`CngxNavLabel`), `[cngxNavGroup]`
  *   (`CngxNavGroup`), `[cngxNavBadge]` (`CngxNavBadge`), all hidden
  *   on the collapsed rail
- * - `.cngx-nav-group-content` / `--open`, the nested nav-group
- *   expand / collapse wrapper
+ * - `.cngx-nav-header` / `.cngx-nav-footer` (`CngxNavHeader` /
+ *   `CngxNavFooter`), clipped on the collapsed rail
  *
  * **Inheritance**
  *
  * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
  * - `--cngx-sidenav-border-color` -> `--cngx-color-border`
- * - `--cngx-sidenav-footer-border-color` -> `--cngx-sidenav-border-
- *   color` -> `--cngx-color-border`
+ * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color`
+ *   -> `--cngx-sidenav-border-color` -> `--cngx-color-border`
+ * - `--cngx-nav-header-padding-block` / `--cngx-nav-footer-padding-block`
+ *   -> `--cngx-sidenav-padding` -> `--cngx-space-md`
  * - `--cngx-sidenav-resize-handle-color` -> `--cngx-color-primary`
  * - `--cngx-sidenav-resize-handle-focus-outline-color` -> `--cngx-color-primary`
  * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-text`
@@ -97,8 +86,9 @@
  * - `--cngx-nav-link-hover-bg` / `-pressed-bg` / `-active-bg` /
  *   `-active-hover-bg` -> `--cngx-color-primary` at 6 / 12 / 16 / 22 %
  *   over transparent; `--cngx-nav-link-inset` -> `--cngx-space-xs`. All are
- *   SET on the `cngx-sidenav` host, so an accent or surface scoped to one
- *   rail reaches its rows; override them on the host or the row.
+ *   registered in `cngx-nav.css` and SET on the `cngx-sidenav` host, so an
+ *   accent or surface scoped to one rail reaches its rows; override them on
+ *   the host or the row.
  *
  * **Dark mode**
  *
@@ -233,66 +223,17 @@
   }
 
   /**
-   * Padding shorthand inside the header / footer slots.
+   * Block padding of the projected nav header and footer; the host SETs
+   * `--cngx-nav-header-padding-block` / `--cngx-nav-footer-padding-block`
+   * from it.
    * @group Layout
    */
   @property --cngx-sidenav-padding {
     syntax: '<length>';
-    /* Read on the .cngx-sidenav-header / -footer descendants; inherits so the
-       cngx-sidenav host SET reaches them. */
+    /* Read on the host only, but kept inherits:true so an ancestor SET still
+       reaches it, as before the header and footer moved to cngx-nav.css. */
     inherits: true;
     initial-value: 16px;
-  }
-
-  /**
-   * Background of the header slot.
-   * @group Surface
-   */
-  @property --cngx-sidenav-header-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
-  }
-
-  /**
-   * Font-size of the header slot.
-   * @group Typography
-   */
-  @property --cngx-sidenav-header-font-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.875rem;
-  }
-
-  /**
-   * Background of the footer slot.
-   * @group Surface
-   */
-  @property --cngx-sidenav-footer-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
-  }
-
-  /**
-   * Border color of the footer divider. Falls back to the rail
-   * border color.
-   * @group Surface
-   */
-  @property --cngx-sidenav-footer-border-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.89 0 0);
-  }
-
-  /**
-   * Font-size of the footer slot.
-   * @group Typography
-   */
-  @property --cngx-sidenav-footer-font-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.75rem;
   }
 
   /**
@@ -381,228 +322,6 @@
     initial-value: 0.5;
   }
 
-  /**
-   * Padding shorthand of each nav link.
-   * @group Layout
-   */
-  @property --cngx-nav-link-padding {
-    syntax: '*';
-    /* Read on the .cngx-nav-link descendant; inherits so the cngx-sidenav host
-       SET reaches it. */
-    inherits: true;
-    initial-value: 10px 16px;
-  }
-
-  /**
-   * Font-size of each nav link.
-   * @group Typography
-   */
-  @property --cngx-nav-link-font-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.875rem;
-  }
-
-  /**
-   * Text color of a resting nav link.
-   * @group Surface
-   */
-  @property --cngx-nav-link-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
-
-  /**
-   * Inline inset of each nav row from the rail edges (expanded rail only).
-   * SET from `--cngx-space-xs` on the `cngx-sidenav` host.
-   * @group Layout
-   */
-  @property --cngx-nav-link-inset {
-    syntax: '<length>';
-    /* Read on the row; inherits so the cngx-sidenav host SET reaches it. */
-    inherits: true;
-    initial-value: 4px;
-  }
-
-  /**
-   * Corner radius of each nav link.
-   * @group Layout
-   */
-  @property --cngx-nav-link-radius {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 4px;
-  }
-
-  /**
-   * Text color on hover.
-   * @group State / Hover
-   */
-  @property --cngx-nav-link-hover-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
-
-  /**
-   * Background tint on hover.
-   * @group State / Hover
-   */
-  @property --cngx-nav-link-hover-bg {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0 0 0 / 0.04);
-  }
-
-  /**
-   * Background while a nav row is pressed (`:active`). Sits between the hover
-   * and the active fill; a pressed active row keeps the active-hover fill.
-   * @group State / Pressed
-   */
-  @property --cngx-nav-link-pressed-bg {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0 0 0 / 0.06);
-  }
-
-  /**
-   * Text color of the active nav link.
-   * @group State / Active
-   */
-  @property --cngx-nav-link-active-color {
-    syntax: '*';
-    inherits: true;
-    initial-value: currentColor;
-  }
-
-  /**
-   * Background of the active nav link.
-   * @group State / Active
-   */
-  @property --cngx-nav-link-active-bg {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0 0 0 / 0.08);
-  }
-
-  /**
-   * Background of the active nav link under the pointer. The strongest fill,
-   * so hovering the active row still answers.
-   * @group State / Active
-   */
-  @property --cngx-nav-link-active-hover-bg {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0 0 0 / 0.1);
-  }
-
-  /**
-   * Colour of the bar on the inline-start edge of the active nav link. SET
-   * from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1
-   * on the active fills; `transparent` drops the bar for a fill-only look.
-   * @group State / Active
-   * @see [[--cngx-color-primary-text]]
-   */
-  @property --cngx-nav-link-active-indicator-color {
-    syntax: '<color>';
-    /* Read on the row's ::before; inherits so the host SET reaches it. */
-    inherits: true;
-    initial-value: oklch(0.54 0.19 50);
-  }
-
-  /**
-   * Inline size of the active indicator bar. SET from `--cngx-space-xs`, so
-   * it follows density; `0` drops the bar.
-   * @group State / Active
-   */
-  @property --cngx-nav-link-active-indicator-size {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 3px;
-  }
-
-  /**
-   * Block-axis inset of the active indicator bar from the row's top and
-   * bottom edges. SET from `--cngx-space-sm`.
-   * @group State / Active
-   */
-  @property --cngx-nav-link-active-indicator-inset {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 8px;
-  }
-
-  /**
-   * Font-weight of the active nav link.
-   * @group State / Active
-   */
-  @property --cngx-nav-link-active-font-weight {
-    syntax: '<number>';
-    inherits: false;
-    initial-value: 600;
-  }
-
-  /**
-   * Outer colour of the double keyboard focus ring on a nav row. SET from
-   * `--cngx-color-text` on the `cngx-sidenav` host, so the ring stays apart
-   * from the active hue on every fill.
-   * @group State / Focus
-   * @see [[--cngx-color-text]]
-   */
-  @property --cngx-nav-link-focus-outline-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.66 0.19 50);
-  }
-
-  /**
-   * Inner colour of the double keyboard focus ring, drawn inside the outer
-   * ring at the same width. SET from `--cngx-sidenav-bg`, so the outer ring
-   * reads against a band of the rail surface on any fill.
-   * @group State / Focus
-   * @see [[--cngx-sidenav-bg]]
-   */
-  @property --cngx-nav-link-focus-inner-color {
-    syntax: '<color>';
-    /* Read on the row; inherits so the host SET reaches it. */
-    inherits: true;
-    initial-value: oklch(0.97 0.005 250);
-  }
-
-  /**
-   * Stroke width of the keyboard focus ring.
-   * @group State / Focus
-   */
-  @property --cngx-nav-link-focus-outline-width {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 2px;
-  }
-
-  /**
-   * Distance from the link edge to the focus ring. Negative offsets
-   * pull the ring inside the link bounds so a fully-padded link
-   * doesn't shove its neighbours when focused.
-   * @group State / Focus
-   */
-  @property --cngx-nav-link-focus-outline-offset {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: -2px;
-  }
-
-  /**
-   * Font-size of the first-letter initial shown on the collapsed rail (when
-   * the full label is hidden).
-   * @group Variant / Mini
-   */
-  @property --cngx-nav-link-initial-size {
-    syntax: '*';
-    inherits: false;
-    initial-value: 0.875rem;
-  }
-
   /*
    * Default-theme palette pass. The @property `initial-value` shadows
    * any `var(…)` fallback inside component CSS, so we must explicitly
@@ -616,7 +335,6 @@
   :root {
     --cngx-sidenav-bg: var(--cngx-color-surface, oklch(0.97 0.005 250));
     --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
-    --cngx-sidenav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
     --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
   }
@@ -647,6 +365,16 @@
        are inherits:true so the SET cascades from this host. sidenav-padding
        16 -> md; nav-link-padding 10/16 -> sm/md (10 -> 8). */
     --cngx-sidenav-padding: var(--cngx-space-md);
+    --cngx-nav-header-padding-block: var(--cngx-sidenav-padding, 16px);
+    --cngx-nav-footer-padding-block: var(--cngx-sidenav-padding, 16px);
+    --cngx-nav-header-border-color: var(
+      --cngx-sidenav-border-color,
+      var(--cngx-color-border, oklch(0.89 0 0))
+    );
+    --cngx-nav-footer-border-color: var(
+      --cngx-sidenav-border-color,
+      var(--cngx-color-border, oklch(0.89 0 0))
+    );
     --cngx-nav-link-padding: var(--cngx-space-sm) var(--cngx-space-md);
     --cngx-nav-link-inset: var(--cngx-space-xs);
     /* Nav row fills: one accent at rising ratios over transparent, so they
@@ -836,8 +564,8 @@
   }
 
   /* Collapsed rail: truncate header/footer */
-  cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav-header,
-  cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav-footer {
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-header,
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-footer {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
@@ -851,118 +579,10 @@
     display: none !important;
   }
 
-  .cngx-sidenav-header {
-    flex-shrink: 0;
-    padding: var(--cngx-sidenav-padding, 16px);
-    background: var(--cngx-sidenav-header-bg, transparent);
-    border-bottom: 1px solid
-      var(--cngx-sidenav-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
-    font-weight: 600;
-    font-size: var(--cngx-sidenav-header-font-size, 0.875rem);
-  }
-
-  .cngx-sidenav-footer {
-    flex-shrink: 0;
-    margin-top: auto;
-    padding: var(--cngx-sidenav-padding, 16px);
-    background: var(--cngx-sidenav-footer-bg, transparent);
-    border-top: 1px solid
-      var(
-        --cngx-sidenav-footer-border-color,
-        var(--cngx-sidenav-border-color, var(--cngx-color-border, oklch(0.89 0 0)))
-      );
-    font-size: var(--cngx-sidenav-footer-font-size, 0.75rem);
-    /* De-emphasis by colour (muted text), never opacity. */
-    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
-  }
-
   /*
-   * Nav links - structural rules with conservative defaults; visual
-   * theming flows through --cngx-nav-link-* tokens, intended to be
-   * wired by the nav-link-theme.scss Material bridge.
-   */
-  cngx-sidenav .cngx-nav-link {
-    position: relative;
-    display: block;
-    padding: var(--cngx-nav-link-padding, 10px 16px);
-    text-decoration: none;
-    font-size: var(--cngx-nav-link-font-size, 0.875rem);
-    color: var(--cngx-nav-link-color, currentColor);
-  }
-
-  /*
-   * One row shape for links and group heads. State ladder: rest (0,1,1),
-   * then hover, pressed, active, active+hover, all four at (0,2,1) in this
-   * source order, so the order is the precedence: active beats hover and
-   * pressed, active+hover beats active, a pressed active row stays
-   * active+hover. `:is()` takes its strongest argument, (0,1,0) for the class
-   * and the attribute alike. Only background and colour transition.
-   * `background: transparent` at rest beats the UA button face on group heads.
-   */
-  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]) {
-    border-radius: var(--cngx-nav-link-radius, 4px);
-    background: transparent;
-    transition:
-      background-color var(--cngx-duration-fast, 150ms),
-      color var(--cngx-duration-fast, 150ms);
-  }
-
-  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]) {
-    margin-inline: var(--cngx-nav-link-inset, 4px);
-  }
-
-  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]):hover {
-    color: var(--cngx-nav-link-hover-color, currentColor);
-    background: var(--cngx-nav-link-hover-bg, oklch(0 0 0 / 0.04));
-  }
-
-  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]):active {
-    background: var(--cngx-nav-link-pressed-bg, oklch(0 0 0 / 0.06));
-  }
-
-  cngx-sidenav .cngx-nav-link.cngx-nav-link--active {
-    color: var(--cngx-nav-link-active-color, currentColor);
-    background: var(--cngx-nav-link-active-bg, oklch(0 0 0 / 0.08));
-    font-weight: var(--cngx-nav-link-active-font-weight, 600);
-  }
-
-  cngx-sidenav .cngx-nav-link--active:hover {
-    color: var(--cngx-nav-link-active-color, currentColor);
-    background: var(--cngx-nav-link-active-hover-bg, oklch(0 0 0 / 0.1));
-  }
-
-  /*
-   * Active indicator: a bar on the inline-start edge (logical, so RTL puts it
-   * on the right). Not on the collapsed rail, whose ::before draws the
-   * first-letter initial.
-   */
-  cngx-sidenav:not([data-sidebar-state='rail']) .cngx-nav-link--active::before {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block: var(--cngx-nav-link-active-indicator-inset, 8px);
-    inline-size: var(--cngx-nav-link-active-indicator-size, 3px);
-    border-radius: var(--cngx-nav-link-active-indicator-size, 3px);
-    background: var(--cngx-nav-link-active-indicator-color, currentColor);
-  }
-
-  /*
-   * Double keyboard focus ring on a nav row, inset so a focused row doesn't
-   * push its neighbours. Outer ring: the outline in the text colour. Inner
-   * ring: an inset box-shadow in the rail surface, twice the outline width,
-   * whose outer half the outline covers. The pair reads on every fill and
-   * never depends on the active hue.
-   */
-  cngx-sidenav :is(.cngx-nav-link, [cngxNavGroup]):focus-visible {
-    outline: var(--cngx-nav-link-focus-outline-width, 2px) solid
-      var(--cngx-nav-link-focus-outline-color, oklch(0.2 0.01 250));
-    outline-offset: var(--cngx-nav-link-focus-outline-offset, -2px);
-    box-shadow: inset 0 0 0 calc(2 * var(--cngx-nav-link-focus-outline-width, 2px))
-      var(--cngx-nav-link-focus-inner-color, oklch(0.97 0.005 250));
-  }
-
-  /*
-   * Collapsed-rail nav links: show first-letter initial, hide full text.
+   * Collapsed-rail nav links: hide the label text; the letter fallback or the
+   * icon (cngx-nav.css) stays in the icon box. Rewritten as a clip-and-fade
+   * crop of the expanded row in a later pass.
    */
   cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link {
     overflow: hidden;
@@ -971,37 +591,9 @@
     padding: var(--cngx-nav-link-padding, 10px 8px);
   }
 
-  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link[data-initial]::before {
-    content: attr(data-initial) / '';
-    font-size: var(--cngx-nav-link-initial-size, 0.875rem);
-    font-weight: 600;
-    display: inline-block;
-    width: var(--cngx-nav-link-initial-size, 0.875rem);
-    text-align: center;
-  }
-
   /* Hide badges on the collapsed rail */
   cngx-sidenav[data-sidebar-state='rail'] [cngxNavBadge] {
     display: none;
-  }
-
-  /*
-   * Animated nav-group expand/collapse via grid-template-rows 0fr → 1fr.
-   * Single wrapper child required for the grid trick.
-   */
-  .cngx-nav-group-content {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows var(--cngx-sidenav-transition-duration, 0.2s) ease;
-  }
-
-  .cngx-nav-group-content > * {
-    overflow: hidden;
-    min-height: 0;
-  }
-
-  .cngx-nav-group-content--open {
-    grid-template-rows: 1fr;
   }
 
   .cngx-sidenav__resize-handle {
@@ -1093,41 +685,5 @@
   cngx-sidenav.cngx-sidenav--resizing {
     transition: none !important;
     user-select: none;
-  }
-}
-
-/* Forced-colors (WHCM): the active nav link signals only with a background tint
-   (forced to Canvas) plus a heavier font-weight, so under a forced palette the
-   active item is left with weight alone - too weak a lone cue. Re-signal it with
-   Highlight. The rail's own edge border self-heals. Every other row keeps UA
-   forcing (outline to a system colour, box-shadow removed). Unlayered + outside @layer beats the
-   layered base rule; forced-color-adjust:none opts the control out of the UA
-   background forcing in case CngxNavLink renders a <button>, so Highlight paints.
-   The indicator inherits that opt-out (forced-color-adjust is inherited), so it
-   needs an explicit system colour: HighlightText on the Highlight row. The same
-   opt-out leaves the active row's focus rings unforced, so it gets one
-   HighlightText ring and no inner ring. */
-@media (forced-colors: active) {
-  cngx-sidenav .cngx-nav-link--active {
-    forced-color-adjust: none;
-    background: Highlight;
-    color: HighlightText;
-  }
-
-  /*
-   * HighlightText next to Canvas does not read, so neither the bar nor the
-   * ring may touch the row edge here: the ring sits one width inside the
-   * edge with a Highlight band around it, and the bar starts one more width
-   * further in, clear of the ring.
-   */
-  cngx-sidenav:not([data-sidebar-state='rail']) .cngx-nav-link--active::before {
-    inset-inline-start: calc(3 * var(--cngx-nav-link-focus-outline-width, 2px));
-    background: HighlightText;
-  }
-
-  cngx-sidenav .cngx-nav-link--active:focus-visible {
-    outline-color: HighlightText;
-    outline-offset: calc(-2 * var(--cngx-nav-link-focus-outline-width, 2px));
-    box-shadow: none;
   }
 }

@@ -18,7 +18,7 @@ test.describe('ui/sidenav', () => {
     await gotoDemo(page, 'ui/sidenav/config-hover-dwell');
     const nav = page.locator('cngx-sidenav', { hasText: 'Config' }).first();
     await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
-    const header = nav.locator('cngx-sidenav-header');
+    const header = nav.locator('cngx-nav-header');
     const mark = header.locator('.demo-sidenav__brand-mark');
     const name = header.locator('.demo-sidenav__brand-name');
 
@@ -42,7 +42,7 @@ test.describe('ui/sidenav', () => {
     await page.mouse.move(1500, 850);
     await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
 
-    const footer = nav.locator('cngx-sidenav-footer');
+    const footer = nav.locator('cngx-nav-footer');
     // The visible text fits the rail, so the footer does not clip it.
     const fits = await footer.evaluate((el) => el.scrollWidth <= el.clientWidth);
     expect(fits).toBe(true);

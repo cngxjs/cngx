@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxNavLink } from '@cngx/common/interactive';
 import { accessibleName } from '@cngx/testing/geometry';
@@ -8,15 +8,18 @@ import { CngxSidenav } from './sidenav';
 import { CngxSidenavContent } from './sidenav-content';
 import { CngxSidenavLayout } from './sidenav-layout';
 
-// Runs in a real Chromium (the `test-geometry` target). The mini rail shows a
-// link's first letter as `::before` content and shrinks the link text to
-// `font-size: 0`; the text stays in the accessibility tree. Without CSS alt
+// Runs in a real Chromium (the `test-geometry` target). The nav row skin
+// (cngx-nav.css) draws a link's first letter as `::before` content in the icon
+// box, and the mini rail shrinks the link text to `font-size: 0`; the text
+// stays in the accessibility tree. Without CSS alt
 // text Chromium folds the initial into the link name ("D Dashboard").
 
 @Component({
   selector: 'cngx-sidenav-initial-name-host',
   standalone: true,
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxNavLink],
+  styleUrls: ['../../core/theming/layers.css', '../../common/theming/components/cngx-nav.css'],
+  encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-sidenav-layout>
       <cngx-sidenav

@@ -13,7 +13,8 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxSidenavRouterSync', 'CngxSidenav'],
   moduleImports: [
     "import { signal } from '@angular/core';",
-    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavRouterSync } from '@cngx/ui';",
+    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavRouterSync } from '@cngx/ui';",
+    'import { CngxNavHeader } from \'@cngx/common/interactive\';',
     "import { CngxNavLink } from '@cngx/common';",
     "import { CngxTag } from '@cngx/common/display';",
   ],
@@ -21,7 +22,7 @@ export const STORY: DemoSpec = {
     'CngxSidenavLayout',
     'CngxSidenav',
     'CngxSidenavContent',
-    'CngxSidenavHeader',
+    'CngxNavHeader',
     'CngxSidenavRouterSync',
     'CngxNavLink',
     'CngxTag',
@@ -39,7 +40,7 @@ export const STORY: DemoSpec = {
                   mode="over"
                   ariaLabel="Demo navigation"
                   [(opened)]="navOpen">
-      <cngx-sidenav-header>Menu</cngx-sidenav-header>
+      <cngx-nav-header>Menu</cngx-nav-header>
       @for (item of ['Dashboard', 'Reports', 'Settings']; track item) {
         <a cngxNavLink [active]="item === 'Dashboard'">{{ item }}</a>
       }
