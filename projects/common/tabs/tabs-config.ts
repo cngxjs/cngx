@@ -547,11 +547,11 @@ export function withTabsAddable(addable: boolean): CngxTabsConfigFeature {
 
 /** @internal - shared empty base, so label merges over an unset key memoize. */
 const NO_LABELS: object = {};
-const NO_ARIA_LABELS: CngxTabsAriaLabels = {};
 
 /**
- * Merge ARIA labels into the cascade. Keys not provided keep their
- * library defaults; per-instance overrides on the tab group still win.
+ * Merge ARIA labels into the cascade. The keys have no library default:
+ * an unset `tabsRegion` leaves the group named by `CngxTabsI18n.tabsLabel`.
+ * Per-instance overrides on the tab group still win.
  * Pass a `Signal` to switch the language at runtime.
  */
 export function withTabsAriaLabels(
@@ -728,7 +728,7 @@ function tabsConfigDefaultsFromPack(): CngxTabsConfig {
     ...TABS_CONFIG_DEFAULTS,
     // No pack default: an unset `tabsRegion` lets `CngxTabsI18n.tabsLabel`
     // name the group. Still a Signal, so `ariaLabels` always holds one here.
-    ariaLabels: computed((): CngxTabsAriaLabels => NO_ARIA_LABELS),
+    ariaLabels: computed((): CngxTabsAriaLabels => NO_LABELS),
     fallbackLabels: computed(
       () => ({
         tabRoleDescription: language().tabRoleDescription,
