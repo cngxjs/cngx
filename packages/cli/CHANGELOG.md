@@ -77,3 +77,10 @@ another release.
 - `cngx doctor` exits 2 for a `<projectDir>` it cannot read (a locked directory,
   or a path component that denies access) instead of a clean `[]` or an internal
   error.
+
+### Fixed
+
+- A fetched release (`--cngx-version` or the installed release) links its
+  examples to the examples build of that release (`/cngx/examples/v<version>`),
+  like the bundled snapshot; it linked them to `main`. A prerelease keeps the
+  links to `main`.

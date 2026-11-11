@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { createDocsIndex } from './loader.js';
-import { EXAMPLES_BASE_URL, rebaseExampleUrls } from './example-urls.js';
+import { EXAMPLES_BASE_URL, examplesBaseUrl, rebaseExampleUrls } from './example-urls.js';
 import type { DocEntry } from './types.js';
 
 const LOCAL = 'http://localhost:4200/#/forms/select/single-select/clearable';
@@ -57,5 +57,15 @@ describe('rebaseExampleUrls', () => {
     rebaseExampleUrls(docs);
 
     expect(docs).toEqual(before);
+  });
+});
+
+describe('examplesBaseUrl', () => {
+  it('points a final release at its own examples', () => {
+    expect(examplesBaseUrl('0.3.0')).toBe('https://cngxjs.github.io/cngx/examples/v0.3.0');
+  });
+
+  it('points a prerelease at the examples of main', () => {
+    expect(examplesBaseUrl('0.1.0-rc.9')).toBe('https://cngxjs.github.io/cngx/examples');
   });
 });
