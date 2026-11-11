@@ -200,7 +200,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxSelect, CngxCombobox, CngxTreeSelect
+ * @relatedTo CngxMultiSelect, CngxSelect, CngxCombobox, CngxTreeSelect, CngxMultiSelectChipHandle, CngxMultiSelectMoveGlyph, withReorderKeyboardModifier, withReorderStripFreeze
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>

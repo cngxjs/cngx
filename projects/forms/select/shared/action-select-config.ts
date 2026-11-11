@@ -88,7 +88,7 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts
  * @since 0.1.0
- * @relatedTo provideActionSelectConfig, provideActionSelectConfigAt, injectActionSelectConfig, withActionAriaLabel, withActionPosition, withActionPopoverPlacement, CngxActionSelect, CngxActionMultiSelect
+ * @relatedTo provideActionSelectConfig, provideActionSelectConfigAt, injectActionSelectConfig, withActionAriaLabel, withActionPosition, withActionPopoverPlacement, CngxActionSelect, CngxActionMultiSelect, withFocusTrapBehavior, withCloseOnCreate, withLiveInputFallback
  */
 export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConfig>(
   'CngxActionSelectConfig',
@@ -110,6 +110,8 @@ function feature(config: Partial<CngxActionSelectConfig>): CngxActionSelectConfi
 
 /**
  * Sets {@link CngxActionFocusTrapBehavior}.
+ *
+ * @relatedTo provideActionSelectConfig
  */
 export function withFocusTrapBehavior(
   behavior: CngxActionFocusTrapBehavior,
@@ -120,6 +122,8 @@ export function withFocusTrapBehavior(
 /**
  * Sets the action-slot ARIA label. Pass a `Signal` to follow a runtime
  * language switch.
+ *
+ * @relatedTo provideActionSelectConfig
  */
 export function withActionAriaLabel(label: string | Signal<string>): CngxActionSelectConfigFeature {
   return feature({ ariaLabel: label });
@@ -128,6 +132,8 @@ export function withActionAriaLabel(label: string | Signal<string>): CngxActionS
 /**
  * Forces `closeOnCreate` across both action organisms. Pass `null` to
  * restore the variant baselines.
+ *
+ * @relatedTo provideActionSelectConfig
  */
 export function withCloseOnCreate(closeOnCreate: boolean | null): CngxActionSelectConfigFeature {
   return feature({ closeOnCreate });
@@ -135,6 +141,8 @@ export function withCloseOnCreate(closeOnCreate: boolean | null): CngxActionSele
 
 /**
  * Sets the default `*cngxSelectAction` slot position.
+ *
+ * @relatedTo provideActionSelectConfig
  */
 export function withActionPosition(position: CngxActionPosition): CngxActionSelectConfigFeature {
   return feature({ actionPosition: position });
@@ -143,6 +151,8 @@ export function withActionPosition(position: CngxActionPosition): CngxActionSele
 /**
  * Sets the live-input fallback policy. Disable when consumer owns
  * debouncing.
+ *
+ * @relatedTo provideActionSelectConfig
  */
 export function withLiveInputFallback(enabled: boolean): CngxActionSelectConfigFeature {
   return feature({ liveInputFallback: enabled });
@@ -150,6 +160,8 @@ export function withLiveInputFallback(enabled: boolean): CngxActionSelectConfigF
 
 /**
  * Sets the popover placement for the action organisms.
+ *
+ * @relatedTo provideActionSelectConfig
  */
 export function withActionPopoverPlacement(
   placement: PopoverPlacement,

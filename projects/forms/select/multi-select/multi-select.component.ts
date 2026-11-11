@@ -183,7 +183,7 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip
+ * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxActionMultiSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/multi-select/multi-basic</example-url>
  * <example-url>/#/forms/select/multi-select/multi-clearable</example-url>
