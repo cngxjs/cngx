@@ -1006,8 +1006,11 @@
   }
 
   /* The flyout already shows the nesting by sitting beside its head, so its
-     rows drop the first indent level; deeper levels still indent. */
+     rows drop the first indent level; deeper levels still indent. The inline
+     padding steps down to --cngx-space-sm, a menu's density, so the content
+     does not sit three insets deep. */
   .cngx-nav-group-content:popover-open :is(.cngx-nav-link, .cngx-nav-group) {
+    --cngx-nav-link-padding-inline: var(--cngx-space-sm, 8px);
     margin-inline-start: calc(
       var(--cngx-nav-link-inset, 4px) + max(0, var(--cngx-nav-depth, 0) - 1) *
         var(--cngx-nav-indent, 12px)

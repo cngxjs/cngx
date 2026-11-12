@@ -221,12 +221,13 @@ describe('CngxNavRail geometry', () => {
     });
   }
 
-  it('drops the first indent level for the rows of an open flyout', async () => {
+  it('drops the first indent level and steps the padding down for the rows of an open flyout', async () => {
     const { fixture, el } = mount('end');
     el('.head').click();
     fixture.detectChanges();
     TestBed.flushEffects();
     await new Promise((resolve) => requestAnimationFrame(resolve));
     expect(getComputedStyle(el('.sub')).marginInlineStart).toBe('4px');
+    expect(getComputedStyle(el('.sub')).paddingInlineStart).toBe('8px');
   });
 });
