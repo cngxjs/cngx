@@ -75,6 +75,15 @@
     syntax: '*';
     inherits: true;
   }
+
+  /**
+   * Width of the rail's inline-end border. The group flyout clears it.
+   * @group Surface
+   */
+  @property --cngx-nav-rail-border-width {
+    syntax: '*';
+    inherits: true;
+  }
 }
 
 @layer cngx.components {
@@ -96,14 +105,15 @@
     );
     block-size: 100%;
     overflow: hidden;
-    border-inline-end: 1px solid
+    border-inline-end: var(--cngx-nav-rail-border-width, 1px) solid
       var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
     background: var(--cngx-nav-rail-bg, var(--cngx-color-surface, oklch(1 0 0)));
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     /* The flyout anchors to the group head, which sits the row inset and the
        border inside the rail edge: clear both, then keep the gap. */
     --cngx-nav-flyout-offset: calc(
-      var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) + 1px + var(--cngx-space-xs, 4px)
+      var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
+        var(--cngx-nav-rail-border-width, 1px) + var(--cngx-space-xs, 4px)
     );
   }
 
@@ -137,13 +147,27 @@
     white-space: nowrap;
   }
 
-  /* Section labels keep their text for assistive technology but paint none. */
+  /* Section labels keep their text for assistive technology but paint none,
+     in every colour mode (a transparent colour would be forced back). */
   cngx-nav-rail .cngx-nav-label:not(.cngx-nav-group-content *) {
     overflow: clip;
     white-space: nowrap;
-    color: transparent;
+    clip-path: inset(100%);
     block-size: var(--cngx-space-md, 16px);
     padding-block: 0;
+  }
+
+  /* A badge sits on the icon's top inline-end corner in the icon-only look:
+     the clipped label would take it along, and the tooltip only repeats the
+     name. */
+  cngx-nav-rail[data-label-placement='end'] .cngx-nav-badge:not(.cngx-nav-group-content *) {
+    position: absolute;
+    inset-block-start: calc(var(--cngx-space-xs, 4px) / 2);
+    inset-inline-start: calc(
+      var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px)) +
+        var(--cngx-nav-icon-size, 1.25rem) / 2 + var(--cngx-space-xs, 4px)
+    );
+    margin: 0;
   }
 
   /* Look 'below': icon over a short, centred label. */

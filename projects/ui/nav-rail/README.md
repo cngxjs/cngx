@@ -74,7 +74,11 @@ on the host.
   nothing but stays the accessible name. A tooltip shows the label on hover
   (after 300ms) and at once on keyboard focus.
 - `'below'` - the icon stacked over a short, centred, wrapping label. No
-  tooltip; a badge moves to the icon's top inline-end corner.
+  tooltip.
+
+In both looks a badge sits on the icon's top inline-end corner, and section
+labels (`cngxNavLabel`) keep their text for assistive technology but paint
+nothing, in every colour mode.
 
 A row without `cngxNavIcon` draws its first letter in the icon box, as in the
 sidenav.
@@ -143,11 +147,13 @@ Rail tokens (`nav-rail.css`):
 | `--cngx-nav-rail-below-font-size` | `0.75rem` |
 | `--cngx-nav-rail-bg` | `--cngx-color-surface` |
 | `--cngx-nav-rail-border-color` | `--cngx-color-border` |
+| `--cngx-nav-rail-border-width` | `1px` |
 
 Flyout tokens (`cngx-nav.css`): `--cngx-nav-flyout-bg`, `-color`,
 `-border-color`, `-shadow`, `-radius`, `-padding`, `-min-inline-size`,
 `-offset`. The rail sets `--cngx-nav-flyout-offset` so the flyout clears the
-rail edge. The tooltip uses the `cngx-tooltip` skin.
+rail edge. The tooltip uses the `cngx-tooltip` skin and sits
+`--cngx-nav-tooltip-offset` (`--cngx-space-sm`) past the row.
 
 Row tokens (`--cngx-nav-link-*`, `--cngx-nav-icon-size`) come from the nav
 atoms and follow density.

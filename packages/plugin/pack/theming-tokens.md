@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3100 tokens across 168 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3111 tokens across 168 components.
 
 ## CngxA11yPanel
 
@@ -1986,6 +1986,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavFooter
 
@@ -2039,6 +2040,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavGroup
 
@@ -2092,6 +2094,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavGroupContent
 
@@ -2145,6 +2148,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavHeader
 
@@ -2198,6 +2202,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavIcon
 
@@ -2251,6 +2256,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavLabel
 
@@ -2304,6 +2310,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavLink
 
@@ -2357,6 +2364,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavMark
 
@@ -2410,6 +2418,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavName
 
@@ -2463,6 +2472,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavRail
 
@@ -2473,6 +2483,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-rail-below-font-size`|``|Typography|Font size of the label under the icon (`labelPlacement="below"`).|
 |`--cngx-nav-rail-bg`|``|Surface|Background of the rail.|
 |`--cngx-nav-rail-border-color`|``|Surface|Colour of the rail's inline-end border.|
+|`--cngx-nav-rail-border-width`|``|Surface|Width of the rail's inline-end border. The group flyout clears it.|
 
 ## CngxOption
 

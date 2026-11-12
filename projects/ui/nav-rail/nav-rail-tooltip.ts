@@ -76,7 +76,8 @@ function rowLabel(row: HTMLElement): string {
  * group content, an open group head and rows with a `[cngxTooltip]` of their
  * own get no rail tooltip. The tooltip sits at the
  * inline end of the row through CSS anchor positioning (`anchor-name` on the
- * row, `position-area: inline-end`), so it follows the row and mirrors under
+ * row; `cngx-nav.css` places it at the row's inline end with the
+ * `--cngx-nav-tooltip-offset` gap), so it follows the row and mirrors under
  * `dir="rtl"`. A browser without CSS anchor positioning shows it at the
  * top-layer default position.
  *
@@ -110,8 +111,6 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
   tip.setAttribute('aria-hidden', 'true');
   tip.classList.add('cngx-tooltip', 'cngx-nav-rail-tooltip');
   tip.style.setProperty('position-anchor', anchorName);
-  tip.style.setProperty('position-area', 'inline-end');
-  tip.style.setProperty('margin-inline-start', 'var(--cngx-space-sm, 8px)');
   renderer.appendChild(host, tip);
 
   let anchored: HTMLElement | null = null;

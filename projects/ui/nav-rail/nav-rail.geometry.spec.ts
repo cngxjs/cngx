@@ -1,9 +1,11 @@
 import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
+  CngxNavBadge,
   CngxNavGroup,
   CngxNavGroupContent,
   CngxNavIcon,
+  CngxNavLabel,
   CngxNavLink,
 } from '@cngx/common/interactive';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -16,16 +18,26 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
 @Component({
   selector: 'cngx-nav-rail-geometry-host',
   standalone: true,
-  imports: [CngxNavRail, CngxNavLink, CngxNavIcon, CngxNavGroup, CngxNavGroupContent],
+  imports: [
+    CngxNavRail,
+    CngxNavLink,
+    CngxNavIcon,
+    CngxNavBadge,
+    CngxNavLabel,
+    CngxNavGroup,
+    CngxNavGroupContent,
+  ],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../common/theming/components/cngx-nav.css',
+    '../../common/theming/components/cngx-tooltip.css',
     './nav-rail.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div style="block-size: 400px; display: flex">
-      <cngx-nav-rail [labelPlacement]="placement()">
+      <cngx-nav-rail [labelPlacement]="placement()" style="--cngx-target-min: 44px">
+        <div cngxNavLabel class="section">Mail</div>
         <a cngxNavLink href="#inbox" class="row">
           <span cngxNavIcon class="icon"
             ><span
@@ -33,6 +45,7 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
             ></span
           ></span>
           <span class="label">Inbox</span>
+          <span cngxNavBadge [value]="7" class="badge"></span>
         </a>
         <button type="button" cngxNavGroup #reports="cngxNavGroup" class="head">
           <span cngxNavIcon
@@ -102,6 +115,43 @@ describe('CngxNavRail geometry', () => {
     const railCentre = (rail.left + rail.right) / 2;
     expect(Math.abs(iconCentre - railCentre)).toBeLessThanOrEqual(1.5);
     expect(label.right).toBeLessThanOrEqual(rail.right + 0.5);
+  });
+
+  it('keeps the badge on the icon corner in the icon-only rail, inside the row', () => {
+    const { el } = mount('end');
+    const row = el('.row').getBoundingClientRect();
+    const icon = el('.icon').getBoundingClientRect();
+    const badge = el('.badge').getBoundingClientRect();
+    expect(badge.width).toBeGreaterThan(0);
+    expect(badge.left).toBeLessThan(icon.right);
+    expect(badge.right).toBeGreaterThan(icon.right);
+    expect(badge.right).toBeLessThanOrEqual(row.right + 0.5);
+    expect(badge.top).toBeLessThan(icon.top + icon.height / 2);
+  });
+
+  it('paints no section label text in either look, as a clip and not a colour', () => {
+    for (const placement of ['end', 'below'] as const) {
+      const { el } = mount(placement);
+      expect(getComputedStyle(el('.section')).clipPath).not.toBe('none');
+      mountedRoot?.remove();
+    }
+  });
+
+  it('keeps a stacked row at the touch-target floor', () => {
+    const { el } = mount('below');
+    expect(el('.row').getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+  });
+
+  it('shows the label tooltip at the row inline end, past the row edge', async () => {
+    const { el } = mount('end');
+    el('.row').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    const tip = el('.cngx-nav-rail-tooltip');
+    expect(tip.matches(':popover-open')).toBe(true);
+    expect(getComputedStyle(tip).marginInlineStart).toBe('8px');
+    expect(tip.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+      el('.row').getBoundingClientRect().right + 7.5,
+    );
   });
 
   for (const dir of ['ltr', 'rtl'] as const) {
