@@ -10,7 +10,8 @@ import { injectNavRailTooltip } from './nav-rail-tooltip';
     <a class="cngx-nav-link row-inbox" href="#inbox">
       <span class="cngx-nav-icon" aria-hidden="true">inbox</span>
       Inbox
-      <span class="cngx-nav-badge">7</span>
+      <span class="cngx-nav-badge" aria-hidden="true">7</span
+      ><span class="cngx-sr-only">7 unread</span>
     </a>
     <button type="button" class="cngx-nav-group row-settings">Settings</button>
     <button type="button" class="cngx-nav-group row-open" aria-expanded="true">Reports</button>
@@ -76,7 +77,7 @@ describe('injectNavRailTooltip', () => {
     expect(isOpen()).toBe(false);
   });
 
-  it('shows the row label without icon and badge when a row takes focus', () => {
+  it('shows the row label without icon, badge and the badge spoken text when a row takes focus', () => {
     const { row, tip, isOpen } = setup();
     row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(isOpen()).toBe(true);

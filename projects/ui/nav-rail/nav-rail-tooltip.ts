@@ -34,7 +34,8 @@ function skipsTooltip(row: HTMLElement): boolean {
 
 /**
  * The visible label of a nav row: its own text without the icon, the letter
- * fallback or a badge. An explicit `aria-label` wins.
+ * fallback, a badge or a badge's visually hidden spoken text. An explicit
+ * `aria-label` wins.
  */
 function rowLabel(row: HTMLElement): string {
   const explicit = row.getAttribute('aria-label');
@@ -53,7 +54,8 @@ function rowLabel(row: HTMLElement): string {
     const decorative =
       node.getAttribute('aria-hidden') === 'true' ||
       node.classList.contains('cngx-nav-icon') ||
-      node.classList.contains('cngx-nav-badge');
+      node.classList.contains('cngx-nav-badge') ||
+      node.classList.contains('cngx-sr-only');
     if (!decorative) {
       text += node.textContent ?? '';
     }
