@@ -10,6 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
+import type { CngxSidebarSide } from '@cngx/common/layout';
 
 import { injectNavRailConfig } from './config/inject-nav-rail-config';
 import { CNGX_NAV_RAIL_DEFAULTS } from './config/nav-rail.config.defaults';
@@ -20,8 +21,12 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
 /** How a `cngx-nav-rail` lays out a row's label. */
 export type CngxNavRailLabelPlacement = 'end' | 'below';
 
-/** The page edge a `cngx-nav-rail` sits on, logical: `'start'` is the right edge under RTL. */
-export type CngxNavRailSide = 'start' | 'end';
+/**
+ * The page edge a `cngx-nav-rail` sits on, logical: `'start'` is the right
+ * edge under RTL. The same union as `CngxSidebarSide`, so a sidebar's side
+ * passes to the rail helpers unchanged.
+ */
+export type CngxNavRailSide = CngxSidebarSide;
 
 /**
  * A navigation rail: a narrow, always-collapsed column of nav rows for apps
