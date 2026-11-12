@@ -11,9 +11,9 @@ import { createRetry, type RetryState } from '@cngx/common/interactive';
 ## Quick Start
 
 ```typescript
-import { Component } from '@angular/core';
-import { createRetry } from '@cngx/common/interactive';
-import { CngxAsyncClick } from '@cngx/common/interactive';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
+import { CngxAsyncClick, createRetry } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-save',
@@ -28,19 +28,22 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
         @default { Save }
       }
     </button>
-    <div *ngIf="retryState.exhausted()">
-      Last error: {{ retryState.lastError() }}
-    </div>
+    @if (retryState.exhausted()) {
+      <div>Last error: {{ retryState.lastError() }}</div>
+    }
   `,
   imports: [CngxAsyncClick],
 })
 export class SaveComponent {
-  private readonly [saveWithRetry, retryState] = createRetry(
-    () => this.http.post('/api/save', data),
+  // Declared before the retry field: its closure reads `this.http`.
+  private readonly http = inject(HttpClient);
+  // A class field cannot destructure, so store the tuple and read its parts.
+  private readonly retry = createRetry(
+    () => this.http.post('/api/save', {}),
     { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
   );
-
-  constructor(private http: HttpClient) {}
+  protected readonly saveWithRetry = this.retry[0];
+  protected readonly retryState = this.retry[1];
 }
 ```
 
@@ -210,7 +213,8 @@ const [saveWithRetry, retryState] = createRetry(
 
 ```typescript
 const [uploadWithRetry, retryState] = createRetry(
-  (file: File) => this.upload(file),
+  // The action receives only an optional AbortSignal; read the file from state.
+  () => this.upload(this.file()),
   { maxAttempts: 3, delay: 500, backoff: 'exponential' }
 );
 
@@ -222,7 +226,7 @@ const [uploadWithRetry, retryState] = createRetry(
       <span class="label">Attempt {{ retryState.attempt() }} of {{ retryState.maxAttempts() }}</span>
 
       @if (retryState.retrying()) {
-        <span class="status retrying">Retrying in {{ getRetryDelay() }}ms...</span>
+        <span class="status retrying">Retrying (attempt {{ retryState.attempt() }})...</span>
       } @else if (retryState.exhausted()) {
         <span class="status error">All {{ retryState.maxAttempts() }} attempts exhausted</span>
       } @else if (retryState.lastError()) {
@@ -253,5 +257,5 @@ await retryAction();
 - [API on compodocx](../../../../README.md)
 - [CngxAsyncClick](../async-click/) - The most common consumer of retry actions
 - [CngxAsyncState](../../../core/utils/) - The shared state interface
-- Demo: `examples/stories/common/retry-demo/`
+- Demo: `examples/stories/common/interactive/retry/`
 - Tests: `projects/common/interactive/retry/with-retry.spec.ts`
