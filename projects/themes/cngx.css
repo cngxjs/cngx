@@ -22,7 +22,8 @@
  *   `CngxBreadcrumb`, `CngxButtonToggle`, the data-grid family,
  *   `CngxDialog`, `CngxDivider`, `CngxListbox`,
  *   `CngxMenu`, the nav atoms (`CngxNavLink`, `CngxNavGroup`,
- *   `CngxNavLabel`, `CngxNavBadge`), `CngxRipple`, `CngxSlider`, `CngxTooltip`,
+ *   `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
+ *   `CngxNavFooter`, `CngxNavMark`, `CngxNavName`), `CngxRipple`, `CngxSlider`, `CngxTooltip`,
  *   `CngxFileDrop`, the field-affix atoms)
  * - `cngx.theme` - reserved for consumer overrides
  * - `app` - reserved for consumer selectors

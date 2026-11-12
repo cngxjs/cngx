@@ -99,6 +99,7 @@ $theme: mat.define-theme((
     for (const token of [
       '--cngx-nav-header-bg:',
       '--cngx-nav-footer-bg:',
+      '--cngx-nav-header-border-color:',
       '--cngx-nav-footer-border-color:',
       '--cngx-nav-header-font-size:',
       '--cngx-nav-footer-font-size:',

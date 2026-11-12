@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 
-// Provides M3/M2 colors for `[cngxNavLink]` when used inside a sidenav.
+// Provides M3/M2 tokens for the nav atoms of `@cngx/common/interactive`
+// (`cngxNavLink` rows, header and footer slots) in any container.
 // Included automatically by `sidenav.theme()` - no separate import needed.
 
 @mixin color($theme) {
@@ -67,10 +68,12 @@
 
     --cngx-nav-header-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
     --cngx-nav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-nav-header-border-color: var(--mat-sys-outline-variant, #{$_outline});
     --cngx-nav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
   } @else {
     --cngx-nav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
     --cngx-nav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-nav-header-border-color: rgba(0, 0, 0, 0.12);
     --cngx-nav-footer-border-color: rgba(0, 0, 0, 0.12);
   }
 }

@@ -378,6 +378,8 @@
     --cngx-nav-link-padding: var(--cngx-space-sm)
       var(--cngx-nav-link-padding-inline, var(--cngx-space-md));
     --cngx-nav-link-inset: var(--cngx-space-xs);
+    /* Group content inside the sidenav animates with the sidenav duration. */
+    --cngx-nav-transition: var(--cngx-sidenav-transition-duration, 0.25s);
     /* Nav row fills: one accent at rising ratios over transparent, so they
        composite over any --cngx-sidenav-bg and grow away from the surface in
        light and dark alike. SET here (not :root) so a host-scoped

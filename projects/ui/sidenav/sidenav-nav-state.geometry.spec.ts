@@ -103,6 +103,15 @@ type Fill = (typeof FILLS)[number];
         <a cngxNavLink href="#mini-compact" class="row-mini-compact" [active]="true">Inbox</a>
       </cngx-sidenav>
     </div>
+    <cngx-sidenav
+      class="rail-timed"
+      mode="side"
+      [opened]="true"
+      ariaLabel="Timed"
+      style="--cngx-sidenav-transition-duration: 0.4s"
+    >
+      <div class="cngx-nav-group-content group-content-timed"><div></div></div>
+    </cngx-sidenav>
     <span class="probe-highlighttext" style="color: HighlightText"></span>
     <span class="probe-highlight" style="color: Highlight"></span>
   `,
@@ -366,6 +375,11 @@ describe('active indicator', () => {
     expect(getComputedStyle(row, '::before').content).toContain('I');
     expect(bar(row, 'content')).toBe('""');
     expect(bar(row, 'position')).toBe('absolute');
+  });
+
+  it('animates nav group content with the sidenav transition duration', () => {
+    const root = mount({ still: false });
+    expect(computedValue(one(root, '.group-content-timed'), 'transition-duration')).toBe('0.4s');
   });
 
   it('keeps the header mark at its x when the sidenav collapses to the rail', () => {
