@@ -35,12 +35,24 @@ function compareVersions(a, b) {
  * dropped, so no prerelease ordering is needed.
  */
 export function selectReleaseTags(tags, { min, keep }) {
+  return finalTagsFrom(tags, min).slice(0, keep);
+}
+
+/**
+ * The counterpart of `selectReleaseTags`: the final release tags at or above
+ * `min` that fell out of the newest `keep`, newest first. Their docs are no
+ * longer built; the deploy answers their error-code URLs with moved pages.
+ */
+export function selectDroppedTags(tags, { min, keep }) {
+  return finalTagsFrom(tags, min).slice(keep);
+}
+
+function finalTagsFrom(tags, min) {
   return tags
     .filter((tag) => FINAL_TAG.test(tag))
     .map((tag) => tag.slice(1))
     .filter((version) => compareVersions(version, min) >= 0)
     .sort((a, b) => compareVersions(b, a))
-    .slice(0, keep)
     .map((version) => `v${version}`);
 }
 
