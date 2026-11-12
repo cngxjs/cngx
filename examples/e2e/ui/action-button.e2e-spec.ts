@@ -116,6 +116,32 @@ test.describe('ui/action-button/async-button', () => {
     });
   });
 
+  test.describe('announcements-and-outputs artifact', () => {
+    test('the region speaks the announcement, the outputs log each settle, a quiet button stays empty', async ({
+      page,
+    }) => {
+      await gotoDemo(page, 'ui/action-button/async-button/announcements-and-outputs');
+      const buttons = page.locator('.cngx-ex-artifact button.cngx-action-button');
+      const exportBtn = buttons.nth(0);
+      const quiet = buttons.nth(1);
+      const events = page.locator('.cngx-ex-chrome .event-value');
+
+      await exportBtn.click();
+      await expect(exportBtn.locator('xpath=following-sibling::*[1]')).toHaveText(
+        'Quarterly report exported.',
+      );
+      await expect(exportBtn.locator('.cngx-action-button__label[data-active]')).toHaveText(
+        'Exported',
+      );
+      await expect(events).toHaveText(['export (settled) #1 success', 'export (outcome) success']);
+
+      await quiet.click();
+      await expect(quiet).toHaveAttribute('data-status', 'success');
+      await expect(events.last()).toHaveText('quiet (outcome) success');
+      await expect(quiet.locator('xpath=following-sibling::*[1]')).toHaveText('');
+    });
+  });
+
   test.describe('busy-timing artifact', () => {
     test('pending is immediate on both, only the default button waits out the show delay', async ({
       page,
