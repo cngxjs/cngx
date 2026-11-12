@@ -117,8 +117,10 @@
     );
     block-size: 100%;
     overflow: hidden;
-    border-inline-end: var(--cngx-nav-rail-border-width, 1px) solid
-      var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    /* Style and colour on every side, the width only on the inner edge, so
+       an end-side rail only swaps the width. */
+    border: 0 solid var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    border-inline-end-width: var(--cngx-nav-rail-border-width, 1px);
     background: var(--cngx-nav-rail-bg, var(--cngx-color-surface, oklch(1 0 0)));
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     /* The flyout anchors to the group head, which sits the row inset and the
@@ -130,9 +132,8 @@
   }
 
   cngx-nav-rail[data-side='end'] {
-    border-inline-end: 0;
-    border-inline-start: var(--cngx-nav-rail-border-width, 1px) solid
-      var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    border-inline-end-width: 0;
+    border-inline-start-width: var(--cngx-nav-rail-border-width, 1px);
   }
 
   cngx-nav-rail[data-label-placement='below'] {
