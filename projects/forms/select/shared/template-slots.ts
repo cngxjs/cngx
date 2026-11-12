@@ -705,11 +705,11 @@ export class CngxSelectLoadingGlyph {
  * `*cngxSelectRefreshing` slot - top-bar overlay during refresh.
  *
  * ```html
- * <cngx-select [state]="colorsState">
+ * <cngx-select-shell [state]="colorsState">
  *   <ng-template cngxSelectRefreshing let-count="previousCount">
  *     Refreshing {{ count }} items…
  *   </ng-template>
- * </cngx-select>
+ * </cngx-select-shell>
  * ```
  *
  * @wcag AA
