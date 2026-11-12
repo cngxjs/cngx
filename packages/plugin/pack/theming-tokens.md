@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3095 tokens across 167 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3100 tokens across 168 components.
 
 ## CngxA11yPanel
 
@@ -2463,6 +2463,16 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavRail
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-rail-size`|``|Layout|Width of an icon-only rail (`labelPlacement="end"`). Unset, it derives from the row tokens so the icon box sits centred: `2 * (inset + inline padding) + icon size`.|
+|`--cngx-nav-rail-below-size`|``|Layout|Width of a rail with labels below the icons (`labelPlacement="below"`).|
+|`--cngx-nav-rail-below-font-size`|``|Typography|Font size of the label under the icon (`labelPlacement="below"`).|
+|`--cngx-nav-rail-bg`|``|Surface|Background of the rail.|
+|`--cngx-nav-rail-border-color`|``|Surface|Colour of the rail's inline-end border.|
 
 ## CngxOption
 

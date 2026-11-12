@@ -361,6 +361,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_NAV_RAIL_I18N',
+    kind: 'dedicated',
+    copyKeys: '*',
+    settingsKeys: [],
+  },
+  {
     token: 'CNGX_COMMAND_PALETTE_CONFIG',
     kind: 'config',
     copyKeys: [

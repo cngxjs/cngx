@@ -336,6 +336,30 @@ links leave the tab order and the accessibility tree. Do not set the classes by 
 
 **Material theme:** `@use '@cngx/themes/material/sidenav-theme'` - includes nav-link theme automatically
 
+### CngxNavRail (`@cngx/ui/nav-rail`)
+
+A narrow, always-collapsed column of nav rows for apps whose primary
+navigation never expands. Reach for `CngxSidenav` when the same navigation
+also opens to full width. The rows are the nav atoms of
+`@cngx/common/interactive`; the rail only sets their tokens and its width.
+
+```html
+<cngx-nav-rail labelPlacement="below">
+  <a cngxNavLink routerLink="/inbox">
+    <cngx-icon cngxNavIcon><mat-icon>inbox</mat-icon></cngx-icon>
+    Inbox
+  </a>
+</cngx-nav-rail>
+```
+
+**Inputs:** `labelPlacement` (`'end'`: icon only with a tooltip, default;
+`'below'`: icon over a short label), `ariaLabel` (unbound, the `navRail`
+language-pack copy names the landmark).
+**Slots:** `cngx-nav-header` / `[cngxNavHeader]` above the rows,
+`cngx-nav-footer` / `[cngxNavFooter]` below them.
+A nav group opens as a flyout beside its head; `aria-expanded` stays the one
+state. See `projects/ui/nav-rail/README.md`.
+
 ### CngxToc (`@cngx/ui/toc`)
 
 "On this page" navigation rail. Renders a `<nav>` of anchor links from a

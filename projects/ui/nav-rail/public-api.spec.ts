@@ -7,6 +7,15 @@ describe('@cngx/ui/nav-rail public API shape', () => {
     expect(typeof api.injectNavRailTooltip).toBe('function');
   });
 
+  it('exports the rail organism, its copy token and its English section', () => {
+    expect(api.CngxNavRail).toBeDefined();
+    expect(api.CNGX_NAV_RAIL_I18N).toBeDefined();
+    expect(api.provideNavRailI18n).toBeTypeOf('function');
+    expect(api.withNavRailI18nLabels).toBeTypeOf('function');
+    expect(api.injectNavRailI18n).toBeTypeOf('function');
+    expect(api.CNGX_NAV_RAIL_LANGUAGE_EN).toEqual({ ariaLabel: 'Navigation' });
+  });
+
   it('exports the rail group flyout injection function', () => {
     expect(typeof api.injectNavRailFlyout).toBe('function');
   });

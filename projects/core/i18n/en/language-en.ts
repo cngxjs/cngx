@@ -354,6 +354,9 @@ export const CNGX_LANGUAGE_EN = {
     splitToggle: 'More options',
     splitMainBusy: 'The main action is running',
   },
+  navRail: {
+    ariaLabel: 'Navigation',
+  },
   paginator: {
     label: 'Pagination',
     first: 'First page',

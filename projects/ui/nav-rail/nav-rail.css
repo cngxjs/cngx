@@ -1,0 +1,175 @@
+/**
+ * @overview
+ * Structural styles of `CngxNavRail`: the rail width and the two looks. The
+ * rows, header, footer and group flyout it holds are skinned by the nav
+ * atoms (`cngx-nav.css` in `@cngx/common/theming/components`, loaded by
+ * `cngx.css`); this file only SETs the rail width and the rail states of the
+ * rows. Shipped via the component's `styleUrl`; under `encapsulation: None`
+ * the `cngx-nav-rail` tag and its descendants match globally.
+ *
+ * **Looks** (`data-label-placement`)
+ *
+ * - `end` - icon only. A row keeps its full label but clips at its padding
+ *   box; the icon gap grows to the row's inline-end padding, so the label
+ *   starts exactly at the clip edge and paints nothing, in every colour
+ *   mode. The label stays the accessible name.
+ * - `below` - the icon stacked over a short label, centred, wrapping.
+ *
+ * Rows inside a group content (the flyout) are excluded from the rail
+ * rules: the flyout shows them at full width.
+ *
+ * @themes CngxNavRail
+ */
+
+@layer cngx.tokens {
+  /**
+   * Width of an icon-only rail (`labelPlacement="end"`). Unset, it derives
+   * from the row tokens so the icon box sits centred:
+   * `2 * (inset + inline padding) + icon size`.
+   * @group Layout
+   * @see [[--cngx-nav-link-inset]]
+   * @see [[--cngx-nav-link-padding-inline]]
+   * @see [[--cngx-nav-icon-size]]
+   */
+  @property --cngx-nav-rail-size {
+    syntax: '*';
+    /* No initial value: the use-site fallback derives the width from the
+       row tokens where the rail reads it. */
+    inherits: true;
+  }
+
+  /**
+   * Width of a rail with labels below the icons (`labelPlacement="below"`).
+   * @group Layout
+   */
+  @property --cngx-nav-rail-below-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Font size of the label under the icon (`labelPlacement="below"`).
+   * @group Typography
+   */
+  @property --cngx-nav-rail-below-font-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background of the rail.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-nav-rail-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Colour of the rail's inline-end border.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-rail-border-color {
+    syntax: '*';
+    inherits: true;
+  }
+}
+
+@layer cngx.components {
+  cngx-nav-rail {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    flex: none;
+    inline-size: var(
+      --cngx-nav-rail-size,
+      calc(
+        2 *
+          (
+            var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
+              var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+          ) +
+          var(--cngx-nav-icon-size, 1.25rem)
+      )
+    );
+    block-size: 100%;
+    overflow: hidden;
+    border-inline-end: 1px solid
+      var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    background: var(--cngx-nav-rail-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    /* The flyout anchors to the group head, which sits the row inset and the
+       border inside the rail edge: clear both, then keep the gap. */
+    --cngx-nav-flyout-offset: calc(
+      var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) + 1px + var(--cngx-space-xs, 4px)
+    );
+  }
+
+  cngx-nav-rail[data-label-placement='below'] {
+    inline-size: var(--cngx-nav-rail-below-size, 5rem);
+  }
+
+  .cngx-nav-rail__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: calc(var(--cngx-space-xs, 4px) / 2);
+    min-block-size: 0;
+    padding-block: var(--cngx-space-xs, 4px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  /* Header and footer clip the name next to the mark. */
+  cngx-nav-rail :is(.cngx-nav-header, .cngx-nav-footer) {
+    overflow: clip;
+    white-space: nowrap;
+  }
+
+  /* Look 'end': the label clips at the row's padding box. */
+  cngx-nav-rail[data-label-placement='end']
+    :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
+    gap: var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px));
+    overflow: clip;
+    white-space: nowrap;
+  }
+
+  /* Section labels keep their text for assistive technology but paint none. */
+  cngx-nav-rail .cngx-nav-label:not(.cngx-nav-group-content *) {
+    overflow: clip;
+    white-space: nowrap;
+    color: transparent;
+    block-size: var(--cngx-space-md, 16px);
+    padding-block: 0;
+  }
+
+  /* Look 'below': icon over a short, centred label. */
+  cngx-nav-rail[data-label-placement='below']
+    :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
+    flex-direction: column;
+    justify-content: center;
+    gap: calc(var(--cngx-space-xs, 4px) / 2);
+    padding-inline: calc(var(--cngx-space-xs, 4px) / 2);
+    font-size: var(--cngx-nav-rail-below-font-size, 0.75rem);
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* A badge sits on the icon's top inline-end corner in the stacked look. */
+  cngx-nav-rail[data-label-placement='below'] .cngx-nav-badge:not(.cngx-nav-group-content *) {
+    position: absolute;
+    inset-block-start: calc(var(--cngx-space-xs, 4px) / 2);
+    inset-inline-start: calc(50% + var(--cngx-space-xs, 4px));
+    margin: 0;
+  }
+
+  /* The flyout replaces the chevron in the stacked look. */
+  cngx-nav-rail[data-label-placement='below']
+    .cngx-nav-group:not(.cngx-nav-group-content *)::after {
+    display: none;
+  }
+}
