@@ -61,9 +61,9 @@ export interface CngxSelectCheckRadioContext<T = unknown> {
  * All nine composites pass it while the caret shows, that is unless
  * `[hideCaret]` is set; `open` (also `$implicit`) mirrors the panel's open
  * state. Assistive technology reads that state from `aria-expanded` on the
- * trigger. `CngxSelectShell` wraps the template in an `aria-hidden` span,
- * the other eight render it bare, so mark a caret glyph `aria-hidden`
- * yourself there.
+ * trigger. Every composite renders the template inside an `aria-hidden`
+ * span, so a text or icon caret stays out of the trigger's name without an
+ * `aria-hidden` of its own.
  */
 export interface CngxSelectCaretContext {
   readonly $implicit: boolean;

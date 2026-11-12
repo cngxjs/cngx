@@ -199,9 +199,11 @@
     }
     @if (resolvedShowCaret()) {
       @if (tpl.caret(); as caretT) {
-        <ng-container
-          *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
-        />
+        <span aria-hidden="true">
+          <ng-container
+            *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
+          />
+        </span>
       } @else if (caretGlyph(); as glyph) {
         <span aria-hidden="true" class="cngx-combobox__caret">
           <ng-container *ngTemplateOutlet="glyph" />

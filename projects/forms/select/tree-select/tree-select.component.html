@@ -160,9 +160,11 @@
     }
     @if (!hideCaret()) {
       @if (caretTpl(); as tpl) {
-        <ng-container
-          *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
-        />
+        <span aria-hidden="true">
+          <ng-container
+            *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
+          />
+        </span>
       } @else if (caretGlyph(); as glyph) {
         <span aria-hidden="true" class="cngx-tree-select__caret">
           <ng-container *ngTemplateOutlet="glyph" />
