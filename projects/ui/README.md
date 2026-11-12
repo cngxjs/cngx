@@ -360,6 +360,8 @@ language-pack copy names the landmark).
 A nav group opens as a flyout beside its head; `aria-expanded` stays the one
 state. See `projects/ui/nav-rail/README.md`.
 
+**Material theme:** `@use '@cngx/themes/material/nav-rail-theme'` - rail surface, flyout and the rows
+
 ### CngxToc (`@cngx/ui/toc`)
 
 "On this page" navigation rail. Renders a `<nav>` of anchor links from a

@@ -158,6 +158,23 @@ rail edge. The tooltip uses the `cngx-tooltip` skin and sits
 Row tokens (`--cngx-nav-link-*`, `--cngx-nav-icon-size`) come from the nav
 atoms and follow density.
 
+### Material
+
+```scss
+@use '@angular/material' as mat;
+@use '@cngx/themes/material/nav-rail-theme' as nav-rail;
+
+html {
+  @include nav-rail.theme($theme);
+}
+```
+
+`theme()` bridges the rail surface (`surface`), the flyout (`surface-container`,
+level 2), the stacked label size (`label-medium`) and the rows, header and
+footer. The aggregate `@cngx/themes/material/theme` includes the rail through
+`nav-rail.surface()`, since its sidenav bridge already covers the rows. The
+label tooltip takes `tooltip-theme`.
+
 ## A rail beside a secondary sidebar
 
 Apps with many sections often pair a rail of sections with a sidebar of the

@@ -60,6 +60,7 @@
 @use './interactive-controls-theme' as controls;
 @use './menu-theme' as menu;
 @use './metric-theme' as metric;
+@use './nav-rail-theme' as nav-rail;
 @use './option-theme' as option;
 @use './paginator-theme' as paginator;
 @use './password-strength-meter-theme' as password-strength-meter;
@@ -141,6 +142,8 @@
   @include segmented-progress.theme($theme);
   @include select.theme($theme);
   @include sidenav.theme($theme);
+  // Rows come from sidenav.theme above; the rail adds its surface and flyout.
+  @include nav-rail.surface($theme);
   @include skeleton.theme($theme);
   @include slider.theme($theme);
   @include speak.theme($theme);
