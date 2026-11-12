@@ -32,7 +32,6 @@ const ATOMS: {
   selector: string;
   axis: 'block' | 'inline';
   coarse?: { width: number; height: number };
-  hitArea?: '::before';
 }[] = [
   {
     name: 'checkbox',
@@ -64,14 +63,11 @@ const ATOMS: {
     selector: '.cngx-chip__remove',
     axis: 'inline',
   },
-  // The icon-button family keeps its visual box and grows the hit area
-  // through a centred ::before, so the pseudo-element is measured.
   {
     name: 'close-button',
     route: '/#/common/button/close-button/basic',
     selector: '.cngx-close-button',
     axis: 'block',
-    hitArea: '::before',
   },
   {
     name: 'button-toggle',
@@ -146,8 +142,6 @@ const ATOMS: {
     route: '/#/ui/breadcrumb/overflow/collapsed-menu',
     selector: '.cngx-breadcrumb__overflow-trigger',
     axis: 'block',
-    // A cngxIconMenuButton: the icon-button skin floors the ::before hit area.
-    hitArea: '::before',
   },
   // Third-tier sweep. Only always-rendered surfaces appear here. Interaction-
   // gated hosts (tab-overflow popover, breadcrumb-siblings dropdown, tree-select
@@ -177,7 +171,6 @@ const ATOMS: {
     route: '/#/ui/feedback/alert/closable',
     selector: '.cngx-alert__dismiss',
     axis: 'inline',
-    hitArea: '::before',
   },
   {
     name: 'tab-nav-link',
@@ -206,22 +199,9 @@ async function open(
   return { page, close: () => context.close() };
 }
 
-async function constrainedSize(
-  page: Page,
-  selector: string,
-  axis: 'block' | 'inline',
-  hitArea?: '::before',
-) {
+async function constrainedSize(page: Page, selector: string, axis: 'block' | 'inline') {
   const target = page.locator(selector).first();
   await expect(target).toBeVisible();
-  if (hitArea) {
-    const size = await target.evaluate(
-      (el, [pseudo, prop]) => parseFloat(getComputedStyle(el, pseudo).getPropertyValue(prop)),
-      [hitArea, axis === 'block' ? 'block-size' : 'inline-size'] as const,
-    );
-    expect(Number.isNaN(size), `no ${hitArea} hit area on ${selector}`).toBe(false);
-    return size;
-  }
   const box = await target.boundingBox();
   expect(box, `no bounding box for ${selector}`).not.toBeNull();
   return axis === 'block' ? box!.height : box!.width;
@@ -237,7 +217,7 @@ for (const atom of ATOMS) {
     test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
     const { page, close } = await open(browser, atom.route, 'coarse', atom.coarse);
     try {
-      const size = await constrainedSize(page, atom.selector, atom.axis, atom.hitArea);
+      const size = await constrainedSize(page, atom.selector, atom.axis);
       expect(size).toBeGreaterThanOrEqual(FLOOR);
     } finally {
       await close();
@@ -249,7 +229,7 @@ for (const atom of ATOMS) {
   }) => {
     const { page, close } = await open(browser, atom.route, 'fine');
     try {
-      const size = await constrainedSize(page, atom.selector, atom.axis, atom.hitArea);
+      const size = await constrainedSize(page, atom.selector, atom.axis);
       expect(size).toBeLessThan(FLOOR);
     } finally {
       await close();

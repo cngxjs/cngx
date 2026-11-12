@@ -86,6 +86,8 @@ describe('context-menu trigger core - submenu keyboard routing', () => {
       show: () => visible.set(true),
       setAnchorElement: vi.fn(),
       id: () => 'test',
+      claimPositionTryFallbacks: vi.fn(),
+      releasePositionTryFallbacks: vi.fn(),
     };
     core = createContextMenuTriggerCore({
       menu: () => root.host,

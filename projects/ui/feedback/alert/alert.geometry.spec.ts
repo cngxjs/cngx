@@ -63,24 +63,18 @@ describe('CngxAlert geometry', () => {
     expect(computedValue(body, 'min-width')).toBe('0px');
   });
 
-  it('floors the dismiss hit area to the pointer-derived minimum', () => {
+  it('floors the dismiss box to the pointer-derived minimum', () => {
     const host = mount();
     const dismiss = query(host, '.cngx-alert__dismiss');
-    // The dismiss is a cngxCloseButton: its visual box keeps its size and the
-    // centred ::before hit area is max(100%, var(--cngx-target-min, 0px)), inert
-    // on a fine pointer and lifted to the floor on a coarse one.
-    // 100% resolves against the padding box (the containing block of the
-    // absolutely positioned pseudo-element), so it is compared to clientWidth.
-    const box = dismiss.getBoundingClientRect();
-    const hit = (prop: 'inline-size' | 'block-size') =>
-      parseFloat(getComputedStyle(dismiss, '::before').getPropertyValue(prop));
-    expect(Math.abs(hit('inline-size') - dismiss.clientWidth)).toBeLessThanOrEqual(1);
-    expect(Math.abs(hit('block-size') - dismiss.clientHeight)).toBeLessThanOrEqual(1);
-    expect(hit('inline-size')).toBeLessThan(44);
+    // The dismiss is a cngxCloseButton: its box is
+    // max(size, var(--cngx-target-min, 0px)) on both axes, inert on a fine
+    // pointer and lifted to the floor on a coarse one.
+    const box = () => dismiss.getBoundingClientRect();
+    expect(box().width).toBeLessThan(44);
+    expect(box().height).toBeLessThan(44);
     host.style.setProperty('--cngx-target-min', '44px');
-    expect(hit('inline-size')).toBe(44);
-    expect(hit('block-size')).toBe(44);
-    expect(dismiss.getBoundingClientRect().width).toBeCloseTo(box.width, 0);
+    expect(box().width).toBeCloseTo(44, 0);
+    expect(box().height).toBeCloseTo(44, 0);
   });
 });
 

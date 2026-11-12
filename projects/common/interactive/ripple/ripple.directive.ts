@@ -14,8 +14,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * Waves render into a lazily created `<span class="cngx-ripple__container" aria-hidden="true">`
  * that `cngx-ripple.css` lays over the host (`inset: 0`, `border-radius: inherit`,
  * `overflow: hidden`, `pointer-events: none`). Only the wave is clipped to the host
- * shape; the host itself is never clipped, so a hit-area pseudo-element (the touch
- * floor of `cngxButton` / `cngxIconButton`), a corner badge or any other overhang
+ * shape; the host itself is never clipped, so a corner badge or any other overhang
  * stays intact. The host gets the `cngx-ripple` class, which sets `position: relative`
  * at zero specificity, so a host that is already positioned keeps its own value.
  *

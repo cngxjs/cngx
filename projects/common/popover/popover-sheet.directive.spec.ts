@@ -7,6 +7,7 @@ import { WINDOW } from '@cngx/core/tokens';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxPopover } from './popover.directive';
+import { CngxPopoverAnchor } from './popover-anchor.directive';
 import { CngxPopoverTrigger } from './popover-trigger.directive';
 import type { CngxPopoverPresentationRequest } from './popover-sheet.directive';
 import { CngxPopoverSheet } from './popover-sheet.directive';
@@ -169,6 +170,28 @@ class SheetHost {
 })
 class TriggerSheetHost {
   readonly request = signal<CngxPopoverPresentationRequest>('anchored');
+}
+
+@Component({
+  template: `
+    <div class="box" [cngxPopoverAnchor]="pop">
+      <button type="button" class="trigger" [cngxPopoverTrigger]="pop">Open</button>
+    </div>
+    <div cngxPopover #pop="cngxPopover" cngxPopoverSheet="sheet">
+      <h2 cngxPopoverSheetTitle>Title</h2>
+      <button type="button" class="item">Item</button>
+    </div>
+  `,
+  imports: [
+    CngxPopover,
+    CngxPopoverAnchor,
+    CngxPopoverTrigger,
+    CngxPopoverSheet,
+    CngxPopoverSheetTitle,
+  ],
+})
+class BoxAnchorSheetHost {
+  readonly popover = viewChild.required('pop', { read: CngxPopover });
 }
 
 @Component({
@@ -764,6 +787,30 @@ describe('CngxPopoverSheet', () => {
       ctx.host.popover().hide();
       expect(document.activeElement).toBe(opener);
       gone.remove();
+    });
+
+    it('returns focus to the trigger when the explicit anchor box cannot take it', () => {
+      const fixture = TestBed.createComponent(BoxAnchorSheetHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const pop = fixture.componentInstance.popover();
+      const panel = pop.elementRef.nativeElement as unknown as Record<string, unknown>;
+      panel['showPopover'] = vi.fn();
+      panel['hidePopover'] = vi.fn();
+      const root = fixture.nativeElement as HTMLElement;
+      const box = root.querySelector<HTMLElement>('.box')!;
+      const trigger = root.querySelector<HTMLButtonElement>('.trigger')!;
+      expect(pop.anchorElement()).toBe(box);
+
+      // iOS tap: the trigger is clicked but never focused.
+      (document.activeElement as HTMLElement | null)?.blur();
+      pop.show();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(pop.elementRef.nativeElement.contains(document.activeElement)).toBe(true);
+
+      pop.hide();
+      expect(document.activeElement).toBe(trigger);
     });
 
     it('restores focus without a close transition too', () => {

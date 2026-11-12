@@ -189,6 +189,7 @@ export const COPY_TOKENS = [
       'dismissOnScroll',
       'dismissOnBlur',
       'dismissOnFocusOut',
+      'tryFallbacks',
     ],
   },
   {

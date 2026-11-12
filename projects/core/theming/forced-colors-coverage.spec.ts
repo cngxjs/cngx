@@ -94,6 +94,7 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   'projects/common/button/button.component.css',
   'projects/common/theming/components/cngx-listbox.css',
   'projects/common/theming/components/cngx-menu.css',
+  'projects/common/theming/components/cngx-async.css',
   // @cngx/common/data (Phase B) - current-page tint + goal bar background breaks
   'projects/common/data/paginate/styles/paginator-base.css',
   'projects/common/data/display/goal/goal.component.css',
@@ -328,7 +329,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(53);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(54);
   });
 });
 

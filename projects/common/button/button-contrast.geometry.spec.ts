@@ -38,6 +38,7 @@ const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
             Delete
           </button>
         }
+        <button cngxButton="outline" class="o-neutral-{{ scheme }}">Cancel</button>
         <span class="surface-{{ scheme }}" style="color: var(--cngx-color-surface)"></span>
       </p>
     }
@@ -107,5 +108,15 @@ describe('tone text contrast (default palette)', () => {
     const [l1, a1, b1] = oklabOf(computedValue(query(root, `.t-${variant}-primary-${scheme}`), 'color'));
     const [l2, a2, b2] = oklabOf(computedValue(query(root, `.t-${variant}-danger-${scheme}`), 'color'));
     expect(Math.hypot(l1 - l2, a1 - a2, b1 - b2)).toBeGreaterThanOrEqual(0.08);
+  });
+});
+
+describe('neutral outline boundary contrast (default palette)', () => {
+  it.each(['light', 'dark'] as const)('clears 3:1 against the surface in the %s scheme', (scheme) => {
+    const root = mount();
+    const surface = computedValue(query(root, `.surface-${scheme}`), 'color');
+    const border = computedValue(query(root, `.o-neutral-${scheme}`), 'border-top-color');
+    const ratio = contrastRatio(border, surface);
+    expect(ratio, `${scheme}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   });
 });

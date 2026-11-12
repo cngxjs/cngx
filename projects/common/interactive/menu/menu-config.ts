@@ -11,6 +11,7 @@ import {
 import { createLanguageSection } from '@cngx/core/i18n';
 
 import { CNGX_MENU_LANGUAGE_EN, type CngxMenuLanguageSection } from '../i18n/menu-language-section';
+import { CNGX_MENU_TRY_FALLBACKS } from './submenu-defaults';
 
 /**
  * Localised UI strings the menu announces or otherwise renders. English by
@@ -70,6 +71,14 @@ export interface CngxMenuConfig {
    * {@link withDismissOnFocusOut}.
    */
   readonly dismissOnFocusOut: boolean;
+  /**
+   * CSS `<try-tactic>` chain the menu and context-menu triggers claim as the popover's
+   * `position-try-fallbacks`, so a menu without room flips instead of
+   * overflowing the viewport. A `[positionTryFallbacks]` bound on the
+   * popover wins; an empty list claims nothing. Default
+   * {@link CNGX_MENU_TRY_FALLBACKS}. Set via {@link withTryFallbacks}.
+   */
+  readonly tryFallbacks: readonly string[];
 }
 
 /**
@@ -110,6 +119,7 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
   dismissOnScroll: false,
   dismissOnBlur: true,
   dismissOnFocusOut: true,
+  tryFallbacks: CNGX_MENU_TRY_FALLBACKS,
 };
 
 /** @internal The menu section of the active pack over the English section. */

@@ -41,6 +41,8 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
   releaseControls(owner: object): void;
   claimRestoreFocus(owner: object, value: boolean): void;
   releaseRestoreFocus(owner: object): void;
+  claimPositionTryFallbacks(owner: object, value: readonly string[]): void;
+  releasePositionTryFallbacks(owner: object): void;
 }
 
 /**
@@ -98,6 +100,12 @@ interface PopoverController extends CngxMenuDismissPopoverRef {
  * controls hint, so `aria-controls` names the `role="menu"` element. A
  * trigger without a co-hosted `[cngxPopoverTrigger]` emits none of the
  * three (dev builds warn [`CNGX1074`](/error-codes/cngx1074.md)).
+ *
+ * The trigger also claims a `position-try-fallbacks` chain on the popover
+ * (`CngxMenuConfig.tryFallbacks`, default `CNGX_MENU_TRY_FALLBACKS`), so a
+ * menu without room below opens above its trigger. A `[positionTryFallbacks]`
+ * bound on the popover wins; `withTryFallbacks([])` turns the claim off
+ * app-wide or per scope.
  *
  * ### Dismissal
  *
@@ -203,11 +211,13 @@ export class CngxMenuTrigger {
         pop.claimHaspopup(this, 'menu');
         pop.claimControls(this, menu.id);
         pop.claimRestoreFocus(this, false);
+        pop.claimPositionTryFallbacks(this, this.menuConfig.tryFallbacks);
       });
       onCleanup(() => {
         pop.releaseHaspopup(this);
         pop.releaseControls(this);
         pop.releaseRestoreFocus(this);
+        pop.releasePositionTryFallbacks(this);
       });
     });
     effect(() => {

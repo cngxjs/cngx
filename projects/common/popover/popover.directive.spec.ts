@@ -101,7 +101,7 @@ class OutsideClickHost {
   imports: [CngxPopover],
 })
 class FallbackHost {
-  readonly fallbacks = signal<readonly PopoverPositionTryFallback[]>([]);
+  readonly fallbacks = signal<readonly PopoverPositionTryFallback[] | undefined>([]);
   readonly popover = viewChild.required(CngxPopover);
 }
 
@@ -600,7 +600,10 @@ describe('CngxPopover', () => {
   });
 
   describe('opened and closed outputs', () => {
-    function spyOutputs(popover: CngxPopover): { opened: ReturnType<typeof vi.fn>; closed: ReturnType<typeof vi.fn> } {
+    function spyOutputs(popover: CngxPopover): {
+      opened: ReturnType<typeof vi.fn>;
+      closed: ReturnType<typeof vi.fn>;
+    } {
       const opened = vi.fn();
       const closed = vi.fn();
       popover.opened.subscribe(opened);
@@ -786,6 +789,51 @@ describe('CngxPopover', () => {
       fixture.componentInstance.fallbacks.set([]);
       fixture.detectChanges();
       TestBed.flushEffects();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+  });
+
+  describe('positionTryFallbacks claims', () => {
+    const owner = {};
+
+    function mountFallbacks(bound: readonly PopoverPositionTryFallback[] | undefined) {
+      const fixture = TestBed.createComponent(FallbackHost);
+      fixture.componentInstance.fallbacks.set(bound);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const popover = fixture.componentInstance.popover();
+      const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+      return { popover, popoverEl, flush };
+    }
+
+    it('falls back to a composer claim while the input is unbound, and drops it on release', () => {
+      const { popover, popoverEl, flush } = mountFallbacks(undefined);
+      popover.claimPositionTryFallbacks(owner, ['flip-block', 'flip-inline']);
+      flush();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe(
+        'flip-block, flip-inline',
+      );
+
+      popover.releasePositionTryFallbacks(owner);
+      flush();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+    });
+
+    it('lets a bound list win over a claim', () => {
+      const { popover, popoverEl, flush } = mountFallbacks(['flip-inline']);
+      popover.claimPositionTryFallbacks(owner, ['flip-block']);
+      flush();
+      expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+    });
+
+    it('lets a bound empty list opt out of a claim', () => {
+      const { popover, popoverEl, flush } = mountFallbacks([]);
+      popover.claimPositionTryFallbacks(owner, ['flip-block']);
+      flush();
       expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
     });
   });

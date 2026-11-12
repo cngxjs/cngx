@@ -23,8 +23,8 @@
 // - tone `primary` -> primary / on-primary, written to the strong fill pair
 //   the solid fill reads (solid = mat-flat-button)
 // - tone `danger` -> error / on-error, written to the strong danger pair
-// - variant `outline` -> the `outline` role for the neutral border
-//   (mat-stroked-button)
+// - variant `outline` -> the `outline` role on the 3:1 border rung the
+//   neutral boundary reads (mat-stroked-button)
 // - variant `secondary` -> the `*-container` roles through the three
 //   --cngx-button-secondary-* hooks (neutral = secondary-container, the M3
 //   tonal button; primary = primary-container; danger = error-container)
@@ -154,7 +154,7 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
       --cngx-button-hover-shade: var(--mat-sys-on-error);
     }
     @include bridge.on(".cngx-button[data-variant='outline']") {
-      --cngx-color-border: var(--mat-sys-outline);
+      --cngx-color-border-strong: var(--mat-sys-outline);
     }
     @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='neutral']") {
       @include _tonal(secondary-container, on-secondary-container);

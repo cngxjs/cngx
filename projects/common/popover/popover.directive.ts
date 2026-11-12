@@ -345,12 +345,16 @@ export class CngxPopover {
   readonly placement = input<PopoverPlacement>('bottom');
 
   /**
-   * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Empty
-   * array (default) means the host does not write the property at all.
-   * Non-empty entries are written verbatim, comma-joined, in declaration
-   * order. Spec-compatible vocabulary only (no cngx placement tokens).
+   * CSS `<try-tactic>` fallbacks for `position-try-fallbacks`. Unbound
+   * (default) defers to a composer claim ({@link claimPositionTryFallbacks},
+   * a menu trigger claims a flip chain), else writes nothing. A bound
+   * empty array writes nothing and opts out of every claim. Non-empty
+   * entries are written verbatim, comma-joined, in declaration order.
+   * Spec-compatible vocabulary only (no cngx placement tokens).
    */
-  readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[]>([]);
+  readonly positionTryFallbacks = input<readonly PopoverPositionTryFallback[] | undefined>(
+    undefined,
+  );
 
   /**
    * Gap between anchor and popover in px, on the placement's main axis
@@ -475,7 +479,8 @@ export class CngxPopover {
   /**
    * Programmatic override of {@link positionTryFallbacks}, paired with
    * {@link placementOverride} so a submenu wiring installs the flip chain too.
-   * `null` (default) defers to the `[positionTryFallbacks]` input.
+   * `null` (default) defers to the `[positionTryFallbacks]` input, then to
+   * the last live composer claim ({@link claimPositionTryFallbacks}).
    */
   private readonly positionTryFallbacksOverrideState = signal<
     readonly PopoverPositionTryFallback[] | null
@@ -487,9 +492,20 @@ export class CngxPopover {
    */
   readonly positionTryFallbacksOverride = this.positionTryFallbacksOverrideState.asReadonly();
 
-  /** Effective try-fallbacks - override wins, else the `[positionTryFallbacks]` input. */
+  /** Owner-keyed claims behind the composer default of {@link positionTryFallbacks}. */
+  private readonly positionTryFallbacksClaims =
+    createPopoverHintClaims<readonly PopoverPositionTryFallback[]>();
+
+  /**
+   * Effective try-fallbacks: the override, else the `[positionTryFallbacks]`
+   * input, else the last live composer claim, else none.
+   */
   private readonly effectivePositionTryFallbacks = computed<readonly PopoverPositionTryFallback[]>(
-    () => this.positionTryFallbacksOverride() ?? this.positionTryFallbacks(),
+    () =>
+      this.positionTryFallbacksOverride() ??
+      this.positionTryFallbacks() ??
+      this.positionTryFallbacksClaims.current() ??
+      [],
   );
 
   private readonly stateSignal = signal<PopoverState>('closed');
@@ -525,6 +541,14 @@ export class CngxPopover {
    * organisms via {@link setAnchorElement}.
    */
   private readonly anchorElementState = signal<HTMLElement | null>(null);
+
+  /**
+   * @internal The implicit anchor ({@link setAnchorElement}) even while an
+   * explicit anchor shadows it. Read by `CngxPopoverSheet` only: its focus
+   * fallback needs a focusable opener when the explicit anchor is a
+   * non-focusable box.
+   */
+  readonly implicitAnchorElement = this.anchorElementState.asReadonly();
 
   /** Explicit anchor slot, claimed by `CngxPopoverAnchor`. */
   private readonly explicitAnchorElementSlot = createSlotRegistry<HTMLElement>();
@@ -907,6 +931,26 @@ export class CngxPopover {
   }
 
   /**
+   * Claim the `position-try-fallbacks` chain the popover falls back to
+   * while the consumer binds no `[positionTryFallbacks]`. Composers (menu
+   * wirings) claim with themselves as `owner` and release on destroy. The
+   * last live claim wins; a re-claim by the same owner replaces its
+   * earlier one. A bound list, including an empty one, wins over every
+   * claim.
+   */
+  claimPositionTryFallbacks(owner: object, value: readonly PopoverPositionTryFallback[]): void {
+    this.positionTryFallbacksClaims.claim(owner, value);
+  }
+
+  /**
+   * Release `owner`'s `position-try-fallbacks` claim. Release removes only
+   * this owner's claim, so a co-composer's chain survives it.
+   */
+  releasePositionTryFallbacks(owner: object): void {
+    this.positionTryFallbacksClaims.release(owner);
+  }
+
+  /**
    * Claim the focus-return hint triggers fall back to when the consumer
    * binds no `[restoreFocus]`. The last live claim wins; a re-claim by the
    * same owner replaces its earlier one.
@@ -972,7 +1016,8 @@ export class CngxPopover {
 
   /**
    * @internal Install or clear the programmatic {@link positionTryFallbacks}
-   * override. `null` defers back to the `[positionTryFallbacks]` input.
+   * override. `null` defers back to the `[positionTryFallbacks]` input, then
+   * to the last live composer claim.
    */
   setPositionTryFallbacksOverride(value: readonly PopoverPositionTryFallback[] | null): void {
     this.positionTryFallbacksOverrideState.set(value);

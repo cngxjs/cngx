@@ -1,13 +1,16 @@
-import { Component, signal, ViewEncapsulation } from '@angular/core';
+import { Component, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxButton, type CngxButtonSize } from '@cngx/common/button';
 import { CngxAsyncClick, CngxMenu, CngxMenuItem, type AsyncAction } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
+import { provideDirection } from '@cngx/core';
 import { accessibleName, computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_BUTTON_CARET_ICON } from './caret-icon.token';
+import { CngxIconMenuButton } from './icon-menu-button.component';
 import { CngxMenuButton } from './menu-button.component';
+import { CngxSplitButton } from './split-button.directive';
 
 // Runs in a real Chromium (the `test-geometry` target): the menu button must
 // sit on the cngxButton row at every size and keep its caret at 1em of the
@@ -38,7 +41,14 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         </p>
       }
       <p>
-        <button cngxMenuButton class="m-busy" [cngxAsyncClick]="action" [showDelay]="0" [menu]="menu" [popover]="pop">
+        <button
+          cngxMenuButton
+          class="m-busy"
+          [cngxAsyncClick]="action"
+          [showDelay]="0"
+          [menu]="menu"
+          [popover]="pop"
+        >
           Export
         </button>
       </p>
@@ -80,6 +90,111 @@ class CustomCaret {}
   `,
 })
 class CustomCaretHost {}
+
+@Component({
+  selector: 'cngx-split-button-touch-host',
+  standalone: true,
+  imports: [CngxButton, CngxIconMenuButton, CngxSplitButton, CngxMenu, CngxMenuItem, CngxPopover],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button-group.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div data-touch="on">
+      @for (size of sizes; track size) {
+        <div cngxSplitButton class="s-{{ size }}" [size]="size" aria-label="Publish">
+          <button cngxButton class="main">Publish</button>
+          <button cngxIconMenuButton class="caret" [menu]="menu" [popover]="pop"></button>
+        </div>
+      }
+      <div cngxPopover #pop="cngxPopover">
+        <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+          <li cngxMenuItem value="schedule">Schedule</li>
+        </ul>
+      </div>
+    </div>
+  `,
+})
+class SplitTouchHost {
+  readonly sizes: readonly CngxButtonSize[] = ['xs', 'sm', 'md', 'lg'];
+}
+
+@Component({
+  selector: 'cngx-split-button-anchor-host',
+  standalone: true,
+  imports: [CngxButton, CngxIconMenuButton, CngxSplitButton, CngxMenu, CngxMenuItem, CngxPopover],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-popover.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div [attr.dir]="dir()" style="padding: 0 40px">
+      <div cngxSplitButton class="split" aria-label="Publish">
+        <button cngxButton class="main" style="inline-size: 160px">Publish</button>
+        <button cngxIconMenuButton class="caret" [menu]="menu" [popover]="pop"></button>
+      </div>
+      <div
+        cngxPopover
+        #pop="cngxPopover"
+        class="panel"
+        placement="bottom-start"
+        style="width: 120px; height: 40px"
+      >
+        <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+          <li cngxMenuItem value="schedule">Schedule</li>
+        </ul>
+      </div>
+    </div>
+  `,
+})
+class SplitAnchorHost {
+  readonly dir = signal<'ltr' | 'rtl'>('ltr');
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  selector: 'cngx-split-button-flip-host',
+  standalone: true,
+  imports: [CngxButton, CngxIconMenuButton, CngxSplitButton, CngxMenu, CngxMenuItem, CngxPopover],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/reset.css',
+    '../../core/theming/base.css',
+    '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-popover.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div
+      cngxSplitButton
+      class="split"
+      aria-label="Publish"
+      style="position: fixed; inset-block-end: 8px; inset-inline-start: 40px"
+    >
+      <button cngxButton>Publish</button>
+      <button cngxIconMenuButton class="caret" [menu]="menu" [popover]="pop"></button>
+    </div>
+    <div cngxPopover #pop="cngxPopover" class="panel" placement="bottom-end" style="height: 160px">
+      <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="schedule">Schedule</li>
+      </ul>
+    </div>
+  `,
+})
+class SplitFlipHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -206,5 +321,91 @@ describe('CngxMenuButton geometry', () => {
     const { root } = mount('comfortable', 'reduced');
     const caret = query(root, '.m-md .cngx-menu-button__caret');
     expect(computedValue(caret, 'transition-duration')).toBe('0s');
+  });
+});
+
+describe('CngxSplitButton geometry: touch', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  it('floors both halves to the same 44px block size on a coarse pointer', () => {
+    const fixture = TestBed.createComponent(SplitTouchHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    for (const size of ['xs', 'sm', 'md', 'lg'] as const) {
+      const split = query(mountedRoot, `.s-${size}`);
+      const main = query(split, '.main').getBoundingClientRect();
+      const caret = query(split, '.caret').getBoundingClientRect();
+      expect(main.height, `${size} main`).toBeGreaterThanOrEqual(44 - 0.5);
+      expect(caret.height, `${size} caret`).toBeCloseTo(main.height, 0);
+      expect(caret.width, `${size} caret inline`).toBeGreaterThanOrEqual(44 - 0.5);
+    }
+  });
+});
+
+describe('CngxSplitButton geometry: menu anchor', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    it(`hangs the menu under the group start edge, not the caret (${dir})`, async () => {
+      // The popover mirrors its placement from CNGX_DIRECTION, not the DOM dir.
+      TestBed.configureTestingModule({ providers: [provideDirection(dir)] });
+      const fixture = TestBed.createComponent(SplitAnchorHost);
+      fixture.componentInstance.dir.set(dir);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      const popover = fixture.componentInstance.popover();
+      popover.show();
+      fixture.detectChanges();
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+      const group = query(mountedRoot, '.split').getBoundingClientRect();
+      const caret = query(mountedRoot, '.caret').getBoundingClientRect();
+      const panel = query(mountedRoot, '.panel').getBoundingClientRect();
+      const groupStart = dir === 'ltr' ? group.left : group.right;
+      const caretStart = dir === 'ltr' ? caret.left : caret.right;
+      const panelStart = dir === 'ltr' ? panel.left : panel.right;
+      expect(Math.abs(groupStart - caretStart)).toBeGreaterThan(40);
+      expect(Math.abs(panelStart - groupStart)).toBeLessThanOrEqual(1);
+      expect(panel.top).toBeGreaterThanOrEqual(group.bottom - 1);
+      popover.hide();
+    });
+  }
+});
+
+describe('CngxSplitButton geometry: menu flip', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  it('opens the menu above the group when the viewport has no room below', async () => {
+    const fixture = TestBed.createComponent(SplitFlipHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const popover = fixture.componentInstance.popover();
+    popover.show();
+    fixture.detectChanges();
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+    const group = query(mountedRoot, '.split').getBoundingClientRect();
+    const panel = query(mountedRoot, '.panel').getBoundingClientRect();
+    expect(panel.bottom).toBeLessThanOrEqual(group.top + 1);
+    expect(panel.top).toBeGreaterThanOrEqual(0);
+    popover.hide();
   });
 });

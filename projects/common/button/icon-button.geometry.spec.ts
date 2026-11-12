@@ -10,8 +10,8 @@ import { CngxIconButton } from './icon-button.component';
 import { CngxButtonStart } from './slots';
 
 // Runs in a real Chromium (the `test-geometry` target): the square box, the
-// pseudo-element hit area and the md parity with CngxButton only exist after
-// layout. jsdom reports `''` for every read.
+// touch floor and the md parity with CngxButton only exist after layout.
+// jsdom reports `''` for every read.
 
 type Density = 'comfortable' | 'compact' | 'spacious';
 
@@ -28,7 +28,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div [attr.data-density]="density()" [attr.data-touch]="touch()">
+    <div [attr.data-density]="density()" [attr.data-touch]="touch()" [attr.dir]="dir()">
       @for (size of sizes; track size) {
         <p><button cngxIconButton class="i-{{ size }}" [size]="size" aria-label="Add">+</button></p>
       }
@@ -45,14 +45,16 @@ class GeometryHost {
   readonly sizes: readonly CngxButtonSize[] = ['xs', 'sm', 'md', 'lg'];
   readonly density = signal<Density>('comfortable');
   readonly touch = signal<'on' | null>(null);
+  readonly dir = signal<'rtl' | null>(null);
 }
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(density: Density = 'comfortable', touch = false): HTMLElement {
+function mount(density: Density = 'comfortable', touch = false, rtl = false): HTMLElement {
   const fixture = TestBed.createComponent(GeometryHost);
   fixture.componentInstance.density.set(density);
   fixture.componentInstance.touch.set(touch ? 'on' : null);
+  fixture.componentInstance.dir.set(rtl ? 'rtl' : null);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -65,11 +67,6 @@ function query(root: HTMLElement, selector: string): HTMLElement {
     throw new Error(`${selector} did not render`);
   }
   return el as HTMLElement;
-}
-
-function pseudoSize(el: Element): { width: number; height: number } {
-  const style = getComputedStyle(el, '::before');
-  return { width: parseFloat(style.width), height: parseFloat(style.height) };
 }
 
 afterEach(() => {
@@ -106,22 +103,20 @@ describe.each(['comfortable', 'compact', 'spacious'] as const)('CngxIconButton g
 });
 
 describe('CngxIconButton geometry: touch', () => {
-  it('keeps the visual box and grows the hit area to 44px on a coarse pointer', () => {
-    const fine = query(mount(), '.i-sm').getBoundingClientRect();
-    mountedRoot?.remove();
-    const btn = query(mount('comfortable', true), '.i-sm');
-    const coarse = btn.getBoundingClientRect();
-    expect(coarse.height).toBeCloseTo(fine.height, 0);
-    expect(coarse.width).toBeCloseTo(fine.width, 0);
-    const hit = pseudoSize(btn);
-    expect(hit.width).toBeGreaterThanOrEqual(44 - 0.5);
-    expect(hit.height).toBeGreaterThanOrEqual(44 - 0.5);
+  it('floors every size and the default close button to a 44px square on a coarse pointer', () => {
+    const root = mount('comfortable', true);
+    for (const selector of ['.i-xs', '.i-sm', '.i-md', '.i-lg', '.c-default']) {
+      const rect = query(root, selector).getBoundingClientRect();
+      expect(rect.width, selector).toBeGreaterThanOrEqual(44 - 0.5);
+      expect(rect.height, selector).toBeGreaterThanOrEqual(44 - 0.5);
+      expect(rect.width, selector).toBeCloseTo(rect.height, 0);
+    }
   });
 
-  it('grows the default close button hit area to 44px on a coarse pointer', () => {
-    const hit = pseudoSize(query(mount('comfortable', true), '.c-default'));
-    expect(hit.width).toBeGreaterThanOrEqual(44 - 0.5);
-    expect(hit.height).toBeGreaterThanOrEqual(44 - 0.5);
+  it('keeps the design size on a fine pointer', () => {
+    const rect = query(mount(), '.i-xs').getBoundingClientRect();
+    expect(rect.height).toBeLessThan(44 - 0.5);
+    expect(rect.width).toBeCloseTo(rect.height, 0);
   });
 
   it('floors the spacing between adjacent icon buttons on a coarse pointer', () => {
@@ -131,12 +126,33 @@ describe('CngxIconButton geometry: touch', () => {
     expect(second.left - first.right).toBeGreaterThanOrEqual(8 - 0.5);
   });
 
-  it('keeps the hit area at the box size on a fine pointer', () => {
-    const btn = query(mount(), '.i-md');
-    const rect = btn.getBoundingClientRect();
-    // 100% of the padding box: the two border pixels short of the box.
-    expect(pseudoSize(btn).width).toBeGreaterThanOrEqual(rect.width - 2.5);
-    expect(pseudoSize(btn).width).toBeLessThanOrEqual(rect.width);
+  it('hits the button on every point of the centred 44px square under dir="rtl"', () => {
+    const root = mount('comfortable', true, true);
+    for (const selector of ['.i-xs', '.i-sm', '.c-default']) {
+      const btn = query(root, selector);
+      btn.scrollIntoView({ block: 'center', inline: 'center' });
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const reach = 22 - 1;
+      // Hit testing follows the rounded corner, so the corner probes sit one
+      // radius in from the square's corners.
+      const corner = reach - parseFloat(getComputedStyle(btn).borderTopLeftRadius);
+      for (const [dx, dy] of [
+        [0, 0],
+        [-reach, 0],
+        [reach, 0],
+        [0, -reach],
+        [0, reach],
+        [-corner, -corner],
+        [corner, -corner],
+        [-corner, corner],
+        [corner, corner],
+      ]) {
+        const hit = document.elementFromPoint(cx + dx, cy + dy);
+        expect(hit && btn.contains(hit), `${selector} at ${dx},${dy}`).toBe(true);
+      }
+    }
   });
 });
 

@@ -451,10 +451,27 @@
     }
 
     /* Keep the title clear of the corner-pinned close - reserve only when a
-       close actually renders, so a close-less header keeps its full width. */
+       close actually renders, so a close-less header keeps its full width.
+       Both lengths follow the close box, which floors to --cngx-target-min
+       on a coarse pointer. */
     .cngx-popover-panel__header-row:has(.cngx-popover-panel__close)
       > .cngx-popover-panel__header {
-      padding-inline-end: calc(var(--cngx-popover-panel-close-size, 28px) + 8px);
+      padding-inline-end: calc(
+        max(var(--cngx-popover-panel-close-size, 28px), var(--cngx-target-min, 0px)) + 8px
+      );
+    }
+
+    /* The row ends below the close, so the body never starts under it; on a
+       fine pointer this is 16px, below the title line, and inert. The padding
+       token is registered inherits:false, so the row takes the host's value
+       explicitly; otherwise it reads the 16px initial under density or an
+       override. */
+    .cngx-popover-panel__header-row:has(.cngx-popover-panel__close) {
+      --cngx-popover-panel-padding: inherit;
+      min-block-size: calc(
+        max(var(--cngx-popover-panel-close-size, 28px), var(--cngx-target-min, 0px)) +
+          var(--cngx-popover-panel-close-offset, 4px) - var(--cngx-popover-panel-padding, 16px)
+      );
     }
 
     /* Pin the close to the panel's top inline-end corner (the panel host is

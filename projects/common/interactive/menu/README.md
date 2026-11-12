@@ -195,6 +195,7 @@ For a component-scoped override use `provideMenuConfigAt(...)` in `viewProviders
 | `withSubmenuOpenDelay(ms)` | `0` | Reserved for hover-driven menubar implementations. |
 | `withSubmenuCloseDelay(ms)` | `150` | Grace period before a hover-out closes the submenu. |
 | `withCloseOnSelect(close)` | `true` | Whether activating a leaf item closes the menu. |
+| `withTryFallbacks(chain)` | `CNGX_MENU_TRY_FALLBACKS` | `position-try-fallbacks` chain the menu trigger and the context-menu triggers claim on their popover, so a clipped menu flips. `[]` opts out; a `[positionTryFallbacks]` binding on the popover still wins. |
 
 `provideMenuConfig(...)` and `provideMenuConfigAt(...)` are the lower-level entry points if a consumer wants to bypass the aggregator. `injectMenuConfig()` resolves the merged config from the current injection scope.
 

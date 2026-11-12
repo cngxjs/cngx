@@ -26,8 +26,8 @@ import { provideButtonHost } from './button-host.token';
  * and the disabled reason.
  *
  * The visual box follows `size` and stays square; on a coarse pointer the
- * hit area grows to `--cngx-target-min` through a pseudo-element, so the
- * icon keeps its design size.
+ * box floors to `--cngx-target-min` on both axes, so the box is the hit
+ * area and the icon keeps its design size.
  *
  * ```html
  * <button cngxIconButton aria-label="Delete row" tone="danger" (click)="remove()">
