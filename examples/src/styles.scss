@@ -1630,12 +1630,10 @@ cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sid
   color: inherit;
 }
 .demo-sidenav__link--plain {
-  display: block;
   border-left: 0;
   justify-content: initial;
 }
 .demo-sidenav__link--sub {
-  display: block;
   padding: 0.4rem 1rem 0.4rem calc(1rem + 14px);
   text-decoration: none;
   font-size: 0.8rem;
@@ -1738,6 +1736,7 @@ cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sid
   resize: horizontal;
   overflow: auto;
   width: 40rem;
+  margin-top: var(--cngx-space-md, 1rem);
   min-width: 20rem;
   max-width: none;
   border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
