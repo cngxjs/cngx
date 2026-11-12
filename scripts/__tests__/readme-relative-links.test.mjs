@@ -23,7 +23,7 @@ const PROJECTS = join(ROOT, 'projects');
 const DOCS_SITE = 'https://cngxjs.github.io/cngx/';
 const GITHUB_BLOB = 'https://github.com/cngxjs/cngx/blob/main/';
 /** Folders whose READMEs belong to no docs page (internal select spine). */
-const NO_DOCS_PAGE = ['projects/forms/select/shared/'];
+const NO_DOCS_PAGE = ['projects/forms/select/shared/internal/'];
 
 function readmes(dir) {
   return readdirSync(dir).flatMap((name) => {

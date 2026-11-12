@@ -48,7 +48,7 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 
 `CngxSelectCompareFn<T>` (`compare-fn.types.ts`, the `[compareWith]` signature `(a: T | undefined, b: T | undefined) => boolean`) is the one public type of this block.
 
-See [`ARCHITECTURE.md` § Core factory](../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
+See [`ARCHITECTURE.md` § Core factory](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 
 ### Trigger handlers
 
@@ -172,7 +172,7 @@ Declarative scalar commit-error announce policy. Two policies:
 | `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` | DI token             |
 
 The two-policy split is deliberate: `CngxSelect` and `CngxTypeahead` keep their own close timing and
-announce channel, see [`ARCHITECTURE.md` § Commit-action lifecycle](../ARCHITECTURE.md#commit-action-lifecycle).
+announce channel, see [`ARCHITECTURE.md` § Commit-action lifecycle](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#commit-action-lifecycle).
 
 ### `chip-removal-handler.ts`
 
@@ -478,7 +478,7 @@ Unified aggregator across all three config surfaces.
 | `CngxSelectAggregatorFeature`                            | `CngxSelectConfigFeature \| CngxActionSelectConfigFeature \| CngxReorderableSelectConfigFeature` |
 
 The three individual `provide*` providers stay exported for back-compat - the aggregator is purely additive.
-See [`ARCHITECTURE.md` § Configuration cascade](../ARCHITECTURE.md#configuration-cascade).
+See [`ARCHITECTURE.md` § Configuration cascade](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#configuration-cascade).
 
 ### `internal/resolve-config.ts`
 
@@ -567,7 +567,7 @@ Variant-specific trigger skin lives next to each variant in `<variant>.component
 
 ## Internal file map
 
-`shared/internal/` holds the entry-private units (see [`internal/README.md`](internal/README.md)). The ones without a section above:
+`shared/internal/` holds the entry-private units (see [`internal/README.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/internal/README.md)). The ones without a section above:
 
 | File | Used by | Job |
 |-|-|-|
@@ -596,4 +596,4 @@ Variant-specific trigger skin lives next to each variant in `<variant>.component
 
 ## How to extend
 
-See [`ARCHITECTURE.md` § How to extend](../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a tenth composite.
+See [`ARCHITECTURE.md` § How to extend](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a tenth composite.
