@@ -72,8 +72,8 @@ function rowLabel(row: HTMLElement): string {
  * One tooltip element per host, created like the one of `CngxTooltip`
  * (`popover="manual"`, class `cngx-tooltip`, so the skin is
  * `cngx-tooltip.css`). Event delegation on the host finds the row under the
- * pointer or focus, so projected rows need no directive of their own. Focus
- * shows the tooltip at once, the pointer after a 300ms dwell; leaving the
+ * pointer or focus, so projected rows need no directive of their own. Keyboard
+ * focus shows the tooltip at once, the pointer after a 300ms dwell; leaving the
  * row, blur, a click, Escape and the rail opening hide it. Rows inside a
  * group content, an open group head and rows with a `[cngxTooltip]` of their
  * own get no rail tooltip. The tooltip sits at the
@@ -117,6 +117,9 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
 
   let anchored: HTMLElement | null = null;
   let open = false;
+  // The row a click dismissed the tooltip on: hover stays quiet on it until
+  // the pointer leaves the row.
+  let dismissed: HTMLElement | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   function clearTimer(): void {
@@ -175,18 +178,23 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
   };
 
   const unlisten = [
+    // Keyboard focus only: a pointer press focuses the row too, and showing
+    // there would flash the tooltip until the click hides it again.
     renderer.listen(host, 'focusin', (event: FocusEvent) => {
       const row = rowOf(event.target);
-      if (row && untracked(railed)) {
+      if (row && row.matches(':focus-visible') && untracked(railed)) {
         show(row);
       }
     }),
     renderer.listen(host, 'focusout', () => hide()),
     // Activating a row (a group head opening its flyout) dismisses the tooltip.
-    renderer.listen(host, 'click', () => hide()),
+    renderer.listen(host, 'click', (event: MouseEvent) => {
+      dismissed = rowOf(event.target);
+      hide();
+    }),
     renderer.listen(host, 'pointerover', (event: PointerEvent) => {
       const row = rowOf(event.target);
-      if (!row || row === anchored || !untracked(railed)) {
+      if (!row || row === anchored || row === dismissed || !untracked(railed)) {
         return;
       }
       clearTimer();
@@ -197,6 +205,7 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
       if (row?.contains(event.relatedTarget as Node | null)) {
         return;
       }
+      dismissed = null;
       hide();
     }),
   ];

@@ -42,6 +42,17 @@ function setup() {
   return { fixture, host, tip, row, isOpen };
 }
 
+/**
+ * Keyboard focus. jsdom has no `:focus-visible` heuristic, so the row reports
+ * it while it holds focus; the geometry spec covers the real browser.
+ */
+function keyFocus(el: HTMLElement): void {
+  const matches = el.matches.bind(el);
+  el.matches = (selector: string) =>
+    selector === ':focus-visible' ? el.ownerDocument.activeElement === el : matches(selector);
+  el.focus();
+}
+
 function pointer(type: 'pointerover' | 'pointerout', target: Element, related?: Element): void {
   target.dispatchEvent(new MouseEvent(type, { bubbles: true, relatedTarget: related ?? null }));
 }
@@ -54,7 +65,7 @@ describe('injectNavRailTooltip', () => {
   it('leaves flyout rows, an open group head and rows with their own tooltip alone', () => {
     const { row, isOpen } = setup();
     for (const selector of ['.row-flyout', '.row-open', '.row-own-tip']) {
-      row(selector).dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      keyFocus(row(selector));
       expect(isOpen()).toBe(false);
       expect(row(selector).style.getPropertyValue('anchor-name')).toBe('');
     }
@@ -62,7 +73,7 @@ describe('injectNavRailTooltip', () => {
 
   it('hides when a row is activated, so an opening group head drops it', () => {
     const { row, isOpen } = setup();
-    row('.row-settings').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-settings'));
     expect(isOpen()).toBe(true);
     row('.row-settings').click();
     expect(isOpen()).toBe(false);
@@ -79,7 +90,7 @@ describe('injectNavRailTooltip', () => {
 
   it('shows the row label without icon, badge and the badge spoken text when a row takes focus', () => {
     const { row, tip, isOpen } = setup();
-    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-inbox'));
     expect(isOpen()).toBe(true);
     expect(tip.textContent).toBe('Inbox');
     expect(row('.row-inbox').style.getPropertyValue('anchor-name')).toBe(
@@ -99,8 +110,8 @@ describe('injectNavRailTooltip', () => {
 
   it('follows the row: the anchor moves to the row now in focus', () => {
     const { row, tip } = setup();
-    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
-    row('.row-settings').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-inbox'));
+    keyFocus(row('.row-settings'));
     expect(tip.textContent).toBe('Settings');
     expect(row('.row-settings').style.getPropertyValue('anchor-name')).not.toBe('');
     expect(row('.row-inbox').style.getPropertyValue('anchor-name')).toBe('');
@@ -108,29 +119,48 @@ describe('injectNavRailTooltip', () => {
 
   it('hides when the pointer leaves the row and on blur', () => {
     const { row, host, isOpen } = setup();
-    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-inbox'));
     pointer('pointerout', row('.row-inbox'), host.querySelector('.outside')!);
     expect(isOpen()).toBe(false);
-    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-inbox'));
     row('.row-inbox').dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
     expect(isOpen()).toBe(false);
   });
 
   it('hides on Escape', () => {
     const { row, isOpen } = setup();
-    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-inbox'));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(isOpen()).toBe(false);
   });
 
   it('hides when the rows stop being railed and stays hidden while they are not', () => {
     const { fixture, row, isOpen } = setup();
-    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-inbox'));
     fixture.componentInstance.railed.set(false);
     TestBed.flushEffects();
     expect(isOpen()).toBe(false);
-    row('.row-settings').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    keyFocus(row('.row-settings'));
     expect(isOpen()).toBe(false);
+  });
+
+  it('stays hidden on pointer focus, so a click does not flash it', () => {
+    const { row, isOpen } = setup();
+    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(isOpen()).toBe(false);
+  });
+
+  it('keeps hover quiet on a clicked row until the pointer leaves it', () => {
+    vi.useFakeTimers();
+    const { row, isOpen } = setup();
+    row('.row-inbox').click();
+    pointer('pointerover', row('.row-inbox'));
+    vi.advanceTimersByTime(400);
+    expect(isOpen()).toBe(false);
+    pointer('pointerout', row('.row-inbox'), row('.row-settings'));
+    pointer('pointerover', row('.row-inbox'));
+    vi.advanceTimersByTime(400);
+    expect(isOpen()).toBe(true);
   });
 
   it('ignores elements that are not nav rows', () => {

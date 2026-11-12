@@ -153,7 +153,8 @@ describe('CngxNavRail geometry', () => {
 
   it('shows the label tooltip at the row inline end, past the row edge', async () => {
     const { el } = mount('end');
-    el('.row').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    // Programmatic focus without a prior pointer press is :focus-visible.
+    el('.row').focus();
     await new Promise((resolve) => requestAnimationFrame(resolve));
     const tip = el('.cngx-nav-rail-tooltip');
     expect(tip.matches(':popover-open')).toBe(true);
