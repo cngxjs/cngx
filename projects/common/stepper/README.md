@@ -45,7 +45,6 @@ Resolution priority: per-instance Input → `viewProviders` → root provider �
 | `withStepperLinear(boolean)` | Default linear-mode flag. |
 | `withStepperCommitMode('optimistic' \| 'pessimistic')` | Default commit mode. |
 | `withStepperRouterSync(mode, paramName?)` | Default router-sync `mode` + `paramName`. |
-| `withStepperAriaLabels({ stepperRegion?, ... })` | App-wide ARIA-label overrides (consumer locale). |
 | `withStepperFallbackLabels({ groupRoleDescription?, stepRoleDescription?, ... })` | App-wide role-description overrides. |
 
 ### I18n

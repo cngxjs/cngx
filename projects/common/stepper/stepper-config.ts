@@ -24,18 +24,6 @@ import type { CngxStepIndicatorContext } from './slots/step-indicator.directive'
 import type { CngxStepRejectionContext } from './slots/step-rejection.directive';
 
 /**
- * Aria-label overrides for the stepper landmark region. Library
- * defaults are English; locales come from consumer overrides.
- *
- * Per-step navigation labels (`previousStep`, `nextStep`) live in
- * {@link CngxStepperI18n} - SR phrasing, not landmark naming.
- * Splitting the surfaces avoids a dual-override path for the same string.
- */
-export interface CngxStepperAriaLabels {
-  readonly stepperRegion?: string;
-}
-
-/**
  * Fallback labels for derived strings (group descriptors, badge SR
  * announcements). English defaults; consumer overrides per locale.
  */
@@ -205,8 +193,6 @@ export interface CngxStepperConfig {
    * classic strip and on the Material twin (`<cngx-mat-stepper>`).
    */
   readonly mobileSwipe?: boolean;
-  /** Landmark labels; a `Signal` switches the language at runtime. */
-  readonly ariaLabels?: CngxStepperAriaLabels | Signal<CngxStepperAriaLabels>;
   /** Role descriptions; a `Signal` switches the language at runtime. */
   readonly fallbackLabels?: CngxStepperFallbackLabels | Signal<CngxStepperFallbackLabels>;
   readonly templates?: CngxStepperTemplates;
@@ -214,9 +200,8 @@ export interface CngxStepperConfig {
 
 /** @internal */
 const STEPPER_CONFIG_DEFAULTS: Required<
-  Omit<CngxStepperConfig, 'ariaLabels' | 'fallbackLabels' | 'templates'>
+  Omit<CngxStepperConfig, 'fallbackLabels' | 'templates'>
 > & {
-  ariaLabels: CngxStepperAriaLabels;
   fallbackLabels: CngxStepperFallbackLabels;
   templates: CngxStepperTemplates;
 } = {
@@ -234,9 +219,6 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   mobileCollapse: 'text',
   mobileIndicatorPosition: 'top',
   mobileSwipe: true,
-  ariaLabels: {
-    stepperRegion: CNGX_STEPPER_LANGUAGE_EN.stepperRegion,
-  },
   fallbackLabels: {
     groupRoleDescription: CNGX_STEPPER_LANGUAGE_EN.groupRoleDescription,
     stepRoleDescription: CNGX_STEPPER_LANGUAGE_EN.stepRoleDescription,
@@ -448,20 +430,6 @@ export function withStepperDensity(mode: CngxStepperDensity): CngxStepperConfigF
 }
 
 /**
- * Merge ARIA labels into the cascade. Keys not provided keep their
- * library defaults; per-instance overrides on the stepper still win.
- * Pass a `Signal` to switch the language at runtime.
- */
-export function withStepperAriaLabels(
-  labels: CngxStepperAriaLabels | Signal<CngxStepperAriaLabels>,
-): CngxStepperConfigFeature {
-  return defineStepperConfigFeature((cfg) => ({
-    ...cfg,
-    ariaLabels: createOverrideMerge<CngxStepperAriaLabels>(cfg.ariaLabels ?? NO_LABELS, labels),
-  }));
-}
-
-/**
  * Merge fallback role descriptions (`groupRoleDescription` /
  * `stepRoleDescription`) into the cascade. These feed the strip's
  * `aria-roledescription` attributes when the consumer supplies none.
@@ -591,9 +559,6 @@ function stepperConfigDefaultsFromPack(): CngxStepperConfig {
   const language = injectStepperLanguage();
   return {
     ...STEPPER_CONFIG_DEFAULTS,
-    ariaLabels: computed(() => ({ stepperRegion: language().stepperRegion }), {
-      equal: recordEqual,
-    }),
     fallbackLabels: computed(
       () => ({
         groupRoleDescription: language().groupRoleDescription,

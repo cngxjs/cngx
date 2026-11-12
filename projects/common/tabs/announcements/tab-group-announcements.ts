@@ -56,7 +56,7 @@ export interface CngxTabGroupAnnouncements {
 
   /**
    * Wrapper `aria-label`. Resolution: per-instance Input →
-   * `ariaLabels.tabsRegion` → `i18n.tabsLabel`. Returns `null` when
+   * `i18n.tabsLabel`. Returns `null` when
    * `aria-labelledby` is bound (mutually exclusive per WAI-ARIA).
    */
   readonly resolvedAriaLabel: Signal<string | null>;
@@ -165,7 +165,6 @@ export function createTabGroupAnnouncements(
 
   const fallbackLabels = coerceSignal(config.fallbackLabels);
   const defaultFallbackLabels = coerceSignal(TABS_CONFIG_DEFAULTS.fallbackLabels);
-  const ariaLabels = coerceSignal(config.ariaLabels);
 
   const tabsRoleDescription = computed<string>(
     () =>
@@ -182,7 +181,7 @@ export function createTabGroupAnnouncements(
     if (ariaLabelledBy()) {
       return null;
     }
-    return ariaLabel() ?? ariaLabels()?.tabsRegion ?? i18n().tabsLabel;
+    return ariaLabel() ?? i18n().tabsLabel;
   });
 
   // `prev?.source` = source value before the most recent change -

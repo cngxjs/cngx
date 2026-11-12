@@ -11,9 +11,8 @@ import { CNGX_TABS_LANGUAGE_EN, type CngxTabsLanguageSection } from './tabs-lang
  */
 export interface CngxTabsI18n {
   /**
-   * Default accessible name of the tab group. An explicit
-   * `CNGX_TABS_CONFIG.ariaLabels.tabsRegion` (set through
-   * `withTabsAriaLabels(...)`) overrides it when set; it has no default.
+   * Accessible name of the tab group. Only a per-instance `[aria-label]`
+   * or `[aria-labelledby]` on the group overrides it.
    */
   readonly tabsLabel: string;
   readonly selectedTab: (label: string, position: number, count: number) => string;
@@ -178,9 +177,10 @@ function defineTabsI18nFeature(
 
 /**
  * Override i18n labels via a partial bundle - unset keys keep the
- * language pack's copy, or the English default. Same shape as `withTabsAriaLabels` /
- * `withTabsFallbackLabels` so `provideCngxTabs` composes both
- * surfaces uniformly. Pass a `Signal` to switch the language at runtime.
+ * language pack's copy, or the English default. Same shape as
+ * `withTabsFallbackLabels`, so `provideCngxTabs` composes the i18n and
+ * the config feature uniformly. Pass a `Signal` to switch the language
+ * at runtime.
  */
 export function withTabsI18nLabels(
   overrides: Partial<CngxTabsI18n> | Signal<Partial<CngxTabsI18n>>,

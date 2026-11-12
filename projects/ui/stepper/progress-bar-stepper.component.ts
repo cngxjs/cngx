@@ -16,6 +16,7 @@ import {
   CngxStepperEmpty,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  CNGX_STEPPER_LANGUAGE_EN,
   createStepperAccname,
   createStepperStateView,
   injectStepperConfig,
@@ -82,8 +83,8 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
 export class CngxProgressBarStepper {
   /**
    * Accessible name of the stepper host, bound as `[aria-label]`. Resolution order: this input,
-   * then `ariaLabels.stepperRegion` from the stepper config, then the `stepperLabel` string of
-   * the stepper i18n bundle. Ignored while a non-empty `[aria-labelledby]` is set.
+   * then the `stepperLabel` string of the stepper i18n bundle. Ignored while a non-empty
+   * `[aria-labelledby]` is set.
    */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   /**
@@ -100,19 +101,22 @@ export class CngxProgressBarStepper {
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
 
-  /** Shared accname cascade (input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`). */
+  /** Shared accname cascade (input → `i18n.stepperLabel`). */
   protected readonly resolvedAriaLabel = createStepperAccname({
     ariaLabel: this.ariaLabel,
     ariaLabelledBy: this.ariaLabelledBy,
-    config: this.config,
     i18n: this.i18n,
   });
 
   private readonly fallbackLabels = coerceSignal(this.config.fallbackLabels);
 
-  /** Landmark role-description with config + i18n cascade, mirroring `<cngx-stepper>`. */
+  /**
+   * Landmark role-description mirroring `<cngx-stepper>`: config
+   * `fallbackLabels`, then the library default, never the stepper name.
+   */
   protected readonly stepperRoleDescription = computed<string>(
-    () => this.fallbackLabels()?.stepRoleDescription ?? this.i18n().stepperLabel,
+    () =>
+      this.fallbackLabels()?.stepRoleDescription ?? CNGX_STEPPER_LANGUAGE_EN.stepRoleDescription,
   );
 
   private readonly emptySlot = contentChild(CngxStepperEmpty);

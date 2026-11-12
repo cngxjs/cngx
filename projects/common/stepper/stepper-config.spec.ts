@@ -18,7 +18,6 @@ import {
   provideStepperConfigAt,
   withStepperDefaultOrientation,
   withStepperDensity,
-  withStepperAriaLabels,
   withStepperCommitMode,
   withStepperFallbackLabels,
   withStepperGroupCollapse,
@@ -37,7 +36,7 @@ import {
 } from './stepper-config';
 
 describe('CngxStepperConfig', () => {
-  it('library default is horizontal + non-linear + pessimistic + EN region label', () => {
+  it('library default is horizontal + non-linear + pessimistic', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -45,7 +44,6 @@ describe('CngxStepperConfig', () => {
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLinear).toBe(false);
     expect(cfg.defaultCommitMode).toBe('pessimistic');
-    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Steps');
   });
 
   it('provideStepperConfig merges with* features in order', () => {
@@ -55,14 +53,12 @@ describe('CngxStepperConfig', () => {
         provideStepperConfig(
           withStepperDefaultOrientation('vertical'),
           withStepperCommitMode('optimistic'),
-          withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
         ),
       ],
     });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.defaultCommitMode).toBe('optimistic');
-    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Schrittfolge');
   });
 
   it('injectStepperConfig works inside an injection context', () => {
@@ -83,7 +79,6 @@ describe('CngxStepperConfig', () => {
     expect(withStepperLinear(true)._target).toBe('config');
     expect(withStepperCommitMode('optimistic')._target).toBe('config');
     expect(withStepperRouterSync('queryParam', 'phase')._target).toBe('config');
-    expect(withStepperAriaLabels({ stepperRegion: 'Schritte' })._target).toBe('config');
     expect(withStepperFallbackLabels({ stepRoleDescription: 'Schritt' })._target).toBe('config');
     expect(withStepperSkin('linear-minimal')._target).toBe('config');
   });
@@ -394,7 +389,6 @@ describe('CngxStepperConfig copy keys', () => {
   it('resolves static label overrides to the same bundles as the eager merge', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const defaults = TestBed.inject(CNGX_STEPPER_CONFIG);
-    const defaultAria = coerceSignal(defaults.ariaLabels)();
     const defaultFallback = coerceSignal(defaults.fallbackLabels)();
     TestBed.resetTestingModule();
 
@@ -402,14 +396,12 @@ describe('CngxStepperConfig copy keys', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideStepperConfig(
-          withStepperAriaLabels({ stepperRegion: 'A' }),
           withStepperFallbackLabels({ groupRoleDescription: 'Gruppe' }),
           withStepperFallbackLabels({ stepRoleDescription: 'Schritte' }),
         ),
       ],
     });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ ...defaultAria, stepperRegion: 'A' });
     expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
       ...defaultFallback,
       groupRoleDescription: 'Gruppe',
@@ -423,7 +415,6 @@ describe('CngxStepperConfig copy keys', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideStepperConfig(
-          withStepperAriaLabels(computed(() => (lang() === 'de' ? { stepperRegion: 'Schrittfolge' } : {}))),
           withStepperFallbackLabels(
             computed(() => (lang() === 'de' ? { groupRoleDescription: 'Schrittgruppe' } : {})),
           ),
@@ -431,26 +422,26 @@ describe('CngxStepperConfig copy keys', () => {
       ],
     });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-    const aria = coerceSignal(cfg.ariaLabels);
     const fallback = coerceSignal(cfg.fallbackLabels);
-    expect(aria()?.stepperRegion).toBe('Steps');
     expect(fallback()?.groupRoleDescription).toBe('step group');
 
     lang.set('de');
-    expect(aria()?.stepperRegion).toBe('Schrittfolge');
     expect(fallback()?.groupRoleDescription).toBe('Schrittgruppe');
     expect(fallback()?.stepRoleDescription).toBe('stepper');
   });
 
   it('keeps the label bundle reference when an override is re-set to an equal object', () => {
-    const labels = signal({ stepperRegion: 'Schrittfolge' });
+    const labels = signal({ groupRoleDescription: 'Schrittgruppe' });
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideStepperConfig(withStepperAriaLabels(labels))],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(withStepperFallbackLabels(labels)),
+      ],
     });
-    const aria = coerceSignal(TestBed.inject(CNGX_STEPPER_CONFIG).ariaLabels);
-    const before = aria();
-    labels.set({ stepperRegion: 'Schrittfolge' });
-    expect(aria()).toBe(before);
+    const fallback = coerceSignal(TestBed.inject(CNGX_STEPPER_CONFIG).fallbackLabels);
+    const before = fallback();
+    labels.set({ groupRoleDescription: 'Schrittgruppe' });
+    expect(fallback()).toBe(before);
   });
 });
 
@@ -458,14 +449,13 @@ describe('CNGX_STEPPER_CONFIG language pack', () => {
   it('keeps the pre-section English labels', () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-    expect(coerceSignal(cfg.ariaLabels)()).toEqual({ stepperRegion: 'Steps' });
     expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
       groupRoleDescription: 'step group',
       stepRoleDescription: 'stepper',
     });
   });
 
-  it('reads the landmark and role-description labels from the stepper section', () => {
+  it('reads the role-description labels from the stepper section', () => {
     const pack = signal<CngxActiveLanguagePack | undefined>(undefined);
     TestBed.configureTestingModule({
       providers: [
@@ -474,15 +464,10 @@ describe('CNGX_STEPPER_CONFIG language pack', () => {
       ],
     });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-    const aria = coerceSignal(cfg.ariaLabels);
     const fallback = coerceSignal(cfg.fallbackLabels);
-    expect(aria()?.stepperRegion).toBe('Steps');
+    expect(fallback()?.groupRoleDescription).toBe('step group');
 
-    pack.set({
-      locale: 'de',
-      stepper: { stepperRegion: 'Schrittfolge', groupRoleDescription: 'Schrittgruppe' },
-    });
-    expect(aria()?.stepperRegion).toBe('Schrittfolge');
+    pack.set({ locale: 'de', stepper: { groupRoleDescription: 'Schrittgruppe' } });
     expect(fallback()).toEqual({
       groupRoleDescription: 'Schrittgruppe',
       stepRoleDescription: 'stepper',
@@ -496,7 +481,7 @@ describe('CNGX_STEPPER_CONFIG language pack', () => {
         provideCngxI18n(
           withPartialPack({
             locale: 'de',
-            stepper: { stepperRegion: 'Schrittfolge', stepRoleDescription: 'Schritte' },
+            stepper: { stepRoleDescription: 'Schritte' },
           }),
           withDocumentLanguage('off'),
         ),
@@ -504,7 +489,6 @@ describe('CNGX_STEPPER_CONFIG language pack', () => {
       ],
     });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
-    expect(coerceSignal(cfg.ariaLabels)()?.stepperRegion).toBe('Schrittfolge');
     expect(coerceSignal(cfg.fallbackLabels)()).toEqual({
       groupRoleDescription: 'Gruppe',
       stepRoleDescription: 'Schritte',
