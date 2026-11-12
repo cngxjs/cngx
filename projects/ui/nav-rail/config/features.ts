@@ -20,6 +20,24 @@ export function withNavRailLabelPlacement(
 }
 
 /**
+ * Switch the label tooltip of railed rows on or off (default on). It only
+ * applies to the `'end'` look; `'below'` never shows a tooltip. A bound
+ * `[tooltip]` on `cngx-nav-rail` still wins. Off, `injectNavRailTooltip`
+ * creates no tooltip element and attaches no listener.
+ *
+ * ```ts
+ * provideNavRailConfig(withNavRailTooltip(false));
+ * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/config/features.ts
+ * @since 0.3.0
+ * @relatedTo provideNavRailConfig, provideNavRailConfigAt, CngxNavRail, injectNavRailTooltip
+ */
+export function withNavRailTooltip(enabled: boolean): CngxNavRailConfigFeature {
+  return { kind: 'tooltip', payload: { tooltip: enabled } };
+}
+
+/**
  * Set the pointer dwell in ms before the label tooltip of a railed row shows
  * (default `300`). Keyboard focus shows it at once regardless.
  *

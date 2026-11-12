@@ -37,7 +37,8 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * `provideNavRailConfig(withNavRailLabelPlacement(...))`):
  * - `'end'` (default): icon only. Each row keeps its full label, clipped at
  *   the row edge, so it stays the accessible name; a tooltip shows it on
- *   hover after a short delay and at once on keyboard focus. The width
+ *   hover after a short delay and at once on keyboard focus (`[tooltip]` or
+ *   `withNavRailTooltip(false)` switches it off). The width
  *   derives from the row tokens
  *   (`--cngx-nav-rail-size`), so the icon box sits centred.
  * - `'below'`: the icon stacked over a short label, no tooltip
@@ -66,7 +67,7 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail.ts
  * @selector cngx-nav-rail
  * @since 0.3.0
- * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, provideNavRailConfig
+ * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, provideNavRailConfig, withNavRailTooltip
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
  * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
@@ -98,11 +99,20 @@ export class CngxNavRail {
   readonly ariaLabel = input<string | undefined>(undefined);
 
   /**
-   * `'end'`: icon only with a tooltip. `'below'`: icon over a short label.
+   * `'end'`: icon only with a tooltip (unless `tooltip` is off). `'below'`:
+   * icon over a short label, never a tooltip.
    * Unbound, `withNavRailLabelPlacement` of the config in scope applies, else
    * `'end'`.
    */
   readonly labelPlacement = input<CngxNavRailLabelPlacement | undefined>(undefined);
+
+  /**
+   * Whether a row shows its label in a tooltip in the `'end'` look; the
+   * `'below'` look never shows one. Unbound, `withNavRailTooltip` of the
+   * config in scope applies, else `true`. Switching it off removes the
+   * tooltip element and its listeners.
+   */
+  readonly tooltip = input<boolean | undefined>(undefined);
 
   private readonly i18n = inject(CNGX_NAV_RAIL_I18N);
   private readonly config = injectNavRailConfig();
@@ -111,6 +121,11 @@ export class CngxNavRail {
   protected readonly resolvedLabelPlacement = computed(
     () =>
       this.labelPlacement() ?? this.config.labelPlacement ?? CNGX_NAV_RAIL_DEFAULTS.labelPlacement,
+  );
+
+  /** Whether the tooltip is on: `[tooltip]`, then the config, then `true`. */
+  protected readonly resolvedTooltip = computed(
+    () => this.tooltip() ?? this.config.tooltip ?? CNGX_NAV_RAIL_DEFAULTS.tooltip,
   );
 
   protected readonly resolvedAriaLabel = computed(() => this.ariaLabel() ?? this.i18n().ariaLabel);
@@ -129,7 +144,9 @@ export class CngxNavRail {
   });
 
   constructor() {
-    injectNavRailTooltip(computed(() => this.resolvedLabelPlacement() === 'end'));
+    injectNavRailTooltip(
+      computed(() => this.resolvedLabelPlacement() === 'end' && this.resolvedTooltip()),
+    );
     injectNavRailFlyout({
       railed: signal(true).asReadonly(),
       groups: this.groups,

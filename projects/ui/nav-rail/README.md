@@ -72,7 +72,8 @@ on the host.
 - `'end'` (default) - icon only. Each row keeps its full label; the label
   starts at the row's inline-end padding edge and clips there, so it paints
   nothing but stays the accessible name. A tooltip shows the label on hover
-  (after 300ms, see Configuration) and at once on keyboard focus.
+  (after 300ms, see Configuration) and at once on keyboard focus. `[tooltip]`
+  or `withNavRailTooltip(false)` switches it off.
 - `'below'` - the icon stacked over a short, centred, wrapping label. No
   tooltip.
 
@@ -155,9 +156,12 @@ bootstrapApplication(App, {
 | Feature | Key | Default |
 |-|-|-|
 | `withNavRailLabelPlacement(placement)` | `labelPlacement` | `'end'` |
+| `withNavRailTooltip(enabled)` | `tooltip` | `true` (only the `'end'` look has a tooltip) |
 | `withNavRailTooltipDelay(ms)` | `tooltipDelay` | `300` |
 
-`[labelPlacement]` wins over the config, the config over the default.
+`[labelPlacement]` and `[tooltip]` win over the config, the config over the
+default. With the tooltip off, no tooltip element exists and no listener is
+attached; flipping it at runtime sets the tooltip up or tears it down.
 `provideNavRailConfigAt(...)` in a component's `viewProviders` merges over the
 parent scope. `injectNavRailConfig()` returns the configuration in scope;
 `injectNavRailTooltip` reads `tooltipDelay` from it, so the delay reaches every
@@ -253,7 +257,8 @@ Give the two landmarks different names, as above.
 `CngxNavRail` is built on two injection functions you can call in your own
 organism:
 
-- `injectNavRailTooltip(railed)` - the label tooltip for clipped rows.
+- `injectNavRailTooltip(railed)` - the label tooltip for clipped rows; while
+  `railed()` is `false` no tooltip element or listener exists.
 - `injectNavRailFlyout({ railed, groups, groupElements, contents, contentElements })` -
   nav groups as anchored flyouts while `railed()` is `true`; `groups` and
   `contents` are your content queries for `CngxNavGroup` and

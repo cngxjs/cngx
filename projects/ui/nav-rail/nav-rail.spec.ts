@@ -7,7 +7,7 @@ import {
   CngxNavHeader,
   CngxNavLink,
 } from '@cngx/common/interactive';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CNGX_NAV_RAIL_I18N, provideNavRailI18n, withNavRailI18nLabels } from './nav-rail-i18n';
 import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
@@ -22,7 +22,7 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
     CngxNavFooter,
   ],
   template: `
-    <cngx-nav-rail [labelPlacement]="placement()" [ariaLabel]="label()">
+    <cngx-nav-rail [labelPlacement]="placement()" [ariaLabel]="label()" [tooltip]="tooltip()">
       <cngx-nav-footer class="footer">v1</cngx-nav-footer>
       <a cngxNavLink href="#inbox" class="row-inbox">Inbox</a>
       <button type="button" cngxNavGroup #reports="cngxNavGroup" class="head">Reports</button>
@@ -36,6 +36,7 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
 class RailHost {
   readonly placement = signal<CngxNavRailLabelPlacement>('end');
   readonly label = signal<string | undefined>(undefined);
+  readonly tooltip = signal<boolean | undefined>(undefined);
 }
 
 function setup() {
@@ -125,6 +126,30 @@ describe('CngxNavRail', () => {
     settle();
     el('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(tip.hasAttribute('data-popover-open')).toBe(false);
+  });
+
+  it('sets the tooltip up and tears it down when [tooltip] flips at runtime', () => {
+    const { fixture, rail, el, settle } = setup();
+    const listen = vi.spyOn(rail, 'addEventListener');
+    fixture.componentInstance.tooltip.set(false);
+    settle();
+    expect(rail.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    // Off: focus on a row finds nothing to open.
+    el('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(rail.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    fixture.componentInstance.tooltip.set(true);
+    settle();
+    expect(rail.querySelectorAll('.cngx-nav-rail-tooltip')).toHaveLength(1);
+    expect(listen).toHaveBeenCalled();
+    listen.mockRestore();
+  });
+
+  it('creates no tooltip in the stacked look even with [tooltip] on', () => {
+    const { fixture, rail, settle } = setup();
+    fixture.componentInstance.tooltip.set(true);
+    fixture.componentInstance.placement.set('below');
+    settle();
+    expect(rail.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
   });
 
   it('opens a projected nav group as a flyout', () => {

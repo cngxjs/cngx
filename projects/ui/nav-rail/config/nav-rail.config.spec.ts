@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CngxNavRail, type CngxNavRailLabelPlacement } from '../nav-rail';
-import { withNavRailLabelPlacement, withNavRailTooltipDelay } from './features';
+import { withNavRailLabelPlacement, withNavRailTooltip, withNavRailTooltipDelay } from './features';
 import { injectNavRailConfig } from './inject-nav-rail-config';
 import { CNGX_NAV_RAIL_CONFIG, CNGX_NAV_RAIL_DEFAULTS } from './nav-rail.config.defaults';
 import { provideNavRailConfig, provideNavRailConfigAt } from './provide-nav-rail-config';
@@ -26,10 +26,19 @@ class AtHost {
 
 @Component({
   imports: [CngxNavRail],
-  template: `<cngx-nav-rail [labelPlacement]="placement()" />`,
+  template: `
+    <cngx-nav-rail [labelPlacement]="placement()" [tooltip]="tooltip()">
+      <a href="#inbox" class="cngx-nav-link">Inbox</a>
+    </cngx-nav-rail>
+  `,
 })
 class RailHost {
   readonly placement = signal<CngxNavRailLabelPlacement | undefined>(undefined);
+  readonly tooltip = signal<boolean | undefined>(undefined);
+}
+
+function hasTooltip(fixture: { nativeElement: HTMLElement }): boolean {
+  return fixture.nativeElement.querySelector('.cngx-nav-rail-tooltip') !== null;
 }
 
 function placementOf(fixture: { nativeElement: HTMLElement }): string | null {
@@ -39,7 +48,11 @@ function placementOf(fixture: { nativeElement: HTMLElement }): string | null {
 describe('CNGX_NAV_RAIL_CONFIG', () => {
   it('resolves to the library defaults with no provider present', () => {
     expect(TestBed.inject(CNGX_NAV_RAIL_CONFIG)).toBe(CNGX_NAV_RAIL_DEFAULTS);
-    expect(CNGX_NAV_RAIL_DEFAULTS).toEqual({ labelPlacement: 'end', tooltipDelay: 300 });
+    expect(CNGX_NAV_RAIL_DEFAULTS).toEqual({
+      labelPlacement: 'end',
+      tooltip: true,
+      tooltipDelay: 300,
+    });
   });
 
   it('merges root features over the defaults, last write wins', () => {
@@ -47,6 +60,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
       providers: [
         provideNavRailConfig(
           withNavRailLabelPlacement('below'),
+          withNavRailTooltip(false),
           withNavRailTooltipDelay(100),
           withNavRailTooltipDelay(200),
         ),
@@ -54,6 +68,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     });
     expect(TestBed.inject(CNGX_NAV_RAIL_CONFIG)).toEqual({
       labelPlacement: 'below',
+      tooltip: false,
       tooltipDelay: 200,
     });
   });
@@ -71,6 +86,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.probe().cfg).toEqual({
       labelPlacement: 'below',
+      tooltip: true,
       tooltipDelay: 800,
     });
   });
@@ -91,5 +107,23 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     configured.componentInstance.placement.set('end');
     configured.detectChanges();
     expect(placementOf(configured)).toBe('end');
+  });
+
+  it('resolves the tooltip switch as input, then config, then default', () => {
+    const plain = TestBed.createComponent(RailHost);
+    plain.detectChanges();
+    expect(hasTooltip(plain)).toBe(true);
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideNavRailConfig(withNavRailTooltip(false))],
+    });
+    const configured = TestBed.createComponent(RailHost);
+    configured.detectChanges();
+    expect(hasTooltip(configured)).toBe(false);
+
+    configured.componentInstance.tooltip.set(true);
+    configured.detectChanges();
+    expect(hasTooltip(configured)).toBe(true);
   });
 });

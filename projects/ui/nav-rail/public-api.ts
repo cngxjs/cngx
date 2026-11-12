@@ -12,7 +12,11 @@ export {
   provideNavRailConfigAt,
   type CngxNavRailConfigFeature,
 } from './config/provide-nav-rail-config';
-export { withNavRailLabelPlacement, withNavRailTooltipDelay } from './config/features';
+export {
+  withNavRailLabelPlacement,
+  withNavRailTooltip,
+  withNavRailTooltipDelay,
+} from './config/features';
 export { injectNavRailConfig } from './config/inject-nav-rail-config';
 export {
   CNGX_NAV_RAIL_I18N,

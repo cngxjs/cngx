@@ -184,6 +184,31 @@ describe('injectNavRailTooltip', () => {
     expect(isOpen()).toBe(false);
   });
 
+  it('creates no element and attaches no listener while not railed, and sets up on the flip', () => {
+    const listen = vi.spyOn(HTMLElement.prototype, 'addEventListener');
+    const fixture = TestBed.createComponent(TestRail);
+    fixture.componentInstance.railed.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    expect(listen.mock.contexts.filter((el) => el === host)).toHaveLength(0);
+    fixture.componentInstance.railed.set(true);
+    TestBed.flushEffects();
+    expect(host.querySelectorAll('.cngx-nav-rail-tooltip')).toHaveLength(1);
+    expect(listen.mock.contexts.filter((el) => el === host).length).toBeGreaterThan(0);
+    listen.mockRestore();
+  });
+
+  it('removes the tooltip element and its listeners when the rows stop being railed', () => {
+    const { fixture, host, row } = setup();
+    fixture.componentInstance.railed.set(false);
+    TestBed.flushEffects();
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    keyFocus(row('.row-inbox'));
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+  });
+
   it('removes the tooltip element on destroy', () => {
     const { fixture, host } = setup();
     fixture.destroy();

@@ -22,6 +22,7 @@ describe('@cngx/ui/nav-rail public API shape', () => {
     expect(api.provideNavRailConfigAt).toBeTypeOf('function');
     expect(api.injectNavRailConfig).toBeTypeOf('function');
     expect(api.withNavRailLabelPlacement).toBeTypeOf('function');
+    expect(api.withNavRailTooltip).toBeTypeOf('function');
     expect(api.withNavRailTooltipDelay).toBeTypeOf('function');
   });
 

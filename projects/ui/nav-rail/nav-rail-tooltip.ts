@@ -66,23 +66,25 @@ function rowLabel(row: HTMLElement): string {
 /**
  * Shows the clipped label of a nav row in a tooltip while a navigation rail
  * is collapsed. Call it in the constructor of the organism that hosts the
- * rows (today `cngx-nav-rail`) and pass a derived signal that is
- * `true` while the rows are railed; nothing shows while it is `false`.
+ * rows (today `cngx-nav-rail`) and pass a derived signal that is `true`
+ * while the rows are railed and the tooltip is wanted. While it is `false`
+ * no tooltip element exists and no listener is attached; each flip sets the
+ * tooltip up or tears it down, so an organism can switch it off at runtime
+ * (`cngx-nav-rail` folds its `tooltip` input in).
  *
  * One tooltip element per host, created like the one of `CngxTooltip`
  * (`popover="manual"`, class `cngx-tooltip`, so the skin is
  * `cngx-tooltip.css`). Event delegation on the host finds the row under the
- * pointer or focus, so projected rows need no directive of their own. Keyboard
- * focus shows the tooltip at once, the pointer after a dwell (300ms, set
- * app-wide through `withNavRailTooltipDelay`); leaving the
- * row, blur, a click, Escape and the rail opening hide it. Rows inside a
- * group content, an open group head and rows with a `[cngxTooltip]` of their
- * own get no rail tooltip. The tooltip sits at the inline end of the row
- * through CSS anchor positioning (`anchor-name` on the row; `nav-rail.css`,
- * the stylesheet of `cngx-nav-rail`, places it with the
- * `--cngx-nav-tooltip-offset` gap), so it follows the row and mirrors under
- * `dir="rtl"`. A browser without CSS anchor positioning shows it at the
- * top-layer default position.
+ * pointer or focus, so projected rows need no directive of their own.
+ * Keyboard focus shows the tooltip at once, the pointer after a dwell (300ms,
+ * set app-wide through `withNavRailTooltipDelay`); leaving the row, blur, a
+ * click, Escape and the rail opening hide it. Rows inside a group content, an
+ * open group head and rows with a `[cngxTooltip]` of their own get no rail
+ * tooltip. The tooltip sits at the inline end of the row through CSS anchor
+ * positioning (`anchor-name` on the row; `nav-rail.css`, the stylesheet of
+ * `cngx-nav-rail`, places it with the `--cngx-nav-tooltip-offset` gap), so it
+ * follows the row and mirrors under `dir="rtl"`. A browser without CSS anchor
+ * positioning shows it at the top-layer default position.
  *
  * The row label is already the row's accessible name, so the tooltip is
  * `aria-hidden`: it repeats the name for sighted users and is never
@@ -97,17 +99,45 @@ function rowLabel(row: HTMLElement): string {
  * }
  * ```
  *
- * @param railed `true` while the rows are railed and their labels clipped.
+ * @param railed `true` while the rows are railed, their labels clipped and the tooltip wanted.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
  * @since 0.3.0
- * @relatedTo injectNavRailFlyout, withNavRailTooltipDelay, CngxNavLink, CngxNavGroup, CngxTooltip
+ * @relatedTo injectNavRailFlyout, withNavRailTooltipDelay, withNavRailTooltip, CngxNavLink, CngxNavGroup, CngxTooltip
  */
 export function injectNavRailTooltip(railed: Signal<boolean>): void {
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const renderer = inject(Renderer2);
+  const hoverDelay = injectNavRailConfig().tooltipDelay ?? CNGX_NAV_RAIL_DEFAULTS.tooltipDelay;
+  let detach: (() => void) | null = null;
+
+  effect(() => {
+    const active = railed();
+    untracked(() => {
+      if (active && !detach) {
+        detach = attachNavRailTooltip(host, renderer, hoverDelay);
+        return;
+      }
+      if (!active && detach) {
+        detach();
+        detach = null;
+      }
+    });
+  });
+
+  inject(DestroyRef).onDestroy(() => {
+    detach?.();
+    detach = null;
+  });
+}
+
+/** Creates the tooltip element and its listeners; returns the teardown. */
+function attachNavRailTooltip(
+  host: HTMLElement,
+  renderer: Renderer2,
+  hoverDelay: number,
+): () => void {
   const doc = host.ownerDocument;
   const anchorName = `--${nextUid('cngx-nav-rail-tip')}`;
-  const hoverDelay = injectNavRailConfig().tooltipDelay ?? CNGX_NAV_RAIL_DEFAULTS.tooltipDelay;
 
   const tip = renderer.createElement('div') as HTMLElement;
   tip.setAttribute('popover', 'manual');
@@ -184,7 +214,7 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
     // there would flash the tooltip until the click hides it again.
     renderer.listen(host, 'focusin', (event: FocusEvent) => {
       const row = rowOf(event.target);
-      if (row && row.matches(':focus-visible') && untracked(railed)) {
+      if (row && row.matches(':focus-visible')) {
         show(row);
       }
     }),
@@ -196,7 +226,7 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
     }),
     renderer.listen(host, 'pointerover', (event: PointerEvent) => {
       const row = rowOf(event.target);
-      if (!row || row === anchored || row === dismissed || !untracked(railed)) {
+      if (!row || row === anchored || row === dismissed) {
         return;
       }
       clearTimer();
@@ -212,17 +242,11 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
     }),
   ];
 
-  effect(() => {
-    if (!railed()) {
-      untracked(hide);
-    }
-  });
-
-  inject(DestroyRef).onDestroy(() => {
+  return () => {
     hide();
     for (const stop of unlisten) {
       stop();
     }
     tip.remove();
-  });
+  };
 }
