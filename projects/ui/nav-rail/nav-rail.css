@@ -140,12 +140,23 @@
     white-space: nowrap;
   }
 
-  /* Look 'end': the label clips at the row's padding box. */
+  /* Look 'end': the row clips at its border box, but leaves a badge zone of
+     --cngx-space-lg past its inline end: on a compact rail the row is too
+     narrow for a badge at the icon corner. The label starts past that zone,
+     so it still paints nothing. clip-path, not overflow, because overflow
+     clips on every side alike; it is physical, hence the :dir(rtl) twin. */
   cngx-nav-rail[data-label-placement='end']
     :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
-    gap: var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px));
-    overflow: clip;
+    gap: calc(
+      var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px)) + var(--cngx-space-lg, 24px)
+    );
+    clip-path: inset(0 calc(-1 * var(--cngx-space-lg, 24px)) 0 0);
     white-space: nowrap;
+  }
+
+  cngx-nav-rail[data-label-placement='end']:dir(rtl)
+    :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
+    clip-path: inset(0 0 0 calc(-1 * var(--cngx-space-lg, 24px)));
   }
 
   /* Section labels keep their text for assistive technology but paint none,
@@ -164,9 +175,14 @@
   cngx-nav-rail[data-label-placement='end'] .cngx-nav-badge:not(.cngx-nav-group-content *) {
     position: absolute;
     inset-block-start: calc(var(--cngx-space-xs, 4px) / 2);
-    inset-inline-start: calc(
-      var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px)) +
-        var(--cngx-nav-icon-size, 1.25rem) / 2 + var(--cngx-space-xs, 4px)
+    /* At the icon corner, but never past the rail's inner edge (the row end
+       plus the row inset): a compact rail is narrower than icon + badge. */
+    inset-inline-start: min(
+      calc(
+        var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px)) +
+          var(--cngx-nav-icon-size, 1.25rem) / 2 + var(--cngx-space-xs, 4px)
+      ),
+      calc(100% + var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) - 1.25rem)
     );
     margin: 0;
   }

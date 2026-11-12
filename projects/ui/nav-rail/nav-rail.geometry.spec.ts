@@ -107,11 +107,37 @@ describe('CngxNavRail geometry', () => {
     );
   });
 
+  for (const dir of ['ltr', 'rtl'] as const) {
+    it(`keeps the badge whole inside a compact rail (${dir})`, () => {
+      document.documentElement.setAttribute('dir', dir);
+      const { el } = mount('end');
+      const railEl = el('cngx-nav-rail');
+      // The compact density metrics: 8px row padding, 2px row inset.
+      railEl.style.setProperty('--cngx-nav-link-padding-inline', '8px');
+      railEl.style.setProperty('--cngx-nav-link-inset', '2px');
+      const rail = railEl.getBoundingClientRect();
+      const border = parseFloat(getComputedStyle(railEl).borderInlineEndWidth);
+      const badge = el('.badge').getBoundingClientRect();
+      const label = el('.label').getBoundingClientRect();
+      const row = el('.row').getBoundingClientRect();
+      if (dir === 'ltr') {
+        expect(badge.right).toBeLessThanOrEqual(rail.right - border + 0.5);
+        expect(label.left).toBeGreaterThanOrEqual(badge.right);
+      } else {
+        expect(badge.left).toBeGreaterThanOrEqual(rail.left + border - 0.5);
+        expect(label.right).toBeLessThanOrEqual(badge.left);
+      }
+      expect(badge.top).toBeGreaterThanOrEqual(row.top);
+    });
+  }
+
   it('paints no label pixels in the icon-only rail', () => {
     const { el } = mount('end');
     const row = el('.row').getBoundingClientRect();
     const label = el('.label').getBoundingClientRect();
-    expect(label.left).toBeGreaterThanOrEqual(row.right - 0.5);
+    // The row clip leaves a badge zone of --cngx-space-lg (24px) past its end;
+    // the label starts beyond it.
+    expect(label.left).toBeGreaterThanOrEqual(row.right + 24 - 0.5);
   });
 
   it('stacks the label under a centred icon in the label-below rail', () => {
