@@ -1,7 +1,14 @@
 import type { Locator, Page } from '@playwright/test';
 
 import { expect, test } from '../../_test';
-import { gotoDemo } from '../../_helpers';
+import {
+  attributeLogOf,
+  clicksOf,
+  countClicks,
+  describedText,
+  gotoDemo,
+  recordAttributes,
+} from '../../_helpers';
 
 // Story: CngxButton puts the button brain on a native button or anchor. The
 // axes land as data-variant / data-tone / data-size, a disabled button stays
@@ -27,58 +34,6 @@ async function setDirection(page: Page, dir: 'ltr' | 'rtl'): Promise<void> {
 
 function artifactOf(page: Page): Locator {
   return page.locator('.cngx-ex-artifact');
-}
-
-/** Text of the node the host's aria-describedby points at, or null. */
-async function describedText(page: Page, host: Locator): Promise<string | null> {
-  const ids = await host.getAttribute('aria-describedby');
-  if (!ids) {
-    return null;
-  }
-  const texts = await Promise.all(
-    ids.split(/\s+/).map((id) => page.locator(`[id="${id}"]`).textContent()),
-  );
-  return texts.map((t) => t?.trim() ?? '').join(' ');
-}
-
-type CountedHost = HTMLElement & { cngxE2eClicks?: number };
-
-/**
- * Counts the clicks that reach a bubble listener on the host. The brain's
- * guard is a capture listener on the same element, so a swallowed click
- * never reaches this one.
- */
-async function countClicks(host: Locator): Promise<void> {
-  await host.evaluate((el: CountedHost) => {
-    el.cngxE2eClicks = 0;
-    el.addEventListener('click', () => {
-      el.cngxE2eClicks = (el.cngxE2eClicks ?? 0) + 1;
-    });
-  });
-}
-
-function clicksOf(host: Locator): Promise<number> {
-  return host.evaluate((el: CountedHost) => el.cngxE2eClicks ?? 0);
-}
-
-type LoggedHost = HTMLElement & { cngxE2eLog?: string[] };
-
-/** Records every data-pending / data-busy change on the host, in order. */
-async function recordRunAttributes(host: Locator): Promise<void> {
-  await host.evaluate((el: LoggedHost) => {
-    const log: string[] = [];
-    el.cngxE2eLog = log;
-    new MutationObserver((records) => {
-      for (const record of records) {
-        const name = record.attributeName ?? '';
-        log.push(`${name}=${el.getAttribute(name) ?? 'null'}`);
-      }
-    }).observe(el, { attributes: true, attributeFilter: ['data-pending', 'data-busy'] });
-  });
-}
-
-function runLogOf(host: Locator): Promise<string[]> {
-  return host.evaluate((el: LoggedHost) => [...(el.cngxE2eLog ?? [])]);
 }
 
 test.describe('common/button/button', () => {
@@ -191,7 +146,7 @@ test.describe('common/button/button', () => {
     await expect(save).not.toHaveAttribute('data-pending');
     await expect(save).not.toHaveAttribute('data-busy');
     await countClicks(save);
-    await recordRunAttributes(save);
+    await recordAttributes(save, ['data-pending', 'data-busy']);
 
     await save.click();
     await expect(save).toHaveAttribute('data-pending', 'true');
@@ -212,7 +167,7 @@ test.describe('common/button/button', () => {
     await expect(save.locator('.cngx-button__busy')).toHaveCount(0);
 
     // data-pending is set first, data-busy follows once the show delay passed.
-    const log = await runLogOf(save);
+    const log = await attributeLogOf(save);
     expect(log[0]).toBe('data-pending=true');
     expect(log.indexOf('data-busy=true')).toBeGreaterThan(0);
 
@@ -228,10 +183,10 @@ test.describe('common/button/button', () => {
     await gotoDemo(page, ASYNC);
     await page.getByRole('radio', { name: /fast run/ }).check();
     const save = artifactOf(page).getByRole('button', { name: 'Save changes' });
-    await recordRunAttributes(save);
+    await recordAttributes(save, ['data-pending', 'data-busy']);
 
     await save.click();
-    await expect.poll(() => runLogOf(save)).toEqual(['data-pending=true', 'data-pending=null']);
+    await expect.poll(() => attributeLogOf(save)).toEqual(['data-pending=true', 'data-pending=null']);
     await expect(save).not.toHaveAttribute('aria-busy');
     await expect(save).not.toHaveAttribute('data-busy');
   });
