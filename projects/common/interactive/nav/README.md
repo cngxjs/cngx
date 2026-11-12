@@ -242,7 +242,7 @@ The nav atoms ship their skin in `cngx-nav.css` (`@cngx/common/theming/component
 
 | Group | Tokens |
 |-|-|
-| Row | `--cngx-nav-link-padding`, `-font-size`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
+| Row | `--cngx-nav-link-padding`, `-padding-inline`, `-font-size`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
 | States | `--cngx-nav-link-hover-color`, `-hover-bg`, `-pressed-bg`, `-active-color`, `-active-bg`, `-active-hover-bg`, `-active-font-weight` |
 | Indicator | `--cngx-nav-link-active-indicator-color`, `-size`, `-inset` |
 | Focus | `--cngx-nav-link-focus-outline-color`, `-inner-color`, `-outline-width`, `-outline-offset` |
@@ -265,6 +265,8 @@ A container that wants its own look SETs the tokens on its host; the rows inside
   --cngx-nav-link-inset: 8px;
 }
 ```
+
+`--cngx-nav-link-padding-inline` moves the rows, the header and footer marks and the section labels together. The `--cngx-nav-link-padding` shorthand moves only the rows; a container that SETs it builds the inline part from `--cngx-nav-link-padding-inline`, as `cngx-sidenav` does.
 
 To restyle a single row, SET the token on that row instead (`[cngxNavLink].danger { --cngx-nav-link-color: var(--cngx-color-danger-text); }`). Do not write `background` or `padding` on `.cngx-nav-link` directly: the state ladder and the indicator read the tokens, and a raw property only wins for the rest state.
 

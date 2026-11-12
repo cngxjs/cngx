@@ -2,7 +2,13 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxNavGroup, CngxNavLink } from '@cngx/common/interactive';
+import {
+  CngxNavGroup,
+  CngxNavHeader,
+  CngxNavLink,
+  CngxNavMark,
+  CngxNavName,
+} from '@cngx/common/interactive';
 import { computedValue, contrastRatio, oklabOf, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
@@ -26,7 +32,7 @@ type Fill = (typeof FILLS)[number];
 @Component({
   selector: 'cngx-sidenav-nav-state-host',
   standalone: true,
-  imports: [CngxSidenav, CngxNavLink, CngxNavGroup],
+  imports: [CngxSidenav, CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavMark, CngxNavName],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -39,6 +45,10 @@ type Fill = (typeof FILLS)[number];
   encapsulation: ViewEncapsulation.None,
   template: `
     <cngx-sidenav class="rail-a" mode="side" [opened]="true" ariaLabel="Primary">
+      <cngx-nav-header>
+        <span cngxNavMark class="mark-expanded">A</span>
+        <span cngxNavName>Acme</span>
+      </cngx-nav-header>
       <nav>
         <a cngxNavLink href="#inbox" class="row-active" [active]="true">Inbox</a>
         <a cngxNavLink href="#drafts" class="row-idle">Drafts</a>
@@ -73,6 +83,10 @@ type Fill = (typeof FILLS)[number];
       [expandOnHover]="false"
       ariaLabel="Mini"
     >
+      <cngx-nav-header>
+        <span cngxNavMark class="mark-mini">A</span>
+        <span cngxNavName>Acme</span>
+      </cngx-nav-header>
       <a cngxNavLink href="#mini" class="row-mini" [active]="true">Inbox</a>
     </cngx-sidenav>
     <div data-density="compact">
@@ -352,6 +366,15 @@ describe('active indicator', () => {
     expect(getComputedStyle(row, '::before').content).toContain('I');
     expect(bar(row, 'content')).toBe('""');
     expect(bar(row, 'position')).toBe('absolute');
+  });
+
+  it('keeps the header mark at its x when the sidenav collapses to the rail', () => {
+    const root = mount();
+    const offset = (mark: string, rail: string): number =>
+      one(root, mark).getBoundingClientRect().left - one(root, rail).getBoundingClientRect().left;
+    expect(
+      Math.abs(offset('.mark-mini', '.rail-mini') - offset('.mark-expanded', '.rail-a')),
+    ).toBeLessThanOrEqual(0.5);
   });
 
   it('thins the bar under compact density', () => {

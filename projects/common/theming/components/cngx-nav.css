@@ -68,7 +68,9 @@
  * - `--cngx-nav-link-focus-inner-color` -> `--cngx-color-surface`
  * - `--cngx-nav-link-active-indicator-color` -> `--cngx-color-primary-text`
  * - `--cngx-nav-link-inset` -> `--cngx-space-xs`
- * - `--cngx-nav-link-padding` -> `--cngx-space-sm` `--cngx-space-md`
+ * - `--cngx-nav-link-padding` -> `--cngx-space-sm` `--cngx-nav-link-padding-inline`
+ * - `--cngx-nav-link-padding-inline` -> `--cngx-space-md` (read on the row,
+ *   the header, the footer and the section label)
  * - `--cngx-nav-label-color` -> `--cngx-color-text-muted`
  * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color` ->
  *   `--cngx-color-border`
@@ -105,6 +107,22 @@
     /* Read on the row; inherits so a container SET reaches it. No initial
        value: a registered pixel initial would defeat the use-site fallback, so
        a row outside any container could not follow [data-density]. */
+    inherits: true;
+  }
+
+  /**
+   * Inline padding of a nav row, and the inline offset of the header, footer
+   * and section label past the row inset. One value, so a mark and a label
+   * stay at the row icon x and label x. The default row padding reads it;
+   * a container that SETs the `--cngx-nav-link-padding` shorthand builds it
+   * from this token to keep the slots aligned.
+   * @group Layout
+   * @see [[--cngx-space-md]]
+   */
+  @property --cngx-nav-link-padding-inline {
+    syntax: '*';
+    /* No initial value: the use-site fallback reads --cngx-space-md on the
+       row, so density reaches rows and slots alike. */
     inherits: true;
   }
 
@@ -590,7 +608,10 @@
     margin-inline-start: calc(
       var(--cngx-nav-link-inset, 4px) + var(--cngx-nav-depth, 0) * var(--cngx-nav-indent, 12px)
     );
-    padding: var(--cngx-nav-link-padding, var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px));
+    padding: var(
+      --cngx-nav-link-padding,
+      var(--cngx-space-sm, 8px) var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+    );
     border-radius: var(--cngx-nav-link-radius, 4px);
     background: transparent;
     font-size: var(--cngx-nav-link-font-size, 0.875rem);
@@ -726,7 +747,11 @@
     display: block;
     padding: var(
       --cngx-nav-label-padding,
-      var(--cngx-space-md, 16px) calc(var(--cngx-nav-link-inset, 4px) + var(--cngx-space-md, 16px))
+      var(--cngx-space-md, 16px)
+        calc(
+          var(--cngx-nav-link-inset, 4px) +
+            var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+        )
         var(--cngx-space-xs, 4px)
     );
     font-size: var(--cngx-nav-label-font-size, 0.75rem);
@@ -786,7 +811,10 @@
     align-items: center;
     gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
     box-sizing: border-box;
-    padding-inline: calc(var(--cngx-nav-link-inset, 4px) + var(--cngx-space-md, 16px));
+    padding-inline: calc(
+      var(--cngx-nav-link-inset, 4px) +
+        var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+    );
   }
 
   .cngx-nav-header {

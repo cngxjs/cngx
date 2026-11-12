@@ -375,7 +375,8 @@
       --cngx-sidenav-border-color,
       var(--cngx-color-border, oklch(0.89 0 0))
     );
-    --cngx-nav-link-padding: var(--cngx-space-sm) var(--cngx-space-md);
+    --cngx-nav-link-padding: var(--cngx-space-sm)
+      var(--cngx-nav-link-padding-inline, var(--cngx-space-md));
     --cngx-nav-link-inset: var(--cngx-space-xs);
     /* Nav row fills: one accent at rising ratios over transparent, so they
        composite over any --cngx-sidenav-bg and grow away from the surface in
@@ -563,14 +564,12 @@
     scrollbar-width: none;
   }
 
-  /* Collapsed rail: truncate header/footer */
+  /* Collapsed rail: clip header/footer; the mark keeps its x at the row icon x. */
   cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-header,
   cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-footer {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: clip;
-    text-align: center;
-    padding: 8px 4px;
   }
 
   /* Hide section labels and nav group buttons on the collapsed rail */

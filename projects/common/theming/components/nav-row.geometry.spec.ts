@@ -108,6 +108,17 @@ type Fill = (typeof FILLS)[number];
       <a cngxNavLink href="#rtl" class="row-rtl" [active]="true">Inbox</a>
       <button type="button" cngxNavGroup class="row-group-rtl">Settings</button>
     </nav>
+    <nav aria-label="Wide" style="--cngx-nav-link-padding-inline: 28px">
+      <cngx-nav-header>
+        <span cngxNavMark class="wide-mark">W</span>
+        <span cngxNavName>Wide</span>
+      </cngx-nav-header>
+      <span cngxNavLabel class="wide-label">Section</span>
+      <a cngxNavLink href="#wide" class="wide-row">
+        <span cngxNavIcon class="wide-icon">W</span>
+        Wide
+      </a>
+    </nav>
     <div data-density="compact">
       <nav aria-label="Compact">
         <a cngxNavLink href="#compact" class="row-compact" [active]="true">Inbox</a>
@@ -484,6 +495,20 @@ describe('header and footer slots', () => {
         Math.abs(one(root, selector).getBoundingClientRect().left - rowIconX),
       ).toBeLessThanOrEqual(0.5);
     }
+  });
+
+  it('moves the mark, the label and the row icon together with the inline padding token', () => {
+    const root = mount();
+    const row = one(root, '.wide-row');
+    expect(computedValue(row, 'padding-left')).toBe('28px');
+    const iconX = one(root, '.wide-icon').getBoundingClientRect().left;
+    expect(
+      Math.abs(one(root, '.wide-mark').getBoundingClientRect().left - iconX),
+    ).toBeLessThanOrEqual(0.5);
+    const label = one(root, '.wide-label');
+    const labelTextX =
+      label.getBoundingClientRect().left + parseFloat(computedValue(label, 'padding-left'));
+    expect(Math.abs(labelTextX - iconX)).toBeLessThanOrEqual(0.5);
   });
 
   it('sizes a mark to the icon box', () => {

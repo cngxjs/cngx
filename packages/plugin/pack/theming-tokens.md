@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3005 tokens across 167 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3015 tokens across 167 components.
 
 ## CngxA11yPanel
 
@@ -1939,6 +1939,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -1983,6 +1984,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2027,6 +2029,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2071,6 +2074,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2115,6 +2119,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2159,6 +2164,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2203,6 +2209,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2247,6 +2254,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2291,6 +2299,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
@@ -2335,6 +2344,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
