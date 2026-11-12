@@ -2,32 +2,54 @@
   <ng-container cngxSelectAutoRecycler />
 }
 @if (spacerVirtualizer(); as v) {
-  <div class="cngx-select__virtual-spacer" cngxRecyclerPlaceholder [rowHeight]="v.rowSizeHint()" aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
+  <div
+    class="cngx-select__virtual-spacer"
+    cngxRecyclerPlaceholder
+    [rowHeight]="v.rowSizeHint()"
+    aria-hidden="true"
+    [style.height.px]="v.offsetBefore()"
+  ></div>
 }
 @for (item of renderItems(); track $index) {
   @if (host.isGroup(item)) {
     <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
       @if (host.tpl.optgroup(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
+        <div aria-hidden="true">
+          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
+        </div>
       } @else {
         <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
       }
       @for (opt of item.children; track opt.value) {
-        <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled, virtualIndex: null }" />
+        <ng-container
+          *ngTemplateOutlet="
+            optionRow;
+            context: { $implicit: opt, groupDisabled: !!item.disabled, virtualIndex: null }
+          "
+        />
       }
     </div>
   } @else {
     <ng-container
-      *ngTemplateOutlet="optionRow; context: {
-        $implicit: item,
-        groupDisabled: false,
-        virtualIndex: virtualizer() ? virtualizer()!.startIndex() + $index : null
-      }"
+      *ngTemplateOutlet="
+        optionRow;
+        context: {
+          $implicit: item,
+          groupDisabled: false,
+          virtualIndex: virtualizer() ? virtualizer()!.startIndex() + $index : null,
+        }
+      "
     />
   }
 }
 @if (spacerVirtualizer(); as v) {
-  <div class="cngx-select__virtual-spacer" cngxRecyclerPlaceholder [rowHeight]="v.rowSizeHint()" aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
+  <div
+    class="cngx-select__virtual-spacer"
+    cngxRecyclerPlaceholder
+    [rowHeight]="v.rowSizeHint()"
+    aria-hidden="true"
+    [style.height.px]="v.offsetAfter()"
+  ></div>
 }
 
 <!--
@@ -44,13 +66,18 @@
     class="cngx-select__option"
     [class.cngx-select__option--selected]="host.isSelected(opt)"
     [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
-    [class.cngx-select__option--indicator-after]="host.resolvedSelectionIndicatorPosition() === 'after'"
+    [class.cngx-select__option--indicator-after]="
+      host.resolvedSelectionIndicatorPosition() === 'after'
+    "
     [class.cngx-select__option--indicated]="host.resolvedShowSelectionIndicator()"
     [attr.data-cngx-recycle-index]="virtualIndex"
     [attr.aria-setsize]="virtualIndex !== null ? virtualizer()?.setsize() : null"
     [attr.aria-posinset]="virtualIndex !== null ? virtualIndex + 1 : null"
   >
-    @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
+    @if (
+      host.resolvedShowSelectionIndicator() &&
+      host.resolvedSelectionIndicatorPosition() === 'before'
+    ) {
       @if (host.tpl.check(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'before')" />
       } @else {
@@ -58,11 +85,23 @@
       }
     }
     @if (host.tpl.optionLabel(); as tpl) {
-      <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt), highlighted: isHighlighted(opt) }" />
+      <ng-container
+        *ngTemplateOutlet="
+          tpl;
+          context: {
+            $implicit: opt,
+            option: opt,
+            selected: host.isSelected(opt),
+            highlighted: isHighlighted(opt),
+          }
+        "
+      />
     } @else {
       {{ opt.label }}
     }
-    @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
+    @if (
+      host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after'
+    ) {
       @if (host.tpl.check(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'after')" />
       } @else {
@@ -75,9 +114,16 @@
       } @else {
         <span aria-hidden="true" class="cngx-select__option-spinner"></span>
       }
-    } @else if (host.commitErrorDisplay() === 'inline' && host.showCommitError() && host.isSelected(opt)) {
+    } @else if (
+      host.commitErrorDisplay() === 'inline' && host.showCommitError() && host.isSelected(opt)
+    ) {
       @if (host.tpl.optionError(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, error: host.commitErrorValue() }" />
+        <ng-container
+          *ngTemplateOutlet="
+            tpl;
+            context: { $implicit: opt, option: opt, error: host.commitErrorValue() }
+          "
+        />
       } @else {
         <span aria-hidden="true" class="cngx-select__option-error">!</span>
       }
@@ -93,10 +139,7 @@
 <ng-template #defaultIndicator let-opt>
   @switch (host.resolvedSelectionIndicatorVariant()) {
     @case ('radio') {
-      <cngx-radio-indicator
-        class="cngx-select__check"
-        [checked]="host.isSelected(opt)"
-      />
+      <cngx-radio-indicator class="cngx-select__check" [checked]="host.isSelected(opt)" />
     }
     @case ('checkmark') {
       <cngx-checkbox-indicator

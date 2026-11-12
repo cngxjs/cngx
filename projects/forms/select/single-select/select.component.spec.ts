@@ -36,6 +36,7 @@ import {
   type CngxSelectAriaLabels,
 } from '../shared/config';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
+import { CngxSelectOptgroupTemplate } from '../shared/template-slots';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../shared/commit-action.types';
 
 const OPTIONS: CngxSelectOptionDef<string>[] = [
@@ -545,6 +546,38 @@ describe('CngxSelect - grouped options', () => {
     const options = fixture.debugElement.queryAll(By.directive(CngxListbox))[0];
     const listbox = options.injector.get(CngxListbox);
     expect(listbox.options().length).toBe(4);
+  });
+
+  it('keeps a projected *cngxSelectOptgroup header out of the group name', () => {
+    @Component({
+      template: `
+        <cngx-select [label]="'G'" [options]="grouped">
+          <ng-template cngxSelectOptgroup let-group>
+            <span class="projected-group-header">{{ group.label }}</span>
+          </ng-template>
+        </cngx-select>
+      `,
+      imports: [CngxSelect, CngxSelectOptgroupTemplate],
+    })
+    class ProjectedGroupHost {
+      readonly grouped = GROUPED_OPTIONS;
+    }
+
+    const fixture = TestBed.createComponent(ProjectedGroupHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.open();
+    flush(fixture);
+    const headers: HTMLElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('.projected-group-header'),
+    );
+    expect(headers.length).toBe(2);
+    for (const header of headers) {
+      expect(header.closest('[role="group"]')).not.toBeNull();
+      expect(header.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
   });
 });
 

@@ -54,8 +54,8 @@ export interface CngxFlatNavContext<T> {
  * The strategy only decides; the composite acts on the result. `select` runs
  * the composite's normal pick, including a bound commit; `highlight` opens the
  * panel and moves the active option; `noop` leaves the key to the browser.
- * `CngxSelect` does not re-check a `select` option for `disabled`, so a custom
- * strategy skips disabled options itself.
+ * The composite drops a `select` whose option is disabled and treats it as
+ * `noop`, so a custom strategy cannot pick a disabled option.
  */
 export type CngxFlatNavAction<T> =
   /** Typeahead hit; variant runs its pick semantics. */
