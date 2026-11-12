@@ -1005,6 +1005,15 @@
     );
   }
 
+  /* The flyout already shows the nesting by sitting beside its head, so its
+     rows drop the first indent level; deeper levels still indent. */
+  .cngx-nav-group-content:popover-open :is(.cngx-nav-link, .cngx-nav-group) {
+    margin-inline-start: calc(
+      var(--cngx-nav-link-inset, 4px) + max(0, var(--cngx-nav-depth, 0) - 1) *
+        var(--cngx-nav-indent, 12px)
+    );
+  }
+
   /* Label tooltip of a railed row (injectNavRailTooltip wires the anchor):
      at the inline end of the row. Two classes, so it beats the margin reset
      of the tooltip skin's @scope. */

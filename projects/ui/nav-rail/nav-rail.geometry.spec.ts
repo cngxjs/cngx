@@ -57,7 +57,7 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
         </button>
         <div [cngxNavGroupContent]="reports" class="flyout">
           <div>
-            <a cngxNavLink href="#weekly" [depth]="1">Weekly</a>
+            <a cngxNavLink href="#weekly" [depth]="1" class="sub">Weekly</a>
             <a cngxNavLink href="#monthly" [depth]="1">Monthly</a>
           </div>
         </div>
@@ -193,4 +193,13 @@ describe('CngxNavRail geometry', () => {
       }
     });
   }
+
+  it('drops the first indent level for the rows of an open flyout', async () => {
+    const { fixture, el } = mount('end');
+    el('.head').click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(getComputedStyle(el('.sub')).marginInlineStart).toBe('4px');
+  });
 });
