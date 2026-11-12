@@ -114,7 +114,11 @@ describe('CngxNavRail', () => {
   it('shows the row label in a tooltip in the icon-only look and not in the stacked look', () => {
     const { fixture, rail, el, settle } = setup();
     const tip = rail.querySelector<HTMLElement>('.cngx-nav-rail-tooltip')!;
-    el('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    // Keyboard focus: jsdom has no :focus-visible heuristic, so the row reports it.
+    const row = el('.row-inbox');
+    const matches = row.matches.bind(row);
+    row.matches = (selector: string) => selector === ':focus-visible' || matches(selector);
+    row.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(tip.hasAttribute('data-popover-open')).toBe(true);
     el('.row-inbox').dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
     fixture.componentInstance.placement.set('below');
