@@ -153,6 +153,33 @@ describe('README relative links', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('links folders only where the docs build has a feature page for them', () => {
+    // On a feature page compodocx rewrites a link without `.md` to the page
+    // of the feature whose folder it names and drops any other one to plain
+    // text. The JSON export names a feature folder only through its README
+    // (`semantic.features[].readme`), so a folder link in a rendered README
+    // must hit a folder that holds a rendered README.
+    const doc = JSON.parse(readFileSync(join(ROOT, '.compodoc/documentation.json'), 'utf8'));
+    const rendered = (doc.semantic?.features ?? []).map((f) => f.readme).filter(Boolean);
+    const folders = new Set(rendered.map((file) => dirname(file)));
+    const offenders = rendered.flatMap((file) =>
+      links(readFileSync(join(ROOT, file), 'utf8'))
+        .filter((href) => !isExternal(href) && !href.startsWith('#'))
+        .map((href) => decodeURI(href.split('#')[0]))
+        .filter((path) => !/\.md$/i.test(path))
+        .map((path) => ({
+          path,
+          target: relative(
+            ROOT,
+            path.startsWith('/') ? join(ROOT, path) : join(ROOT, dirname(file), path),
+          ),
+        }))
+        .filter(({ target }) => !folders.has(target))
+        .map(({ path, target }) => `${file}: ${path} (no feature page for ${target})`),
+    );
+    expect(offenders).toEqual([]);
+  });
+
   it('slugs headings the way GitHub renders them', () => {
     expect(headingSlug('`model<T>()` for two-way bindable atoms')).toBe(
       'modelt-for-two-way-bindable-atoms',
