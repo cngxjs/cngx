@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { posix, resolve } from 'node:path';
+import { resolve } from 'node:path';
 
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
+import { moduleFilesOf } from '../dev-diagnostics.mjs';
 import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
 
 /**
@@ -328,13 +329,10 @@ const BARREL = /(^|\/)public-api\.ts$/;
  */
 export function barrelReach(files) {
   const byPath = new Map(files.map((file) => [file.path, file.text]));
-  const resolveSpecifier = (from, specifier) => {
-    if (!ts.isStringLiteral(specifier) || !specifier.text.startsWith('.')) {
-      return undefined;
-    }
-    const base = posix.join(posix.dirname(from), specifier.text);
-    return [`${base}.ts`, `${base}/index.ts`, `${base}/public-api.ts`].find((c) => byPath.has(c));
-  };
+  const resolveSpecifier = (from, specifier) =>
+    ts.isStringLiteral(specifier)
+      ? moduleFilesOf(from, specifier.text)?.find((c) => byPath.has(c))
+      : undefined;
   const reached = new Set();
   /** @type {{ path: string, name: string | null }[]} */
   const queue = files
