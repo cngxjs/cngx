@@ -84,7 +84,7 @@ interface FlyoutPair {
  *   constructor() {
  *     injectNavRailFlyout({
  *       railed: signal(true),
- *       side: signal('start'),
+ *       side: signal<CngxNavRailSide>('start'),
  *       groups: this.groups,
  *       groupElements: this.groupElements,
  *       contents: this.contents,

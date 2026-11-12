@@ -178,10 +178,10 @@ export class CngxNavRail {
   });
 
   constructor() {
-    inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(
-      computed(() => this.resolvedLabelPlacement() === 'end' && this.resolvedTooltip()),
-      this.resolvedSide,
-    );
+    inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)({
+      railed: computed(() => this.resolvedLabelPlacement() === 'end' && this.resolvedTooltip()),
+      side: this.resolvedSide,
+    });
     inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({
       railed: signal(true).asReadonly(),
       side: this.resolvedSide,

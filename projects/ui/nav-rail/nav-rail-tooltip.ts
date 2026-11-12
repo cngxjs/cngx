@@ -17,6 +17,20 @@ import type { CngxNavRailSide } from './nav-rail';
 const ROW_SELECTOR = '.cngx-nav-link, .cngx-nav-group';
 
 /**
+ * What `injectNavRailTooltip` reads from the organism that hosts the rows. A
+ * sources object, like `CngxNavRailFlyoutSources`, so a later input does not
+ * break the signature of a `CNGX_NAV_RAIL_TOOLTIP_FACTORY` override.
+ *
+ * @since 0.3.0
+ */
+export interface CngxNavRailTooltipSources {
+  /** `true` while the rows are railed, their labels clipped and the tooltip wanted. */
+  readonly railed: Signal<boolean>;
+  /** The edge the rows sit on; the tooltip opens away from it. */
+  readonly side: Signal<CngxNavRailSide>;
+}
+
+/**
  * A row the rail leaves alone: one inside a group content (the flyout shows
  * it at full width), an open group head (its flyout sits where the tooltip
  * would), or a row that is described by a tooltip of its own (`[cngxTooltip]`).
@@ -68,8 +82,8 @@ function rowLabel(row: HTMLElement): string {
 /**
  * Shows the clipped label of a nav row in a tooltip while a navigation rail
  * is collapsed. Call it in the constructor of the organism that hosts the
- * rows (today `cngx-nav-rail`) and pass a derived signal that is `true`
- * while the rows are railed and the tooltip is wanted. While it is `false`
+ * rows (today `cngx-nav-rail`) and pass `railed`, a derived signal that is
+ * `true` while the rows are railed and the tooltip is wanted, and `side`. While it is `false`
  * no tooltip element exists and no listener is attached; each flip sets the
  * tooltip up or tears it down, so an organism can switch it off at runtime
  * (`cngx-nav-rail` folds its `tooltip` input in).
@@ -98,20 +112,20 @@ function rowLabel(row: HTMLElement): string {
  * ```typescript
  * export class MyRail {
  *   readonly collapsed = input(false);
- *   readonly side = input<'start' | 'end'>('start');
+ *   readonly side = input<CngxNavRailSide>('start');
  *   constructor() {
- *     injectNavRailTooltip(this.collapsed, this.side);
+ *     injectNavRailTooltip({ railed: this.collapsed, side: this.side });
  *   }
  * }
  * ```
  *
- * @param railed `true` while the rows are railed, their labels clipped and the tooltip wanted.
- * @param side The edge the rows sit on; the tooltip opens away from it.
+ * @param sources The rail state and the side the rows sit on.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
  * @since 0.3.0
  * @relatedTo injectNavRailFlyout, withNavRailTooltipDelay, withNavRailTooltip, CngxNavLink, CngxNavGroup, CngxTooltip
  */
-export function injectNavRailTooltip(railed: Signal<boolean>, side: Signal<CngxNavRailSide>): void {
+export function injectNavRailTooltip(sources: CngxNavRailTooltipSources): void {
+  const { railed, side } = sources;
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const renderer = inject(Renderer2);
   const hoverDelay = injectNavRailConfig().tooltipDelay ?? CNGX_NAV_RAIL_DEFAULTS.tooltipDelay;
@@ -262,22 +276,19 @@ function attachNavRailTooltip(
 }
 
 /** The shape an override of {@link CNGX_NAV_RAIL_TOOLTIP_FACTORY} must match. */
-export type CngxNavRailTooltipFactory = (
-  railed: Signal<boolean>,
-  side: Signal<CngxNavRailSide>,
-) => void;
+export type CngxNavRailTooltipFactory = (sources: CngxNavRailTooltipSources) => void;
 
 /**
  * Swap token for the rail's label tooltip. The default resolves to
  * {@link injectNavRailTooltip}; `cngx-nav-rail` calls
- * `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(active, side)` in its constructor, so an
+ * `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(sources)` in its constructor, so an
  * override runs in the rail's injection context and may inject what it needs
  * (`ElementRef`, `Renderer2`, `CngxTooltip` infrastructure). Provide
  * `() => {}` to drop the tooltip machinery entirely.
  *
- * `active` already folds in the look and the `[tooltip]` / `withNavRailTooltip`
- * switch: it is `true` only in the `'end'` look with the tooltip on, so an
- * override honours the switch by reading it.
+ * `sources.railed` already folds in the look and the `[tooltip]` /
+ * `withNavRailTooltip` switch: it is `true` only in the `'end'` look with the
+ * tooltip on, so an override honours the switch by reading it.
  *
  * ```ts
  * providers: [{ provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY, useValue: () => {} }];
@@ -285,7 +296,7 @@ export type CngxNavRailTooltipFactory = (
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
  * @since 0.3.0
- * @relatedTo injectNavRailTooltip, CngxNavRail, CNGX_NAV_RAIL_FLYOUT_FACTORY
+ * @relatedTo injectNavRailTooltip, CngxNavRailTooltipSources, CngxNavRail, CNGX_NAV_RAIL_FLYOUT_FACTORY
  */
 export const CNGX_NAV_RAIL_TOOLTIP_FACTORY = new InjectionToken<CngxNavRailTooltipFactory>(
   'CngxNavRailTooltipFactory',

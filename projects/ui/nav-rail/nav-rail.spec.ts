@@ -1,4 +1,4 @@
-import { Component, effect, signal, type Signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   CngxNavFooter,
@@ -12,7 +12,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { CNGX_NAV_RAIL_I18N, provideNavRailI18n, withNavRailI18nLabels } from './nav-rail-i18n';
 import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
 import { CNGX_NAV_RAIL_FLYOUT_FACTORY, injectNavRailFlyout } from './nav-rail-flyout';
-import { CNGX_NAV_RAIL_TOOLTIP_FACTORY, injectNavRailTooltip } from './nav-rail-tooltip';
+import {
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+  type CngxNavRailTooltipSources,
+  injectNavRailTooltip,
+} from './nav-rail-tooltip';
 
 @Component({
   imports: [
@@ -209,9 +213,9 @@ describe('CngxNavRail', () => {
       providers: [
         {
           provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-          useValue: (active: Signal<boolean>, side: Signal<CngxNavRailSide>) => {
+          useValue: ({ railed, side }: CngxNavRailTooltipSources) => {
             effect(() => {
-              seen.push(active());
+              seen.push(railed());
             });
             effect(() => {
               sides.push(side());

@@ -287,12 +287,13 @@ organism:
 Both are behind swap tokens: `CNGX_NAV_RAIL_TOOLTIP_FACTORY` and
 `CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; `cngx-nav-rail`
 calls the provided factory in its own injection context. Provide `() => {}` to
-drop one. The tooltip factory receives the signal with the `[tooltip]` switch
-already folded in.
+drop one. The tooltip factory receives `railed` with the `[tooltip]` switch
+already folded in. Both take one sources object, and `side` (`'start'` or
+`'end'`) tells them which way to open.
 
-- `injectNavRailTooltip(railed)` - the label tooltip for clipped rows; while
-  `railed()` is `false` no tooltip element or listener exists.
-- `injectNavRailFlyout({ railed, groups, groupElements, contents, contentElements })` -
+- `injectNavRailTooltip({ railed, side })` - the label tooltip for clipped rows;
+  while `railed()` is `false` no tooltip element or listener exists.
+- `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` -
   nav groups as anchored flyouts while `railed()` is `true`; `groups` and
   `contents` are your content queries for `CngxNavGroup` and
   `CngxNavGroupContent`, `groupElements` and `contentElements` the same

@@ -31,7 +31,7 @@ class TestRail {
   readonly side = signal<CngxNavRailSide>('start');
 
   constructor() {
-    injectNavRailTooltip(this.railed, this.side);
+    injectNavRailTooltip({ railed: this.railed, side: this.side });
   }
 }
 

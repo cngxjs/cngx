@@ -5,6 +5,7 @@
 export {
   CNGX_NAV_RAIL_TOOLTIP_FACTORY,
   type CngxNavRailTooltipFactory,
+  type CngxNavRailTooltipSources,
   injectNavRailTooltip,
 } from './nav-rail-tooltip';
 export {
