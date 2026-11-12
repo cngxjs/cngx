@@ -84,7 +84,15 @@ export type CngxSelectTemplateContexts = {
 };
 
 /**
- * Live-region announcer config: politeness + formatter.
+ * Shape of the live-region announcement a select makes after a selection
+ * change.
+ *
+ * `enabled` (default `true`) switches the announcement off; a per-instance
+ * `[announceChanges]` wins. `politeness` (default `'polite'`) sets the
+ * live-region priority. `format` builds the message; unset, it comes from the
+ * `select` language section, and a per-instance `[announceTemplate]` wins.
+ * Provide it through `withAnnouncer`; the keys merge one by one over earlier
+ * features and the parent scope.
  */
 export interface CngxSelectAnnouncerConfig {
   readonly enabled?: boolean;
@@ -107,18 +115,30 @@ export interface CngxSelectAnnouncerConfig {
 }
 
 /**
- * First-load async view variant. Per-instance `*cngxSelectLoading` wins.
+ * Indicator the panel shows while the first load of `[state]` runs.
+ *
+ * Set app-wide through `withLoadingVariant`, per instance through
+ * `[loadingVariant]`. A projected `*cngxSelectLoading` template replaces
+ * every variant.
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
 /**
- * Subsequent-load indicator overlaying visible options. Per-instance
- * `*cngxSelectRefreshing` wins. `'none'` suppresses.
+ * Indicator the panel shows while a reload runs over options already listed.
+ *
+ * `'none'` renders nothing and leaves the panel's status region empty, so
+ * the refresh is silent for screen readers too. Set app-wide through
+ * `withRefreshingVariant`, per instance through `[refreshingVariant]`. A
+ * projected `*cngxSelectRefreshing` template replaces every variant.
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
 /**
- * Selection-indicator position relative to the option label.
+ * Side of the option label the selection indicator sits on in a panel row.
+ *
+ * `'after'` (default) places it at the row end, `'before'` ahead of the
+ * label. Set app-wide through `withSelectionIndicatorPosition`, per instance
+ * through `[selectionIndicatorPosition]`.
  */
 export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
 
@@ -374,9 +394,10 @@ export interface CngxSelectConfig {
   /** Truncate threshold. Values below 1 resolve to `1`, fractions are floored, non-finite values fall back to `3`. Default `3`. */
   readonly maxVisibleChips?: number;
   /**
-   * Forces the scalar-commit error announce policy. `null` keeps each
-   * variant's baseline (CngxSelect verbose/assertive, Typeahead +
-   * ActionSelect soft). Array-commit variants don't read this.
+   * Forces the commit-error announce policy on all nine composites. `null`
+   * keeps each variant's baseline (verbose/assertive on most hosts, soft on
+   * Typeahead and ActionSelect). A per-instance `[commitErrorAnnouncePolicy]`
+   * wins.
    */
   readonly commitErrorAnnouncePolicy?: CngxCommitErrorAnnouncePolicy | null;
   /** Class(es) applied to the panel root for theming. */
@@ -626,7 +647,13 @@ export const CNGX_SELECT_DEFAULTS: Required<
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
 
 /**
- * Feature returned by a `with*` helper. Merged by `provideSelectConfig`.
+ * One config slice returned by a `with*` helper of the select family.
+ *
+ * Pass any number of them to `provideSelectConfig`, `provideSelectConfigAt`,
+ * `makeSelectConfig` or `provideCngxSelect`. They apply in list order: a later
+ * feature replaces the keys an earlier one set, while the deep keys
+ * (`ariaLabels`, `fallbackLabels`, `announcer`, `templates`) merge one entry
+ * at a time.
  */
 export interface CngxSelectConfigFeature {
   readonly config: Partial<CngxSelectConfig>;
@@ -639,28 +666,54 @@ function feature(config: Partial<CngxSelectConfig>): CngxSelectConfigFeature {
 }
 
 /**
- * Panel width: `'trigger'` (match), fixed px number, or `null` (natural).
+ * Sets the minimum width of the select panel.
+ *
+ * `'trigger'` (default) matches the width of the bordered trigger row, a
+ * number sets a fixed minimum in px, and `null` lets the panel size to its
+ * content. Every composite reads it as the default of its `[panelWidth]`
+ * input, which wins per instance.
+ *
+ * @example
+ * ```ts
+ * provideSelectConfig(withPanelWidth(320));
+ * ```
  */
 export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelectConfigFeature {
   return feature({ panelWidth: width });
 }
 
 /**
- * First-load indicator variant. Default `'spinner'`.
+ * Sets the indicator the panel shows while the first load of `[state]` runs.
+ *
+ * `'spinner'` (default), `'bar'` and `'skeleton'` are hidden from assistive
+ * technology; the panel's status region announces the `statusLoading` label
+ * instead. `'text'` renders `fallbackLabels.loading` and announces that same
+ * string. A projected `*cngxSelectLoading` template replaces the variant and
+ * leaves the status region empty, so the template has to announce itself.
+ * The `[loadingVariant]` input on each composite overrides this default per
+ * instance; the row count of `'skeleton'` comes from `withSkeletonRowCount`.
  */
 export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelectConfigFeature {
   return feature({ loadingVariant: variant });
 }
 
 /**
- * Sets `skeletonRowCount`. Default `3`.
+ * Sets how many placeholder rows the `'skeleton'` loading variant renders.
+ *
+ * Default `3`. Only read while `loadingVariant` is `'skeleton'`; the rows are
+ * hidden from assistive technology. A per-instance `[skeletonRowCount]` wins.
  */
 export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
   return feature({ skeletonRowCount: count });
 }
 
 /**
- * Sets the refreshing indicator. Default `'bar'`. `'none'` suppresses.
+ * Sets the indicator shown while a reload runs over options already listed.
+ *
+ * Default `'bar'`; `'spinner'` and `'dots'` are the other visible variants.
+ * The visible indicator is hidden from assistive technology, and the panel's
+ * status region announces the refresh instead. `'none'` renders nothing and
+ * announces nothing. A per-instance `[refreshingVariant]` wins.
  */
 export function withRefreshingVariant(
   variant: CngxSelectRefreshingVariant,
@@ -669,7 +722,13 @@ export function withRefreshingVariant(
 }
 
 /**
- * Default `[commitAction]` error surface. Default `'banner'`.
+ * Sets where a failed `[commitAction]` shows its error.
+ *
+ * `'banner'` (default) renders a banner inside the panel, `'inline'` an error
+ * marker on the option row, and `'none'` neither. The
+ * live-region announcement of the failure is separate and follows
+ * `withCommitErrorAnnouncePolicy`. A per-instance `[commitErrorDisplay]`
+ * wins.
  */
 export function withCommitErrorDisplay(
   display: CngxSelectCommitErrorDisplay,
@@ -678,8 +737,12 @@ export function withCommitErrorDisplay(
 }
 
 /**
- * Forces the scalar-commit error-announce policy. `null` restores each
- * variant's baseline.
+ * Sets how a failed `[commitAction]` is announced to screen readers.
+ *
+ * `{ kind: 'verbose', severity }` reads the error message at the given
+ * live-region priority; `{ kind: 'soft' }` announces a generic removal at
+ * the current selection count instead. `null` (default) keeps each
+ * composite's own baseline. A per-instance `[commitErrorAnnouncePolicy]` wins.
  */
 export function withCommitErrorAnnouncePolicy(
   policy: CngxCommitErrorAnnouncePolicy | null,
@@ -688,15 +751,29 @@ export function withCommitErrorAnnouncePolicy(
 }
 
 /**
- * Default popover placement for flat variants. Default `'bottom'`.
- * Action organisms use `withActionPopoverPlacement`.
+ * Sets where the anchored panel opens relative to its trigger.
+ *
+ * Default `'bottom'`. Read by every composite except the two action hosts,
+ * which take their placement from `withActionPopoverPlacement`. A
+ * per-instance `[popoverPlacement]` wins.
+ *
+ * @example
+ * ```ts
+ * provideSelectConfig(withPopoverPlacement('top'));
+ * ```
  */
 export function withPopoverPlacement(placement: PopoverPlacement): CngxSelectConfigFeature {
   return feature({ popoverPlacement: placement });
 }
 
 /**
- * Sets `inputmode` for input-trigger variants. Default `'search'`.
+ * Sets the `inputmode` attribute of the search input, which picks the
+ * on-screen keyboard.
+ *
+ * Default `'search'`. Read by the input variants `CngxCombobox`,
+ * `CngxTypeahead`, `CngxActionSelect` and `CngxActionMultiSelect`; the
+ * button-trigger variants have no text input. A per-instance `[inputMode]`
+ * wins.
  */
 export function withInputMode(
   mode: NonNullable<CngxSelectConfig['inputMode']>,
@@ -705,8 +782,13 @@ export function withInputMode(
 }
 
 /**
- * Forces `enterkeyhint` across input-trigger variants. `null` restores
- * each variant's baseline.
+ * Sets the `enterkeyhint` attribute of the search input, which labels the
+ * Enter key of the on-screen keyboard.
+ *
+ * `null` (default) keeps each variant's baseline: `'done'` on `CngxTypeahead`,
+ * `'enter'` on `CngxCombobox` and `CngxActionMultiSelect`, `'go'` on
+ * `CngxActionSelect`. A value forces it on all four input variants. A
+ * per-instance `[enterKeyHint]` wins.
  */
 export function withEnterKeyHint(
   hint: NonNullable<CngxSelectConfig['enterKeyHint']> | null,
@@ -715,8 +797,20 @@ export function withEnterKeyHint(
 }
 
 /**
- * Sets the chip-strip overflow mode. Default `'wrap'`. `'fit'` keeps one row
- * and folds the chips that do not fit the trigger into the `+N` badge.
+ * Sets how the chip strip of a multi-value trigger handles more chips than
+ * fit.
+ *
+ * `'wrap'` (default) grows the trigger, `'scroll-x'` keeps one scrolling row,
+ * `'truncate'` shows `maxVisibleChips` chips plus a `+N` badge, and `'fit'`
+ * keeps one row and folds the chips that do not fit into the `+N` badge.
+ * `CngxReorderableMultiSelect` downgrades `'truncate'` and `'fit'` to
+ * `'scroll-x'`, since a hidden chip cannot be reordered. A per-instance
+ * `[chipOverflow]` wins.
+ *
+ * @example
+ * ```ts
+ * provideSelectConfig(withChipOverflow('truncate'), withMaxVisibleChips(2));
+ * ```
  */
 export function withChipOverflow(
   mode: NonNullable<CngxSelectConfig['chipOverflow']>,
@@ -725,8 +819,12 @@ export function withChipOverflow(
 }
 
 /**
- * Sets `maxVisibleChips` for truncate mode. Default `3`. Values below 1
- * resolve to 1, fractions are floored, non-finite values fall back to 3.
+ * Sets how many chips stay visible before the `+N` badge takes the rest.
+ *
+ * Default `3`. Values below 1 resolve to 1, fractions are floored and
+ * non-finite values fall back to 3. The flat multi-value variants read it in
+ * `'truncate'` overflow mode; `CngxTreeSelect` uses it as the cap of its
+ * one-line chip strip. A per-instance `[maxVisibleChips]` wins.
  */
 export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
   return feature({ maxVisibleChips: count });
@@ -786,7 +884,10 @@ export function withFallbackLabels(
 }
 
 /**
- * Class list applied to every select panel.
+ * Adds one or more classes to the root of every select panel, for theming.
+ *
+ * Default none. A per-instance `[panelClass]` adds its classes after the
+ * configured ones.
  */
 export function withPanelClass(panelClass: string | readonly string[]): CngxSelectConfigFeature {
   return feature({ panelClass });
@@ -817,7 +918,13 @@ export function withSearchDebounce(ms: number): CngxSelectConfigFeature {
 }
 
 /**
- * Typeahead-while-closed (native `<select>` parity). Default `true`.
+ * Sets whether typing on the closed trigger picks a matching option, as a
+ * native `<select>` does.
+ *
+ * Default `true`. Read by the button-trigger variants: `CngxSelect` and
+ * `CngxSelectShell` select the next match, `CngxMultiSelect` and
+ * `CngxReorderableMultiSelect` toggle the first match.
+ * There is no per-instance input.
  */
 export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeature {
   return feature({ typeaheadWhileClosed: enabled });
@@ -840,16 +947,23 @@ export function withSearchMatchFn(fn: CngxSelectMatchFn | null): CngxSelectConfi
 }
 
 /**
- * Whether the selected-option checkmark is rendered at all. Default `true`.
- * `CngxTreeSelect` ignores it and always renders its node checkbox.
+ * Sets whether panel rows render the selection indicator at all.
+ *
+ * Default `true`. With `false`, selection still reaches assistive technology
+ * through `aria-selected`. A per-instance
+ * `[hideSelectionIndicator]` wins. `CngxTreeSelect` ignores it and always
+ * renders its node checkbox.
  */
 export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showSelectionIndicator: enabled });
 }
 
 /**
- * Sets the selection-indicator position: `'after'` (default) at the row end,
- * `'before'` ahead of the label.
+ * Sets the side of the option label the selection indicator sits on.
+ *
+ * `'after'` (default) places it at the row end, `'before'` ahead of the
+ * label. A per-instance `[selectionIndicatorPosition]` wins. `CngxTreeSelect`
+ * does not read it.
  */
 export function withSelectionIndicatorPosition(
   position: CngxSelectSelectionIndicatorPosition,
@@ -858,8 +972,12 @@ export function withSelectionIndicatorPosition(
 }
 
 /**
- * Sets the selection-indicator glyph. Default `'auto'`. `CngxTreeSelect`
- * ignores it and always renders its node checkbox.
+ * Sets the glyph of the selection indicator in panel rows.
+ *
+ * `'auto'` (default) picks `'checkbox'` on the multi-value variants and
+ * `'checkmark'` on the single-value ones. A per-instance
+ * `[selectionIndicatorVariant]` wins. `CngxTreeSelect` ignores it and always
+ * renders its node checkbox.
  */
 export function withSelectionIndicatorVariant(
   variant: CngxSelectSelectionIndicatorVariant,
@@ -868,7 +986,11 @@ export function withSelectionIndicatorVariant(
 }
 
 /**
- * Whether the trigger's dropdown caret glyph is rendered. Default `true`.
+ * Sets whether the trigger renders its dropdown caret.
+ *
+ * Default `true`. The caret is decorative; the open state reaches assistive
+ * technology through `aria-expanded`. A per-instance `[hideCaret]` wins, and a
+ * projected `*cngxSelectCaret` template replaces the glyph.
  */
 export function withCaret(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showCaret: enabled });
@@ -908,16 +1030,30 @@ export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSele
 }
 
 /**
- * Open strategy for the trigger, honoured by all nine composites; the input
- * variants open on focus of their text input. Default `'click'`.
+ * Sets which gesture opens the panel: `'click'`, `'focus'` or
+ * `'click+focus'`.
+ *
+ * Default `'click'`. Honoured by all nine composites; the input variants
+ * open on focus of their text input. The focus restore after a close never
+ * reopens the panel. There is no per-instance input.
  */
 export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFeature {
   return feature({ openOn: mode });
 }
 
 /**
- * Configure the live-region announcer used for selection changes. Pass a
- * `Signal` to swap the formatter on a runtime language switch.
+ * Configures the live-region announcement every select makes after a
+ * selection change.
+ *
+ * The bundle merges per key, so `withAnnouncer({ politeness: 'assertive' })`
+ * keeps the default formatter. Pass a `Signal` to swap the formatter on a
+ * runtime language switch; the next announcement uses it. Per instance,
+ * `[announceChanges]` and `[announceTemplate]` win.
+ *
+ * @example
+ * ```ts
+ * provideSelectConfig(withAnnouncer({ politeness: 'assertive' }));
+ * ```
  */
 export function withAnnouncer(
   config: CngxSelectAnnouncerConfig | Signal<CngxSelectAnnouncerConfig>,
@@ -1035,8 +1171,27 @@ export function makeSelectConfig(...features: CngxSelectConfigFeature[]): CngxSe
 }
 
 /**
- * App-wide defaults for the Select family. `provideSelectConfigAt` and
- * per-instance inputs win.
+ * App-wide defaults for the select family, provided at bootstrap or on a
+ * route.
+ *
+ * Composes the `with*` features in list order through `makeSelectConfig`.
+ * `provideSelectConfigAt` below it and per-instance inputs win. To configure
+ * the action and reorderable configs in the same call, use
+ * `provideCngxSelect`.
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     provideSelectConfig(
+ *       withPanelWidth('trigger'),
+ *       withLoadingVariant('skeleton'),
+ *       withChipOverflow('fit'),
+ *       withSearchDebounce(150),
+ *     ),
+ *   ],
+ * });
+ * ```
  */
 export function provideSelectConfig(...features: CngxSelectConfigFeature[]): EnvironmentProviders {
   return makeEnvironmentProviders([
