@@ -39,8 +39,8 @@ export class SaveButtonComponent {
 
 - **ARIA roles:** Sets `aria-busy="true"` while pending and `aria-disabled="true"` on every host while pending, while the busy visual shows or while blocked. Both are immediate; only the busy visual is delayed (see Styling). The directive never sets the native `disabled` attribute
 - **Keyboard interaction:**
-  - `Enter`: Activates the action if focused (native button behavior)
-  - `Space`: Activates the action if focused (native button behavior)
+  - The directive listens to `click` only. On a `<button>` the browser turns `Enter` and `Space` into that click
+  - An anchor gets the click from `Enter` only; a `role="button"` host promises `Space` too, and the page adds it (see the `on-anchor-element` story, or `createActivationKeyHandler`)
   - A click during a run is swallowed (`preventDefault`, no second run); the host keeps its pointer events and stays focusable
 - **Screen reader:**
   - An auto-rendered polite region (a sibling of the host, outside its accessible name) speaks every success and error settle once
