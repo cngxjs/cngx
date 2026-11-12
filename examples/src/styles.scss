@@ -4298,6 +4298,14 @@ app-menu-button-material-bridge {
   @include cngx-menu-bridge.theme($demo-material-bridge-theme);
 }
 
+// The nav-rail stories wrap mat-icon in cngx-icon; only the icon bridge sizes
+// the glyph to the icon box, without it a 24px glyph clips in a 20px box.
+app-nav-rail-labels-beside,
+app-nav-rail-labels-below,
+app-nav-rail-rail-with-secondary-sidebar {
+  @include cngx-icon-bridge.theme($demo-material-bridge-theme);
+}
+
 // Demo-only accent for the stepper `chips` skin stories (matches the
 // reference screenshot). Static demo styling, not a library default;
 // the chips skin's own default active fill follows --cngx-color-primary.
