@@ -11,6 +11,7 @@ import {
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
+import { injectNavRailTooltip } from './nav-rail-tooltip';
 
 // Runs in a real Chromium (the `test-geometry` target): the rail width, the
 // clipped label and the anchored flyout are layout facts jsdom cannot see.
@@ -72,6 +73,32 @@ import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } fro
 class RailGeometryHost {
   readonly placement = signal<CngxNavRailLabelPlacement>('end');
   readonly side = signal<CngxNavRailSide>('start');
+}
+
+// Another organism calling the helper (the sidenav in its rail state): the
+// nav skin only, no nav-rail.css.
+@Component({
+  selector: 'cngx-nav-rail-geometry-foreign-host',
+  standalone: true,
+  imports: [CngxNavLink],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../common/theming/components/cngx-nav.css',
+    '../../common/theming/components/cngx-tooltip.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div class="frame" style="display: flex; justify-content: flex-end">
+      <nav style="inline-size: 60px">
+        <a cngxNavLink href="#inbox" class="row">Inbox</a>
+      </nav>
+    </div>
+  `,
+})
+class ForeignHost {
+  constructor() {
+    injectNavRailTooltip({ railed: signal(true), side: signal<CngxNavRailSide>('end') });
+  }
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -256,6 +283,24 @@ describe('CngxNavRail geometry', () => {
       }
     });
   }
+
+  it('places the tooltip of another organism away from its side without nav-rail.css', async () => {
+    const fixture = TestBed.createComponent(ForeignHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const sheets = Array.from(document.querySelectorAll('style'), (s) => s.textContent ?? '');
+    expect(sheets.some((text) => text.includes('cngx-nav-rail__body'))).toBe(false);
+    const row = mountedRoot.querySelector<HTMLElement>('.row')!;
+    row.focus();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    const tip = mountedRoot.querySelector<HTMLElement>('.cngx-nav-rail-tooltip')!;
+    expect(tip.matches(':popover-open')).toBe(true);
+    expect(tip.getBoundingClientRect().right).toBeLessThanOrEqual(
+      row.getBoundingClientRect().left - 7.5,
+    );
+  });
 
   it('keeps a closed flyout out of the page, with no UA popover box', () => {
     const { el } = mount('end');
