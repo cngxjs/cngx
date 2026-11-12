@@ -5,7 +5,7 @@
  * `action-button`, `sidenav`, `skeleton` and `speak` plus the three
  * async-state directives that moved to `@cngx/common/interactive`.
  * Everything else ships exclusively through its secondary entry point
- * (`@cngx/ui/<entry>`, 26 entries) - deliberately not re-exported here so
+ * (`@cngx/ui/<entry>`, 27 entries) - deliberately not re-exported here so
  * a root import can never pull Material or CDK into a bundle that does
  * not use them.
  *
