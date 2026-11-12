@@ -12,7 +12,14 @@ import {
 } from './option.model';
 
 /**
- * Input for {@link createProjectedOptionModel}.
+ * Projected content and search state `CngxSelectShell` hands to its option
+ * model.
+ *
+ * The shell passes its `<cngx-option>` / `<cngx-optgroup>` containers, the
+ * live search term and a `matches` function that resolves the
+ * `[searchMatchFn]` input over `withSearchMatchFn` and the locale default. A
+ * consumer meets this shape only when it replaces the model through
+ * {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY}.
  */
 export interface ProjectedOptionModelInput<T> {
   readonly containers: Signal<readonly CngxOptionContainer[]>;
@@ -29,8 +36,14 @@ export interface ProjectedOptionModelInput<T> {
 }
 
 /**
- * Output of {@link createProjectedOptionModel}. Each signal carries a
- * structural `equal` so unrelated CD passes don't cascade.
+ * Option tree, visible options and active-descendant items `CngxSelectShell`
+ * derives from its projected content. Each signal carries a structural
+ * `equal` so unrelated CD passes don't cascade.
+ *
+ * `derivedOptions` feeds the select core the same way `[options]` does on the
+ * data-driven composites. A replacement must keep `adItems` in step with
+ * `visibleProjectedOptions`, or keyboard navigation reaches options the
+ * filter hid.
  */
 export interface ProjectedOptionModel<T> {
   readonly derivedOptions: Signal<CngxSelectOptionsInput<T>>;
@@ -224,7 +237,11 @@ export function createProjectedOptionModel<T>(
 }
 
 /**
- * Factory signature for {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY}.
+ * Function shape a replacement projected-option model must have.
+ *
+ * `CngxSelectShell` calls it once during construction, in an injection
+ * context; no other composite projects options. Provide it through
+ * {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY}.
  */
 export type CngxProjectedOptionModelFactory = <T>(
   input: ProjectedOptionModelInput<T>,

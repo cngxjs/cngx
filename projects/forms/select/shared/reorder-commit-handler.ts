@@ -9,7 +9,14 @@ import type { CngxSelectOptionDef } from './option.model';
 import { commitLedgerFor } from './internal/commit-ledger';
 
 /**
- * Configuration for {@link createReorderCommitHandler}.
+ * Inputs `CngxReorderableMultiSelect` hands to the reorder commit handler.
+ *
+ * The composite passes the same commit controller its array handler uses, so
+ * a reorder and a toggle supersede each other instead of racing. A consumer
+ * meets this shape only when it replaces the handler through
+ * {@link CNGX_REORDER_COMMIT_HANDLER_FACTORY}. `onAnnounce` speaks the new
+ * position; wire `announceError` too, or a rejected reorder is silent for
+ * screen readers.
  */
 export interface ReorderCommitHandlerOptions<T> {
   /** Component's primary value signal. */
@@ -64,7 +71,13 @@ export interface ReorderCommitHandlerOptions<T> {
 }
 
 /**
- * API returned from {@link createReorderCommitHandler}.
+ * Entry points `CngxReorderableMultiSelect` calls for a drag or keyboard move
+ * and for the commit-error Retry.
+ *
+ * A separate handler exists because the array handler skips writes whose
+ * membership did not change, which is exactly what a reorder is. A
+ * replacement must write `values` on success even when only the order
+ * changed.
  */
 export interface ReorderCommitHandler<T> {
   /**
@@ -164,7 +177,11 @@ export function createReorderCommitHandler<T>(
 }
 
 /**
- * Signature of the factory behind {@link CNGX_REORDER_COMMIT_HANDLER_FACTORY}.
+ * Function shape a replacement reorder commit handler must have.
+ *
+ * `CngxReorderableMultiSelect` calls it once during construction, in an
+ * injection context. Provide it through
+ * {@link CNGX_REORDER_COMMIT_HANDLER_FACTORY}.
  */
 export type CngxReorderCommitHandlerFactory = <T>(
   opts: ReorderCommitHandlerOptions<T>,

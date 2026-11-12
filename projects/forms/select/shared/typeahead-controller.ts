@@ -6,7 +6,13 @@ import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './internal/select-core';
 
 /**
- * Configuration for {@link createTypeaheadController}.
+ * Inputs a button-trigger composite hands to its closed-trigger typeahead.
+ *
+ * `CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect` and
+ * `CngxSelectShell` build one controller each and pass their flat options,
+ * `compareWith`, the `[typeaheadDebounceInterval]` input and their
+ * `DestroyRef`. Without `destroyRef` the caller owns the buffer-reset timer and
+ * calls `clearBuffer()` itself.
  */
 export interface TypeaheadControllerOptions<T> {
   /** Flat candidate list in listbox order. */
@@ -37,7 +43,13 @@ export interface TypeaheadControllerOptions<T> {
 }
 
 /**
- * Public API returned from {@link createTypeaheadController}.
+ * Prefix matcher the button-trigger composites call while the panel is
+ * closed, the native `<select>` behaviour of typing to pick.
+ *
+ * The composite seeds the start index with `matchFromValue` and hands the
+ * controller to the flat-nav strategy's `onTypeaheadWhileClosed`, which calls
+ * `matchFromIndex`. It has no injection token; a different keyboard
+ * policy goes through {@link CNGX_FLAT_NAV_STRATEGY}.
  */
 export interface TypeaheadController<T> {
   /**

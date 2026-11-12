@@ -10,7 +10,9 @@ import type { LocalItemsBuffer } from './local-items-buffer';
 import type { CngxSelectOptionDef } from './option.model';
 
 /**
- * Configuration for {@link createCreateCommitHandler}. Callbacks are
+ * Inputs the two action hosts hand to the quick-create commit handler.
+ * A consumer meets this shape only when it replaces the handler through
+ * {@link CNGX_CREATE_COMMIT_HANDLER_FACTORY}. Callbacks are
  * plain functions - the handler reads no signals beyond
  * `quickCreateAction`, so consumers keep ownership of the reactive
  * surface.
@@ -80,7 +82,8 @@ export interface CreateCommitHandlerOptions<T, Prev = unknown> {
 }
 
 /**
- * API returned from {@link createCreateCommitHandler}. `T` is a phantom
+ * Quick-create entry points the action slot reaches through its `commit`
+ * and `retry` callbacks. `T` is a phantom
  * marker so consumers type the handler as
  * `CreateCommitHandler<Tag, readonly Tag[]>` instead of
  * `CreateCommitHandler<unknown, readonly Tag[]>` - constrains the
@@ -229,7 +232,13 @@ function requireCreatedItem<T>(
 }
 
 /**
- * Signature of the factory behind {@link CNGX_CREATE_COMMIT_HANDLER_FACTORY}.
+ * Function shape a replacement quick-create commit handler must have.
+ *
+ * `CngxActionSelect` and `CngxActionMultiSelect` each call it once during
+ * construction, in an injection context, with their own `Prev` shape. A
+ * replacement keeps creates pessimistic: the handler cannot build a
+ * placeholder `T` from a draft label. Provide it through
+ * {@link CNGX_CREATE_COMMIT_HANDLER_FACTORY}.
  */
 export type CngxCreateCommitHandlerFactory = <T, Prev = unknown>(
   opts: CreateCommitHandlerOptions<T, Prev>,

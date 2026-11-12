@@ -10,7 +10,14 @@ import { isEmptyScalar } from './internal/compare';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
 
 /**
- * Configuration for {@link createScalarCommitHandler}.
+ * Inputs a single-value composite hands to the scalar commit handler.
+ *
+ * `CngxSelect`, `CngxTypeahead`, `CngxActionSelect` and `CngxSelectShell` pass
+ * it. The two input-trigger hosts, `CngxTypeahead` and `CngxActionSelect`, also
+ * pass `onValueWrite` so the text field follows a success or a rollback. A
+ * consumer meets this shape only when it replaces the handler through
+ * {@link CNGX_SCALAR_COMMIT_HANDLER_FACTORY}. Route `onCommitError` to the
+ * commit-error announcer, or a failed commit is silent for screen readers.
  */
 export interface ScalarCommitHandlerOptions<T> {
   /** Primary scalar value signal. */
@@ -53,7 +60,14 @@ export interface ScalarCommitHandlerOptions<T> {
 }
 
 /**
- * API returned from {@link createScalarCommitHandler}.
+ * Commit entry points a single-value composite calls on selection, clear and
+ * Retry.
+ *
+ * Without a bound `[commitAction]` the composite calls `finalizeSelection`
+ * and no commit runs. With one, a selection goes through `beginCommit` or
+ * `dispatchFromActivation`, a clear through `beginClear`, and the
+ * commit-error Retry through `retryLast`. A replacement keeps the rollback
+ * target in step with the ledger through `createCommitBaseline`.
  */
 export interface ScalarCommitHandler<T> {
   /**
@@ -248,7 +262,12 @@ export function dispatchScalarClear<T>(opts: {
 }
 
 /**
- * Factory signature for {@link CNGX_SCALAR_COMMIT_HANDLER_FACTORY}.
+ * Function shape a replacement scalar commit handler must have.
+ *
+ * It is generic over the value type because one provider serves every
+ * single-value composite in its injector scope. Each composite calls it once
+ * during construction, in an injection context. Provide it through
+ * {@link CNGX_SCALAR_COMMIT_HANDLER_FACTORY}.
  */
 export type CngxScalarCommitHandlerFactory = <T>(
   opts: ScalarCommitHandlerOptions<T>,
