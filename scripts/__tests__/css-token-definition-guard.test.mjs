@@ -28,12 +28,17 @@ import { describe, expect, it } from 'vitest';
  * property IS set by an ancestor component is allowlisted with that reason.
  * A sentinel or `inherit` fallback is consistent with the initial and passes.
  *
- * Rules C to E cover the forms component stylesheets (`projects/forms/**`)
- * only. Rule C - a `--mat-sys-*` read: Material system tokens belong to the
- * theme bridges in `projects/themes/**`. Rule D - a raw hex colour: a colour
- * is a token read with a fallback. Rule E - a `var()` with no fallback on a
+ * Rules C to E cover every scanned component stylesheet. Rule C - a
+ * `--mat-sys-*` read: Material system tokens belong to the theme bridges in
+ * `projects/themes/**`. Rule D - a bare hex colour: a colour is a token read
+ * with a fallback. A hex literal as a `var()` fallback is the documented
+ * convention and an `@property` `initial-value` must be a literal, so both
+ * pass; anywhere else a hex is flagged. `projects/forms/**` keeps the stricter
+ * rule and flags every hex literal. Rule E - a `var()` with no fallback on a
  * token the default palette does not define: unset, the declaration computes
- * to its initial value, so the read needs a fallback or a stated reason.
+ * to its initial value, so the read needs a fallback or a stated reason. A
+ * property registered by an `@property` rule anywhere in `projects/**` counts
+ * as defined: it always resolves, at worst to its registered initial.
  *
  * The allowlist is an exact-set ratchet: a new offender fails, and a row that
  * no longer matches fails as stale, so every closed defect removes its row.
@@ -165,16 +170,34 @@ export function rawHexColours(source) {
 }
 
 /**
- * Rule E: `var()` reads with no fallback of a name that neither the palette
- * nor the stylesheet itself sets (a private `--_*` token set in the same file
- * passes).
+ * Rule D outside `projects/forms/**`: hex literals left after every
+ * `@property` block and every `var()` call is removed, so a hex fallback and a
+ * registered `initial-value` pass.
  */
-export function undefinedReadsWithoutFallback(source, defined) {
+export function bareHexColours(source) {
+  let rest = source.replace(/@property\s+--[\w-]+\s*\{[^}]*\}/g, ' ');
+  for (const body of varBodies(rest)) {
+    rest = rest.replace(`var(${body})`, ' ');
+  }
+  return rawHexColours(rest);
+}
+
+/** Every custom property registered by an `@property` rule in `source`. */
+export function registeredProperties(source) {
+  return new Set([...source.matchAll(/@property\s+(--[\w-]+)/g)].map((m) => m[1]));
+}
+
+/**
+ * Rule E: `var()` reads with no fallback of a name that neither the palette,
+ * the stylesheet itself (a private `--_*` token set in the same file passes)
+ * nor an `@property` registration defines.
+ */
+export function undefinedReadsWithoutFallback(source, defined, registered = new Set()) {
   const local = new Set([...source.matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]));
   const found = new Set();
   for (const body of varBodies(source)) {
     const { name, fallback } = splitVarBody(body);
-    if (fallback === null && !defined.has(name) && !local.has(name)) {
+    if (fallback === null && !defined.has(name) && !local.has(name) && !registered.has(name)) {
       found.add(name);
     }
   }
@@ -229,25 +252,30 @@ for (const { source } of ALL_CSS) {
   }
 }
 
-function repoOffenders() {
+const REGISTERED_PROPERTIES = new Set();
+for (const { source } of ALL_CSS) {
+  for (const name of registeredProperties(source)) {
+    REGISTERED_PROPERTIES.add(name);
+  }
+}
+
+function repoOffenders(files = SCANNED) {
   const rows = [];
-  for (const { rel, source } of SCANNED) {
+  for (const { rel, source } of files) {
     for (const token of undefinedPaletteReads(source, DEFINED, FAMILIES)) {
       rows.push({ rule: 'A', token, file: rel });
     }
     for (const token of deadSentinelFallbacks(source, SENTINEL_PROPERTIES)) {
       rows.push({ rule: 'B', token, file: rel });
     }
-    if (!rel.startsWith('projects/forms/')) {
-      continue;
-    }
     for (const token of materialSystemReads(source)) {
       rows.push({ rule: 'C', token, file: rel });
     }
-    for (const token of rawHexColours(source)) {
+    const hex = rel.startsWith('projects/forms/') ? rawHexColours(source) : bareHexColours(source);
+    for (const token of hex) {
       rows.push({ rule: 'D', token, file: rel });
     }
-    for (const token of undefinedReadsWithoutFallback(source, DEFINED)) {
+    for (const token of undefinedReadsWithoutFallback(source, DEFINED, REGISTERED_PROPERTIES)) {
       rows.push({ rule: 'E', token, file: rel });
     }
   }
@@ -257,6 +285,9 @@ function repoOffenders() {
 const key = ({ rule, token, file }) => `${rule} ${token} ${file}`;
 
 // --- allowlist ---------------------------------------------------------------
+
+const RIPPLE_INLINE =
+  'set per wave as an inline style by CngxRipple (ripple.directive.ts), so no stylesheet defines it';
 
 const ALLOWLIST = [
   {
@@ -443,6 +474,31 @@ const ALLOWLIST = [
     reason:
       'no fallback by design: unset, inline-size computes to auto and a bare select keeps its content width (pinned in select-base.css.spec.ts)',
   },
+  {
+    rule: 'E',
+    token: '--cngx-icon-button-size',
+    file: 'projects/common/button/close-button.component.css',
+    reason:
+      'SET by icon-button.component.css, which CngxCloseButton loads through styleUrls before this sheet',
+  },
+  {
+    rule: 'E',
+    token: '--cngx-ripple-size',
+    file: 'projects/common/theming/components/cngx-ripple.css',
+    reason: RIPPLE_INLINE,
+  },
+  {
+    rule: 'E',
+    token: '--cngx-ripple-x',
+    file: 'projects/common/theming/components/cngx-ripple.css',
+    reason: RIPPLE_INLINE,
+  },
+  {
+    rule: 'E',
+    token: '--cngx-ripple-y',
+    file: 'projects/common/theming/components/cngx-ripple.css',
+    reason: RIPPLE_INLINE,
+  },
 ];
 
 // --- the suite ---------------------------------------------------------------
@@ -503,10 +559,21 @@ describe('Rule B - dead fallback on a sentinel registration', () => {
   });
 });
 
-describe('Rules C to E - forms component stylesheets', () => {
+describe('Rules C to E - component stylesheets', () => {
   it('Rule C flags a Material system token read', () => {
     expect(materialSystemReads('.a { color: var(--mat-sys-primary, currentColor); }')).toEqual([
       '--mat-sys-primary',
+    ]);
+  });
+
+  it('Rules C and D run on a stylesheet outside projects/forms, forms keeps the any-hex D', () => {
+    const source = '.a { color: var(--mat-sys-primary, #fff); }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/x.css', source }]).map(key)).toEqual([
+      'C --mat-sys-primary projects/ui/x/x.css',
+    ]);
+    expect(repoOffenders([{ rel: 'projects/forms/x/x.css', source }]).map(key)).toEqual([
+      'C --mat-sys-primary projects/forms/x/x.css',
+      'D #fff projects/forms/x/x.css',
     ]);
   });
 
@@ -514,6 +581,28 @@ describe('Rules C to E - forms component stylesheets', () => {
     expect(rawHexColours('.a { color: #FF0000; b: #abc; } #main { --x-1abc: 0; }')).toEqual([
       '#ff0000',
       '#abc',
+    ]);
+  });
+
+  it('bare Rule D flags a hex outside a var() fallback and an @property initial-value', () => {
+    expect(bareHexColours('.a { color: #ff00aa; }')).toEqual(['#ff00aa']);
+    expect(
+      bareHexColours(`
+        @property --cngx-a-border { syntax: '<color>'; inherits: true; initial-value: #e0e0e0; }
+        .a { color: var(--x, #fff); border-color: var(--y, var(--z, #abcdef)); }
+      `),
+    ).toEqual([]);
+  });
+
+  it('Rule E passes a bare read of a registered property', () => {
+    const registered = registeredProperties(
+      "@property --cngx-a-layer { syntax: '<color>'; inherits: true; initial-value: transparent; }",
+    );
+    expect(
+      undefinedReadsWithoutFallback('.a { color: var(--cngx-a-layer); }', new Set(), registered),
+    ).toEqual([]);
+    expect(undefinedReadsWithoutFallback('.a { color: var(--cngx-a-layer); }', new Set())).toEqual([
+      '--cngx-a-layer',
     ]);
   });
 
