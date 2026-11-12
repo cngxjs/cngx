@@ -15,6 +15,24 @@ const HOVER_DELAY_MS = 300;
 const ROW_SELECTOR = '.cngx-nav-link, .cngx-nav-group';
 
 /**
+ * A row the rail leaves alone: one inside a group content (the flyout shows
+ * it at full width), an open group head (its flyout sits where the tooltip
+ * would), or a row that is described by a tooltip of its own (`[cngxTooltip]`).
+ */
+function skipsTooltip(row: HTMLElement): boolean {
+  if (row.closest('.cngx-nav-group-content')) {
+    return true;
+  }
+  if (row.getAttribute('aria-expanded') === 'true') {
+    return true;
+  }
+  const describedBy = row.getAttribute('aria-describedby')?.split(/\s+/) ?? [];
+  return describedBy.some(
+    (id) => id && row.ownerDocument.getElementById(id)?.getAttribute('role') === 'tooltip',
+  );
+}
+
+/**
  * The visible label of a nav row: its own text without the icon, the letter
  * fallback or a badge. An explicit `aria-label` wins.
  */
@@ -54,7 +72,9 @@ function rowLabel(row: HTMLElement): string {
  * `cngx-tooltip.css`). Event delegation on the host finds the row under the
  * pointer or focus, so projected rows need no directive of their own. Focus
  * shows the tooltip at once, the pointer after a 300ms dwell; leaving the
- * row, blur, Escape and the rail opening hide it. The tooltip sits at the
+ * row, blur, a click, Escape and the rail opening hide it. Rows inside a
+ * group content, an open group head and rows with a `[cngxTooltip]` of their
+ * own get no rail tooltip. The tooltip sits at the
  * inline end of the row through CSS anchor positioning (`anchor-name` on the
  * row, `position-area: inline-end`), so it follows the row and mirrors under
  * `dir="rtl"`. A browser without CSS anchor positioning shows it at the
@@ -150,7 +170,7 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
       return null;
     }
     const row = target.closest<HTMLElement>(ROW_SELECTOR);
-    return row && host.contains(row) ? row : null;
+    return row && host.contains(row) && !skipsTooltip(row) ? row : null;
   };
 
   const unlisten = [
@@ -161,6 +181,8 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
       }
     }),
     renderer.listen(host, 'focusout', () => hide()),
+    // Activating a row (a group head opening its flyout) dismisses the tooltip.
+    renderer.listen(host, 'click', () => hide()),
     renderer.listen(host, 'pointerover', (event: PointerEvent) => {
       const row = rowOf(event.target);
       if (!row || row === anchored || !untracked(railed)) {

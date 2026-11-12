@@ -13,6 +13,12 @@ import { injectNavRailTooltip } from './nav-rail-tooltip';
       <span class="cngx-nav-badge">7</span>
     </a>
     <button type="button" class="cngx-nav-group row-settings">Settings</button>
+    <button type="button" class="cngx-nav-group row-open" aria-expanded="true">Reports</button>
+    <div class="cngx-nav-group-content">
+      <a class="cngx-nav-link row-flyout" href="#weekly">Weekly</a>
+    </div>
+    <a class="cngx-nav-link row-own-tip" href="#help" aria-describedby="own-tip">Help</a>
+    <div id="own-tip" role="tooltip">Opens the help center</div>
     <span class="outside">Not a row</span>
   `,
 })
@@ -44,9 +50,26 @@ describe('injectNavRailTooltip', () => {
     vi.useRealTimers();
   });
 
+  it('leaves flyout rows, an open group head and rows with their own tooltip alone', () => {
+    const { row, isOpen } = setup();
+    for (const selector of ['.row-flyout', '.row-open', '.row-own-tip']) {
+      row(selector).dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      expect(isOpen()).toBe(false);
+      expect(row(selector).style.getPropertyValue('anchor-name')).toBe('');
+    }
+  });
+
+  it('hides when a row is activated, so an opening group head drops it', () => {
+    const { row, isOpen } = setup();
+    row('.row-settings').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(isOpen()).toBe(true);
+    row('.row-settings').click();
+    expect(isOpen()).toBe(false);
+  });
+
   it('creates one hidden tooltip element with the tooltip skin, out of the accessibility tree', () => {
     const { host, tip, isOpen } = setup();
-    expect(host.querySelectorAll('[role="tooltip"]')).toHaveLength(1);
+    expect(host.querySelectorAll('.cngx-nav-rail-tooltip[role="tooltip"]')).toHaveLength(1);
     expect(tip.getAttribute('popover')).toBe('manual');
     expect(tip.getAttribute('aria-hidden')).toBe('true');
     expect(tip.classList.contains('cngx-tooltip')).toBe(true);
