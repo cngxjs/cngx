@@ -595,13 +595,14 @@
 
   /*
    * Collapsed-rail nav links: the label keeps its font size, so the row keeps
-   * its expanded height, and a full-width gap pushes it past the clipped row
-   * end; the letter fallback or the icon (cngx-nav.css) stays in the icon box.
+   * its expanded height, and a gap of the whole rail width pushes it past the
+   * clipped row end (a percentage gap would resolve against the narrow content
+   * box); the letter fallback or the icon (cngx-nav.css) stays in the icon box.
    */
   cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link {
     overflow: clip;
     white-space: nowrap;
-    gap: 100%;
+    gap: var(--cngx-sidenav-mini-width, 56px);
   }
 
   /* Hide badges on the collapsed rail */

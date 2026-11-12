@@ -92,6 +92,29 @@ describe('sidenav rail collapse', () => {
     );
     expect(boxes()).toEqual(expanded);
   });
+
+  it('pushes every row label past the clipped row end on the rail', () => {
+    const fixture = TestBed.createComponent(CollapseHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.componentInstance.collapsed.set(true);
+    fixture.detectChanges();
+    const rows = Array.from(mountedRoot.querySelectorAll<HTMLElement>('.row'));
+    expect(rows.length).toBe(2);
+    for (const row of rows) {
+      const text = Array.from(row.childNodes).find(
+        (node) => node.nodeType === Node.TEXT_NODE && node.textContent!.trim() !== '',
+      )!;
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      // A whole padding of clearance: a label that only just clears the row
+      // end shows its first glyphs once a consumer narrows the padding.
+      const clearance = parseFloat(getComputedStyle(row).paddingInlineStart);
+      expect(range.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+        row.getBoundingClientRect().right + clearance,
+      );
+    }
+  });
 });
 
 describe('sidenav mini-rail initial', () => {
