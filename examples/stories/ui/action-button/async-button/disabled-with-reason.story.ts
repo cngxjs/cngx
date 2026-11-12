@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxActionButton: Disabled with a reason',
   subtitle: '<code>disabled</code> renders <code>aria-disabled</code> on the action host; it stays focusable, refuses to run and says why.',
-  description: 'The action button forwards <code>disabled</code> and <code>disabledReason</code> to the same button brain as <code>CngxButton</code>. A disabled action button renders <code>aria-disabled="true"</code> instead of the native attribute, so it keeps its place in the tab order, a click does not start the action, and <code>disabledReason</code> is read through <code>aria-describedby</code> while (and only while) the button is disabled. Tab to Publish and grant or revoke the editor role to hear the difference. The dashed box below mirrors what a screen reader gets for the button: role, name, description and state are exposed, not painted.',
+  description: 'The action button forwards <code>disabled</code> and <code>disabledReason</code> to the same button brain as <code>CngxButton</code>. A disabled action button renders <code>aria-disabled="true"</code> instead of the native attribute, so it keeps its place in the tab order, a click does not start the action, and <code>disabledReason</code> is read through <code>aria-describedby</code> while (and only while) the button is disabled. <code>cngxDescribedBy</code> adds the page\'s own hint to the same <code>aria-describedby</code>, ahead of the reason, so both are read while disabled and the hint alone once enabled; <code>size="lg"</code> is the button size axis, forwarded like on <code>CngxButton</code>. Tab to Publish and grant or revoke the editor role to hear the difference. The dashed box below mirrors what a screen reader gets for the button: role, name, description and state are exposed, not painted.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -23,12 +23,15 @@ export const STORY: DemoSpec = {
   <button
     cngxActionButton
     tone="primary"
+    size="lg"
     [action]="publish"
     [disabled]="!canPublish()"
     disabledReason="You need the editor role to publish."
+    cngxDescribedBy="publish-hint"
     pendingLabel="Publishing..."
     succeededLabel="Published"
-  >Publish</button>`,
+  >Publish</button>
+  <p id="publish-hint">Publishing notifies every subscriber.</p>`,
   setupChrome: `
   // Mirrors the accessibility layer of the button into the box below.
   protected readonly sr = mirrorScreenReader([

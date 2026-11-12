@@ -100,16 +100,19 @@ test.describe('ui/action-button/async-button', () => {
       const publish = page.locator('.cngx-ex-artifact button.cngx-action-button');
       const chrome = page.locator('.cngx-ex-chrome');
 
+      const hint = 'Publishing notifies every subscriber.';
+      const reason = 'You need the editor role to publish.';
       await expect(publish).toHaveAttribute('aria-disabled', 'true');
-      expect(await describedText(page, publish)).toBe('You need the editor role to publish.');
+      await expect(publish).toHaveAttribute('data-size', 'lg');
+      expect(await describedText(page, publish)).toBe(`${hint} ${reason}`);
 
       await chrome.getByRole('button', { name: 'Grant editor role' }).click();
       await expect(publish).not.toHaveAttribute('aria-disabled', 'true');
-      expect(await describedText(page, publish)).toBeNull();
+      expect(await describedText(page, publish)).toBe(hint);
 
       await chrome.getByRole('button', { name: 'Revoke editor role' }).click();
       await expect(publish).toHaveAttribute('aria-disabled', 'true');
-      expect(await describedText(page, publish)).toBe('You need the editor role to publish.');
+      expect(await describedText(page, publish)).toBe(`${hint} ${reason}`);
     });
   });
 
