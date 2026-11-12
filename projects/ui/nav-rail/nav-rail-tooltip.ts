@@ -83,10 +83,11 @@ function rowLabel(row: HTMLElement): string {
  * Shows the clipped label of a nav row in a tooltip while a navigation rail
  * is collapsed. Call it in the constructor of the organism that hosts the
  * rows (today `cngx-nav-rail`) and pass `railed`, a derived signal that is
- * `true` while the rows are railed and the tooltip is wanted, and `side`. While it is `false`
- * no tooltip element exists and no listener is attached; each flip sets the
- * tooltip up or tears it down, so an organism can switch it off at runtime
- * (`cngx-nav-rail` folds its `tooltip` input in).
+ * `true` while the rows are railed and the tooltip is wanted, and `side`.
+ * While `railed()` is `false` no tooltip element exists and no listener is
+ * attached; each flip sets the tooltip up or tears it down, so an organism
+ * can switch it off at runtime (`cngx-nav-rail` folds its `tooltip` input
+ * in).
  *
  * One tooltip element per host, created like the one of `CngxTooltip`
  * (`popover="manual"`, class `cngx-tooltip`, so the skin is

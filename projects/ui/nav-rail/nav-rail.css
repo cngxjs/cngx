@@ -96,6 +96,18 @@
     syntax: '*';
     inherits: true;
   }
+
+  /**
+   * Gap between a railed row and its label tooltip. Read on the tooltip,
+   * which `cngx-nav.css` places; no initial value, so the use-site fallback
+   * follows the foundation.
+   * @group Layout
+   * @see [[--cngx-space-sm]]
+   */
+  @property --cngx-nav-tooltip-offset {
+    syntax: '*';
+    inherits: true;
+  }
 }
 
 @layer cngx.components {

@@ -634,18 +634,6 @@
     inherits: true;
   }
 
-  /**
-   * Gap between a railed row and its label tooltip (`injectNavRailTooltip`).
-   * Read on the tooltip; no initial value, so the use-site fallback follows
-   * the foundation.
-   * @group Layout
-   * @see [[--cngx-space-sm]]
-   */
-  @property --cngx-nav-tooltip-offset {
-    syntax: '*';
-    inherits: true;
-  }
-
   /*
    * Default-theme palette pass. A registered `initial-value` shadows any
    * `var(...)` fallback, so the colour tokens are SET here from the
@@ -1032,7 +1020,8 @@
      host and wires the anchor): at the row's inline end, or its inline start
      for an end-side rail (data-cngx-rail-side); flips when the viewport has
      no room, and the flip swaps the margins with it. Two classes, so it beats
-     the margin reset of the tooltip skin's @scope. */
+     the margin reset of the tooltip skin's @scope. The gap token is
+     documented with CngxNavRail (nav-rail.css). */
   .cngx-tooltip.cngx-nav-rail-tooltip {
     position-area: inline-end;
     position-try-fallbacks: flip-inline;

@@ -206,13 +206,13 @@ Rail tokens (`nav-rail.css`):
 | `--cngx-nav-rail-bg` | `--cngx-color-surface` |
 | `--cngx-nav-rail-border-color` | `--cngx-color-border`, the border on the rail's inner edge |
 | `--cngx-nav-rail-border-width` | `1px`, the border on the rail's inner edge |
+| `--cngx-nav-tooltip-offset` | `--cngx-space-sm`, the gap between a row and its label tooltip |
 
 Flyout tokens (`cngx-nav.css`): `--cngx-nav-flyout-bg`, `-color`,
 `-border-color`, `-border-width`, `-shadow`, `-radius`, `-padding`, `-min-inline-size`,
 `-offset`. The rail sets `--cngx-nav-flyout-offset` so the flyout clears the
 rail edge. The tooltip uses the `cngx-tooltip` skin; `cngx-nav.css` places it
-`--cngx-nav-tooltip-offset` (default `--cngx-space-sm`) past the row, so the
-placement also reaches an organism that calls `injectNavRailTooltip` without
+`--cngx-nav-tooltip-offset` past the row, so the placement also reaches an organism that calls `injectNavRailTooltip` without
 loading `nav-rail.css`.
 
 Row tokens (`--cngx-nav-link-*`, `--cngx-nav-icon-size`) come from the nav
