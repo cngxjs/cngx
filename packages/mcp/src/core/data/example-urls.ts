@@ -10,6 +10,15 @@ import type { DocEntry } from './types.js';
 /** The published examples app every example URL points at. */
 export const EXAMPLES_BASE_URL = 'https://cngxjs.github.io/cngx/examples';
 
+/**
+ * The examples app of `version`: a final release has its own (`/v<version>`), a
+ * prerelease falls back to the examples of `main`. Same rule as the error-code
+ * links of the library.
+ */
+export function examplesBaseUrl(version: string): string {
+  return version.includes('-') ? EXAMPLES_BASE_URL : `${EXAMPLES_BASE_URL}/v${version}`;
+}
+
 // Everything before the `/#/` hash route is swapped for `base`; a URL without a
 // hash route is left alone.
 function rebaseUrl(url: string, base: string): string {

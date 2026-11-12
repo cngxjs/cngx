@@ -12,6 +12,7 @@ import {
   llmDumpPresent,
   parseSnapshotArgs,
   rebaseExampleUrls,
+  rebaseLlmDump,
   rebaseUrl,
   stripPageBody,
 } from '../mcp-snapshot.mjs';
@@ -92,6 +93,49 @@ describe('parseSnapshotArgs', () => {
     expect(options.requireLlmDump).toBe(true);
     expect(options.baseUrl).toBe('https://x.test/ex');
     expect(parseSnapshotArgs([], '0.1.0', { EXAMPLES_BASE_URL: 'https://env.test/' }).baseUrl).toBe('https://env.test');
+  });
+});
+
+describe('rebaseLlmDump', () => {
+  const DUMP = [
+    `- [clearable](${BASE}/#/forms/select/single-select/clearable)`,
+    `- [basic](${BASE}/#/ui/feedback/toast/basic)`,
+  ].join('\n');
+
+  it('points every example link of a final release at its own examples build', () => {
+    expect(rebaseLlmDump(DUMP, parseSnapshotArgs([], '0.3.0').baseUrl)).toBe(
+      [
+        `- [clearable](${BASE}/v0.3.0/#/forms/select/single-select/clearable)`,
+        `- [basic](${BASE}/v0.3.0/#/ui/feedback/toast/basic)`,
+      ].join('\n'),
+    );
+  });
+
+  it('leaves the links of a prerelease at main', () => {
+    expect(rebaseLlmDump(DUMP, parseSnapshotArgs([], '0.3.0-rc.1').baseUrl)).toBe(DUMP);
+  });
+
+  it('expects the dump on the exampleUrlBase of .compodocrc.json', () => {
+    const { exampleUrlBase } = JSON.parse(readFileSync(join(ROOT, '.compodocrc.json'), 'utf8'));
+    expect(parseSnapshotArgs([], '0.3.0-rc.1').baseUrl).toBe(exampleUrlBase.replace(/\/+$/, ''));
+  });
+
+  it('takes an explicit --base like the snapshot does', () => {
+    const { baseUrl } = parseSnapshotArgs(['--base=https://x.test/ex/'], '0.3.0');
+    expect(rebaseLlmDump(DUMP, baseUrl)).toBe(
+      [
+        '- [clearable](https://x.test/ex/#/forms/select/single-select/clearable)',
+        '- [basic](https://x.test/ex/#/ui/feedback/toast/basic)',
+      ].join('\n'),
+    );
+  });
+
+  it('leaves text without an example link of the base unchanged', () => {
+    const text = [
+      '- [docs](https://cngxjs.github.io/cngx/additional-documentation/error-codes/cngx1071.html)',
+      '- [local](http://localhost:4200/#/forms/select/single-select/clearable)',
+    ].join('\n');
+    expect(rebaseLlmDump(text, parseSnapshotArgs([], '0.3.0').baseUrl)).toBe(text);
   });
 });
 

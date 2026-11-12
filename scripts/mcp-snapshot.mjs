@@ -185,6 +185,16 @@ export function parseSnapshotArgs(argv, rootVersion, env = {}) {
 }
 
 /**
+ * Point the example links of the llm-md dump at `base`. The dump is built with
+ * the GH Pages examples of `main` (`exampleUrlBase` in `.compodocrc.json`), so
+ * a final release would otherwise link its examples to `main` while its
+ * snapshot links them to its own build.
+ */
+export function rebaseLlmDump(text, base) {
+  return text.replaceAll(`${EXAMPLES_BASE_URL}/#/`, `${base}/#/`);
+}
+
+/**
  * Whether the llm-md dump at `source` is there to copy. A missing dump is a
  * skip for the dev build and a thrown error under `--require-llm-dump`.
  */
@@ -264,9 +274,11 @@ function main() {
   );
 
   if (dumpPresent) {
-    const dump = readFileSync(LLM_DUMP_SOURCE);
+    const dump = rebaseLlmDump(readFileSync(LLM_DUMP_SOURCE, 'utf8'), BASE_URL);
     writeFileSync(LLM_DUMP_DEST, dump);
-    console.log(`mcp-snapshot: copied packages/mcp/data/llm-context.md (${dump.byteLength} bytes).`);
+    console.log(
+      `mcp-snapshot: copied packages/mcp/data/llm-context.md (${Buffer.byteLength(dump)} bytes, example links on ${BASE_URL}).`,
+    );
   } else {
     console.warn(
       `mcp-snapshot: ${LLM_DUMP_SOURCE} not found; skipping the llm-md dump. ` +

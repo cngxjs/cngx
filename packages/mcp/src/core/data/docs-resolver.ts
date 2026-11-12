@@ -9,7 +9,7 @@
 // resolver does the same for the separate `error-codes.json` asset, which only
 // `get_error_code` reaches.
 
-import { rebaseExampleUrls } from './example-urls.js';
+import { examplesBaseUrl, rebaseExampleUrls } from './example-urls.js';
 import type { DocsIndex, ErrorCodeIndex } from './loader.js';
 import { loadDocsFromFile, loadErrorCodesFromFile, SnapshotLoadError } from './loader.js';
 import type { FetchSnapshot } from '../diff/snapshot-fetch.js';
@@ -60,7 +60,8 @@ interface ReleaseAssetSource<D> {
   /** What the fetched-load failure calls the asset. */
   readonly label: string;
   readonly fetch: FetchSnapshot;
-  load(path: string): D;
+  /** `version` is the requested release; a fetched asset carries no stamp of its own. */
+  load(path: string, version: string): D;
   /** The version a loaded asset says it is; null resolves to the requested version. */
   versionOf(value: D): string | null;
   readonly removeDir?: (dir: string) => void;
@@ -84,8 +85,9 @@ export function createDocsResolver(bundled: DocsIndex, deps: DocsResolverDeps = 
     label: 'snapshot',
     fetch: deps.fetchSnapshot,
     // A release asset is the raw docs:json export; only the bundled snapshot is
-    // rebased at build time.
-    load: (path) => rebaseExampleUrls(deps.loadDocs(path)),
+    // rebased at build time. The asset is unstamped, so the requested version picks
+    // the examples app.
+    load: (path, version) => rebaseExampleUrls(deps.loadDocs(path), examplesBaseUrl(version)),
     versionOf: (docs) => docs.meta.cngxVersion,
     removeDir: deps.removeDir,
     cache: deps.cache,
@@ -119,7 +121,8 @@ export function createErrorCodeResolver(
     bundledVersion: bundled.meta.cngxVersion,
     label: 'error-code asset',
     fetch: deps.fetchErrorCodes,
-    load: deps.loadErrorCodes ?? loadErrorCodesFromFile,
+    // The error-code asset holds no example links, so the version is not passed on.
+    load: (path) => (deps.loadErrorCodes ?? loadErrorCodesFromFile)(path),
     versionOf: () => null,
     removeDir: deps.removeDir,
     cache: deps.cache,
@@ -195,7 +198,7 @@ async function fetchAndLoad<D>(
     return { ok: false, reason: fetched.reason, message: fetched.message };
   }
   try {
-    const docs = source.load(fetched.path);
+    const docs = source.load(fetched.path, requested);
     // Written only after the load succeeded, so a schema mismatch is never cached.
     source.cache?.write(requested, fetched.path);
     cacheDocs(cache, requested, docs);
@@ -223,7 +226,7 @@ function readCached<D>(requested: string, source: ReleaseAssetSource<D>): D | un
     return undefined;
   }
   try {
-    return source.load(path);
+    return source.load(path, requested);
   } catch (error) {
     source.cache.discard(requested, fetchedLoadProblem(error));
     return undefined;
