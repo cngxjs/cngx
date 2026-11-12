@@ -11,6 +11,8 @@ import {
 } from '@angular/core';
 import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 
+import { injectNavRailConfig } from './config/inject-nav-rail-config';
+import { CNGX_NAV_RAIL_DEFAULTS } from './config/nav-rail.config.defaults';
 import { CNGX_NAV_RAIL_I18N } from './nav-rail-i18n';
 import { injectNavRailFlyout } from './nav-rail-flyout';
 import { injectNavRailTooltip } from './nav-rail-tooltip';
@@ -31,7 +33,8 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * projects above the rows and `cngx-nav-footer` / `[cngxNavFooter]` below
  * them, with `[cngxNavMark]` at the row icon x.
  *
- * Two looks through `labelPlacement`:
+ * Two looks through `labelPlacement` (app-wide default through
+ * `provideNavRailConfig(withNavRailLabelPlacement(...))`):
  * - `'end'` (default): icon only. Each row keeps its full label, clipped at
  *   the row edge, so it stays the accessible name; a tooltip shows it on
  *   hover after a short delay and at once on keyboard focus. The width
@@ -63,7 +66,7 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail.ts
  * @selector cngx-nav-rail
  * @since 0.3.0
- * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout
+ * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, provideNavRailConfig
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
  * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
@@ -87,17 +90,28 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
     class: 'cngx-nav-rail',
     role: 'navigation',
     '[attr.aria-label]': 'resolvedAriaLabel()',
-    '[attr.data-label-placement]': 'labelPlacement()',
+    '[attr.data-label-placement]': 'resolvedLabelPlacement()',
   },
 })
 export class CngxNavRail {
   /** Accessible name of the landmark. Unbound, the `navRail` language-pack copy applies. */
   readonly ariaLabel = input<string | undefined>(undefined);
 
-  /** `'end'`: icon only with a tooltip. `'below'`: icon over a short label. */
-  readonly labelPlacement = input<CngxNavRailLabelPlacement>('end');
+  /**
+   * `'end'`: icon only with a tooltip. `'below'`: icon over a short label.
+   * Unbound, `withNavRailLabelPlacement` of the config in scope applies, else
+   * `'end'`.
+   */
+  readonly labelPlacement = input<CngxNavRailLabelPlacement | undefined>(undefined);
 
   private readonly i18n = inject(CNGX_NAV_RAIL_I18N);
+  private readonly config = injectNavRailConfig();
+
+  /** The look in effect: `[labelPlacement]`, then the config, then `'end'`. */
+  protected readonly resolvedLabelPlacement = computed(
+    () =>
+      this.labelPlacement() ?? this.config.labelPlacement ?? CNGX_NAV_RAIL_DEFAULTS.labelPlacement,
+  );
 
   protected readonly resolvedAriaLabel = computed(() => this.ariaLabel() ?? this.i18n().ariaLabel);
 
@@ -115,7 +129,7 @@ export class CngxNavRail {
   });
 
   constructor() {
-    injectNavRailTooltip(computed(() => this.labelPlacement() === 'end'));
+    injectNavRailTooltip(computed(() => this.resolvedLabelPlacement() === 'end'));
     injectNavRailFlyout({
       railed: signal(true).asReadonly(),
       groups: this.groups,

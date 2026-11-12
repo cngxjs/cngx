@@ -16,6 +16,15 @@ describe('@cngx/ui/nav-rail public API shape', () => {
     expect(api.CNGX_NAV_RAIL_LANGUAGE_EN).toEqual({ ariaLabel: 'Navigation' });
   });
 
+  it('exports the rail config cascade', () => {
+    expect(api.CNGX_NAV_RAIL_CONFIG).toBeDefined();
+    expect(api.provideNavRailConfig).toBeTypeOf('function');
+    expect(api.provideNavRailConfigAt).toBeTypeOf('function');
+    expect(api.injectNavRailConfig).toBeTypeOf('function');
+    expect(api.withNavRailLabelPlacement).toBeTypeOf('function');
+    expect(api.withNavRailTooltipDelay).toBeTypeOf('function');
+  });
+
   it('exports the rail group flyout injection function', () => {
     expect(typeof api.injectNavRailFlyout).toBe('function');
   });

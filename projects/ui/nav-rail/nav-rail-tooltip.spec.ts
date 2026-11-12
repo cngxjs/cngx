@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { withNavRailTooltipDelay } from './config/features';
+import { provideNavRailConfig } from './config/provide-nav-rail-config';
 import { injectNavRailTooltip } from './nav-rail-tooltip';
 
 @Component({
@@ -103,6 +105,19 @@ describe('injectNavRailTooltip', () => {
     const { row, isOpen } = setup();
     pointer('pointerover', row('.row-settings'));
     vi.advanceTimersByTime(299);
+    expect(isOpen()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('takes the hover dwell from withNavRailTooltipDelay', () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({
+      providers: [provideNavRailConfig(withNavRailTooltipDelay(500))],
+    });
+    const { row, isOpen } = setup();
+    pointer('pointerover', row('.row-settings'));
+    vi.advanceTimersByTime(499);
     expect(isOpen()).toBe(false);
     vi.advanceTimersByTime(1);
     expect(isOpen()).toBe(true);

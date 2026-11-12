@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
-/** Pointer dwell before the tooltip shows, like `CngxTooltip`'s default delay. */
-const HOVER_DELAY_MS = 300;
+import { injectNavRailConfig } from './config/inject-nav-rail-config';
+import { CNGX_NAV_RAIL_DEFAULTS } from './config/nav-rail.config.defaults';
 
 const ROW_SELECTOR = '.cngx-nav-link, .cngx-nav-group';
 
@@ -73,7 +73,8 @@ function rowLabel(row: HTMLElement): string {
  * (`popover="manual"`, class `cngx-tooltip`, so the skin is
  * `cngx-tooltip.css`). Event delegation on the host finds the row under the
  * pointer or focus, so projected rows need no directive of their own. Keyboard
- * focus shows the tooltip at once, the pointer after a 300ms dwell; leaving the
+ * focus shows the tooltip at once, the pointer after a dwell (300ms, set
+ * app-wide through `withNavRailTooltipDelay`); leaving the
  * row, blur, a click, Escape and the rail opening hide it. Rows inside a
  * group content, an open group head and rows with a `[cngxTooltip]` of their
  * own get no rail tooltip. The tooltip sits at the inline end of the row
@@ -99,13 +100,14 @@ function rowLabel(row: HTMLElement): string {
  * @param railed `true` while the rows are railed and their labels clipped.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
  * @since 0.3.0
- * @relatedTo injectNavRailFlyout, CngxNavLink, CngxNavGroup, CngxTooltip
+ * @relatedTo injectNavRailFlyout, withNavRailTooltipDelay, CngxNavLink, CngxNavGroup, CngxTooltip
  */
 export function injectNavRailTooltip(railed: Signal<boolean>): void {
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const renderer = inject(Renderer2);
   const doc = host.ownerDocument;
   const anchorName = `--${nextUid('cngx-nav-rail-tip')}`;
+  const hoverDelay = injectNavRailConfig().tooltipDelay ?? CNGX_NAV_RAIL_DEFAULTS.tooltipDelay;
 
   const tip = renderer.createElement('div') as HTMLElement;
   tip.setAttribute('popover', 'manual');
@@ -198,7 +200,7 @@ export function injectNavRailTooltip(railed: Signal<boolean>): void {
         return;
       }
       clearTimer();
-      timer = setTimeout(() => show(row), HOVER_DELAY_MS);
+      timer = setTimeout(() => show(row), hoverDelay);
     }),
     renderer.listen(host, 'pointerout', (event: PointerEvent) => {
       const row = rowOf(event.target);

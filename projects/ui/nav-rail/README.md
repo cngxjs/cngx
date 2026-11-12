@@ -72,7 +72,7 @@ on the host.
 - `'end'` (default) - icon only. Each row keeps its full label; the label
   starts at the row's inline-end padding edge and clips there, so it paints
   nothing but stays the accessible name. A tooltip shows the label on hover
-  (after 300ms) and at once on keyboard focus.
+  (after 300ms, see Configuration) and at once on keyboard focus.
 - `'below'` - the icon stacked over a short, centred, wrapping label. No
   tooltip.
 
@@ -135,6 +135,33 @@ bootstrapApplication(App, {
 Resolution order: `[ariaLabel]`, then `CNGX_NAV_RAIL_I18N`, then the English
 default. `withNavRailI18nLabels` also takes a `Signal`, so the name follows a
 language switch.
+
+## Configuration
+
+```typescript
+import {
+  provideNavRailConfig,
+  withNavRailLabelPlacement,
+  withNavRailTooltipDelay,
+} from '@cngx/ui/nav-rail';
+
+bootstrapApplication(App, {
+  providers: [
+    provideNavRailConfig(withNavRailLabelPlacement('below'), withNavRailTooltipDelay(500)),
+  ],
+});
+```
+
+| Feature | Key | Default |
+|-|-|-|
+| `withNavRailLabelPlacement(placement)` | `labelPlacement` | `'end'` |
+| `withNavRailTooltipDelay(ms)` | `tooltipDelay` | `300` |
+
+`[labelPlacement]` wins over the config, the config over the default.
+`provideNavRailConfigAt(...)` in a component's `viewProviders` merges over the
+parent scope. `injectNavRailConfig()` returns the configuration in scope;
+`injectNavRailTooltip` reads `tooltipDelay` from it, so the delay reaches every
+organism that calls it.
 
 ## Theming
 
