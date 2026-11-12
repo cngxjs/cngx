@@ -82,6 +82,7 @@ export type CngxNavRailSide = 'start' | 'end';
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
  * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
+ * <example-url>/#/ui/nav-rail/end-side</example-url>
  * @axis level organism
  */
 @Component({
