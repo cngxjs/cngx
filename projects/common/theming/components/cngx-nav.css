@@ -654,7 +654,7 @@
     color: var(--cngx-nav-link-ink, currentColor);
   }
 
-  :is(.cngx-nav-link, .cngx-nav-group)[data-initial]:not(:has(> .cngx-nav-icon))::before {
+  :is(.cngx-nav-link, .cngx-nav-group)[data-initial]:not(:has(.cngx-nav-icon))::before {
     content: attr(data-initial) / '';
     display: inline-flex;
     flex: none;

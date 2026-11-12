@@ -202,7 +202,7 @@ Nav directives are orthogonal atoms that compose to build sidebars:
 
 ## Icon slot and letter fallback
 
-Put `cngxNavIcon` on the icon inside a row or a group head. `cngx-nav.css` sizes it to `--cngx-nav-icon-size` and places it in the row's icon box, at the same x in every row. The icon is `aria-hidden`; the row text stays the accessible name.
+Put `cngxNavIcon` on the icon inside a row or a group head. `cngx-nav.css` sizes it to `--cngx-nav-icon-size` and places it in the row's icon box, at the same x in every row. The icon may sit inside a wrapper. It is `aria-hidden`, also when it is a `cngx-icon` with a `label`; the row text stays the accessible name.
 
 ```html
 <a cngxNavLink href="/inbox">

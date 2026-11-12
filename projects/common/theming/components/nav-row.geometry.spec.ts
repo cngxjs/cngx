@@ -85,6 +85,10 @@ type Fill = (typeof FILLS)[number];
         <span cngxNavIcon class="icon-starred">S</span>
         Starred
       </a>
+      <a cngxNavLink href="#shared" class="row-icon-wrapped">
+        <span class="icon-wrapper"><span cngxNavIcon class="icon-shared">H</span></span>
+        Shared
+      </a>
       <cngx-nav-footer class="footer">
         <span cngxNavMark class="footer-mark">JD</span>
         <span cngxNavName class="footer-name">Jane Doe with a name far too long for any nav</span>
@@ -446,6 +450,11 @@ describe('icon box and letter fallback', () => {
   it('draws no letter on a row with an icon', () => {
     const root = mount();
     expect(letter(one(root, '.row-icon'), 'content')).toBe('none');
+  });
+
+  it('draws no letter on a row whose icon sits inside a wrapper', () => {
+    const root = mount();
+    expect(letter(one(root, '.row-icon-wrapped'), 'content')).toBe('none');
   });
 
   it('keeps the letter and the icon out of the accessible name', async () => {
