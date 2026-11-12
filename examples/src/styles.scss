@@ -1562,7 +1562,7 @@ button.chip:disabled {
 // (fills, active indicator, focus ring); these rules only lay the rows out.
 .demo-sidenav__container {
   height: 420px;
-  margin-top: 0.75rem;
+  margin-top: var(--cngx-space-md, 1rem);
   border: 1px solid var(--cngx-color-border);
   border-radius: 6px;
 }
@@ -1599,6 +1599,8 @@ cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__header {
 }
 cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__footer {
   padding-inline: 0;
+  justify-content: center;
+  text-align: center;
 }
 cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sidenav__footer-name) {
   position: absolute;
