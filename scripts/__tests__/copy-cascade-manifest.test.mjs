@@ -25,7 +25,10 @@ import { RULE_FIXTURES } from './reactive-i18n-coverage.fixtures.mjs';
  * both directions: a new cascade updates this number in the same PR, so every
  * new copy seam is a visible, reviewed change.
  */
-const CASCADE_COUNT = 74;
+// The scanner records a direct `input ?? bundle.key` only; a side-dependent
+// fallback (`input ?? (cond ? bundle.a : bundle.b)`, CngxNavRail and
+// CngxSidenav landmark names) is not counted.
+const CASCADE_COUNT = 73;
 
 // One site per inventory shape:
 //   A      input over a bundle key
