@@ -125,8 +125,11 @@ jobs:
           cp -R "$RUNNER_TEMP/examples-main/browser/." docs/examples/
 
       # Missing paths (dropped releases, unversioned URLs printed by older
-      # packages) go to the same page of the newest release.
-      - name: Write 404 page
+      # packages) go to the same page of the newest release. Error-code pages
+      # also get static moved pages (200, no script) at the unversioned path
+      # and under each dropped release. Runs after the cache save, so they never
+      # enter the release cache.
+      - name: Write 404 and moved pages
         run: node scripts/docs-404.mjs docs
 
       - name: Disable Jekyll
