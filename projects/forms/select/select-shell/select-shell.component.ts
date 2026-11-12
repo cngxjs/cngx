@@ -92,7 +92,11 @@ import {
 } from '../shared/commit-action.types';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
+import {
+  isOptionDisabled,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionsInput,
+} from '../shared/option.model';
 import { CNGX_PROJECTED_OPTION_MODEL_FACTORY } from '../shared/projected-option-model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
@@ -1307,7 +1311,7 @@ export class CngxSelectShell<T = unknown>
           },
           key,
         );
-        if (action.kind === 'select') {
+        if (action.kind === 'select' && !isOptionDisabled(action.option)) {
           event.preventDefault();
           this.commitClosedPick(action.option, v);
           return;
