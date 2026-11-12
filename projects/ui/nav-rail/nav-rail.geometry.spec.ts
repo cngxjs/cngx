@@ -154,6 +154,14 @@ describe('CngxNavRail geometry', () => {
     );
   });
 
+  it('keeps a closed flyout out of the page, with no UA popover box', () => {
+    const { el } = mount('end');
+    const flyout = el('.flyout');
+    expect(flyout.getAttribute('popover')).toBe('manual');
+    expect(getComputedStyle(flyout).display).toBe('none');
+    expect(flyout.getBoundingClientRect().width).toBe(0);
+  });
+
   for (const dir of ['ltr', 'rtl'] as const) {
     it(`opens the flyout beside the head, inside the viewport (${dir})`, async () => {
       document.documentElement.setAttribute('dir', dir);

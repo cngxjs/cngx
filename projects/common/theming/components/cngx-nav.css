@@ -968,6 +968,13 @@
     grid-template-rows: 1fr;
   }
 
+  /* A closed flyout stays out of the layout: the group content's own display
+     would otherwise beat the UA [popover]:not(:popover-open) rule and paint
+     the UA popover box. */
+  .cngx-nav-group-content[popover]:not(:popover-open) {
+    display: none;
+  }
+
   /* Group flyout on a collapsed rail: the group content as a top-layer
      popover at the inline end of its head (injectNavRailFlyout wires the
      anchor). Logical area, so it mirrors under dir="rtl"; it flips when the
