@@ -982,9 +982,10 @@
   }
 
   /* Group flyout on a collapsed rail: the group content as a top-layer
-     popover at the inline end of its head (injectNavRailFlyout wires the
-     anchor). Logical area, so it mirrors under dir="rtl"; it flips when the
-     viewport has no room. */
+     popover at the inline end of its head, or at its inline start for a rail
+     at the inline end (data-cngx-rail-side, written by injectNavRailFlyout,
+     which also wires the anchor). Logical area, so it mirrors under
+     dir="rtl"; it flips when the viewport has no room. */
   .cngx-nav-group-content:popover-open {
     inset: auto;
     margin: 0;
@@ -1003,6 +1004,13 @@
       --cngx-nav-flyout-shadow,
       var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.12))
     );
+  }
+
+  /* The fallbacks of the base rule stay, so an end-side flyout still flips. */
+  .cngx-nav-group-content[data-cngx-rail-side='end']:popover-open {
+    margin-inline-start: 0;
+    margin-inline-end: var(--cngx-nav-flyout-offset, var(--cngx-space-xs, 4px));
+    position-area: inline-start span-block-end;
   }
 
   /* The flyout already shows the nesting by sitting beside its head, so its

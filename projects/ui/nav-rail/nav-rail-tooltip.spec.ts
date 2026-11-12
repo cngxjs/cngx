@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { withNavRailTooltipDelay } from './config/features';
 import { provideNavRailConfig } from './config/provide-nav-rail-config';
+import type { CngxNavRailSide } from './nav-rail';
 import { injectNavRailTooltip } from './nav-rail-tooltip';
 
 @Component({
@@ -27,9 +28,10 @@ import { injectNavRailTooltip } from './nav-rail-tooltip';
 })
 class TestRail {
   readonly railed = signal(true);
+  readonly side = signal<CngxNavRailSide>('start');
 
   constructor() {
-    injectNavRailTooltip(this.railed);
+    injectNavRailTooltip(this.railed, this.side);
   }
 }
 
@@ -124,6 +126,16 @@ describe('injectNavRailTooltip', () => {
     expect(isOpen()).toBe(false);
     vi.advanceTimersByTime(1);
     expect(isOpen()).toBe(true);
+  });
+
+  it('marks the tooltip with the rail side on show and takes a flip on the next show', () => {
+    const { fixture, tip, row } = setup();
+    keyFocus(row('.row-inbox'));
+    expect(tip.getAttribute('data-cngx-rail-side')).toBe('start');
+    fixture.componentInstance.side.set('end');
+    row('.row-inbox').blur();
+    keyFocus(row('.row-settings'));
+    expect(tip.getAttribute('data-cngx-rail-side')).toBe('end');
   });
 
   it('follows the row: the anchor moves to the row now in focus', () => {

@@ -204,13 +204,17 @@ describe('CngxNavRail', () => {
 
   it('lets the swap tokens replace or drop tooltip and flyout, with the switch folded in', () => {
     const seen: boolean[] = [];
+    const sides: CngxNavRailSide[] = [];
     TestBed.configureTestingModule({
       providers: [
         {
           provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-          useValue: (active: Signal<boolean>) => {
+          useValue: (active: Signal<boolean>, side: Signal<CngxNavRailSide>) => {
             effect(() => {
               seen.push(active());
+            });
+            effect(() => {
+              sides.push(side());
             });
           },
         },
@@ -223,6 +227,9 @@ describe('CngxNavRail', () => {
     fixture.componentInstance.tooltip.set(false);
     settle();
     expect(seen).toEqual([true, false]);
+    fixture.componentInstance.side.set('end');
+    settle();
+    expect(sides).toEqual(['start', 'end']);
   });
 
   it('opens a projected nav group as a flyout', () => {

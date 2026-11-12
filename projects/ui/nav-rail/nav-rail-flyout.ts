@@ -12,6 +12,8 @@ import {
 import type { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
+import type { CngxNavRailSide } from './nav-rail';
+
 /**
  * What `injectNavRailFlyout` reads from the organism that projects the rows.
  * Each directive query comes with its `read: ElementRef` twin over the same
@@ -21,6 +23,8 @@ import { nextUid } from '@cngx/core/utils';
 export interface CngxNavRailFlyoutSources {
   /** `true` while the rows are railed. */
   readonly railed: Signal<boolean>;
+  /** The edge the rows sit on; the flyout opens away from it. */
+  readonly side: Signal<CngxNavRailSide>;
   /** The projected group heads. */
   readonly groups: Signal<readonly CngxNavGroup[]>;
   /** The host elements of `groups`, in the same order. */
@@ -38,8 +42,8 @@ interface FlyoutPair {
 }
 
 /**
- * Shows an open nav group as a flyout beside its head while the rows are
- * railed. Call it in the constructor of the organism that projects the rows
+ * Shows an open nav group as a flyout beside its head, away from `side`,
+ * while the rows are railed. Call it in the constructor of the organism that projects the rows
  * and pass its content queries for `CngxNavGroup` and `CngxNavGroupContent`,
  * each with its `read: ElementRef` twin. A content is paired with its head
  * through `CngxNavGroupContent.group()`, never by position.
@@ -47,7 +51,9 @@ interface FlyoutPair {
  * While railed, each `cngxNavGroupContent` becomes a native
  * `popover="manual"` anchored to its group head (`anchor-name` /
  * `position-anchor`); `cngx-nav.css` draws the surface
- * (`.cngx-nav-group-content:popover-open`) at the inline end of the head.
+ * (`.cngx-nav-group-content:popover-open`) at the inline end of the head, or
+ * at its inline start for `side: 'end'` (the content carries
+ * `data-cngx-rail-side`).
  * The flyout is open exactly while the group's `disclosure.opened()` is, so
  * `aria-expanded` on the head stays the one source of state. It is a
  * disclosure, not a menu: the links keep their link role and Tab walks
@@ -78,6 +84,7 @@ interface FlyoutPair {
  *   constructor() {
  *     injectNavRailFlyout({
  *       railed: signal(true),
+ *       side: signal('start'),
  *       groups: this.groups,
  *       groupElements: this.groupElements,
  *       contents: this.contents,
@@ -222,6 +229,7 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
     wired.get(pair.content)?.();
     wired.delete(pair.content);
     pair.content.removeAttribute('popover');
+    pair.content.removeAttribute('data-cngx-rail-side');
     pair.content.style.removeProperty('position-anchor');
     pair.head.style.removeProperty('anchor-name');
   }
@@ -231,6 +239,7 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
   let wasRailed = false;
   afterRenderEffect(() => {
     const railed = sources.railed();
+    const side = sources.side();
     const current = pairs();
     const opened = current.map((pair) => pair.group.disclosure.opened());
     // Entering the rail closes every open group, so none pops up on its own.
@@ -259,6 +268,7 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
         pair.head.style.setProperty('anchor-name', anchor);
         pair.content.style.setProperty('position-anchor', anchor);
         pair.content.setAttribute('popover', 'manual');
+        pair.content.setAttribute('data-cngx-rail-side', side);
         wire(pair);
         if (opened[i]) {
           showFlyout(pair);

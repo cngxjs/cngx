@@ -238,11 +238,20 @@
   }
 
   /* Label tooltip of a railed row (injectNavRailTooltip appends it to the
-     rail and wires the anchor): at the inline end of the row. Two classes,
-     so it beats the margin reset of the tooltip skin's @scope. */
+     rail and wires the anchor): at the row's inline end, or its inline start
+     for an end-side rail (data-cngx-rail-side); flips when the viewport has
+     no room, and the flip swaps the margins with it. Two classes, so it beats
+     the margin reset of the tooltip skin's @scope. */
   .cngx-tooltip.cngx-nav-rail-tooltip {
     position-area: inline-end;
+    position-try-fallbacks: flip-inline;
     margin-inline-start: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
+  }
+
+  .cngx-tooltip.cngx-nav-rail-tooltip[data-cngx-rail-side='end'] {
+    position-area: inline-start;
+    margin-inline-start: 0;
+    margin-inline-end: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
   }
 
   /* The flyout replaces the chevron in the stacked look. */

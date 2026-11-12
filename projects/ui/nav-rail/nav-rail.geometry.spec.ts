@@ -204,18 +204,58 @@ describe('CngxNavRail geometry', () => {
     expect(el('.row').getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
   });
 
-  it('shows the label tooltip at the row inline end, past the row edge', async () => {
-    const { el } = mount('end');
-    // Programmatic focus without a prior pointer press is :focus-visible.
-    el('.row').focus();
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    const tip = el('.cngx-nav-rail-tooltip');
-    expect(tip.matches(':popover-open')).toBe(true);
-    expect(getComputedStyle(tip).marginInlineStart).toBe('8px');
-    expect(tip.getBoundingClientRect().left).toBeGreaterThanOrEqual(
-      el('.row').getBoundingClientRect().right + 7.5,
-    );
-  });
+  for (const [side, dir] of [
+    ['start', 'ltr'],
+    ['start', 'rtl'],
+    ['end', 'ltr'],
+    ['end', 'rtl'],
+  ] as const) {
+    it(`shows the label tooltip past the row edge, away from the rail side (${side}, ${dir})`, async () => {
+      document.documentElement.setAttribute('dir', dir);
+      const { el } = mount('end', side);
+      // Programmatic focus without a prior pointer press is :focus-visible.
+      el('.row').focus();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const tip = el('.cngx-nav-rail-tooltip');
+      expect(tip.matches(':popover-open')).toBe(true);
+      const style = getComputedStyle(tip);
+      expect(side === 'start' ? style.marginInlineStart : style.marginInlineEnd).toBe('8px');
+      const box = tip.getBoundingClientRect();
+      const row = el('.row').getBoundingClientRect();
+      // Physically right of the row: a start rail in LTR, an end rail in RTL.
+      if ((side === 'start') === (dir === 'ltr')) {
+        expect(box.left).toBeGreaterThanOrEqual(row.right + 7.5);
+      } else {
+        expect(box.right).toBeLessThanOrEqual(row.left - 7.5);
+      }
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+    });
+  }
+
+  for (const dir of ['ltr', 'rtl'] as const) {
+    it(`flips the tooltip inward when it would overflow the viewport (${dir})`, async () => {
+      document.documentElement.setAttribute('dir', dir);
+      const { el } = mount('end', 'start');
+      // A start-side rail placed at the inline end of the page: no room past it.
+      el('.frame').style.justifyContent = 'flex-end';
+      el('.row').focus();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const tip = el('.cngx-nav-rail-tooltip');
+      expect(tip.matches(':popover-open')).toBe(true);
+      const box = tip.getBoundingClientRect();
+      const row = el('.row').getBoundingClientRect();
+      // Without the flip the browser only shifts the box back into the
+      // viewport, on top of the row; flipped, it sits clear of the row.
+      if (dir === 'ltr') {
+        expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+        expect(box.right).toBeLessThanOrEqual(row.left - 7.5);
+      } else {
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.left).toBeGreaterThanOrEqual(row.right + 7.5);
+      }
+    });
+  }
 
   it('keeps a closed flyout out of the page, with no UA popover box', () => {
     const { el } = mount('end');
@@ -225,10 +265,15 @@ describe('CngxNavRail geometry', () => {
     expect(flyout.getBoundingClientRect().width).toBe(0);
   });
 
-  for (const dir of ['ltr', 'rtl'] as const) {
-    it(`opens the flyout beside the head, inside the viewport (${dir})`, async () => {
+  for (const [side, dir] of [
+    ['start', 'ltr'],
+    ['start', 'rtl'],
+    ['end', 'ltr'],
+    ['end', 'rtl'],
+  ] as const) {
+    it(`opens the flyout beside the head, away from the rail side (${side}, ${dir})`, async () => {
       document.documentElement.setAttribute('dir', dir);
-      const { fixture, el } = mount('end');
+      const { fixture, el } = mount('end', side);
       el('.head').click();
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -240,7 +285,8 @@ describe('CngxNavRail geometry', () => {
       expect(box.width).toBeGreaterThan(0);
       expect(box.left).toBeGreaterThanOrEqual(0);
       expect(box.right).toBeLessThanOrEqual(window.innerWidth);
-      if (dir === 'ltr') {
+      // Physically right of the rail: a start rail in LTR, an end rail in RTL.
+      if ((side === 'start') === (dir === 'ltr')) {
         expect(box.left).toBeGreaterThanOrEqual(rail.right - 0.5);
       } else {
         expect(box.right).toBeLessThanOrEqual(rail.left + 0.5);
