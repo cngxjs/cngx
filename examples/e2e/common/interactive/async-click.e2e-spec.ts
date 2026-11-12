@@ -40,7 +40,10 @@ test.describe('common/interactive/async-click', () => {
 
     await save.click();
     await expect(save).toHaveAttribute('aria-busy', 'true');
-    await save.click();
+    // force: Playwright waits out aria-disabled before a click, which would
+    // land the second click after the settle instead of inside the run.
+    await save.click({ force: true });
+    await expect(save).toHaveText('Saving...');
 
     await expect(save).toHaveText('Saved!', { timeout: 5_000 });
     await expect(save).not.toHaveAttribute('aria-busy');
