@@ -36,6 +36,16 @@ import { describe, expect, it } from 'vitest';
  *     initial-value. A rule that violates this is silently DROPPED by the
  *     browser, taking its `inherits` flag and fallback with it (see
  *     property-invalid-initial-value-findings.md).
+ *
+ * (c) Literal spacing: a `gap` / `row-gap` / `column-gap` / `padding*`
+ *     declaration in a component stylesheet whose value is a bare length list
+ *     (`<number><unit>` tokens only, a lone `0` excluded) is a literal that no
+ *     `[data-density]` swap reaches. Declarations inside a `[data-skin]` block
+ *     are skipped, the same gate rule (a) honours: a skin is variant geometry,
+ *     like a `*-skins.css` file. A value with a `var()` read, a unitless `0`
+ *     token or a custom-property SET is not a literal declaration. Pre-existing
+ *     literals sit in LITERAL_SPACING_EXEMPT, keyed per file with an exact
+ *     count and a reason; the ratchet only shrinks.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -102,6 +112,36 @@ const DENSITY_ALLOWLIST = new Map([
     'deliberate 0-keep - --cngx-button-toggle-group-gap defaults to 0 so segmented toggles render flush; deriving it would introduce an unwanted gap.',
   ],
 ]);
+
+/** Pre-existing literal spacing declarations (rule c), exact count per file.
+ * A new declaration, or a row whose count no longer matches, fails. */
+const LITERAL_SPACING_EXEMPT = [
+  {
+    file: '/projects/common/popover/popover-panel.component.css',
+    count: 1,
+    reason: 'pre-existing literal, out of feature area',
+  },
+  {
+    file: '/projects/common/theming/components/cngx-button-toggle.css',
+    count: 1,
+    reason: 'pre-existing literal, out of feature area',
+  },
+  {
+    file: '/projects/ui/breadcrumb/breadcrumb-overflow.component.css',
+    count: 1,
+    reason: 'pre-existing literal (font-relative em), out of feature area',
+  },
+  {
+    file: '/projects/ui/command-palette/palette/command-palette.component.css',
+    count: 1,
+    reason: 'pre-existing literal (font-relative em on the kbd chip), out of feature area',
+  },
+  {
+    file: '/projects/ui/sidenav/sidenav.css',
+    count: 1,
+    reason: 'pre-existing literal, out of feature area',
+  },
+];
 
 // --- helpers ---------------------------------------------------------------
 
@@ -194,6 +234,38 @@ function hasNonSkinGatedScaleSet(css) {
   return false;
 }
 
+const SPACING_DECLARATION =
+  /(?<![\w-])(gap|row-gap|column-gap|padding(?:-[a-z-]+)?)\s*:\s*([^;{}]+);/g;
+const BARE_LENGTH_LIST = /^[0-9.]+(px|rem|em)(\s+[0-9.]+(px|rem|em))*$/;
+
+/** Rule (c): literal spacing declarations outside a skin-gated block. `css`
+ * must already be comment-stripped. */
+function literalSpacingDeclarations(css) {
+  const gated = skinGatedRanges(css);
+  const found = [];
+  SPACING_DECLARATION.lastIndex = 0;
+  let m;
+  while ((m = SPACING_DECLARATION.exec(css)) !== null) {
+    const at = m.index;
+    const value = m[2].trim();
+    const inGate = gated.some(([s, e]) => at >= s && at < e);
+    if (inGate || !BARE_LENGTH_LIST.test(value)) {
+      continue;
+    }
+    found.push(`${m[1]}: ${value}`);
+  }
+  return found;
+}
+
+function isLiteralSpacingScanned(relPath) {
+  return (
+    !relPath.includes('/themes/') &&
+    !/-skins\.css$/.test(relPath) &&
+    !relPath.includes('/examples/') &&
+    !relPath.includes('.spec-host.')
+  );
+}
+
 const TYPED_DIMENSION = /^<(length|length-percentage|angle|time|resolution|flex)>$/;
 const RELATIVE_UNIT = /(?:\d|\.)\s*(rem|em|ex|ch|cap|ic|lh|rlh|vw|vh|vi|vb|vmin|vmax|%)\b/i;
 const CSS_WIDE_KEYWORD = /^(inherit|initial|unset|revert|revert-layer)$/i;
@@ -282,6 +354,26 @@ describe('density derivation detection', () => {
   });
 });
 
+describe('literal spacing detection (rule c)', () => {
+  it('flags a bare length list', () => {
+    expect(literalSpacingDeclarations('.a { padding: 12px 16px; }')).toEqual([
+      'padding: 12px 16px',
+    ]);
+  });
+
+  it('passes a zero, a list with a unitless 0 token, a token read and a SET', () => {
+    expect(
+      literalSpacingDeclarations(
+        '.a { padding: 0; padding-block: 8px 0; gap: var(--cngx-x-padding, 8px); --cngx-x-padding: 12px; }',
+      ),
+    ).toEqual([]);
+  });
+
+  it('passes a literal inside a skin-gated block', () => {
+    expect(literalSpacingDeclarations("[data-skin='x'] .a { padding: 12px 16px; }")).toEqual([]);
+  });
+});
+
 describe('css density + @property regression guard', () => {
   it('every component stylesheet referencing a spacing token derives it from the scale at a non-skin-gated host', () => {
     const offenders = [];
@@ -298,6 +390,31 @@ describe('css density + @property regression guard', () => {
       offenders,
       `these stylesheets reference a *-gap/*-padding token but never SET one from --cngx-space-* at a non-skin-gated host (add the SET, or a DENSITY_ALLOWLIST entry with a one-clause reason):\n${offenders.join('\n')}`,
     ).toEqual([]);
+  });
+
+  it('no literal spacing declaration outside LITERAL_SPACING_EXEMPT (exact count per file)', () => {
+    const counts = new Map();
+    for (const { full, rel } of CSS_FILES) {
+      if (!isLiteralSpacingScanned(rel)) {
+        continue;
+      }
+      const found = literalSpacingDeclarations(stripComments(readFileSync(full, 'utf8')));
+      if (found.length > 0) {
+        counts.set(rel, found.length);
+      }
+    }
+    const actual = [...counts].map(([file, count]) => `${file} ${count}`).sort();
+    const exempt = LITERAL_SPACING_EXEMPT.map(({ file, count }) => `${file} ${count}`).sort();
+    expect(
+      actual,
+      'a gap / padding declaration with a bare length list never re-scales with [data-density]; read a token that derives from --cngx-space-* (or shrink the exempt row when a literal is removed)',
+    ).toEqual(exempt);
+  });
+
+  it('every LITERAL_SPACING_EXEMPT row carries a reason', () => {
+    expect(LITERAL_SPACING_EXEMPT.filter((row) => !row.reason || row.reason.trim() === '')).toEqual(
+      [],
+    );
   });
 
   it('no @property registers an invalid initial-value (would be silently dropped)', () => {
