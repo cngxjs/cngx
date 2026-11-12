@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   protected readonly save = () =>
     new Promise<void>((resolve) => setTimeout(resolve, 200));`,
   template: `
-  <div class="button-row">
+  <div class="demo-inline-actions">
     <button
       cngxActionButton
       #timed="cngxActionButton"

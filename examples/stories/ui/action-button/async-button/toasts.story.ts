@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
       setTimeout(() => reject(new Error('The server is unreachable.')), 600),
     );`,
   template: `
-  <div class="button-row">
+  <div class="demo-inline-actions">
     <button
       cngxActionButton
       [action]="saveDraft"
