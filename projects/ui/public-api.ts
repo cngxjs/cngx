@@ -1,5 +1,5 @@
 /**
- * Public API Surface of @cngx/ui
+ * Public API Surface of `@cngx/ui`
  *
  * The root entry is a small backwards-compat set only: it re-exports
  * `action-button`, `sidenav`, `skeleton` and `speak` plus the three
@@ -9,7 +9,7 @@
  * a root import can never pull Material or CDK into a bundle that does
  * not use them.
  *
- * @module @cngx/ui
+ * @module `@cngx/ui`
  */
 
 export * from './ui';

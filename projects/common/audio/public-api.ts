@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/audio
+ * @module `@cngx/common/audio`
  *
  * Signal-first audio-feedback system. A thin directive layer over a small
  * Web Audio adapter: zero asset weight (earcons synthesised from

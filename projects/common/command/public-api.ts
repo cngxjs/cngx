@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/command
+ * @module `@cngx/common/command`
  */
 export { type CngxCommand, type CngxCommandGroup, type CommandGroup } from './command';
 export {

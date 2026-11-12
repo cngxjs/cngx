@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/interactive
+ * @module `@cngx/common/interactive`
  */
 export {
   CNGX_ASYNC_CANCELLED,

@@ -1,6 +1,6 @@
 /**
- * Public API Surface of @cngx/forms/validators
- * @module @cngx/forms/validators
+ * Public API Surface of `@cngx/forms/validators`
+ * @module `@cngx/forms/validators`
  */
 
 export * from './required-true.validator';

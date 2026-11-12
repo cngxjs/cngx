@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/a11y
+ * @module `@cngx/common/a11y`
  */
 export { CngxAriaExpanded } from './aria/aria-expanded.directive';
 export { CngxLiveRegion } from './aria/live-region.directive';

@@ -1,5 +1,5 @@
 /**
- * Public API Surface of @cngx/forms/select
+ * Public API Surface of `@cngx/forms/select`
  *
  * The whole select family (CngxSelect, CngxMultiSelect, CngxCombobox,
  * CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect,
@@ -8,7 +8,7 @@
  * secondary entry; `shared/` hosts reused building blocks (commit
  * controller, option helpers, template slots, config + config features).
  *
- * @module @cngx/forms/select
+ * @module `@cngx/forms/select`
  */
 
 export { CngxSelect, type CngxSelectChange } from './single-select/select.component';

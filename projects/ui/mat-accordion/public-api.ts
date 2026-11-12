@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/mat-accordion
+ * @module `@cngx/ui/mat-accordion`
  *
  * Material instrumentation directive for `<mat-accordion>`: attach
  * `[cngxMatAccordion]` and it composes the same {@link CngxAccordion}

@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/accordion
+ * @module `@cngx/ui/accordion`
  */
 export { CngxAccordionGroup } from './accordion-group.component';
 export { CNGX_ACCORDION_GROUP, type CngxAccordionGroupContext } from './accordion-group.token';

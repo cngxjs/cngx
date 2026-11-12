@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/tabs
+ * @module `@cngx/ui/tabs`
  */
 export { CngxTabGroup } from './tab-group.component';
 export { CngxTabNav } from './tab-nav.component';

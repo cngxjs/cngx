@@ -86,8 +86,8 @@ function installReason(installed: string | undefined, order: number | undefined,
 }
 
 /**
- * The `ng-add` of every @cngx package but core: each answers `ng add` with
- * the same onboarding, owned by @cngx/core. The shim reads the installed
+ * The `ng-add` of every `@cngx` package but core: each answers `ng add` with
+ * the same onboarding, owned by `@cngx/core`. The shim reads the installed
  * core version from its package.json before it loads anything, because the
  * engine caches the first collection it creates for a name:
  *
@@ -100,8 +100,8 @@ function installReason(installed: string | undefined, order: number | undefined,
  *   its own version.
  *
  * A shim re-exports this as its `ngAdd` factory; the CLI passes only the
- * options, so `bundleDir` is the shim bundle's own folder. `ng add
- * @cngx/<lib>` always installs and records `<lib>`; the other flags go to
+ * options, so `bundleDir` is the shim bundle's own folder.
+ * `ng add @cngx/<lib>` always installs and records `<lib>`; the other flags go to
  * core as the CLI handed them over.
  */
 export function delegateNgAdd(options: NgAddFlags, bundleDir: string = __dirname): Rule {

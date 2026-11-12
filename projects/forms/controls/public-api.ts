@@ -1,6 +1,6 @@
 /**
- * Public API Surface of @cngx/forms/controls
- * @module @cngx/forms/controls
+ * Public API Surface of `@cngx/forms/controls`
+ * @module `@cngx/forms/controls`
  */
 
 export * from './typed-control.directive';

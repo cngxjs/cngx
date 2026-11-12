@@ -1,5 +1,5 @@
 /**
- * @module @cngx/core/i18n
+ * @module `@cngx/core/i18n`
  */
 export type {
   CngxLanguagePack,

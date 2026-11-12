@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/button
+ * @module `@cngx/common/button`
  */
 
 export type {

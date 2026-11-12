@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/tabs
+ * @module `@cngx/common/tabs`
  */
 export {
   CngxTabGroupPresenter,

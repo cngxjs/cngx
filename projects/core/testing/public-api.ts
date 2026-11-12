@@ -1,5 +1,5 @@
 /**
- * @module @cngx/core/testing
+ * @module `@cngx/core/testing`
  */
 export {
   createAnnouncementCapture,

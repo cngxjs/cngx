@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/timeline
+ * @module `@cngx/ui/timeline`
  */
 
 export {

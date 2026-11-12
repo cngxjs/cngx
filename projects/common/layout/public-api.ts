@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/layout
+ * @module `@cngx/common/layout`
  */
 export { CngxBackdrop } from './drawer/backdrop.directive';
 export { CngxDrawer, type DrawerPosition } from './drawer/drawer.directive';
