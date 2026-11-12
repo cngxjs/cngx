@@ -13,9 +13,10 @@
 // so a runtime URL of a dropped release lands on the same page.
 //
 // The script only helps a browser: an agent or curl gets a bare 404. So the
-// error-code pages, the URLs diagnostics print, also get static moved pages
-// that answer 200 and name the target without a script, for the unversioned
-// path and for every dropped release. The 404 page stays the net for the rest.
+// error-code pages, the URLs diagnostics print, and their overview also get
+// static moved pages that answer 200 and name the target without a script, for
+// the unversioned path and for every dropped release. The 404 page stays the
+// net for the rest.
 //
 // Usage:
 //   node scripts/docs-404.mjs <outDir> [--root=/cngx/]
@@ -32,6 +33,7 @@ import { parseReleaseTagOptions, selectDroppedTags } from './docs-release-tags.m
 export const DOCS_ROOT = '/cngx/';
 export const DOCS_ORIGIN = 'https://cngxjs.github.io';
 export const ERROR_CODES_DIR = 'additional-documentation/error-codes';
+export const ERROR_CODES_OVERVIEW = 'additional-documentation/error-codes.html';
 
 /**
  * Where a missing `pathname` of the site under `root` goes, given the label of
@@ -95,10 +97,28 @@ export function render404Html(root = DOCS_ROOT) {
 }
 
 /**
- * The moved pages for the error-code `pages` (file names) of the newest
- * release: one at the unversioned path, one per dropped label, each pointing at
- * the same page under `newestLabel`. `path` is relative to the site folder.
- * Nothing is written under the newest label itself.
+ * The error-code pages of the release folder `releaseDir`, relative to it: the
+ * overview when the release has one, then every `.html` of the error-code
+ * folder. A release without that folder throws.
+ */
+export function listErrorCodePages(releaseDir) {
+  const pagesDir = join(releaseDir, ERROR_CODES_DIR);
+  if (!existsSync(pagesDir)) {
+    throw new Error(`${pagesDir} missing`);
+  }
+  const overview = existsSync(join(releaseDir, ERROR_CODES_OVERVIEW)) ? [ERROR_CODES_OVERVIEW] : [];
+  const pages = readdirSync(pagesDir)
+    .filter((name) => name.endsWith('.html'))
+    .sort()
+    .map((name) => `${ERROR_CODES_DIR}/${name}`);
+  return [...overview, ...pages];
+}
+
+/**
+ * The moved pages for the error-code `pages` of the newest release (paths
+ * relative to its folder): one at the unversioned path, one per dropped label,
+ * each pointing at the same page under `newestLabel`. `path` is relative to the
+ * site folder. Nothing is written under the newest label itself.
  */
 export function movedPages(pages, newestLabel, droppedLabels, root) {
   if (!newestLabel) {
@@ -110,8 +130,8 @@ export function movedPages(pages, newestLabel, droppedLabels, root) {
   ];
   return prefixes.flatMap((prefix) =>
     pages.map((page) => ({
-      path: `${prefix}${ERROR_CODES_DIR}/${page}`,
-      target: `${root}${newestLabel}/${ERROR_CODES_DIR}/${page}`,
+      path: `${prefix}${page}`,
+      target: `${root}${newestLabel}/${page}`,
     })),
   );
 }
@@ -148,13 +168,7 @@ function writeMovedPages(outDir, root) {
   if (!newestLabel) {
     throw new Error(`${manifestPath} lists no version`);
   }
-  const pagesDir = join(outDir, newestLabel, ERROR_CODES_DIR);
-  if (!existsSync(pagesDir)) {
-    throw new Error(`${pagesDir} missing`);
-  }
-  const pages = readdirSync(pagesDir)
-    .filter((name) => name.endsWith('.html'))
-    .sort();
+  const pages = listErrorCodePages(join(outDir, newestLabel));
   const tags = execFileSync('git', ['tag', '--list', 'v*'], { encoding: 'utf8' })
     .split('\n')
     .filter(Boolean);
