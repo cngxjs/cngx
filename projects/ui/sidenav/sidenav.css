@@ -553,6 +553,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     min-width: var(--cngx-sidenav-width, 280px);
+    /* Same block inset as the nav-rail body: the first and last row keep a
+       gap to the panel edge or the header and footer. */
+    padding-block: var(--cngx-space-xs, 4px);
     scrollbar-gutter: stable; /* reserve scrollbar space */
   }
 
