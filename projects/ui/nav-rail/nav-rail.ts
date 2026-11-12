@@ -33,7 +33,8 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * Two looks through `labelPlacement`:
  * - `'end'` (default): icon only. Each row keeps its full label, clipped at
  *   the row edge, so it stays the accessible name; a tooltip shows it on
- *   hover and focus. The width derives from the row tokens
+ *   hover after a short delay and at once on keyboard focus. The width
+ *   derives from the row tokens
  *   (`--cngx-nav-rail-size`), so the icon box sits centred.
  * - `'below'`: the icon stacked over a short label, no tooltip
  *   (`--cngx-nav-rail-below-size`).

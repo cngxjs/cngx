@@ -66,7 +66,7 @@ function rowLabel(row: HTMLElement): string {
 /**
  * Shows the clipped label of a nav row in a tooltip while a navigation rail
  * is collapsed. Call it in the constructor of the organism that hosts the
- * rows (`cngx-nav-rail`, `cngx-sidenav`) and pass a derived signal that is
+ * rows (today `cngx-nav-rail`) and pass a derived signal that is
  * `true` while the rows are railed; nothing shows while it is `false`.
  *
  * One tooltip element per host, created like the one of `CngxTooltip`

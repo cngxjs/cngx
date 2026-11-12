@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxNavRail: icon-only rail',
   subtitle:
-    'A rail that never expands. Each row keeps its full label, clipped at the row edge, so it stays the accessible name; a tooltip repeats it on hover and focus.',
+    'A rail that never expands. Each row keeps its full label, clipped at the row edge, so it stays the accessible name; a tooltip repeats it on hover after a short delay and at once on keyboard focus.',
   description:
     'The default <code>labelPlacement="end"</code> look. The rail width derives from the row tokens, so every icon box sits centred. A badge sits on the icon corner, section labels keep their text for assistive technology but paint nothing. <code>Reports</code> is a <code>cngxNavGroup</code>: it opens as a flyout beside its head, a disclosure with the links in tab order. Escape on the head or in the flyout closes it and returns focus to the head; focus leaving the flyout or a press outside closes it too.',
   level: 'organism',
