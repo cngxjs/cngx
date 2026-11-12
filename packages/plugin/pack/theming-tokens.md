@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3015 tokens across 167 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3095 tokens across 167 components.
 
 ## CngxA11yPanel
 
@@ -1978,6 +1978,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavFooter
 
@@ -2023,6 +2031,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavGroup
 
@@ -2068,6 +2084,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavGroupContent
 
@@ -2113,6 +2137,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavHeader
 
@@ -2158,6 +2190,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavIcon
 
@@ -2203,6 +2243,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavLabel
 
@@ -2248,6 +2296,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavLink
 
@@ -2293,6 +2349,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavMark
 
@@ -2338,6 +2402,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavName
 
@@ -2383,6 +2455,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
 |`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
 |`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxOption
 

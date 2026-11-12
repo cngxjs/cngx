@@ -16,7 +16,8 @@
  * - `.cngx-nav-label` (`CngxNavLabel`) - section label
  * - `.cngx-nav-badge` (`CngxNavBadge`) with `--count`, `--dot`, `--status`
  * - `.cngx-nav-group-content` (`CngxNavGroupContent`) - grid-rows expand
- *   and collapse wrapper; it needs one child
+ *   and collapse wrapper; it needs one child. Open as a popover on a
+ *   collapsed rail (`:popover-open`) it is the group flyout
  * - `.cngx-nav-icon` (`CngxNavIcon`) - icon slot of a row or group head
  * - `.cngx-nav-header` (`CngxNavHeader`), `.cngx-nav-footer`
  *   (`CngxNavFooter`) - top and bottom regions of a nav container
@@ -533,6 +534,93 @@
     initial-value: 6px;
   }
 
+  /**
+   * Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-nav-flyout-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text colour of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-nav-flyout-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Border colour of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-flyout-border-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Elevation of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-shadow-md]]
+   */
+  @property --cngx-nav-flyout-shadow {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-radius-md]]
+   */
+  @property --cngx-nav-flyout-radius {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-space-xs]]
+   */
+  @property --cngx-nav-flyout-padding {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   */
+  @property --cngx-nav-flyout-min-inline-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Gap between a group head and its flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-space-xs]]
+   */
+  @property --cngx-nav-flyout-offset {
+    syntax: '*';
+    inherits: true;
+  }
+
   /*
    * Default-theme palette pass. A registered `initial-value` shadows any
    * `var(...)` fallback, so the colour tokens are SET here from the
@@ -868,6 +956,29 @@
   .cngx-nav-group-content--open {
     grid-template-rows: 1fr;
   }
+
+  /* Group flyout on a collapsed rail: the group content as a top-layer
+     popover at the inline end of its head (injectNavRailFlyout wires the
+     anchor). Logical area, so it mirrors under dir="rtl"; it flips when the
+     viewport has no room. */
+  .cngx-nav-group-content:popover-open {
+    inset: auto;
+    margin: 0;
+    margin-inline-start: var(--cngx-nav-flyout-offset, var(--cngx-space-xs, 4px));
+    position-area: inline-end span-block-end;
+    position-try-fallbacks: flip-block, flip-inline;
+    box-sizing: border-box;
+    min-inline-size: var(--cngx-nav-flyout-min-inline-size, 12rem);
+    padding: var(--cngx-nav-flyout-padding, var(--cngx-space-xs, 4px));
+    border: 1px solid var(--cngx-nav-flyout-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    border-radius: var(--cngx-nav-flyout-radius, var(--cngx-radius-md, 8px));
+    background: var(--cngx-nav-flyout-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    color: var(--cngx-nav-flyout-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+    box-shadow: var(
+      --cngx-nav-flyout-shadow,
+      var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.12))
+    );
+  }
 }
 
 /* Forced colors (WHCM): the active row signals only with a fill (forced to
@@ -898,6 +1009,11 @@
     outline-color: HighlightText;
     outline-offset: calc(-2 * var(--cngx-nav-link-focus-outline-width, 2px));
     box-shadow: none;
+  }
+
+  /* The flyout loses its shadow: keep its edge in the text colour. */
+  .cngx-nav-group-content:popover-open {
+    border-color: CanvasText;
   }
 
   /* A filled pill or dot is forced to Canvas: ring it. */

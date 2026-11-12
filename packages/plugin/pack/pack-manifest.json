@@ -260,7 +260,7 @@
   "theming": {
     "artifact": "pack/theming-tokens.md",
     "source": "packages/mcp/data/documentation.json",
-    "contentHash": "sha256:5eb1aabedc840d0d5a9e36c4bfd4cc7d2612c7192f598882a6b696e707dc76ca",
-    "tokenCount": 3015
+    "contentHash": "sha256:5a8de7d9b0f81813b87a64dc0de3dc7ec8cdbad2b725ae748d89cee5d7550a98",
+    "tokenCount": 3095
   }
 }
