@@ -120,7 +120,10 @@ describe('CngxNavRail', () => {
     // Keyboard focus: jsdom has no :focus-visible heuristic, so the row reports it.
     const row = el('.row-inbox');
     const matches = row.matches.bind(row);
-    row.matches = (selector: string) => selector === ':focus-visible' || matches(selector);
+    Object.defineProperty(row, 'matches', {
+      configurable: true,
+      value: (selector: string) => selector === ':focus-visible' || matches(selector),
+    });
     row.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     expect(tip.hasAttribute('data-popover-open')).toBe(true);
     el('.row-inbox').dispatchEvent(new FocusEvent('focusout', { bubbles: true }));

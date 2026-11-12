@@ -50,8 +50,11 @@ function setup() {
  */
 function keyFocus(el: HTMLElement): void {
   const matches = el.matches.bind(el);
-  el.matches = (selector: string) =>
-    selector === ':focus-visible' ? el.ownerDocument.activeElement === el : matches(selector);
+  Object.defineProperty(el, 'matches', {
+    configurable: true,
+    value: (selector: string) =>
+      selector === ':focus-visible' ? el.ownerDocument.activeElement === el : matches(selector),
+  });
   el.focus();
 }
 
