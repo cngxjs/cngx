@@ -621,17 +621,6 @@
     inherits: true;
   }
 
-  /**
-   * Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so
-   * the use-site fallback follows the foundation.
-   * @group Layout
-   * @see [[--cngx-space-sm]]
-   */
-  @property --cngx-nav-tooltip-offset {
-    syntax: '*';
-    inherits: true;
-  }
-
   /*
    * Default-theme palette pass. A registered `initial-value` shadows any
    * `var(...)` fallback, so the colour tokens are SET here from the
@@ -1015,14 +1004,6 @@
       var(--cngx-nav-link-inset, 4px) + max(0, var(--cngx-nav-depth, 0) - 1) *
         var(--cngx-nav-indent, 12px)
     );
-  }
-
-  /* Label tooltip of a railed row (injectNavRailTooltip wires the anchor):
-     at the inline end of the row. Two classes, so it beats the margin reset
-     of the tooltip skin's @scope. */
-  .cngx-tooltip.cngx-nav-rail-tooltip {
-    position-area: inline-end;
-    margin-inline-start: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
   }
 }
 

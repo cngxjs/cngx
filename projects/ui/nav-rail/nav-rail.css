@@ -3,8 +3,8 @@
  * Structural styles of `CngxNavRail`: the rail width and the two looks. The
  * rows, header, footer and group flyout it holds are skinned by the nav
  * atoms (`cngx-nav.css` in `@cngx/common/theming/components`, loaded by
- * `cngx.css`); this file only SETs the rail width and the rail states of the
- * rows. Shipped via the component's `styleUrl`; under `encapsulation: None`
+ * `cngx.css`); this file SETs the rail width and the rail states of the
+ * rows and places the rail's label tooltip. Shipped via the component's `styleUrl`; under `encapsulation: None`
  * the `cngx-nav-rail` tag and its descendants match globally.
  *
  * **Looks** (`data-label-placement`)
@@ -82,6 +82,17 @@
    * @group Surface
    */
   @property --cngx-nav-rail-border-width {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so
+   * the use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-space-sm]]
+   */
+  @property --cngx-nav-tooltip-offset {
     syntax: '*';
     inherits: true;
   }
@@ -206,6 +217,14 @@
     inset-block-start: calc(var(--cngx-space-xs, 4px) / 2);
     inset-inline-start: calc(50% + var(--cngx-space-xs, 4px));
     margin: 0;
+  }
+
+  /* Label tooltip of a railed row (injectNavRailTooltip appends it to the
+     rail and wires the anchor): at the inline end of the row. Two classes,
+     so it beats the margin reset of the tooltip skin's @scope. */
+  .cngx-tooltip.cngx-nav-rail-tooltip {
+    position-area: inline-end;
+    margin-inline-start: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
   }
 
   /* The flyout replaces the chevron in the stacked look. */
