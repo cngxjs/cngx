@@ -95,11 +95,7 @@ export class CngxNavGroup {
   /** Nesting depth for indentation. Consumer sets manually. */
   readonly depth = input<number>(0);
 
-  /**
-   * The group head element. An organism that places the group content
-   * relative to its head (the rail flyout anchors to it) reads it here.
-   */
-  readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
   private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
 

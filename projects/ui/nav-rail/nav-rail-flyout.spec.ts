@@ -1,4 +1,4 @@
-import { Component, signal, viewChildren } from '@angular/core';
+import { Component, ElementRef, signal, viewChildren } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
@@ -25,10 +25,19 @@ import { injectNavRailFlyout } from './nav-rail-flyout';
 })
 class TestRail {
   readonly railed = signal(true);
+  readonly groups = viewChildren(CngxNavGroup);
+  readonly groupElements = viewChildren(CngxNavGroup, { read: ElementRef });
   readonly contents = viewChildren(CngxNavGroupContent);
+  readonly contentElements = viewChildren(CngxNavGroupContent, { read: ElementRef });
 
   constructor() {
-    injectNavRailFlyout({ railed: this.railed, contents: this.contents });
+    injectNavRailFlyout({
+      railed: this.railed,
+      groups: this.groups,
+      groupElements: this.groupElements,
+      contents: this.contents,
+      contentElements: this.contentElements,
+    });
   }
 }
 

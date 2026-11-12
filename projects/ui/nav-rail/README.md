@@ -226,6 +226,8 @@ Give the two landmarks different names, as above.
 organism:
 
 - `injectNavRailTooltip(railed)` - the label tooltip for clipped rows.
-- `injectNavRailFlyout({ railed, contents })` - nav groups as anchored
-  flyouts while `railed()` is `true`; `contents` is your content query for
-  `CngxNavGroupContent`.
+- `injectNavRailFlyout({ railed, groups, groupElements, contents, contentElements })` -
+  nav groups as anchored flyouts while `railed()` is `true`; `groups` and
+  `contents` are your content queries for `CngxNavGroup` and
+  `CngxNavGroupContent`, `groupElements` and `contentElements` the same
+  queries with `read: ElementRef`.

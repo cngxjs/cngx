@@ -2,6 +2,7 @@ import {
   afterRenderEffect,
   DestroyRef,
   DOCUMENT,
+  type ElementRef,
   inject,
   Renderer2,
   type Signal,
@@ -10,12 +11,23 @@ import {
 import type { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
-/** What `injectNavRailFlyout` reads from the organism that projects the rows. */
+/**
+ * What `injectNavRailFlyout` reads from the organism that projects the rows.
+ * Each directive query comes with its `read: ElementRef` twin over the same
+ * selector and options, so the two lists hold the same nodes in the same
+ * order.
+ */
 export interface CngxNavRailFlyoutSources {
   /** `true` while the rows are railed. */
   readonly railed: Signal<boolean>;
+  /** The projected group heads. */
+  readonly groups: Signal<readonly CngxNavGroup[]>;
+  /** The host elements of `groups`, in the same order. */
+  readonly groupElements: Signal<readonly ElementRef<HTMLElement>[]>;
   /** The projected group contents; each one names its head through `group()`. */
   readonly contents: Signal<readonly CngxNavGroupContent[]>;
+  /** The host elements of `contents`, in the same order. */
+  readonly contentElements: Signal<readonly ElementRef<HTMLElement>[]>;
 }
 
 interface FlyoutPair {
@@ -27,8 +39,9 @@ interface FlyoutPair {
 /**
  * Shows an open nav group as a flyout beside its head while the rows are
  * railed. Call it in the constructor of the organism that projects the rows
- * and pass its content query for `CngxNavGroupContent`; each content names
- * its group head, so nothing is paired by index.
+ * and pass its content queries for `CngxNavGroup` and `CngxNavGroupContent`,
+ * each with its `read: ElementRef` twin. A content is paired with its head
+ * through `CngxNavGroupContent.group()`, never by position.
  *
  * While railed, each `cngxNavGroupContent` becomes a native
  * `popover="manual"` anchored to its group head (`anchor-name` /
@@ -51,14 +64,29 @@ interface FlyoutPair {
  *
  * ```typescript
  * export class MyRail {
+ *   private readonly groups = contentChildren(CngxNavGroup, { descendants: true });
+ *   private readonly groupElements = contentChildren(CngxNavGroup, {
+ *     descendants: true,
+ *     read: ElementRef,
+ *   });
  *   private readonly contents = contentChildren(CngxNavGroupContent, { descendants: true });
+ *   private readonly contentElements = contentChildren(CngxNavGroupContent, {
+ *     descendants: true,
+ *     read: ElementRef,
+ *   });
  *   constructor() {
- *     injectNavRailFlyout({ railed: signal(true), contents: this.contents });
+ *     injectNavRailFlyout({
+ *       railed: signal(true),
+ *       groups: this.groups,
+ *       groupElements: this.groupElements,
+ *       contents: this.contents,
+ *       contentElements: this.contentElements,
+ *     });
  *   }
  * }
  * ```
  *
- * @param sources The rail state and the content queries.
+ * @param sources The rail state and the group and content queries.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-flyout.ts
  * @since 0.3.0
  * @relatedTo injectNavRailTooltip, CngxNavGroup, CngxNavGroupContent, CngxDisclosure
@@ -71,10 +99,21 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
   const wired = new Map<HTMLElement, () => void>();
   let inertObserver: MutationObserver | null = null;
 
+  // WHY by index: a directive query and its `read: ElementRef` twin run the
+  // same selector over the same view, so entry i of both is the same node.
+  // Only that twin pairing is positional; a content finds its head through
+  // `group()`.
   function pairs(): readonly FlyoutPair[] {
-    return sources.contents().map((content) => {
+    const groupElements = sources.groupElements();
+    const heads = new Map(
+      sources.groups().map((group, i) => [group, groupElements[i]?.nativeElement] as const),
+    );
+    const contentElements = sources.contentElements();
+    return sources.contents().flatMap((content, i) => {
       const group = content.group();
-      return { group, head: group.element, content: content.element };
+      const head = heads.get(group);
+      const element = contentElements[i]?.nativeElement;
+      return head && element ? [{ group, head, content: element }] : [];
     });
   }
 

@@ -63,11 +63,7 @@ export class CngxNavGroupContent {
   /** Whether the referenced group is open. */
   protected readonly opened = computed(() => this.group().disclosure.opened());
 
-  /**
-   * The content region element. An organism that shows the region outside
-   * the row flow (the rail flyout) reads it here.
-   */
-  readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   constructor() {
     // Runs before the host's inert binding is refreshed: focus is still inside
