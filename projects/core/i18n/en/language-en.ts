@@ -356,6 +356,7 @@ export const CNGX_LANGUAGE_EN = {
   },
   navRail: {
     ariaLabel: 'Navigation',
+    endAriaLabel: 'Secondary navigation',
   },
   paginator: {
     label: 'Pagination',

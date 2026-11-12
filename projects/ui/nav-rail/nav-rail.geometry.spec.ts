@@ -10,7 +10,7 @@ import {
 } from '@cngx/common/interactive';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
+import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
 
 // Runs in a real Chromium (the `test-geometry` target): the rail width, the
 // clipped label and the anchored flyout are layout facts jsdom cannot see.
@@ -35,8 +35,12 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div style="block-size: 400px; display: flex">
-      <cngx-nav-rail [labelPlacement]="placement()" style="--cngx-target-min: 44px">
+    <div
+      class="frame"
+      style="block-size: 400px; display: flex"
+      [style.justify-content]="side() === 'end' ? 'flex-end' : null"
+    >
+      <cngx-nav-rail [labelPlacement]="placement()" [side]="side()" style="--cngx-target-min: 44px">
         <div cngxNavLabel class="section">Mail</div>
         <a cngxNavLink href="#inbox" class="row">
           <span cngxNavIcon class="icon"
@@ -67,13 +71,15 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
 })
 class RailGeometryHost {
   readonly placement = signal<CngxNavRailLabelPlacement>('end');
+  readonly side = signal<CngxNavRailSide>('start');
 }
 
 let mountedRoot: HTMLElement | null = null;
 
-function mount(placement: CngxNavRailLabelPlacement = 'end') {
+function mount(placement: CngxNavRailLabelPlacement = 'end', side: CngxNavRailSide = 'start') {
   const fixture = TestBed.createComponent(RailGeometryHost);
   fixture.componentInstance.placement.set(placement);
+  fixture.componentInstance.side.set(side);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
@@ -89,16 +95,30 @@ afterEach(() => {
 });
 
 describe('CngxNavRail geometry', () => {
-  it('centres the icon box in the icon-only rail, inside its border', () => {
-    const { el } = mount('end');
+  it('draws the border on the inner edge of an end-side rail', () => {
+    const { el } = mount('end', 'end');
     const railEl = el('cngx-nav-rail');
-    const rail = railEl.getBoundingClientRect();
-    const border = parseFloat(getComputedStyle(railEl).borderInlineEndWidth);
-    const icon = el('.icon').getBoundingClientRect();
-    const left = icon.left - rail.left;
-    const right = rail.right - border - icon.right;
-    expect(Math.abs(left - right)).toBeLessThanOrEqual(0.5);
+    const style = getComputedStyle(railEl);
+    expect(style.borderInlineStartWidth).toBe('1px');
+    expect(style.borderInlineEndWidth).toBe('0px');
+    expect(railEl.getBoundingClientRect().right).toBeCloseTo(
+      el('.frame').getBoundingClientRect().right,
+      1,
+    );
   });
+
+  for (const side of ['start', 'end'] as const) {
+    it(`centres the icon box in the icon-only rail, inside its border (${side})`, () => {
+      const { el } = mount('end', side);
+      const railEl = el('cngx-nav-rail');
+      const rail = railEl.getBoundingClientRect();
+      const style = getComputedStyle(railEl);
+      const icon = el('.icon').getBoundingClientRect();
+      const left = icon.left - rail.left - parseFloat(style.borderInlineStartWidth);
+      const right = rail.right - parseFloat(style.borderInlineEndWidth) - icon.right;
+      expect(Math.abs(left - right)).toBeLessThanOrEqual(0.5);
+    });
+  }
 
   it('sizes a cngx-icon in the slot to the icon box, not the row font', () => {
     const { el } = mount('below');
@@ -107,15 +127,22 @@ describe('CngxNavRail geometry', () => {
     );
   });
 
-  for (const dir of ['ltr', 'rtl'] as const) {
-    it(`keeps the badge whole inside a compact rail (${dir})`, () => {
+  for (const [side, dir] of [
+    ['start', 'ltr'],
+    ['start', 'rtl'],
+    ['end', 'ltr'],
+    ['end', 'rtl'],
+  ] as const) {
+    it(`keeps the badge whole inside a compact rail (${side}, ${dir})`, () => {
       document.documentElement.setAttribute('dir', dir);
-      const { el } = mount('end');
+      const { el } = mount('end', side);
       const railEl = el('cngx-nav-rail');
       // The compact density metrics: 8px row padding, 2px row inset.
       railEl.style.setProperty('--cngx-nav-link-padding-inline', '8px');
       railEl.style.setProperty('--cngx-nav-link-inset', '2px');
       const rail = railEl.getBoundingClientRect();
+      // The rows end at the rail's inline end; only a start-side rail has its
+      // border there (0 for an end-side rail).
       const border = parseFloat(getComputedStyle(railEl).borderInlineEndWidth);
       const badge = el('.badge').getBoundingClientRect();
       const label = el('.label').getBoundingClientRect();

@@ -13,7 +13,10 @@ describe('@cngx/ui/nav-rail public API shape', () => {
     expect(api.provideNavRailI18n).toBeTypeOf('function');
     expect(api.withNavRailI18nLabels).toBeTypeOf('function');
     expect(api.injectNavRailI18n).toBeTypeOf('function');
-    expect(api.CNGX_NAV_RAIL_LANGUAGE_EN).toEqual({ ariaLabel: 'Navigation' });
+    expect(api.CNGX_NAV_RAIL_LANGUAGE_EN).toEqual({
+      ariaLabel: 'Navigation',
+      endAriaLabel: 'Secondary navigation',
+    });
   });
 
   it('exports the rail config cascade', () => {
@@ -22,6 +25,7 @@ describe('@cngx/ui/nav-rail public API shape', () => {
     expect(api.provideNavRailConfigAt).toBeTypeOf('function');
     expect(api.injectNavRailConfig).toBeTypeOf('function');
     expect(api.withNavRailLabelPlacement).toBeTypeOf('function');
+    expect(api.withNavRailSide).toBeTypeOf('function');
     expect(api.withNavRailTooltip).toBeTypeOf('function');
     expect(api.withNavRailTooltipDelay).toBeTypeOf('function');
   });

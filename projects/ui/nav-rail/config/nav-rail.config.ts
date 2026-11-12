@@ -1,15 +1,15 @@
-import type { CngxNavRailLabelPlacement } from '../nav-rail';
+import type { CngxNavRailLabelPlacement, CngxNavRailSide } from '../nav-rail';
 
 /**
- * App-wide cascade for the nav rail's look and its label tooltip. Settings
+ * App-wide cascade for the nav rail's look, its side and its label tooltip. Settings
  * only; the rail's copy lives on `CNGX_NAV_RAIL_I18N`.
  *
  * Resolution priority (high -> low):
- *   1. Per-instance Input binding (`[labelPlacement]`, `[tooltip]`).
+ *   1. Per-instance Input binding (`[labelPlacement]`, `[side]`, `[tooltip]`).
  *   2. `provideNavRailConfigAt(...)` in a parent component's `viewProviders`.
  *   3. `provideNavRailConfig(...)` at the application root.
- *   4. Library defaults (`labelPlacement: 'end'`, `tooltip: true`,
- *      `tooltipDelay: 300`).
+ *   4. Library defaults (`labelPlacement: 'end'`, `side: 'start'`,
+ *      `tooltip: true`, `tooltipDelay: 300`).
  *
  * Every key is a flat top-level scalar, so a later feature replaces the
  * earlier value of the same key.
@@ -23,6 +23,13 @@ export interface CngxNavRailConfig {
    * `[labelPlacement]` still wins.
    */
   readonly labelPlacement?: CngxNavRailLabelPlacement;
+
+  /**
+   * Default side of every `cngx-nav-rail`: `'start'` or `'end'`, logical. The
+   * border goes on the rail's inner edge and the flyout and the tooltip open
+   * away from it. A bound `[side]` still wins.
+   */
+  readonly side?: CngxNavRailSide;
 
   /**
    * Whether a railed row shows its label in a tooltip (default `true`). Only

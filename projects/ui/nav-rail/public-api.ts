@@ -13,7 +13,7 @@ export {
   type CngxNavRailFlyoutSources,
   injectNavRailFlyout,
 } from './nav-rail-flyout';
-export { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
+export { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
 export type { CngxNavRailConfig } from './config/nav-rail.config';
 export { CNGX_NAV_RAIL_CONFIG } from './config/nav-rail.config.defaults';
 export {
@@ -23,6 +23,7 @@ export {
 } from './config/provide-nav-rail-config';
 export {
   withNavRailLabelPlacement,
+  withNavRailSide,
   withNavRailTooltip,
   withNavRailTooltipDelay,
 } from './config/features';

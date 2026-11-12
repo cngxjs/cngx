@@ -7,6 +7,13 @@
  * rows and places the rail's label tooltip. Shipped via the component's `styleUrl`; under `encapsulation: None`
  * the `cngx-nav-rail` tag and its descendants match globally.
  *
+ * **Side** (`data-side`)
+ *
+ * - `start` - the rail sits at the inline start; border on its inline end.
+ * - `end` - the rail sits at the inline end; border on its inline start. The
+ *   rail's place is the consumer's DOM order, the attribute only turns the
+ *   side-dependent parts.
+ *
  * **Looks** (`data-label-placement`)
  *
  * - `end` - icon only. A row keeps its full label but clips at its padding
@@ -68,7 +75,8 @@
   }
 
   /**
-   * Colour of the rail's inline-end border.
+   * Colour of the border on the rail's inner edge (inline end for
+   * `side="start"`, inline start for `side="end"`).
    * @group Surface
    * @see [[--cngx-color-border]]
    */
@@ -78,7 +86,8 @@
   }
 
   /**
-   * Width of the rail's inline-end border. The group flyout clears it.
+   * Width of the border on the rail's inner edge (inline end for
+   * `side="start"`, inline start for `side="end"`). The group flyout clears it.
    * @group Surface
    */
   @property --cngx-nav-rail-border-width {
@@ -127,6 +136,12 @@
       var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
         var(--cngx-nav-rail-border-width, 1px) + var(--cngx-space-xs, 4px)
     );
+  }
+
+  cngx-nav-rail[data-side='end'] {
+    border-inline-end: 0;
+    border-inline-start: var(--cngx-nav-rail-border-width, 1px) solid
+      var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
   }
 
   cngx-nav-rail[data-label-placement='below'] {

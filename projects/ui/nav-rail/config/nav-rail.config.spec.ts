@@ -2,8 +2,13 @@ import { Component, Directive, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { CngxNavRail, type CngxNavRailLabelPlacement } from '../nav-rail';
-import { withNavRailLabelPlacement, withNavRailTooltip, withNavRailTooltipDelay } from './features';
+import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from '../nav-rail';
+import {
+  withNavRailLabelPlacement,
+  withNavRailSide,
+  withNavRailTooltip,
+  withNavRailTooltipDelay,
+} from './features';
 import { injectNavRailConfig } from './inject-nav-rail-config';
 import { CNGX_NAV_RAIL_CONFIG, CNGX_NAV_RAIL_DEFAULTS } from './nav-rail.config.defaults';
 import { provideNavRailConfig, provideNavRailConfigAt } from './provide-nav-rail-config';
@@ -27,18 +32,23 @@ class AtHost {
 @Component({
   imports: [CngxNavRail],
   template: `
-    <cngx-nav-rail [labelPlacement]="placement()" [tooltip]="tooltip()">
+    <cngx-nav-rail [labelPlacement]="placement()" [side]="side()" [tooltip]="tooltip()">
       <a href="#inbox" class="cngx-nav-link">Inbox</a>
     </cngx-nav-rail>
   `,
 })
 class RailHost {
   readonly placement = signal<CngxNavRailLabelPlacement | undefined>(undefined);
+  readonly side = signal<CngxNavRailSide | undefined>(undefined);
   readonly tooltip = signal<boolean | undefined>(undefined);
 }
 
 function hasTooltip(fixture: { nativeElement: HTMLElement }): boolean {
   return fixture.nativeElement.querySelector('.cngx-nav-rail-tooltip') !== null;
+}
+
+function sideOf(fixture: { nativeElement: HTMLElement }): string | null {
+  return fixture.nativeElement.querySelector('cngx-nav-rail')!.getAttribute('data-side');
 }
 
 function placementOf(fixture: { nativeElement: HTMLElement }): string | null {
@@ -50,6 +60,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     expect(TestBed.inject(CNGX_NAV_RAIL_CONFIG)).toBe(CNGX_NAV_RAIL_DEFAULTS);
     expect(CNGX_NAV_RAIL_DEFAULTS).toEqual({
       labelPlacement: 'end',
+      side: 'start',
       tooltip: true,
       tooltipDelay: 300,
     });
@@ -60,6 +71,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
       providers: [
         provideNavRailConfig(
           withNavRailLabelPlacement('below'),
+          withNavRailSide('end'),
           withNavRailTooltip(false),
           withNavRailTooltipDelay(100),
           withNavRailTooltipDelay(200),
@@ -68,6 +80,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     });
     expect(TestBed.inject(CNGX_NAV_RAIL_CONFIG)).toEqual({
       labelPlacement: 'below',
+      side: 'end',
       tooltip: false,
       tooltipDelay: 200,
     });
@@ -86,6 +99,7 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.probe().cfg).toEqual({
       labelPlacement: 'below',
+      side: 'start',
       tooltip: true,
       tooltipDelay: 800,
     });
@@ -107,6 +121,24 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     configured.componentInstance.placement.set('end');
     configured.detectChanges();
     expect(placementOf(configured)).toBe('end');
+  });
+
+  it('resolves the rail side as input, then config, then default', () => {
+    const plain = TestBed.createComponent(RailHost);
+    plain.detectChanges();
+    expect(sideOf(plain)).toBe('start');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideNavRailConfig(withNavRailSide('end'))],
+    });
+    const configured = TestBed.createComponent(RailHost);
+    configured.detectChanges();
+    expect(sideOf(configured)).toBe('end');
+
+    configured.componentInstance.side.set('start');
+    configured.detectChanges();
+    expect(sideOf(configured)).toBe('start');
   });
 
   it('resolves the tooltip switch as input, then config, then default', () => {

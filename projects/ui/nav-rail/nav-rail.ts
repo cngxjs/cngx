@@ -20,6 +20,9 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
 /** How a `cngx-nav-rail` lays out a row's label. */
 export type CngxNavRailLabelPlacement = 'end' | 'below';
 
+/** The page edge a `cngx-nav-rail` sits on, logical: `'start'` is the right edge under RTL. */
+export type CngxNavRailSide = 'start' | 'end';
+
 /**
  * A navigation rail: a narrow, always-collapsed column of nav rows for apps
  * whose primary navigation never expands. Use `cngx-sidenav` when the same
@@ -43,6 +46,13 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  *   (`--cngx-nav-rail-size`), so the icon box sits centred.
  * - `'below'`: the icon stacked over a short label, no tooltip
  *   (`--cngx-nav-rail-below-size`).
+ *
+ * `side` names the edge the rail sits on (`'start'` default, app-wide through
+ * `withNavRailSide`): the border goes on the rail's inner edge and the flyout
+ * and the tooltip open away from the rail, into the page. Placing the rail is
+ * still the consumer's DOM order; `side` only turns the side-dependent parts.
+ * An unbound `[ariaLabel]` names a `side="end"` rail by its own copy key, so a
+ * start rail and an end rail on one page never share a landmark name.
  *
  * A nav group opens as a flyout beside its head in both looks; its
  * `aria-expanded` stays the one state. Tooltip and flyout are swappable
@@ -68,7 +78,7 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail.ts
  * @selector cngx-nav-rail
  * @since 0.3.0
- * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, CNGX_NAV_RAIL_TOOLTIP_FACTORY, CNGX_NAV_RAIL_FLYOUT_FACTORY, provideNavRailConfig, withNavRailTooltip
+ * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, CNGX_NAV_RAIL_TOOLTIP_FACTORY, CNGX_NAV_RAIL_FLYOUT_FACTORY, provideNavRailConfig, withNavRailTooltip, withNavRailSide
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
  * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
@@ -93,10 +103,15 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
     role: 'navigation',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.data-label-placement]': 'resolvedLabelPlacement()',
+    '[attr.data-side]': 'resolvedSide()',
   },
 })
 export class CngxNavRail {
-  /** Accessible name of the landmark. Unbound, the `navRail` language-pack copy applies. */
+  /**
+   * Accessible name of the landmark. Unbound, the `navRail` language-pack copy
+   * applies: `ariaLabel` for a `side="start"` rail, `endAriaLabel` for a
+   * `side="end"` rail.
+   */
   readonly ariaLabel = input<string | undefined>(undefined);
 
   /**
@@ -115,6 +130,14 @@ export class CngxNavRail {
    */
   readonly tooltip = input<boolean | undefined>(undefined);
 
+  /**
+   * The edge the rail sits on: the border goes on its inner edge and the
+   * flyout and the tooltip open away from it. Logical, so `'start'` is the
+   * right edge under RTL. Unbound, `withNavRailSide` of the config in scope
+   * applies, else `'start'`.
+   */
+  readonly side = input<CngxNavRailSide | undefined>(undefined);
+
   private readonly i18n = inject(CNGX_NAV_RAIL_I18N);
   private readonly config = injectNavRailConfig();
 
@@ -129,7 +152,16 @@ export class CngxNavRail {
     () => this.tooltip() ?? this.config.tooltip ?? CNGX_NAV_RAIL_DEFAULTS.tooltip,
   );
 
-  protected readonly resolvedAriaLabel = computed(() => this.ariaLabel() ?? this.i18n().ariaLabel);
+  /** The side in effect: `[side]`, then the config, then `'start'`. */
+  protected readonly resolvedSide = computed(
+    () => this.side() ?? this.config.side ?? CNGX_NAV_RAIL_DEFAULTS.side,
+  );
+
+  protected readonly resolvedAriaLabel = computed(
+    () =>
+      this.ariaLabel() ??
+      (this.resolvedSide() === 'end' ? this.i18n().endAriaLabel : this.i18n().ariaLabel),
+  );
 
   // Each directive query has a `read: ElementRef` twin over the same selector,
   // so the flyout pairs a directive with its host by index.
