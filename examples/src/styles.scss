@@ -5097,3 +5097,34 @@ mat-icon.demo-breadcrumb-icon {
     --cngx-ex-toast-ring-progress: 0;
   }
 }
+
+// Demo-specific styles: nav-rail-demo. The rail and the nav atoms paint
+// themselves; these rules only frame the rail next to some content.
+.demo-nav-rail__frame {
+  display: flex;
+  block-size: 420px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--cngx-color-border);
+  border-radius: 6px;
+}
+.demo-nav-rail__content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding: var(--cngx-space-md, 1rem);
+}
+.demo-nav-rail__layout {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.demo-nav-rail__mark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--cngx-nav-icon-size, 1.25rem);
+  block-size: var(--cngx-nav-icon-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-color-primary);
+  color: var(--cngx-color-on-primary, white);
+  font-size: 0.625rem;
+  font-weight: 600;
+}

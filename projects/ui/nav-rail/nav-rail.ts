@@ -62,6 +62,9 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * @selector cngx-nav-rail
  * @since 0.3.0
  * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout
+ * <example-url>/#/ui/nav-rail/labels-beside</example-url>
+ * <example-url>/#/ui/nav-rail/labels-below</example-url>
+ * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
  * @axis level organism
  */
 @Component({
