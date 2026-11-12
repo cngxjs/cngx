@@ -20,8 +20,16 @@ export interface LocalItemsBuffer<T> {
 }
 
 /**
- * Builds a {@link LocalItemsBuffer}. Reads `compareWith` lazily so
+ * Builds the default `LocalItemsBuffer`. Reads `compareWith` lazily so
  * mid-flight comparator swaps are honoured.
+ *
+ * @example
+ * ```ts
+ * const buffer = createLocalItemsBuffer<string>(signal(Object.is));
+ * buffer.patch({ value: 'urgent', label: 'Urgent' });
+ * buffer.patch({ value: 'urgent', label: 'Urgent again' });
+ * buffer.items().length === 1;
+ * ```
  */
 export function createLocalItemsBuffer<T>(
   compareWith: Signal<CngxSelectCompareFn<T>>,
@@ -50,7 +58,13 @@ export function createLocalItemsBuffer<T>(
 }
 
 /**
- * Factory signature for {@link CNGX_LOCAL_ITEMS_BUFFER_FACTORY}.
+ * Function shape a replacement local-items buffer must have.
+ *
+ * Every composite except `CngxTreeSelect` calls it once during construction
+ * with its live `compareWith`, and the quick-create handler of the two action
+ * hosts patches created items into it. The buffer only grows until the
+ * composite calls `clear`; a state refresh does not empty it. Provide it
+ * through {@link CNGX_LOCAL_ITEMS_BUFFER_FACTORY}.
  */
 export type CngxLocalItemsBufferFactory = <T>(
   compareWith: Signal<CngxSelectCompareFn<T>>,

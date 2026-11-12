@@ -18,8 +18,12 @@ export type CngxCommitErrorAnnouncePolicy =
   | { readonly kind: 'soft' };
 
 /**
- * Announcer surface for {@link createCommitErrorAnnouncer}. Both policies
- * speak through `announcer.announce`.
+ * Announcer and copy the select core hands to the commit-error announcer.
+ *
+ * The core passes the composite's `CngxSelectAnnouncer`, the commit-error
+ * message formatter and the soft-failure sentence from the select copy. Both
+ * policies speak through `announcer.announce`, so a replacement that keeps
+ * this call reaches the same live region as every other select announcement.
  */
 export interface CngxCommitErrorAnnounceDeps {
   readonly announcer: CngxSelectAnnouncer;
@@ -89,7 +93,13 @@ export function createCommitErrorAnnouncer(
 }
 
 /**
- * Factory signature for {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY}.
+ * Function shape a replacement commit-error announcer must have.
+ *
+ * The select core calls it in every composite to build the callback its
+ * commit handlers receive as `announceError` or `onCommitError`. A
+ * replacement that drops the announce leaves screen-reader users with only
+ * the visual error surface. Provide it through
+ * {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY}.
  */
 export type CngxCommitErrorAnnouncerFactory = (
   options: CngxCommitErrorAnnouncerOptions,

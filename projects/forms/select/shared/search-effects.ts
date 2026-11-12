@@ -15,8 +15,13 @@ import type { CngxSelectAriaLabels } from './config';
 import { resolveSelectConfig } from './internal/resolve-config';
 
 /**
- * The filter outcome {@link createSearchEffects} speaks once a typed term
- * settles.
+ * Filter outcome the search effects announce once a typed term settles.
+ *
+ * The five searching composites build it from their filtered option count and
+ * panel view, so the `announceResults` or `announceNoResults` copy reaches
+ * screen readers only after the options for the term have loaded. A consumer
+ * meets this shape only when it replaces the effects through
+ * {@link CNGX_SEARCH_EFFECTS_FACTORY}.
  */
 export interface SearchEffectsResults {
   /** Options matching the settled term. */
@@ -33,7 +38,13 @@ export interface SearchEffectsResults {
 }
 
 /**
- * Config for {@link createSearchEffects}.
+ * Inputs a searching composite hands to its search effects.
+ *
+ * `CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`, `CngxActionMultiSelect`
+ * and `CngxSelectShell` pass them. The input-trigger hosts gate auto-open on
+ * their display binding through `autoOpenGate` and leave `emit` undefined. A
+ * consumer meets this shape only when it replaces the effects through
+ * {@link CNGX_SEARCH_EFFECTS_FACTORY}.
  */
 export interface SearchEffectsOptions {
   /** Debounced search-term signal. */
@@ -185,7 +196,13 @@ function announceSearchResults(opts: SearchEffectsOptions, results: SearchEffect
 }
 
 /**
- * Factory signature for {@link CNGX_SEARCH_EFFECTS_FACTORY}.
+ * Function shape replacement search effects must have.
+ *
+ * Each searching composite calls it once during construction, in an injection
+ * context, and reads nothing back: the effects act through `open`, the `emit`
+ * forward and the select announcer. A replacement that drops the `results`
+ * announcement leaves screen-reader users without the match count. Provide it
+ * through {@link CNGX_SEARCH_EFFECTS_FACTORY}.
  */
 export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
 
@@ -198,8 +215,10 @@ export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
  * @since 0.1.0
  * @relatedTo CngxCombobox, CngxTypeahead, withTypeaheadDebounce
  */
-export const CNGX_SEARCH_EFFECTS_FACTORY =
-  new InjectionToken<CngxSearchEffectsFactory>('CngxSearchEffectsFactory', {
+export const CNGX_SEARCH_EFFECTS_FACTORY = new InjectionToken<CngxSearchEffectsFactory>(
+  'CngxSearchEffectsFactory',
+  {
     providedIn: 'root',
     factory: () => createSearchEffects,
-  });
+  },
+);

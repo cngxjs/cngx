@@ -78,6 +78,10 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
 /**
  * Resolved template-ref signals - output of the 3-stage cascade, ready
  * for `*ngTemplateOutlet`.
+ *
+ * Each slot carries the projected template, else the one from
+ * `withTemplates`, else `null`; on `null` the trigger or panel renders its
+ * built-in markup.
  */
 export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly check: Signal<TemplateRef<CngxSelectCheckContext<T>> | null>;
@@ -175,7 +179,13 @@ export function createTemplateRegistry<T = unknown>(
 }
 
 /**
- * Factory signature for {@link CNGX_TEMPLATE_REGISTRY_FACTORY}.
+ * Function shape a replacement template registry must have.
+ *
+ * All nine composites call it once during construction, in an injection
+ * context, with the signals of their `contentChild` slot queries. The default
+ * reads `CNGX_SELECT_CONFIG` from that injector, so a replacement can resolve
+ * against a different source per scope. Provide it through
+ * {@link CNGX_TEMPLATE_REGISTRY_FACTORY}.
  */
 export type CngxTemplateRegistryFactory = <T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,

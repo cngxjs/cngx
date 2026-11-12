@@ -41,7 +41,15 @@ export interface ActionHostBridge {
 }
 
 /**
- * Options for {@link createActionHostBridge}.
+ * Wiring a composite hands to the bridge behind its `*cngxSelectAction` slot.
+ *
+ * `CngxActionSelect` and `CngxActionMultiSelect` pass `commit`, `retry` and
+ * `isPending` from their quick-create handler. `CngxSelect`, `CngxMultiSelect`,
+ * `CngxCombobox`, `CngxTypeahead` and `CngxReorderableMultiSelect` pass only
+ * `close`, so the slot's `commit` and `retry` callbacks are no-ops there. A
+ * consumer meets this shape only when it replaces the bridge through
+ * {@link CNGX_ACTION_HOST_BRIDGE_FACTORY}; the default implementation is
+ * {@link createActionHostBridge}.
  */
 export interface ActionHostBridgeOptions {
   /** Bound `close()` from the variant - dismisses the panel. */
@@ -153,7 +161,13 @@ export function createActionHostBridge(options: ActionHostBridgeOptions): Action
 }
 
 /**
- * Factory signature for {@link CNGX_ACTION_HOST_BRIDGE_FACTORY}.
+ * Function shape a replacement action-host bridge must have.
+ *
+ * Seven composites call it once during construction, in an injection context,
+ * so a replacement may `inject()` and register `DestroyRef` cleanup. The
+ * dismiss handler reads the returned `shouldBlockDismiss` to keep the panel
+ * open on an outside click while the action slot reports unsaved input.
+ * Provide it through {@link CNGX_ACTION_HOST_BRIDGE_FACTORY}.
  */
 export type CngxActionHostBridgeFactory = (options: ActionHostBridgeOptions) => ActionHostBridge;
 

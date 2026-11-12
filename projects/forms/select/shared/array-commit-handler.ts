@@ -10,7 +10,17 @@ import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './internal/select-core';
 
 /**
- * Configuration for {@link createArrayCommitHandler}.
+ * Inputs a multi-value composite hands to the array commit handler.
+ *
+ * A consumer meets this shape only when it replaces the handler through
+ * {@link CNGX_ARRAY_COMMIT_HANDLER_FACTORY}. `CngxMultiSelect`, `CngxCombobox`,
+ * `CngxReorderableMultiSelect` and `CngxActionMultiSelect` pass it for toggles
+ * and clears, `CngxTreeSelect` for clears only. Before each call the composite
+ * has already written `values` and set `togglingOption`; the handler runs the
+ * commit and reports back through `onToggleFinalize` and `onClearFinalize`.
+ * Without `announceError`, a failed commit reaches the error surface and
+ * `onError` but no live region. The default implementation is
+ * {@link createArrayCommitHandler}.
  */
 export interface ArrayCommitHandlerOptions<T> {
   /** Component's primary value signal (multi-select / combobox). */
@@ -50,7 +60,14 @@ export interface ArrayCommitHandlerOptions<T> {
 }
 
 /**
- * API returned from {@link createArrayCommitHandler}.
+ * Commit entry points a multi-value composite calls after its optimistic write.
+ *
+ * The composite calls `beginToggle` from an option click or chip removal,
+ * `beginClear` from the clear button, and `retryLast` from the commit-error
+ * Retry. A replacement must keep the ledger contract: when a commit fails, the
+ * rollback restores the last confirmed selection, not a value written in
+ * between. `createCommitBaseline(core.commitController)` gives a replacement
+ * that target.
  */
 export interface ArrayCommitHandler<T> {
   /**
@@ -184,7 +201,12 @@ export function createArrayCommitHandler<T>(
 }
 
 /**
- * Factory signature for {@link CNGX_ARRAY_COMMIT_HANDLER_FACTORY}.
+ * Function shape a replacement array commit handler must have.
+ *
+ * It is generic over the value type because one provider serves every
+ * multi-value composite in its injector scope. Each composite calls it once
+ * during construction, in an injection context. Provide it through
+ * {@link CNGX_ARRAY_COMMIT_HANDLER_FACTORY}.
  */
 export type CngxArrayCommitHandlerFactory = <T>(
   opts: ArrayCommitHandlerOptions<T>,
