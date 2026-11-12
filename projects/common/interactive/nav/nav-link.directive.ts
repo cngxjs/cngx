@@ -1,4 +1,12 @@
-import { afterNextRender, Directive, effect, ElementRef, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  afterRenderEffect,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
 import { CNGX_NAV_CONFIG } from './nav-config';
 import { injectNavInitial } from './nav-initial';
@@ -91,8 +99,11 @@ export class CngxNavLink {
     });
 
     // Scroll into view when becoming active (e.g., after route change).
-    // Skips the initial render to avoid scroll jank on page load.
-    effect(() => {
+    // Skips the initial render to avoid scroll jank on page load. After render,
+    // not in a plain effect: scrollIntoView forces a style pass, and inside
+    // change detection that pass sees rows whose classes are not bound yet, so
+    // their colour transitions start from the wrong state and flash.
+    afterRenderEffect(() => {
       if (!this.initialized() || !this.active() || !this.scrollOnActive()) {
         return;
       }
