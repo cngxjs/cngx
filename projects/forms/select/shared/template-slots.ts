@@ -8,8 +8,7 @@ import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.mod
  * has no `indeterminate`; narrow on `variant` before reading.
  */
 export type CngxSelectCheckContext<T = unknown> =
-  | CngxSelectCheckBoxContext<T>
-  | CngxSelectCheckRadioContext<T>;
+  CngxSelectCheckBoxContext<T> | CngxSelectCheckRadioContext<T>;
 
 /**
  * Box-style indicator branch. `indeterminate` carries tree /
@@ -644,7 +643,7 @@ export class CngxMultiSelectChip<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChip, CngxMultiSelectMoveGlyph
+ * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChip, CngxMultiSelectMoveGlyph, withDefaultDragHandle
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChipHandle]',
@@ -677,7 +676,7 @@ export class CngxMultiSelectChipHandle {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChipHandle
+ * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChipHandle, withDefaultMoveGlyph
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectMoveGlyph]',
@@ -716,7 +715,7 @@ export class CngxMultiSelectMoveGlyph {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxComboboxChip
+ * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxComboboxChip, withChipOverflow, withMaxVisibleChips
  */
 @Directive({
   selector: 'ng-template[cngxSelectChipOverflow]',

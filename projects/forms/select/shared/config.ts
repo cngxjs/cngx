@@ -902,7 +902,6 @@ export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectCo
  * @since 0.1.0
  * @relatedTo CngxPopoverSheet
  * <example-url>/#/forms/select/mobile-sheet/opt-out</example-url>
- * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
  */
 export function withMobileSheet(mode: CngxSelectConfig['mobileSheet']): CngxSelectConfigFeature {
   return feature({ mobileSheet: mode });

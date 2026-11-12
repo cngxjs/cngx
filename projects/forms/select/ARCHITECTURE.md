@@ -1,9 +1,9 @@
 # `@cngx/forms/select` - Architecture
 
 > The nine-composite select family - eight data-driven variants (single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select) plus the declarative `<cngx-select-shell>`.
-> Same commit machinery, same async-state machine, same slot system, nine different value-shape × trigger × option-source combinations.
+> They share one commit machinery, async-state machine and slot system, and differ in value shape, trigger and option source.
 
-This document is the canonical entry point for understanding how the family is composed, where to override behaviour, and which variant to reach for.
+This document explains how the family is composed and where to override behaviour.
 For day-to-day API reference (inputs, outputs, signals, CSS variables) see the compodoc output (`npm run docs:serve`) or the in-source JSDoc.
 
 ---
@@ -68,7 +68,8 @@ The family is **decompose-ready** - every `@Component` is a thin declaration del
 | `CngxActionMultiSelect`      | `T[]`            | `<input>` + chips + action panel            | flat listbox + action slot | combobox + listbox |
 | `CngxSelectShell`            | `T \| undefined` | `<div role="combobox">`                     | projected `<cngx-option>` children, optional `<cngx-select-search>` | combobox + listbox |
 
-Each composite provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All nine share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` differs from `CngxSelect` only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
+Each composite provides `CNGX_FORM_FIELD_CONTROL` directly - no bridge directive needed. All nine share the shared slot registry, the same config surface, the same announcer, and the same commit lifecycle. `<cngx-select-shell>` differs from `CngxSelect` only in where its options come from (projected `<cngx-option>` children instead of `[options]`).
+The option-row slots (`*cngxSelectCheck`, `*cngxSelectOptgroup`, `*cngxSelectOptionLabel`) exist only on the seven flat option-loop hosts, not on the shell or the tree.
 What differs is the _value-shape adapter_ on top of `createSelectCore` and the _trigger-element template_.
 
 ---
@@ -175,7 +176,7 @@ What stays in the variant body:
 
 - The trigger-element template.
 - The value-shape adapter (single sets `value.set(v)`; multi calls
-  `toggleOptionByUser(opt)`; tree calls `singleToggle(node)` /
+  `ArrayCommitHandler.beginToggle(...)`; tree calls `singleToggle(node)` /
   `cascadeToggle(node)`; reorderable handles position moves).
 - Variant-specific output emissions (`selectionChange`,
   `optionToggled`, `cleared`, `reordered`).
@@ -191,7 +192,7 @@ Every shared factory has a corresponding DI token - providers can swap the defau
 | `CNGX_SCALAR_COMMIT_HANDLER_FACTORY`    | `createScalarCommitHandler`    | ActionSelect commit flow                                    |
 | `CNGX_REORDER_COMMIT_HANDLER_FACTORY`   | `createReorderCommitHandler`   | Reorderable position-move commits                           |
 | `CNGX_CREATE_COMMIT_HANDLER_FACTORY`    | `createCreateCommitHandler`    | Action-host quick-create commit flow                        |
-| `CNGX_DISPLAY_BINDING_FACTORY`          | `createDisplayBinding`         | Typeahead value ↔ input-text binding                        |
+| `CNGX_DISPLAY_BINDING_FACTORY`          | `createDisplayBinding`         | Typeahead / ActionSelect value ↔ input-text binding         |
 | `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`   | `createCommitErrorAnnouncer`   | Scalar commit-error AT announce policy                      |
 | `CNGX_TRIGGER_FOCUS_FACTORY`            | `createTriggerFocusState`      | Shared focus-state slot                                     |
 | `CNGX_TEMPLATE_REGISTRY_FACTORY`        | `createTemplateRegistry`       | Three-stage template-slot cascade                           |
@@ -202,12 +203,12 @@ Every shared factory has a corresponding DI token - providers can swap the defau
 | `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`       | `createLocalItemsBuffer`       | Quick-create local-items persistence                        |
 | `CNGX_PANEL_RENDERER_FACTORY`           | `createIdentityPanelRenderer`  | Panel render strategy (default = identity, opt-in recycler) |
 | `CNGX_PROJECTED_OPTION_MODEL_FACTORY`   | `createProjectedOptionModel`   | Option model for projected `<cngx-option>` children (shell) |
-| `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`     | `createChipRemovalHandler`     | Chip ✕ disabled-guard + commit branch + WeakMap closure     |
+| `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`     | `createChipRemovalHandler`     | Chip remove disabled-guard + commit branch + WeakMap closure |
 | `CNGX_FLAT_NAV_STRATEGY`                | `createDefaultFlatNavStrategy` | PageUp/Down + typeahead-while-closed policy                 |
 
 `CNGX_SELECTION_CONTROLLER_FACTORY` (`createSelectionController`, from `@cngx/core/utils`) is the multi-mode membership engine. The core and the tree variant inject it; it is a core token, so it is not counted in the table above.
 
-All eighteen tokens are `providedIn: 'root'` with sensible defaults, overrideable per-component via `viewProviders`.
+All eighteen tokens are `providedIn: 'root'` with library defaults, overrideable per-component via `viewProviders`.
 The override never breaks because the factory shape is captured in a `Cngx<Name>Factory` type alias - overrides match the exact signature.
 
 ---
@@ -239,20 +240,20 @@ The slot directives live in `shared/template-slots.ts` and project a typed conte
 | `*cngxSelectOptionPending`                          | Per-row commit-pending glyph            | `{ option }`                                                           |
 | `*cngxSelectOptionError`                            | Per-row commit-error glyph              | `{ option, error }`                                                    |
 | `*cngxSelectAction`                                 | Action panel slot (action-\* variants)  | `{ searchTerm, commit, close, isPending, dirty, retry, error, value }` |
-| `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }`                                     |
+| `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (input-led variants: combobox, typeahead, action-select, action-multi) | `{ disabled, focused, panelOpen }` |
 | `*cngxSelectSheetHandle` | Decorative drag handle of the mobile sheet (inside an `aria-hidden` wrapper) | `{ presentation, dragging }` |
 
 `disabled` in the `*cngxSelectRetryButton` context is `true` only on the commit-error surface while the retried commit is pending (the variant's `isCommitting()`), so an override button can turn itself `aria-disabled` instead of starting a second retry. The load and inline refresh-error surfaces retry a load and always pass `false`.
 
 Variant-specific slots that complement the table above:
 
-- `*cngxSelectTriggerLabel` (single only)
-- `*cngxMultiSelectChip` (multi + reorderable)
+- `*cngxSelectTriggerLabel` (single + shell)
+- `*cngxMultiSelectChip` (multi + reorderable + action-multi)
 - `*cngxMultiSelectChipHandle` (reorderable only - drag-handle override)
 - `*cngxMultiSelectMoveGlyph` (reorderable only - move-button glyph of the touch reorder list)
-- `*cngxMultiSelectTriggerLabel` (multi)
+- `*cngxMultiSelectTriggerLabel` (multi + reorderable)
 - `*cngxComboboxChip` (combobox)
-- `*cngxComboboxTriggerLabel` (combobox)
+- `*cngxComboboxTriggerLabel` (combobox + action-multi)
 - `*cngxSelectChipOverflow` (multi + combobox + action-multi - `+N` overflow badge under `chipOverflow: 'truncate'` or `'fit'`; tree - the `+N` chip of its always one-line strip)
 - `*cngxTreeSelectNode` (tree - node row override)
 - `*cngxTreeSelectChip` (tree)
@@ -293,7 +294,7 @@ sequenceDiagram
 ```
 
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
-Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
+Variant components declare their `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser - NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry({...})`. The factory wires each query through `injectResolvedTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
 ### Default glyphs
 
@@ -306,7 +307,7 @@ Consumers override via:
 
 The reorderable chip drag handle has no glyph fallback: `*cngxMultiSelectChipHandle` wins over `[chipDragHandle]` (app-wide default via `withDefaultDragHandle`), and with neither no grip renders. The move buttons of the touch reorder list follow the same shape: `*cngxMultiSelectMoveGlyph` wins over `[moveGlyph]` (app-wide default via `withDefaultMoveGlyph`), and with neither the list draws its default triangles. The projected glyph sits in an `aria-hidden` wrapper and gets `{ $implicit, direction }`.
 
-The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component - we assume consumers bring their own design system.
+The mobile sheet header renders its buttons with `CngxButton` / `CngxCloseButton` from `@cngx/common/button`. Every other glyph comes from the `@cngx/utils` icon set; consumers replace any of them through the slots above.
 
 ---
 
@@ -514,6 +515,14 @@ Observable that completes without a value settles as an error
 commit that has nothing to return; a quick-create commit that resolves
 `undefined` settles the same way (`CNGX2027`).
 
+**Deferred Enter on the action hosts.** Enter on the input of
+`CngxActionSelect` / `CngxActionMultiSelect` creates from the typed term
+only with no option highlighted, a bound `quickCreateAction` and a
+non-empty term. While the term is still debouncing, `CngxListboxTrigger`
+settles it, prevents the Enter and runs the key after the next render;
+the quick-create check then runs once, after the deferred keys, and only
+while the panel is still open.
+
 **Supersede semantics.** Every `begin(...)` increments a monotonic
 `commitId`. Outcome callbacks check their captured id against the
 current counter; if a newer commit started in the meantime, the
@@ -523,8 +532,8 @@ callback no-ops. Consecutive picks therefore never race.
 
 - `'banner'` (default) - `*cngxSelectCommitError` slot or a default alert banner above the option list.
 - `'inline'` - a per-row `*cngxSelectOptionError` glyph on the failed option (visual-only, AT feedback via `announcer.announce(..., 'assertive')`).
-- `'none'` - no built-in UI; bridge via `<cngx-toast-on />`,
-  `<cngx-banner-on />`, or any `CNGX_STATEFUL`-aware transition component on the host.
+- `'none'` - no built-in UI; bridge via `[cngxToastOn]`,
+  `[cngxBannerOn]`, or any `CNGX_STATEFUL`-aware transition component on the host.
 
 The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges work with zero additional wiring.
 
@@ -553,14 +562,11 @@ and keyboard browsing read `disabled()` only. Clear buttons and chip
 remove affordances are not rendered while writes are blocked.
 
 **Live ARIA on the trigger**: `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage` come from `core.triggerAria`. `aria-expanded`, `aria-haspopup` and `aria-controls` have one writer, `CngxPopoverTrigger`: the template binds `[haspopup]="sheetWiring.triggerHaspopup()"` and `[controls]="sheetWiring.triggerControls()"` (the listbox / tree id while anchored, `'dialog'` and the sheet id while modal).
-All are reactive computeds - they always reflect the current state, never go stale.
+All are reactive computeds.
 
-**TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav)
-
-- Home/End + typeahead) composed with `CngxHierarchicalNav`
-  (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
-  Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
-  The treeitem is the one AT channel: the row checkbox and the parent-row count (`2/3`) are `aria-hidden`, because `aria-checked` already carries what they show. Under the touch floor the checkbox wrapper is the selection tap target and a pointer tap on the row expands a parent: the row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row (`rowTapExpands` on `CNGX_TREE_SELECT_PANEL_HOST`, read from the touch-floor signal). Every other activation, including a screen reader's double tap (a click without pointer events), runs `handleSelect`; AT expands through `aria-expanded`. The footer clear-all is `aria-disabled` and described by the count while nothing is selected, so it keeps focus instead of dropping it to `body`.
+**TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav + Home/End + typeahead) composed with `CngxHierarchicalNav` (ArrowLeft/Right collapse-and-traverse) on the same element - no double-fire because the two directives own disjoint key sets.
+Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-checked` (true / false / `mixed` for partial cascade selection - APG checkbox-tree pattern), `aria-disabled`, all reactive.
+The treeitem is the one AT channel: the row checkbox and the parent-row count (`2/3`) are `aria-hidden`, because `aria-checked` already carries what they show. Under the touch floor the checkbox wrapper is the selection tap target and a pointer tap on the row expands a parent: the row expands only for the `click` that ends a `pointerdown` with `pointerType` `touch` or `pen` on that row (`rowTapExpands` on `CNGX_TREE_SELECT_PANEL_HOST`, read from the touch-floor signal). Every other activation, including a screen reader's double tap (a click without pointer events), runs `handleSelect`; AT expands through `aria-expanded`. The footer clear-all is `aria-disabled` and described by the count while nothing is selected, so it keeps focus instead of dropping it to `body`.
 
 **Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces selection changes through a global polite live region. While a mobile sheet is modal and open, the variant's `CngxScopedSelectAnnouncer` speaks through the region inside the sheet instead (see [Mobile sheet](#mobile-sheet)).
 `CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.
@@ -601,7 +607,7 @@ protected readonly rfField = adaptFormControl(
 
 Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">` exactly as for native Signal Forms.
 
-`createFieldSync` (in `projects/forms/field/field-sync.ts`, exported from `@cngx/forms/field`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes. The select family reaches it through `shared/field-sync.ts`, which gates the sync on `CNGX_SELECT_DISABLE_FIELD_SYNC`: a subtree can opt out of value-sync (while keeping the disabled / focused / errorState bridge) by providing that token truthy - used by composites like `CngxFilterBuilderFormFieldControl` that are themselves the form-field control, so their inner selects never sync the composite's object value.
+`createFieldSync` (in `projects/forms/field/field-sync.ts`, exported from `@cngx/forms/field`) is the shared bridge - two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes. The select family reaches it through `shared/field-sync.ts` (re-exported from `@cngx/forms/select` as `createFieldSync`, `CNGX_SELECT_DISABLE_FIELD_SYNC` and `FieldSyncOptions`), which gates the sync on `CNGX_SELECT_DISABLE_FIELD_SYNC`: a subtree can opt out of value-sync (while keeping the disabled / focused / errorState bridge) by providing that token truthy - used by composites like `CngxFilterBuilderFormFieldControl` that are themselves the form-field control, so their inner selects never sync the composite's object value.
 
 ### Why the select family has no ControlValueAccessor
 
@@ -665,21 +671,21 @@ On a coarse, narrow viewport every variant opens its panel as a modal sheet inst
 
 ## Class size and decompose strategy
 
-Each composite's `*.component.ts` file runs from roughly 1080 to 1410 lines (730 to 940 lines without comments), depending on value-shape complexity.
+Each composite's `*.component.ts` file runs past a thousand lines, depending on value-shape complexity.
 Sub-200-LOC targets are structurally unreachable under the locked patterns (no inheritance, no abstract base classes).
 The 18 DI tokens + the slot system ARE the real decompose strategy: they eliminate cross-variant duplication and let consumers swap implementations.
 
 **Atomic-decompose contract.** Each variant is decompose-ready:
 
 - Thin `@Component` declaration.
-- `hostDirectives: []` minimal - most variants use only the popover trigger directives.
+- `hostDirectives` carries only `CngxFieldSkinHost` (the `[skin]` input); the popover trigger sits in the template.
 - DI-token contracts for every internal logic block.
-- CSS split: `select-base.css` (structural, family-shared) +`<variant>.component.css` (trigger skin). The schematic can eject the trigger skin into the consumer's project while keeping the base styles linked from the library.
+- CSS split: `select-base.css` (structural, family-shared) + `<variant>.component.css` (trigger skin).
 
 **What is genuinely variant-specific** and does NOT factor out:
 
 - Trigger template markup (button vs input vs chip-strip-with-input).
-- Public API surface (single `value` vs `values: T[]` vs `treeValues`).
+- Public API surface (single `value` vs multi and tree `values: T[]`).
 - AD-activation glue (the activated payload's shape varies).
 - Field-sync wiring (single owns scalar `value`; multi/tree own arrays; typeahead owns `value + display.writeFromValue` integration).
 

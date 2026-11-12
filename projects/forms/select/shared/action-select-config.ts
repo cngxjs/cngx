@@ -88,7 +88,7 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<Omit<CngxActionSelectConfig, 
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-select-config.ts
  * @since 0.1.0
- * @relatedTo provideActionSelectConfig, provideActionSelectConfigAt, injectActionSelectConfig, withActionAriaLabel, withActionPosition, withActionPopoverPlacement, CngxActionSelect, CngxActionMultiSelect
+ * @relatedTo provideActionSelectConfig, provideActionSelectConfigAt, injectActionSelectConfig, withActionAriaLabel, withActionPosition, withActionPopoverPlacement, CngxActionSelect, CngxActionMultiSelect, withFocusTrapBehavior, withCloseOnCreate, withLiveInputFallback
  */
 export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConfig>(
   'CngxActionSelectConfig',

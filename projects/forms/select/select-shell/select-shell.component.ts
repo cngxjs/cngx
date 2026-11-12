@@ -193,7 +193,7 @@ export interface CngxSelectShellChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/select-shell/select-shell.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
+ * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, withSearchMatchFn
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>

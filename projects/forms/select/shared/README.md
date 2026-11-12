@@ -39,13 +39,14 @@ Internal symbols. None of these is in `public-api.ts`; the variants use them and
 | `createSelectCore`               | The factory                                         |
 | `CngxSelectCore<T, TCommit>`     | Return shape                                        |
 | `CngxSelectCoreDeps<T, TCommit>` | Input shape                                         |
-| `CngxSelectCompareFn<T>`         | `(a: T \| undefined, b: T \| undefined) => boolean` |
 | `cngxSelectDefaultCompare`       | `Object.is`-based default                           |
 | `CngxSelectTriggerAria`          | Bundled ARIA projection for the trigger             |
 | `CngxSelectAnnouncerInputs`      | Per-instance announcer config                       |
 | `CngxSelectCorePanelKeys`        | Panel-host keys the core supplies                   |
 | `CngxSelectPanelHostExtras<T>`   | `Omit<CngxSelectPanelHost<T>, CngxSelectCorePanelKeys>` plus the override keys; the variant's half of `createPanelHost` |
 | `CngxSelectPanelViewHostExtras<T>` | Same for `createPanelViewHost`                    |
+
+`CngxSelectCompareFn<T>` (`compare-fn.types.ts`, the `[compareWith]` signature `(a: T | undefined, b: T | undefined) => boolean`) is the one public type of this block.
 
 See [`ARCHITECTURE.md` § Core factory](../ARCHITECTURE.md#core-factory-createselectcore) for the input/output diagram.
 
@@ -79,9 +80,7 @@ Callable as `runCommitAction<T>(action, intended, handlers)`; returns a `CngxCom
 
 ### `commit-controller.token.ts`
 
-Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncState<T | undefined>` slot, the monotonic `commitId` for supersede semantics, the `intendedValue` signal driving the option-row spinner, and the `begin(action, intended, previous, handlers)`
-
-- `cancel()` API.
+Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncState<T | undefined>` slot, the monotonic `commitId` for supersede semantics, the `intendedValue` signal driving the option-row spinner, and the `begin(action, intended, previous, handlers)` + `cancel()` API.
 
 | Symbol | Purpose |
 |-|-|
@@ -91,11 +90,15 @@ Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncSta
 | `CngxSelectCommitControllerFactory`     | DI factory type                           |
 | `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | DI token                                  |
 
-Override the token to wrap the controller with retry-with-backoff, offline queues, or telemetry - every variant picks up the override without a fork.
+Override the token to wrap the controller; every variant picks up the override without a fork.
+
+### `commit-handler-core.ts`
+
+`CngxCommitHandlerCore<T, TCommit>` is the slice of the select core a commit handler reads: the commit controller, the pending-row marker, option lookup and the live-region announce. `ArrayCommitHandlerOptions.core` and `ScalarCommitHandlerOptions.core` are typed to it, so a replacement handler compiles against exactly what the default handlers use.
 
 ### `array-commit-handler.ts`
 
-Multi/Combobox/Action-multi/Reorderable per-toggle + clear-all flow.
+Multi/Combobox/Action-multi/Reorderable per-toggle + clear-all flow; Tree uses it for its clear commit.
 Owns the value reconciliation (`sameArrayContents`-guarded), rollback on error in optimistic mode, `togglingOption.set(null)` on success, live-region "removed" announce on error/clear paths.
 
 | Symbol | Purpose |
@@ -120,7 +123,7 @@ Single-value action-select commit flow. Sibling of `array-commit-handler`.
 
 ### `reorder-commit-handler.ts`
 
-Reorderable-specific position-move commit. Bypasses the array handler's `sameArrayContents` membership-preserving guard (which would skip reorders) and talks to `commitController` directly with the new order.
+Reorderable-specific position-move commit. Bypasses the array handler's `sameArrayContents` membership-preserving guard (which would skip reorders) and records kind `reorder` on the shared commit ledger with order-sensitive equality.
 
 | Symbol | Purpose |
 |-|-|
@@ -146,11 +149,11 @@ Action-host quick-create commit flow (used by `CngxActionSelect` and `CngxAction
 | Symbol | Purpose |
 |-|-|
 | `createCreateCommitHandler<T>`       | Default factory                                      |
-| `CreateCommitHandler<T>`             | API: `beginCreate`, `retryLast`                      |
+| `CreateCommitHandler<T>`             | API: `dispatch(draft, searchTerm, previousSnapshot)`, `retryLast` |
 | `CreateCommitHandlerOptions<T>`      | Input shape                                          |
 | `CngxCreateCommitHandlerFactory`     | DI factory type                                      |
 | `CNGX_CREATE_COMMIT_HANDLER_FACTORY` | DI token                                             |
-| `CngxSelectCreateAction<T>`          | `(term: string) => Observable<T> \| Promise<T> \| T` |
+| `CngxSelectCreateAction<T>`          | `(searchTerm: string, draft: { readonly label: string }) => Observable<T> \| Promise<T> \| T` |
 
 ### `commit-error-announcer.ts`
 
@@ -173,9 +176,7 @@ announce channel, see [`ARCHITECTURE.md` § Commit-action lifecycle](../ARCHITEC
 
 ### `chip-removal-handler.ts`
 
-Per-chip ✕ click + Backspace-on-empty handler. Owns the disabled-guard
-
-- `[...values()]` snapshot + `compareWith`-filtered next array + commit/sync branch dispatch + WeakMap closure cache (so `removeFor(item)` returns stable identity across CD cycles).
+Per-chip remove click + Backspace-on-empty handler. Owns the disabled-guard, the `[...values()]` snapshot + `compareWith`-filtered next array + commit/sync branch dispatch + WeakMap closure cache (so `removeFor(item)` returns stable identity across CD cycles).
 
 `removeOverride` escape hatch lets `CngxTreeSelect` keep its tree-aware mutation path while still using the WeakMap caching + disabled-guard.
 
@@ -214,9 +215,7 @@ Owns the `activeView()` switch (loading variants, empty/none, first-load error, 
 
 Subfolder containing `panel.component.ts` - the flat option-loop panel body.
 Wraps `<cngx-select-panel-shell>` and contributes the grouped/flat `@for` option loop with `viewChildren(CngxOption)`, `items` computed, and `isHighlighted(opt)`.
-Used by 4 variants:
-`CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`.
-Reorderable + action variants reuse it via `CNGX_SELECT_PANEL_HOST`.
+Used by the seven flat variants: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`.
 
 Tree-select uses its own `tree-select-panel.component.ts` (sibling of this folder, in `tree-select/`) because the panel body is a `role="tree"` recursive structure rather than a flat option loop.
 
@@ -259,14 +258,14 @@ Click-outside dismissal. Action-host-aware - when an action workflow is dirty, t
 | Symbol | Purpose |
 |-|-|
 | `createDismissHandler`         | Default factory           |
-| `DismissHandler`               | API: `handleClickOutside` |
+| `DismissHandler`               | API: `handleClickOutside`, optional `handleSheetClose` |
 | `DismissHandlerOptions`        | Input shape               |
 | `CngxDismissHandlerFactory`    | DI factory type           |
 | `CNGX_DISMISS_HANDLER_FACTORY` | DI token                  |
 
 ### `search-effects.ts`
 
-Debounced `searchTerm` → `(searchTermChange)` emit + auto-open on typing. Used by combobox, typeahead, action-multi-select.
+Debounced `searchTerm` → `(searchTermChange)` emit + auto-open on typing. Used by combobox, typeahead, action-select, action-multi-select and the shell.
 
 | Symbol | Purpose |
 |-|-|
@@ -274,6 +273,7 @@ Debounced `searchTerm` → `(searchTermChange)` emit + auto-open on typing. Used
 | `SearchEffectsOptions`        | Input shape     |
 | `CngxSearchEffectsFactory`    | DI factory type |
 | `CNGX_SEARCH_EFFECTS_FACTORY` | DI token        |
+| `SearchEffectsResults`        | Filter outcome the effects announce once a term settles |
 
 ### `trigger-focus.ts`
 
@@ -307,11 +307,12 @@ Routes the listbox's `ActiveDescendant.activated` stream into the variant's comm
 |-|-|
 | `createADActivationDispatcher<T, V>`  | Default factory |
 | `ADActivationDispatcherOptions<T, V>` | Input shape     |
+| `CngxActivationDispatcherCore<T>`     | The core slice the dispatcher reads |
 
 ### `display-binding.ts`
 
 Bidirectional binding between a scalar `value` signal and the visible text of a co-located `<input cngxListboxSearch>` element.
-Used by `CngxTypeahead` (and reusable by any future scalar autocomplete).
+Used by `CngxTypeahead` and `CngxActionSelect`.
 Two effects: value → input text on commit; user typing → consumer callback (suppresses library writes via a `writingFlag`).
 
 | Symbol | Purpose |
@@ -342,7 +343,7 @@ Persistent buffer of just-created items merged into the option list before the c
 | Symbol | Purpose |
 |-|-|
 | `createLocalItemsBuffer<T>`       | Default factory              |
-| `LocalItemsBuffer<T>`             | API: `items`, `add`, `clear` |
+| `LocalItemsBuffer<T>`             | API: `items`, `patch`, `clear` |
 | `CngxLocalItemsBufferFactory`     | DI factory type              |
 | `CNGX_LOCAL_ITEMS_BUFFER_FACTORY` | DI token                     |
 
@@ -370,7 +371,7 @@ Slot list (with the cascade tier each slot belongs to - every slot flows through
 
 | Directive | Context interface |
 |-|-|
-| `CngxSelectCheck<T>`                              | `CngxSelectCheckContext<T>`         |
+| `CngxSelectCheck<T>`                              | `CngxSelectCheckContext<T>` (union of `CngxSelectCheckBoxContext` and `CngxSelectCheckRadioContext`) |
 | `CngxSelectCaret`                                 | `CngxSelectCaretContext`            |
 | `CngxSelectOptgroupTemplate<T>`                   | `CngxSelectOptgroupContext<T>`      |
 | `CngxSelectPlaceholder`                           | `CngxSelectPlaceholderContext`      |
@@ -392,14 +393,16 @@ Slot list (with the cascade tier each slot belongs to - every slot flows through
 
 Plus the variant-specific slots (also defined here):
 
-| Directive | Variant |
-|-|-|
-| `CngxSelectTriggerLabel<T>`                                 | single only         |
-| `CngxMultiSelectChip<T>` / `CngxMultiSelectTriggerLabel<T>` | multi + reorderable |
-| `CngxMultiSelectChipHandle`                                 | reorderable only    |
-| `CngxMultiSelectMoveGlyph`                                  | reorderable only    |
-| `CngxComboboxChip<T>` / `CngxComboboxTriggerLabel<T>`       | combobox            |
-| `CngxSelectChipOverflow<T>`                                 | multi, combobox, action-multi, reorderable, tree |
+| Directive | Context interface | Variant |
+|-|-|-|
+| `CngxSelectTriggerLabel<T>` | `CngxSelectTriggerLabelContext<T>` | single, shell |
+| `CngxMultiSelectChip<T>` | `CngxMultiSelectChipContext<T>` | multi, reorderable, action-multi |
+| `CngxMultiSelectTriggerLabel<T>` | `CngxMultiSelectTriggerLabelContext<T>` | multi, reorderable |
+| `CngxMultiSelectChipHandle` | (no context) | reorderable only |
+| `CngxMultiSelectMoveGlyph` | `CngxMultiSelectMoveGlyphContext` | reorderable only |
+| `CngxComboboxChip<T>` | `CngxComboboxChipContext<T>` | combobox |
+| `CngxComboboxTriggerLabel<T>` | `CngxComboboxTriggerLabelContext<T>` | combobox, action-multi |
+| `CngxSelectChipOverflow<T>` | `CngxSelectChipOverflowContext<T>` | multi, combobox, action-multi, tree |
 
 **Config-tier asymmetry.** `CngxSelectConfig.templates` (and `withTemplates`)
 carries only the shared registry slots - the ones `createTemplateRegistry`
@@ -410,8 +413,7 @@ trigger-label directives have **no** config tier: they are projected per instanc
 only. They live outside the shared registry queries, so an app-wide default would
 need a per-variant registry extension, and no consumer has asked for app-wide
 chip / node / affix defaults. The reorderable drag handle is the exception - it
-has its own config tier through `withDefaultDragHandle`. Tracked as accepted debt
-(select-family register, section 8).
+has its own config tier through `withDefaultDragHandle`.
 
 ### `template-registry.ts`
 
@@ -444,14 +446,14 @@ The main `CNGX_SELECT_CONFIG` token + `provideSelectConfig(...)` / `provideSelec
 Public exports:
 
 - **Token**: `CNGX_SELECT_CONFIG`.
-- **Providers**: `provideSelectConfig`, `provideSelectConfigAt`.
-- **Type aliases**: `CngxSelectConfig`, `CngxSelectAnnouncerConfig`, `CngxSelectAriaLabels`, `CngxSelectFallbackLabels`, `CngxSelectTemplateContexts`, `CngxSelectConfigFeature`, `CngxSelectVirtualizationConfig`, plus the four enum types (`CngxSelectLoadingVariant`, `CngxSelectRefreshingVariant`, `CngxSelectSelectionIndicatorPosition`, `CngxSelectSelectionIndicatorVariant`).
-- **Features** (examples; the full `with*` list is in `public-api.ts`): `withPanelWidth`, `withPanelClass`, `withTypeaheadDebounce`, `withSearchDebounce`, `withTypeaheadWhileClosed`, `withSelectionIndicator`, `withSelectionIndicatorPosition`, `withSelectionIndicatorVariant`, `withCaret`, `withRestoreFocus`, `withDismissOn`, `withOpenOn`, `withAnnouncer`, `withAriaLabels`, `withFallbackLabels`, `withLoadingVariant`, `withSkeletonRowCount`, `withRefreshingVariant`, `withCommitErrorDisplay`, `withCommitErrorAnnouncePolicy`, `withChipOverflow`, `withMaxVisibleChips`, `withInputMode`, `withEnterKeyHint`, `withPopoverPlacement`, `withVirtualization`.
+- **Providers**: `provideSelectConfig`, `provideSelectConfigAt`, plus `makeSelectConfig` (the same merge as a pure function, for a lazy `useFactory`).
+- **Type aliases**: `CngxSelectConfig`, `CngxSelectAnnouncerConfig`, `CngxSelectAriaLabels`, `CngxSelectFallbackLabels`, `CngxSelectTemplateContexts`, `CngxSelectConfigFeature`, `CngxSelectVirtualizationConfig`, `CngxSelectMatchFn`, `CngxSelectMatchOption`, plus the four enum types (`CngxSelectLoadingVariant`, `CngxSelectRefreshingVariant`, `CngxSelectSelectionIndicatorPosition`, `CngxSelectSelectionIndicatorVariant`).
+- **Features**: `withPanelWidth`, `withPanelClass`, `withTypeaheadDebounce`, `withSearchDebounce`, `withTypeaheadWhileClosed`, `withSearchMatchFn`, `withSelectionIndicator`, `withSelectionIndicatorPosition`, `withSelectionIndicatorVariant`, `withCaret`, `withRestoreFocus`, `withDismissOn`, `withMobileSheet`, `withOpenOn`, `withAnnouncer`, `withAriaLabels`, `withTemplates`, `withFallbackLabels`, `withLoadingVariant`, `withSkeletonRowCount`, `withRefreshingVariant`, `withCommitErrorDisplay`, `withCommitErrorAnnouncePolicy`, `withChipOverflow`, `withMaxVisibleChips`, `withInputMode`, `withEnterKeyHint`, `withPopoverPlacement`, `withVirtualization`.
 
 ### `action-select-config.ts`
 
 `CNGX_ACTION_SELECT_CONFIG` token + `provideActionSelectConfig(...)` /
-`*At` providers + 6 features specific to the action-host:
+`provideActionSelectConfigAt(...)` providers + 6 features specific to the action-host:
 
 - **Features**: `withFocusTrapBehavior`, `withCloseOnCreate`, `withActionPopoverPlacement`, `withLiveInputFallback`, `withActionPosition`, `withActionAriaLabel`.
 - **Type aliases**: `CngxActionSelectConfig`, `CngxActionFocusTrapBehavior`, `CngxActionPosition`, `CngxActionSelectConfigFeature`.
@@ -459,10 +461,10 @@ Public exports:
 ### `reorderable-select-config.ts`
 
 `CNGX_REORDERABLE_SELECT_CONFIG` token + `provideReorderableSelectConfig(...)` /
-`*At` providers + 5 features:
+`provideReorderableSelectConfigAt(...)` providers + 6 features:
 
 - **Features**: `withReorderKeyboardModifier`, `withReorderAriaLabel`, `withReorderListLabels`, `withReorderStripFreeze`, `withDefaultDragHandle`, `withDefaultMoveGlyph`.
-- **Types**: `CngxReorderableSelectConfig`, `CngxReorderableSelectConfigFeature`.
+- **Types**: `CngxReorderableSelectConfig`, `CngxReorderableSelectConfigFeature`, `CngxReorderMoveLabel` (`(label) => string`, the move-button name).
 
 ### `provide-cngx-select.ts`
 
@@ -507,6 +509,18 @@ The option-shape contract:
 | `filterSelectOptions(input, term, matchFn)`       | Filter options with a matcher; preserves group structure, drops empty groups                                              |
 | `mergeLocalItems(input, localItems, compareWith)` | Merge a quick-create buffer into the option list, deduped                                                                 |
 
+### `projected-option-model.ts`
+
+Folds the projected `<cngx-option>` / `<cngx-optgroup>` children of `CngxSelectShell` into the option tree the panel renders; groups stay groups, `createSelectCore` reflattens for lookup.
+
+| Symbol | Purpose |
+|-|-|
+| `createProjectedOptionModel<T>` | Default factory |
+| `ProjectedOptionModelInput<T>` | Input shape |
+| `ProjectedOptionModel<T>` | Return shape |
+| `CngxProjectedOptionModelFactory` | DI factory type |
+| `CNGX_PROJECTED_OPTION_MODEL_FACTORY` | DI token |
+
 ### `compare.ts`
 
 | Symbol | Purpose |
@@ -545,13 +559,41 @@ Internal helpers. `handleFlatNavPageJumpKey` serves the button-trigger variants;
 ### `select-base.css`
 
 Family-shared structural CSS. Panel frame, option rows, skeleton shimmer (`prefers-reduced-motion`-aware), spinner / loading-bar / refreshing-spinner / dots animations, option-row commit feedback, panel- level error surfaces, chip strip layout (shared by `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`'s clear button surface, `CngxReorderableMultiSelect`, `CngxActionMultiSelect`, `CngxTreeSelect`), chip drag/drop styles for reorder.
-All values are `--cngx-*` CSS custom properties with sensible fallbacks.
+All values are `--cngx-*` CSS custom properties with fallbacks.
 
 Variant-specific trigger skin lives next to each variant in `<variant>.component.css` and is `styleUrls`-linked alongside this file.
-The schematic can eject the trigger skin into the consumer's project while keeping `select-base.css` linked from the library.
 
 
+
+## Internal file map
+
+`shared/internal/` holds the entry-private units (see [`internal/README.md`](internal/README.md)). The ones without a section above:
+
+| File | Used by | Job |
+|-|-|-|
+| `select-core.ts` | every composite | `createSelectCore`, see [Core factory](#1-core-factory) |
+| `commit-ledger.ts` | the commit handlers, tree toggle dispatch | Records each commit with its kind so Retry replays that kind |
+| `commit-retry.ts` | reorderable, tree | Shape of anything that can replay the commit it started |
+| `merged-commit-state.ts` | action-select, action-multi | Overlays the quick-create commit state on the primary commit state |
+| `option-label-formatter.ts` | typeahead, action-select | Input text for a value: `displayWith`, else the last resolved option label, else `String(value)` |
+| `options-state-view.ts` | tree | Re-types the tree's `[state]` as the option-list state the core reads |
+| `array-toggle.ts` | multi, combobox, reorderable, action-multi | Array toggle and clear-all dispatch, finalize events, AD-activation closures |
+| `action-trigger-input.ts` | action-select, action-multi | Trigger-input keyboard and live-term dispatch of the action hosts |
+| `listbox-key-forward.ts` | `<cngx-select-search>` | Arrow, Enter and Escape forwarding from a search input to a listbox it does not focus |
+| `listbox-match.ts` | combobox, typeahead, action-select, action-multi | Adapts a `CngxSelectMatchFn` to the `ListboxMatchFn` of `cngxListboxSearch` |
+| `host-focus-within.ts` | every composite | Field-facing focus: focus inside the host's own panel keeps the field focused |
+| `select-sheet-wiring.ts` | every composite | Mobile sheet presentation, trigger ARIA while modal, sheet header wiring |
+| `sheet-trigger.directive.ts` | combobox, typeahead, action-select, action-multi, shell | Forwards trigger input events to the sheet wiring |
+| `scoped-announcer.ts` | every composite | Speaks through the sheet's live region while the sheet is modal |
+| `touch-floor.ts` | multi, combobox, reorderable, tree, action-multi | `injectTouchFloorSignal()`, the touch-floor signal of the host |
+| `chip-overflow.ts` | `summary/` | Chip-strip overflow derivation (`+N` count, hidden options) |
+| `chip-fit.ts` | `chip-fit-strip.directive.ts`, `summary/` | `fitChipCount()` from one strip measurement |
+| `chip-fit-strip.directive.ts` | multi, combobox, action-multi | Measures a `'fit'` chip strip |
+| `auto-recycler.directive.ts` | `panel/` | Mounts the recycler once a flat list reaches the virtualization threshold |
+| `summary/` | the five multi-value composites | `<cngx-select-summary>`, the trigger summary under the touch floor |
+| `reorder-list/` | reorderable | `<cngx-select-reorder-list>`, the touch reorder list |
+| `sheet-header/` | every composite | Header of the mobile sheet (handle, count, close button) |
 
 ## How to extend
 
-See [`ARCHITECTURE.md` § How to extend](../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a ninth variant.
+See [`ARCHITECTURE.md` § How to extend](../ARCHITECTURE.md#how-to-extend) - four walkthroughs covering new slots, new ariaLabels keys, factory overrides, and adding a tenth composite.

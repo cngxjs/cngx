@@ -172,8 +172,7 @@ export interface CngxActionSelectChange<T = unknown> {
  *
  * Pessimistic commit only: panel stays open while pending, `isPending`
  * flips on the slot context, error surfaces in the commit-error
- * banner. True optimistic create requires a consumer-supplied
- * `tempValueFactory`.
+ * banner.
  *
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
@@ -199,7 +198,7 @@ export interface CngxActionSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxActionMultiSelect, CngxCombobox, CngxSelectAction
+ * @relatedTo CngxSelect, CngxActionMultiSelect, CngxSelectAction, CngxTypeahead, withActionPosition, withCloseOnCreate, withLiveInputFallback, withActionPopoverPlacement
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/action-select/basic-sync-quick-create</example-url>
  * <example-url>/#/forms/select/action-select/custom-action-template-split-actions</example-url>
