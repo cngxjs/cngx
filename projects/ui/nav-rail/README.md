@@ -142,7 +142,7 @@ Rail tokens (`nav-rail.css`):
 
 | Token | Default |
 |-|-|
-| `--cngx-nav-rail-size` | `2 * (row inset + row inline padding) + icon size`, so the icon box sits centred |
+| `--cngx-nav-rail-size` | `2 * (row inset + row inline padding) + icon size + border width`, so the icon box sits centred |
 | `--cngx-nav-rail-below-size` | `5rem` |
 | `--cngx-nav-rail-below-font-size` | `0.75rem` |
 | `--cngx-nav-rail-bg` | `--cngx-color-surface` |

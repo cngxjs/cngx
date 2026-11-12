@@ -774,6 +774,13 @@
     color: var(--cngx-nav-link-ink, currentColor);
   }
 
+  /* A cngx-icon in the slot fills the icon box. Its own rung is em-based and
+     would follow the row font (the stacked label is smaller), the box does
+     not. Two classes, so it beats the rung of the icon's @scope. */
+  .cngx-nav-icon.cngx-icon {
+    --cngx-icon-size: var(--cngx-nav-icon-size, 1.25rem);
+  }
+
   :is(.cngx-nav-link, .cngx-nav-group)[data-initial]:not(:has(.cngx-nav-icon))::before {
     content: attr(data-initial) / '';
     display: inline-flex;

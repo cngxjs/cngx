@@ -25,11 +25,12 @@
   /**
    * Width of an icon-only rail (`labelPlacement="end"`). Unset, it derives
    * from the row tokens so the icon box sits centred:
-   * `2 * (inset + inline padding) + icon size`.
+   * `2 * (inset + inline padding) + icon size + border width`.
    * @group Layout
    * @see [[--cngx-nav-link-inset]]
    * @see [[--cngx-nav-link-padding-inline]]
    * @see [[--cngx-nav-icon-size]]
+   * @see [[--cngx-nav-rail-border-width]]
    */
   @property --cngx-nav-rail-size {
     syntax: '*';
@@ -100,7 +101,7 @@
             var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
               var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
           ) +
-          var(--cngx-nav-icon-size, 1.25rem)
+          var(--cngx-nav-icon-size, 1.25rem) + var(--cngx-nav-rail-border-width, 1px)
       )
     );
     block-size: 100%;

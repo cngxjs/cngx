@@ -48,7 +48,7 @@ import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
           <span cngxNavBadge [value]="7" class="badge"></span>
         </a>
         <button type="button" cngxNavGroup #reports="cngxNavGroup" class="head">
-          <span cngxNavIcon
+          <span cngxNavIcon class="cngx-icon head-icon"
             ><span
               style="display:block;inline-size:100%;block-size:100%;background:currentColor"
             ></span
@@ -89,13 +89,22 @@ afterEach(() => {
 });
 
 describe('CngxNavRail geometry', () => {
-  it('centres the icon box in the icon-only rail', () => {
+  it('centres the icon box in the icon-only rail, inside its border', () => {
     const { el } = mount('end');
-    const rail = el('cngx-nav-rail').getBoundingClientRect();
+    const railEl = el('cngx-nav-rail');
+    const rail = railEl.getBoundingClientRect();
+    const border = parseFloat(getComputedStyle(railEl).borderInlineEndWidth);
     const icon = el('.icon').getBoundingClientRect();
     const left = icon.left - rail.left;
-    const right = rail.right - icon.right;
-    expect(Math.abs(left - right)).toBeLessThanOrEqual(1.5);
+    const right = rail.right - border - icon.right;
+    expect(Math.abs(left - right)).toBeLessThanOrEqual(0.5);
+  });
+
+  it('sizes a cngx-icon in the slot to the icon box, not the row font', () => {
+    const { el } = mount('below');
+    expect(getComputedStyle(el('.head-icon')).getPropertyValue('--cngx-icon-size').trim()).toBe(
+      '1.25rem',
+    );
   });
 
   it('paints no label pixels in the icon-only rail', () => {
