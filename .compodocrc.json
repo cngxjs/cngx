@@ -66,7 +66,10 @@
         "projects/ui/mat-stepper/material-bridge/**": "material-bridge",
         "projects/ui/mat-tabs/decorations/**": "decorations",
         "projects/ui/mat-tabs/material-bridge/**": "material-bridge",
-        "projects/ui/mat-tabs/overflow/**": "overflow"
+        "projects/ui/mat-tabs/overflow/**": "overflow",
+        "projects/common/interactive/async-click/**": "async-click",
+        "projects/common/interactive/listbox/**": "listbox",
+        "projects/forms/select/shared/**": "shared"
     },
     "collapsedAll": true,
     "classificationAxes": {
