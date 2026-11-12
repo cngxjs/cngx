@@ -549,7 +549,10 @@
   }
 
   .cngx-sidenav__body {
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    gap: calc(var(--cngx-space-xs, 4px) / 2);
     overflow-y: auto;
     overflow-x: hidden;
     min-width: var(--cngx-sidenav-width, 280px);
@@ -577,22 +580,28 @@
     text-overflow: clip;
   }
 
-  /* Hide section labels and nav group buttons on the collapsed rail */
-  cngx-sidenav[data-sidebar-state='rail'] [cngxNavLabel],
+  /* Section labels keep their box and their text for assistive technology
+     but paint none, so the rows keep their y when the rail collapses. */
+  cngx-sidenav[data-sidebar-state='rail'] [cngxNavLabel] {
+    overflow: clip;
+    white-space: nowrap;
+    clip-path: inset(100%);
+  }
+
+  /* Hide nav group buttons on the collapsed rail */
   cngx-sidenav[data-sidebar-state='rail'] [cngxNavGroup] {
     display: none !important;
   }
 
   /*
-   * Collapsed-rail nav links: hide the label text; the letter fallback or the
-   * icon (cngx-nav.css) stays in the icon box. Rewritten as a clip-and-fade
-   * crop of the expanded row in a later pass.
+   * Collapsed-rail nav links: the label keeps its font size, so the row keeps
+   * its expanded height, and a full-width gap pushes it past the clipped row
+   * end; the letter fallback or the icon (cngx-nav.css) stays in the icon box.
    */
   cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link {
-    overflow: hidden;
-    text-align: center;
-    font-size: 0 !important; /* must beat inline styles */
-    padding: var(--cngx-nav-link-padding, 10px 8px);
+    overflow: clip;
+    white-space: nowrap;
+    gap: 100%;
   }
 
   /* Hide badges on the collapsed rail */
