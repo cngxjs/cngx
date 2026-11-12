@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, relative, resolve } from 'node:path';
+import { dirname, posix, relative, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -37,8 +37,11 @@ import { describe, expect, it } from 'vitest';
  * rule and flags every hex literal. Rule E - a `var()` with no fallback on a
  * token the default palette does not define: unset, the declaration computes
  * to its initial value, so the read needs a fallback or a stated reason. A
- * property registered by an `@property` rule anywhere in `projects/**` counts
- * as defined: it always resolves, at worst to its registered initial.
+ * property registered by an `@property` rule counts as defined when the
+ * registration is in the same stylesheet or in one `projects/themes/cngx.css`
+ * imports: then it is loaded wherever the read is and resolves, at worst to its
+ * registered initial. A registration in another component's sheet applies only
+ * once that sheet is loaded, so a read relying on it carries a reason row.
  *
  * The allowlist is an exact-set ratchet: a new offender fails, and a row that
  * no longer matches fails as stale, so every closed defect removes its row.
@@ -252,10 +255,29 @@ for (const { source } of ALL_CSS) {
   }
 }
 
-const REGISTERED_PROPERTIES = new Set();
-for (const { source } of ALL_CSS) {
+/** Stylesheets `projects/themes/cngx.css` imports, so every cngx app loads. */
+export function bundledSheets(bundleSource, bundleRel) {
+  const dir = posix.dirname(bundleRel);
+  return new Set(
+    [...bundleSource.matchAll(/@import\s+['"](\.[^'"]+\.css)['"]/g)].map((m) =>
+      posix.join(dir, m[1]),
+    ),
+  );
+}
+
+const BUNDLE_REL = 'projects/themes/cngx.css';
+const BUNDLED = bundledSheets(
+  stripComments(readFileSync(resolve(REPO_ROOT, BUNDLE_REL), 'utf8')),
+  BUNDLE_REL,
+);
+
+const BUNDLED_REGISTRATIONS = new Set();
+for (const { rel, source } of ALL_CSS) {
+  if (!BUNDLED.has(rel)) {
+    continue;
+  }
   for (const name of registeredProperties(source)) {
-    REGISTERED_PROPERTIES.add(name);
+    BUNDLED_REGISTRATIONS.add(name);
   }
 }
 
@@ -275,7 +297,8 @@ function repoOffenders(files = SCANNED) {
     for (const token of hex) {
       rows.push({ rule: 'D', token, file: rel });
     }
-    for (const token of undefinedReadsWithoutFallback(source, DEFINED, REGISTERED_PROPERTIES)) {
+    const registered = new Set([...BUNDLED_REGISTRATIONS, ...registeredProperties(source)]);
+    for (const token of undefinedReadsWithoutFallback(source, DEFINED, registered)) {
       rows.push({ rule: 'E', token, file: rel });
     }
   }
@@ -483,6 +506,20 @@ const ALLOWLIST = [
   },
   {
     rule: 'E',
+    token: '--cngx-tab-active-color',
+    file: 'projects/ui/tabs/tab-group.component.css',
+    reason:
+      'registered by common/tabs/styles/tabs-base.css, which CngxTabGroup loads through styleUrls before this sheet',
+  },
+  {
+    rule: 'E',
+    token: '--cngx-tab-color',
+    file: 'projects/ui/tabs/tab-overflow.component.css',
+    reason:
+      'registered by common/tabs/styles/tabs-base.css; cngx-tab-overflow renders only projected into cngx-tab-group, which loads that sheet',
+  },
+  {
+    rule: 'E',
     token: '--cngx-ripple-size',
     file: 'projects/common/theming/components/cngx-ripple.css',
     reason: RIPPLE_INLINE,
@@ -592,6 +629,26 @@ describe('Rules C to E - component stylesheets', () => {
         .a { color: var(--x, #fff); border-color: var(--y, var(--z, #abcdef)); }
       `),
     ).toEqual([]);
+  });
+
+  it('collects the stylesheets the cngx.css bundle imports', () => {
+    expect([
+      ...bundledSheets(
+        "@import '../core/theming/layers.css'; @import '@cngx/x/y.css'; @import '../common/a/b.css';",
+        'projects/themes/cngx.css',
+      ),
+    ]).toEqual(['projects/core/theming/layers.css', 'projects/common/a/b.css']);
+    expect(BUNDLED.has('projects/core/theming/system-tokens.css')).toBe(true);
+  });
+
+  it('Rule E counts a registration in the same sheet, not one in an unbundled other sheet', () => {
+    const own =
+      "@property --cngx-zz-own { syntax: '*'; inherits: true; initial-value: 0; } .a { b: var(--cngx-zz-own); }";
+    const borrowed = '.a { b: var(--cngx-zz-own); }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/own.css', source: own }])).toEqual([]);
+    expect(
+      repoOffenders([{ rel: 'projects/ui/x/borrowed.css', source: borrowed }]).map(key),
+    ).toEqual(['E --cngx-zz-own projects/ui/x/borrowed.css']);
   });
 
   it('Rule E passes a bare read of a registered property', () => {
