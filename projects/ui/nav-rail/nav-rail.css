@@ -193,7 +193,10 @@
         var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px)) +
           var(--cngx-nav-icon-size, 1.25rem) / 2 + var(--cngx-space-xs, 4px)
       ),
-      calc(100% + var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) - 1.25rem)
+      calc(
+        100% + var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) -
+          var(--cngx-nav-icon-size, 1.25rem)
+      )
     );
     margin: 0;
   }

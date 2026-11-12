@@ -568,6 +568,16 @@
   }
 
   /**
+   * Border width of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback (`1px`) applies.
+   * @group State / Flyout
+   */
+  @property --cngx-nav-flyout-border-width {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Elevation of a nav group flyout. Read on the open flyout; no initial value, so the
    * use-site fallback follows the foundation.
    * @group State / Flyout
@@ -984,7 +994,8 @@
     box-sizing: border-box;
     min-inline-size: var(--cngx-nav-flyout-min-inline-size, 12rem);
     padding: var(--cngx-nav-flyout-padding, var(--cngx-space-xs, 4px));
-    border: 1px solid var(--cngx-nav-flyout-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    border: var(--cngx-nav-flyout-border-width, 1px) solid
+      var(--cngx-nav-flyout-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
     border-radius: var(--cngx-nav-flyout-radius, var(--cngx-radius-md, 8px));
     background: var(--cngx-nav-flyout-bg, var(--cngx-color-surface, oklch(1 0 0)));
     color: var(--cngx-nav-flyout-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
