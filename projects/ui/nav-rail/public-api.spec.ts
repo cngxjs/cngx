@@ -29,4 +29,9 @@ describe('@cngx/ui/nav-rail public API shape', () => {
   it('exports the rail group flyout injection function', () => {
     expect(typeof api.injectNavRailFlyout).toBe('function');
   });
+
+  it('exports the tooltip and flyout swap tokens', () => {
+    expect(api.CNGX_NAV_RAIL_TOOLTIP_FACTORY).toBeDefined();
+    expect(api.CNGX_NAV_RAIL_FLYOUT_FACTORY).toBeDefined();
+  });
 });

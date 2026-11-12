@@ -14,8 +14,8 @@ import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { injectNavRailConfig } from './config/inject-nav-rail-config';
 import { CNGX_NAV_RAIL_DEFAULTS } from './config/nav-rail.config.defaults';
 import { CNGX_NAV_RAIL_I18N } from './nav-rail-i18n';
-import { injectNavRailFlyout } from './nav-rail-flyout';
-import { injectNavRailTooltip } from './nav-rail-tooltip';
+import { CNGX_NAV_RAIL_FLYOUT_FACTORY } from './nav-rail-flyout';
+import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
 
 /** How a `cngx-nav-rail` lays out a row's label. */
 export type CngxNavRailLabelPlacement = 'end' | 'below';
@@ -45,7 +45,8 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  *   (`--cngx-nav-rail-below-size`).
  *
  * A nav group opens as a flyout beside its head in both looks; its
- * `aria-expanded` stays the one state. The host is a `navigation` landmark
+ * `aria-expanded` stays the one state. Tooltip and flyout are swappable
+ * through `CNGX_NAV_RAIL_TOOLTIP_FACTORY` and `CNGX_NAV_RAIL_FLYOUT_FACTORY`. The host is a `navigation` landmark
  * named by `[ariaLabel]` or the `navRail` section of the language pack.
  *
  * ```html
@@ -67,7 +68,7 @@ export type CngxNavRailLabelPlacement = 'end' | 'below';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail.ts
  * @selector cngx-nav-rail
  * @since 0.3.0
- * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, provideNavRailConfig, withNavRailTooltip
+ * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, CNGX_NAV_RAIL_TOOLTIP_FACTORY, CNGX_NAV_RAIL_FLYOUT_FACTORY, provideNavRailConfig, withNavRailTooltip
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
  * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
@@ -144,10 +145,10 @@ export class CngxNavRail {
   });
 
   constructor() {
-    injectNavRailTooltip(
+    inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(
       computed(() => this.resolvedLabelPlacement() === 'end' && this.resolvedTooltip()),
     );
-    injectNavRailFlyout({
+    inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({
       railed: signal(true).asReadonly(),
       groups: this.groups,
       groupElements: this.groupElements,

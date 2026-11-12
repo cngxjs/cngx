@@ -257,6 +257,12 @@ Give the two landmarks different names, as above.
 `CngxNavRail` is built on two injection functions you can call in your own
 organism:
 
+Both are behind swap tokens: `CNGX_NAV_RAIL_TOOLTIP_FACTORY` and
+`CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; `cngx-nav-rail`
+calls the provided factory in its own injection context. Provide `() => {}` to
+drop one. The tooltip factory receives the signal with the `[tooltip]` switch
+already folded in.
+
 - `injectNavRailTooltip(railed)` - the label tooltip for clipped rows; while
   `railed()` is `false` no tooltip element or listener exists.
 - `injectNavRailFlyout({ railed, groups, groupElements, contents, contentElements })` -

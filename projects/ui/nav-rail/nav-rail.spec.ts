@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, effect, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   CngxNavFooter,
@@ -11,6 +11,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CNGX_NAV_RAIL_I18N, provideNavRailI18n, withNavRailI18nLabels } from './nav-rail-i18n';
 import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
+import { CNGX_NAV_RAIL_FLYOUT_FACTORY, injectNavRailFlyout } from './nav-rail-flyout';
+import { CNGX_NAV_RAIL_TOOLTIP_FACTORY, injectNavRailTooltip } from './nav-rail-tooltip';
 
 @Component({
   imports: [
@@ -150,6 +152,34 @@ describe('CngxNavRail', () => {
     fixture.componentInstance.placement.set('below');
     settle();
     expect(rail.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+  });
+
+  it('defaults its swap tokens to the shipped injection functions', () => {
+    expect(TestBed.inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)).toBe(injectNavRailTooltip);
+    expect(TestBed.inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)).toBe(injectNavRailFlyout);
+  });
+
+  it('lets the swap tokens replace or drop tooltip and flyout, with the switch folded in', () => {
+    const seen: boolean[] = [];
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+          useValue: (active: Signal<boolean>) => {
+            effect(() => {
+              seen.push(active());
+            });
+          },
+        },
+        { provide: CNGX_NAV_RAIL_FLYOUT_FACTORY, useValue: () => undefined },
+      ],
+    });
+    const { fixture, rail, el, settle } = setup();
+    expect(rail.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    expect(el('.content').hasAttribute('popover')).toBe(false);
+    fixture.componentInstance.tooltip.set(false);
+    settle();
+    expect(seen).toEqual([true, false]);
   });
 
   it('opens a projected nav group as a flyout', () => {

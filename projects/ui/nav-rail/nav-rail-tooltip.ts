@@ -3,6 +3,7 @@ import {
   ElementRef,
   effect,
   inject,
+  InjectionToken,
   Renderer2,
   type Signal,
   untracked,
@@ -250,3 +251,31 @@ function attachNavRailTooltip(
     tip.remove();
   };
 }
+
+/** The shape an override of {@link CNGX_NAV_RAIL_TOOLTIP_FACTORY} must match. */
+export type CngxNavRailTooltipFactory = (railed: Signal<boolean>) => void;
+
+/**
+ * Swap token for the rail's label tooltip. The default resolves to
+ * {@link injectNavRailTooltip}; `cngx-nav-rail` calls
+ * `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(active)` in its constructor, so an
+ * override runs in the rail's injection context and may inject what it needs
+ * (`ElementRef`, `Renderer2`, `CngxTooltip` infrastructure). Provide
+ * `() => {}` to drop the tooltip machinery entirely.
+ *
+ * `active` already folds in the look and the `[tooltip]` / `withNavRailTooltip`
+ * switch: it is `true` only in the `'end'` look with the tooltip on, so an
+ * override honours the switch by reading it.
+ *
+ * ```ts
+ * providers: [{ provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY, useValue: () => {} }];
+ * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
+ * @since 0.3.0
+ * @relatedTo injectNavRailTooltip, CngxNavRail, CNGX_NAV_RAIL_FLYOUT_FACTORY
+ */
+export const CNGX_NAV_RAIL_TOOLTIP_FACTORY = new InjectionToken<CngxNavRailTooltipFactory>(
+  'CngxNavRailTooltipFactory',
+  { providedIn: 'root', factory: () => injectNavRailTooltip },
+);

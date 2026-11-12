@@ -4,6 +4,7 @@ import {
   DOCUMENT,
   type ElementRef,
   inject,
+  InjectionToken,
   Renderer2,
   type Signal,
   untracked,
@@ -276,3 +277,27 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
     }
   });
 }
+
+/** The shape an override of {@link CNGX_NAV_RAIL_FLYOUT_FACTORY} must match. */
+export type CngxNavRailFlyoutFactory = (sources: CngxNavRailFlyoutSources) => void;
+
+/**
+ * Swap token for the rail's group flyout. The default resolves to
+ * {@link injectNavRailFlyout}; `cngx-nav-rail` calls
+ * `inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)(sources)` in its constructor, so an
+ * override runs in the rail's injection context and gets the same group and
+ * content queries. Provide `() => {}` to keep groups as plain inline
+ * disclosures (a group's content is then clipped by the narrow rail).
+ *
+ * ```ts
+ * providers: [{ provide: CNGX_NAV_RAIL_FLYOUT_FACTORY, useValue: myMenuFlyout }];
+ * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-flyout.ts
+ * @since 0.3.0
+ * @relatedTo injectNavRailFlyout, CngxNavRail, CNGX_NAV_RAIL_TOOLTIP_FACTORY
+ */
+export const CNGX_NAV_RAIL_FLYOUT_FACTORY = new InjectionToken<CngxNavRailFlyoutFactory>(
+  'CngxNavRailFlyoutFactory',
+  { providedIn: 'root', factory: () => injectNavRailFlyout },
+);
