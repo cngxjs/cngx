@@ -186,7 +186,9 @@ test.describe('common/button/button', () => {
     await recordAttributes(save, ['data-pending', 'data-busy']);
 
     await save.click();
-    await expect.poll(() => attributeLogOf(save)).toEqual(['data-pending=true', 'data-pending=null']);
+    await expect
+      .poll(() => attributeLogOf(save))
+      .toEqual(['data-pending=true', 'data-pending=null']);
     await expect(save).not.toHaveAttribute('aria-busy');
     await expect(save).not.toHaveAttribute('data-busy');
   });
