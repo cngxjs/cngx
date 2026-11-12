@@ -215,7 +215,7 @@ function attachNavRailTooltip(
     // there would flash the tooltip until the click hides it again.
     renderer.listen(host, 'focusin', (event: FocusEvent) => {
       const row = rowOf(event.target);
-      if (row && row.matches(':focus-visible')) {
+      if (row?.matches(':focus-visible')) {
         show(row);
       }
     }),
