@@ -1,5 +1,5 @@
 /**
- * @cngx/forms/filter-builder - data model.
+ * `@cngx/forms/filter-builder` - data model.
  *
  * Recursive discriminated-union tree describing a user-built filter
  * predicate. The root is always a `FilterGroup`; leaves are

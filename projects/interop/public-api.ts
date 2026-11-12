@@ -1,6 +1,6 @@
 /**
- * Public API Surface of @cngx/interop
- * @module @cngx/interop
+ * Public API Surface of `@cngx/interop`
+ * @module `@cngx/interop`
  */
 
 export * from './interop';

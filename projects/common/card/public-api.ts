@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/card
+ * @module `@cngx/common/card`
  */
 
 export type { EmptyReason } from './card.types';

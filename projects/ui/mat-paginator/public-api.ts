@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/mat-paginator
+ * @module `@cngx/ui/mat-paginator`
  *
  * Material instrumentation for `<mat-paginator>`: the `[cngxMatPaginator]` bridge
  * `CngxMatPaginator` adopts an existing `<mat-paginator>` in place, letting the

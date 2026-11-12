@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/stepper
+ * @module `@cngx/common/stepper`
  *
  * Level-2 directive-only logic for stepper / wizard flows. Ships the
  * presenter brain, atom directives, host tokens, router-sync, config

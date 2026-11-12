@@ -40,7 +40,7 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * <div [cngxSpeak]="notification()">{{ notification() }}</div>
  * ```
  *
- * ### With CngxSpeakButton (from @cngx/ui)
+ * ### With CngxSpeakButton (from `@cngx/ui`)
  * ```html
  * <span [cngxSpeak]="text" #tts="cngxSpeak">{{ text }}</span>
  * <cngx-speak-button [speakRef]="tts" />

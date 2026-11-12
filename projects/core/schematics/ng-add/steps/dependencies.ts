@@ -39,7 +39,7 @@ const NEEDS_CDK: readonly CngxLib[] = ['common', 'data-display', 'ui'];
 const FLOATING_UI = '@floating-ui/dom';
 const FLOATING_UI_RANGE = '^1.0.0';
 
-/** The selected libs plus their @cngx peers, in package order. */
+/** The selected libs plus their `@cngx` peers, in package order. */
 export function selectedLibs(libs: readonly CngxLib[]): readonly CngxLib[] {
   const wanted = new Set(libs.flatMap((lib) => [lib, ...LIB_PEERS[lib]]));
   return CNGX_LIBS.filter((lib) => wanted.has(lib));
@@ -153,7 +153,7 @@ function cdkDependency(facts: ProjectFacts, provenance: Provenance): StepResult 
 }
 
 /**
- * Pins every selected @cngx package and its peers to the exact release,
+ * Pins every selected `@cngx` package and its peers to the exact release,
  * `@cngx/themes` when a theme is wanted and installable, the CDK matching the
  * app's Angular when a package needs it, and `@floating-ui/dom` on request
  * when `@cngx/common` (which provides the fallback) is selected.

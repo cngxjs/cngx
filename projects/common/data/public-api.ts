@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/data
+ * @module `@cngx/common/data`
  */
 export { CngxSort, type SortEntry } from './sort/sort.directive';
 export { CngxSortHeader } from './sort/sort-header.directive';

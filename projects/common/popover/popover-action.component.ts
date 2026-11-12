@@ -87,7 +87,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
  * </button>
  * ```
  *
- * ### With @switch
+ * ### With `@switch`
  * ```html
  * <button cngxPopoverAction [action]="save" #act="cngxPopoverAction">
  *   @switch (act.status()) {

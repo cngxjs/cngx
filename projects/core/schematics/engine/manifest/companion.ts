@@ -17,7 +17,7 @@ const PLAIN_SEMVER_RANGE = /^[\s\d.^~<>=|xX*v-]+$/;
  * dist-tag, `^<major>.<minor>.0` of the resolved version, or `^<version>` for
  * a prerelease, which no stable `^x.y.0` range would match; else `undefined`.
  *
- * The @cngx packages peer on `@angular/cdk` across two Angular majors. Left to
+ * The `@cngx` packages peer on `@angular/cdk` across two Angular majors. Left to
  * itself, npm installs a missing peer at the newest version the range allows,
  * whose own peers then name the next Angular major, so the companion is
  * always declared at the app's Angular instead.

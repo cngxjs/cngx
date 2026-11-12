@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/skeleton
+ * @module `@cngx/ui/skeleton`
  */
 
 export { CngxSkeletonContainer } from './skeleton-container';

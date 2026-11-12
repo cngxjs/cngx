@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/chart
+ * @module `@cngx/common/chart`
  *
  * Declarative, Signal-first chart system. Two-level architecture:
  * composable atoms (`<cngx-chart>` element + `[cngxAxis]` and layer

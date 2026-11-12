@@ -218,7 +218,7 @@ function specChange(facts: ProjectFacts, shell: AppShell, provenance: Provenance
  * unedited stock standalone `app.spec.ts` gets the feedback providers, the
  * unedited `ng new --standalone=false` spec also the outlet classes in its
  * TestBed `imports`; next to any other spec, and next to that NgModule spec
- * where @angular/build is not on major 21, cngx places no outlet at all
+ * where `@angular/build` is not on major 21, cngx places no outlet at all
  * (fail-closed: a red `ng test` is never the result) and one note names the
  * outlets and what the spec needs. The starter is never
  * written next to such a spec (`writesStarter`), so its branch here only

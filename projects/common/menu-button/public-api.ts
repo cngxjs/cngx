@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/menu-button
+ * @module `@cngx/common/menu-button`
  */
 export { CngxMenuButton } from './menu-button.component';
 export { CngxIconMenuButton } from './icon-menu-button.component';

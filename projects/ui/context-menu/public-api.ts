@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/context-menu
+ * @module `@cngx/ui/context-menu`
  */
 export { CngxContextMenu } from './context-menu.component';
 export {

@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/stat-card
+ * @module `@cngx/ui/stat-card`
  */
 
 export { CngxStatCard } from './stat-card.component';

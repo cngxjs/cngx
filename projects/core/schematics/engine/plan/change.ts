@@ -48,7 +48,7 @@ export interface AddDependency extends ChangeBase {
   readonly version: string;
   /**
    * A devDependency on its own version line (`@cngx/eslint-plugin`); it is
-   * not part of the @cngx lockstep, so an existing range is kept as declared.
+   * not part of the `@cngx` lockstep, so an existing range is kept as declared.
    */
   readonly dev?: boolean;
 }

@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/stepper
+ * @module `@cngx/ui/stepper`
  *
  * Level-4 organism - CNGX-standard `<cngx-stepper>` skin over the
  * Level-2 `CngxStepperPresenter` from `@cngx/common/stepper`.
