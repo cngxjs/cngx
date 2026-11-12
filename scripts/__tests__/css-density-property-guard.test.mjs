@@ -38,12 +38,13 @@ import { describe, expect, it } from 'vitest';
  *     property-invalid-initial-value-findings.md).
  *
  * (c) Literal spacing: a `gap` / `row-gap` / `column-gap` / `padding*`
- *     declaration in a component stylesheet whose value is a bare length list
- *     (`<number><unit>` tokens only, a lone `0` excluded) is a literal that no
- *     `[data-density]` swap reaches. Declarations inside a `[data-skin]` block
- *     are skipped, the same gate rule (a) honours: a skin is variant geometry,
- *     like a `*-skins.css` file. A value with a `var()` read, a unitless `0`
- *     token or a custom-property SET is not a literal declaration. Pre-existing
+ *     declaration in a component stylesheet whose value is a length list
+ *     (`<number><unit>` and `0` tokens, `!important` ignored) with at least
+ *     one non-zero length is a literal that no `[data-density]` swap reaches:
+ *     `padding: 0 2px` keeps its `2px`. A value of zeros only, a `var()` read
+ *     or a custom-property SET is not a literal declaration. Declarations
+ *     inside a `[data-skin]` block are skipped, the same gate rule (a)
+ *     honours: a skin is variant geometry, like a `*-skins.css` file. Pre-existing
  *     literals sit in LITERAL_SPACING_EXEMPT, keyed per file with an exact
  *     count and a reason; the ratchet only shrinks.
  */
@@ -117,14 +118,39 @@ const DENSITY_ALLOWLIST = new Map([
  * A new declaration, or a row whose count no longer matches, fails. */
 const LITERAL_SPACING_EXEMPT = [
   {
-    file: '/projects/common/popover/popover-panel.component.css',
+    file: '/projects/common/display/chip/chip.component.css',
     count: 1,
-    reason: 'pre-existing literal, out of feature area',
+    reason: 'pre-existing literal (0 2px), out of feature area',
+  },
+  {
+    file: '/projects/common/popover/popover-panel.component.css',
+    count: 2,
+    reason: 'pre-existing literals (gap 8px, padding 8px 0), out of feature area',
   },
   {
     file: '/projects/common/theming/components/cngx-button-toggle.css',
     count: 1,
     reason: 'pre-existing literal, out of feature area',
+  },
+  {
+    file: '/projects/forms/field/form-errors.component.css',
+    count: 1,
+    reason: 'pre-existing literal (font-relative 1.25em list indent), out of feature area',
+  },
+  {
+    file: '/projects/forms/select/action-select/action-select.component.css',
+    count: 1,
+    reason: 'pre-existing literal (0 0.25rem), out of feature area',
+  },
+  {
+    file: '/projects/forms/select/shared/select-base.css',
+    count: 1,
+    reason: 'pre-existing literal (0 0.125rem), out of feature area',
+  },
+  {
+    file: '/projects/forms/select/typeahead/typeahead.component.css',
+    count: 1,
+    reason: 'pre-existing literal (0 0.25rem), out of feature area',
   },
   {
     file: '/projects/ui/breadcrumb/breadcrumb-overflow.component.css',
@@ -235,8 +261,15 @@ function hasNonSkinGatedScaleSet(css) {
 }
 
 const SPACING_DECLARATION =
-  /(?<![\w-])(gap|row-gap|column-gap|padding(?:-[a-z-]+)?)\s*:\s*([^;{}]+);/g;
-const BARE_LENGTH_LIST = /^[0-9.]+(px|rem|em)(\s+[0-9.]+(px|rem|em))*$/;
+  /(?<![\w-])(gap|row-gap|column-gap|padding(?:-[a-z-]+)?)\s*:\s*([^;{}]+)(?=[;}])/g;
+const LENGTH_OR_ZERO = /^(?:0|[0-9.]+(?:px|rem|em))$/;
+const NON_ZERO = /[1-9]/;
+
+/** A list of lengths and zeros with at least one non-zero length. */
+function isLiteralLengthList(value) {
+  const tokens = value.replace(/\s*!important$/i, '').split(/\s+/);
+  return tokens.every((t) => LENGTH_OR_ZERO.test(t)) && tokens.some((t) => NON_ZERO.test(t));
+}
 
 /** Rule (c): literal spacing declarations outside a skin-gated block. `css`
  * must already be comment-stripped. */
@@ -249,7 +282,7 @@ function literalSpacingDeclarations(css) {
     const at = m.index;
     const value = m[2].trim();
     const inGate = gated.some(([s, e]) => at >= s && at < e);
-    if (inGate || !BARE_LENGTH_LIST.test(value)) {
+    if (inGate || !isLiteralLengthList(value)) {
       continue;
     }
     found.push(`${m[1]}: ${value}`);
@@ -361,10 +394,18 @@ describe('literal spacing detection (rule c)', () => {
     ]);
   });
 
-  it('passes a zero, a list with a unitless 0 token, a token read and a SET', () => {
+  it('flags a list with a zero token, an !important literal and a last declaration without a semicolon', () => {
     expect(
       literalSpacingDeclarations(
-        '.a { padding: 0; padding-block: 8px 0; gap: var(--cngx-x-padding, 8px); --cngx-x-padding: 12px; }',
+        '.a { padding: 0 2px; gap: 4px !important; } .b { padding-block: 8px 0 }',
+      ),
+    ).toEqual(['padding: 0 2px', 'gap: 4px !important', 'padding-block: 8px 0']);
+  });
+
+  it('passes zeros only, a token read and a SET', () => {
+    expect(
+      literalSpacingDeclarations(
+        '.a { padding: 0; padding-block: 0 0; gap: 0px; padding-inline: var(--cngx-x-padding, 8px); --cngx-x-padding: 12px; }',
       ),
     ).toEqual([]);
   });
