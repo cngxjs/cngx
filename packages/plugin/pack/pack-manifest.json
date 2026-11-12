@@ -253,8 +253,8 @@
     },
     {
       "artifact": "pack/recipes/ui-action-button-async-button.md",
-      "source": "examples/stories/ui/action-button/async-button/ejected-host.story.ts",
-      "contentHash": "sha256:a10cf9a4396d9ba882dea7974a9729c2a7effe2496890948e9e3df55ef9614f2"
+      "source": "examples/stories/ui/action-button/async-button/external-state.story.ts",
+      "contentHash": "sha256:153824bb29db5c3ad38e44aa86780b0b8304afdcc0e8a7c9f437b6d4b945b932"
     }
   ],
   "theming": {
