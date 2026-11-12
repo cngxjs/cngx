@@ -78,6 +78,9 @@ import { CngxActionToast } from './action-toast.directive';
  * <example-url>/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
  * <example-url>/#/ui/action-button/async-button/external-state</example-url>
+ * <example-url>/#/ui/action-button/async-button/toasts</example-url>
+ * <example-url>/#/ui/action-button/async-button/disabled-with-reason</example-url>
+ * <example-url>/#/ui/action-button/async-button/busy-timing</example-url>
  * @axis level organism
  */
 @Component({
