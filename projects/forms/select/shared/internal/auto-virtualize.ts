@@ -152,15 +152,20 @@ export function createAutoPanelRenderer<T>(opts: {
       // What density, text scale and the touch-target axis change on a row. The
       // rows are tracked by position, so a window move hands the measured node
       // another option: a resize with none of these changed is new content
-      // (a taller custom row), not a new row height.
+      // (a taller custom row), not a new row height. The row floor is read as
+      // its inherited inputs on the scroll element, not as the row's own
+      // min-block-size, so a floor set on single rows is content too.
       const sizing = (row: HTMLElement): string => {
         const style = getComputedStyle(row);
+        const el = scrollElement.nativeElement;
+        const scope = el ? getComputedStyle(el) : null;
         return [
           style.fontSize,
           style.lineHeight,
           style.paddingBlockStart,
           style.paddingBlockEnd,
-          style.minBlockSize,
+          scope?.getPropertyValue('--cngx-target-min') ?? '',
+          scope?.getPropertyValue('--cngx-select-option-min-height') ?? '',
         ].join('|');
       };
       // Every render, not a tracked effect: the window signals derive from the
