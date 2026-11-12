@@ -525,7 +525,7 @@ Current providers:
 
 <aside class="cc-note">
 
-**Note.** `CngxActionButton` and `dialog[cngxDialog]` are stateful too but do not currently provide the token. Bind `btn.state` / `dlg.submitState` explicitly when wiring a bridge.
+**Note.** `CngxActionButton` and `dialog[cngxDialog]` are stateful too but do not provide the token. Bind `btn.state` / `dlg.submitState` explicitly when wiring a bridge.
 
 </aside>
 
