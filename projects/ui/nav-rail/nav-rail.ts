@@ -3,13 +3,12 @@ import {
   Component,
   computed,
   contentChildren,
-  ElementRef,
   inject,
   input,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
+import { CngxNavGroupContent } from '@cngx/common/interactive';
 
 import { CNGX_NAV_RAIL_I18N } from './nav-rail-i18n';
 import { injectNavRailFlyout } from './nav-rail-flyout';
@@ -97,25 +96,10 @@ export class CngxNavRail {
 
   protected readonly resolvedAriaLabel = computed(() => this.ariaLabel() ?? this.i18n().ariaLabel);
 
-  private readonly groups = contentChildren(CngxNavGroup, { descendants: true });
-  private readonly groupElements = contentChildren(CngxNavGroup, {
-    descendants: true,
-    read: ElementRef,
-  });
   private readonly contents = contentChildren(CngxNavGroupContent, { descendants: true });
-  private readonly contentElements = contentChildren(CngxNavGroupContent, {
-    descendants: true,
-    read: ElementRef,
-  });
 
   constructor() {
     injectNavRailTooltip(computed(() => this.labelPlacement() === 'end'));
-    injectNavRailFlyout({
-      railed: signal(true).asReadonly(),
-      groups: this.groups,
-      groupElements: this.groupElements,
-      contents: this.contents,
-      contentElements: this.contentElements,
-    });
+    injectNavRailFlyout({ railed: signal(true).asReadonly(), contents: this.contents });
   }
 }

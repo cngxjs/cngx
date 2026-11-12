@@ -1,4 +1,4 @@
-import { Component, ElementRef, signal, viewChildren } from '@angular/core';
+import { Component, signal, viewChildren } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
@@ -25,19 +25,10 @@ import { injectNavRailFlyout } from './nav-rail-flyout';
 })
 class TestRail {
   readonly railed = signal(true);
-  readonly groups = viewChildren(CngxNavGroup);
-  readonly groupElements = viewChildren(CngxNavGroup, { read: ElementRef });
   readonly contents = viewChildren(CngxNavGroupContent);
-  readonly contentElements = viewChildren(CngxNavGroupContent, { read: ElementRef });
 
   constructor() {
-    injectNavRailFlyout({
-      railed: this.railed,
-      groups: this.groups,
-      groupElements: this.groupElements,
-      contents: this.contents,
-      contentElements: this.contentElements,
-    });
+    injectNavRailFlyout({ railed: this.railed, contents: this.contents });
   }
 }
 
@@ -126,10 +117,52 @@ describe('injectNavRailFlyout', () => {
     el('.head-a').click();
     settle();
     el('.link-a1').focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    el('.link-a1').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     settle();
     expect(open('.content-a')).toBe(false);
     expect(document.activeElement).toBe(el('.head-a'));
+  });
+
+  it('leaves an Escape outside the head and the flyout to its owner', () => {
+    const { el, settle, open } = setup();
+    el('.head-a').click();
+    settle();
+    const seen: KeyboardEvent[] = [];
+    const listener = (event: Event) => seen.push(event as KeyboardEvent);
+    document.addEventListener('keydown', listener);
+    el('.outside').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    document.removeEventListener('keydown', listener);
+    settle();
+    expect(seen).toHaveLength(1);
+    expect(open('.content-a')).toBe(true);
+  });
+
+  it('closes when focus moves to an element outside the head and the flyout', () => {
+    const { el, settle, open } = setup();
+    el('.head-a').click();
+    settle();
+    el('.link-a1').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: el('.link-a2') }),
+    );
+    settle();
+    expect(open('.content-a')).toBe(true);
+    el('.link-a2').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: el('.outside') }),
+    );
+    settle();
+    expect(open('.content-a')).toBe(false);
+    expect(el('.head-a').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('stays open when the window loses focus', () => {
+    const { el, settle, open } = setup();
+    el('.head-a').click();
+    settle();
+    el('.link-a1').dispatchEvent(
+      new FocusEvent('focusout', { bubbles: true, relatedTarget: null }),
+    );
+    settle();
+    expect(open('.content-a')).toBe(true);
   });
 
   it('closes on a press outside the head and the flyout, but not on a press inside', () => {

@@ -95,7 +95,11 @@ export class CngxNavGroup {
   /** Nesting depth for indentation. Consumer sets manually. */
   readonly depth = input<number>(0);
 
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  /**
+   * The group head element. An organism that places the group content
+   * relative to its head (the rail flyout anchors to it) reads it here.
+   */
+  readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
   private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
 
@@ -112,11 +116,11 @@ export class CngxNavGroup {
    * `<body>` when the region turns `inert`.
    */
   focus(options?: FocusOptions): void {
-    this.host.focus(options);
+    this.element.focus(options);
   }
 
   constructor() {
-    injectNavInitial(this.host);
+    injectNavInitial(this.element);
     this.registry?.register(this);
     inject(DestroyRef).onDestroy(() => this.registry?.unregister(this));
 

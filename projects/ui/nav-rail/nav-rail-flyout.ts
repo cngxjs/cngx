@@ -2,27 +2,20 @@ import {
   afterRenderEffect,
   DestroyRef,
   DOCUMENT,
-  effect,
-  type ElementRef,
   inject,
+  Renderer2,
   type Signal,
   untracked,
 } from '@angular/core';
 import type { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
-/**
- * The nav groups and group contents an organism projects, as its content
- * queries return them: once as instances, once as host elements, in the
- * same order.
- */
+/** What `injectNavRailFlyout` reads from the organism that projects the rows. */
 export interface CngxNavRailFlyoutSources {
   /** `true` while the rows are railed. */
   readonly railed: Signal<boolean>;
-  readonly groups: Signal<readonly CngxNavGroup[]>;
-  readonly groupElements: Signal<readonly ElementRef<HTMLElement>[]>;
+  /** The projected group contents; each one names its head through `group()`. */
   readonly contents: Signal<readonly CngxNavGroupContent[]>;
-  readonly contentElements: Signal<readonly ElementRef<HTMLElement>[]>;
 }
 
 interface FlyoutPair {
@@ -34,8 +27,8 @@ interface FlyoutPair {
 /**
  * Shows an open nav group as a flyout beside its head while the rows are
  * railed. Call it in the constructor of the organism that projects the rows
- * and pass its content queries for `CngxNavGroup` and `CngxNavGroupContent`
- * (instances and host elements).
+ * and pass its content query for `CngxNavGroupContent`; each content names
+ * its group head, so nothing is paired by index.
  *
  * While railed, each `cngxNavGroupContent` becomes a native
  * `popover="manual"` anchored to its group head (`anchor-name` /
@@ -48,32 +41,19 @@ interface FlyoutPair {
  *
  * Entering the rail closes open groups (an open group would otherwise pop up
  * as a flyout on its own); leaving it hides the flyout and the group shows
- * inline again in its current state. Escape and a press outside the head and
- * the flyout close the group; Escape moves focus to the head, and a close
- * with focus inside the flyout hands focus to the head through
- * `CngxNavGroupContent`. An open flyout closes when the host turns `inert`
- * (a page-modal overlay opening over the rail).
+ * inline again in its current state. Escape on the head or inside the flyout
+ * closes the group and moves focus to the head; Escape anywhere else is left
+ * alone. Focus moving to an element outside the head and the flyout, and a
+ * press outside both, close the group; a close with focus inside the flyout
+ * hands focus to the head through `CngxNavGroupContent`. An open flyout
+ * closes when the host turns `inert` (a page-modal overlay opening over the
+ * rail).
  *
  * ```typescript
  * export class MyRail {
- *   private readonly groups = contentChildren(CngxNavGroup, { descendants: true });
- *   private readonly groupElements = contentChildren(CngxNavGroup, {
- *     descendants: true,
- *     read: ElementRef,
- *   });
  *   private readonly contents = contentChildren(CngxNavGroupContent, { descendants: true });
- *   private readonly contentElements = contentChildren(CngxNavGroupContent, {
- *     descendants: true,
- *     read: ElementRef,
- *   });
  *   constructor() {
- *     injectNavRailFlyout({
- *       railed: signal(true),
- *       groups: this.groups,
- *       groupElements: this.groupElements,
- *       contents: this.contents,
- *       contentElements: this.contentElements,
- *     });
+ *     injectNavRailFlyout({ railed: signal(true), contents: this.contents });
  *   }
  * }
  * ```
@@ -85,25 +65,17 @@ interface FlyoutPair {
  */
 export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
   const doc = inject(DOCUMENT);
+  const renderer = inject(Renderer2);
   const anchorPrefix = `--${nextUid('cngx-nav-flyout')}`;
   let shown: readonly FlyoutPair[] = [];
+  const wired = new Map<HTMLElement, () => void>();
   let inertObserver: MutationObserver | null = null;
 
   function pairs(): readonly FlyoutPair[] {
-    const groups = sources.groups();
-    const heads = sources.groupElements();
-    const contents = sources.contents();
-    const contentEls = sources.contentElements();
-    const result: FlyoutPair[] = [];
-    contents.forEach((content, i) => {
+    return sources.contents().map((content) => {
       const group = content.group();
-      const head = heads[groups.indexOf(group)]?.nativeElement;
-      const el = contentEls[i]?.nativeElement;
-      if (head && el) {
-        result.push({ group, head, content: el });
-      }
+      return { group, head: group.element, content: content.element };
     });
-    return result;
   }
 
   function isOpen(el: HTMLElement): boolean {
@@ -130,24 +102,12 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
     }
   }
 
-  function closeAll({ focusHead }: { focusHead: boolean }): void {
+  function closeAll(): void {
     for (const pair of shown) {
-      if (!isOpen(pair.content)) {
-        continue;
-      }
-      pair.group.disclosure.close();
-      if (focusHead) {
-        pair.group.focus({ preventScroll: true });
+      if (isOpen(pair.content)) {
+        pair.group.disclosure.close();
       }
     }
-  }
-
-  function onKeydown(event: KeyboardEvent): void {
-    if (event.key !== 'Escape' || !shown.some((pair) => isOpen(pair.content))) {
-      return;
-    }
-    event.stopPropagation();
-    closeAll({ focusHead: true });
   }
 
   function onPointerdown(event: PointerEvent): void {
@@ -157,65 +117,92 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
         isOpen(pair.content) && (pair.head.contains(target) || pair.content.contains(target)),
     );
     if (!inside) {
-      closeAll({ focusHead: false });
+      closeAll();
     }
   }
 
+  // Pointer presses and inert land anywhere, so these two watch the document,
+  // and only while a flyout is open.
   function watchDocument(active: boolean): void {
     if (active && !inertObserver) {
-      doc.addEventListener('keydown', onKeydown, true);
       doc.addEventListener('pointerdown', onPointerdown, true);
-      if (typeof MutationObserver === 'function') {
-        inertObserver = new MutationObserver(() => {
-          if (shown.some((pair) => pair.head.closest('[inert]'))) {
-            closeAll({ focusHead: false });
-          }
-        });
-        inertObserver.observe(doc.documentElement, {
-          attributes: true,
-          attributeFilter: ['inert'],
-          subtree: true,
-        });
-      }
+      inertObserver = new MutationObserver(() => {
+        if (shown.some((pair) => pair.head.closest('[inert]'))) {
+          closeAll();
+        }
+      });
+      inertObserver.observe(doc.documentElement, {
+        attributes: true,
+        attributeFilter: ['inert'],
+        subtree: true,
+      });
       return;
     }
     if (!active && inertObserver) {
-      doc.removeEventListener('keydown', onKeydown, true);
       doc.removeEventListener('pointerdown', onPointerdown, true);
       inertObserver.disconnect();
       inertObserver = null;
     }
   }
 
+  // Escape and focus loss belong to the head and its flyout only.
+  function wire(pair: FlyoutPair): void {
+    if (wired.has(pair.content)) {
+      return;
+    }
+    const within = (node: EventTarget | null): boolean =>
+      node instanceof Node && (pair.head.contains(node) || pair.content.contains(node));
+    const onKeydown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || !isOpen(pair.content)) {
+        return;
+      }
+      event.stopPropagation();
+      pair.group.disclosure.close();
+      pair.group.focus({ preventScroll: true });
+    };
+    const onFocusout = (event: FocusEvent): void => {
+      // A null target is the window losing focus, not the user leaving.
+      if (isOpen(pair.content) && event.relatedTarget && !within(event.relatedTarget)) {
+        pair.group.disclosure.close();
+      }
+    };
+    const stops = [pair.head, pair.content].flatMap((el) => [
+      renderer.listen(el, 'keydown', onKeydown),
+      renderer.listen(el, 'focusout', onFocusout),
+    ]);
+    wired.set(pair.content, () => {
+      for (const stop of stops) {
+        stop();
+      }
+    });
+  }
+
   function release(pair: FlyoutPair): void {
     hideFlyout(pair);
+    wired.get(pair.content)?.();
+    wired.delete(pair.content);
     pair.content.removeAttribute('popover');
     pair.content.style.removeProperty('position-anchor');
     pair.head.style.removeProperty('anchor-name');
   }
 
-  // Entering the rail closes every open group, so none pops up on its own.
-  let wasRailed = false;
-  effect(() => {
-    const railed = sources.railed();
-    const entered = railed && !wasRailed;
-    wasRailed = railed;
-    if (entered) {
-      untracked(() => {
-        for (const group of sources.groups()) {
-          group.disclosure.close();
-        }
-      });
-    }
-  });
-
   // Popover wiring and open state, derived from railed and each disclosure.
   // After render: the group contents' inputs are bound only then.
+  let wasRailed = false;
   afterRenderEffect(() => {
     const railed = sources.railed();
     const current = pairs();
     const opened = current.map((pair) => pair.group.disclosure.opened());
+    // Entering the rail closes every open group, so none pops up on its own.
+    const entered = railed && !wasRailed;
+    wasRailed = railed;
     untracked(() => {
+      if (entered) {
+        for (const pair of current) {
+          pair.group.disclosure.close();
+        }
+        opened.fill(false);
+      }
       const kept = new Set(current.map((pair) => pair.content));
       for (const pair of shown) {
         if (!kept.has(pair.content)) {
@@ -232,6 +219,7 @@ export function injectNavRailFlyout(sources: CngxNavRailFlyoutSources): void {
         pair.head.style.setProperty('anchor-name', anchor);
         pair.content.style.setProperty('position-anchor', anchor);
         pair.content.setAttribute('popover', 'manual');
+        wire(pair);
         if (opened[i]) {
           showFlyout(pair);
         } else {

@@ -1034,7 +1034,7 @@
     {
       "class": "CngxNavRail",
       "file": "projects/ui/nav-rail/nav-rail.ts",
-      "line": 98,
+      "line": 97,
       "member": "resolvedAriaLabel",
       "enclosing": "computed",
       "tiers": [

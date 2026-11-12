@@ -100,9 +100,10 @@ CSS anchor positioning at the head's inline end (flips at the viewport edge).
   while the group is.
 - It is a disclosure, not a menu: the links keep their link role and Tab walks
   them in DOM order, head first.
-- Escape closes it and moves focus to the head. A press outside the head and
-  the flyout closes it. It also closes when the rail turns `inert`, for
-  example under a modal dialog.
+- Escape on the head or inside the flyout closes it and moves focus to the
+  head; an Escape elsewhere on the page is left alone. Focus moving outside
+  the head and the flyout, or a press outside both, closes it. It also
+  closes when the rail turns `inert`, for example under a modal dialog.
 
 CSS anchor positioning has no fallback here. In a browser without it the
 flyout opens at the popover's default position.
@@ -202,6 +203,6 @@ Give the two landmarks different names, as above.
 organism:
 
 - `injectNavRailTooltip(railed)` - the label tooltip for clipped rows.
-- `injectNavRailFlyout(sources)` - nav groups as anchored flyouts while
-  `railed()` is `true`; pass your content queries for `CngxNavGroup` and
+- `injectNavRailFlyout({ railed, contents })` - nav groups as anchored
+  flyouts while `railed()` is `true`; `contents` is your content query for
   `CngxNavGroupContent`.

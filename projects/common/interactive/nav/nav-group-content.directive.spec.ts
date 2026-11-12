@@ -33,6 +33,16 @@ describe('CngxNavGroupContent', () => {
     return { content, toggle };
   }
 
+  it('exposes its own host and its group head as element, for organisms that place the region', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const contentDe = fixture.debugElement.query(By.directive(CngxNavGroupContent));
+    const groupDe = fixture.debugElement.query(By.directive(CngxNavGroup));
+    const content = contentDe.injector.get(CngxNavGroupContent);
+    expect(content.element).toBe(contentDe.nativeElement);
+    expect(content.group().element).toBe(groupDe.nativeElement);
+  });
+
   it('always carries the animated content class', () => {
     const { content } = setup();
     expect(content.classList.contains('cngx-nav-group-content')).toBe(true);
