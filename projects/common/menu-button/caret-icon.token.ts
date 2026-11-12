@@ -3,7 +3,8 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
 /**
  * Injection token for a custom caret component, rendered by every
  * `button[cngxMenuButton]` whose `cngxButtonEnd` slot is empty and by the
- * caret of every `cngxSplitButton`. Without it the caret is
+ * caret of every `cngxSplitButton` (the `cngxIconMenuButton` that is its
+ * direct child). Without it the caret is
  * `CNGX_ICON_CHEVRON_DOWN` from the shared icon set. Set it with
  * {@link provideButtonCaretIcon} at the root or on a subtree to swap the
  * glyph app-wide, e.g. a wrapper around a Material `arrow_drop_down` icon.
