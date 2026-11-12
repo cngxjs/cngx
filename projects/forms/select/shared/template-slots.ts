@@ -76,8 +76,8 @@ export interface CngxSelectCaretContext {
  * The seven flat composites pass it; `CngxSelectShell` renders projected
  * `<cngx-optgroup>` markup and `CngxTreeSelect` has no groups. The group
  * element carries `role="group"` and an `aria-label` from `group.label`, and
- * the default header is `aria-hidden`. A projected header renders without
- * that wrapper, so keep it `aria-hidden` or the label is read twice.
+ * the header, default or projected, sits inside an `aria-hidden` element, so
+ * the label is read once, as the group's name.
  */
 export interface CngxSelectOptgroupContext<T = unknown> {
   readonly $implicit: CngxSelectOptionGroupDef<T>;
