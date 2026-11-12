@@ -4,21 +4,34 @@ import type { CngxPopoverPresentation } from '@cngx/common/popover';
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.model';
 
 /**
- * Selection-indicator slot context. Discriminated on `variant` - radio
- * has no `indeterminate`; narrow on `variant` before reading.
+ * Values the `*cngxSelectCheck` template receives on each option row.
+ *
+ * Discriminated on `variant`: radio has no `indeterminate`, so narrow on
+ * `variant` before reading it. The seven flat composites pass it;
+ * `CngxTreeSelect` and `CngxSelectShell` have no such slot. `variant` follows
+ * `[selectionIndicatorVariant]`, then `withSelectionIndicatorVariant`, and
+ * `'auto'` resolves to `'checkbox'` on the multi-value hosts and
+ * `'checkmark'` on the single-value ones. Selection reaches assistive
+ * technology through `aria-selected` on the row, and the template renders
+ * inside the row without an `aria-hidden` wrapper, so text it renders joins
+ * the option's accessible name.
  */
 export type CngxSelectCheckContext<T = unknown> =
   CngxSelectCheckBoxContext<T> | CngxSelectCheckRadioContext<T>;
 
 /**
- * Box-style indicator branch. `indeterminate` carries tree /
- * select-all semantics.
+ * Checkbox and checkmark branch of the `*cngxSelectCheck` context.
+ *
+ * Every host of the slot keeps a flat selection, so `indeterminate` is
+ * always `false`; tree rows replace their checkbox through
+ * `*cngxTreeSelectNode` instead. `position` mirrors the resolved
+ * indicator position, and the template renders once per row on that side.
  */
 export interface CngxSelectCheckBoxContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
   readonly option: CngxSelectOptionDef<T>;
   readonly selected: boolean;
-  /** Always `false` for flat panels; real value for tree-select. */
+  /** Always `false`: every host of this slot keeps a flat selection. */
   readonly indeterminate: boolean;
   /** Resolved by the indicator cascade. */
   readonly variant: 'checkbox' | 'checkmark';
@@ -26,7 +39,12 @@ export interface CngxSelectCheckBoxContext<T = unknown> {
 }
 
 /**
- * Radio-style indicator branch. No `indeterminate` - radio is exclusive.
+ * Radio branch of the `*cngxSelectCheck` context.
+ *
+ * Hosts pass it only when the resolved indicator variant is `'radio'`, which
+ * `'auto'` never picks, so it appears after an explicit
+ * `[selectionIndicatorVariant]="'radio'"` or `withSelectionIndicatorVariant('radio')`.
+ * It carries no `indeterminate` because a radio choice is exclusive.
  */
 export interface CngxSelectCheckRadioContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -38,7 +56,14 @@ export interface CngxSelectCheckRadioContext<T = unknown> {
 }
 
 /**
- * Context for the trigger caret template.
+ * Values the `*cngxSelectCaret` template receives inside the trigger.
+ *
+ * All nine composites pass it while the caret shows, that is unless
+ * `[hideCaret]` is set; `open` (also `$implicit`) mirrors the panel's open
+ * state. Assistive technology reads that state from `aria-expanded` on the
+ * trigger. `CngxSelectShell` wraps the template in an `aria-hidden` span,
+ * the other eight render it bare, so mark a caret glyph `aria-hidden`
+ * yourself there.
  */
 export interface CngxSelectCaretContext {
   readonly $implicit: boolean;
@@ -46,7 +71,13 @@ export interface CngxSelectCaretContext {
 }
 
 /**
- * Context for the optgroup header template.
+ * Values the `*cngxSelectOptgroup` template receives for each option group.
+ *
+ * The seven flat composites pass it; `CngxSelectShell` renders projected
+ * `<cngx-optgroup>` markup and `CngxTreeSelect` has no groups. The group
+ * element carries `role="group"` and an `aria-label` from `group.label`, and
+ * the default header is `aria-hidden`. A projected header renders without
+ * that wrapper, so keep it `aria-hidden` or the label is read twice.
  */
 export interface CngxSelectOptgroupContext<T = unknown> {
   readonly $implicit: CngxSelectOptionGroupDef<T>;
@@ -54,7 +85,15 @@ export interface CngxSelectOptgroupContext<T = unknown> {
 }
 
 /**
- * Context for the placeholder template (empty selection).
+ * Values the `*cngxSelectPlaceholder` template receives while nothing is
+ * selected.
+ *
+ * `CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
+ * `CngxTreeSelect` and `CngxSelectShell` pass it. `placeholder` (also
+ * `$implicit`) is the raw `[placeholder]` input, `''` by default; the
+ * built-in text falls back to the field label, this value does not. The
+ * template renders inside the trigger, so its text is what assistive
+ * technology reads there while the selection is empty.
  */
 export interface CngxSelectPlaceholderContext {
   readonly $implicit: string;
@@ -62,7 +101,16 @@ export interface CngxSelectPlaceholderContext {
 }
 
 /**
- * Empty-state template context.
+ * Values the `*cngxSelectEmpty` template receives when the panel has no
+ * option to show.
+ *
+ * All nine composites pass it. `searchTerm` is always `''` on `CngxSelect`,
+ * `CngxMultiSelect`, `CngxReorderableMultiSelect` and `CngxTreeSelect`,
+ * which have no search input, and `filtered` is `true` exactly when
+ * `searchTerm` is not empty. `totalCount` is the unfiltered option count on
+ * `CngxSelectShell` and always `0` on the other eight. The built-in empty
+ * message is plain text with no live region, so a projected template
+ * changes nothing for assistive technology.
  */
 export interface CngxSelectEmptyContext {
   /** Live filter term; `''` for button-trigger variants. */
@@ -74,16 +122,29 @@ export interface CngxSelectEmptyContext {
 }
 
 /**
- * Loading-template context.
+ * Values the `*cngxSelectLoading` template receives during the first load.
+ *
+ * All nine composites pass it while `[state]` loads with no options yet, or
+ * while `[loading]` is `true` without `[state]`. `retry` re-runs the load;
+ * no host fills `progress`, it is always `undefined`. The template replaces
+ * the `loadingVariant` indicator and leaves the panel's status region empty,
+ * so it has to announce the load itself.
  */
 export interface CngxSelectLoadingContext {
-  /** 0–1 progress. Undefined unless consumer extends `CngxAsyncState`. */
+  /** 0-1 progress. Always `undefined`: no composite passes a value. */
   readonly progress?: number;
   readonly retry: () => void;
 }
 
 /**
- * Context for the trigger label template.
+ * Values the `*cngxSelectTriggerLabel` template receives inside the trigger.
+ *
+ * `CngxSelect` and `CngxSelectShell` pass it. `CngxSelect` renders the
+ * template only while a value is selected; `CngxSelectShell` also renders it
+ * on an empty selection when no placeholder template is projected, and
+ * `selected` (also `$implicit`) is then `null`. The template sits inside the
+ * `role="combobox"` trigger, so its text is what assistive technology reads
+ * as the current value; keep the option label in it.
  */
 export interface CngxSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T> | null;
@@ -95,7 +156,13 @@ export interface CngxSelectTriggerLabelContext<T = unknown> {
 }
 
 /**
- * Context for the option label template (rich content inside each option).
+ * Values the `*cngxSelectOptionLabel` template receives on each option row.
+ *
+ * The seven flat composites pass it; `CngxSelectShell` and `CngxTreeSelect`
+ * have no such slot. `highlighted` is `true` on the keyboard-active row.
+ * The template replaces the label text of the `role="option"` row, so its
+ * text becomes the option's accessible name and the label typeahead matches
+ * against stays `option.label`.
  */
 export interface CngxSelectOptionLabelContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -105,7 +172,13 @@ export interface CngxSelectOptionLabelContext<T = unknown> {
 }
 
 /**
- * Context for the error panel template (shown when `state()?.isError()`).
+ * Values the `*cngxSelectError` template receives when a load fails.
+ *
+ * All nine composites pass it, for the full-panel block after a failed first
+ * load and for the inline block above the options after a failed refresh.
+ * `retry` re-runs the load. The built-in blocks carry `role="alert"`; a
+ * projected template renders without that wrapper, so give it its own
+ * `role="alert"` if the failure should be announced.
  */
 export interface CngxSelectErrorContext {
   readonly $implicit: unknown;
@@ -114,8 +187,17 @@ export interface CngxSelectErrorContext {
 }
 
 /**
- * Retry-button slot context. Drives every retry surface (load /
- * refresh / commit). Routing handled by the panel-shell host.
+ * Values the `*cngxSelectRetryButton` template receives inside a built-in
+ * error block.
+ *
+ * All nine composites pass it in three places: the load-error block, the
+ * inline refresh-error block and the commit-error banner. It renders only
+ * inside those built-in blocks, so a projected `*cngxSelectError` or
+ * `*cngxSelectCommitError` template drops it. `retry` (also `$implicit`)
+ * reruns the load or the commit of that block, and `label` is the
+ * library's retry copy for that block. The built-in control is a native
+ * `<button>` with that copy as its text, so a projected control has to be
+ * keyboard-reachable and carry an accessible name itself.
  */
 export interface CngxSelectRetryButtonContext {
   readonly $implicit: () => void;
@@ -134,15 +216,29 @@ export interface CngxSelectRetryButtonContext {
 }
 
 /**
- * Refreshing-indicator template context.
+ * Values the `*cngxSelectRefreshing` template receives while a reload runs
+ * over options already listed.
+ *
+ * `previousCount` is the number of options `CngxSelectShell` lists at that
+ * moment; the other eight composites always pass `0`, so a template there
+ * should not print it. The projected template replaces the
+ * `refreshingVariant` indicator and leaves the panel's status region empty,
+ * so it has to announce the refresh itself.
  */
 export interface CngxSelectRefreshingContext {
-  /** Count from the most recent successful load. */
+  /** Options listed on `CngxSelectShell`; `0` on every other composite. */
   readonly previousCount: number;
 }
 
 /**
- * Commit-error template context. `retry` re-invokes the commit.
+ * Values the `*cngxSelectCommitError` template receives when a commit fails.
+ *
+ * All nine composites pass it while `commitErrorDisplay` is `'banner'`.
+ * `retry` replays the failed commit with the same intended value. `option`
+ * is the option the failed commit concerned, `null` for a clear and always
+ * `null` on `CngxTreeSelect`. The failure reaches assistive technology
+ * through a hidden node the trigger references, independent of this
+ * template, so the banner content stays visual.
  */
 export interface CngxSelectCommitErrorContext<T = unknown> {
   readonly $implicit: unknown;
@@ -152,10 +248,16 @@ export interface CngxSelectCommitErrorContext<T = unknown> {
 }
 
 /**
- * Per-chip context for `CngxMultiSelect` and
- * `CngxReorderableMultiSelect`. `remove()` routes through the commit
- * flow when `[commitAction]` is bound. `index` is only set by the
- * reorderable variant.
+ * Values the `*cngxMultiSelectChip` template receives for each chip in the
+ * trigger strip.
+ *
+ * `CngxMultiSelect`, `CngxReorderableMultiSelect` and
+ * `CngxActionMultiSelect` pass it on a fine pointer while no trigger-label
+ * template is projected; `index` is only set by the reorderable variant.
+ * `remove()` routes through the commit flow when `[commitAction]` is bound
+ * and does nothing while the control is disabled or readonly. The built-in
+ * chip names its remove button from `chipRemoveAriaLabel`, so a projected
+ * remove control needs its own accessible name.
  */
 export interface CngxMultiSelectChipContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -165,9 +267,13 @@ export interface CngxMultiSelectChipContext<T = unknown> {
 }
 
 /**
- * Context of the `*cngxMultiSelectMoveGlyph` slot. The glyph is decorative
- * (its wrapper is `aria-hidden`; the move button keeps its `aria-label`), so
- * the context only says which button it renders in.
+ * Values the `*cngxMultiSelectMoveGlyph` template receives inside a move
+ * button.
+ *
+ * Only `CngxReorderableMultiSelect` passes it, in the reorder list its panel
+ * shows under the touch floor. The glyph is decorative (its wrapper is
+ * `aria-hidden`; the move button keeps its `aria-label`), so the context only
+ * says which button it renders in.
  */
 export interface CngxMultiSelectMoveGlyphContext {
   readonly $implicit: 'up' | 'down';
@@ -176,8 +282,12 @@ export interface CngxMultiSelectMoveGlyphContext {
 }
 
 /**
- * Context of the `*cngxSelectSheetHandle` slot. The handle is decorative
- * (always `aria-hidden`), so the context carries visual state only.
+ * Values the `*cngxSelectSheetHandle` template receives in the mobile sheet
+ * header.
+ *
+ * All nine composites pass it while their panel opens as a sheet or
+ * fullscreen. The handle is decorative (always `aria-hidden`), so the
+ * context carries visual state only.
  */
 export interface CngxSelectSheetHandleContext {
   readonly $implicit: CngxPopoverPresentation;
@@ -188,7 +298,15 @@ export interface CngxSelectSheetHandleContext {
 }
 
 /**
- * Clear-button context shared by single-clear and clear-all surfaces.
+ * Values the `*cngxSelectClearButton` template receives inside the trigger.
+ *
+ * All nine composites pass it; `clear` (also `$implicit`) clears the value
+ * on the single-value hosts and every value on the multi-value hosts. The
+ * template renders only while `[clearable]` is set, a value is selected and
+ * the control is neither disabled nor readonly, so `disabled` is `false`
+ * whenever it renders. Its wrapper stops click, Enter and Space from
+ * reaching the trigger. The built-in button takes its `aria-label` from
+ * `clearButtonAriaLabel`, so a projected button needs its own name.
  */
 export interface CngxSelectClearButtonContext {
   readonly $implicit: () => void;
@@ -197,8 +315,15 @@ export interface CngxSelectClearButtonContext {
 }
 
 /**
- * Per-row pending-indicator context. Replaces
- * `.cngx-select__option-spinner`.
+ * Values the `*cngxSelectOptionPending` template receives on the row whose
+ * commit is in flight.
+ *
+ * The seven flat composites pass it in place of
+ * `.cngx-select__option-spinner`; `CngxSelectShell` renders the template
+ * inside the projected `<cngx-option>` with no context, and `CngxTreeSelect`
+ * has no such slot. The template renders inside the `role="option"` row and
+ * the built-in spinner is `aria-hidden`, so keep a projected indicator
+ * `aria-hidden` too or its text joins the option's accessible name.
  */
 export interface CngxSelectOptionPendingContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -206,8 +331,15 @@ export interface CngxSelectOptionPendingContext<T = unknown> {
 }
 
 /**
- * Per-row commit-error glyph context for
- * `commitErrorDisplay === 'inline'`.
+ * Values the `*cngxSelectOptionError` template receives on a selected row
+ * after a commit fails.
+ *
+ * The seven flat composites pass it while `commitErrorDisplay` is
+ * `'inline'`, on every selected row; `CngxSelectShell` renders the template
+ * inside the failed `<cngx-option>` with no context. The built-in `!` glyph
+ * is `aria-hidden`, and the failure reaches assistive technology through a
+ * hidden node the trigger references. Keep a projected glyph `aria-hidden`
+ * so its text does not join the option's accessible name.
  */
 export interface CngxSelectOptionErrorContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -216,8 +348,14 @@ export interface CngxSelectOptionErrorContext<T = unknown> {
 }
 
 /**
- * Trigger-label context for `CngxMultiSelect`. Replaces the chip strip
- * entirely.
+ * Values the `*cngxMultiSelectTriggerLabel` template receives in place of
+ * the chip strip.
+ *
+ * `CngxMultiSelect` and `CngxReorderableMultiSelect` pass it while at least
+ * one value is selected, so `count` is never `0`. The template replaces the
+ * chip strip and the touch summary; the reorderable variant loses drag
+ * reordering in the trigger with it. The per-chip remove buttons go too, so
+ * values are then removed through the panel or the clear button.
  */
 export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxSelectOptionDef<T>[];
@@ -227,9 +365,15 @@ export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
 }
 
 /**
- * Trigger-label context for `CngxCombobox`. Replaces only the chip strip;
- * the search `<input>` stays. Shape mirrors
- * {@link CngxMultiSelectTriggerLabelContext}.
+ * Values the `*cngxComboboxTriggerLabel` template receives in place of the
+ * chip strip.
+ *
+ * `CngxCombobox` and `CngxActionMultiSelect` pass it whenever the template
+ * is projected, including with no selection (`count` is then `0`); the
+ * search `<input>` stays. Shape mirrors
+ * {@link CngxMultiSelectTriggerLabelContext}. The per-chip remove buttons go
+ * with the strip, so values are then removed through the panel or the clear
+ * button.
  */
 export interface CngxComboboxTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxSelectOptionDef<T>[];
@@ -239,8 +383,15 @@ export interface CngxComboboxTriggerLabelContext<T = unknown> {
 }
 
 /**
- * Per-chip context for `CngxCombobox`. Mirrors
- * {@link CngxMultiSelectChipContext}.
+ * Values the `*cngxComboboxChip` template receives for each chip in the
+ * combobox trigger.
+ *
+ * Only `CngxCombobox` passes it, on a fine pointer while no
+ * `*cngxComboboxTriggerLabel` template is projected. Mirrors
+ * {@link CngxMultiSelectChipContext}, with `index` always set to the chip's
+ * position in the strip. The built-in chip names its remove button from
+ * `chipRemoveAriaLabel`, so a projected remove control needs its own
+ * accessible name.
  */
 export interface CngxComboboxChipContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -250,14 +401,20 @@ export interface CngxComboboxChipContext<T = unknown> {
 }
 
 /**
- * Overflow-badge context for the chip strips of `CngxMultiSelect`,
- * `CngxCombobox` and `CngxActionMultiSelect` under
- * `chipOverflow: 'truncate'` or `'fit'`. `count` is the number of selected
+ * Values the `*cngxSelectChipOverflow` template receives in place of the
+ * `+N` badge.
+ *
+ * `CngxMultiSelect`, `CngxCombobox` and `CngxActionMultiSelect` pass it
+ * under `chipOverflow: 'truncate'` or `'fit'`, `CngxTreeSelect` once more
+ * chips are selected than `maxVisibleChips`; all four also pass it for the
+ * badge of their touch summary. `count` is the number of selected
  * options the strip hides, `label` the badge text the host would render (the
  * `chipOverflowBadge` copy of the active language pack, `+N` in English,
  * the number in the reading locale's digits), `hidden` the hidden selected
  * options themselves in selection order, e.g. for a tooltip listing them.
- * `hidden` keeps its identity while the hidden set is unchanged.
+ * `hidden` keeps its identity while the hidden set is unchanged. The
+ * built-in badge is `aria-hidden` because the control announces the
+ * selection, so keep a projected badge `aria-hidden` as well.
  */
 export interface CngxSelectChipOverflowContext<T = unknown> {
   readonly $implicit: number;
@@ -657,11 +814,13 @@ export class CngxMultiSelectChipHandle {
 /**
  * `*cngxMultiSelectMoveGlyph` slot - glyph of the move-up / move-down
  * buttons in the reorder list the panel shows under the touch floor.
+ *
  * Cascade: this slot > `[moveGlyph]` Input (app-wide default via
  * `withDefaultMoveGlyph`) > the default triangles. The glyph renders inside
  * the move button in an `aria-hidden="true"` wrapper; the button keeps its
- * `aria-label`. `direction` (also `$implicit`) is `'up'` or `'down'`. Only
- * rendered under the touch floor, where the reorder list shows; on a fine
+ * `aria-label`. `direction` (also `$implicit`) is `'up'` or `'down'`.
+ *
+ * Only rendered under the touch floor, where the reorder list shows; on a fine
  * pointer the chip strip reorders by drag and keyboard instead. Size the
  * default triangles and the wrapper with `--cngx-select-reorder-move-size`.
  *
@@ -692,12 +851,16 @@ export class CngxMultiSelectMoveGlyph {
  * visible chips when `chipOverflow` is `'truncate'` or `'fit'` and selected
  * options are hidden. Under `'fit'` the badge sits in a slot exactly
  * `--cngx-select-chip-fit-badge-reserve` wide and is clipped past it; raise
- * the token for a wider projected badge. Rendered by `CngxMultiSelect`, `CngxCombobox`,
+ * the token for a wider projected badge.
+ *
+ * Rendered by `CngxMultiSelect`, `CngxCombobox`,
  * `CngxActionMultiSelect` and `CngxTreeSelect`; `CngxReorderableMultiSelect`
  * does not render it (its touch summary keeps the built-in badge). The
  * chip-strip badge is fine pointer only. Under the touch floor the same slot
  * replaces the badge of the summary trigger. Not rendered while a trigger-label slot
- * replaces the chip strip. The default badge is `aria-hidden` because the
+ * replaces the chip strip.
+ *
+ * The default badge is `aria-hidden` because the
  * selection is announced through the control; keep a projected badge
  * `aria-hidden` unless it adds its own interaction.
  *
@@ -813,7 +976,14 @@ export class CngxSelectSheetHandle {
 }
 
 /**
- * Context for `*cngxSelectSheetCount`.
+ * Values the `*cngxSelectSheetCount` template receives after the mobile
+ * sheet title.
+ *
+ * Only `CngxTreeSelect` passes it; the other composites report no count and
+ * the header shows nothing there. `text` (also `$implicit`) is the built-in
+ * `selectedCount` copy, and the template renders only while that text is not
+ * empty. The count sits in the header outside any `aria-hidden` wrapper, so
+ * assistive technology reads whatever the template renders.
  */
 export interface CngxSelectSheetCountContext {
   /** The built-in count text (`selectedCount` copy, e.g. `'2 selected'`). */
@@ -984,7 +1154,15 @@ export interface CngxSelectActionContext {
 }
 
 /**
- * Context for input-prefix / input-suffix slots.
+ * Values the `*cngxSelectInputPrefix` and `*cngxSelectInputSuffix`
+ * templates receive next to the trigger `<input>`.
+ *
+ * `CngxTypeahead`, `CngxCombobox`, `CngxActionSelect` and
+ * `CngxActionMultiSelect` pass it; the flags mirror the control's disabled,
+ * focus and panel state. The wrapper stops a click inside it from reaching
+ * the trigger. The content stays in the accessibility tree but outside the
+ * `<input>`, so it does not name the input; mark a decorative icon
+ * `aria-hidden`.
  */
 export interface CngxSelectInputSlotContext {
   readonly disabled: boolean;
