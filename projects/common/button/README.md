@@ -71,6 +71,25 @@ It rests in the muted hint colour and lifts to the text colour on hover. It stay
 
 Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: import `CngxCloseButton` from `@cngx/common/button`, write `<button cngxCloseButton aria-label="...">`, and drop the inner `.cngx-close-button__btn` from selectors; `--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and `-transition` are gone (the button tokens and the global focus ring take over).
 
+## Button group
+
+`[cngxButtonGroup]` joins buttons, icon buttons, addons and separators into one framed row. The host is `role="group"` and needs a name: set `aria-label` or `aria-labelledby`, else it warns [`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md) in development.
+
+```html
+<div cngxButtonGroup variant="outline" aria-label="History">
+  <button cngxButton>Undo</button>
+  <button cngxButton>Redo</button>
+</div>
+```
+
+- **Orientation.** `orientation="horizontal"` is the default; `vertical` stacks the segments into a column.
+- **Shared variant and size.** `variant` and `size` set on the group reach every `cngxButton` and `cngxIconButton` inside through `CNGX_BUTTON_GROUP`; a button's own input still wins (`input ?? group ?? config ?? default`). `tone` is not passed, intent is per button. A nested group without its own value inherits the outer group's.
+- **Toolbar.** A group whose direct children are groups is a toolbar: the sub-groups sit apart, the gap floored to `--cngx-target-gap` on a coarse pointer. One group child is enough, so a loose button next to sub-groups gets no segment geometry; wrap it in a group of its own.
+- **Separator.** `cngxButtonGroupSeparator` draws a divider that follows the orientation. It is decorative (`aria-hidden="true"`); when the split carries meaning, use two labelled groups.
+- **Addon.** `cngxButtonGroupAddon` gives non-interactive content (an avatar, an icon, a count, a short status) a segment of the group's size. It adds no role; its text is read in document order between the buttons.
+- **Geometry.** The segment geometry (collapsed seams, outer radius only, lifted hover and focus) ships in the `cngx.css` bundle (`cngx-button-group.css`), not on the directive.
+- **Selection** is not the group's job; use `CngxButtonToggleGroup` for pressed state.
+
 ## Opening a menu
 
 A button that opens a menu is its own button type: `button[cngxMenuButton]` in `@cngx/common/menu-button`. It renders on the same core as `cngxButton` (variant, tone, size, group, disabled, busy), adds the end caret, and wires the menu with two bindings:
