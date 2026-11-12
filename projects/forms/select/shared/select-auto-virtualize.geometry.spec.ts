@@ -244,4 +244,33 @@ describe('select auto virtualization at 44px rows', () => {
       style.remove();
     }
   });
+
+  // A floor on single rows is not the touch-target axis: that one arrives
+  // through the inherited tokens, so a per-row min-block-size must not count as
+  // a new row height when the window hands the measured node such a row.
+  it('keeps the scroll height and position when single rows carry their own min-block-size', async () => {
+    const style = document.createElement('style');
+    style.textContent = `.cngx-select__option[data-cngx-recycle-index$='5'] {
+      min-block-size: 90px;
+    }`;
+    document.head.appendChild(style);
+    try {
+      const { settle, scroller } = await mountTall();
+      const heights = new Set<number>();
+      const jumps: string[] = [];
+      for (let step = 1; step <= 40; step++) {
+        const target = step * 97;
+        scroller.scrollTop = target;
+        await settle();
+        heights.add(scroller.scrollHeight);
+        if (Math.abs(scroller.scrollTop - target) > 1) {
+          jumps.push(`${target} -> ${scroller.scrollTop}`);
+        }
+      }
+      expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(90);
+      expect(jumps).toEqual([]);
+    } finally {
+      style.remove();
+    }
+  });
 });
