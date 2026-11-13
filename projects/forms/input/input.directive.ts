@@ -5,6 +5,7 @@ import {
   HostAttributeToken,
   inject,
   input,
+  linkedSignal,
   signal,
 } from '@angular/core';
 import {
@@ -16,6 +17,16 @@ import {
   DEFAULT_NO_SPELLCHECK_FIELDS,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
+
+/** A field value that shows nothing in a text control. */
+function isEmptyValue(value: unknown): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    (Array.isArray(value) && value.length === 0)
+  );
+}
 
 /**
  * Applies ARIA attributes and focus tracking to a native input, textarea, or select
@@ -79,7 +90,16 @@ export class CngxInput implements CngxFormFieldControl {
   readonly id = computed(() => this.presenter?.inputId() ?? (this.el.nativeElement.id || ''));
   private readonly focusedState = signal(false);
   readonly focused = this.focusedState.asReadonly();
-  private readonly emptyState = signal(true);
+  /**
+   * Derived from the field value under a presenter, so a programmatic write
+   * or clear updates it at once; an `(input)` event overrides it until the
+   * field value changes again, which keeps an input that is not bound to the
+   * field (typing without `[formField]`) honest. `true` initially without a
+   * presenter.
+   */
+  private readonly emptyState = linkedSignal(() =>
+    isEmptyValue(this.presenter?.fieldState().value()),
+  );
   readonly empty = this.emptyState.asReadonly();
   readonly disabled = computed(() => this.presenter?.disabled() ?? false);
   readonly errorState = computed(() => this.presenter?.showError() ?? false);
