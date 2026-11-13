@@ -31,8 +31,9 @@ export interface CngxButtonState {
 /**
  * DI token every cngx button provides on its own host through
  * `CngxButtonBrain`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`,
- * `cngxMenuButton`, `cngxIconMenuButton` and `cngx-action-button`. A split
- * button reads its main action through it.
+ * `cngxMenuButton`, `cngxIconMenuButton`, `cngxActionButton`,
+ * `cngxPanelToggle`, `cngxPopoverAction`, `cngxPopoverDismiss` and any custom
+ * host of the brain. A split button reads its main action through it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
  * @since 0.1.0
