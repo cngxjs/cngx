@@ -240,10 +240,10 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 <cngx-sidenav-layout>
   <cngx-sidenav position="start" [(opened)]="navOpen" mode="side"
                 [resizable]="true" shortcut="mod+b" width="240px">
-    <cngx-sidenav-header>Workspace</cngx-sidenav-header>
+    <cngx-nav-header>Workspace</cngx-nav-header>
     <a cngxNavLink [active]="true">Dashboard</a>
     <a cngxNavLink>Settings</a>
-    <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
+    <cngx-nav-footer>v1.0</cngx-nav-footer>
   </cngx-sidenav>
   <cngx-sidenav-content>
     <router-outlet />
@@ -274,7 +274,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 **CngxSidenav signals:** `opened` (model), `expanded` (full nav shown), `widthClass`, `effectiveMode`, `resizing`, `isOverlay`
 **Methods:** `open()`, `close()`, `toggle()`
 
-**Slot components:** `CngxSidenavHeader`, `CngxSidenavFooter` (projected into named slots)
+**Slots:** `CngxNavHeader`, `CngxNavFooter` from `@cngx/common/interactive` (projected above and below the body; skinned by `cngx-nav.css`)
 **Layout:** `CngxSidenavLayout` (container, width class, backdrop), `CngxSidenavContent` (main area)
 
 **CSS Custom Properties:**
@@ -286,9 +286,9 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `--cngx-sidenav-bg` | M3 surface-container | Background |
 | `--cngx-sidenav-color` | M3 on-surface | Text color |
 | `--cngx-sidenav-border-color` | M3 outline-variant | Border color |
-| `--cngx-sidenav-padding` | density-dependent | Header/footer padding |
-| `--cngx-sidenav-header-bg` | M3 surface-container-low | Header background |
-| `--cngx-sidenav-footer-bg` | M3 surface-container-low | Footer background |
+| `--cngx-sidenav-padding` | density-dependent | Header/footer block padding |
+| `--cngx-nav-header-bg` | M3 surface-container-low | Header background (nav atom token) |
+| `--cngx-nav-footer-bg` | M3 surface-container-low | Footer background (nav atom token) |
 | `--cngx-sidenav-backdrop-bg` | M3 scrim | Backdrop color |
 | `--cngx-sidenav-backdrop-opacity` | `0.5` | Backdrop opacity |
 | `--cngx-sidenav-transition-duration` | `0.25s` | Animation duration |
@@ -296,16 +296,25 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `--cngx-sidenav-resize-handle-color` | M3 primary | Handle highlight color |
 | `--cngx-sidenav-expanded-shadow` | `4px 0 12px rgba(0,0,0,0.1)` | Mini expanded shadow |
 
-**Nav link theming** (applied inside sidenavs via `sidenav.theme()`):
+**Nav row theming** (links and `[cngxNavGroup]` heads inside `cngx-sidenav`; the state fills, indicator, inset and ring colours are SET on the `cngx-sidenav` host, `sidenav.theme()` maps them onto M3 roles):
 
 | Variable | Description |
 |-|-|
 | `--cngx-nav-link-color` | Default text color |
 | `--cngx-nav-link-hover-color` | Hover text color |
+| `--cngx-nav-link-hover-bg` | Hover fill (primary 6 % over transparent) |
+| `--cngx-nav-link-pressed-bg` | Pressed fill (primary 12 %) |
 | `--cngx-nav-link-active-color` | Active text color |
-| `--cngx-nav-link-active-bg` | Active background (M3 secondary-container) |
-| `--cngx-nav-link-radius` | Border radius (default 8px) |
-| `--cngx-nav-link-padding` | Padding (density-dependent) |
+| `--cngx-nav-link-active-bg` | Active fill (primary 16 %; M3 secondary-container in the bridge) |
+| `--cngx-nav-link-active-hover-bg` | Active row under the pointer (primary 22 %) |
+| `--cngx-nav-link-active-indicator-color` | Inline-start bar on the active row (`--cngx-color-primary-text`; `transparent` in the M3 bridge) |
+| `--cngx-nav-link-active-indicator-size` | Bar width (from `--cngx-space-xs`) |
+| `--cngx-nav-link-active-indicator-inset` | Bar block inset (from `--cngx-space-sm`) |
+| `--cngx-nav-link-inset` | Row inline inset from the rail edges (from `--cngx-space-xs`) |
+| `--cngx-nav-link-focus-outline-color` | Outer focus ring (`--cngx-color-text`) |
+| `--cngx-nav-link-focus-inner-color` | Inner focus ring (`--cngx-sidenav-bg`) |
+| `--cngx-nav-link-radius` | Border radius (default 4px, 8px in the M3 bridge) |
+| `--cngx-nav-link-padding` | Padding (from `--cngx-space-sm` / `--cngx-space-md`) |
 
 **Animated nav group expand/collapse:**
 
@@ -326,6 +335,32 @@ links leave the tab order and the accessibility tree. Do not set the classes by 
 ```
 
 **Material theme:** `@use '@cngx/themes/material/sidenav-theme'` - includes nav-link theme automatically
+
+### CngxNavRail (`@cngx/ui/nav-rail`)
+
+A narrow, always-collapsed column of nav rows for apps whose primary
+navigation never expands. Reach for `CngxSidenav` when the same navigation
+also opens to full width. The rows are the nav atoms of
+`@cngx/common/interactive`; the rail only sets their tokens and its width.
+
+```html
+<cngx-nav-rail labelPlacement="below">
+  <a cngxNavLink routerLink="/inbox">
+    <cngx-icon cngxNavIcon><mat-icon>inbox</mat-icon></cngx-icon>
+    Inbox
+  </a>
+</cngx-nav-rail>
+```
+
+**Inputs:** `labelPlacement` (`'end'`: icon only with a tooltip, default;
+`'below'`: icon over a short label), `ariaLabel` (unbound, the `navRail`
+language-pack copy names the landmark).
+**Slots:** `cngx-nav-header` / `[cngxNavHeader]` above the rows,
+`cngx-nav-footer` / `[cngxNavFooter]` below them.
+A nav group opens as a flyout beside its head; `aria-expanded` stays the one
+state. See `projects/ui/nav-rail/README.md`.
+
+**Material theme:** `@use '@cngx/themes/material/nav-rail-theme'` - rail surface, flyout and the rows
 
 ### CngxToc (`@cngx/ui/toc`)
 

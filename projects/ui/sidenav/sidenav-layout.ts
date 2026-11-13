@@ -49,7 +49,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-layout.ts
  * @since 0.1.0
- * @relatedTo CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
+ * @relatedTo CngxSidenav, CngxSidenavContent, CngxNavHeader, CngxNavFooter
  */
 @Component({
   selector: 'cngx-sidenav-layout',

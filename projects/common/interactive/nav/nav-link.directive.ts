@@ -1,29 +1,15 @@
 import {
   afterNextRender,
-  computed,
+  afterRenderEffect,
   Directive,
-  effect,
   ElementRef,
   inject,
   input,
   signal,
 } from '@angular/core';
-import { injectLocale, memoize } from '@cngx/core/utils';
 
 import { CNGX_NAV_CONFIG } from './nav-config';
-
-const graphemeSegmenterFor = memoize(
-  (locale: string) => new Intl.Segmenter(locale, { granularity: 'grapheme' }),
-  { cacheLimit: 8 },
-);
-
-/** @internal The first user-perceived character: `é` built from `e` + accent, a flag, an emoji. */
-function firstGrapheme(text: string, locale: string): string {
-  if (typeof Intl.Segmenter !== 'function') {
-    return Array.from(text)[0] ?? '';
-  }
-  return graphemeSegmenterFor(locale).segment(text)[Symbol.iterator]().next().value?.segment ?? '';
-}
+import { injectNavInitial } from './nav-initial';
 
 /**
  * Navigation link atom. Applied to `<a>` or `<button>` elements in a
@@ -100,40 +86,24 @@ export class CngxNavLink {
   readonly needsFocusFix = signal(false);
 
   private readonly initialized = signal(false);
-  private readonly locale = injectLocale();
-  /** Link text read after the first render; `null` when the consumer set `data-initial`. */
-  private readonly initialSource = signal<string | null>(null);
-  /** First character of the link text, uppercased with the app locale. */
-  private readonly initial = computed(() => {
-    const text = this.initialSource();
-    const locale = this.locale();
-    return text ? firstGrapheme(text, locale).toLocaleUpperCase(locale) : null;
-  });
 
   constructor() {
     const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+    injectNavInitial(el);
 
     afterNextRender(() => {
       if (el.tagName === 'A') {
         this.needsFocusFix.set(!el.hasAttribute('href'));
       }
-      const text = el.textContent?.trim();
-      if (text && !Object.hasOwn(el.dataset, 'initial')) {
-        this.initialSource.set(text);
-      }
       this.initialized.set(true);
     });
 
-    effect(() => {
-      const initial = this.initial();
-      if (initial) {
-        el.dataset['initial'] = initial;
-      }
-    });
-
     // Scroll into view when becoming active (e.g., after route change).
-    // Skips the initial render to avoid scroll jank on page load.
-    effect(() => {
+    // Skips the initial render to avoid scroll jank on page load. After render,
+    // not in a plain effect: scrollIntoView forces a style pass, and inside
+    // change detection that pass sees rows whose classes are not bound yet, so
+    // their colour transitions start from the wrong state and flash.
+    afterRenderEffect(() => {
       if (!this.initialized() || !this.active() || !this.scrollOnActive()) {
         return;
       }

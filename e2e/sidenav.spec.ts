@@ -2,7 +2,16 @@ import { expect, test } from '@playwright/test';
 
 test.describe('CngxSidenav layout regressions', () => {
   test('rail body does not overflow a non-default-width rail (side mode)', async ({ page }) => {
+    // The story binds no mode: only the expanded width class docks the full
+    // rail with its group heads, so pin a wide viewport and check for it.
+    await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+    await expect(page.locator('cngx-sidenav').first()).toHaveAttribute(
+      'data-sidebar-state',
+      'expanded',
+    );
+    // An open overlay drawer also reports expanded; only a docked rail is side.
+    await expect(page.locator('cngx-sidenav').first()).toHaveClass(/cngx-sidenav--side/);
     const nav = page.locator('cngx-sidenav').first();
     const body = nav.locator('.cngx-sidenav__body');
     await expect(nav).toBeVisible();
@@ -41,7 +50,16 @@ test.describe('CngxSidenav layout regressions', () => {
   });
 
   test('Tab skips the links of a collapsed animated nav group', async ({ page }) => {
+    // The story binds no mode: only the expanded width class docks the full
+    // rail with its group heads, so pin a wide viewport and check for it.
+    await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+    await expect(page.locator('cngx-sidenav').first()).toHaveAttribute(
+      'data-sidebar-state',
+      'expanded',
+    );
+    // An open overlay drawer also reports expanded; only a docked rail is side.
+    await expect(page.locator('cngx-sidenav').first()).toHaveClass(/cngx-sidenav--side/);
     const team = page.getByRole('button', { name: 'Team' });
     const members = page.locator('#team-items').getByText('Members');
     await expect(team).toHaveAttribute('aria-expanded', 'false');
@@ -62,7 +80,16 @@ test.describe('CngxSidenav layout regressions', () => {
   });
 
   test('a nav group closing around focus hands focus to its trigger', async ({ page }) => {
+    // The story binds no mode: only the expanded width class docks the full
+    // rail with its group heads, so pin a wide viewport and check for it.
+    await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+    await expect(page.locator('cngx-sidenav').first()).toHaveAttribute(
+      'data-sidebar-state',
+      'expanded',
+    );
+    // An open overlay drawer also reports expanded; only a docked rail is side.
+    await expect(page.locator('cngx-sidenav').first()).toHaveClass(/cngx-sidenav--side/);
     const team = page.getByRole('button', { name: 'Team' });
     const members = page.locator('#team-items').getByText('Members');
 

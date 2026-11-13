@@ -362,6 +362,12 @@ export const COPY_TOKENS = [
     settingsKeys: [],
   },
   {
+    token: 'CNGX_NAV_RAIL_I18N',
+    kind: 'dedicated',
+    copyKeys: '*',
+    settingsKeys: [],
+  },
+  {
     token: 'CNGX_COMMAND_PALETTE_CONFIG',
     kind: 'config',
     copyKeys: [
@@ -545,6 +551,9 @@ export const SETTINGS_TOKENS = [
   'CNGX_MENU_SUBMENU_WIRING',
   'CNGX_MOTION',
   'CNGX_NAV_CONFIG',
+  'CNGX_NAV_RAIL_CONFIG',
+  'CNGX_NAV_RAIL_FLYOUT_FACTORY',
+  'CNGX_NAV_RAIL_TOOLTIP_FACTORY',
   'CNGX_NESTED_INTERACTIVE_SELECTOR',
   'CNGX_OPTION_CONTAINER',
   'CNGX_OPTION_FILTER_HOST',

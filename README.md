@@ -145,9 +145,9 @@ Data-display organisms.
 
 ### `@cngx/ui` - Level 4
 
-Mostly self-contained organisms across 26 entries. Peer-deps: `@angular/cdk`, `@angular/common`, `@angular/core` only.
+Mostly self-contained organisms across 27 entries. Peer-deps: `@angular/cdk`, `@angular/common`, `@angular/core` only.
 
-- Pure cngx: `action-button`, `empty-state`, `feedback`, `layout`, `skeleton`, `speak`, `stepper`, `tabs`.
+- Pure cngx: `action-button`, `empty-state`, `feedback`, `layout`, `nav-rail`, `skeleton`, `speak`, `stepper`, `tabs`.
 - `feedback` ships toasts, banners, alerts via `provideFeedback(...)`.
 - Two entries use `@angular/cdk`: `overlay` runs on `cdk/overlay` + `cdk/portal` as its engine, `sidenav` takes its focus trap from `cdk/a11y`.
 - Four Material opt-ins: `mat-accordion`, `mat-paginator`, `mat-stepper`, `mat-tabs`.

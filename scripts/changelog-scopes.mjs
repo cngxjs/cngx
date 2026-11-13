@@ -64,6 +64,7 @@ export const LIBRARY_SCOPES = [
   'ui/data-grid-accordion',
   'ui/breadcrumb',
   'ui/sidenav',
+  'ui/nav-rail',
   'ui/skeleton',
   'ui/speak',
   'ui/action-button',

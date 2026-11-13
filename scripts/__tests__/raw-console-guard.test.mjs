@@ -104,6 +104,7 @@ const EXPECTED_DEV_WRAPPERS = [
   'projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts#warnRegistration',
   'projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts#warnTie',
   'projects/common/interactive/menu/menu-item-submenu.directive.ts#warnMissingSubmenuFallbacks',
+  'projects/common/interactive/nav/nav-badge.directive.ts#warnUnlabelledDot',
   'projects/common/interactive/reorder/reorder.directive.ts#wireDevModeCheck',
   'projects/common/layout/router/warn-router-absent.ts#warnRouterAbsent',
   'projects/common/tabs/router-absent-warning.ts#warnTabsRouterAbsent',

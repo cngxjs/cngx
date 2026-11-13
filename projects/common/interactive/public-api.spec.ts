@@ -11,4 +11,14 @@ describe('@cngx/common/interactive public API shape', () => {
       animationDuration: 150,
     });
   });
+
+  it('exports the nav icon slot', () => {
+    expect(typeof api.CngxNavIcon).toBe('function');
+  });
+
+  it('exports the nav header, footer, mark and name slots', () => {
+    for (const slot of [api.CngxNavHeader, api.CngxNavFooter, api.CngxNavMark, api.CngxNavName]) {
+      expect(typeof slot).toBe('function');
+    }
+  });
 });

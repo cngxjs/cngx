@@ -13,6 +13,7 @@
     "command-palette/**/*.spec.ts",
     "action-button/**/*.spec.ts",
     "sidenav/**/*.spec.ts",
+    "nav-rail/**/*.spec.ts",
     "skeleton/**/*.spec.ts",
     "speak/**/*.spec.ts",
     "layout/**/*.spec.ts",

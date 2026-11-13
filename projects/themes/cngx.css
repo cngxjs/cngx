@@ -21,7 +21,9 @@
  *   `CngxAsync`, `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
  *   `CngxBreadcrumb`, `CngxButtonToggle`, the data-grid family,
  *   `CngxDialog`, `CngxDivider`, `CngxListbox`,
- *   `CngxMenu`, `CngxRipple`, `CngxSlider`, `CngxTooltip`,
+ *   `CngxMenu`, the nav atoms (`CngxNavLink`, `CngxNavGroup`,
+ *   `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
+ *   `CngxNavFooter`, `CngxNavMark`, `CngxNavName`), `CngxRipple`, `CngxSlider`, `CngxTooltip`,
  *   `CngxFileDrop`, the field-affix atoms)
  * - `cngx.theme` - reserved for consumer overrides
  * - `app` - reserved for consumer selectors
@@ -107,6 +109,7 @@
 @import '../common/theming/components/cngx-icon-glyph.css';
 @import '../common/theming/components/cngx-listbox.css';
 @import '../common/theming/components/cngx-menu.css';
+@import '../common/theming/components/cngx-nav.css';
 @import '../common/theming/components/cngx-popover.css';
 @import '../common/theming/components/cngx-popover-sheet.css';
 @import '../common/theming/components/cngx-recycler-placeholder.css';

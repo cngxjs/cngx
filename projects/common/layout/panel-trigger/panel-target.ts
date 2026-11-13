@@ -28,8 +28,17 @@ export type CngxPanelSide = 'start' | 'end' | 'left' | 'right' | 'top' | 'bottom
 export interface CngxPanelTarget {
   /** The `id` of the panel element; the trigger's `aria-controls`. */
   readonly id: Signal<string>;
-  /** Whether the panel is shown; the trigger's `aria-expanded`. */
+  /**
+   * Whether the panel is shown (a peek included); the trigger's
+   * `aria-expanded` unless `peeked`.
+   */
   readonly expanded: Signal<boolean>;
+  /**
+   * Whether the panel shows only temporarily over its resting state.
+   * Optional; unset reads as `false`. A trigger does not report a peek as
+   * expanded.
+   */
+  readonly peeked?: Signal<boolean>;
   /** Opens a hidden panel, hides an open one. */
   toggle(): void;
   /** Shows the panel temporarily without changing its resting state. Optional. */

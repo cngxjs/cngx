@@ -62,6 +62,18 @@ describe('CngxNavLink', () => {
     expect(el.classList.contains('cngx-nav-link--active')).toBe(true);
   });
 
+  it('scrolls into view only after render, once the active class is bound', async () => {
+    const { fixture, el, host } = setup();
+    await fixture.whenStable();
+    const classAtScroll: boolean[] = [];
+    el.scrollIntoView = () => {
+      classAtScroll.push(el.classList.contains('cngx-nav-link--active'));
+    };
+    host.active.set(true);
+    await fixture.whenStable();
+    expect(classAtScroll).toEqual([true]);
+  });
+
   it('sets --cngx-nav-depth CSS variable', () => {
     const { fixture, el, host } = setup();
     expect(el.style.getPropertyValue('--cngx-nav-depth')).toBe('0');

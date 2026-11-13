@@ -354,6 +354,10 @@ export const CNGX_LANGUAGE_EN = {
     splitToggle: 'More options',
     splitMainBusy: 'The main action is running',
   },
+  navRail: {
+    ariaLabel: 'Navigation',
+    endAriaLabel: 'Secondary navigation',
+  },
   paginator: {
     label: 'Pagination',
     first: 'First page',
