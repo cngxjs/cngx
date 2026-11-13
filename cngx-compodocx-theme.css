@@ -677,7 +677,7 @@ code.cdx-shiki-inline {
 .cdx-section-heading,
 [data-compodoc^='block-'] > h3,
 .cdx-overview-section-heading {
-  font-size: 15px;
+  font-size: 17px;
 }
 
 /* The playground tab shows only the launch button: the source snippet is
