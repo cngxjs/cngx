@@ -16,7 +16,7 @@ import {
   type CngxFormFieldControl,
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
-import { coerceSignal } from '@cngx/core/utils';
+import { coerceSignal, createKeyedRegistry, nextUid } from '@cngx/core/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import { CNGX_FIELD_AFFIX } from './field-box.token';
@@ -151,6 +151,19 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
 
   /** Deterministic hint element ID: `cngx-{name}-hint`. */
   readonly hintId = computed(() => `cngx-${this.name()}-hint`);
+
+  private readonly hints = createKeyedRegistry<object>({ name: 'CngxFormFieldPresenter hints' });
+
+  /**
+   * @internal Called by each `CngxHint` on creation; the returned release
+   * runs on its destroy. The hint id is referenced only while one is
+   * registered.
+   */
+  registerHint(hint: object): () => void {
+    const key = nextUid('cngx-hint');
+    this.hints.register(key, hint);
+    return () => this.hints.unregister(key, hint);
+  }
   /** Deterministic error element ID: `cngx-{name}-error`. */
   readonly errorId = computed(() => `cngx-${this.name()}-error`);
 
@@ -175,8 +188,8 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   /**
    * Space-separated `aria-describedby` target list for the field's input.
    *
-   * The hint ID is always present; the error ID is emitted only while
-   * {@link showError} is true, the disabled-reason ID only while
+   * The hint ID is emitted only while a `CngxHint` is rendered, the error ID
+   * only while {@link showError} is true, the disabled-reason ID only while
    * {@link disabledReasonText} is non-empty. A directly-referenced node
    * contributes to the accessible description even when it is hidden
    * (accname 1.2 §2A), so the reference itself is the gate - the containers
@@ -184,7 +197,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    */
   readonly describedBy = computed(() =>
     [
-      this.hintId(),
+      this.hints.values().length > 0 ? this.hintId() : null,
       this.showError() ? this.errorId() : null,
       this.disabledReasonText() ? this.disabledReasonId() : null,
     ]

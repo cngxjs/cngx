@@ -21,6 +21,7 @@ import { adaptFormControl } from './form-control-adapter';
 import { CngxFormErrors } from './form-errors.component';
 import { CngxFormField } from './form-field.component';
 import { CNGX_FORM_FIELD_REVEAL } from './form-field.token';
+import { CngxHint } from './hint.directive';
 import { CngxLabel } from './label.component';
 import { CngxListboxFieldBridge } from './listbox-field-bridge.directive';
 import { CngxRangeSliderFieldBridge } from './range-slider-field-bridge.directive';
@@ -374,5 +375,40 @@ describe('field integration - disabled reason', () => {
     flush(fixture);
     expect(input.getAttribute('aria-describedby') ?? '').not.toContain(reasonId);
     expect(document.getElementById(reasonId)).not.toBeNull();
+  });
+});
+
+describe('field integration - hint reference', () => {
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.name">
+        <label cngxLabel>Name</label>
+        <input cngxInput [formField]="f.name" />
+        @if (withHint()) {
+          <span cngxHint>As on your passport</span>
+        }
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxLabel, CngxInput, CngxHint, FormField],
+  })
+  class HintHost {
+    readonly withHint = signal(false);
+    readonly f = form(signal({ name: '' }));
+  }
+
+  it('references the hint id only while a hint is rendered', () => {
+    const { fixture, host, el } = mount(HintHost);
+    const input = el.querySelector('input')!;
+    const hintId = input.id.replace(/-input$/, '-hint');
+    expect(input.getAttribute('aria-describedby') ?? '').not.toContain(hintId);
+
+    host.withHint.set(true);
+    flush(fixture);
+    expect(document.getElementById(hintId)).not.toBeNull();
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toContain(hintId);
+
+    host.withHint.set(false);
+    flush(fixture);
+    expect(input.getAttribute('aria-describedby') ?? '').not.toContain(hintId);
   });
 });
