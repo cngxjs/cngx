@@ -2,12 +2,20 @@
 
 `CngxSidebar` is the brain of a persistent side region. Unlike a drawer, which opens over or beside the content for a moment, a sidebar stays in the layout and reserves inline space. It collapses to a narrow rail or out of the layout, and a collapsed sidebar can peek at full size over the content without reflowing it.
 
-The directive owns state, ARIA and the reserved size. It knows no nav model and no rail representation: what the rail shows is up to the consumer.
+The directive owns state, ARIA and the reserved size. The class `cngx-sidebar` adds the base skin from `@cngx/themes/cngx.css`: surface, border toward the content, sticky nav header and footer, peek shadow, and a rail that crops the nav rows instead of swapping them.
 
 ## Import
 
 ```typescript
 import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';
+import {
+  CngxNavFooter,
+  CngxNavHeader,
+  CngxNavIcon,
+  CngxNavLink,
+  CngxNavName,
+  CngxNavRailed,
+} from '@cngx/common/interactive';
 ```
 
 ## Quick start
@@ -15,24 +23,31 @@ import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';
 ```html
 <button type="button" [cngxPanelToggle]="sidebar" label="Navigation"></button>
 
-<div class="shell">
-  <nav cngxSidebar #sidebar="cngxSidebar" [(collapsed)]="collapsed" [role]="null">
-    <a href="/inbox">
-      <cngx-icon name="inbox" />
-      @if (sidebar.expanded()) { <span>Inbox</span> }
-    </a>
+<cngx-stack direction="row" gap="none">
+  <nav
+    cngxSidebar
+    #sidebar="cngxSidebar"
+    class="cngx-sidebar"
+    [(collapsed)]="collapsed"
+    [role]="null"
+    [cngxNavRailed]="sidebar.state() === 'rail'"
+    [cngxNavRailedSide]="sidebar.side()"
+  >
+    <cngx-nav-header><span cngxNavName>Acme</span></cngx-nav-header>
+    <a cngxNavLink routerLink="/inbox"><cngx-icon cngxNavIcon><mat-icon>inbox</mat-icon></cngx-icon>Inbox</a>
+    <cngx-nav-footer><span cngxNavName>Jane Doe</span></cngx-nav-footer>
   </nav>
   <main>…</main>
-</div>
+</cngx-stack>
 ```
 
-```css
-.shell {
-  display: flex;
-}
-```
+The host is a flex item: its `inline-size` is set from the state, so the sibling content lane follows. The page shell, here a `cngx-stack` row, is yours.
 
-The host is a flex item: its `inline-size` is set from the state, so the sibling content lane follows.
+## Rail
+
+On the rail the skin crops the expanded sidebar: rows and group heads keep their place and clip their label, a row without an icon shows its first letter (`cngx-nav.css`), section labels paint nothing and the header and footer name fades out. Nothing is removed from the accessibility tree.
+
+`[cngxNavRailed]` from `@cngx/common/interactive` adds the rail tooltip (the clipped label on focus and hover) and shows an open nav group as a flyout. Without it, a group head on the rail still opens, but its content shows inline at rail width.
 
 ## States
 
@@ -77,4 +92,13 @@ A collapsed rail stays operable: nothing in it is made `inert`.
 | `--cngx-sidebar-rail-size` | `3.5rem` | Rail size. |
 | `--cngx-sidebar-peek-z-index` | `2` | Stacking of the peeked host over the content. |
 
-Set them on the host or any ancestor. Skins key off `[data-sidebar-state]`.
+Base skin tokens (`cngx-sidebar.css`, opt-in with `class="cngx-sidebar"`):
+
+| Custom property | Default | Purpose |
+|-|-|-|
+| `--cngx-sidebar-bg` | `--cngx-color-surface-alt` | Surface, also behind the sticky header and footer. |
+| `--cngx-sidebar-border-color` | `--cngx-color-border` | Border on the side facing the content. |
+| `--cngx-sidebar-border-width` | `1px` | Width of that border. |
+| `--cngx-sidebar-peek-shadow` | `--cngx-shadow-md` | Shadow of a peek over the content. |
+
+Set them on the host or any ancestor. Skins key off `[data-sidebar-state]` and `[data-sidebar-side]`.

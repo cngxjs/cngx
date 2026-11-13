@@ -103,12 +103,15 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
  * Sizes are tokens with fallbacks: `--cngx-sidebar-size` (expanded, default
  * `16rem`) and `--cngx-sidebar-rail-size` (default `3.5rem`), plus
  * `--cngx-sidebar-peek-z-index`. The host renders `data-sidebar-state`
- * (`expanded | rail | hidden | peek`) for skins.
+ * (`expanded | rail | hidden | peek`) and `data-sidebar-side` for skins.
+ * The base skin is opt-in with the `cngx-sidebar` class (`cngx-sidebar.css`
+ * in `@cngx/themes/cngx.css`): surface, border, sticky nav header and
+ * footer, peek shadow and the rail crop of nav rows.
  *
  * The sidebar is a `CngxPanelTarget` and provides `CNGX_PANEL_TARGET`: a
  * `[cngxPanelTrigger]="sidebar"` mirrors `expanded` and toggles `collapsed`;
- * `action="peek"` peeks. It knows neither a nav model nor a rail
- * representation; what the rail shows is the consumer's.
+ * `action="peek"` peeks. It knows no nav model; `[cngxNavRailed]` adds the
+ * rail tooltip and group flyout to the nav rows inside it.
  *
  * ```html
  * <button type="button" [cngxPanelTrigger]="sidebar"></button>
@@ -144,6 +147,7 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
     '[attr.inert]': "concealed() ? '' : null",
     '[attr.aria-hidden]': "concealed() ? 'true' : null",
     '[attr.data-sidebar-state]': 'state()',
+    '[attr.data-sidebar-side]': 'side()',
     '[style.inline-size]': 'inlineSize()',
     '[style.margin-inline-end]': "side() === 'start' ? peekOffset() : null",
     '[style.margin-inline-start]': "side() === 'end' ? peekOffset() : null",

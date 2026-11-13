@@ -1,0 +1,109 @@
+/**
+ * @overview
+ * Base skin for `CngxSidebar`. Opt-in: add the `.cngx-sidebar` class
+ * alongside `[cngxSidebar]`. The class, not the attribute, keeps the skin
+ * out of `cngx-sidenav`, which composes `CngxSidebar` as a host directive
+ * and ships its own stylesheet.
+ *
+ * The host becomes a scrolling flex column on a surface with a border on
+ * the side facing the content (`data-sidebar-side`, written by the
+ * directive). A `cngx-nav-header` sticks to the block start, a
+ * `cngx-nav-footer` to the block end, so both stay in view while the rows
+ * between them scroll. A peek paints a shadow over the content.
+ *
+ * On the rail (`data-sidebar-state='rail'`) the sidebar is a crop of its
+ * expanded self: rows and group heads keep their place and push their label
+ * past the clipped row end with a gap of the whole rail width, section
+ * labels paint nothing, and the header and footer name fades out. The icon
+ * or letter (`cngx-nav.css`) stays in the icon box. Rows inside a group
+ * content are left alone, so a flyout shows them at full width. Tooltip and
+ * flyout on the rail come from `[cngxNavRailed]`.
+ *
+ * The page shell around the sidebar (a flex row with the content lane) is
+ * the consumer's.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-sidebar-bg` -> `--cngx-color-surface-alt`
+ * - `--cngx-sidebar-border-color` -> `--cngx-color-border`
+ * - `--cngx-sidebar-border-width` -> `1px`
+ * - `--cngx-sidebar-peek-shadow` -> `--cngx-shadow-md`
+ * - `--cngx-sidebar-rail-size` (the directive's rail size, `3.5rem`) sets
+ *   the label push on the rail
+ *
+ * @themes CngxSidebar
+ */
+
+@layer cngx.components {
+  @scope (.cngx-sidebar) {
+    :scope {
+      /* Functional - a flex column that scrolls between header and footer */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex: none;
+      box-sizing: border-box;
+      min-block-size: 0;
+      overflow-x: clip;
+      overflow-y: auto;
+
+      /* Themable - token-driven */
+      background: var(--cngx-sidebar-bg, var(--cngx-color-surface-alt, oklch(0.98 0 0)));
+    }
+
+    :scope[data-sidebar-side='start'] {
+      border-inline-end: var(--cngx-sidebar-border-width, 1px) solid
+        var(--cngx-sidebar-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+    }
+
+    :scope[data-sidebar-side='end'] {
+      border-inline-start: var(--cngx-sidebar-border-width, 1px) solid
+        var(--cngx-sidebar-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+    }
+
+    :scope[data-sidebar-state='peek'] {
+      box-shadow: var(--cngx-sidebar-peek-shadow, var(--cngx-shadow-md, 0 4px 16px oklch(0 0 0 / 0.12)));
+    }
+
+    /* Header and footer stay in view; the rows scroll under them. */
+    .cngx-nav-header,
+    .cngx-nav-footer {
+      position: sticky;
+      z-index: 1;
+      --cngx-nav-header-bg: var(--cngx-sidebar-bg, var(--cngx-color-surface-alt, oklch(0.98 0 0)));
+      --cngx-nav-footer-bg: var(--cngx-sidebar-bg, var(--cngx-color-surface-alt, oklch(0.98 0 0)));
+    }
+
+    .cngx-nav-header {
+      inset-block-start: 0;
+    }
+
+    .cngx-nav-footer {
+      inset-block-end: 0;
+      margin-block-start: auto;
+    }
+
+    /* Rail: a crop of the expanded sidebar, nothing moves. */
+    :scope[data-sidebar-state='rail']
+      :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
+      overflow: clip;
+      white-space: nowrap;
+      gap: var(--cngx-sidebar-rail-size, 3.5rem);
+    }
+
+    :scope[data-sidebar-state='rail'] [cngxNavLabel] {
+      overflow: clip;
+      white-space: nowrap;
+      clip-path: inset(100%);
+    }
+
+    :scope[data-sidebar-state='rail'] :is(.cngx-nav-header, .cngx-nav-footer) {
+      overflow: clip;
+      white-space: nowrap;
+    }
+
+    :scope[data-sidebar-state='rail'] :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
+      opacity: 0;
+    }
+  }
+}
