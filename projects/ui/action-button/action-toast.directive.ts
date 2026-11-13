@@ -40,7 +40,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-toast.directive.ts
  * @since 0.1.0
- * @relatedTo CngxActionButton, CngxActionStatusBrain, CNGX_ANNOUNCEMENT_COVER, CngxToaster
+ * @relatedTo CngxActionButton, CngxActionStatusBrain, CNGX_ANNOUNCEMENT_COVER, CngxToaster, CngxToastOn, withToasts, provideToasts, withErrorDetail, CNGX_ACTION_STATUS
  * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
  * @axis level molecule
  */
