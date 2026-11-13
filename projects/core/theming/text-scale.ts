@@ -1,9 +1,6 @@
-import {
-  InjectionToken,
-  signal,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -31,11 +28,25 @@ export const CNGX_TEXT_SCALE = new InjectionToken<WritableSignal<CngxTextScaleVa
   'CNGX_TEXT_SCALE',
   {
     providedIn: 'root',
-    factory: () => signal<CngxTextScaleValue>('md'),
+    factory: (): WritableSignal<CngxTextScaleValue> => textScaleAxis.unprovided('md'),
   },
 );
 
 const textScaleAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideTextScale() in a child injector does not write <html data-text-size> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideTextScale() is not installed, so this write changes the signal but not <html data-text-size>; call it in the application config.',
+    ),
   token: CNGX_TEXT_SCALE,
   attribute: 'data-text-size',
 });

@@ -1,9 +1,6 @@
-import {
-  InjectionToken,
-  signal,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -28,10 +25,24 @@ export type CngxDensityValue = 'comfortable' | 'compact' | 'spacious';
  */
 export const CNGX_DENSITY = new InjectionToken<WritableSignal<CngxDensityValue>>('CNGX_DENSITY', {
   providedIn: 'root',
-  factory: () => signal<CngxDensityValue>('comfortable'),
+  factory: (): WritableSignal<CngxDensityValue> => densityAxis.unprovided('comfortable'),
 });
 
 const densityAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideDensity() in a child injector does not write <html data-density> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideDensity() is not installed, so this write changes the signal but not <html data-density>; call it in the application config.',
+    ),
   token: CNGX_DENSITY,
   attribute: 'data-density',
 });

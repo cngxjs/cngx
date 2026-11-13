@@ -25,6 +25,7 @@ import { provideButtonCloseIcon } from './close-button.component';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
+ * @relatedTo withButtonCloseIcon, provideCngxButton
  */
 export interface CngxButtonCloseIconFeature {
   readonly _target: 'closeIcon';
@@ -37,6 +38,7 @@ export interface CngxButtonCloseIconFeature {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
+ * @relatedTo withButtonSpinner, provideCngxButton
  */
 export interface CngxButtonSpinnerFeature {
   readonly _target: 'spinner';
@@ -49,6 +51,10 @@ export interface CngxButtonSpinnerFeature {
  * `withButtonSize` helpers), the close glyph, the busy glyph and the action
  * status defaults (`withActionStatusLabels` / `withActionStatusTemplates`
  * from `@cngx/common/interactive`).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
+ * @since 0.1.0
+ * @relatedTo provideCngxButton, provideCngxButtonAt
  */
 export type CngxButtonFeature =
   | CngxButtonConfigFeature
@@ -140,17 +146,19 @@ function partitionFeatures(
 }
 
 /**
- * Unified aggregator for the button family. Filters by `_target` and
- * forwards: config features to {@link provideButtonConfig}, the close glyph
- * to {@link provideButtonCloseIcon}, the busy glyph to
- * {@link provideButtonSpinner}, the action status features to
- * `provideActionStatusConfig` (`@cngx/common/interactive`). Mirrors `provideCngxStepper` /
- * `provideCngxTabs`. The menu buttons have their own,
- * `provideCngxMenuButton` in `@cngx/common/menu-button`.
+ * One provider for the whole button family. It routes each feature by its `_target`:
  *
- * Returns {@link EnvironmentProviders} for app-root use; the
- * component-scoped twin {@link provideCngxButtonAt} returns `Provider[]`
- * because `viewProviders` cannot accept opaque `EnvironmentProviders`.
+ * - config features to {@link provideButtonConfig}
+ * - the close glyph to {@link provideButtonCloseIcon}
+ * - the busy glyph to {@link provideButtonSpinner}
+ * - the action status features to `provideActionStatusConfig` (`@cngx/common/interactive`)
+ *
+ * A feature without a `_target` is dropped with [`CNGX1041`](/error-codes/cngx1041.md) in
+ * development. The menu buttons have their own provider, `provideCngxMenuButton` in
+ * `@cngx/common/menu-button`.
+ *
+ * Returns {@link EnvironmentProviders} for the app root. Use {@link provideCngxButtonAt} in
+ * `viewProviders`, which cannot take `EnvironmentProviders`.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -167,7 +175,7 @@ function partitionFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner, provideActionStatusConfig
+ * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner, provideActionStatusConfig, withButtonVariant, withButtonCloseIcon, withButtonSpinner
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButton(...features: readonly CngxButtonFeature[]): EnvironmentProviders {
@@ -194,7 +202,7 @@ export function provideCngxButton(...features: readonly CngxButtonFeature[]): En
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButton, provideButtonConfigAt, provideActionStatusConfigAt
+ * @relatedTo provideCngxButton, provideButtonConfigAt, provideActionStatusConfigAt, withButtonVariant, withButtonCloseIcon, withButtonSpinner
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButtonAt(...features: readonly CngxButtonFeature[]): Provider[] {

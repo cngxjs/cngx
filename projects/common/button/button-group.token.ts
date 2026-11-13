@@ -5,6 +5,10 @@ import type { CngxButtonSize, CngxButtonVariant } from './button.types';
 /**
  * Contract a button group exposes to the buttons inside it. A child's own
  * input still wins; an `undefined` group value falls through to the config.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.token.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_BUTTON_GROUP, CngxButtonGroup
  */
 export interface CngxButtonGroupContext {
   /** Emphasis the group hands to its children. */
@@ -19,6 +23,6 @@ export interface CngxButtonGroupContext {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.token.ts
  * @since 0.1.0
- * @relatedTo CngxButton
+ * @relatedTo CngxButton, CngxButtonGroup, CngxButtonGroupAddon, CngxButtonBrain
  */
 export const CNGX_BUTTON_GROUP = new InjectionToken<CngxButtonGroupContext>('CngxButtonGroup');

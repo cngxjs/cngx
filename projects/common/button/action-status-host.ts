@@ -38,7 +38,7 @@ import { CNGX_BUTTON_HOST_STATE, type CngxButtonHostState } from './button-host.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/action-status-host.ts
  * @since 0.1.0
- * @relatedTo provideButtonHost, CngxButtonBrain, CngxActionStatusBrain, CNGX_ACTION_STATUS, CNGX_BUTTON_HOST_STATE
+ * @relatedTo provideButtonHost, CngxButtonBrain, CngxActionStatusBrain, CNGX_ACTION_STATUS, CNGX_BUTTON_HOST_STATE, CngxActionButton
  */
 export function provideActionStatusHost(): Provider[] {
   return [

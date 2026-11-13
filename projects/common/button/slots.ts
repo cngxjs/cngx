@@ -6,12 +6,15 @@ import { Directive } from '@angular/core';
  * font size; a filled start slot trims the inline-start padding.
  *
  * ```html
- * <button cngxButton><cngx-icon cngxButtonStart name="save" /> Save</button>
+ * <button cngxButton>
+ *   <svg cngxButtonStart aria-hidden="true" viewBox="0 0 24 24">...</svg>
+ *   Save
+ * </button>
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxButtonEnd
+ * @relatedTo CngxButton, CngxButtonEnd, CngxMenuButton
  * <example-url>/#/common/button/button/start-and-end-slots</example-url>
  */
 @Directive({
@@ -32,7 +35,7 @@ export class CngxButtonStart {}
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxButtonStart
+ * @relatedTo CngxButton, CngxButtonStart, CngxMenuButton
  * <example-url>/#/common/button/button/start-and-end-slots</example-url>
  */
 @Directive({

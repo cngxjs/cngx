@@ -15,18 +15,20 @@ import {
 import { cngxDevWarn } from '@cngx/utils';
 
 /**
- * Per-outcome toasts for an action host on `CngxActionStatusBrain`: one
- * toast per own settle and one per `success` / `error` edge of a bound
- * `[externalState]`, read from `CNGX_ACTION_STATUS.outcome`. Two settles
- * before one render are two toasts. A selector-less host directive;
- * `CngxActionButton` co-hosts it, an ejected action host lists it in its
- * `hostDirectives`.
+ * Raises one toast per outcome of an action host on `CngxActionStatusBrain`: each own settle
+ * and each `success` / `error` edge of a bound `[externalState]`, read from
+ * `CNGX_ACTION_STATUS.outcome`. Two settles before one render are two toasts.
  *
- * Needs `CngxToaster` (`provideFeedback(withToasts())` or `provideToasts()`);
- * without one it does nothing. A shown toast already announces its
- * outcome, so the directive provides `CNGX_ANNOUNCEMENT_COVER` and the
- * runner's region next to the host stays empty for it, unless the brain's
- * `[autoAnnounce]` is `true`.
+ * A selector-less host directive. `CngxActionButton` co-hosts it; an ejected action host lists
+ * it in its `hostDirectives`. It needs a `CngxToaster` (`provideFeedback(withToasts())` or
+ * `provideToasts()`) and does nothing without one.
+ *
+ * A shown toast already announces its outcome, so the directive provides
+ * `CNGX_ANNOUNCEMENT_COVER` and the live region next to the host stays empty for that outcome,
+ * unless the brain's `autoAnnounce` is `true`.
+ *
+ * Do not combine it with `[cngxToastOn]` on the same element. Both toast the same outcome, and
+ * development builds warn [`CNGX3008`](/error-codes/cngx3008.md).
  *
  * ```ts
  * hostDirectives: [
@@ -38,8 +40,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/action-button/action-toast.directive.ts
  * @since 0.1.0
- * @relatedTo CngxActionButton, CngxActionStatusBrain, CNGX_ANNOUNCEMENT_COVER, CngxToaster
- * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
+ * @relatedTo CngxActionButton, CngxActionStatusBrain, CNGX_ANNOUNCEMENT_COVER, CngxToaster, CngxToastOn, withToasts, provideToasts, withErrorDetail, CNGX_ACTION_STATUS
  * @axis level molecule
  */
 @Directive({
@@ -55,16 +56,20 @@ export class CngxActionToast implements CngxAnnouncementCover {
   private readonly externalToastOn = inject(CngxToastOn, { self: true, optional: true });
 
   /**
-   * Toast message on success. Silently ignored when no `CngxToaster` is
-   * provided. `toastSuccessDuration` should be >= `feedbackDuration` to
-   * avoid rapid re-fire on repeated clicks that floods the SR queue.
+   * Toast message on success. Repeats inside the toaster's dedup window
+   * (`withToasts({ dedupWindow })`, 1000 ms by default) merge into one toast with a count.
    */
   readonly toastSuccess = input<string | undefined>(undefined);
 
   /** Toast message on error. */
   readonly toastError = input<string | undefined>(undefined);
 
-  /** Include the error detail message in the error toast body. */
+  /**
+   * Appends the error detail to the error toast message. The detail comes from
+   * `provideFeedback(withErrorDetail(...))`. Without a mapping, development builds append the
+   * raw error message and warn once ([`CNGX3004`](/error-codes/cngx3004.md)); production builds
+   * append nothing.
+   */
   readonly toastErrorDetail = input<boolean>(false);
 
   /**
@@ -74,8 +79,8 @@ export class CngxActionToast implements CngxAnnouncementCover {
   readonly toastSuccessDuration = input<number | undefined>(undefined);
 
   /**
-   * Duration for error toasts; `'persistent'` means manual dismiss only.
-   * Unbound, `CngxToaster` resolves it (an error toast stays until dismissed).
+   * Duration for error toasts in ms, or `'persistent'` for manual dismiss only. Unbound, the
+   * toaster keeps an error toast until it is dismissed.
    */
   readonly toastErrorDuration = input<number | 'persistent' | undefined>(undefined);
 

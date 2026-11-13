@@ -6,6 +6,7 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
+import { injectEffectiveMotion } from '@cngx/core';
 
 /**
  * Options for {@link createOrganismScrollSync}.
@@ -51,9 +52,10 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  *   popover scrolls it back into the strip, and the overflow recompute
  *   then self-trims - keyboard navigation and the overflow list stay in
  *   sync.
- * - Motion is overridable for reduced motion: the default is smooth-center
- *   along the inline axis; pass `scrollOptions` (e.g. `behavior: 'auto'`)
- *   to honour `prefers-reduced-motion` or to scroll vertically.
+ * - The default is smooth-center along the inline axis, instant under
+ *   reduced motion (the in-app `CNGX_MOTION` pick or the OS query, via
+ *   `injectEffectiveMotion`); pass `scrollOptions` to replace it, for
+ *   example to scroll vertically.
  *
  * ```ts
  * // Install once from the organism's field-init (needs an injection context).
@@ -73,15 +75,18 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  */
 export function createOrganismScrollSync(opts: CngxOrganismScrollSyncOptions): void {
   const { activeId, hostElement, scrollOptions, injector } = opts;
-  const resolvedOptions = scrollOptions ?? DEFAULT_SCROLL_OPTIONS;
-
   runInInjectionContext(injector, () => {
+    const motion = scrollOptions ? undefined : injectEffectiveMotion();
     effect(() => {
       const id = activeId();
       if (!id) {
         return;
       }
       untracked(() => {
+        const resolvedOptions = scrollOptions ?? {
+          ...DEFAULT_SCROLL_OPTIONS,
+          behavior: motion?.() === 'reduced' ? 'auto' : DEFAULT_SCROLL_OPTIONS.behavior,
+        };
         const button = hostElement.querySelector<HTMLElement>(`[id="${id}-header"]`);
         button?.scrollIntoView?.(resolvedOptions);
       });
@@ -110,7 +115,7 @@ export type CngxOrganismScrollSyncFactory = (opts: CngxOrganismScrollSyncOptions
  * - `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`.
  *
  * ```ts
- * // Honour prefers-reduced-motion app-wide:
+ * // Always scroll instantly, motion preference or not:
  * providers: [
  *   {
  *     provide: CNGX_ORGANISM_SCROLL_SYNC_FACTORY,

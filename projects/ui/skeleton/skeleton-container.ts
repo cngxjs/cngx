@@ -1,20 +1,14 @@
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
-  DestroyRef,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  createMediaQuerySignal,
-  createVisibilityGate,
-  injectLoadingConfig,
-  type CngxAsyncState,
-} from '@cngx/core/utils';
+import { injectEffectiveMotion } from '@cngx/core';
+import { createVisibilityGate, injectLoadingConfig, type CngxAsyncState } from '@cngx/core/utils';
 
 import {
   CngxSkeletonPlaceholder,
@@ -132,15 +126,11 @@ export class CngxSkeletonContainer {
   /** Array of indices for internal `@for` rendering. */
   readonly indices = computed(() => Array.from({ length: this.count() }, (_, i) => i));
 
-  private readonly prefersReducedMotion = createMediaQuerySignal(
-    '(prefers-reduced-motion: reduce)',
-    inject(DestroyRef),
-    inject(DOCUMENT).defaultView,
-  );
+  private readonly motion = injectEffectiveMotion();
 
   /** @internal */
   protected readonly showShimmer = computed(
-    () => this.gatedLoading() && this.shimmer() && !this.prefersReducedMotion(),
+    () => this.gatedLoading() && this.shimmer() && this.motion() !== 'reduced',
   );
 
   /** @internal */

@@ -10,14 +10,17 @@ import { InjectionToken, type Signal } from '@angular/core';
  */
 export interface CngxButtonState {
   /**
-   * `true` while the button refuses activation: disabled, running a
-   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`.
+   * `true` while the button refuses activation:
+   *
+   * - `disabled` is set
+   * - the host refuses through `CNGX_BUTTON_HOST_STATE`
+   * - a run is in flight, or its busy layer is held through the dwell
+   * - a co-hosted runner refuses, e.g. `cngxAsyncClick` with `[enabled]="false"`
    */
   readonly blocked: Signal<boolean>;
   /**
-   * `true` while the button runs: a co-hosted `cngxAsyncClick` is pending or
-   * the host reflects a run of its own. The immediate truth, without the
-   * busy layer's show delay.
+   * `true` while a co-hosted `cngxAsyncClick` is pending or the host reflects a run of its own.
+   * The immediate truth, without the busy layer's show delay.
    */
   readonly busy: Signal<boolean>;
   /**
@@ -29,13 +32,11 @@ export interface CngxButtonState {
 }
 
 /**
- * DI token every cngx button provides on its own host through
- * `CngxButtonBrain`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`,
- * `cngxMenuButton`, `cngxIconMenuButton` and `cngx-action-button`. A split
- * button reads its main action through it.
+ * DI token every host on `CngxButtonBrain` provides on its own element. A split button reads its
+ * main action through it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxIconButton, CngxSplitButton
+ * @relatedTo CngxButton, CngxIconButton, CngxSplitButton, CngxButtonBrain, CngxSplitCaret, CngxActionButton
  */
 export const CNGX_BUTTON_STATE = new InjectionToken<CngxButtonState>('CngxButtonState');

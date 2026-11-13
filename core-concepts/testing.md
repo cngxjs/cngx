@@ -219,6 +219,6 @@ Jasmine has no equivalent of the matchers. Assert on `heard()`, and call `resolv
 
 ## Browser-mode suites
 
-`provideCngxTesting()` does not pin motion: no cngx runtime reads the motion preference under jsdom, so pinning it would change nothing. A suite that runs in a real browser and wants reduced motion adds `provideMotion('reduced')` itself. That sets `<html data-motion>` and leaves it in place when the test module is torn down, so remove the attribute after the spec.
+`provideCngxTesting()` does not pin motion: the JS motion readers go through `injectEffectiveMotion()`, which follows the OS query for `auto`, and jsdom has no `matchMedia`, so they already resolve to full motion. A suite that wants reduced motion adds `provideMotion('reduced')` itself. That sets `<html data-motion>` and removes it again when the test module is torn down.
 
 `onTransitionDone` keeps its fallback timer either way: the computed transition time plus 50 ms, which is 50 ms under jsdom.

@@ -22,16 +22,15 @@ import { provideButtonHost } from './button-host.token';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
- * @relatedTo provideButtonCloseIcon, injectButtonCloseIcon, CngxCloseButton
+ * @relatedTo provideButtonCloseIcon, injectButtonCloseIcon, CngxCloseButton, withButtonCloseIcon
  * <example-url>/#/common/button/close-button/provided-icon</example-url>
  */
 export const CNGX_BUTTON_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxButtonCloseIcon');
 
 /**
- * Provides `component` as the glyph of every close button below the
- * provider that projects none (`CNGX_BUTTON_CLOSE_ICON`). Works in `providers` and
- * `viewProviders`; the nearest provider wins. Alerts, toasts and banners get
- * it through `provideFeedback(withCloseIcon(...))`, which uses this function.
+ * Provides `component` as the glyph of every close button below the provider that projects none
+ * (`CNGX_BUTTON_CLOSE_ICON`). Works in `providers` and `viewProviders`. The nearest provider
+ * wins.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideButtonCloseIcon(MaterialCloseIcon)] });
@@ -62,40 +61,30 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
 }
 
 /**
- * Close / dismiss button on the icon-button brain. Sits on the native
- * `<button>`, so every attribute the consumer writes (`aria-label`,
- * `(click)`, `data-*`, a co-hosted `cngxRipple` or `cngxTooltip`) lands on
- * the real element.
+ * Close or dismiss button on the native `<button>`, built on the icon-button geometry.
  *
- * It renders the default X glyph unless the consumer projects one or
- * `provideButtonCloseIcon` swaps it app-wide; the glyph is hidden from assistive
- * technology, so the name is the consumer's copy: set `aria-label` on the
- * host and name the dismissed artifact, not the affordance (`"Close
- * session-expired alert"`, not `"Close"`). A host without `aria-label`,
- * `aria-labelledby` or `title` warns [`CNGX1071`](/error-codes/cngx1071.md) in development mode.
+ * It renders the default X glyph unless you project one or `provideButtonCloseIcon` swaps it.
+ * The glyph is `aria-hidden`, so set `aria-label` on the host and name the dismissed thing, not
+ * the affordance: `"Close session-expired alert"`, not `"Close"`. Without a name the host warns
+ * [`CNGX1071`](/error-codes/cngx1071.md) in development.
  *
- * Shares the button family's state surface: `disabled` renders
- * `aria-disabled` (the button stays focusable and swallows activation) and
- * `disabledReason` is read through `aria-describedby`, so a blocked close
- * still says why it does nothing.
- *
- * The emphasis stays `ghost`, the size `sm` and the tone `neutral`
- * wherever the button sits: a dismiss affordance does not take the group or
- * `provideButtonConfig` axes. Set `cngxCloseButton="outline"`, `size` or `tone` per instance; size
- * the box and the glyph with `--cngx-close-button-size` and
- * `--cngx-close-button-icon-size`.
+ * It pins `ghost`, `sm` and `neutral` against the group and the button config, so an app
+ * default never makes a dismiss loud. Set `cngxCloseButton="outline"`, `size` or `tone` per
+ * instance. `--cngx-close-button-size` and `--cngx-close-button-icon-size` size the box and the
+ * glyph. Under the Material bridge the default `sm` close button takes the 40px M3 icon-button
+ * box with a 24px glyph, and a value you set on the host still wins.
  *
  * ```html
  * <button cngxCloseButton aria-label="Close settings dialog" (click)="close()"></button>
  * <button cngxCloseButton aria-label="Dismiss toast" [disabled]="saving()" disabledReason="Saving">
- *   <cngx-icon name="close" />
+ *   <svg aria-hidden="true" viewBox="0 0 24 24">...</svg>
  * </button>
  * ```
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
- * @relatedTo provideButtonCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel
+ * @relatedTo provideButtonCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel, withButtonCloseIcon, withCloseIcon
  * <example-url>/#/common/button/close-button/basic</example-url>
  * <example-url>/#/common/button/close-button/projected-icon</example-url>
  * <example-url>/#/common/button/close-button/provided-icon</example-url>

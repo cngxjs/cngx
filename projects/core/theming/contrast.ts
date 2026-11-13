@@ -1,9 +1,6 @@
-import {
-  InjectionToken,
-  signal,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -31,11 +28,25 @@ export const CNGX_CONTRAST = new InjectionToken<WritableSignal<CngxContrastPrefe
   'CNGX_CONTRAST',
   {
     providedIn: 'root',
-    factory: () => signal<CngxContrastPreference>('auto'),
+    factory: (): WritableSignal<CngxContrastPreference> => contrastAxis.unprovided('auto'),
   },
 );
 
 const contrastAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideContrast() in a child injector does not write <html data-contrast> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideContrast() is not installed, so this write changes the signal but not <html data-contrast>; call it in the application config.',
+    ),
   token: CNGX_CONTRAST,
   attribute: 'data-contrast',
   removeValue: 'auto',

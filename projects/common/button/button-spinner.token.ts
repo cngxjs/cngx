@@ -1,13 +1,11 @@
 import { inject, InjectionToken, type Provider, type Type } from '@angular/core';
 
 /**
- * Injection token for a custom busy glyph, rendered inside the busy layer of
- * every cngx button (`cngxButton`, `cngxIconButton`, `cngxCloseButton`,
- * `cngxMenuButton`, `cngxIconMenuButton`, `cngxActionButton` and custom hosts
- * on `CngxButtonBrain`) in place of the built-in spinner. The layer itself
- * stays: it covers the label (width stable), is `aria-hidden`, and follows
- * the show delay and min-dwell of the run, so the component renders a glyph
- * only. Set it with {@link provideButtonSpinner} at the root or on a subtree.
+ * Injection token for a custom busy glyph, rendered in place of the built-in spinner by every
+ * host on `CngxButtonBrain`. Set it with {@link provideButtonSpinner} at the root or on a subtree.
+ *
+ * The layer itself stays: it covers the label, is `aria-hidden` and keeps the run's show delay
+ * and min-dwell. The component renders a glyph only.
  *
  * ```ts
  * providers: [provideButtonSpinner(MyDotsSpinner)]
@@ -15,15 +13,14 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
  * @since 0.1.0
- * @relatedTo provideButtonSpinner, injectButtonSpinner, CngxButtonBrain, CngxButton
+ * @relatedTo provideButtonSpinner, injectButtonSpinner, CngxButtonBrain, CngxButton, withButtonSpinner
  * <example-url>/#/common/button/button/custom-spinner</example-url>
  */
 export const CNGX_BUTTON_SPINNER = new InjectionToken<Type<unknown>>('CngxButtonSpinner');
 
 /**
- * Provides `component` as the busy glyph of every cngx button below the
- * provider (`CNGX_BUTTON_SPINNER`). Works in `providers` and
- * `viewProviders`; the nearest provider wins.
+ * Provides `component` as the busy glyph of every cngx button below the provider
+ * (`CNGX_BUTTON_SPINNER`). Works in `providers` and `viewProviders`. The nearest provider wins.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideButtonSpinner(MyDotsSpinner)] });
