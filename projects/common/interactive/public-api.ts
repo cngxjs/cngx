@@ -91,6 +91,20 @@ export { CngxNavFooter } from './nav/nav-footer.directive';
 export { CngxNavMark } from './nav/nav-mark.directive';
 export { CngxNavName } from './nav/nav-name.directive';
 export { CngxDisclosure } from './nav/disclosure.directive';
+export {
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+  type CngxNavRailTooltipFactory,
+  type CngxNavRailTooltipSources,
+  injectNavRailTooltip,
+} from './nav/nav-rail-tooltip';
+export {
+  CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  type CngxNavRailFlyoutContent,
+  type CngxNavRailFlyoutFactory,
+  type CngxNavRailFlyoutGroup,
+  type CngxNavRailFlyoutSources,
+  injectNavRailFlyout,
+} from './nav/nav-rail-flyout';
 export { CngxExpandable } from './expandable/expandable.directive';
 export {
   CngxHoverIntent,

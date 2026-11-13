@@ -8,10 +8,10 @@ import {
   viewChildren,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
 
-import type { CngxNavRailSide } from './nav-rail';
+import { CngxNavGroup } from './nav-group.directive';
+import { CngxNavGroupContent } from './nav-group-content.directive';
 import { type CngxNavRailFlyoutGroup, injectNavRailFlyout } from './nav-rail-flyout';
 
 @Component({
@@ -34,7 +34,7 @@ import { type CngxNavRailFlyoutGroup, injectNavRailFlyout } from './nav-rail-fly
 })
 class TestRail {
   readonly railed = signal(true);
-  readonly side = signal<CngxNavRailSide>('start');
+  readonly side = signal<'start' | 'end'>('start');
   readonly groups = viewChildren(CngxNavGroup);
   readonly groupElements = viewChildren(CngxNavGroup, { read: ElementRef });
   readonly contents = viewChildren(CngxNavGroupContent);
@@ -90,7 +90,7 @@ class AltRail {
   constructor() {
     injectNavRailFlyout({
       railed: signal(true),
-      side: signal<CngxNavRailSide>('start'),
+      side: signal<'start' | 'end'>('start'),
       groups: this.groups,
       groupElements: this.groupElements,
       contents: this.contents,

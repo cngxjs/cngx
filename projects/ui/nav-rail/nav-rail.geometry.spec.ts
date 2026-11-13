@@ -7,11 +7,11 @@ import {
   CngxNavIcon,
   CngxNavLabel,
   CngxNavLink,
+  injectNavRailTooltip,
 } from '@cngx/common/interactive';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
-import { injectNavRailTooltip } from './nav-rail-tooltip';
 
 // Runs in a real Chromium (the `test-geometry` target): the rail width, the
 // clipped label and the anchored flyout are layout facts jsdom cannot see.
@@ -97,7 +97,11 @@ class RailGeometryHost {
 })
 class ForeignHost {
   constructor() {
-    injectNavRailTooltip({ railed: signal(true), side: signal<CngxNavRailSide>('end') });
+    injectNavRailTooltip({
+      railed: signal(true),
+      side: signal<CngxNavRailSide>('end'),
+      hoverDelay: signal(300),
+    });
   }
 }
 

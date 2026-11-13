@@ -10,9 +10,6 @@ import {
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
-import { injectNavRailConfig } from './config/inject-nav-rail-config';
-import type { CngxNavRailSide } from './nav-rail';
-
 const ROW_SELECTOR = '.cngx-nav-link, .cngx-nav-group';
 
 /**
@@ -26,7 +23,9 @@ export interface CngxNavRailTooltipSources {
   /** `true` while the rows are railed, their labels clipped and the tooltip wanted. */
   readonly railed: Signal<boolean>;
   /** The edge the rows sit on; the tooltip opens away from it. */
-  readonly side: Signal<CngxNavRailSide>;
+  readonly side: Signal<'start' | 'end'>;
+  /** Pointer dwell in milliseconds before the tooltip shows; read on each hover. */
+  readonly hoverDelay: Signal<number>;
 }
 
 /**
@@ -92,15 +91,15 @@ function rowLabel(row: HTMLElement): string {
  * (`popover="manual"`, class `cngx-tooltip`, so the skin is
  * `cngx-tooltip.css`). Event delegation on the host finds the row under the
  * pointer or focus, so projected rows need no directive of their own.
- * Keyboard focus shows the tooltip at once, the pointer after a dwell (300ms,
- * set app-wide through `withNavRailTooltipDelay`); leaving the row, blur, a
+ * Keyboard focus shows the tooltip at once, the pointer after the
+ * `hoverDelay` dwell (the organisms pass `withNavRailTooltipDelay`, default
+ * 300ms); leaving the row, blur, a
  * click, Escape and the rail opening hide it. Rows inside a group content, an
  * open group head and rows with a `[cngxTooltip]` of their own get no rail
  * tooltip. The tooltip opens away from `side`: at the inline end of the row,
  * or at its inline start for an end-side rail, through CSS anchor positioning
  * (`anchor-name` on the row, `data-cngx-rail-side` on the tooltip;
- * `nav-rail.css`, the stylesheet of `cngx-nav-rail`, places it with the
- * `--cngx-nav-tooltip-offset` gap). It follows the row, mirrors under
+ * `cngx-nav.css` places it with the `--cngx-nav-tooltip-offset` gap). It follows the row, mirrors under
  * `dir="rtl"` and flips to the other side when the viewport has no room. The
  * side is read on each show, so a flip applies from the next one. A browser without CSS anchor
  * positioning shows it at the top-layer default position.
@@ -112,23 +111,23 @@ function rowLabel(row: HTMLElement): string {
  * ```typescript
  * export class MyRail {
  *   readonly collapsed = input(false);
- *   readonly side = input<CngxNavRailSide>('start');
+ *   readonly side = input<'start' | 'end'>('start');
+ *   readonly hoverDelay = input(300);
  *   constructor() {
- *     injectNavRailTooltip({ railed: this.collapsed, side: this.side });
+ *     injectNavRailTooltip({ railed: this.collapsed, side: this.side, hoverDelay: this.hoverDelay });
  *   }
  * }
  * ```
  *
- * @param sources The rail state and the side the rows sit on.
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
+ * @param sources The rail state, the side the rows sit on and the hover dwell.
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-rail-tooltip.ts
  * @since 0.3.0
  * @relatedTo injectNavRailFlyout, withNavRailTooltipDelay, withNavRailTooltip, CngxNavLink, CngxNavGroup, CngxTooltip
  */
 export function injectNavRailTooltip(sources: CngxNavRailTooltipSources): void {
-  const { railed, side } = sources;
+  const { railed, side, hoverDelay } = sources;
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const renderer = inject(Renderer2);
-  const hoverDelay = injectNavRailConfig().tooltipDelay;
   let detach: (() => void) | null = null;
 
   effect(() => {
@@ -155,8 +154,8 @@ export function injectNavRailTooltip(sources: CngxNavRailTooltipSources): void {
 function attachNavRailTooltip(
   host: HTMLElement,
   renderer: Renderer2,
-  hoverDelay: number,
-  side: Signal<CngxNavRailSide>,
+  hoverDelay: Signal<number>,
+  side: Signal<'start' | 'end'>,
 ): () => void {
   const doc = host.ownerDocument;
   const anchorName = `--${nextUid('cngx-nav-rail-tip')}`;
@@ -254,7 +253,8 @@ function attachNavRailTooltip(
         return;
       }
       clearTimer();
-      timer = setTimeout(() => show(row), hoverDelay);
+      // Plain read, like `side()`: a delay change applies from the next hover.
+      timer = setTimeout(() => show(row), hoverDelay());
     }),
     renderer.listen(host, 'pointerout', (event: PointerEvent) => {
       const row = rowOf(event.target);
@@ -295,7 +295,7 @@ export type CngxNavRailTooltipFactory = (sources: CngxNavRailTooltipSources) => 
  * providers: [{ provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY, useValue: () => {} }];
  * ```
  *
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-tooltip.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-rail-tooltip.ts
  * @since 0.3.0
  * @relatedTo injectNavRailTooltip, CngxNavRailTooltipSources, CngxNavRail, CNGX_NAV_RAIL_FLYOUT_FACTORY
  */

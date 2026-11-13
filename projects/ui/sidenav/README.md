@@ -76,7 +76,7 @@ The rail is a crop of the expanded sidenav. Collapsing only narrows the width; n
 - **Tooltip:** a railed row shows its label in a tooltip after a hover delay and at once on keyboard focus. The tooltip is visual only (`aria-hidden`): the label is already the row's accessible name.
 - **Transitions:** rail, peek and expanded move only the width (and the peek's compensating margin, so the content does not shift). Labels, badges, chevrons and the header name fade in after `--cngx-duration-fast` while the width grows and drop out at once on the way back. Under reduced motion the global motion net switches the state without intermediate frames.
 
-The flyout and the tooltip are the rail pieces of `@cngx/ui/nav-rail` (`injectNavRailFlyout`, `injectNavRailTooltip`), with the sidenav `position` as their side. That follows from the existing pieces:
+The flyout and the tooltip are the rail pieces of the nav atoms in `@cngx/common/interactive` (`injectNavRailFlyout`, `injectNavRailTooltip`), with the sidenav `position` as their side. That follows from the existing pieces:
 
 - Tooltip and flyout attach only while the sidenav rests as a rail. Peek, expanded, an overlay (`over`, also in the `compact` and `medium` width classes) and `collapsedAs="hidden"` are not railed.
 - The hover peek is on by default (`expandOnHover`) and settles after about 120ms, before the 300ms tooltip delay. A pointer on the rail therefore gets the peek, not the tooltip: the tooltip shows on keyboard focus, and for the pointer when `expandOnHover` is off.

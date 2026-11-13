@@ -17,6 +17,8 @@ import {
   CngxNavMark,
   CngxNavName,
   CngxDisclosure,
+  injectNavRailTooltip,
+  injectNavRailFlyout,
   provideNavConfig,
   withSingleAccordion,
   withNavIndent,
@@ -233,6 +235,15 @@ A row without an icon draws its first letter in the same box, as a round filled 
 ```
 
 `CngxSidenav` projects these slots above and below its scrolling body; any other container lays them out where it renders them.
+
+## Rail tooltip and group flyout
+
+Two injection functions turn a container of nav rows into a working rail. `cngx-nav-rail` and the rail of `cngx-sidenav` (both in `@cngx/ui`) call them; they live here because they need nothing but the nav atoms and the native `popover` attribute.
+
+- `injectNavRailTooltip({ railed, side, hoverDelay })` - while `railed()` is `true`, shows the clipped label of the row under the pointer (after `hoverDelay()` ms) or keyboard focus (at once) in one `aria-hidden` tooltip per host, opening away from `side()`.
+- `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` - while `railed()` is `true`, shows an open `cngxNavGroupContent` as a flyout beside its head. `groups` / `contents` are content queries for `CngxNavGroup` / `CngxNavGroupContent`, the `*Elements` twins the same queries with `read: ElementRef`.
+
+`CNGX_NAV_RAIL_TOOLTIP_FACTORY` and `CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; an override reaches every caller. `cngx-nav.css` draws the flyout surface and places the tooltip.
 
 ## Theming
 

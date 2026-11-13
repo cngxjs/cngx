@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import type { Signal } from '@angular/core';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import * as api from './public-api';
 
@@ -20,5 +21,21 @@ describe('@cngx/common/interactive public API shape', () => {
     for (const slot of [api.CngxNavHeader, api.CngxNavFooter, api.CngxNavMark, api.CngxNavName]) {
       expect(typeof slot).toBe('function');
     }
+  });
+
+  it('exports the rail tooltip and group flyout with their swap tokens', () => {
+    expect(typeof api.injectNavRailTooltip).toBe('function');
+    expect(typeof api.injectNavRailFlyout).toBe('function');
+    expect(api.CNGX_NAV_RAIL_TOOLTIP_FACTORY).toBeDefined();
+    expect(api.CNGX_NAV_RAIL_FLYOUT_FACTORY).toBeDefined();
+  });
+
+  it('types the flyout on a group contract the nav atoms match', () => {
+    expectTypeOf<api.CngxNavGroup>().toMatchTypeOf<api.CngxNavRailFlyoutGroup>();
+    expectTypeOf<api.CngxNavGroupContent>().toMatchTypeOf<api.CngxNavRailFlyoutContent>();
+  });
+
+  it('types the rail side as the logical edge union', () => {
+    expectTypeOf<api.CngxNavRailTooltipSources['side']>().toEqualTypeOf<Signal<'start' | 'end'>>();
   });
 });

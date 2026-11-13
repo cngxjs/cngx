@@ -21,8 +21,8 @@ export const CNGX_NAV_RAIL_DEFAULTS: Required<CngxNavRailConfig> = {
 };
 
 /**
- * App-wide configuration cascade for `cngx-nav-rail` and
- * `injectNavRailTooltip`. Resolves in priority order:
+ * App-wide configuration cascade for `cngx-nav-rail` and the rail of
+ * `cngx-sidenav`. Resolves in priority order:
  *
  *   1. Per-instance Input binding.
  *   2. `provideNavRailConfigAt(...)` in a parent component's `viewProviders`.

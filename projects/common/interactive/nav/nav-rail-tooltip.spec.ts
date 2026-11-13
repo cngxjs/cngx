@@ -2,9 +2,6 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { withNavRailTooltipDelay } from './config/features';
-import { provideNavRailConfig } from './config/provide-nav-rail-config';
-import type { CngxNavRailSide } from './nav-rail';
 import { injectNavRailTooltip } from './nav-rail-tooltip';
 
 @Component({
@@ -28,10 +25,11 @@ import { injectNavRailTooltip } from './nav-rail-tooltip';
 })
 class TestRail {
   readonly railed = signal(true);
-  readonly side = signal<CngxNavRailSide>('start');
+  readonly side = signal<'start' | 'end'>('start');
+  readonly hoverDelay = signal(300);
 
   constructor() {
-    injectNavRailTooltip({ railed: this.railed, side: this.side });
+    injectNavRailTooltip({ railed: this.railed, side: this.side, hoverDelay: this.hoverDelay });
   }
 }
 
@@ -115,12 +113,10 @@ describe('injectNavRailTooltip', () => {
     expect(isOpen()).toBe(true);
   });
 
-  it('takes the hover dwell from withNavRailTooltipDelay', () => {
+  it('reads the hover dwell from hoverDelay on each hover', () => {
     vi.useFakeTimers();
-    TestBed.configureTestingModule({
-      providers: [provideNavRailConfig(withNavRailTooltipDelay(500))],
-    });
-    const { row, isOpen } = setup();
+    const { fixture, row, isOpen } = setup();
+    fixture.componentInstance.hoverDelay.set(500);
     pointer('pointerover', row('.row-settings'));
     vi.advanceTimersByTime(499);
     expect(isOpen()).toBe(false);

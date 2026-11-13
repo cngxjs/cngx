@@ -19,6 +19,8 @@ import {
 import { createTransitionTracker, injectLocale, numberFormatterFor } from '@cngx/core/utils';
 import {
   CNGX_HOVER_INTENT_DEFAULTS,
+  CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
   CngxNavGroup,
   CngxNavGroupContent,
   injectHotkeys,
@@ -39,11 +41,7 @@ import {
   type CngxSidebarDriver,
   type CngxSidebarSide,
 } from '@cngx/common/layout';
-import {
-  CNGX_NAV_RAIL_FLYOUT_FACTORY,
-  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-  injectNavRailConfig,
-} from '@cngx/ui/nav-rail';
+import { injectNavRailConfig } from '@cngx/ui/nav-rail';
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
@@ -559,6 +557,7 @@ export class CngxSidenav
     inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)({
       railed: computed(() => this.resolvedTooltip() && this.railed()),
       side: this.position,
+      hoverDelay: signal(this.navRailConfig.tooltipDelay).asReadonly(),
     });
     inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({
       railed: this.railed,

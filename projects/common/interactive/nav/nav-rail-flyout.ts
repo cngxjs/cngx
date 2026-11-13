@@ -11,8 +11,6 @@ import {
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
-import type { CngxNavRailSide } from './nav-rail';
-
 /**
  * A group head the flyout drives: its open state, a way to close it and
  * focus for Escape. `CngxNavGroup` matches it; another disclosure head with
@@ -45,7 +43,7 @@ export interface CngxNavRailFlyoutSources {
   /** `true` while the rows are railed. */
   readonly railed: Signal<boolean>;
   /** The edge the rows sit on; the flyout opens away from it. */
-  readonly side: Signal<CngxNavRailSide>;
+  readonly side: Signal<'start' | 'end'>;
   /** The projected group heads (`CngxNavGroup`). */
   readonly groups: Signal<readonly CngxNavRailFlyoutGroup[]>;
   /** The host elements of `groups`, in the same order. */
@@ -106,7 +104,7 @@ interface FlyoutPair {
  *   constructor() {
  *     injectNavRailFlyout({
  *       railed: signal(true),
- *       side: signal<CngxNavRailSide>('start'),
+ *       side: signal<'start' | 'end'>('start'),
  *       groups: this.groups,
  *       groupElements: this.groupElements,
  *       contents: this.contents,
@@ -117,7 +115,7 @@ interface FlyoutPair {
  * ```
  *
  * @param sources The rail state and the group and content queries.
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-flyout.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-rail-flyout.ts
  * @since 0.3.0
  * @relatedTo injectNavRailTooltip, CngxNavGroup, CngxNavGroupContent, CngxDisclosure
  */
@@ -325,7 +323,7 @@ export type CngxNavRailFlyoutFactory = (sources: CngxNavRailFlyoutSources) => vo
  * providers: [{ provide: CNGX_NAV_RAIL_FLYOUT_FACTORY, useValue: myMenuFlyout }];
  * ```
  *
- * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/nav-rail/nav-rail-flyout.ts
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-rail-flyout.ts
  * @since 0.3.0
  * @relatedTo injectNavRailFlyout, CngxNavRail, CNGX_NAV_RAIL_TOOLTIP_FACTORY
  */

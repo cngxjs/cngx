@@ -2,20 +2,6 @@
  * @module @cngx/ui/nav-rail
  */
 
-export {
-  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-  type CngxNavRailTooltipFactory,
-  type CngxNavRailTooltipSources,
-  injectNavRailTooltip,
-} from './nav-rail-tooltip';
-export {
-  CNGX_NAV_RAIL_FLYOUT_FACTORY,
-  type CngxNavRailFlyoutContent,
-  type CngxNavRailFlyoutFactory,
-  type CngxNavRailFlyoutGroup,
-  type CngxNavRailFlyoutSources,
-  injectNavRailFlyout,
-} from './nav-rail-flyout';
 export { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
 export type { CngxNavRailConfig } from './config/nav-rail.config';
 export { CNGX_NAV_RAIL_CONFIG } from './config/nav-rail.config.defaults';

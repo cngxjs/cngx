@@ -3,6 +3,7 @@ import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxPanelTrigger } from '@cngx/common/layout';
 import {
   CNGX_HOTKEY_REGISTRY,
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
   type CngxHotkeyBinding,
   type CngxHotkeyScopeNode,
   CngxNavGroup,
@@ -11,10 +12,15 @@ import {
   CngxNavLink,
   CngxNavMark,
   CngxNavName,
+  type CngxNavRailTooltipSources,
   createHotkeyRegistry,
   injectHotkeyRegistryDeps,
 } from '@cngx/common/interactive';
-import { provideNavRailConfig, withNavRailTooltip } from '@cngx/ui/nav-rail';
+import {
+  provideNavRailConfig,
+  withNavRailTooltip,
+  withNavRailTooltipDelay,
+} from '@cngx/ui/nav-rail';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -1849,6 +1855,23 @@ describe('CngxSidenav rail pieces', () => {
     expect(nav.getAttribute('data-sidebar-state')).toBe('peek');
     expect(tooltip()).toBeNull();
     expect(flyoutWired()).toBe(false);
+  });
+
+  it('passes withNavRailTooltipDelay to the rail tooltip as hoverDelay', () => {
+    let delay: number | undefined;
+    TestBed.configureTestingModule({
+      providers: [
+        provideNavRailConfig(withNavRailTooltipDelay(500)),
+        {
+          provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+          useValue: ({ hoverDelay }: CngxNavRailTooltipSources) => {
+            delay = hoverDelay();
+          },
+        },
+      ],
+    });
+    setup();
+    expect(delay).toBe(500);
   });
 
   it('attaches neither in overlay mode', () => {
