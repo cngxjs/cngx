@@ -6,8 +6,10 @@ import { createPreferenceAxis } from './preference-axis';
 /**
  * The three text-scale rungs the `[data-text-size]` swap ships
  * (`text-scale-tokens.css`). `md` is the library default (multiplier
- * `1`, identity); `sm` and `lg` re-scale `--cngx-font-scale` so every
- * root-relative `font-size` shrinks or grows for the subtree.
+ * `1`, identity); `sm` and `lg` set `--cngx-font-scale`, which the `html`
+ * rule multiplies into the root font size, so every root-relative
+ * `font-size` on the page shrinks or grows. The swap only takes effect on
+ * the root element.
  *
  * @since 0.1.0
  */

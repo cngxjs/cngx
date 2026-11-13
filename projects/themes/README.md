@@ -4,7 +4,7 @@ The theme package for cngx: one CSS import for the default look, one Sass entry 
 
 ## What ships
 
-- `cngx.css` - single-import default theme: cascade-layer order, the full foundation token set (OKLCH system tokens, `@property` registrations, `light-dark()` dark mode), reset, bare-element base layer, the `.cngx-sr-only` utility, and the externalised CSS of every cngx `@Directive` that paints DOM.
+- `cngx.css` - single-import default theme: cascade-layer order, the full foundation token set (OKLCH system tokens, `@property` registrations, dark mode that follows `prefers-color-scheme` and switches on `data-color-scheme` or the `.dark` / `.light` class), reset, bare-element base layer, the `.cngx-sr-only` utility, and the externalised CSS of every cngx `@Directive` that paints DOM.
 - `example-brand.css` - a worked brand override you copy and edit, not import forever.
 - `material/` - 55 per-component Sass bridges plus `system-bridge.scss`, `density-bridge.scss`, and the `theme.scss` aggregator that maps a Material theme (M2 or M3) onto the cngx token system.
 
