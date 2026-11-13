@@ -19,17 +19,9 @@ import {
 } from './button-toggle-group.token';
 
 /**
- * Single-select segmented control: a `radiogroup` of `cngxButtonToggle` buttons with one
- * `value`.
- *
- * Arrow keys, Home and End move focus and select, like `CngxRadioGroup`. Focus from Tab or a
- * programmatic `focus()` does not select. Click, Space and Enter select the toggle they hit.
- *
- * For any number of selected values use `CngxButtonMultiToggleGroup`. The leaf is the same, the
- * group decides its mode.
- *
- * Arrow selection runs through the host `CngxRovingTabindex`, which flags a navigation key before
- * it moves focus. The focused toggle calls `consumePendingArrowSelect`, which reads that flag.
+ * Single-select segmented control: a `radiogroup` of `cngxButtonToggle` buttons bound with
+ * `[(value)]`. Arrow keys, Home and End move focus and select, like `CngxRadioGroup`; focus from
+ * Tab or `focus()` does not select.
  *
  * ```html
  * <cngx-button-toggle-group label="Layout" [(value)]="view">
@@ -88,56 +80,29 @@ import {
 export class CngxButtonToggleGroup<T = unknown>
   implements CngxButtonToggleGroupContract<T>, CngxControlValue<T | undefined>, CngxFormFieldControl
 {
-  /**
-   * Value of the selected toggle, or `undefined` when none is selected. Two-way
-   * bindable with `[(value)]`; a toggle writes it on click, Space, Enter and arrow-key
-   * focus. Default `undefined`.
-   */
+  /** Selected toggle value, `undefined` when none. */
   readonly value = model<T | undefined>(undefined);
-  /**
-   * Disables every toggle in the group: each toggle combines it with its own
-   * `disabled`, and the host sets `aria-disabled="true"`. Arrow-key focus does not
-   * select while the group is disabled. Default `false`.
-   */
+  /** Disables every toggle; arrow-key focus does not select while set. */
   readonly disabled = model<boolean>(false);
-  /**
-   * Sets `aria-required="true"` on the host while true. The group performs no
-   * validation itself. Default `false`.
-   */
+  /** Only sets `aria-required`; the group does not validate. */
   readonly required = model<boolean>(false);
-  /**
-   * Sets `aria-invalid="true"` on the host. A `model` so form bridges and validity adapters can
-   * write it. The surrounding field's error display sets `aria-invalid` too. Default `false`.
-   */
+  /** Sets `aria-invalid`. A `model`, so form bridges can write it. */
   readonly invalid = model<boolean>(false);
   /**
-   * Id of the element that holds the error message, emitted as `aria-errormessage`. Render that
-   * element yourself. Assistive technology ignores the attribute while `aria-invalid` is unset, so
-   * a fixed id is safe on a valid group. Default `null` omits it.
+   * Emitted as `aria-errormessage`; render the element yourself. Ignored while `aria-invalid` is
+   * unset, so a fixed id is safe on a valid group.
    */
   readonly errorMessageId = input<string | null>(null);
-  /**
-   * Layout direction of the group, reflected as `aria-orientation`; `'horizontal'` also
-   * adds the `cngx-button-toggle-group--horizontal` class. The same binding is
-   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis. Default
-   * `'horizontal'`.
-   */
+  /** Arrow-key axis of the host `CngxRovingTabindex`, reflected as `aria-orientation`. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  /**
-   * Accessible name of the group, emitted as `aria-label`. A non-empty label also stops
-   * the group from referencing the surrounding `cngx-form-field` label through
-   * `aria-labelledby`. Default `undefined`.
-   */
+  /** Emitted as `aria-label`; a non-empty label replaces the `cngx-form-field` label reference. */
   readonly label = input<string | undefined>(undefined);
 
-  /**
-   * Id of the element that names the group, emitted as `aria-labelledby`. Wins over the field
-   * label a `cngx-form-field` would reference.
-   */
+  /** Emitted as `aria-labelledby`; wins over the `cngx-form-field` label. */
   readonly labelledBy = input<string | undefined>(undefined);
   /**
-   * Async state behind `aria-busy`, which is set while its status is `'loading'`. Unbound,
-   * `undefined` or a bare `state` attribute falls back to the nearest `CNGX_STATEFUL` provider.
+   * Sets `aria-busy` while `'loading'`. Unbound or a bare attribute falls back to the nearest
+   * `CNGX_STATEFUL` provider.
    */
   readonly state = input<
     CngxAsyncState<unknown> | undefined,
@@ -147,11 +112,8 @@ export class CngxButtonToggleGroup<T = unknown>
   private readonly roving = inject(CngxRovingTabindex, { host: true });
 
   /**
-   * Selects `value` when the host `CngxRovingTabindex` reports that focus just moved by a
-   * navigation key, and returns `true`. Returns `false` for any other focus, such as Tab, while
-   * the group is disabled and while `leafDisabled` is set. Each call clears the roving flag.
-   *
-   * Called by `CngxButtonToggle` from its focus handler, disabled or not.
+   * Selects `value` and returns `true` after an arrow, Home or End focus, unless the group or
+   * `leafDisabled` is disabled. Clears the roving flag on every call.
    */
   consumePendingArrowSelect(value: T, leafDisabled = false): boolean {
     if (!this.roving.consumeNavigationKey()) {
@@ -176,19 +138,16 @@ export class CngxButtonToggleGroup<T = unknown>
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 
-  /** Generated host id, written to the `id` attribute. */
+  /** Generated host id. */
   readonly id = this.groupHost.id;
 
   /** True while focus is inside the group. */
   readonly focused = this.groupHost.focused;
 
-  /** Empty when no toggle is selected. */
+  /** True when no toggle is selected. */
   readonly empty = computed(() => this.value() === undefined);
 
-  /**
-   * True while the surrounding `cngx-form-field`, or else a `CngxErrorAggregator`, shows an
-   * error. Turns on `aria-invalid`.
-   */
+  /** True while the surrounding `cngx-form-field` or a `CngxErrorAggregator` shows an error. */
   readonly errorState = this.groupHost.errorState;
 
   protected handleFocusIn(): void {

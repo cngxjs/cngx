@@ -65,12 +65,10 @@ A `cngxButtonToggle` needs exactly one of the two groups above it. Outside both 
 ## Keyboard
 
 Both groups carry `CngxRovingTabindex`, so the group is one tab stop. `orientation` sets the arrow
-axis and `aria-orientation`. Navigation wraps at the ends, skips disabled toggles and follows the
-writing direction for Left and Right.
+axis and `aria-orientation`. Navigation wraps at the ends and follows the writing direction for
+Left and Right.
 
-Arrow selection in the single group comes from the roving directive: it flags a navigation key
-before it moves focus, and the newly focused toggle asks the group to select it. Focus from Tab, a
-click or `focus()` does not select.
+In the single group arrow, Home and End focus selects; focus from Tab or `focus()` does not.
 
 Space and Enter select on keydown. Read changes from the group's model, not from `(click)` on a
 toggle.
@@ -85,10 +83,9 @@ toggle.
 - `aria-busy` is set while `state` reports `loading`. With `state` unbound, the nearest
   `CNGX_STATEFUL` producer counts.
 - `required` only sets `aria-required`. Validation belongs to the form.
-- A disabled toggle explains why through `[cngxDescribedBy]`: render the reason yourself and pass
-  its id. The group's `disabled` disables every toggle with `aria-disabled`; the toggles stay
-  focusable and reachable with the arrow keys, so the reason is announced, and activation is
-  swallowed. A toggle disabled by its own `disabled` is still skipped by the arrow keys.
+- Disabled toggles render `aria-disabled`, stay focusable and swallow activation. Arrow keys skip
+  a toggle disabled by its own `disabled` but reach one disabled by the group, so its
+  `[cngxDescribedBy]` reason (render it yourself and pass its id) is announced.
 
 ## Forms
 
