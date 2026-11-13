@@ -143,12 +143,11 @@ export class CngxButtonToggle<T = unknown> {
     this.resolved.mode === 'multi' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 
+  // A disabled toggle is focusable, so it still consumes the roving flag; the group refuses the
+  // selection. Returning early here would leave the flag set for the next, unrelated focus.
   protected handleFocus(): void {
-    if (this.toggleDisabled()) {
-      return;
-    }
     if (this.resolved.mode === 'single') {
-      this.resolved.group.consumePendingArrowSelect(this.value());
+      this.resolved.group.consumePendingArrowSelect(this.value(), this.toggleDisabled());
     }
   }
 
