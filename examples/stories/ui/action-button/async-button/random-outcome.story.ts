@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxActionButton'],
   setup: `protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
-    setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 200),
+    setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 80),
   );`,
   setupChrome: `
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -26,25 +26,21 @@ export const STORY: DemoSpec = {
   protected readonly heard = signal<readonly { n: number; text: string }[]>([]);
   protected readonly ariaBusy = signal('-');
 
-  protected latencyMs(): number {
+  // The wait added in front of submitAction's own 80 ms, per latency picked below.
+  private extraMs(): number {
     switch (this.latency()) {
       case 'fast':
-        return 80;
+        return 0;
       case 'medium':
-        return 200;
+        return 120;
       default:
-        return 1500;
+        return 1420;
     }
   }
 
-  // Runs submitAction with the latency picked below instead of its fixed 200 ms.
-  private readonly latencyKnob = wrapDemoAction(this, 'submitAction', () => () =>
-    new Promise<void>((resolve, reject) =>
-      setTimeout(
-        () => (Math.random() > 0.4 ? resolve() : reject(new Error('Random failure'))),
-        this.latencyMs(),
-      ),
-    ),
+  // Runs submitAction after the picked extra wait; its own outcome decides the run.
+  private readonly latencyKnob = wrapDemoAction(this, 'submitAction', (original) => () =>
+    new Promise<void>((resolve) => setTimeout(resolve, this.extraMs())).then(() => original()),
   );
 
   // Logs the real DOM writes into the live region next to each async button.

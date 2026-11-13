@@ -17,7 +17,7 @@ The button does not own async state; cngxAsyncClick on the same element does. Wh
 
 ```ts
 protected readonly save = (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 200));
+  new Promise((resolve) => setTimeout(resolve, 80));
 ```
 
 ## Wiring

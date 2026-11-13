@@ -17,28 +17,26 @@ export const STORY: DemoSpec = {
   imports: ['CngxButton', 'CngxAsyncClick'],
   setup: `
   protected readonly save = (): Promise<void> =>
-    new Promise((resolve) => setTimeout(resolve, 200));`,
+    new Promise((resolve) => setTimeout(resolve, 80));`,
   setupChrome: `
   protected readonly fail = signal(false);
   protected readonly latency = signal<'fast' | 'medium' | 'slow'>('medium');
 
-  private latencyMs(): number {
+  // The wait added in front of save's own 80 ms, per latency picked below.
+  private extraMs(): number {
     switch (this.latency()) {
       case 'fast':
-        return 80;
+        return 0;
       case 'medium':
-        return 200;
+        return 120;
       default:
-        return 1500;
+        return 1420;
     }
   }
 
-  // Runs save with the latency picked below instead of its fixed 200 ms, and
-  // makes it fail while the switch is on.
-  private readonly latencyKnob = wrapDemoAction(
-    this,
-    'save',
-    () => () => new Promise<void>((resolve) => setTimeout(resolve, this.latencyMs())),
+  // Runs save after the picked extra wait, and makes it fail while the switch is on.
+  private readonly latencyKnob = wrapDemoAction(this, 'save', (original) => () =>
+    new Promise<void>((resolve) => setTimeout(resolve, this.extraMs())).then(() => original()),
   );
   private readonly failSwitch = failDemoActionWhen(
     this,

@@ -239,7 +239,7 @@
     {
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
-      "contentHash": "sha256:a0156a28d3b40bcb7600b090c622e9f83e94d1d4dc84d6eb7c1822385b25b3c2"
+      "contentHash": "sha256:100d61cbc0a178ea81e8dbfd16d21bfad0a9eb66a1ce9c67d2f48b9dfab3df61"
     },
     {
       "artifact": "pack/recipes/common-menu-button-split-button.md",
