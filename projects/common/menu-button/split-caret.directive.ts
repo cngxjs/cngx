@@ -12,27 +12,18 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
 import { CNGX_SPLIT_CARET, type CngxSplitCaretRole } from './split-caret.token';
 
 /**
- * The caret role of a `cngxSplitButton`, as a host directive. Declare it in `hostDirectives` of a
- * button host on `CngxButtonBrain`: as a direct child of a split the host becomes the caret,
- * anywhere else it stays an ordinary button. `cngxIconMenuButton` renders on it.
+ * The caret role of a `cngxSplitButton`, as a host directive on a button host on
+ * `CngxButtonBrain`. As a direct child of a split the host becomes the caret, anywhere else it
+ * stays an ordinary button. `cngxIconMenuButton` renders on it.
  *
- * While the host is the caret and the main action is blocked, the directive refuses activation
- * through `CNGX_BUTTON_HOST_STATE`, so `aria-disabled` and the activation guard follow the main.
- * It adds the cause to `aria-describedby`: the main button's reason, or the busy note while the
- * main action runs.
- *
- * The host template renders what the directive supplies:
- *
- * - `label()` as visually hidden text, so an `aria-label` on the host still wins.
- * - `busyNote()` in a `hidden` span with `[id]="busyNoteId"`.
- *
- * The host's own click toggle has to refuse to open while the brain is `blocked()`, and still
- * close an open menu.
+ * While the main action is blocked it refuses activation through `CNGX_BUTTON_HOST_STATE` and
+ * adds the cause to `aria-describedby`. The host renders `label()` as visually hidden text (an
+ * `aria-label` still wins) and `busyNote()` in a `hidden` span with `[id]="busyNoteId"`. Its click
+ * toggle must refuse to open while the brain is `blocked()` and still close an open menu.
  *
  * Co-host `CngxPopoverTrigger`: the split reads the caret's popover through it to hang the menu
- * under the whole group. A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces this
- * directive's entry and folds `refusing()` into its own state. The `custom-caret-host` example
- * shows a complete host.
+ * under the group. A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces this entry and
+ * folds `refusing()` into its own state.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-caret.directive.ts
@@ -65,10 +56,10 @@ export class CngxSplitCaret implements CngxButtonHostState {
   /** Id the host template puts on its hidden busy note. */
   readonly busyNoteId = nextUid('cngx-split-caret-busy-');
 
-  /** The caret's name from the language pack (`menuButton.splitToggle`). */
+  /** The caret's name, `menuButton.splitToggle`. */
   readonly label = computed(() => this.i18n().splitToggle);
 
-  /** The busy note from the language pack (`menuButton.splitMainBusy`). */
+  /** The busy note, `menuButton.splitMainBusy`. */
   readonly busyNote = computed(() => this.i18n().splitMainBusy);
 
   // The cause of a refusal that comes from the main: its reason, or the busy

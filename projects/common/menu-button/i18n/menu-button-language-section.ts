@@ -2,8 +2,7 @@
 import type {} from '@cngx/core/i18n';
 
 /**
- * The `menuButton` section of a `CngxLanguagePack`: the copy a split caret falls back to
- * when the consumer sets none.
+ * The `menuButton` section of a `CngxLanguagePack`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-language-section.ts
  * @since 0.1.0
@@ -12,16 +11,12 @@ import type {} from '@cngx/core/i18n';
 export interface CngxMenuButtonLanguageSection {
   /** Accessible name of a split caret. An `aria-label` on the caret wins. */
   readonly splitToggle: string;
-  /**
-   * Description of the split caret while the main action runs, referenced through
-   * `aria-describedby`, never part of the name.
-   */
+  /** Description of the split caret while the main action runs, never part of its name. */
   readonly splitMainBusy: string;
 }
 
 /**
- * The English `menuButton` section. `CNGX_MENU_BUTTON_I18N` defaults to it, and the shipped
- * English pack is built from it.
+ * The English `menuButton` section, the default of `CNGX_MENU_BUTTON_I18N`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-language-section.ts
  * @since 0.1.0
