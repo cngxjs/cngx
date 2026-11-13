@@ -1771,6 +1771,7 @@ class EndPersistHost {}
       [(opened)]="open"
       [(collapsed)]="collapsed"
       [collapsedAs]="collapsedAs()"
+      [tooltip]="tooltipOn()"
     >
       <cngx-nav-header>
         <span cngxNavMark class="mark">A</span>
@@ -1799,6 +1800,7 @@ class RailPiecesHost {
   readonly open = signal(true);
   readonly collapsed = signal(true);
   readonly collapsedAs = signal<'rail' | 'hidden'>('rail');
+  readonly tooltipOn = signal<boolean | undefined>(undefined);
 }
 
 describe('CngxSidenav rail pieces', () => {
@@ -1907,6 +1909,21 @@ describe('CngxSidenav rail pieces', () => {
       providers: [provideNavRailConfig(withNavRailTooltip(false))],
     });
     const { tooltip, flyoutWired } = setup();
+    expect(tooltip()).toBeNull();
+    expect(flyoutWired()).toBe(true);
+  });
+
+  it('lets [tooltip] win over the config and switch the tooltip at runtime', () => {
+    TestBed.configureTestingModule({
+      providers: [provideNavRailConfig(withNavRailTooltip(false))],
+    });
+    const { host, settle, tooltip, flyoutWired } = setup();
+    expect(tooltip()).toBeNull();
+    host.tooltipOn.set(true);
+    settle();
+    expect(tooltip()).not.toBeNull();
+    host.tooltipOn.set(false);
+    settle();
     expect(tooltip()).toBeNull();
     expect(flyoutWired()).toBe(true);
   });

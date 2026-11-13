@@ -81,7 +81,7 @@ The flyout and the tooltip are the rail pieces of `@cngx/ui/nav-rail` (`injectNa
 - Tooltip and flyout attach only while the sidenav rests as a rail. Peek, expanded, an overlay (`over`, also in the `compact` and `medium` width classes) and `collapsedAs="hidden"` are not railed.
 - The hover peek is on by default (`expandOnHover`) and settles after about 120ms, before the 300ms tooltip delay. A pointer on the rail therefore gets the peek, not the tooltip: the tooltip shows on keyboard focus, and for the pointer when `expandOnHover` is off.
 - A flyout opened by keyboard turns into the inline group when a pointer peek starts, and that group closes when the peek ends.
-- The tooltip delay and switch come from `CNGX_NAV_RAIL_CONFIG` (`withNavRailTooltipDelay`, `withNavRailTooltip`); the sidenav has no input or config key of its own for them. An override of `CNGX_NAV_RAIL_TOOLTIP_FACTORY` / `CNGX_NAV_RAIL_FLYOUT_FACTORY` applies to the sidenav and to `cngx-nav-rail` alike.
+- `[tooltip]` switches the tooltip per sidenav; unbound, `withNavRailTooltip` of `CNGX_NAV_RAIL_CONFIG` applies, else it is on. The delay comes from the same config (`withNavRailTooltipDelay`). An override of `CNGX_NAV_RAIL_TOOLTIP_FACTORY` / `CNGX_NAV_RAIL_FLYOUT_FACTORY` applies to the sidenav and to `cngx-nav-rail` alike.
 
 ### Sidenav or nav rail
 

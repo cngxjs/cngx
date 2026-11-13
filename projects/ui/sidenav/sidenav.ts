@@ -284,6 +284,13 @@ export class CngxSidenav
    */
   readonly miniWidth = input<string | undefined>(this.cfg.dimensions?.miniWidth);
 
+  /**
+   * Whether a row on the collapsed rail shows its label in a tooltip. Unbound,
+   * `withNavRailTooltip` of the nav rail config in scope applies, else `true`.
+   * Switching it off removes the tooltip element and its listeners.
+   */
+  readonly tooltip = input<boolean | undefined>(undefined);
+
   /** Whether the sidebar is user-resizable via a drag handle. */
   readonly resizable = input<boolean>(false);
 
@@ -526,6 +533,11 @@ export class CngxSidenav
    */
   private readonly railed = computed(() => this.sidebar.state() === 'rail');
 
+  private readonly navRailConfig = injectNavRailConfig();
+
+  /** Whether the rail tooltip is on: `[tooltip]`, then the nav rail config. */
+  private readonly resolvedTooltip = computed(() => this.tooltip() ?? this.navRailConfig.tooltip);
+
   // Each directive query has a `read: ElementRef` twin over the same selector,
   // so the flyout pairs a directive with its host by index.
   private readonly navGroups = contentChildren(CngxNavGroup, { descendants: true });
@@ -542,11 +554,10 @@ export class CngxSidenav
   constructor() {
     // The rail pieces of cngx-nav-rail: a tooltip with the clipped row label
     // and the nav groups as flyouts, both only while railed. The tooltip
-    // switch and delay come from CNGX_NAV_RAIL_CONFIG, so one app-wide
-    // setting covers both organisms.
-    const tooltipOn = injectNavRailConfig().tooltip ?? true;
+    // delay comes from CNGX_NAV_RAIL_CONFIG, so one setting covers both
+    // organisms.
     inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)({
-      railed: computed(() => tooltipOn && this.railed()),
+      railed: computed(() => this.resolvedTooltip() && this.railed()),
       side: this.position,
     });
     inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({

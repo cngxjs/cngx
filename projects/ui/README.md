@@ -266,6 +266,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `collapsedAs` | `'rail' \| 'hidden'` | `'rail'` | How a collapsed rail rests |
 | `expandOnHover` | `boolean` | `true` | Peek a collapsed rail on hover |
 | `modality` | `'page' \| 'contained' \| 'none'` | `'page'` | How far an open overlay takes over the page |
+| `tooltip` | `boolean` | config, else `true` | Label tooltip on the collapsed rail; unbound, `withNavRailTooltip` applies |
 | `resizable` | `boolean` | `false` | Show drag handle for user resize |
 | `minWidth` | `string` | `'120px'` | Min width constraint during resize |
 | `maxWidth` | `string` | `'600px'` | Max width constraint during resize |
