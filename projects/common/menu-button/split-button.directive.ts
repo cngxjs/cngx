@@ -16,54 +16,32 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
 import { CNGX_SPLIT_BUTTON, type CngxSplitButtonContext } from './split-button.token';
 
 /**
- * A split button: a main `cngxButton` that runs the default action and a
- * `cngxIconMenuButton` caret that opens the alternatives, framed as one
- * button group. The group carries `role="group"` and needs a name
- * (`aria-label` or `aria-labelledby`, [`CNGX1072`](/error-codes/cngx1072.md)); `variant` and `size`
- * pass to both buttons.
+ * A main button for the default action and a `cngxIconMenuButton` caret for the alternatives,
+ * framed as one `role="group"` button group. The group needs a name
+ * ([`CNGX1072`](/error-codes/cngx1072.md)); `variant` and `size` pass to both buttons.
  *
- * The caret derives its state from the main button: while the main action
- * is disabled, running its `cngxAsyncClick` or refused by
- * `[enabled]="false"`, the caret renders `aria-disabled`, opens on neither
- * click nor key, and an open menu closes. Its `aria-describedby` says why:
- * the main button's reason while the main is disabled with one, and "The
- * main action is running" (`menuButton.splitMainBusy`) while the main
- * action runs; the main button keeps `aria-busy` and the announcement.
- * Inside the split the caret renders the caret glyph and is named "More
- * options" from the active language pack (`CNGX_MENU_BUTTON_I18N`) unless it
- * has an `aria-label`.
+ * Both roles are direct children (an `ng-container` in between is fine): the caret carries
+ * `CngxSplitCaret`, the main action is the first other cngx button. Without a main button the
+ * split warns [`CNGX1073`](/error-codes/cngx1073.md).
  *
- * The caret's menu hangs under the whole group, not under the caret: the
- * split claims the explicit anchor slot of the caret's popover (the slot
- * `CngxPopoverAnchor` uses) and emits its `anchor-name`. A consumer
- * `[cngxPopoverAnchor]` on the same popover keeps precedence; the split
- * claims the slot only while it is free. Dismissal is unchanged: a
- * pointerdown on the main button still closes an open menu.
+ * While the main button is disabled, running or refused by `[enabled]="false"`, the caret reads
+ * `aria-disabled`, does not open, closes an open menu and names the cause in `aria-describedby`.
+ * The main button keeps `aria-busy` and the announcement.
  *
- * Both roles are direct children (an `ng-container` in between is fine): the
- * caret is the `cngxIconMenuButton` (or any host on `CngxSplitCaret`), the
- * main action the first other cngx button (`cngxButton`, `cngxIconButton`,
- * `cngxActionButton` or a custom host on `CngxButtonBrain`). Without a main button the directive
- * warns [`CNGX1073`](/error-codes/cngx1073.md). Buttons deeper inside the split, for example in a
- * projected panel, take neither role.
+ * The caret's menu hangs under the whole group. The split takes the explicit anchor slot of the
+ * caret's popover only while it is free, so a `[cngxPopoverAnchor]` of your own keeps precedence.
  *
  * ```html
  * <div cngxSplitButton variant="solid" aria-label="Publish">
  *   <button cngxButton [cngxAsyncClick]="publish">Publish</button>
  *   <button cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
  * </div>
- * <div cngxPopover placement="bottom-end" #pop="cngxPopover">
- *   <ul cngxMenu label="Publish options" #menu="cngxMenu">
- *     <li cngxMenuItem value="schedule">Schedule</li>
- *     <li cngxMenuItem value="draft">Save as draft</li>
- *   </ul>
- * </div>
  * ```
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.directive.ts
  * @since 0.1.0
- * @relatedTo CngxIconMenuButton, CngxSplitCaret, CngxButton, CngxButtonGroup, CNGX_BUTTON_STATE, CngxAsyncClick, CNGX_MENU_BUTTON_I18N
+ * @relatedTo CngxIconMenuButton, CngxSplitCaret, CngxButton, CngxButtonGroup, CNGX_BUTTON_STATE, CngxAsyncClick, CNGX_MENU_BUTTON_I18N, CNGX_SPLIT_BUTTON, CngxPopoverAnchor
  * <example-url>/#/common/menu-button/split-button/basic</example-url>
  * <example-url>/#/common/menu-button/split-button/busy-and-disabled</example-url>
  * @axis level molecule
@@ -86,7 +64,7 @@ export class CngxSplitButton implements CngxSplitButtonContext {
 
   private readonly caretRole = contentChild(CNGX_SPLIT_CARET, { descendants: false });
 
-  /** The button state of the caret: the direct child host of `CngxSplitCaret`. */
+  /** The caret's button state. */
   readonly caret = computed(() => this.caretRole()?.state);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

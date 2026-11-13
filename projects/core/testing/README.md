@@ -60,7 +60,7 @@ The min-dwell timer is only scheduled when the indicator shows, so one advance h
 
 Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; use the values you bound in the same sum.
 
-The same two timers run on every async-click host: the button family (`cngx-button`, `cngx-icon-button`, `cngx-close-button`, `cngx-menu-button`, `cngx-icon-menu-button`), `cngx-action-button`, the popover confirm action and stepper complete. On all of them the busy visual appears after `showDelay` and is held for `minDwell` past the run, and for that whole held window the host refuses activation (`aria-disabled` and `aria-busy` both stay `true`, the click is swallowed). A spec that clicks again inside the dwell has to advance `showDelay + minDwell + 1` before the host accepts a second run.
+The same two timers run on every async-click host: the button family (`cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxMenuButton`, `cngxIconMenuButton`), `cngxActionButton`, the popover confirm action and stepper complete. On all of them the busy visual appears after `showDelay` and is held for `minDwell` past the run, and for that whole held window the host refuses activation (`aria-disabled` and `aria-busy` both stay `true`, the click is swallowed). A spec that clicks again inside the dwell has to advance `showDelay + minDwell + 1` before the host accepts a second run.
 
 ## Announcements
 
@@ -116,7 +116,7 @@ The helpers use no runner globals, so they work the same under Vitest, Jasmine /
 
 ## What it does not pin
 
-- **Motion.** No cngx runtime reads the motion preference token, so pinning it changes nothing under jsdom. A browser-mode suite that wants reduced motion adds `provideMotion('reduced')` itself; that sets `<html data-motion>` and leaves it in place when the test module is torn down, so remove it after the spec.
+- **Motion.** Not pinned: the JS motion readers go through `injectEffectiveMotion()`, which follows the OS query for `auto`, and jsdom has no `matchMedia`, so they already resolve to full motion. A suite that wants reduced motion adds `provideMotion('reduced')` itself; that sets `<html data-motion>` and removes it again when the test module is torn down.
 - **Transition settle time.** `onTransitionDone` keeps its fallback timer: the computed transition time plus 50 ms, which is 50 ms under jsdom.
 
 ## Peer dependencies

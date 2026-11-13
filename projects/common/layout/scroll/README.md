@@ -360,7 +360,7 @@ div[cngxInfiniteScroll] {
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/layout/scroll/)
 - Demo: `examples/stories/common/scroll-demo/`
 - Tests: `projects/common/layout/scroll/*.spec.ts`
 - `CngxIntersectionObserver` in `@cngx/common/layout` - Low-level observer primitive

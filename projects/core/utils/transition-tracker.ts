@@ -89,7 +89,9 @@ export function createTransitionTracker<T = AsyncStatus>(
     source,
     computation: (current, prev) => ({
       current,
-      previous: prev?.value.current ?? options?.seed ?? current,
+      // Branch on prev, not on its value: a transition out of undefined or
+      // null is real and must not fall through to the seed.
+      previous: prev !== undefined ? prev.value.current : (options?.seed ?? current),
     }),
     equal: (a, b) => eq(a.current, b.current) && eq(a.previous, b.previous),
   });

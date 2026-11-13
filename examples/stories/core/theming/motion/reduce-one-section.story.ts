@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>[cngxMotionScope]="\'reduced\'"</code> reflects <code>data-motion</code> onto one section, so the shipped safety net collapses motion for that subtree while the rest of the page keeps animating.',
   description:
-    "Both panels hold a spinner and a shimmering skeleton line. The right panel carries <code>cngxMotionScope</code>; because the <code>motion-tokens.css</code> safety net is unanchored, <code>data-motion='reduced'</code> on the section collapses <code>animation-duration</code> and <code>transition-duration</code> for its descendants only. The skeleton shimmer freezes, while the spinner (a <code>role='status'</code> host) switches to a slow opacity pulse instead of dying into a frozen ring - the essential-motion carve-out. The input accepts only <code>reduced</code> and <code>full</code>: <code>auto</code> means \"follow the OS query\" and lives on <code>provideMotion()</code> at the root. A subtree <code>full</code> does not re-enable motion against an OS reduce preference; that escape is root-only. If your OS already asks for reduced motion, both panels are reduced and the toggle shows no difference.",
+    "Both panels hold a spinner and a shimmering skeleton line. The right panel carries <code>cngxMotionScope</code>; because the <code>motion-tokens.css</code> safety net is unanchored, <code>data-motion='reduced'</code> on the section collapses <code>animation-duration</code> and <code>transition-duration</code> for its descendants only. The spinner and the skeleton line switch to a slow opacity pulse instead of freezing - the essential-motion carve-out: both loading components set <code>data-cngx-busy</code> while they load, and the safety net keeps a pulse on that hook. The input accepts only <code>reduced</code> and <code>full</code>: <code>auto</code> means \"follow the OS query\" and lives on <code>provideMotion()</code> at the root. A subtree <code>full</code> does not re-enable motion against an OS reduce preference; that escape is root-only. If your OS already asks for reduced motion, both panels are reduced and the toggle shows no difference.",
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -48,8 +48,8 @@ export const STORY: DemoSpec = {
   </div>`,
   templateChromeBefore: `
   <div class="cngx-ex-chrome" style="margin-bottom:12px">
-    Toggle the scope on the right-hand section: its skeleton shimmer stops and
-    its spinner falls back to a pulse, while the left panel keeps animating.
+    Toggle the scope on the right-hand section: its spinner and skeleton
+    shimmer fall back to a slow pulse, while the left panel keeps animating.
   </div>
   <div style="margin-bottom:20px">
     <cngx-toggle [(value)]="reduceSection">Reduce motion in the right section</cngx-toggle>

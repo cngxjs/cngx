@@ -27,15 +27,16 @@ export function foldForMatching(value: string, locale?: string): string {
 
 /**
  * Accent- and case-tolerant prefix match between an item label and a
- * typeahead query term - THE matching semantic of every cngx typeahead
- * surface.
+ * typeahead query term: the one-shot form of {@link createTypeaheadMatcher}
+ * for a single comparison. No cngx library calls it; the libraries match
+ * through {@link createTypeaheadMatcher}, which holds the matching semantic of
+ * every cngx typeahead surface.
  *
- * `CngxActiveDescendant` applies it to the rendered window on every
- * buffered keystroke; `CngxTreeSelect`'s expand-to-reveal miss search
- * applies it to the full flat tree. Both MUST agree on what "matches"
- * means - a revealed node that the rendered-window walk would then
- * skip (or vice versa) breaks the type-to-find contract. Change the
- * semantic here and every consumer moves together.
+ * `CngxActiveDescendant` reaches that matcher through
+ * {@link createTypeaheadWalker} on every buffered keystroke;
+ * `CngxTreeSelect`'s expand-to-reveal miss search calls it over the full
+ * flat tree. Both agree on what "matches" means because they share it, and
+ * this function returns the same answer for the same label, term and locale.
  *
  * Both sides are lowercased with `locale` (plain `toLowerCase()` without
  * one), NFD-normalised and stripped of combining marks, so `u` finds
@@ -82,10 +83,12 @@ function foldedLabelOf(label: string, locale: string | undefined, key: object | 
 }
 
 /**
- * {@link matchesTypeahead} for a walk over many labels: the term is folded
- * once, and a label passed with its option object as `key` is folded once per
- * label text and locale, so a keystroke over a long list folds only what
- * changed. Same semantic as {@link matchesTypeahead}.
+ * The typeahead matcher every cngx typeahead surface uses (directly, or
+ * through {@link createTypeaheadWalker}): an accent- and case-tolerant prefix
+ * match, built for a walk over many labels. The term is folded once, and a
+ * label passed with its option object as `key` is folded once per label text
+ * and locale, so a keystroke over a long list folds only what changed.
+ * {@link matchesTypeahead} is the one-shot form for a single comparison.
  *
  * ```typescript
  * const matches = createTypeaheadMatcher(term, locale);

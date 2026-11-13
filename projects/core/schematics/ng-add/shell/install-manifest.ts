@@ -28,19 +28,23 @@ export function readInstallManifest(tree: Tree): InstallManifestState {
   if (text === undefined) {
     return { state: 'unreadable', cause: 'not-utf8', content };
   }
-  if (!isJson(text)) {
+  const parsed = readJsonc(tree);
+  if (parsed === NOT_JSON) {
     return { state: 'unreadable', cause: 'not-json', content };
   }
-  const manifest = parseInstallManifest(text);
+  const manifest = parseInstallManifest(parsed);
   return manifest === undefined ? { state: 'unreadable', cause: 'not-a-record', content } : { state: 'read', manifest };
 }
 
-function isJson(text: string): boolean {
+const NOT_JSON = Symbol('not-json');
+
+// JSONC like `angular.json`: a hand edit that leaves a comment or a
+// trailing comma must not reset the manifest to an `.unreadable` copy.
+function readJsonc(tree: Tree): unknown {
   try {
-    JSON.parse(text);
-    return true;
+    return tree.readJson(INSTALL_MANIFEST_PATH);
   } catch {
-    return false;
+    return NOT_JSON;
   }
 }
 

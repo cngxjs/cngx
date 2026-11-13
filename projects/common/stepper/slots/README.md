@@ -75,5 +75,5 @@ For app-wide defaults, register the same `TemplateRef`s on `CNGX_STEPPER_CONFIG.
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for context-type members and the cascade factory signature.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/stepper/slots/) for context-type members and the cascade factory signature.
 - `@cngx/common/stepper` entry README for the host contracts, presenter, config cascade, and i18n.

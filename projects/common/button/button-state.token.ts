@@ -1,8 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
 /**
- * State every cngx button type publishes about itself, so a composing
- * molecule reads it without importing a concrete button class.
+ * Button state a composing molecule reads without importing a button class.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
  * @since 0.1.0
@@ -10,33 +9,21 @@ import { InjectionToken, type Signal } from '@angular/core';
  */
 export interface CngxButtonState {
   /**
-   * `true` while the button refuses activation: disabled, running a
-   * co-hosted `cngxAsyncClick`, or refused by its `[enabled]="false"`.
+   * Refuses activation: `disabled`, a host refusal, a run or its held busy layer, or a refusing
+   * runner (`cngxAsyncClick` with `[enabled]="false"`).
    */
   readonly blocked: Signal<boolean>;
-  /**
-   * `true` while the button runs: a co-hosted `cngxAsyncClick` is pending or
-   * the host reflects a run of its own. The immediate truth, without the
-   * busy layer's show delay.
-   */
+  /** A co-hosted run is pending or the host reflects one. Ungated. */
   readonly busy: Signal<boolean>;
-  /**
-   * Id of the element that says why the button is disabled, while it
-   * describes the button (`disabled` with a reason), else `null`. A
-   * composing molecule references it to explain its own refusal.
-   */
+  /** Disabled-reason id while it applies, else `null`. Reference it to explain a refusal. */
   readonly activeReasonId: Signal<string | null>;
 }
 
 /**
- * DI token every cngx button provides on its own host through
- * `CngxButtonBrain`: `cngxButton`, `cngxIconButton`, `cngxCloseButton`,
- * `cngxMenuButton`, `cngxIconMenuButton`, `cngxActionButton`,
- * `cngxPanelToggle`, `cngxPopoverAction`, `cngxPopoverDismiss` and any custom
- * host of the brain. A split button reads its main action through it.
+ * Provided by every host on `CngxButtonBrain`. A split button reads its main action through it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxIconButton, CngxSplitButton
+ * @relatedTo CngxButton, CngxIconButton, CngxSplitButton, CngxButtonBrain, CngxSplitCaret, CngxActionButton
  */
 export const CNGX_BUTTON_STATE = new InjectionToken<CngxButtonState>('CngxButtonState');

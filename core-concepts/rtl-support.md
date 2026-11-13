@@ -20,7 +20,7 @@ Set `dir` on the document, or on any host that scopes a subtree:
 <html dir="rtl">
 ```
 
-That is the whole opt-in. Under Angular i18n the framework already sets `<html dir>` from the active locale, so a localized RTL build needs no extra CNGX wiring. Everything below reacts to that attribute; nothing in the library sets it, and no component takes an `[rtl]` input.
+That is the whole opt-in. Under Angular i18n the framework already sets `<html dir>` from the active locale, so a localized RTL build needs no extra CNGX wiring. Everything below reacts to that attribute, and no component takes an `[rtl]` input. The one place CNGX writes it is `provideCngxI18n` (`@cngx/core/i18n`): by default it sets `<html lang>` and `<html dir>` from the active language pack (the pack's `dir`, else derived from its `locale`). Pass `withDocumentLanguage('off')` to leave both attributes to the app; see [Localisation](localisation.html).
 
 ---
 
@@ -30,7 +30,7 @@ One read-only signal carries the direction through the component graph.
 
 ### `injectDirection()`
 
-Returns a `Signal<'ltr' | 'rtl'>`. It resolves the document-root `dir` and re-signals when the root flips at runtime. It is read-only: CNGX reports the direction the DOM owns, it never writes it. A root `dir="auto"` is honoured at read time: the signal reports what the browser resolved for `<html>` (its `:dir(rtl)` state), read at construction, after the first render and on every root `dir` change, so content that arrives later does not re-resolve it. An invalid value reads as `'ltr'` and warns in development mode ([`CNGX0006`](error-codes/cngx0006.html)).
+Returns a `Signal<'ltr' | 'rtl'>`. It resolves the document-root `dir` and re-signals when the root flips at runtime. The signal is read-only and never writes the DOM. Under `provideCngxI18n` (document language on, the default) the token reports the pack's direction instead, and the provider writes the same value to `<html dir>`. A root `dir="auto"` is honoured at read time: the signal reports what the browser resolved for `<html>` (its `:dir(rtl)` state), read at construction, after the first render and on every root `dir` change, so content that arrives later does not re-resolve it. An invalid value reads as `'ltr'` and warns in development mode ([`CNGX0006`](error-codes/cngx0006.html)).
 
 ```ts
 import { injectDirection } from '@cngx/core';

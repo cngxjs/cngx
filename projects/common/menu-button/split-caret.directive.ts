@@ -12,64 +12,23 @@ import { CNGX_SPLIT_BUTTON } from './split-button.token';
 import { CNGX_SPLIT_CARET, type CngxSplitCaretRole } from './split-caret.token';
 
 /**
- * The caret role of a `cngxSplitButton`, as a host directive. A button host
- * on `CngxButtonBrain` declares it in `hostDirectives` and becomes the
- * split's caret when it is a direct child of the split; anywhere else it
+ * The caret role of a `cngxSplitButton`, as a host directive on a button host on
+ * `CngxButtonBrain`. As a direct child of a split the host becomes the caret, anywhere else it
  * stays an ordinary button. `cngxIconMenuButton` renders on it.
  *
- * While the host is the caret it refuses activation with the main action
- * (provided to the brain as `CNGX_BUTTON_HOST_STATE`, so `aria-disabled`,
- * the activation guard and a co-hosted trigger follow) and adds the cause
- * to the host's `aria-describedby`: the main button's reason while the
- * main is disabled with one, and the busy note while the main action runs.
- * The host template renders the name and the note from the directive:
- * `label()` as visually hidden text (so a consumer `aria-label` still
- * wins) and `busyNote()` in a `hidden` span with `[id]="busyNoteId"`; both
- * come from the active language pack (`menuButton.splitToggle`,
- * `menuButton.splitMainBusy`).
+ * While the main action is blocked it refuses activation through `CNGX_BUTTON_HOST_STATE` and
+ * adds the cause to `aria-describedby`. The host renders `label()` as visually hidden text (an
+ * `aria-label` still wins) and `busyNote()` in a `hidden` span with `[id]="busyNoteId"`. Its click
+ * toggle must refuse to open while the brain is `blocked()` and still close an open menu.
  *
- * A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces this
- * directive's entry; fold `refusing()` into its own state then.
- *
- * ```ts
- * @Component({
- *   selector: 'button[appCaret]',
- *   hostDirectives: [
- *     { directive: CngxButtonBrain, inputs: ['variant: appCaret', 'disabled', 'disabledReason'] },
- *     { directive: CngxMenuTrigger, inputs: ['cngxMenuTrigger: menu', 'popover'] },
- *     { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
- *     CngxSplitCaret,
- *   ],
- *   providers: [provideButtonHost('appCaret', { defaultVariant: 'solid', iconOnly: true })],
- *   host: { '(click)': 'toggle()' },
- *   template: `
- *     <span aria-hidden="true">v</span>
- *     @if (caret.isCaret()) {
- *       <span class="cngx-sr-only">{{ caret.label() }}</span>
- *       <span [id]="caret.busyNoteId" hidden>{{ caret.busyNote() }}</span>
- *     }
- *   `,
- * })
- * class AppCaret {
- *   protected readonly caret = inject(CngxSplitCaret);
- *   private readonly brain = inject(CngxButtonBrain);
- *   private readonly menu = inject(CngxMenuTrigger);
- *   private readonly popover = inject(CngxPopoverTrigger);
- *
- *   // A blocked caret never opens its menu; an open one still closes.
- *   protected toggle(): void {
- *     if (this.brain.blocked() && !this.menu.isOpen()) {
- *       return;
- *     }
- *     this.popover.popoverRef().toggle();
- *   }
- * }
- * ```
+ * Co-host `CngxPopoverTrigger`: the split reads the caret's popover through it to hang the menu
+ * under the group. A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces this entry and
+ * folds `refusing()` into its own state.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-caret.directive.ts
  * @since 0.1.0
- * @relatedTo CngxSplitButton, CngxIconMenuButton, CngxButtonBrain, CNGX_SPLIT_BUTTON
+ * @relatedTo CngxSplitButton, CngxIconMenuButton, CngxButtonBrain, CNGX_SPLIT_BUTTON, CNGX_MENU_BUTTON_I18N, CNGX_BUTTON_HOST_STATE, CngxPopoverTrigger
  * <example-url>/#/common/menu-button/split-button/custom-caret-host</example-url>
  * @axis level molecule
  */
@@ -97,10 +56,10 @@ export class CngxSplitCaret implements CngxButtonHostState {
   /** Id the host template puts on its hidden busy note. */
   readonly busyNoteId = nextUid('cngx-split-caret-busy-');
 
-  /** The caret's name from the language pack (`menuButton.splitToggle`). */
+  /** The caret's name, `menuButton.splitToggle`. */
   readonly label = computed(() => this.i18n().splitToggle);
 
-  /** The busy note from the language pack (`menuButton.splitMainBusy`). */
+  /** The busy note, `menuButton.splitMainBusy`. */
   readonly busyNote = computed(() => this.i18n().splitMainBusy);
 
   // The cause of a refusal that comes from the main: its reason, or the busy

@@ -53,9 +53,12 @@ const HEX = /#[0-9a-f]{3,8}\b/i;
 const MAT_SYS_HEX_FALLBACK =
   /^--cngx-[a-z0-9-]+: var\(\s*--mat-sys-[a-z0-9-]+,\s*#[0-9a-f]{3,8}\s*\)$/i;
 
+// A `var(--mat-sys-*, <hex>)` fallback anywhere in a value, e.g. inside a color-mix().
+const MAT_SYS_HEX_FALLBACK_ANYWHERE = /var\(\s*--mat-sys-[a-z0-9-]+,\s*#[0-9a-f]{3,8}\s*\)/gi;
+
 // Hex values outside a `var(--mat-sys-*, <hex>)` fallback, i.e. hex the consumer would see.
 function activeHexDeclarations(declarations: readonly string[]): readonly string[] {
-  return declarations.filter((d) => HEX.test(d) && !MAT_SYS_HEX_FALLBACK.test(d));
+  return declarations.filter((d) => HEX.test(d.replace(MAT_SYS_HEX_FALLBACK_ANYWHERE, '')));
 }
 
 describe('theme-system', () => {
@@ -88,7 +91,7 @@ describe('theme-system', () => {
     const fallbacks = declarations.filter((d) => MAT_SYS_HEX_FALLBACK.test(d));
     expect(fallbacks.length).toBeGreaterThan(0);
     for (const declaration of fallbacks) {
-      expect(declaration).toMatch(/^--cngx-(sidenav|nav-link)-/);
+      expect(declaration).toMatch(/^--cngx-(sidenav|nav-link|nav-header|nav-footer)-/);
     }
   });
 

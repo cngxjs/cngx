@@ -11,6 +11,11 @@ import {
   CngxNavLink,
   CngxNavLabel,
   CngxNavBadge,
+  CngxNavIcon,
+  CngxNavHeader,
+  CngxNavFooter,
+  CngxNavMark,
+  CngxNavName,
   CngxDisclosure,
   provideNavConfig,
   withSingleAccordion,
@@ -129,7 +134,7 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
 - **ARIA roles:**
   - CngxNavLink: `aria-current="page"` when active
   - CngxNavLabel: Optional `role="heading"` (opt-in)
-  - CngxNavBadge: `aria-hidden="true"` by default; `aria-label` when meaningful
+  - CngxNavBadge: always `aria-hidden="true"`; `ariaLabel` becomes visually hidden text in the link name
   - CngxDisclosure: `aria-expanded`, `aria-controls`
   - CngxNavGroupContent: `inert` while the group is closed
 - **Keyboard interaction:**
@@ -138,7 +143,7 @@ Injects resolved nav config with defaults merged in. Must be called in an inject
   - Navigation: Tab through links, Arrow keys (if using roving tabindex)
 - **Screen reader:**
   - Links announce active state via `aria-current`
-  - Badges announce via `aria-label` when provided
+  - Badges announce their `ariaLabel` as part of the link name ("Inbox 12 unread")
   - Disclosure announces expanded state via `aria-expanded`
 - **Focus management:**
   - All elements are keyboard focusable
@@ -195,54 +200,77 @@ Nav directives are orthogonal atoms that compose to build sidebars:
 </nav>
 ```
 
-## Styling
+## Icon slot and letter fallback
 
-All nav elements use CSS custom properties for indentation, animation, and spacing:
+Put `cngxNavIcon` on the icon inside a row or a group head. `cngx-nav.css` sizes it to `--cngx-nav-icon-size` and places it in the row's icon box, at the same x in every row. The icon may sit inside a wrapper. It is `aria-hidden`, also when it is a `cngx-icon` with a `label`; the row text stays the accessible name.
 
-- `--cngx-nav-depth` (set by directive, integer) - Current nesting depth
-- `--cngx-nav-indent` (CSS custom property, default 12px) - Indent per level. Set app- or component-wide via `provideNavConfig(withNavIndent(16))`: nav hosts in the provider scope then emit the property. Without the feature the hosts emit nothing and your stylesheet's `var(..., 12px)` fallback or cascade value applies.
-- `--cngx-nav-transition` (CSS custom property, default 150ms) - Animation duration. Same contract via `withNavAnimation(200)`. Content panels are consumer-rendered siblings of the trigger, so panel transitions read the token from your own container - set it there when the panel should follow the config.
+```html
+<a cngxNavLink href="/inbox">
+  <cngx-icon cngxNavIcon><mat-icon>inbox</mat-icon></cngx-icon>
+  Inbox
+</a>
+<a cngxNavLink href="/archive">Archive</a>
+```
 
-### Basic Stylesheet
+A row without an icon draws its first letter in the same box, as a round filled badge. `CngxNavLink` and `CngxNavGroup` write it to `data-initial` after the first render: the first grapheme of the row text, uppercased with the app locale. Set `data-initial` yourself to pick another letter; the directive never overwrites it. The letter is drawn with `content: attr(data-initial) / ''`, so it never reaches the accessible name. Icon rows and letter rows line up, which is what a collapsed rail needs.
 
-```scss
-// Indentation
-[cngxNavLink],
-[cngxNavGroup] {
-  padding-left: calc(var(--cngx-nav-depth, 0) * var(--cngx-nav-indent, 12px));
-}
+## Header, footer, mark and name
 
-// Disclosure animation: use [cngxNavGroupContent] (see "Group content: two paths")
+`cngx-nav-header` / `[cngxNavHeader]` and `cngx-nav-footer` / `[cngxNavFooter]` are the top and bottom regions of a nav container. Both are flex rows at the row inset, the header with a bottom border and weight 600, the footer pushed to the bottom with a top border and muted text. Inside them, `[cngxNavMark]` (logo or avatar, `aria-hidden`) fills the icon box at the row icon x, and `[cngxNavName]` sits at the row label x and truncates with an ellipsis.
 
-// Active link styling
-[cngxNavLink][aria-current="page"] {
-  background: var(--color-primary);
-  color: white;
-  font-weight: 500;
-}
+```html
+<nav aria-label="Main">
+  <cngx-nav-header>
+    <img cngxNavMark src="/logo.svg" alt="" />
+    <span cngxNavName>Acme Console</span>
+  </cngx-nav-header>
+  <a cngxNavLink href="/dashboard">Dashboard</a>
+  <cngx-nav-footer>
+    <span cngxNavMark class="avatar">JD</span>
+    <span cngxNavName>Jane Doe</span>
+  </cngx-nav-footer>
+</nav>
+```
 
-// Badge variants
-[cngxNavBadge] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  background: var(--color-badge);
-  color: white;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
+`CngxSidenav` projects these slots above and below its scrolling body; any other container lays them out where it renders them.
 
-[cngxNavBadge--dot] {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  padding: 0;
+## Theming
+
+The nav atoms ship their skin in `cngx-nav.css` (`@cngx/common/theming/components`), which `@cngx/themes/cngx.css` imports. A `<nav>` of `cngxNavLink`, `cngxNavGroup`, `cngxNavLabel` and `cngxNavBadge` renders finished with no stylesheet of your own: one row shape for links and group heads, graded state fills (hover < pressed < active < active+hover), an indicator bar on the active row, a double focus ring, depth indentation, a group chevron and an animated group content. No selector in the file carries a container prefix, so the rows look the same in `cngx-sidenav`, a `cngxSidebar` or a plain `<nav>`.
+
+### Tokens
+
+| Group | Tokens |
+|-|-|
+| Row | `--cngx-nav-link-padding`, `-padding-inline`, `-font-size`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
+| States | `--cngx-nav-link-hover-color`, `-hover-bg`, `-pressed-bg`, `-active-color`, `-active-bg`, `-active-hover-bg`, `-active-font-weight` |
+| Indicator | `--cngx-nav-link-active-indicator-color`, `-size`, `-inset` |
+| Focus | `--cngx-nav-link-focus-outline-color`, `-inner-color`, `-outline-width`, `-outline-offset` |
+| Label, badge | `--cngx-nav-label-color`, `-font-size`, `-padding`, `--cngx-nav-badge-bg`, `-color`, `-font-size`, `-dot-size` |
+| Header, footer | `--cngx-nav-header-padding-block`, `-bg`, `-border-color`, `-font-size` and the same four for `--cngx-nav-footer-*` |
+| Behaviour | `--cngx-nav-depth` (written by the directive), `--cngx-nav-indent` (12px unless `withNavIndent()` emits one), `--cngx-nav-transition` (`--cngx-duration-base` unless `withNavAnimation()` emits one) |
+
+The compodocx Theming tab of each directive lists defaults, syntax and the foundation token every value derives from.
+
+### Container SETs versus row SETs
+
+Every token is read on the row, and every colour token is SET once at `:root` from the foundation (fills from `--cngx-color-primary` at 6/12/16/22 %, the indicator from `--cngx-color-primary-text`, the focus ring from `--cngx-color-text` and `--cngx-color-surface`, the count badge from `--cngx-color-primary-strong`). The length tokens that follow density (inset, indicator size and inset) are also SET on `[data-density]` and `.cngx-density-*` scopes, so a compact region gets thinner bars.
+
+A container that wants its own look SETs the tokens on its host; the rows inside inherit them. That is what `cngx-sidenav` does for fills, focus ring, inset, padding and the header and footer borders:
+
+```css
+.app-sidebar {
+  --cngx-nav-link-active-bg: var(--brand-50);
+  --cngx-nav-link-active-indicator-color: var(--brand-600);
+  --cngx-nav-link-inset: 8px;
 }
 ```
+
+`--cngx-nav-link-padding-inline` moves the rows, the header and footer marks and the section labels together. The `--cngx-nav-link-padding` shorthand moves only the rows; a container that SETs it builds the inline part from `--cngx-nav-link-padding-inline`, as `cngx-sidenav` does.
+
+To restyle a single row, SET the token on that row instead (`[cngxNavLink].danger { --cngx-nav-link-color: var(--cngx-color-danger-text); }`). Do not write `background` or `padding` on `.cngx-nav-link` directly: the state ladder and the indicator read the tokens, and a raw property only wins for the rest state.
+
+In forced-colors mode the active row paints `Highlight` with a `HighlightText` bar, and filled badges keep a `CanvasText` ring.
 
 ## Examples
 
@@ -392,6 +420,8 @@ export class NavAccordionComponent {
 }
 ```
 
+The Security dot carries `ariaLabel`, so the group name reads "Security Security alerts". A visible dot without `ariaLabel` warns in development mode [`CNGX1083`](../../../../core-concepts/error-codes/cngx1083.md).
+
 ### Hierarchical Sidebar
 
 ```typescript
@@ -499,6 +529,6 @@ export class FAQComponent {
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/interactive/nav/)
 - Demo: `examples/stories/common/nav-demo/`
 - Tests: `projects/common/interactive/nav/nav-group.directive.spec.ts`

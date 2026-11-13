@@ -21,33 +21,19 @@ import { injectButtonCaretIcon } from './caret-icon.token';
 import { injectMenuToggle } from './internal/menu-toggle';
 
 /**
- * A button that opens a menu: the WAI-ARIA APG Menu Button Pattern as its
- * own button type. Sits on the native `<button>` and renders on
- * `CngxButtonBrain`, so variant, tone, size, group, disabled and busy behave
- * exactly as on `cngxButton`.
+ * A button that opens a menu, after the WAI-ARIA APG Menu Button Pattern. Variant, tone, size,
+ * `disabled` with a reason and the busy layer come from `CngxButtonBrain`, as on `cngxButton`.
  *
- * Two bindings wire it: `[menu]` is the `cngxMenu` it drives and
- * `[popover]` the `cngxPopover` that wraps the menu. The button composes
- * `CngxMenuTrigger` (keyboard model, focus, dismissal, the `menu` haspopup
- * hint) and `CngxPopoverTrigger` (anchor, `aria-haspopup`, `aria-expanded`,
- * `aria-controls`) as host directives, and toggles the popover on click.
- * `aria-haspopup` reads `menu` and `aria-controls` names the `role="menu"`
- * element; a sheet or fullscreen presentation reads `dialog` and names the
- * popover. ArrowDown, Enter or Space opens the menu and highlights the
- * first item, ArrowUp the last. After open, focus moves into the menu,
- * which carries `aria-activedescendant`. Escape or an activation closes it
- * and returns focus to the button; Tab or Shift+Tab closes it and leaves
- * focus where it went.
+ * `[menu]` takes the `cngxMenu`, `[popover]` the `cngxPopover` around it. `aria-haspopup` and
+ * `aria-controls` follow without a binding. ArrowDown, Enter or Space opens on the first item,
+ * ArrowUp on the last; Escape or an activation closes and returns focus to the button.
  *
- * The end of the button renders a caret that turns while the menu is open:
- * the chevron of the shared icon set (`CNGX_ICON_CHEVRON_DOWN`). Swap the
- * glyph app-wide with `provideButtonCaretIcon`, or project your
- * own `cngxButtonEnd` content, which replaces the caret. The caret is
- * decorative and hidden from assistive technology.
+ * The button has no action of its own: put async work on the menu items, not on a co-hosted
+ * `cngxAsyncClick`. A disabled menu button does not open, and an open menu closes when it becomes
+ * disabled.
  *
- * `disabled` renders `aria-disabled`: the button stays focusable, opens on
- * neither click nor key, closes an open menu, and reads its
- * `disabledReason` through `aria-describedby`.
+ * The end renders a decorative chevron caret. `provideButtonCaretIcon` swaps it, a projected
+ * `cngxButtonEnd` replaces it on one button.
  *
  * ```html
  * <button cngxMenuButton="outline" [menu]="menu" [popover]="pop">Export</button>
@@ -62,7 +48,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/menu-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxButtonBrain, CngxMenuTrigger, CngxPopoverTrigger, CngxMenu, provideButtonCaretIcon
+ * @relatedTo CngxButton, CngxButtonBrain, CngxMenuTrigger, CngxPopoverTrigger, CngxMenu, provideButtonCaretIcon, CngxIconMenuButton, CNGX_BUTTON_CARET_ICON
  * <example-url>/#/common/menu-button/menu-button/basic</example-url>
  * <example-url>/#/common/menu-button/menu-button/disabled-with-reason</example-url>
  * <example-url>/#/common/menu-button/menu-button/custom-caret</example-url>
@@ -134,16 +120,13 @@ export class CngxMenuButton {
   protected readonly brain = inject(CngxButtonBrain);
 
   /**
-   * @internal - refuses to open the menu while the button is blocked
-   * (disabled, a pending co-hosted `cngxAsyncClick`, or its
-   * `[enabled]="false"`); an open menu still closes on click. The brain's
-   * capture guard swallows every other click while blocked, consumer
-   * `(click)` handlers included; the closing click on the expanded
-   * trigger passes.
+   * @internal - refuses to open while the button is blocked; an open menu
+   * still closes. The brain's capture guard swallows every other click while
+   * blocked, consumer `(click)` handlers included.
    */
   protected readonly toggle = injectMenuToggle(this.brain.blocked);
 
-  /** `true` while the menu is open. Mirrors the popover's visibility. */
+  /** `true` while the menu is open. */
   readonly expanded = this.toggle.expanded;
 
   protected readonly startSlot = contentChild(CngxButtonStart);

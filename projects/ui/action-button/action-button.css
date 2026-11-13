@@ -15,9 +15,9 @@
  *   label, so it never jumps after a run
  * - `.cngx-action-button__label[data-active]` - the visible, named label;
  *   the others are `visibility: hidden` and `aria-hidden`
- * - `[data-busy][data-status-label]` - a status label shows instead of the
- *   spinner (the pending label, or the result label while the busy layer
- *   holds for its min-dwell after the run); the stack carries
+ * - `[data-busy][data-status-label]` - the pending label shows instead of
+ *   the spinner while the busy layer holds (the run and its min-dwell);
+ *   result labels show only once it releases; the stack carries
  *   `.cngx-button__label`, so the shared button sheet's status-label hook
  *   keeps it at `opacity: 1` while busy
  *

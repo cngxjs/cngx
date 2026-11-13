@@ -83,7 +83,7 @@ Decompose targets are scoped by atomic level. The operational consequence is sho
 |-|-|-|
 |Atom|`CngxRovingTabindex`, `CngxFocusTrap`, `CngxActiveDescendant`, `CngxLiveRegion`|No (terminal unit)|
 |Molecule|`CngxListboxTrigger`, `CngxPopoverTrigger`, `CngxOption`|No (terminal unit)|
-|Organism|`CngxSelect`, `CngxTreeSelect`, `CngxFormField`, `CngxStepper`, `CngxButtonToggleGroup`|Yes|
+|Organism|`CngxSelect`, `CngxTreeSelect`, `CngxFormField`, `CngxStepper`|Yes|
 
 ### Why atoms and molecules are terminal
 

@@ -120,6 +120,16 @@
                 "file": "error-codes/cngx0006.md"
             },
             {
+                "title": "CNGX0007",
+                "label": "CNGX0007: Preference axis installed below the root injector",
+                "file": "error-codes/cngx0007.md"
+            },
+            {
+                "title": "CNGX0008",
+                "label": "CNGX0008: Preference axis written without its installer",
+                "file": "error-codes/cngx0008.md"
+            },
+            {
                 "title": "CNGX0901",
                 "label": "CNGX0901: Duplicate node id in a tree",
                 "file": "error-codes/cngx0901.md"
@@ -533,6 +543,11 @@
                 "title": "CNGX1082",
                 "label": "CNGX1082: Action status brain without an async run",
                 "file": "error-codes/cngx1082.md"
+            },
+            {
+                "title": "CNGX1083",
+                "label": "CNGX1083: Dot nav badge without a label",
+                "file": "error-codes/cngx1083.md"
             },
             {
                 "title": "CNGX2001",

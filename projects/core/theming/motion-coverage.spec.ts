@@ -102,12 +102,16 @@ describe('reduced-motion safety-net integrity', () => {
     expect(net).toContain(":root:not([data-motion='full'])");
   });
 
-  it('carves out essential loading motion (role=status/progressbar) to a pulse', () => {
+  it('carves out essential loading motion on loading hosts only', () => {
     // Freezing a loader into a dead ring loses the "still working" signal, so
-    // the net must swap the freeze for a pulse on the ARIA-role hosts the
-    // loading components expose - never on a component class name (layering).
-    expect(net).toContain("[role='status']");
-    expect(net).toContain("[role='progressbar']");
+    // the net swaps the freeze for a pulse on loading hosts - never on a bare
+    // role="status" (static regions must not pulse) and never on a component
+    // class name (layering). e2e/css-contract-reduced-motion.spec.ts pins the
+    // rendered result.
+    expect(net).toContain(
+      ":is([data-cngx-busy], [aria-busy='true'], [role='progressbar']:not([aria-valuenow]))",
+    );
+    expect(net).not.toContain("[role='status']");
     expect(net).toContain('cngx-motion-loading-pulse');
     expect(net).toContain('@keyframes cngx-motion-loading-pulse');
   });

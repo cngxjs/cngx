@@ -9,6 +9,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { provideMotion } from '@cngx/core';
 import { createMatchMediaMock } from '@cngx/testing';
 
 import type { CngxTocAriaLabels } from './config/toc.config';
@@ -277,6 +278,31 @@ describe('CngxToc', () => {
     toc.scrollTo('intro');
 
     expect(scrollFn).toHaveBeenCalledWith({ behavior: 'auto' });
+  });
+
+  it('scrolls with behavior "auto" when the in-app motion pick is reduced', () => {
+    TestBed.configureTestingModule({ providers: [provideMotion('reduced')] });
+    const { toc } = setup();
+    const target = document.getElementById('intro')!;
+    const scrollFn = (target.scrollIntoView = vi.fn());
+    vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    toc.scrollTo('intro');
+
+    expect(scrollFn).toHaveBeenCalledWith({ behavior: 'auto' });
+  });
+
+  it('scrolls smoothly when the in-app motion pick is full under an OS reduce', () => {
+    createMatchMediaMock(true).install(window);
+    TestBed.configureTestingModule({ providers: [provideMotion('full')] });
+    const { toc } = setup();
+    const target = document.getElementById('intro')!;
+    const scrollFn = (target.scrollIntoView = vi.fn());
+    vi.spyOn(target, 'focus').mockImplementation(() => {});
+
+    toc.scrollTo('intro');
+
+    expect(scrollFn).toHaveBeenCalledWith({ behavior: 'smooth' });
   });
 
   it('scrolls with the configured behavior when motion is allowed', () => {

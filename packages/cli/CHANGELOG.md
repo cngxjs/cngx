@@ -84,6 +84,8 @@ another release.
   `common/interactive/listbox` (was `common/interactive/keyboard`), and the
   select slot directives and `CngxSelectAnnouncer` `forms/select/shared` (was
   `forms/select`).
+- `cngx find` and `cngx list` print the `category` of `CngxClickOutside` as
+  `common/interactive/click-outside` (was `common/interactive/keyboard`).
 
 ### Fixed
 

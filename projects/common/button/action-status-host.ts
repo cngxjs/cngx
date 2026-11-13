@@ -9,15 +9,10 @@ import { CngxButtonBrain } from './button-brain.directive';
 import { CNGX_BUTTON_HOST_STATE, type CngxButtonHostState } from './button-host.token';
 
 /**
- * The two providers a button host on `CngxActionStatusBrain` needs, next to
- * {@link provideButtonHost}:
- *
- * - `CNGX_HOST_INTERACTION_STATE`: the brain's interaction plus the
- *   `announcement` of `CNGX_ACTION_STATUS`, so the runner's live region
- *   speaks what the host shows. A host provider beats the entry of the
- *   `CngxButtonBrain` host directive. Without it the region stays silent.
- * - `CNGX_BUTTON_HOST_STATE`: a bound `[externalState]` in flight refuses
- *   clicks and reads as busy.
+ * Providers for a button host on `CngxActionStatusBrain`, next to {@link provideButtonHost}.
+ * `CNGX_HOST_INTERACTION_STATE` adds the `CNGX_ACTION_STATUS` announcement, so the runner's live
+ * region speaks what the host shows (without it the region stays silent).
+ * `CNGX_BUTTON_HOST_STATE` makes a bound `[externalState]` in flight refuse clicks and read busy.
  *
  * ```ts
  * @Component({
@@ -38,7 +33,7 @@ import { CNGX_BUTTON_HOST_STATE, type CngxButtonHostState } from './button-host.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/action-status-host.ts
  * @since 0.1.0
- * @relatedTo provideButtonHost, CngxButtonBrain, CngxActionStatusBrain, CNGX_ACTION_STATUS, CNGX_BUTTON_HOST_STATE
+ * @relatedTo provideButtonHost, CngxButtonBrain, CngxActionStatusBrain, CNGX_ACTION_STATUS, CNGX_BUTTON_HOST_STATE, CngxActionButton
  */
 export function provideActionStatusHost(): Provider[] {
   return [

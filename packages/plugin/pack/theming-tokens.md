@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 2562 tokens across 155 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3111 tokens across 168 components.
 
 ## CngxA11yPanel
 
@@ -81,7 +81,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
 |`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
-|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
 |`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
@@ -776,7 +776,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
 |`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
-|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
 |`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
@@ -1021,7 +1021,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
 |`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
-|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
 |`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
@@ -1038,7 +1038,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 |`--cngx-close-button-color`|`currentColor`|Surface|Resting glyph colour of a neutral close button. Defaults to `--cngx-color-text-muted` (set below); hover and focus lift the glyph to the tone text colour.|
 |`--cngx-close-button-size`|``|Layout|Edge length of the square box. Unset by default, so the box follows the icon-button row of the `size` input (density and text scale included).|
-|`--cngx-close-button-icon-size`|``|Layout|Edge length of an `svg` or `img` glyph. Unset by default (`1.25em` of the button font). Inherits so a value set on the button reaches the glyph.|
+|`--cngx-close-button-icon-size`|``|Layout|Edge length of an `svg` or `img` glyph, projected or drawn by a `provideButtonCloseIcon` component. Unset by default (`1.25em` of the button font). Inherits so a value set on the button reaches the glyph.|
 |`--cngx-close-button-radius`|``|Layout|Corner radius. Defaults to `--cngx-radius-sm`.|
 |`--cngx-close-button-hover-bg`|``|State / Hover|Hover background. Unset by default, so the ghost variant's tone wash paints.|
 |`--cngx-close-button-pressed-bg`|``|State / Pressed|Pressed background. Unset by default, so the ghost variant's pressed tone wash paints.|
@@ -1532,7 +1532,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
 |`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
-|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
 |`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
@@ -1563,7 +1563,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
 |`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
-|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
 |`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
@@ -1673,7 +1673,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
 |`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
-|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
 |`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
@@ -1934,6 +1934,557 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-multi-select-min-height`|`var(--cngx-select-min-height, 2.125rem)`|Layout|Minimum block size of the trigger - fits a single row of chips. Falls back to `--cngx-select-min-height`; see {@link --cngx-select-min-height} for why no `initial-value` is declared. The touch floor still lifts the trigger to `--cngx-target-min`.|
 |`--cngx-multi-select-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 
+## CngxNavBadge
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavFooter
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavGroup
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavGroupContent
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavHeader
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavIcon
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavLabel
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavLink
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavMark
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavName
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
+|`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
+|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
+|`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
+|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
+|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
+|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
+|`--cngx-nav-link-pressed-bg`|`oklch(0 0 0 / 0.06)`|State / Pressed|Background while a nav row is pressed (`:active`). Sits between the hover and the active fill; a pressed active row keeps the active-hover fill.|
+|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
+|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
+|`--cngx-nav-link-active-hover-bg`|`oklch(0 0 0 / 0.1)`|State / Active|Background of the active nav link under the pointer. The strongest fill, so hovering the active row still answers.|
+|`--cngx-nav-link-active-indicator-color`|`oklch(0.54 0.19 50)`|State / Active|Colour of the bar on the inline-start edge of the active nav link. SET from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1 on the active fills; `transparent` drops the bar for a fill-only look.|
+|`--cngx-nav-link-active-indicator-size`|`3px`|State / Active|Inline size of the active indicator bar. SET from `--cngx-space-xs`, so it follows density; `0` drops the bar.|
+|`--cngx-nav-link-active-indicator-inset`|`8px`|State / Active|Block-axis inset of the active indicator bar from the row's top and bottom edges. SET from `--cngx-space-sm`.|
+|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
+|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outer colour of the double keyboard focus ring on a nav row. SET from `--cngx-color-text`, so the ring stays apart from the active hue on every fill.|
+|`--cngx-nav-link-focus-inner-color`|`oklch(0.97 0.005 250)`|State / Focus|Inner colour of the double keyboard focus ring, drawn inside the outer ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs its own surface), so the outer ring reads against a band of the container surface on any fill.|
+|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
+|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
+|`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
+|`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
+|`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
+|`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
+|`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
+|`--cngx-nav-header-font-size`|`0.875rem`|Typography|Font-size of the header.|
+|`--cngx-nav-footer-padding-block`|``|Layout|Block padding of the footer. Unset by default (falls back to `--cngx-space-md`).|
+|`--cngx-nav-footer-bg`|`transparent`|Surface|Background of the footer.|
+|`--cngx-nav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider above the footer.|
+|`--cngx-nav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer.|
+|`--cngx-nav-label-color`|`currentColor`|Typography|Text colour of a section label.|
+|`--cngx-nav-label-font-size`|`0.75rem`|Typography|Font-size of a section label.|
+|`--cngx-nav-label-padding`|``|Layout|Padding shorthand of a section label. Unset by default: the label then aligns its text with the row text and follows `[data-density]`.|
+|`--cngx-nav-badge-bg`|`oklch(0.58 0.19 50)`|Surface|Fill of a count badge and of a dot badge.|
+|`--cngx-nav-badge-color`|`oklch(1 0 0)`|Surface|Text colour of a count badge.|
+|`--cngx-nav-badge-font-size`|`0.75rem`|Typography|Font-size of a count or status badge.|
+|`--cngx-nav-badge-dot-size`|`8px`|Layout|Diameter of a dot badge.|
+|`--cngx-nav-chevron-size`|`6px`|Layout|Arm length of the group head chevron.|
+|`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
+
+## CngxNavRail
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-nav-rail-size`|``|Layout|Width of an icon-only rail (`labelPlacement="end"`). Unset, it derives from the row tokens so the icon box sits centred: `2 * (inset + inline padding) + icon size`.|
+|`--cngx-nav-rail-below-size`|``|Layout|Width of a rail with labels below the icons (`labelPlacement="below"`).|
+|`--cngx-nav-rail-below-font-size`|``|Typography|Font size of the label under the icon (`labelPlacement="below"`).|
+|`--cngx-nav-rail-bg`|``|Surface|Background of the rail.|
+|`--cngx-nav-rail-border-color`|``|Surface|Colour of the rail's inline-end border.|
+|`--cngx-nav-rail-border-width`|``|Surface|Width of the rail's inline-end border. The group flyout clears it.|
+
 ## CngxOption
 
 |Token|Default|Group|Description|
@@ -2034,6 +2585,37 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
       var(--cngx-paginator-dot-size, 0.5rem) + 2 * var(--cngx-paginator-dot-pad)
     )`|Layout|Layout size of one dot button (dot size plus hit padding). The windowed viewport clip and the track translate derive from it.|
 
+## CngxPanelToggle
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-button-padding-block`|`0.5rem`|Layout|Block padding. SET per size from `--cngx-space-*`.|
+|`--cngx-button-padding-inline`|`1rem`|Layout|Inline padding. SET per size from `--cngx-space-*`.|
+|`--cngx-button-gap`|`0.5rem`|Layout|Gap between the slots and the label.|
+|`--cngx-button-font-size`|`1rem`|Typography|Font size. `md` reads the form-control font so the button shares the control line box.|
+|`--cngx-button-radius`|`0.5rem`|Layout|Corner radius.|
+|`--cngx-button-border-width`|`1px`|Layout|Border width on all four sides; transparent where the variant paints none, so every variant shares one box.|
+|`--cngx-button-transition`|`150ms`|Motion|Transition duration for colour changes. Derives from the `--cngx-duration-fast` rung of the motion scale.|
+|`--cngx-button-tone`|`currentColor`|Tone|Tone colour: the outline border, the hover wash, and the solid fill unless `--cngx-button-tone-fill` is set.|
+|`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
+|`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
+|`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
+|`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
+|`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
+|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
+|`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
+|`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
+|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
+|`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
+
 ## CngxPasswordStrengthMeter
 
 |Token|Default|Group|Description|
@@ -2050,14 +2632,63 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-popover-action-padding-block`|`6px`|Layout|Block-axis padding of the action button.|
-|`--cngx-popover-action-padding-inline`|`14px`|Layout|Inline-axis padding of the action button.|
-|`--cngx-popover-action-gap`|`6px`|Layout|Gap between the action's icon and label slots.|
-|`--cngx-popover-action-radius`|`6px`|Layout|Corner radius of the action button.|
-|`--cngx-popover-action-font-size`|`0.8125rem`|Typography|Font-size of the action label.|
-|`--cngx-popover-action-font-weight`|`500`|Typography|Font-weight of the action label.|
-|`--cngx-popover-action-transition`|`150ms`|Motion|Transition duration for the hover / focus state changes. Derives from the `--cngx-duration-fast` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
-|`--cngx-popover-action-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Hover-state surface - neutral default + ghost variant share this token so a single dark-mode swap covers both. Light: 4% black wash; dark: 6% white wash.|
+|`--cngx-button-padding-block`|`0.5rem`|Layout|Block padding. SET per size from `--cngx-space-*`.|
+|`--cngx-button-padding-inline`|`1rem`|Layout|Inline padding. SET per size from `--cngx-space-*`.|
+|`--cngx-button-gap`|`0.5rem`|Layout|Gap between the slots and the label.|
+|`--cngx-button-font-size`|`1rem`|Typography|Font size. `md` reads the form-control font so the button shares the control line box.|
+|`--cngx-button-radius`|`0.5rem`|Layout|Corner radius.|
+|`--cngx-button-border-width`|`1px`|Layout|Border width on all four sides; transparent where the variant paints none, so every variant shares one box.|
+|`--cngx-button-transition`|`150ms`|Motion|Transition duration for colour changes. Derives from the `--cngx-duration-fast` rung of the motion scale.|
+|`--cngx-button-tone`|`currentColor`|Tone|Tone colour: the outline border, the hover wash, and the solid fill unless `--cngx-button-tone-fill` is set.|
+|`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
+|`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
+|`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
+|`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
+|`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
+|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
+|`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
+|`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
+|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
+|`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
+
+## CngxPopoverDismiss
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-button-padding-block`|`0.5rem`|Layout|Block padding. SET per size from `--cngx-space-*`.|
+|`--cngx-button-padding-inline`|`1rem`|Layout|Inline padding. SET per size from `--cngx-space-*`.|
+|`--cngx-button-gap`|`0.5rem`|Layout|Gap between the slots and the label.|
+|`--cngx-button-font-size`|`1rem`|Typography|Font size. `md` reads the form-control font so the button shares the control line box.|
+|`--cngx-button-radius`|`0.5rem`|Layout|Corner radius.|
+|`--cngx-button-border-width`|`1px`|Layout|Border width on all four sides; transparent where the variant paints none, so every variant shares one box.|
+|`--cngx-button-transition`|`150ms`|Motion|Transition duration for colour changes. Derives from the `--cngx-duration-fast` rung of the motion scale.|
+|`--cngx-button-tone`|`currentColor`|Tone|Tone colour: the outline border, the hover wash, and the solid fill unless `--cngx-button-tone-fill` is set.|
+|`--cngx-button-tone-text`|`currentColor`|Tone|Text colour on a transparent or tonal surface.|
+|`--cngx-button-on-tone`|`Canvas`|Tone|Text colour on the solid tone fill.|
+|`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
+|`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
+|`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
+|`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
+|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
+|`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
+|`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
+|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
+|`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
 ## CngxPopoverPanel
 
@@ -2579,44 +3210,27 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-sidenav-width`|`280px`|Layout|Default open-width of the rail.|
 |`--cngx-sidenav-bg`|`oklch(0.97 0.005 250)`|Surface|Background of the rail surface.|
 |`--cngx-sidenav-color`|`currentColor`|Surface|Text color of the rail. Defaults to `currentColor` so it inherits from the page.|
-|`--cngx-sidenav-transition-duration`|`0.25s`|Motion|Duration of the open / close / mini transitions. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
-|`--cngx-sidenav-transition-easing`|`ease`|Motion|Easing curve of the open / close / mini transitions.|
-|`--cngx-sidenav-mini-width`|`56px`|Variant / Mini|Collapsed width in mini mode (icon-rail).|
-|`--cngx-sidenav-expanded-shadow`|`4px 0 12px oklch(0 0 0 / 0.1)`|Variant / Mini|Drop-shadow applied when the mini-rail expands over content.|
+|`--cngx-sidenav-transition-duration`|`0.25s`|Motion|Duration of the open / close / rail-peek transitions. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
+|`--cngx-sidenav-transition-easing`|`ease`|Motion|Easing curve of the open / close / rail-peek transitions.|
+|`--cngx-sidenav-mini-width`|`56px`|Variant / Mini|Width of the collapsed rail (icon rail).|
+|`--cngx-sidenav-expanded-shadow`|`4px 0 12px oklch(0 0 0 / 0.1)`|Variant / Mini|Drop-shadow applied while the collapsed rail peeks over content.|
 |`--cngx-sidenav-border-width`|`1px`|Surface|Stroke width of the rail edge border.|
 |`--cngx-sidenav-border-color`|`oklch(0.89 0 0)`|Surface|Stroke color of the rail edge border. Falls back through `--cngx-color-border`.|
-|`--cngx-sidenav-padding`|`16px`|Layout|Padding shorthand inside the header / footer slots.|
-|`--cngx-sidenav-header-bg`|`transparent`|Surface|Background of the header slot.|
-|`--cngx-sidenav-header-font-size`|`0.875rem`|Typography|Font-size of the header slot.|
-|`--cngx-sidenav-footer-bg`|`transparent`|Surface|Background of the footer slot.|
-|`--cngx-sidenav-footer-border-color`|`oklch(0.89 0 0)`|Surface|Border color of the footer divider. Falls back to the rail border color.|
-|`--cngx-sidenav-footer-font-size`|`0.75rem`|Typography|Font-size of the footer slot.|
+|`--cngx-sidenav-padding`|`16px`|Layout|Block padding of the projected nav header and footer; the host SETs `--cngx-nav-header-padding-block` / `--cngx-nav-footer-padding-block` from it.|
 |`--cngx-sidenav-resize-handle-width`|`4px`|Layout|Width of the drag-to-resize handle on the rail's edge.|
 |`--cngx-sidenav-resize-handle-color`|`oklch(0.66 0.19 50)`|State / Resize|Color of the resize handle on hover / drag. Falls back to `--cngx-color-primary`.|
 |`--cngx-sidenav-resize-handle-focus-outline-width`|`2px`|State / Resize|Width of the focus ring on the keyboard-focused resize separator.|
 |`--cngx-sidenav-resize-handle-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Resize|Color of the focus ring on the keyboard-focused resize separator. Falls back to `--cngx-color-primary`, like the hover tint.|
 |`--cngx-sidenav-resize-handle-focus-outline-offset`|`2px`|State / Resize|Outward offset of the resize separator's focus ring.|
 |`--cngx-sidenav-backdrop-bg`|`oklch(0 0 0)`|State / Over|Background of the mobile backdrop scrim.|
+|`--cngx-sidenav-overlay-shadow`|`4px 0 12px oklch(0 0 0 / 0.1)`|State / Over|Drop-shadow of an open overlay rail (the `compact` drawer and the full nav over the `medium` rail), so it reads as a layer over the content rather than a third column. Defaults to `--cngx-sidenav-expanded-shadow`.|
 |`--cngx-sidenav-backdrop-opacity`|`0.5`|State / Over|Opacity of the mobile backdrop scrim.|
-|`--cngx-nav-link-padding`|`10px 16px`|Layout|Padding shorthand of each nav link.|
-|`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
-|`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
-|`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
-|`--cngx-nav-link-hover-color`|`currentColor`|State / Hover|Text color on hover.|
-|`--cngx-nav-link-hover-bg`|`oklch(0 0 0 / 0.04)`|State / Hover|Background tint on hover.|
-|`--cngx-nav-link-active-color`|`currentColor`|State / Active|Text color of the active nav link.|
-|`--cngx-nav-link-active-bg`|`oklch(0 0 0 / 0.08)`|State / Active|Background of the active nav link.|
-|`--cngx-nav-link-active-font-weight`|`600`|State / Active|Font-weight of the active nav link.|
-|`--cngx-nav-link-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outline color of the keyboard focus ring on a nav link. Falls back to `--cngx-color-primary` so the ring picks up the brand accent.|
-|`--cngx-nav-link-focus-outline-width`|`2px`|State / Focus|Stroke width of the keyboard focus ring.|
-|`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
-|`--cngx-nav-link-initial-size`|`0.875rem`|Variant / Mini|Font-size of the first-letter initial shown in mini mode (when the full label is hidden).|
 
 ## CngxSidenavLayout
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-sidenav-layout-wide`|`0`|Layout|Docking flag written on the rail: `1` when the layout is at least 64rem wide, else `0`. In `auto` mode the sidenav docks (`side`) on `1` and overlays (`over`) on `0`.|
+|`--cngx-sidenav-width-class`|`compact`|Layout|Width class written on the rail: `compact` below 48rem, `medium` from 48rem, `expanded` from 64rem. In `auto` mode the sidenav is a drawer in `compact`, a rail with an overlay in `medium` and docked in `expanded`.|
 
 ## CngxSkeletonContainer
 

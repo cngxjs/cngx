@@ -18,8 +18,6 @@ export {
 } from './sidenav-announcer';
 export { CngxSidenavRouterSync } from './sidenav-router-sync.directive';
 export { CngxSidenavContent } from './sidenav-content';
-export { CngxSidenavHeader } from './sidenav-header';
-export { CngxSidenavFooter } from './sidenav-footer';
 
 export type { CngxSidenavConfig, CngxSidenavLabels } from './config/sidenav.config';
 export {

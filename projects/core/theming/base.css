@@ -100,8 +100,25 @@
    * shift between resting and focused state. The touch floor mirrors the
    * cngx select trigger: inert at 0px on a fine pointer, lifted to
    * --cngx-target-min (44px) under a coarse pointer so a bare input is a
-   * real tap target. Reads border-box from cngx.reset. */
-  input,
+   * real tap target. Reads border-box from cngx.reset.
+   * Text-like input types only: checkbox, radio, range, file, color and the
+   * button types (submit, button, reset, image) keep the user-agent
+   * rendering. `:where()` keeps the specificity of a bare `input`. */
+  input:where(
+    :not([type]),
+    [type='text'],
+    [type='search'],
+    [type='email'],
+    [type='url'],
+    [type='tel'],
+    [type='password'],
+    [type='number'],
+    [type='date'],
+    [type='time'],
+    [type='datetime-local'],
+    [type='month'],
+    [type='week']
+  ),
   textarea,
   select {
     padding: var(--cngx-space-sm, 8px) var(--cngx-space-md, 16px);
@@ -128,7 +145,21 @@
    * dimming, so disabled is restated here - by colour, never opacity: 38%
    * text, a faint text tint on the surface, and a dashed border that keeps
    * the state readable without colour. Same recipe as a disabled fill field. */
-  input:disabled,
+  input:where(
+      :not([type]),
+      [type='text'],
+      [type='search'],
+      [type='email'],
+      [type='url'],
+      [type='tel'],
+      [type='password'],
+      [type='number'],
+      [type='date'],
+      [type='time'],
+      [type='datetime-local'],
+      [type='month'],
+      [type='week']
+    ):disabled,
   textarea:disabled,
   select:disabled {
     border-style: dashed;

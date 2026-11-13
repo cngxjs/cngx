@@ -3,6 +3,15 @@
 Hand-maintained, per package version. The root CHANGELOG.md tracks the cngx
 library releases; this file tracks the doctor package.
 
+## Unreleased
+
+### Changed
+
+- `track-b-css-not-imported` also fires for the nav atoms (`CngxNavLink`,
+  `CngxNavGroup`, `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
+  `CngxNavFooter`, `CngxNavMark`, `CngxNavName`): their row skin now ships in the
+  `cngx.components` layer of `@cngx/themes/cngx.css`.
+
 ## 0.3.0 - 2026-11-03
 
 ### Breaking

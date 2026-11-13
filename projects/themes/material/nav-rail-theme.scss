@@ -1,0 +1,82 @@
+@use '@angular/material' as mat;
+@use './nav-link-theme' as nav-link;
+@use './bridge' as bridge;
+
+// Material bridge for CngxNavRail. Default visuals ship with the component
+// (projects/ui/nav-rail/nav-rail.css) and the nav atoms
+// (projects/common/theming/components/cngx-nav.css); this file aligns the rail
+// surface and the group flyout with Material, plus the rows, header and
+// footer through the nav-link bridge, so the rail reads native on its own.
+// The label tooltip is a cngx-tooltip and takes tooltip-theme.scss.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/themes/material/nav-rail-theme' as nav-rail;
+//   html { @include nav-rail.theme($theme); }
+
+// Rail surface: the M3 navigation rail sits on the surface colour.
+@mixin rail-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-rail-bg: var(--mat-sys-surface);
+    --cngx-nav-rail-border-color: var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-nav-rail-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-nav-rail-border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+// Group flyout: a panel beside the rail, so it takes the M3 menu container
+// colour and elevation (surface-container, level 2) with a panel radius.
+@mixin flyout-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-flyout-bg: var(--mat-sys-surface-container);
+    --cngx-nav-flyout-color: var(--mat-sys-on-surface);
+    --cngx-nav-flyout-border-color: var(--mat-sys-outline-variant);
+    --cngx-nav-flyout-radius: var(--mat-sys-corner-medium, 12px);
+    --cngx-nav-flyout-shadow: var(
+      --mat-sys-level2,
+      0 1px 2px 0 rgb(0 0 0 / 0.3),
+      0 2px 6px 2px rgb(0 0 0 / 0.15)
+    );
+  } @else {
+    --cngx-nav-flyout-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-nav-flyout-color: rgba(0, 0, 0, 0.87);
+    --cngx-nav-flyout-border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+// The stacked look's label is the M3 navigation rail label (label-medium).
+// Width and row metrics derive from the --cngx-space-* scale, which
+// density-bridge.scss maps from Material density.
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-rail-below-font-size: var(--mat-sys-label-medium-size, 0.75rem);
+  }
+}
+
+// Rail surface and flyout only. The aggregate theme.scss includes this one:
+// sidenav-theme.scss already bridges the rows, header and footer app-wide.
+@mixin surface($theme) {
+  @include bridge.on(cngx-nav-rail) {
+    @include rail-color($theme);
+    @include typography($theme);
+  }
+
+  // Set + read on the open flyout itself (the group content).
+  @include bridge.on('cngx-nav-rail .cngx-nav-group-content') {
+    @include flyout-color($theme);
+  }
+}
+
+@mixin theme($theme) {
+  @include surface($theme);
+
+  // Rows, header and footer register their tokens inherits:false, so they
+  // are set on the elements that read them, as in sidenav-theme.scss.
+  @include bridge.on('cngx-nav-rail :is(.cngx-nav-header, .cngx-nav-footer)') {
+    @include nav-link.slots($theme);
+  }
+
+  @include bridge.on('cngx-nav-rail :is(.cngx-nav-link, [cngxNavGroup])') {
+    @include nav-link.theme($theme);
+  }
+}

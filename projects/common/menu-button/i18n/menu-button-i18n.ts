@@ -8,14 +8,11 @@ import {
 } from './menu-button-language-section';
 
 /**
- * Menu-button i18n surface. Library defaults are English; consumers override
- * via {@link provideMenuButtonI18n}. Sibling to `CNGX_CARD_I18N`.
+ * The menu-button copy, the `menuButton` section of a language pack.
  *
- * `splitToggle` is the default accessible name of a `cngxIconMenuButton`
- * inside a `cngxSplitButton`. A consumer `aria-label` on the button wins
- * over it. `splitMainBusy` describes that caret while the main action runs.
- * The same shape as the menu-button section of a language pack,
- * declared once as {@link CngxMenuButtonLanguageSection}.
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_MENU_BUTTON_I18N
  */
 export type CngxMenuButtonI18n = CngxMenuButtonLanguageSection;
 
@@ -23,14 +20,13 @@ export type CngxMenuButtonI18n = CngxMenuButtonLanguageSection;
 const menuButtonBundleFromPack = createLanguageSection('menuButton', CNGX_MENU_BUTTON_LANGUAGE_EN);
 
 /**
- * DI token for the menu-button i18n bundle, a `Signal` so the names follow a
- * runtime language switch. `providedIn: 'root'`: the menu-button section of
- * the active language pack over the English defaults.
+ * The resolved menu-button copy: the `menuButton` section of the active language pack over the
+ * English defaults. A `Signal`, so the names follow a runtime language switch.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
  * @since 0.1.0
- * @relatedTo CngxIconMenuButton, CngxSplitButton
+ * @relatedTo CngxIconMenuButton, CngxSplitButton, CngxSplitCaret, provideMenuButtonI18n, injectMenuButtonI18n, CNGX_MENU_BUTTON_LANGUAGE_EN, provideCngxI18n
  */
 export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18n>>(
   'CngxMenuButtonI18n',
@@ -41,7 +37,11 @@ export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18
 );
 
 /**
- * Branded feature-fn for {@link provideMenuButtonI18n}.
+ * A label override feature of `provideMenuButtonI18n` and `provideCngxMenuButton(At)`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_MENU_BUTTON_I18N, withMenuButtonI18nLabels
  */
 export type CngxMenuButtonI18nFeature = ((
   bundle: Signal<CngxMenuButtonI18n>,
@@ -57,9 +57,12 @@ function defineMenuButtonI18nFeature(
 }
 
 /**
- * Override i18n labels via a partial bundle - unset keys keep the language
- * pack's phrase, or the English default. Pass a `Signal` to switch the
- * language at runtime.
+ * Overrides single keys. Unset keys keep the language pack's phrase, or the English default. Pass
+ * a `Signal` to switch the language at runtime.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_MENU_BUTTON_I18N, provideMenuButtonI18n, provideCngxMenuButton
  */
 export function withMenuButtonI18nLabels(
   overrides: Partial<CngxMenuButtonI18n> | Signal<Partial<CngxMenuButtonI18n>>,
@@ -68,18 +71,18 @@ export function withMenuButtonI18nLabels(
 }
 
 /**
- * Provider for the menu-button i18n bundle. The features apply on top of the
- * active language pack, so a subtree can override single keys of the app's
- * language. A nested provider does not merge onto an outer one: it starts
- * again from the language pack, so a subtree provider repeats every override
- * of the outer scope it still needs (unlike `provideButtonConfigAt`, which
- * merges onto the parent config).
+ * Provides the menu-button copy. The features apply on top of the active language pack, so a
+ * subtree overrides single keys of the app's language.
+ * A nested provider starts again from the language pack instead of merging onto the outer one,
+ * so it repeats every outer override it still needs.
  *
  * ```ts
- * bootstrapApplication(AppComponent, {
- *   providers: [provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle: 'More actions' }))],
- * });
+ * providers: [provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle: 'More actions' }))]
  * ```
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_MENU_BUTTON_I18N, withMenuButtonI18nLabels
  */
 export function provideMenuButtonI18n(...features: readonly CngxMenuButtonI18nFeature[]): Provider {
   return {
@@ -93,7 +96,11 @@ export function provideMenuButtonI18n(...features: readonly CngxMenuButtonI18nFe
 }
 
 /**
- * Inject the resolved menu-button i18n bundle.
+ * Reads the resolved copy. `CngxSplitCaret` already exposes it as `label()` and `busyNote()`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_MENU_BUTTON_I18N, CngxSplitCaret
  */
 export function injectMenuButtonI18n(): Signal<CngxMenuButtonI18n> {
   return inject(CNGX_MENU_BUTTON_I18N);

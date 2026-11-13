@@ -85,6 +85,6 @@ For one-off overrides set `--cngx-checkbox-size` inline.
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/display/checkbox-indicator/) for inputs and tokens.
 - Stories: `examples/stories/common/display/checkbox-indicator/`.
 - Sibling: `CngxRadioIndicator` for single-choice rows.

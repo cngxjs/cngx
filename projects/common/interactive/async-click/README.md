@@ -252,6 +252,6 @@ Template shown after an async action fails (for feedbackDuration ms). The implic
 
 ## See Also
 
-- [API on compodocx](../../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/async-click/)
 - Demo: `examples/stories/common/interactive/async-click/`
 - Tests: `projects/common/interactive/async-click/async-click.directive.spec.ts`

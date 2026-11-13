@@ -1,8 +1,7 @@
-@use 'sass:map';
-@use 'sass:math';
 @use '@angular/material' as mat;
 
-// Provides M3/M2 colors for `[cngxNavLink]` when used inside a sidenav.
+// Provides M3/M2 tokens for the nav atoms of `@cngx/common/interactive`
+// (`cngxNavLink` rows, header and footer slots) in any container.
 // Included automatically by `sidenav.theme()` - no separate import needed.
 
 @mixin color($theme) {
@@ -15,18 +14,41 @@
 
     --cngx-nav-link-color: var(--mat-sys-on-surface-variant, #{$_on-surface-variant});
     --cngx-nav-link-hover-color: var(--mat-sys-on-surface, #{$_on-surface});
+    // M3 state layers: on-surface at 8 % (hover) and 12 % (pressed).
+    --cngx-nav-link-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface, #{$_on-surface}) 8%,
+      transparent
+    );
+    --cngx-nav-link-pressed-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface, #{$_on-surface}) 12%,
+      transparent
+    );
     --cngx-nav-link-active-color: var(
       --mat-sys-on-secondary-container,
       #{$_on-secondary-container}
     );
     --cngx-nav-link-active-bg: var(--mat-sys-secondary-container, #{$_secondary-container});
+    --cngx-nav-link-active-hover-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-secondary-container, #{$_on-secondary-container}) 8%,
+      var(--mat-sys-secondary-container, #{$_secondary-container})
+    );
+    // M3 has no bar: the active row is the secondary-container pill with
+    // on-secondary-container text and the active weight as non-colour cue.
+    --cngx-nav-link-active-indicator-color: transparent;
   } @else {
     $_primary: mat.get-theme-color($theme, primary);
 
     --cngx-nav-link-color: rgba(0, 0, 0, 0.65);
     --cngx-nav-link-hover-color: rgba(0, 0, 0, 0.87);
+    --cngx-nav-link-hover-bg: #{rgba($_primary, 0.04)};
+    --cngx-nav-link-pressed-bg: #{rgba($_primary, 0.06)};
     --cngx-nav-link-active-color: #{$_primary};
     --cngx-nav-link-active-bg: #{rgba($_primary, 0.08)};
+    --cngx-nav-link-active-hover-bg: #{rgba($_primary, 0.12)};
+    --cngx-nav-link-active-indicator-color: #{$_primary};
   }
 }
 
@@ -34,26 +56,44 @@
   --cngx-nav-link-radius: 8px;
   --cngx-nav-link-font-size: 0.875rem;
   --cngx-nav-link-active-font-weight: 500;
-  --cngx-nav-link-hover-bg: rgba(0, 0, 0, 0.04);
 }
 
-@mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.clamp(-4, $scale, 0);
+// Nav header and footer slots (`CngxNavHeader` / `CngxNavFooter`). Emitted
+// on the slot hosts: the bg and font-size tokens are registered
+// inherits:false in cngx-nav.css and read on the slot itself.
+@mixin slot-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    $_outline: mat.get-theme-color($theme, outline-variant);
+    $_surface-low: mat.get-theme-color($theme, surface-container-low);
 
-  $paddings: (
-    0: 10px 16px,
-    -1: 8px 12px,
-    -2: 6px 8px,
-    -3: 4px 6px,
-    -4: 2px 4px,
-  );
-
-  --cngx-nav-link-padding: #{map.get($paddings, $scale)};
+    --cngx-nav-header-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-nav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-nav-header-border-color: var(--mat-sys-outline-variant, #{$_outline});
+    --cngx-nav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
+  } @else {
+    --cngx-nav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-nav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-nav-header-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-nav-footer-border-color: rgba(0, 0, 0, 0.12);
+  }
 }
 
+@mixin slot-typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-header-font-size: var(--mat-sys-title-small-size, 0.875rem);
+    --cngx-nav-footer-font-size: var(--mat-sys-body-small-size, 0.75rem);
+  }
+}
+
+@mixin slots($theme) {
+  @include slot-color($theme);
+  @include slot-typography($theme);
+}
+
+// No density mixin: the row padding is SET from the --cngx-space-* scale on
+// the cngx-sidenav host, and density-bridge.scss maps Material density onto
+// that scale like every scale-derived component.
 @mixin theme($theme) {
   @include base();
   @include color($theme);
-  @include density($theme);
 }

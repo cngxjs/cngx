@@ -1,6 +1,9 @@
 # @cngx/common/button
 
-Buttons that sit on the native element. `cngxButton` and `cngxIconButton` are attribute components on `<button>` and `<a>`, `cngxCloseButton` on `<button>`, so native semantics, forms, `routerLink`, middle click and every attribute you write keep working on the real element. No wrapper, no inner button.
+Buttons that sit on the native element. `cngxButton` and `cngxIconButton` are attribute
+components on `<button>` and `<a>`, `cngxCloseButton` on `<button>`. Forms, `routerLink`, middle
+click and every attribute you write keep working on the real element. No wrapper, no inner
+button.
 
 ## Quick Start
 
@@ -42,35 +45,88 @@ export class AppToolbar {
 | `tone` | `neutral`, `primary`, `danger` | `tone` | `neutral` |
 | `size` | `xs`, `sm`, `md`, `lg` | `size` | `md` |
 
-`variant` and `size` resolve `input ?? group ?? config ?? default`; `tone` resolves `input ?? config ?? default`, because a group passes only variant and size. Set app defaults with `provideButtonConfig(withButtonVariant(...), withButtonTone(...), withButtonSize(...))`, a subtree with `provideButtonConfigAt(...)` in `viewProviders`.
+Each axis resolves `input ?? fixed ?? group ?? config ?? default`:
 
-`provideCngxButton(...)` takes the same config features plus `withButtonCloseIcon(MyIcon)` and `withButtonSpinner(MySpinner)`, so the whole family is set up in one call at the root; `provideCngxButtonAt(...)` is its twin for `viewProviders` and merges the config over the parent scope. A feature without a `_target` is dropped with [`CNGX1041`](../../../core-concepts/error-codes/cngx1041.md) in development. The menu-button caret and labels go through `provideCngxMenuButton(...)` in `@cngx/common/menu-button`.
+1. The input on the button.
+2. Axes the host pins through `provideButtonHost(..., { fixed })`. `cngxCloseButton` pins `ghost`,
+   `sm` and `neutral`.
+3. A surrounding `cngxButtonGroup`, for variant and size only. Tone is per button.
+4. `provideButtonConfigAt(...)` in a parent's `viewProviders`, merged over the outer config.
+5. `provideButtonConfig(...)` at the root.
+6. The host default.
 
-Density, text scale, touch floor, motion and contrast are not inputs. They come from the preference axes in `@cngx/core`: padding is SET from `--cngx-space-*`, text from the font tokens, the hit area from `--cngx-target-min`. `md` is the form-control row, so an `md` button lines up with `cngxInput` and every select trigger.
+`provideButtonConfig` takes `withButtonVariant`, `withButtonTone` and `withButtonSize`.
+`provideCngxButton(...)` sets up the whole family in one call: the same config features,
+`withButtonCloseIcon(MyIcon)`, `withButtonSpinner(MySpinner)` and the action status defaults
+`withActionStatusLabels` / `withActionStatusTemplates` from `@cngx/common/interactive`.
+`provideCngxButtonAt(...)` is its `viewProviders` twin. A feature without a `_target` is dropped
+with [`CNGX1041`](../../../core-concepts/error-codes/cngx1041.md) in development. The menu-button
+caret and labels go through `provideCngxMenuButton(...)` in `@cngx/common/menu-button`.
+
+Density, text scale, touch floor, motion and contrast are not inputs. They come from the
+preference axes in `@cngx/core`. `md` is the form-control row, so an `md` button lines up with
+`cngxInput` and every select trigger.
 
 ## Accessibility
 
-- **Disabled says why.** `[disabled]` renders `aria-disabled="true"` instead of the native attribute: the button stays in the tab order, and `disabledReason` is referenced through `aria-describedby` while the button is disabled. Clicks, middle clicks, `routerLink` navigation and form submission are swallowed by a capture-phase guard whenever the button reads `aria-disabled="true"`, including while a co-hosted `cngxAsyncClick` runs or refuses through `[enabled]="false"`; the one click that passes is the one that closes an open menu on its trigger. A static `aria-describedby` on the host stays; the reason id is appended to it.
-- **Dynamic descriptions.** `[cngxDescribedBy]` takes ids that change at runtime (a hint that appears, a validation message); they join the attribute after the static ids and before the reason, and `null` removes them. The static `aria-describedby` attribute is read once at creation, so bind dynamic ids through the input, not through `[attr.aria-describedby]`.
-- **Disabled links keep their `href`.** A disabled `<a cngxButton>` is marked with `aria-disabled` only, so the context menu can still open the link in a new tab; clicks and middle clicks are swallowed.
-- **`type="button"` by default** on a `<button>` host, so a button inside a `<form>` never submits by accident. `type="submit"` and `[type]` both work. An `<a>` host gets no `type`.
-- **Icon buttons need a name.** `cngxIconButton` warns [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) in development when the host has no `aria-label`, `aria-labelledby` or `title`. A tooltip is optional and a per-icon decision; compose `[cngxTooltip]` where the glyph alone is ambiguous.
-- **Busy.** Co-host `cngxAsyncClick`: the label keeps its place under a spinner, `aria-busy` and the announcement stay with the directive. The spinner follows `CNGX_LOADING_CONFIG`: it appears after `showDelay` (120 ms by default, so a fast run shows none) and stays for at least `minDwell` (400 ms). `pending()` and the settle announcement are immediate; `aria-busy`, `aria-disabled` and the click guard are set at the click and held until the busy visual releases, so for the whole dwell the button reads busy and refuses a second run (never native `disabled`, so it keeps focus). Override per button with `[showDelay]` / `[minDwell]` next to `cngxAsyncClick`. Under reduced motion the ring stops turning. Swap the ring for every button in a subtree with `provideButtonSpinner(MySpinner)` (`CNGX_BUTTON_SPINNER`); the layer stays (over the label, `aria-hidden`, same timing), only the glyph inside it changes. Without a provider the DOM is the built-in ring.
-- **Busy DOM contract (for skins).** The host carries two reflected attributes a skin can key on: `data-pending` (`'true' | null`) is set immediately at the click from `pending()`, before any delay; `data-busy` (`'true' | null`) follows the gated busy visual - set only after `showDelay` and held for the dwell. Paint the delay window off `data-pending` and the shown-busy state off `data-busy`; scope your disabled rules to `:not([data-busy], [data-pending])` so a pending or busy button never paints disabled.
-- **Touch.** Every control size floors to 44px on a coarse pointer; an icon button floors its square box to the same 44px and keeps its glyph size. The `link` variant is the inline exception (WCAG 2.5.8).
-- **Forced colors.** Every variant re-signals with system colours; disabled is `GrayText`.
+- `[disabled]` renders `aria-disabled="true"`, not the native attribute. The button stays in the
+  tab order and `disabledReason` is read through `aria-describedby`. Clicks, middle clicks,
+  `routerLink` navigation and form submission are swallowed. The one click that passes closes an
+  open menu on its trigger.
+- A disabled `<a cngxButton>` keeps its `href`, so the context menu can still open it in a new
+  tab.
+- The button merges every description source into one `aria-describedby`. A static attribute is
+  read once at creation, so bind ids that change at runtime through `[cngxDescribedBy]`, not
+  `[attr.aria-describedby]`.
+- A `<button>` host defaults to `type="button"`, so it never submits a form by accident.
+- `cngxIconButton` and `cngxCloseButton` need a name: `aria-label`, `aria-labelledby` or `title`.
+  Without one they warn [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) in
+  development. Compose `[cngxTooltip]` where the glyph alone is ambiguous.
+- Co-host `cngxAsyncClick` for an async action. The label keeps its place under a spinner that
+  appears after 120 ms and stays at least 400 ms (`showDelay` / `minDwell`, see
+  [Gated surfaces](../../../core-concepts/async-state-machine.md#gated-surfaces)). For the whole
+  dwell the button reads busy and refuses a second run. `provideButtonSpinner(MySpinner)` swaps
+  the ring in a subtree. Under reduced motion it stops turning.
+- Every size floors to 44px on a coarse pointer, an icon button on both axes. The `link` variant
+  is the inline exception (WCAG 2.5.8).
+- Under forced colors every variant re-signals with system colours. Disabled is `GrayText`.
+
+## Button group
+
+`[cngxButtonGroup]` joins buttons, icon buttons and addons into one framed, `role="group"` row.
+`orientation="vertical"` stacks them. `variant` and `size` set on the group reach every button
+inside. The group needs `aria-label` or `aria-labelledby`, else it warns
+[`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md) in development. A group whose
+children are groups is a toolbar.
+
+- `cngxButtonGroupSeparator` draws a decorative divider between segments.
+- `cngxButtonGroupAddon` gives an avatar, icon or count a segment on the button row. Its media
+  is capped to `--cngx-button-group-addon-media-size` (`1lh` of the addon), so a 24px avatar
+  never stretches a 20px-line row.
+- Pressed or selected state is not the group's job. Use `CngxButtonToggleGroup` from
+  `@cngx/common/interactive`.
 
 ## Close button
 
-`button[cngxCloseButton]` is the icon button with the cngx X glyph, used by alerts, toasts, banners and the popover panel. Project a glyph to replace the X per instance, or call `provideButtonCloseIcon(MyIcon)` (the `CNGX_BUTTON_CLOSE_ICON` token; `provideFeedback(withCloseIcon(...))` in `@cngx/ui/feedback` forwards to it) to swap it app-wide. A custom host reads it with `injectButtonCloseIcon()`. The name is your copy on the host; name what it closes, not the affordance, since a bare "Close" reads the same for every dismiss target on the page:
+`button[cngxCloseButton]` is the icon button with the cngx X glyph, used by alerts, toasts,
+banners and the popover panel. Name what it closes, not the affordance. A bare "Close" reads the
+same for every dismiss target on the page.
 
 ```html
 <button cngxCloseButton aria-label="Close settings dialog" (click)="close()"></button>
 ```
 
-It rests in the muted hint colour and lifts to the text colour on hover. It stays `ghost`, `sm` and `neutral` inside a group and under `provideButtonConfig` (a configured `withButtonTone('danger')` included), so a dismiss affordance never turns loud by an app default; set `cngxCloseButton="outline"`, `size` or `tone` per instance. `[disabled]` with `disabledReason` keeps a blocked close focusable and says why. Size the box and the glyph with `--cngx-close-button-size` and `--cngx-close-button-icon-size`; the Material bridge sets both on the default `sm` close button so it takes the 40px Material 3 icon-button box with a 24px glyph, re-scaled in a `[data-density]` island, and a consumer value on the host still wins; `--cngx-close-button-color`, `--cngx-close-button-hover-bg` and `--cngx-close-button-radius` are the paint hooks. On a coarse pointer the box floors to 44px on both axes, the Material 40px box and a consumer size included. Without a name it warns [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md).
+It stays `ghost`, `sm` and `neutral` inside a group and under any button config, so an app
+default never makes a dismiss loud. Set `cngxCloseButton="outline"`, `size` or `tone` per
+instance. Project a glyph to replace the X, or swap it for a subtree with
+`provideButtonCloseIcon(MyIcon)`. `provideFeedback(withCloseIcon(...))` in `@cngx/ui/feedback`
+forwards to it. `--cngx-close-button-size` and `--cngx-close-button-icon-size` size the box and
+the glyph.
 
-Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: import `CngxCloseButton` from `@cngx/common/button`, write `<button cngxCloseButton aria-label="...">`, and drop the inner `.cngx-close-button__btn` from selectors; `--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and `-transition` are gone (the button tokens and the global focus ring take over).
+Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: write
+`<button cngxCloseButton aria-label="...">` and drop `.cngx-close-button__btn` from selectors.
+`--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and
+`-transition` are gone. The button tokens and the global focus ring take over.
 
 ## Button group
 
@@ -93,31 +149,40 @@ Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: 
 
 ## Opening a menu
 
-A button that opens a menu is its own button type: `button[cngxMenuButton]` in `@cngx/common/menu-button`. It renders on the same core as `cngxButton` (variant, tone, size, group, disabled, busy), adds the end caret, and wires the menu with two bindings:
+Use `button[cngxMenuButton]` from [`@cngx/common/menu-button`](../menu-button/README.md), not
+`cngxMenuTrigger` and `cngxPopoverTrigger` hand-wired onto a `cngxButton`. It sits on the same
+brain and adds the caret:
 
 ```html
 <button cngxMenuButton="outline" [menu]="menu" [popover]="pop">Export</button>
 ```
 
-Do not hand-wire `cngxMenuTrigger` and `cngxPopoverTrigger` onto a `cngxButton`; the menu button sets the anchor, `aria-haspopup="menu"`, the click toggle and the keyboard guard for you. The same entry ships `button[cngxIconMenuButton]` for a kebab or "more" button and `[cngxSplitButton]` for a main action with a caret that opens the alternatives. See the [`@cngx/common/menu-button` README](../menu-button/README.md).
-
-Which trigger? Action button, menu button, split button, select, disclosure or toggle group: see [Choosing a Trigger](../../../core-concepts/choosing-a-trigger.md).
+[Choosing a Trigger](../../../core-concepts/choosing-a-trigger.md) compares action button, menu
+button, split button, select, disclosure and toggle group.
 
 ## Composition
 
-- `CngxButtonStart` / `CngxButtonEnd` mark projected icons, badges or `<kbd>` hints; they are sized in `em` and trim the padding on their side.
-- Slot glyphs: an `svg` or `img` is sized to `--cngx-button-icon-size` (`1.25em`, the `cngx-icon` `md` rung) whether it carries the slot marker itself or sits inside the marked element. A `<cngx-icon cngxButtonStart>` scales the same way.
-- Icon fonts set their own pixel size outside any layer, so they ignore the slot size: `.material-icons` and `<mat-icon>` stay at 24px. Wrap the glyph in `<cngx-icon cngxButtonStart>` and let it inherit the size: `<mat-icon inline>` does that by itself, a plain icon-font span needs `font-size: inherit`. With the Material icon bridge (`@cngx/themes/material/icon-theme`, or the whole `@cngx/themes/material/theme`) a `<mat-icon>` wrapped in `<cngx-icon>` takes the rung size, the same size an svg glyph has in that slot or icon button: `<cngx-icon cngxButtonStart><mat-icon>add</mat-icon></cngx-icon>`. A bare `<mat-icon>` is not the pattern.
-- The pressed state is built in: `:active` paints the hover mix one step stronger (`--cngx-button-pressed-layer` on a solid primary or danger fill, next to `--cngx-button-hover-layer` for hover; `--cngx-button-pressed-wash` on outline and ghost; the Material bridge maps them to the M3 hover and pressed state layers), never on a disabled or busy button. `:active` lags on touch and iOS Safari only fires it with a touch listener, so co-host `cngxPressable` (`@cngx/common/interactive`) to sharpen it: the button styles the `.cngx-pressed` class it sets on pointerdown the same way.
-- The ripple wave stays opt-in decoration: co-host `cngxRipple` (`@cngx/common/interactive`) on a `cngxButton` or `cngxIconButton` where you want the wave, and add `[rippleCentered]="true"` on a square icon button. Material buttons ripple by default; a cngx button under the Material bridge ripples only with the directive. The wave is off under `prefers-reduced-motion: reduce`.
-- A `cngxButtonGroupAddon` sits on the row of the buttons beside it: it carries their `data-size` and reads their padding and type tokens. Media children (`img`, `svg`, `picture`, `video`, `canvas`, `cngx-icon`, `cngx-avatar`) are capped to `--cngx-button-group-addon-media-size`, SET to `1lh` of the addon, so a 24px avatar never stretches a 20px-line row. Set it on the addon for a different cap.
-- `CNGX_BUTTON_GROUP` is the contract a group provides so its children read variant and size without importing the group class.
-- `CNGX_HOST_INTERACTION_STATE` (`@cngx/common/interactive`) is how `CngxButtonBrain` tells a co-hosted `cngxAsyncClick` the button is disabled, so both directives render the same `aria-disabled`.
-- `CNGX_DESCRIBED_BY` (`@cngx/core/utils`) is the `aria-describedby` registry the brain provides on the button element: the static ids, the `[cngxDescribedBy]` ids, the disabled reason and a co-hosted `[cngxTooltip]` id all land in one attribute, in that order, instead of one binding overwriting the other.
+- `CngxButtonStart` / `CngxButtonEnd` mark projected icons, badges or `<kbd>` hints. They are
+  sized in `em` and trim the padding on their side. An `svg` or `img` in a slot, or inside the
+  marked element, is sized to `--cngx-button-icon-size` (`1.25em`, the `cngx-icon` `md` rung).
+- Icon fonts ignore the slot size: `.material-icons` and `<mat-icon>` stay at 24px. Wrap the
+  glyph in `<cngx-icon cngxButtonStart>`. Under the Material icon bridge
+  (`@cngx/themes/material/icon-theme`) a wrapped `<mat-icon>` takes the rung size. Without it,
+  use `<mat-icon inline>`, or `font-size: inherit` on a plain icon-font span.
+- The pressed state is built in on `:active`, never on a disabled or busy button. `:active` lags
+  on touch and iOS Safari fires it only with a touch listener, so co-host `cngxPressable`
+  (`@cngx/common/interactive`) where it matters. The button paints its `.cngx-pressed` class the
+  same way.
+- The ripple is opt-in: co-host `cngxRipple` (`@cngx/common/interactive`), with
+  `[rippleCentered]="true"` on an icon button. Under the Material bridge a cngx button ripples
+  only with the directive. The wave is off under `prefers-reduced-motion: reduce`.
 
 ## Building a custom button host
 
-Every cngx button renders on one host directive, `CngxButtonBrain`. It owns the state and the ARIA: the axes, `data-variant` / `data-tone` / `data-size`, `disabled` as `aria-disabled`, the capture-phase activation guard, the `aria-describedby` registry, `data-pending` / `data-busy` from a co-hosted runner or a run the host reflects, and the [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) name check for icon-only hosts. A host that declares the brain without `provideButtonHost` throws [`CNGX1075`](../../../core-concepts/error-codes/cngx1075.md). A host of your own declares it in `hostDirectives`, forwards the inputs it wants to expose, and names itself with `provideButtonHost`:
+Every cngx button renders on one host directive, `CngxButtonBrain`. It owns the axes, the ARIA,
+the activation guard and the busy state. Your host declares it in `hostDirectives`, forwards the
+inputs it wants to expose and names itself with `provideButtonHost`. Without `provideButtonHost`
+the brain throws [`CNGX1075`](../../../core-concepts/error-codes/cngx1075.md).
 
 ```typescript
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
@@ -150,10 +215,35 @@ export class AppChipButton {
 }
 ```
 
-- **Inputs.** `variant`, `tone`, `size`, `disabled`, `disabledReason`, `cngxDescribedBy` and `type` live on the brain. Forward only the ones the host should take; alias `variant` to the selector so `appChipButton="solid"` works.
-- **Descriptor.** `provideButtonHost(name, { defaultVariant, fixed, iconOnly })`: `name` is the public selector, printed in brackets in development diagnostics; `fixed` pins axes against the group and the config (the input still wins); `iconOnly: true` turns on the [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) name check.
-- **What the host keeps.** Its template, its slots, its CSS, the busy layer (render it from `brain.busyVisible()`, with `brain.spinner` as the glyph when it is set) and the reason span (`[id]="brain.reasonId"`, `hidden`, the text from `brain.disabledReason()`, rendered only while a reason is set). The brain sets only attributes on the host element, so the skin reads `[data-variant]`, `[data-tone]`, `[data-size]`, `[aria-disabled='true']`, `[data-pending]` and `[data-busy]`.
-- **Refusal or a run of its own.** Provide `CNGX_BUTTON_HOST_STATE` on the host with a `refusing` signal and an optional `busy` signal; the brain folds them into the guard, `aria-disabled`, `data-pending` and the state a co-hosted runner reads. Without a co-hosted runner, `busy` also opens `busyVisible()` (and `data-busy`) on the `CNGX_LOADING_CONFIG` show delay and min-dwell, so the busy layer shows for a run the host reflects on its own. The brain reads the token on first use, so a factory that injects the host component is safe.
-- **Co-hosted runners.** `cngxAsyncClick` on the host publishes its run through `CNGX_ASYNC_RUN_STATE` (`@cngx/common/interactive`); the brain reads it from there, so the busy layer, `data-pending` and `aria-disabled` follow the run without any wiring in the host.
-- **Status labels.** A host on `CngxActionStatusBrain` (`@cngx/common/interactive`) adds `provideActionStatusHost()` next to `provideButtonHost`: it passes the status brain's announcement to the runner's live region and makes a bound `[externalState]` in flight refuse clicks and read as busy. `CngxActionButton` and `CngxPopoverAction` are built that way.
-- **Reading the state.** `CNGX_BUTTON_STATE` on the element injector exposes `blocked`, `busy` and `activeReasonId`; `cngxSplitButton` reads its main action through it.
+Forward only the brain inputs your host should take, and alias `variant` to the selector so
+`appChipButton="solid"` works. `provideButtonHost(name, { defaultVariant, fixed, iconOnly })`
+fills `CNGX_BUTTON_HOST`. `name` is what development diagnostics print, `fixed` pins axes against
+the group and the config, `iconOnly: true` turns on the
+[`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) name check.
+
+The host keeps its template, slots and CSS. It renders the busy layer while
+`brain.busyVisible()`, with `brain.spinner` inside (the `provideButtonSpinner` glyph or `null`,
+the same value `injectButtonSpinner()` returns), and the hidden reason span shown above. A
+dismiss host reads its glyph through `injectButtonCloseIcon()`, a segment that sizes itself like
+a button reads the scope's defaults through `injectButtonConfig()`.
+
+The brain writes only attributes on the host element. Skin off these:
+
+- `[data-variant]`, `[data-tone]`, `[data-size]`
+- `[aria-disabled='true']`. The click guard runs in the capture phase, so this always means no
+  activation, a co-located `RouterLink` included.
+- `[data-pending]`, set when a run starts, before any delay. Paint the delay window off it.
+- `[data-busy]`, set after `showDelay` and held for `minDwell`. Paint the shown-busy state off it.
+
+Scope disabled rules to `:not([data-busy], [data-pending])` so a running button never paints
+disabled.
+
+A co-hosted `cngxAsyncClick` needs no wiring: the brain reads its run through
+`CNGX_ASYNC_RUN_STATE` (`@cngx/common/interactive`). A host that refuses or runs on its own
+provides `CNGX_BUTTON_HOST_STATE` with a `refusing` and an optional `busy` signal.
+
+A host on `CngxActionStatusBrain` (`@cngx/common/interactive`) adds `provideActionStatusHost()`
+next to `provideButtonHost`. `CngxActionButton` and `CngxPopoverAction` are built that way.
+
+`CNGX_BUTTON_STATE` on the element injector exposes `blocked`, `busy` and `activeReasonId` to a
+composing molecule. `cngxSplitButton` reads its main action through it.

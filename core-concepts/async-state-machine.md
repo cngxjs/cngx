@@ -85,7 +85,7 @@ The interface and the low-level `buildAsyncStateView` kernel live in `@cngx/core
 
 |Producer|Lives in|Use when|
 |-|-|-|
-|`buildAsyncStateView<T>(sources)`|`@cngx/core/utils`|You already have separate `status`/`data`/`error` signals and want to assemble them into the standard interface. Used by `CngxActionButton`, the select family, and other bespoke organisms.|
+|`buildAsyncStateView<T>(sources)`|`@cngx/core/utils`|You already have separate `status`/`data`/`error` signals and want to assemble them into the standard interface. Used by `CngxActionStatusBrain` (behind `CngxActionButton`), the select family, and other bespoke organisms.|
 |`createAggregateAsyncState<T>(sources)`|`@cngx/core/utils`|You have N independent `CngxAsyncState`s and want one derived state: loading while any loads, errored on the first failure, empty only when all are empty, success only when all succeed. Pure `computed()` over the `data()` of each source; the result is itself a `CngxAsyncState`. Wire the keyed list through `CngxAsyncBoundary` (see [Aggregating multiple states](#aggregating-multiple-states)).|
 |`createManualState<T>()`|`@cngx/common/data`|You drive status transitions imperatively (typical inside a commit controller or a Web Worker pipeline). No injection context required. Returns `ManualAsyncState<T>` with `set` / `setSuccess` / `setError` / `setProgress` / `reset`.|
 |`createAsyncState<T>()`|`@cngx/common/data`|Explicit user-triggered mutation (POST/PUT/DELETE). Returns `MutableAsyncState<T>` with an `execute(fn)` method that runs the action, manages cancellation through an internal `AbortController`, and transitions through `pending` -> `success`/`error`. Requires an injection context.|
@@ -331,7 +331,7 @@ interface CngxAsyncSettle {
 
 It never emits on a cancelled run, on reset or after destroy. The hosts that run their side effects on it:
 
-- `CngxActionButton` shows its toast per own settle and re-exports `(settled)`. A bound `[externalState]` stays state: one toast and one announcement per observed edge.
+- `CngxActionButton` re-exports `(settled)`; its co-hosted `CngxActionToast` shows one toast per own settle. A bound `[externalState]` stays state: one toast and one announcement per observed edge.
 - `CngxStepperComplete` emits `(completed)` once per successful finish run.
 - `CngxPopoverAction` (`button[cngxPopoverAction]`) re-arms close-on-success per settle; its result is spoken through the co-hosted `cngxAsyncClick` region via `CNGX_HOST_INTERACTION_STATE.announcement`.
 

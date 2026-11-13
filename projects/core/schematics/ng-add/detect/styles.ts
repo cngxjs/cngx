@@ -157,7 +157,7 @@ function withLocalImports(read: Read, entry: string): readonly string[] {
 export function importsCngxStylesheet(read: Read, entries: readonly string[]): boolean {
   const statement = `@import '${CNGX_STYLESHEET}';`;
   return (
-    entries.includes(CNGX_STYLESHEET) ||
+    entries.some((entry) => entry.replace(/^(?:\.\/)?node_modules\//, '') === CNGX_STYLESHEET) ||
     entries
       .filter(isLocalStylesheet)
       .some((entry) => withLocalImports(read, entry).some((content) => hasStyleImport(content, statement)))

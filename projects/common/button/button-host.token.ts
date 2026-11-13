@@ -3,22 +3,16 @@ import { InjectionToken, type Provider, type Signal } from '@angular/core';
 import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button.types';
 
 /**
- * Static facts about a button host that `CngxButtonBrain` reads: the
- * selector name it reports in development diagnostics and in the `aria-describedby`
- * registry, the variant it falls back to, the axes it pins and whether it
- * is icon-only.
+ * Static facts about a button host, read by `CngxButtonBrain`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
  * @relatedTo provideButtonHost, CngxButtonBrain
  */
 export interface CngxButtonHostDescriptor {
-  /**
-   * Public selector name of the host, e.g. `'cngxIconButton'`. Development
-   * diagnostics print it in brackets (`[cngxIconButton]`).
-   */
+  /** Selector name, e.g. `'cngxIconButton'`, printed by dev diagnostics. */
   readonly name: string;
-  /** Variant after the input, the pinned axes, the group and the config. */
+  /** Last fallback of the variant chain. */
   readonly defaultVariant: CngxButtonVariant;
   /** Axes pinned against the group and the config; the input still wins. */
   readonly fixed?: {
@@ -26,17 +20,13 @@ export interface CngxButtonHostDescriptor {
     readonly tone?: CngxButtonTone;
     readonly size?: CngxButtonSize;
   };
-  /**
-   * `true` for a host without visible text. The brain then checks the
-   * accessible name once the app is stable and warns [`CNGX1071`](/error-codes/cngx1071.md) without one.
-   */
+  /** No visible text: turns on the [`CNGX1071`](/error-codes/cngx1071.md) name check. */
   readonly iconOnly?: boolean;
 }
 
 /**
- * Host contract token of `CngxButtonBrain`: every element that declares the
- * brain as a host directive provides its descriptor here, through
- * {@link provideButtonHost}. A static host fact, not a consumer option.
+ * The host descriptor of `CngxButtonBrain`, set through {@link provideButtonHost}. A host fact,
+ * not a consumer option.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
@@ -45,23 +35,17 @@ export interface CngxButtonHostDescriptor {
 export const CNGX_BUTTON_HOST = new InjectionToken<CngxButtonHostDescriptor>('CngxButtonHost');
 
 /**
- * Provides the {@link CNGX_BUTTON_HOST} descriptor of a button host. Goes in
- * the `providers` of the component (or directive) that declares
- * `CngxButtonBrain` in its `hostDirectives`.
+ * The {@link CNGX_BUTTON_HOST} descriptor. Goes in the `providers` of the class that declares
+ * `CngxButtonBrain` in its `hostDirectives`. Full host in the README, "Building a custom button
+ * host".
  *
  * ```ts
- * @Component({
- *   selector: 'button[appChipButton]',
- *   hostDirectives: [{ directive: CngxButtonBrain, inputs: ['variant: appChipButton', 'disabled'] }],
- *   providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
- *   template: '<ng-content />',
- * })
- * class AppChipButton {}
+ * providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })]
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
- * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST
+ * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST, CngxActionButton
  */
 export function provideButtonHost(
   name: string,
@@ -71,36 +55,26 @@ export function provideButtonHost(
 }
 
 /**
- * Refusal and a run a host adds on top of the brain's own inputs, e.g. the
- * caret of a split button blocked by its main action, or an action button
- * reflecting an external run.
+ * Refusal and a run a host adds on top of the brain's inputs, e.g. a split caret blocked by its
+ * main action.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
  * @relatedTo CNGX_BUTTON_HOST_STATE, CngxButtonBrain, CngxSplitCaret
  */
 export interface CngxButtonHostState {
-  /**
-   * `true` while the host refuses activation for a reason of its own. Folded
-   * into `blocked`, the activation guard and the co-hosted runner's
-   * disabled state; it never references the disabled reason.
-   */
+  /** Folded into `blocked`; never references the disabled reason. */
   readonly refusing: Signal<boolean>;
   /**
-   * `true` while the host reflects a run the co-hosted runner does not own.
-   * Folded into `busy` (so `data-pending`, `aria-busy`, `blocked` and
-   * `aria-disabled`), into `refusing` (the activation guard and the
-   * co-hosted runner's disabled state) and into
-   * `CNGX_HOST_INTERACTION_STATE.busy`. A busy host refuses activation
-   * without setting `refusing` itself.
+   * A run the co-hosted runner does not own. Reads busy and refuses activation. Without a runner
+   * it also drives `busyVisible()` on the `CNGX_LOADING_CONFIG` timing.
    */
   readonly busy?: Signal<boolean>;
 }
 
 /**
- * Optional host state a button host provides on its own element. The brain
- * reads it on first use, so a factory that injects the host component is
- * safe.
+ * Optional host state on the host element. Read on first use, so a factory may inject the host
+ * component.
  *
  * ```ts
  * providers: [
@@ -110,7 +84,7 @@ export interface CngxButtonHostState {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
- * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST
+ * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST, CngxSplitCaret
  */
 export const CNGX_BUTTON_HOST_STATE = new InjectionToken<CngxButtonHostState>(
   'CngxButtonHostState',

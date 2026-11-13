@@ -13,6 +13,7 @@
     "aiGeneratedNote": "Drafted with AI assistance ({value}) and reviewed by a maintainer.",
     "disableMarkdownPages": ["changelog", "license"],
     "exampleUrlBase": "https://cngxjs.github.io/cngx/examples",
+    "siteUrl": "https://cngxjs.github.io/cngx/",
     "assetsFolder": "brand",
     "disableSourceCode": true,
     "disableTemplateTab": true,

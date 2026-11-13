@@ -106,9 +106,12 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
  * ```html
  * <cngx-sidenav-layout>
  *   <cngx-sidenav position="start" [(opened)]="navOpen">
- *     <cngx-sidenav-header>Logo</cngx-sidenav-header>
+ *     <cngx-nav-header>
+ *       <span cngxNavMark>A</span>
+ *       <span cngxNavName>Acme</span>
+ *     </cngx-nav-header>
  *     <a cngxNavLink [active]="true">Dashboard</a>
- *     <cngx-sidenav-footer>v1.0</cngx-sidenav-footer>
+ *     <cngx-nav-footer>v1.0</cngx-nav-footer>
  *   </cngx-sidenav>
  *   <cngx-sidenav-content>
  *     <router-outlet />
@@ -119,11 +122,10 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav.ts
  * @since 0.1.0
- * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter
+ * @relatedTo CngxSidenavLayout, CngxSidenavContent, CngxNavHeader, CngxNavFooter
  * <example-url>/#/ui/sidenav/auto-mode</example-url>
  * <example-url>/#/ui/sidenav/dual-sidebar-master-detail</example-url>
  * <example-url>/#/ui/sidenav/full-navigation-sidebar</example-url>
- * <example-url>/#/ui/sidenav/material-theming-light-vs-dark</example-url>
  * @axis level organism
  */
 @Component({
@@ -187,11 +189,11 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
   },
   imports: [CngxResizable],
   template: `
-    <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
+    <ng-content select="cngx-nav-header, [cngxNavHeader]" />
     <div class="cngx-sidenav__body">
       <ng-content />
     </div>
-    <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
+    <ng-content select="cngx-nav-footer, [cngxNavFooter]" />
     <!-- Only at full width: a collapsed rail or peek has a fixed width, and a
          drag there would leave a stale width on the rail. -->
     @if (resizable() && sidebar.state() === 'expanded') {
@@ -398,8 +400,8 @@ export class CngxSidenav
 
   /**
    * Whether the full nav is shown: the overlay while `opened`, a
-   * docked rail while not `collapsed` or while it peeks. What a trigger's
-   * `aria-expanded` mirrors.
+   * docked rail while not `collapsed` or while it peeks. A trigger's
+   * `aria-expanded` mirrors it outside a peek (`panelTarget.peeked`).
    */
   readonly expanded = computed(() => {
     if (this.isOverlay()) {
@@ -461,12 +463,15 @@ export class CngxSidenav
    * (and `CNGX_PANEL_TARGET` inside the rail). One trigger works in every
    * width class: `toggle()` flips `collapsed` on the docked rail and opens or
    * closes the overlay over the `medium` rail and the `compact` drawer;
-   * `expanded` is what the trigger's `aria-expanded` mirrors. `mode` reads
-   * `over` while `opened` shows the rail as an overlay, else `inline`.
+   * `expanded` is "the full nav is shown", and a hover peek of the docked rail
+   * is reported through `peeked`, so the trigger's `aria-expanded` keeps the
+   * resting state. `mode` reads `over` while `opened` shows the rail as an
+   * overlay, else `inline`.
    */
   readonly panelTarget: CngxPanelTarget = {
     id: this.id,
     expanded: this.expanded,
+    peeked: computed(() => !this.isOverlay() && this.sidebar.peeked()),
     toggle: () => this.toggle(),
     peek: () => this.peek(),
     mode: computed<CngxPanelMode>(() => (this.isOverlay() ? 'over' : 'inline')),

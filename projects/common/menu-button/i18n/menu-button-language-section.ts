@@ -2,35 +2,25 @@
 import type {} from '@cngx/core/i18n';
 
 /**
- * The menu-button section of a {@link CngxLanguagePack}. Same keys as
- * {@link CngxMenuButtonI18n}: the names the menu buttons fall back to when
- * the consumer sets none.
+ * The `menuButton` section of a `CngxLanguagePack`.
  *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-language-section.ts
  * @since 0.1.0
- * @relatedTo CngxIconMenuButton, CngxSplitButton
+ * @relatedTo CNGX_MENU_BUTTON_I18N, CNGX_MENU_BUTTON_LANGUAGE_EN
  */
 export interface CngxMenuButtonLanguageSection {
-  /**
-   * Accessible name of an icon menu button inside a split button, the caret
-   * that opens the alternative actions. Outside a split button the consumer
-   * names the icon menu button.
-   */
+  /** Accessible name of a split caret. An `aria-label` on the caret wins. */
   readonly splitToggle: string;
-  /**
-   * Description of the split caret while the main action runs, so the
-   * caret's refusal says why. Referenced through `aria-describedby`, never
-   * part of the caret's name.
-   */
+  /** Description of the split caret while the main action runs, never part of its name. */
   readonly splitMainBusy: string;
 }
 
 /**
- * The English menu-button section: the single source of the menu buttons'
- * English copy. `CNGX_MENU_BUTTON_I18N` defaults to it, and the shipped
- * English pack is built from it.
+ * The English `menuButton` section, the default of `CNGX_MENU_BUTTON_I18N`.
  *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-language-section.ts
  * @since 0.1.0
- * @relatedTo CNGX_MENU_BUTTON_I18N
+ * @relatedTo CNGX_MENU_BUTTON_I18N, CngxMenuButtonLanguageSection
  */
 export const CNGX_MENU_BUTTON_LANGUAGE_EN: CngxMenuButtonLanguageSection = {
   splitToggle: 'More options',

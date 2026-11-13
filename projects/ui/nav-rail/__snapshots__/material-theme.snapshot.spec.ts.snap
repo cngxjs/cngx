@@ -1,0 +1,86 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Material nav-rail-theme bridge baseline > v0 light: resolved --cngx-* declarations match the baseline 1`] = `
+{
+  "--cngx-nav-flyout-bg": "white",
+  "--cngx-nav-flyout-border-color": "rgba(0, 0, 0, 0.12)",
+  "--cngx-nav-flyout-color": "rgba(0, 0, 0, 0.87)",
+  "--cngx-nav-footer-bg": "rgba(63, 81, 181, 0.04)",
+  "--cngx-nav-footer-border-color": "rgba(0, 0, 0, 0.12)",
+  "--cngx-nav-header-bg": "rgba(63, 81, 181, 0.04)",
+  "--cngx-nav-header-border-color": "rgba(0, 0, 0, 0.12)",
+  "--cngx-nav-link-active-bg": "rgba(63, 81, 181, 0.08)",
+  "--cngx-nav-link-active-color": "#3f51b5",
+  "--cngx-nav-link-active-font-weight": "500",
+  "--cngx-nav-link-active-hover-bg": "rgba(63, 81, 181, 0.12)",
+  "--cngx-nav-link-active-indicator-color": "#3f51b5",
+  "--cngx-nav-link-color": "rgba(0, 0, 0, 0.65)",
+  "--cngx-nav-link-font-size": "0.875rem",
+  "--cngx-nav-link-hover-bg": "rgba(63, 81, 181, 0.04)",
+  "--cngx-nav-link-hover-color": "rgba(0, 0, 0, 0.87)",
+  "--cngx-nav-link-pressed-bg": "rgba(63, 81, 181, 0.06)",
+  "--cngx-nav-link-radius": "8px",
+  "--cngx-nav-rail-bg": "white",
+  "--cngx-nav-rail-border-color": "rgba(0, 0, 0, 0.12)",
+}
+`;
+
+exports[`Material nav-rail-theme bridge baseline > v1 dark: resolved --cngx-* declarations match the baseline 1`] = `
+{
+  "--cngx-nav-flyout-bg": "var(--mat-sys-surface-container)",
+  "--cngx-nav-flyout-border-color": "var(--mat-sys-outline-variant)",
+  "--cngx-nav-flyout-color": "var(--mat-sys-on-surface)",
+  "--cngx-nav-flyout-radius": "var(--mat-sys-corner-medium, 12px)",
+  "--cngx-nav-flyout-shadow": "var(--mat-sys-level2, 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15))",
+  "--cngx-nav-footer-bg": "var(--mat-sys-surface-container-low, #1a1b1f)",
+  "--cngx-nav-footer-border-color": "var(--mat-sys-outline-variant, #44474e)",
+  "--cngx-nav-footer-font-size": "var(--mat-sys-body-small-size, 0.75rem)",
+  "--cngx-nav-header-bg": "var(--mat-sys-surface-container-low, #1a1b1f)",
+  "--cngx-nav-header-border-color": "var(--mat-sys-outline-variant, #44474e)",
+  "--cngx-nav-header-font-size": "var(--mat-sys-title-small-size, 0.875rem)",
+  "--cngx-nav-link-active-bg": "var(--mat-sys-secondary-container, #3e4759)",
+  "--cngx-nav-link-active-color": "var(--mat-sys-on-secondary-container, #dae2f9)",
+  "--cngx-nav-link-active-font-weight": "500",
+  "--cngx-nav-link-active-hover-bg": "color-mix(in srgb, var(--mat-sys-on-secondary-container, #dae2f9) 8%, var(--mat-sys-secondary-container, #3e4759))",
+  "--cngx-nav-link-active-indicator-color": "transparent",
+  "--cngx-nav-link-color": "var(--mat-sys-on-surface-variant, #e0e2ec)",
+  "--cngx-nav-link-font-size": "0.875rem",
+  "--cngx-nav-link-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface, #e3e2e6) 8%, transparent)",
+  "--cngx-nav-link-hover-color": "var(--mat-sys-on-surface, #e3e2e6)",
+  "--cngx-nav-link-pressed-bg": "color-mix(in srgb, var(--mat-sys-on-surface, #e3e2e6) 12%, transparent)",
+  "--cngx-nav-link-radius": "8px",
+  "--cngx-nav-rail-below-font-size": "var(--mat-sys-label-medium-size, 0.75rem)",
+  "--cngx-nav-rail-bg": "var(--mat-sys-surface)",
+  "--cngx-nav-rail-border-color": "var(--mat-sys-outline-variant)",
+}
+`;
+
+exports[`Material nav-rail-theme bridge baseline > v1 light: resolved --cngx-* declarations match the baseline 1`] = `
+{
+  "--cngx-nav-flyout-bg": "var(--mat-sys-surface-container)",
+  "--cngx-nav-flyout-border-color": "var(--mat-sys-outline-variant)",
+  "--cngx-nav-flyout-color": "var(--mat-sys-on-surface)",
+  "--cngx-nav-flyout-radius": "var(--mat-sys-corner-medium, 12px)",
+  "--cngx-nav-flyout-shadow": "var(--mat-sys-level2, 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 2px 6px 2px rgb(0 0 0 / 0.15))",
+  "--cngx-nav-footer-bg": "var(--mat-sys-surface-container-low, #f4f3f6)",
+  "--cngx-nav-footer-border-color": "var(--mat-sys-outline-variant, #c4c6d0)",
+  "--cngx-nav-footer-font-size": "var(--mat-sys-body-small-size, 0.75rem)",
+  "--cngx-nav-header-bg": "var(--mat-sys-surface-container-low, #f4f3f6)",
+  "--cngx-nav-header-border-color": "var(--mat-sys-outline-variant, #c4c6d0)",
+  "--cngx-nav-header-font-size": "var(--mat-sys-title-small-size, 0.875rem)",
+  "--cngx-nav-link-active-bg": "var(--mat-sys-secondary-container, #dae2f9)",
+  "--cngx-nav-link-active-color": "var(--mat-sys-on-secondary-container, #3e4759)",
+  "--cngx-nav-link-active-font-weight": "500",
+  "--cngx-nav-link-active-hover-bg": "color-mix(in srgb, var(--mat-sys-on-secondary-container, #3e4759) 8%, var(--mat-sys-secondary-container, #dae2f9))",
+  "--cngx-nav-link-active-indicator-color": "transparent",
+  "--cngx-nav-link-color": "var(--mat-sys-on-surface-variant, #44474e)",
+  "--cngx-nav-link-font-size": "0.875rem",
+  "--cngx-nav-link-hover-bg": "color-mix(in srgb, var(--mat-sys-on-surface, #1a1b1f) 8%, transparent)",
+  "--cngx-nav-link-hover-color": "var(--mat-sys-on-surface, #1a1b1f)",
+  "--cngx-nav-link-pressed-bg": "color-mix(in srgb, var(--mat-sys-on-surface, #1a1b1f) 12%, transparent)",
+  "--cngx-nav-link-radius": "8px",
+  "--cngx-nav-rail-below-font-size": "var(--mat-sys-label-medium-size, 0.75rem)",
+  "--cngx-nav-rail-bg": "var(--mat-sys-surface)",
+  "--cngx-nav-rail-border-color": "var(--mat-sys-outline-variant)",
+}
+`;

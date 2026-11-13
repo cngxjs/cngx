@@ -1,6 +1,13 @@
 # Button Toggle
 
-A pair of segmented-control groups built from a single leaf directive. Two parent components own opposite contracts: `CngxButtonToggleGroup` is single-select with W3C `radiogroup` semantics, `CngxButtonMultiToggleGroup` is multi-select with W3C `toolbar` semantics. The shared `CngxButtonToggle` leaf binds to native `<button>`, injects exactly one parent token, and picks its ARIA pattern at injection time. Mode is static per atom instance, never a runtime flag.
+Segmented controls on native `<button>` elements. `CngxButtonToggleGroup` selects one value,
+`CngxButtonMultiToggleGroup` selects any number. Both take the same `cngxButtonToggle` leaf, which
+reads its mode from the group it sits in. There is no `[multiple]` flag: the group you write in the
+template is the mode.
+
+Which control? A toggle group fits two to five options that stay visible. For longer lists use a
+select, for commands use a menu or a `cngxButtonGroup` of plain buttons. The full decision table is
+in [Choosing a Trigger](../../../../core-concepts/choosing-a-trigger.md).
 
 ## Import
 
@@ -14,7 +21,7 @@ import {
 
 ## Quick start
 
-Single-select (radiogroup, auto-select on arrow):
+Single selection:
 
 ```html
 <cngx-button-toggle-group label="Layout" [(value)]="view">
@@ -24,7 +31,7 @@ Single-select (radiogroup, auto-select on arrow):
 </cngx-button-toggle-group>
 ```
 
-Multi-select (toolbar, arrow moves focus only):
+Multi selection:
 
 ```html
 <cngx-button-multi-toggle-group label="Filters" [(selectedValues)]="filters">
@@ -34,47 +41,62 @@ Multi-select (toolbar, arrow moves focus only):
 </cngx-button-multi-toggle-group>
 ```
 
-The leaf is the same directive in both cases. The parent it resolves at injection determines its semantics.
+## Single vs multi
 
-## The two group contracts
-
-The leaf injects `CNGX_BUTTON_TOGGLE_GROUP` and `CNGX_BUTTON_MULTI_TOGGLE_GROUP` both with `{ optional: true }`. Exactly one must be present; both or neither throws.
-
-| Aspect | `CNGX_BUTTON_TOGGLE_GROUP` | `CNGX_BUTTON_MULTI_TOGGLE_GROUP` |
+| | `CngxButtonToggleGroup` | `CngxButtonMultiToggleGroup` |
 |-|-|-|
-| Component | `CngxButtonToggleGroup` | `CngxButtonMultiToggleGroup` |
-| Selection | single | multi |
-| Canonical model | `value = model<T \| undefined>` | `selectedValues = model<T[]>` |
-| Two-way alias | `[(value)]` | `[(selectedValues)]` (also `[(value)]`) |
-| Host role | `radiogroup` | `toolbar` |
-| Leaf ARIA | `aria-checked` | `aria-pressed` |
-| Arrow keys | move focus AND select | move focus only |
-| Activation | `group.value.set(v)` | `group.toggle(v)` |
-| Empty | `value() === undefined` | `selectedValues().length === 0` |
+| Binding | `[(value)]`, `T \| undefined` | `[(selectedValues)]`, `T[]` |
+| Group role | `radiogroup` | `toolbar` |
+| Toggle semantics | `role="radio"`, `aria-checked` | native button, `aria-pressed` |
+| Arrow keys, Home, End | move focus and select | move focus only |
+| Click, Space, Enter | select | add or remove |
+| Value match | `===` | key from `keyFn` |
 
-Both contracts share `disabled`, `required`, `invalid`, `errorMessageId`, `orientation`, `label`, and `state` inputs, expose `focused`, `empty`, and `errorState` signals, and provide themselves as `CNGX_CONTROL_VALUE` plus `CNGX_FORM_FIELD_CONTROL` so they drop into `<cngx-form-field [field]>` without a wrapper.
+The multi group also has a `value` property. It is the same model under a second name, for code
+that reads the group through `CNGX_CONTROL_VALUE`. It is not an input: bind `[(selectedValues)]`.
+
+For object values, pass `[keyFn]="byId"` (for example `(v) => v.id`) to the multi group, so a
+re-fetched object with the same id still counts as selected.
+
+A `cngxButtonToggle` needs exactly one of the two groups above it. Outside both it throws
+[`CNGX1053`](../../../../core-concepts/error-codes/cngx1053.md), under both
+[`CNGX1052`](../../../../core-concepts/error-codes/cngx1052.md).
+
+## Keyboard
+
+Both groups carry `CngxRovingTabindex`, so the group is one tab stop. `orientation` sets the arrow
+axis and `aria-orientation`. Navigation wraps at the ends, skips disabled toggles and follows the
+writing direction for Left and Right.
+
+Arrow selection in the single group comes from the roving directive: it flags a navigation key
+before it moves focus, and the newly focused toggle asks the group to select it. Focus from Tab, a
+click or `focus()` does not select.
+
+Space and Enter select on keydown. Read changes from the group's model, not from `(click)` on a
+toggle.
 
 ## Accessibility
 
-Both groups compose `CngxRovingTabindex` as a host directive with `orientation` forwarded, so exactly one leaf is in the tab sequence; the rest carry `tabindex="-1"`. `CngxRovingItem` on the leaf wires arrow navigation and skips per-toggle-disabled leaves.
+- Name the group with `label` or `labelledBy`. Inside a `cngx-form-field` with neither set, the
+  field label names it.
+- `disabled`, `required`, `invalid` and `errorMessageId` land on the host as `aria-disabled`,
+  `aria-required`, `aria-invalid` and `aria-errormessage`. `aria-invalid` also turns on while the
+  surrounding field or `CngxErrorAggregator` shows an error.
+- `aria-busy` is set while `state` reports `loading`. With `state` unbound, the nearest
+  `CNGX_STATEFUL` producer counts.
+- `required` only sets `aria-required`. Validation belongs to the form.
+- A disabled toggle explains why through `[cngxDescribedBy]`: render the reason yourself and pass
+  its id. The group's `disabled` disables every toggle, natively and with `aria-disabled`.
 
-| Key | Single (`radiogroup`) | Multi (`toolbar`) |
-|-|-|-|
-| Arrow keys | move focus + select focused leaf | move focus only |
-| Home / End | move focus + select first / last | move focus to first / last |
-| Space, Enter | select focused leaf | toggle focused leaf |
-| Tab | enter / leave group | enter / leave group |
+## Forms
 
-Single-select auto-select-on-arrow follows the radiogroup pattern via the host `CngxRovingTabindex`: the roving directive raises its navigation-key intent before it moves focus, and each leaf reads `roving.consumeNavigationKey()` in its `(focus)` handler. Reading an already-set fact (rather than a group-owned `(keydown)` flag) means the first arrow press selects the focused leaf instead of being dropped. The value write happens inside the DOM event handler, never inside an `effect()`.
-
-Group state is communicated structurally: `aria-disabled`, `aria-required`, `aria-invalid`, `aria-orientation`, `aria-busy`, and `aria-errormessage` are all `computed()` from inputs and the optional field-host / error-aggregator wiring. `aria-busy` is true while the optional `state` input reports `loading`.
-
-Per-toggle `disabled` describes its reason via `[cngxDescribedBy]` (alias of the leaf's `describedBy` input). Consumers render the description element themselves and pass its id; native `<button aria-describedby>` semantics apply.
-
-Accepted debt: a fully-disabled group lets arrow focus transit through its toggles because Angular forbids re-binding the host-directive's read-only `disabled` input. Every selection pathway short-circuits silently. Mirrors `CngxRadio` behaviour; tracked in `form-primitives-accepted-debt.md §4`.
+Both groups provide `CNGX_FORM_FIELD_CONTROL`, so `<cngx-form-field [field]="f.view">` takes them
+without a wrapper. With Reactive Forms, put `formControlName` on the group and import
+`CngxFormBridge` from `@cngx/forms/controls` ([README](../../../forms/controls/README.md)).
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, outputs, and the full token surface.
-- Stories: `examples/stories/common/interactive/button-toggle-group/`, `examples/stories/common/interactive/button-multi-toggle-group/`.
-- `CngxToggle` (`@cngx/common/interactive`) for the standalone on/off switch (no group context).
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/button-toggle/) for inputs, outputs and the token contracts.
+- Stories: `examples/stories/common/interactive/button-toggle/group/` and
+  `examples/stories/common/interactive/button-toggle/multi-group/`.
+- `CngxToggle` for a single on/off switch without a group.

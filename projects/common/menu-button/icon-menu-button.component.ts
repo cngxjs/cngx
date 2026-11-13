@@ -11,43 +11,26 @@ import { injectMenuToggle } from './internal/menu-toggle';
 import { CngxSplitCaret } from './split-caret.directive';
 
 /**
- * A square, icon-only button that opens a menu: the kebab or "more" button
- * of a row, a toolbar or a card, and the caret half of a `cngxSplitButton`.
- * Same brain as `cngxIconButton` (variant, tone, size, group, disabled with a
- * reason, busy layer; `ghost` by default) and the same two bindings as
- * `cngxMenuButton`: `[menu]` is the `cngxMenu`, `[popover]` the
- * `cngxPopover` around it. Keyboard model, `aria-expanded`,
- * `aria-haspopup="menu"`, anchor and click toggle work as on
- * `cngxMenuButton`: after open, focus moves into the menu, which carries
- * `aria-activedescendant`; Escape returns focus to the button, Tab closes
- * the menu.
+ * The square, icon-only menu button: the kebab of a row, toolbar or card, and the caret of a
+ * `cngxSplitButton`. Bindings and keyboard model of `cngxMenuButton`, `cngxIconButton` skin,
+ * `ghost` by default.
  *
- * Outside a split button the glyph is whatever you project (a kebab icon,
- * an ellipsis) and the name is yours: set `aria-label` (or
- * `aria-labelledby` / `title`); a host without one warns [`CNGX1071`](/error-codes/cngx1071.md) in
- * development mode.
- *
- * As the direct child of a `cngxSplitButton` it renders the caret (the
- * shared chevron; `provideButtonCaretIcon` swaps it) instead of the
- * projected content, and is named by content: the `menuButton.splitToggle`
- * copy ("More options") of the active language pack as visually hidden
- * text, so a consumer `aria-label` still wins and the button never writes
- * one itself. It is blocked while the main action is: `aria-disabled`, no
- * click, no key, an open menu closes. Its `aria-describedby` then references the main's reason (main
- * disabled with one) or a hidden "The main action is running" note
- * (`menuButton.splitMainBusy`, main action pending); its own
- * `disabledReason` only describes its own `[disabled]`.
+ * Outside a split it renders the projected glyph and needs a name: without `aria-label`,
+ * `aria-labelledby` or `title` it warns [`CNGX1071`](/error-codes/cngx1071.md) in development. As
+ * the direct child of a `cngxSplitButton` it is the caret and needs neither glyph nor label.
  *
  * ```html
  * <button cngxIconMenuButton aria-label="Row actions" [menu]="menu" [popover]="pop">
- *   <cngx-icon name="more_vert" />
+ *   <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+ *     <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+ *   </svg>
  * </button>
  * ```
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/icon-menu-button.component.ts
  * @since 0.1.0
- * @relatedTo CngxMenuButton, CngxButtonBrain, CngxSplitButton, CngxSplitCaret, CngxIconButton, CngxMenuTrigger, CNGX_MENU_BUTTON_I18N
+ * @relatedTo CngxMenuButton, CngxButtonBrain, CngxSplitButton, CngxSplitCaret, CngxIconButton, CngxMenuTrigger, CNGX_MENU_BUTTON_I18N, CNGX_BUTTON_CARET_ICON, CngxPopoverTrigger
  * <example-url>/#/common/menu-button/icon-menu-button/kebab</example-url>
  * <example-url>/#/common/menu-button/split-button/basic</example-url>
  * @axis level molecule
@@ -127,13 +110,10 @@ export class CngxIconMenuButton {
   /** @internal - the caret role inside a `cngxSplitButton`. */
   protected readonly caret = inject(CngxSplitCaret);
 
-  /**
-   * @internal - refuses to open the menu while the button is blocked; an
-   * open menu still closes on click.
-   */
+  /** @internal - refuses to open while blocked; an open menu still closes. */
   protected readonly toggle = injectMenuToggle(this.brain.blocked);
 
-  /** `true` while the menu is open. Mirrors the popover's visibility. */
+  /** `true` while the menu is open. */
   readonly expanded = this.toggle.expanded;
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */

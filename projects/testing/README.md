@@ -8,7 +8,6 @@ Internal test utilities and helpers for the cngx component library. Not publishe
 import {
   createDirectiveFixture,
   spyOnOutput,
-  updateAndFlush,
   cngxMatchers,
   createMatchMediaMock,
   createResizeObserverMock,
@@ -127,33 +126,6 @@ directive.setSort('name', 'desc');
 expect(spy.callCount()).toBe(1);
 expect(spy.lastValue()).toEqual({ active: 'name', direction: 'desc' });
 spy.destroy();
-```
-
-### updateAndFlush
-
-Sets a signal value, runs change detection, and flushes effects in one call.
-
-```typescript
-function updateAndFlush<T>(
-  fixture: ComponentFixture<unknown>,
-  signal: WritableSignal<T>,
-  value: T,
-): void
-```
-
-#### Parameters
-
-- `fixture` - The component fixture.
-- `signal` - The writable signal to update.
-- `value` - The new value to set.
-
-#### Example
-
-```typescript
-const { fixture, host, element } = await createDirectiveFixture(...);
-
-updateAndFlush(fixture, host.activeIndex, 2);
-expect(element.classList.contains('active')).toBe(true);
 ```
 
 ### cngxMatchers

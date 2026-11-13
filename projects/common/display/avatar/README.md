@@ -98,5 +98,5 @@ For one-off sizes, set the active tokens inline:
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/display/avatar/) for inputs and tokens.
 - Stories: `examples/stories/common/display/avatar/`.

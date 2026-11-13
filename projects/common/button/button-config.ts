@@ -9,48 +9,26 @@ import {
 import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button.types';
 
 /**
- * App-wide defaults for the button family: every host on
- * `CngxButtonBrain` (`CngxButton`, `CngxIconButton`, `CngxCloseButton`,
- * `CngxMenuButton`, `CngxIconMenuButton`, `CngxActionButton` and custom
- * hosts).
- *
- * Resolution priority for every axis (high -> low):
- *   1. Per-instance input (`cngxButton="outline"`, `[tone]`, `[size]`).
- *   2. The axes the host pins (`provideButtonHost(..., { fixed })`); the
- *      close button pins `ghost` / `sm` / `neutral`, so it never takes the
- *      group or the config.
- *   3. A surrounding button group (`CNGX_BUTTON_GROUP`, variant and size;
- *      tone skips the group).
- *   4. `provideButtonConfigAt(...)` in a parent component's `viewProviders`.
- *   5. `provideButtonConfig(...)` at the application root.
- *   6. The host default (`defaultVariant` of the host, `neutral`, `md`;
- *      `CngxIconButton` and `CngxIconMenuButton` default their variant to
- *      `ghost`).
- *
- * Every key is optional: an unset key falls through to the host default,
- * which is how the icon buttons keep their own `ghost` default unless the
- * app picks a variant for the whole family.
+ * Defaults for every host on `CngxButtonBrain`. Each axis resolves
+ * `input ?? fixed ?? group ?? config ?? default` (README, "Axes"). An unset key falls through to
+ * the host default, which is how the icon buttons keep `ghost` unless the app picks a variant.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt, injectButtonConfig
  */
 export interface CngxButtonConfig {
-  /** Default emphasis when no input or group sets one. */
   readonly variant?: CngxButtonVariant;
-  /** Default intent when no input sets one. */
   readonly tone?: CngxButtonTone;
-  /** Default size when no input or group sets one. */
   readonly size?: CngxButtonSize;
 }
 
 /**
- * DI token carrying the resolved {@link CngxButtonConfig}. Defaults to an
- * empty object, so every axis falls through to the button class default.
+ * The resolved {@link CngxButtonConfig}. Empty by default.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig, injectButtonConfig
+ * @relatedTo provideButtonConfig, injectButtonConfig, withButtonVariant, withButtonTone, withButtonSize
  */
 export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButtonConfig', {
   providedIn: 'root',
@@ -58,15 +36,12 @@ export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButt
 });
 
 /**
- * Feature returned by a `withButton*` config function; merged by
- * {@link provideButtonConfig} and {@link provideButtonConfigAt}. The hidden
- * `_target: 'config'` discriminator routes it through `provideCngxButton`.
- * Build features through `withButtonVariant` / `withButtonTone` /
- * `withButtonSize`: a hand-built object needs `_target: 'config'` too, and
- * `provideCngxButton` drops one without it ([`CNGX1041`](/error-codes/cngx1041.md)).
+ * Feature returned by a `withButton*` config function. A hand-built one needs
+ * `_target: 'config'`, or `provideCngxButton` drops it ([`CNGX1041`](/error-codes/cngx1041.md)).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
+ * @relatedTo provideButtonConfig, provideButtonConfigAt
  */
 export interface CngxButtonConfigFeature {
   readonly _target: 'config';
@@ -74,30 +49,34 @@ export interface CngxButtonConfigFeature {
 }
 
 /**
- * Default emphasis for every button in scope.
+ * Default emphasis in scope. An input, a pinned axis or a group still wins.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
+ * @relatedTo provideButtonConfig, provideButtonConfigAt, provideCngxButton
  */
 export function withButtonVariant(variant: CngxButtonVariant): CngxButtonConfigFeature {
   return { _target: 'config', config: { variant } };
 }
 
 /**
- * Default intent for every button in scope.
+ * Default intent in scope. An input or a pinned tone still wins, so the close button stays
+ * `neutral`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
+ * @relatedTo provideButtonConfig, provideButtonConfigAt, provideCngxButton
  */
 export function withButtonTone(tone: CngxButtonTone): CngxButtonConfigFeature {
   return { _target: 'config', config: { tone } };
 }
 
 /**
- * Default size for every button in scope.
+ * Default size in scope. An input, a pinned size or a group still wins.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
+ * @relatedTo provideButtonConfig, provideButtonConfigAt, provideCngxButton
  */
 export function withButtonSize(size: CngxButtonSize): CngxButtonConfigFeature {
   return { _target: 'config', config: { size } };
@@ -112,7 +91,7 @@ function mergeFeatures(
 }
 
 /**
- * Register app-wide button defaults composed from `withButton*` features.
+ * App-wide button defaults from `withButton*` features.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -122,7 +101,7 @@ function mergeFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo withButtonVariant, withButtonTone, withButtonSize, provideButtonConfigAt
+ * @relatedTo withButtonVariant, withButtonTone, withButtonSize, provideButtonConfigAt, provideCngxButton
  */
 export function provideButtonConfig(...features: CngxButtonConfigFeature[]): EnvironmentProviders {
   if (features.length === 0) {
@@ -134,22 +113,12 @@ export function provideButtonConfig(...features: CngxButtonConfigFeature[]): Env
 }
 
 /**
- * Component-scoped twin of {@link provideButtonConfig} for `viewProviders`.
- * Merges the features on top of the config inherited from the parent
- * injector, so nested scopes cascade.
- *
- * ```ts
- * @Component({
- *   selector: 'app-toolbar',
- *   viewProviders: [provideButtonConfigAt(withButtonVariant('ghost'), withButtonSize('sm'))],
- *   template: '<button cngxButton>Edit</button>',
- * })
- * class AppToolbar {}
- * ```
+ * `viewProviders` twin of {@link provideButtonConfig}. Merges over the parent scope's config, so
+ * nested scopes cascade.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig
+ * @relatedTo provideButtonConfig, withButtonVariant, withButtonTone, withButtonSize
  */
 export function provideButtonConfigAt(...features: CngxButtonConfigFeature[]): Provider[] {
   if (features.length === 0) {
@@ -164,10 +133,12 @@ export function provideButtonConfigAt(...features: CngxButtonConfigFeature[]): P
 }
 
 /**
- * Inject the button config resolved for the current injector.
+ * The config resolved for the current injector. For custom hosts and segments that size
+ * themselves like a button, as `CngxButtonGroupAddon` does.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
+ * @relatedTo CNGX_BUTTON_CONFIG, provideButtonConfig
  */
 export function injectButtonConfig(): CngxButtonConfig {
   return inject(CNGX_BUTTON_CONFIG);

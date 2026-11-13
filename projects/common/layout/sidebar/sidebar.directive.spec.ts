@@ -156,6 +156,21 @@ describe('CngxSidebar', () => {
       expect(trigger.getAttribute('aria-expanded')).toBe('false');
     });
 
+    it('keeps a peek out of the trigger aria-expanded', () => {
+      const { sidebar, host, q, set } = setup();
+      set((h) => h.collapsed.set(true));
+      sidebar.peek();
+      set(() => undefined);
+      expect(sidebar.peeked()).toBe(true);
+      expect(sidebar.expanded()).toBe(true);
+      expect(q('.trigger').getAttribute('aria-expanded')).toBe('false');
+
+      sidebar.pin();
+      set(() => undefined);
+      expect(host.collapsed()).toBe(false);
+      expect(q('.trigger').getAttribute('aria-expanded')).toBe('true');
+    });
+
     it('toggles, pins and peeks through the methods', () => {
       const { sidebar, host, fixture } = setup();
       sidebar.toggle();

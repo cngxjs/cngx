@@ -1,6 +1,6 @@
 # Keyboard Interactions
 
-Keyboard shortcut, hotkey registry, search input, and click-outside directives.
+Keyboard shortcut, hotkey registry and search input directives. Outside-press dismissal lives in [CngxClickOutside](../click-outside/).
 
 ## Import
 
@@ -11,7 +11,6 @@ import {
   injectHotkey,
   injectHotkeys,
   CngxSearch,
-  CngxClickOutside,
   type KeyCombo,
 } from '@cngx/common/interactive';
 ```
@@ -20,7 +19,7 @@ import {
 
 ```typescript
 import { Component } from '@angular/core';
-import { CngxKeyboardShortcut, CngxSearch, CngxClickOutside } from '@cngx/common/interactive';
+import { CngxKeyboardShortcut, CngxSearch } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-search',
@@ -34,19 +33,8 @@ import { CngxKeyboardShortcut, CngxSearch, CngxClickOutside } from '@cngx/common
     <input cngxSearch #search="cngxSearch" placeholder="Search..." />
     <button (click)="search.clear()">Clear</button>
     <span>{{ search.term() }}</span>
-
-    <!-- Click outside dismiss -->
-    <div cngxClickOutside (clickOutside)="closeDropdown()" [enabled]="isOpen()">
-      <button (click)="isOpen.set(!isOpen())">Toggle</button>
-      @if (isOpen()) {
-        <ul>
-          <li>Option 1</li>
-          <li>Option 2</li>
-        </ul>
-      }
-    </div>
   `,
-  imports: [CngxKeyboardShortcut, CngxSearch, CngxClickOutside],
+  imports: [CngxKeyboardShortcut, CngxSearch],
 })
 export class SearchComponent {}
 ```
@@ -57,11 +45,9 @@ export class SearchComponent {}
 - **Keyboard interaction:**
   - CngxKeyboardShortcut: Emits on matching keyboard events
   - CngxSearch: Standard text input keyboard behavior
-  - CngxClickOutside: No keyboard interaction (pointer-only)
 - **Screen reader:**
   - CngxKeyboardShortcut sets `aria-keyshortcuts` on its host from the combo (`Control+K`, `Meta+K` on macOS) while it is enabled and not muted; do not set it by hand
   - Search input is a standard form control
-  - Click-outside is behavioral (no SR announcement needed)
 - **Focus management:**
   - All directives preserve focus
   - No focus traps
@@ -72,7 +58,7 @@ Keyboard directives are orthogonal interaction atoms:
 
 - **Host directives:** None
 - **Combines with:** Forms, buttons, overlays, searches
-- **Provides:** Keyboard and pointer event handling
+- **Provides:** Keyboard event handling
 
 ### Example: Composition Pattern
 
@@ -85,17 +71,6 @@ Keyboard directives are orthogonal interaction atoms:
 <input cngxSearch #search="cngxSearch"
        [value]="search.term()"
        (searchChange)="query.set($event)" />
-
-// Dropdown with click-outside dismiss
-<div cngxClickOutside (clickOutside)="closeMenu()" [enabled]="isOpen()">
-  <button (click)="isOpen.set(!isOpen())">Menu</button>
-  @if (isOpen()) {
-    <ul role="menu">
-      <li><a role="menuitem" href="/a">Option A</a></li>
-      <li><a role="menuitem" href="/b">Option B</a></li>
-    </ul>
-  }
-</div>
 ```
 
 ## Styling
@@ -173,60 +148,6 @@ effect(() => {
 });
 ```
 
-### Dropdown with Click-Outside Dismiss
-
-```typescript
-readonly dropdownOpen = signal(false);
-
-<div class="dropdown">
-  <button (click)="dropdownOpen.set(!dropdownOpen())">
-    Actions ▼
-  </button>
-
-  <div cngxClickOutside (clickOutside)="dropdownOpen.set(false)"
-       [enabled]="dropdownOpen()"
-       [hidden]="!dropdownOpen()"
-       role="menu">
-    <a role="menuitem" href="#edit">Edit</a>
-    <a role="menuitem" href="#delete">Delete</a>
-  </div>
-</div>
-```
-
-### Modal with Outside Dismiss
-
-```typescript
-readonly modalOpen = signal(false);
-
-<div cngxClickOutside (clickOutside)="modalOpen.set(false)"
-     [enabled]="modalOpen()"
-     class="modal-backdrop"
-     [hidden]="!modalOpen()">
-  <dialog class="modal">
-    <h2>Dialog Title</h2>
-    <p>Dialog content</p>
-    <button (click)="modalOpen.set(false)">Close</button>
-  </dialog>
-</div>
-
-<style>
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
-  }
-</style>
-```
-
 ### Accessibility-First: Keyboard Shortcuts with Labels
 
 ```typescript
@@ -254,6 +175,8 @@ readonly modalOpen = signal(false);
 ```
 
 ### Command Palette Pattern
+
+The outside dismissal comes from [CngxClickOutside](../click-outside/).
 
 ```typescript
 readonly searchTerm = signal('');
@@ -285,17 +208,6 @@ openPalette() {
   this.paletteOpen.set(true);
   setTimeout(() => document.querySelector('input')?.focus());
 }
-```
-
-### Touch-Friendly Search with Custom Event
-
-```typescript
-<!-- Use mousedown for faster mobile response -->
-<button cngxClickOutside
-        [eventType]="'mousedown'"
-        (clickOutside)="handleOutsideClick()">
-  Faster outside click detection
-</button>
 ```
 
 ## Hotkey Registry
@@ -359,8 +271,9 @@ Shortcut strings use modifiers and keys separated by `+`:
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/interactive/keyboard/)
 - [CngxLongPress and CngxSwipeDismiss](../gestures/) - Gesture-based interactions
 - [parseKeyCombo from @cngx/core/utils](../../../core/utils/) - Keyboard parsing utilities
-- Demo: `examples/stories/common/keyboard-demo/`
+- [CngxClickOutside](../click-outside/) - Outside-press dismissal
+- Demos: `examples/stories/common/interactive/gestures/keyboard-shortcut/`, `examples/stories/common/interactive/search/`
 - Tests: `projects/common/interactive/keyboard/keyboard-shortcut.directive.spec.ts`

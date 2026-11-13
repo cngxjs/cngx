@@ -98,5 +98,5 @@ Corner positions render a contrast ring (`--cngx-badge-border`) so the indicator
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/display/badge/) for inputs and tokens.
 - Stories: `examples/stories/common/display/badge/`.

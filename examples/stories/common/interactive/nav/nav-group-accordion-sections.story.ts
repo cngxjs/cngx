@@ -40,11 +40,6 @@ export const STORY: DemoSpec = {
       class="demo-nav__trigger"
     >
       Settings
-      <span
-        class="demo-nav__caret"
-        aria-hidden="true"
-        [style.transform]="settings.disclosure.opened() ? 'rotate(90deg)' : 'rotate(0)'"
-      >&#9654;</span>
     </button>
     @if (settings.disclosure.opened()) {
       <div id="settings-content" role="group" aria-labelledby="settings-trigger">
@@ -63,11 +58,6 @@ export const STORY: DemoSpec = {
       class="demo-nav__trigger"
     >
       Account
-      <span
-        class="demo-nav__caret"
-        aria-hidden="true"
-        [style.transform]="account.disclosure.opened() ? 'rotate(90deg)' : 'rotate(0)'"
-      >&#9654;</span>
     </button>
     @if (account.disclosure.opened()) {
       <div id="account-content" role="group" aria-labelledby="account-trigger">

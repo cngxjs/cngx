@@ -85,6 +85,11 @@ export { CngxNavGroupRegistry } from './nav/nav-group-registry';
 export { CngxNavLabel } from './nav/nav-label.directive';
 export { CngxNavLink } from './nav/nav-link.directive';
 export { CngxNavBadge, type NavBadgeVariant } from './nav/nav-badge.directive';
+export { CngxNavIcon } from './nav/nav-icon.directive';
+export { CngxNavHeader } from './nav/nav-header.directive';
+export { CngxNavFooter } from './nav/nav-footer.directive';
+export { CngxNavMark } from './nav/nav-mark.directive';
+export { CngxNavName } from './nav/nav-name.directive';
 export { CngxDisclosure } from './nav/disclosure.directive';
 export { CngxExpandable } from './expandable/expandable.directive';
 export {
@@ -249,7 +254,7 @@ export {
   CngxClickOutside,
   CNGX_CLICK_OUTSIDE_DRIVER,
   type CngxClickOutsideDriver,
-} from './keyboard/click-outside.directive';
+} from './click-outside/click-outside.directive';
 export { CngxBeforeUnload } from './guard/before-unload.directive';
 export { canDeactivateWhenClean } from './guard/can-deactivate';
 export { CngxHoverable } from './hoverable/hoverable.directive';

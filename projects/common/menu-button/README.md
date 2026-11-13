@@ -1,6 +1,17 @@
 # @cngx/common/menu-button
 
-Buttons that open a menu: the WAI-ARIA APG Menu Button Pattern as button types on the cngx button core. `button[cngxMenuButton]` is a `cngxButton` with an end caret that drives a `cngxMenu` inside a `cngxPopover`; `button[cngxIconMenuButton]` is its square, icon-only sibling; `[cngxSplitButton]` joins a main `cngxButton` and an icon menu button caret into a split button. Inside `@cngx/common` the entry is the one place that composes `@cngx/common/button`, `@cngx/common/interactive` and `@cngx/common/popover`.
+Buttons that open a menu, after the WAI-ARIA APG Menu Button Pattern. The entry composes
+`@cngx/common/button`, `@cngx/common/interactive` and `@cngx/common/popover` into three button
+types:
+
+- `button[cngxMenuButton]`: a `cngxButton` with an end caret that opens a `cngxMenu` in a
+  `cngxPopover`.
+- `button[cngxIconMenuButton]`: the square, icon-only kebab or "more" button.
+- `[cngxSplitButton]`: a main action and a caret that opens the alternatives, framed as one
+  button group.
+
+All three render on `CngxButtonBrain`. Variant, tone, size, group, `disabled` with a reason and
+the busy layer work as on `cngxButton`; see the [`@cngx/common/button` README](../button/README.md).
 
 ## Quick Start
 
@@ -28,41 +39,64 @@ export class AppExport {
 }
 ```
 
-## What the button wires
+## Menu button
 
-- `[menu]` and `[popover]` are the only bindings. `CngxMenuTrigger` (keyboard model, focus, dismissal) and `CngxPopoverTrigger` (CSS anchor, `aria-haspopup`, `aria-expanded`, `aria-controls`) sit on the button as host directives.
-- The menu trigger tells the popover it holds a menu, so `aria-haspopup` reads `menu` without a `[haspopup]` and `aria-controls` names the `role="menu"` element. A popover laid out as a sheet or fullscreen reads `dialog` and names the popover. The hints are released when the button binds another popover or is destroyed.
-- A click toggles the popover. ArrowDown, Enter or Space opens the menu and highlights the first item, ArrowUp the last. After open, focus moves into the menu, which carries `aria-activedescendant`. Escape or an activation closes it and returns focus to the button; Tab or Shift+Tab closes it and leaves focus where it went.
-- `expanded` (a signal) mirrors the popover's visibility; the host carries `data-expanded`.
+`[menu]` takes the `cngxMenu` and `[popover]` the `cngxPopover` around it. The button carries
+`CngxMenuTrigger` and `CngxPopoverTrigger` as host directives and toggles the popover on click.
 
-## Axes and states
+`aria-haspopup` reads `menu` and `aria-controls` names the `role="menu"` element, without a
+`[haspopup]` binding. A popover presented as a sheet or fullscreen reads `dialog` and names the
+popover instead.
 
-Variant (through the selector value), `tone`, `size`, group membership and `provideButtonConfig` resolve exactly as on `cngxButton`. `[disabled]` renders `aria-disabled`: the button stays focusable, opens on neither click nor key, closes an open menu and reads `disabledReason` through `aria-describedby`. The menu button has no action of its own: a click opens the menu, so put async actions on the menu items, not a co-hosted `cngxAsyncClick` on the button.
+- ArrowDown, Enter or Space opens the menu on the first item, ArrowUp on the last.
+- Focus moves into the menu, which tracks the highlighted item with `aria-activedescendant`.
+- Escape or an activation closes the menu and returns focus to the button.
+- Tab and Shift+Tab close it and leave focus where it went.
+
+`expanded()` mirrors the popover's visibility, and the host carries `data-expanded`.
+
+A disabled menu button opens on neither click nor key, and an open menu closes when the button
+becomes disabled. The menu button has no action of its own, since a click opens the menu. Put
+async work on the menu items, not on a `cngxAsyncClick` co-hosted on the button.
+
+A projected `cngxButtonStart` element leads the label, as on `cngxButton`.
 
 ## Caret
 
-The end of the button renders the chevron of the shared icon set (`CNGX_ICON_CHEVRON_DOWN`, drawn through `svg[cngxIconSvg]`) inside `<cngx-icon>`, `1em` of the button font (`--cngx-menu-button-caret-size`), turned half a turn while the menu is open. The turn is timed from `--cngx-button-transition` and is instant under reduced motion. The caret is decorative and hidden from assistive technology.
+The end of the button renders the `CNGX_ICON_CHEVRON_DOWN` chevron at `1em` of the button font,
+turned half a turn while the menu is open. It is decorative and hidden from assistive
+technology.
 
-- App-wide: `provideButtonCaretIcon(MyCaret)` (the `CNGX_BUTTON_CARET_ICON` token) in `providers` or `viewProviders`, for example a wrapper around a Material `arrow_drop_down` icon. A custom host reads it with `injectButtonCaretIcon()`.
-- Per button: project a `cngxButtonEnd` element; it replaces the caret on that button.
-
-`provideCngxMenuButton(withButtonCaretIcon(MyCaret), withMenuButtonI18nLabels({ ... }))` sets the caret and the labels in one call at the root; `provideCngxMenuButtonAt(...)` is its twin for `viewProviders`. A feature without a `_target` is dropped with [`CNGX1041`](../../../core-concepts/error-codes/cngx1041.md) in development. Button-wide defaults, the close glyph and the busy glyph go through `provideCngxButton(...)` in `@cngx/common/button`.
+- `--cngx-menu-button-caret-size` sizes it.
+- The turn takes `--cngx-button-transition` and is instant under reduced motion.
+- `provideButtonCaretIcon(MyCaret)` swaps the glyph for every menu button and split caret below
+  the provider, in `providers` or `viewProviders`. A custom host reads it with
+  `injectButtonCaretIcon()`.
+- A projected `cngxButtonEnd` element replaces the caret on one button.
 
 ## Icon menu button
 
-`button[cngxIconMenuButton]` is the kebab or "more" button of a row, a toolbar or a card: the same bindings and keyboard model as `cngxMenuButton`, on the icon-button skin (square, `ghost` by default). It renders the glyph you project, hidden from assistive technology, and has no caret.
+`button[cngxIconMenuButton]` has the bindings and keyboard model of `cngxMenuButton` on the
+icon-button skin: square, `ghost` by default, no caret. It renders the glyph you project.
 
 ```html
 <button cngxIconMenuButton aria-label="Actions for Q3 report" [menu]="menu" [popover]="pop">
-  <cngx-icon name="more_vert" />
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+  </svg>
 </button>
 ```
 
-The name is yours: name the menu after what it acts on, not after the glyph. A host without `aria-label`, `aria-labelledby` or `title` warns [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) in development mode.
+Name the button after what the menu acts on, not after the glyph. Without `aria-label`,
+`aria-labelledby` or `title` it warns [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md)
+in development.
 
 ## Split button
 
-`[cngxSplitButton]` is a button group of a main `cngxButton` that runs the default action and a `cngxIconMenuButton` caret that opens the alternatives. `variant` and `size` pass to both; the group is `role="group"` and needs a name ([`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md)).
+`[cngxSplitButton]` frames a main button that runs the default action and a
+`cngxIconMenuButton` caret that opens the alternatives. It is a button group with
+`role="group"`: `variant` and `size` pass to both buttons, and the group needs a name
+([`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md)).
 
 ```html
 <div cngxSplitButton variant="solid" aria-label="Publish">
@@ -71,17 +105,53 @@ The name is yours: name the menu after what it acts on, not after the glyph. A h
 </div>
 ```
 
-- The caret needs no glyph, no name and no `[disabled]`: inside a split it renders the caret instead of any projected content (`provideButtonCaretIcon` swaps it) and is named "More options" by visually hidden content from the language pack (`menuButton.splitToggle`, override per app with `provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle, splitMainBusy }))`, which also sets the busy note below; an `aria-label` on the caret wins, the caret never writes one itself).
-- The caret follows the main button's `blocked` signal: while the main button is disabled, running its `cngxAsyncClick` or refused by `[enabled]="false"`, the caret reads `aria-disabled`, opens on neither click nor key, and an open menu closes. Its `aria-describedby` then says why: the main button's reason while the main is disabled with one, and "The main action is running" (`menuButton.splitMainBusy`) while the main action runs. The main button keeps `aria-busy` and the announcement.
-- `[disabled]` on the caret blocks only the alternatives and reads the caret's `disabledReason`.
-- Both roles are direct children (an `ng-container` in between is fine): the caret is the button that carries `CngxSplitCaret` (`cngxIconMenuButton` does), the main action the first other button that provides `CNGX_BUTTON_STATE`. Every host of `CngxButtonBrain` provides it, so the main can be a `cngxButton`, a `cngxIconButton`, a `cngxActionButton` or a custom button host. Without a main button it warns [`CNGX1073`](../../../core-concepts/error-codes/cngx1073.md). A button deeper inside the split, for example a kebab in a projected panel, takes neither role and keeps its own name and state.
-- The split has no programmatic run entry point yet. To run a menu choice through the main action today, click the main button from the menu's `(itemActivated)` handler, so the busy state and the announcement stay in one place, and bind `succeededAnnouncement` / `failedAnnouncement` on its `cngxAsyncClick` to name the chosen action.
+The split finds its two roles among its direct children. An `ng-container` in between is fine.
+
+- The caret is the child that carries `CngxSplitCaret`, as `cngxIconMenuButton` does.
+- The main action is the first other cngx button: `cngxButton`, `cngxIconButton`,
+  `cngxActionButton` or a custom host on `CngxButtonBrain`. The split reads it through
+  `CNGX_BUTTON_STATE`.
+- Without a main button the split warns
+  [`CNGX1073`](../../../core-concepts/error-codes/cngx1073.md).
+- A button deeper inside, for example a kebab in a projected panel, takes neither role and
+  keeps its own name and state.
+
+The caret follows the main action. While the main button is disabled, running or refused by
+`[enabled]="false"`, the caret reads `aria-disabled`, opens on neither click nor key, and an
+open menu closes. Its `aria-describedby` names the cause: the main button's reason, or "The main
+action is running" while the main action runs. The main button keeps `aria-busy` and the
+announcement. `[disabled]` on the caret blocks only the alternatives and reads the caret's own
+`disabledReason`.
+
+The caret needs no glyph and no name. Inside a split it renders the caret in place of any
+projected content, named "More options" by visually hidden text. An `aria-label` on the caret
+wins, and the caret never writes one itself. Both strings come from the language pack (see
+[Configuration](#configuration)).
+
+The caret's menu hangs under the whole group, not under the caret. The split takes the explicit
+anchor slot of the caret's popover while it is free, so a `[cngxPopoverAnchor]` of your own on
+that popover keeps precedence. A pointerdown on the main button still closes an open menu.
+
+The split has no run method. To run a menu choice through the main action, click the main
+button from the menu's `(itemActivated)` handler, so the busy state and the announcement stay in
+one place. Bind `succeededAnnouncement` and `failedAnnouncement` on its `cngxAsyncClick` to name
+the chosen action.
 
 ### Custom caret host
 
-`CngxSplitCaret` is the caret role as a host directive. Declare it in `hostDirectives` next to `CngxButtonBrain`, `CngxMenuTrigger` and `CngxPopoverTrigger`, and the host becomes the caret when it is a direct child of a split; anywhere else it is an ordinary button. The directive provides the refusal to the brain (`CNGX_BUTTON_HOST_STATE`), so `aria-disabled`, the activation guard and the trigger follow the main action, and adds the main button's reason or the busy note to `aria-describedby`. The host template renders what the directive supplies, and the click toggle refuses to open while the button is blocked:
+`CngxSplitCaret` is the caret role as a host directive. Declare it on a
+[custom button host](../button/README.md#building-a-custom-button-host), next to
+`CngxMenuTrigger` and `CngxPopoverTrigger`. As a direct child of a split the host becomes the
+caret, anywhere else it stays an ordinary button. The split hangs the menu under the group only
+when the host co-hosts `CngxPopoverTrigger`, since it reads the caret's popover through it.
 
 ```ts
+import { Component, inject } from '@angular/core';
+import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
+import { CngxMenuTrigger } from '@cngx/common/interactive';
+import { CngxSplitCaret } from '@cngx/common/menu-button';
+import { CngxPopoverTrigger } from '@cngx/common/popover';
+
 @Component({
   selector: 'button[appCaret]',
   hostDirectives: [
@@ -115,10 +185,44 @@ export class AppCaret {
 }
 ```
 
-A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces the directive's entry; fold `caret.refusing()` into its own state then.
+The directive hands the refusal to the brain as `CNGX_BUTTON_HOST_STATE` and adds the cause to
+`aria-describedby`. A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces that entry and
+folds `caret.refusing()` into its own state.
+
+## Configuration
+
+`provideCngxMenuButton(...)` sets the caret glyph and the labels in one call at the root.
+`provideCngxMenuButtonAt(...)` is its twin for `providers` and `viewProviders`. A feature without
+a `_target` is dropped with [`CNGX1041`](../../../core-concepts/error-codes/cngx1041.md) in
+development. Button-wide defaults, the close glyph and the busy glyph go through
+`provideCngxButton(...)` in `@cngx/common/button`.
+
+```typescript
+provideCngxMenuButton(
+  withButtonCaretIcon(MyCaret),
+  withMenuButtonI18nLabels({ splitToggle: 'More actions' }),
+);
+```
+
+The labels are the `menuButton` section of the [language pack](../../../core-concepts/i18n.md):
+`splitToggle` names the split caret and `splitMainBusy` describes it while the main action runs.
+`provideMenuButtonI18n(withMenuButtonI18nLabels({ ... }))` overrides single keys on a subtree,
+and a `Signal` passed to `withMenuButtonI18nLabels` follows a runtime language switch.
+
+## Material
+
+`@cngx/themes/material/button-theme` renders menu buttons and split buttons as Material 3 next
+to `[matMenuTriggerFor]`. The split takes the M3 split-button anatomy, which Angular Material
+does not ship. `@cngx/themes/material/menu-theme` makes the `cngxMenu` dropdown read like
+`mat-menu`. The `common/menu-button/menu-button/material-bridge` example shows both.
 
 ## Not a menu
 
-A menu holds actions. Navigation links behind a button are a popover disclosure (`cngxButton` + `cngxPopoverTrigger` with `haspopup="none"`), content that opens in place is `cngxDisclosure`, and a control whose label shows the chosen value is `cngxSelect`.
+A menu holds actions. Pick another trigger for anything else:
 
-Which trigger? The full decision table is in [Choosing a Trigger](../../../core-concepts/choosing-a-trigger.md).
+- Navigation links behind a button: a popover disclosure, `cngxButton` with
+  `cngxPopoverTrigger` and `haspopup="none"`.
+- Content that opens in place: `cngxDisclosure`.
+- A control whose label shows the chosen value: `cngxSelect`.
+
+The full decision table is in [Choosing a Trigger](../../../core-concepts/choosing-a-trigger.md).
