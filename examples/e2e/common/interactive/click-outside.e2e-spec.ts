@@ -29,6 +29,12 @@ test.describe('common/interactive/click-outside', () => {
     await page.mouse.click(10, 10);
     await expect(status).toContainText('closed');
 
+    // The toggle controls the dropdown, so its press is not outside and
+    // closes the open dropdown instead of closing and reopening it.
+    await toggle.click();
+    await expect(status).toContainText('open');
+    await toggle.click();
+    await expect(status).toContainText('closed');
   });
 
   test('enabled-toggle: outside clicks bump the counter; disabled stops emissions', async ({
