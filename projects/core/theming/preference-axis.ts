@@ -126,8 +126,8 @@ export function createPreferenceAxis<V extends string>(
       return value;
     }
     const warn = options.warnUnprovidedWrite;
-    const set = value.set;
-    const update = value.update;
+    const set = value.set.bind(value);
+    const update = value.update.bind(value);
     value.set = (next: V) => {
       warn();
       set(next);
