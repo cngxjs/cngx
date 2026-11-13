@@ -306,6 +306,47 @@ describe('field integration - focusFirstError', () => {
     expect(focusFirstError(host.f)).toBe(true);
     expect(document.activeElement).toBe(el.querySelector('#b'));
   });
+
+  it('counts a [formField] control that already has focus as reached', () => {
+    const { host, el } = mount(DomDisabledHost);
+    const first = el.querySelector<HTMLElement>('#a')!;
+    first.focus();
+    expect(focusFirstError(host.f)).toBe(true);
+    expect(document.activeElement).toBe(first);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.first">
+        <div cngxListbox cngxListboxFieldBridge [label]="'First'" tabindex="0">
+          <div cngxOption value="x">X</div>
+        </div>
+      </cngx-form-field>
+      <cngx-form-field [field]="f.second">
+        <div cngxListbox cngxListboxFieldBridge [label]="'Second'" tabindex="0">
+          <div cngxOption value="y">Y</div>
+        </div>
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxListbox, CngxListboxFieldBridge, CngxOption],
+  })
+  class ListboxPairHost {
+    readonly f = form(
+      signal({ first: '', second: '' }),
+      schema<{ first: string; second: string }>((p) => {
+        required(p.first);
+        required(p.second);
+      }),
+    );
+  }
+
+  it('counts a registered control that already has focus as reached', () => {
+    const { host, el } = mount(ListboxPairHost);
+    const first = el.querySelector<HTMLElement>('[role="listbox"]')!;
+    first.focus();
+    expect(focusFirstError(host.f)).toBe(true);
+    expect(document.activeElement).toBe(first);
+  });
 });
 
 describe('field integration - reveal provided by an ancestor', () => {

@@ -45,18 +45,35 @@ export function fieldControlFor(state: object): CngxFormFieldControl | undefined
  * Focuses the control of `state`: through `focusBoundControl()` when
  * `[formField]` bound one, else through the control a `cngx-form-field`
  * registered for it (an adapted Reactive Forms control, a bridge, a select).
- * Returns whether focus actually moved, so a control that refuses focus (a
- * DOM-disabled input) does not count as reached.
+ * Returns whether the control holds focus afterwards: focus moved, or it
+ * already sat on that control. A control that refuses focus (a DOM-disabled
+ * input) does not count as reached.
  *
  * @internal
  */
 export function focusFieldControl(state: CngxErrorFieldState, doc: Document | undefined): boolean {
   const before = doc?.activeElement;
-  const bindings = state.formFieldBindings?.();
-  if (bindings && bindings.length > 0) {
+  const [binding] = state.formFieldBindings?.() ?? [];
+  const control = fieldControlFor(state);
+  if (binding !== undefined) {
     state.focusBoundControl({ preventScroll: false });
   } else {
-    fieldControlFor(state)?.focus?.();
+    control?.focus?.();
   }
-  return doc !== undefined && doc.activeElement !== before;
+  if (doc === undefined) {
+    return false;
+  }
+  if (doc.activeElement !== before) {
+    return true;
+  }
+  // Focus did not move: reached only when it already sat on this control.
+  if (binding !== undefined) {
+    return (
+      typeof binding === 'object' &&
+      binding !== null &&
+      'element' in binding &&
+      binding.element === before
+    );
+  }
+  return control?.focused() === true;
 }
