@@ -9,6 +9,7 @@ import {
   withDocumentLanguage,
   withPartialPack,
 } from '../provide-i18n';
+import { CNGX_LANGUAGE_EN } from '../en/language-en';
 import { CNGX_LANGUAGE_DE } from './language-de';
 
 /** Every leaf of a value, with its dotted path. */
@@ -26,6 +27,14 @@ describe('CNGX_LANGUAGE_DE', () => {
     expect(CNGX_LANGUAGE_DE.locale).toBe('de');
     const nonStrings = leaves(CNGX_LANGUAGE_DE).filter(([, value]) => typeof value !== 'string');
     expect(nonStrings).toEqual([]);
+  });
+
+  it('carries exactly the keys of the English pack', () => {
+    const paths = (pack: unknown) =>
+      leaves(pack)
+        .map(([path]) => path)
+        .sort();
+    expect(paths(CNGX_LANGUAGE_DE)).toEqual(paths(CNGX_LANGUAGE_EN));
   });
 
   it('carries the time-range error of the form field', () => {

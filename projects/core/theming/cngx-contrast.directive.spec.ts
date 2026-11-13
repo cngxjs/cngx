@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { CngxContrast } from './cngx-contrast.directive';
@@ -41,5 +41,26 @@ describe('CngxContrast', () => {
     const inner = fixture.nativeElement.querySelector('article') as HTMLElement;
     expect(outer.getAttribute('data-contrast')).toBe('more');
     expect(inner.getAttribute('data-contrast')).toBe('normal');
+  });
+  it('follows a runtime change of the bound value and removes the attribute for undefined', () => {
+    @Component({
+      imports: [CngxContrast],
+      template: `<section [cngxContrast]="value()"></section>`,
+    })
+    class Host {
+      readonly value = signal<'more' | 'normal' | undefined>('more');
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('section') as HTMLElement;
+    expect(section.getAttribute('data-contrast')).toBe('more');
+
+    fixture.componentInstance.value.set('normal');
+    fixture.detectChanges();
+    expect(section.getAttribute('data-contrast')).toBe('normal');
+
+    fixture.componentInstance.value.set(undefined);
+    fixture.detectChanges();
+    expect(section.hasAttribute('data-contrast')).toBe(false);
   });
 });
