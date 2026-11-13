@@ -11,24 +11,18 @@ import { injectMenuToggle } from './internal/menu-toggle';
 import { CngxSplitCaret } from './split-caret.directive';
 
 /**
- * A square, icon-only button that opens a menu: the kebab or "more" button of a row, a toolbar or
- * a card, and the caret of a `cngxSplitButton`. It has the bindings and keyboard model of
- * `cngxMenuButton` on the `cngxIconButton` skin, `ghost` by default.
+ * The square, icon-only menu button: the kebab of a row, toolbar or card, and the caret of a
+ * `cngxSplitButton`. Bindings and keyboard model of `cngxMenuButton`, `cngxIconButton` skin,
+ * `ghost` by default.
  *
- * Outside a split it renders the glyph you project, and the name is yours. Without
- * `aria-label`, `aria-labelledby` or `title` it warns [`CNGX1071`](/error-codes/cngx1071.md) in
- * development.
- *
- * As the direct child of a `cngxSplitButton` it is the caret: it renders the caret glyph in place
- * of the projected content, takes its name and its blocked state from the split, and needs
- * neither a glyph nor a label. `CngxSplitButton` describes that role.
+ * Outside a split it renders the projected glyph and needs a name: without `aria-label`,
+ * `aria-labelledby` or `title` it warns [`CNGX1071`](/error-codes/cngx1071.md) in development. As
+ * the direct child of a `cngxSplitButton` it is the caret and needs neither glyph nor label.
  *
  * ```html
  * <button cngxIconMenuButton aria-label="Row actions" [menu]="menu" [popover]="pop">
  *   <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
- *     <circle cx="12" cy="5" r="2" />
- *     <circle cx="12" cy="12" r="2" />
- *     <circle cx="12" cy="19" r="2" />
+ *     <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
  *   </svg>
  * </button>
  * ```
@@ -116,13 +110,10 @@ export class CngxIconMenuButton {
   /** @internal - the caret role inside a `cngxSplitButton`. */
   protected readonly caret = inject(CngxSplitCaret);
 
-  /**
-   * @internal - refuses to open the menu while the button is blocked; an
-   * open menu still closes on click.
-   */
+  /** @internal - refuses to open while blocked; an open menu still closes. */
   protected readonly toggle = injectMenuToggle(this.brain.blocked);
 
-  /** `true` while the menu is open. Mirrors the popover's visibility. */
+  /** `true` while the menu is open. */
   readonly expanded = this.toggle.expanded;
 
   /** @internal - app-wide glyph from `CNGX_BUTTON_CARET_ICON`. */

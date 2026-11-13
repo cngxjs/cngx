@@ -15,10 +15,8 @@ import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonHost } from './button-host.token';
 
 /**
- * Injection token for a custom close icon component, rendered by every
- * `button[cngxCloseButton]` that projects no glyph of its own. Set it with
- * {@link provideButtonCloseIcon}, or through `provideFeedback(withCloseIcon(MyIcon))`,
- * which forwards to it.
+ * Close glyph for every `button[cngxCloseButton]` that projects none.
+ * `provideFeedback(withCloseIcon(MyIcon))` forwards to it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
@@ -28,15 +26,12 @@ import { provideButtonHost } from './button-host.token';
 export const CNGX_BUTTON_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxButtonCloseIcon');
 
 /**
- * Provides `component` as the glyph of every close button below the provider that projects none
- * (`CNGX_BUTTON_CLOSE_ICON`). Works in `providers` and `viewProviders`. The nearest provider
- * wins.
+ * Close glyph for every close button below that projects none. `providers` or `viewProviders`;
+ * the nearest wins.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideButtonCloseIcon(MaterialCloseIcon)] });
  * ```
- *
- * @param component The glyph component; it renders inside the `aria-hidden` glyph span.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
@@ -48,9 +43,7 @@ export function provideButtonCloseIcon(component: Type<unknown>): Provider {
 }
 
 /**
- * Reads the close glyph component provided through {@link provideButtonCloseIcon},
- * or `null` when none is set and the default X renders. Runs in an
- * injection context; a custom dismiss host reads its glyph through it.
+ * The {@link provideButtonCloseIcon} glyph, or `null` for the default X. For custom dismiss hosts.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
@@ -61,21 +54,14 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
 }
 
 /**
- * Close or dismiss button on the native `<button>`, built on the icon-button geometry.
+ * Dismiss button with the X glyph, on the icon-button geometry. Name the dismissed thing in
+ * `aria-label` (`"Close session-expired alert"`, not `"Close"`), else it warns
+ * [`CNGX1071`](/error-codes/cngx1071.md).
  *
- * It renders the default X glyph unless you project one or `provideButtonCloseIcon` swaps it.
- * The glyph is `aria-hidden`, so set `aria-label` on the host and name the dismissed thing, not
- * the affordance: `"Close session-expired alert"`, not `"Close"`. Without a name the host warns
- * [`CNGX1071`](/error-codes/cngx1071.md) in development.
- *
- * It pins `ghost`, `sm` and `neutral` against the group and the button config, so an app
- * default never makes a dismiss loud. Set `cngxCloseButton="outline"`, `size` or `tone` per
- * instance. `--cngx-close-button-size` and `--cngx-close-button-icon-size` size the box and the
- * glyph. Under the Material bridge the default `sm` close button takes the 40px M3 icon-button
- * box with a 24px glyph, and a value you set on the host still wins.
+ * Pins `ghost`, `sm` and `neutral` against the group and the config; inputs still win. Under the
+ * Material bridge the default `sm` takes the 40px M3 icon-button box with a 24px glyph.
  *
  * ```html
- * <button cngxCloseButton aria-label="Close settings dialog" (click)="close()"></button>
  * <button cngxCloseButton aria-label="Dismiss toast" [disabled]="saving()" disabledReason="Saving">
  *   <svg aria-hidden="true" viewBox="0 0 24 24">...</svg>
  * </button>

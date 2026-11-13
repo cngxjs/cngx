@@ -28,33 +28,24 @@ import { CngxActionToast } from './action-toast.directive';
  * Async action button on the cngx button brain. Runs an action on click and reports the
  * outcome in its label, in a live region and, with the toast inputs, in a toast.
  *
- * Reach for it over `cngxButton` with `[cngxAsyncClick]` when the label should change per
- * outcome, when the button reflects an `[externalState]` it does not own, or when the outcome
- * raises a toast. Variant, tone, size, `disabled` with a reason and the busy layer work as on
- * `cngxButton`.
+ * Use it over `cngxButton` with `[cngxAsyncClick]` when the label should change per outcome,
+ * when the button reflects an `[externalState]` it does not own, or when the outcome raises a
+ * toast. Variant, tone, size and `disabled` with a reason work as on `cngxButton`.
  *
- * The labels sit stacked in one cell, so the button keeps the width of its widest label. The
- * pending label shows with the busy visual. The result label shows once it releases, and
- * `aria-busy` and the click guard hold until then. Each outcome is spoken once in the live
- * region next to the button, in the words the button shows.
+ * The labels sit stacked in one cell, so the width never jumps. The result label shows once the
+ * busy visual releases; `aria-busy` and the click guard hold until then. Each outcome is spoken
+ * once in the live region, in the words the button shows.
  *
- * The English language pack has no status labels. Without a bound label, a template or
+ * The English language pack ships no status labels. Without a bound label, a template or
  * `withActionStatusLabels` the visible label never changes and only the live region reports
  * the outcome. The slot directives come from `@cngx/common/interactive`.
  *
- * `cngxButtonStart` / `cngxButtonEnd` content sits around the label. The button publishes
- * `CNGX_BUTTON_STATE`, so it can be the main action of a `cngxSplitButton`.
+ * The button publishes `CNGX_BUTTON_STATE`, so it can be the main action of a `cngxSplitButton`.
  *
- * For your own markup, eject: list `CngxButtonBrain`, `CngxAsyncClick`, `CngxActionStatusBrain`
- * and `CngxActionToast` in `hostDirectives` with `provideButtonHost()` and
- * `provideActionStatusHost()`. A bare `cngxButton` with `[cngxAsyncClick]` has no status cells.
+ * To eject, list `CngxButtonBrain`, `CngxAsyncClick`, `CngxActionStatusBrain` and
+ * `CngxActionToast` in `hostDirectives` with `provideButtonHost()` and
+ * `provideActionStatusHost()`.
  *
- * ### Minimal
- * ```html
- * <button cngxActionButton tone="primary" [action]="save">Save</button>
- * ```
- *
- * ### With template slots
  * ```html
  * <button cngxActionButton [action]="save">
  *   Save Draft
@@ -175,10 +166,8 @@ export class CngxActionButton {
   readonly busyVisible: Signal<boolean> = this.brain.busyVisible;
 
   /**
-   * `CngxAsyncState` view of the effective lifecycle (`[externalState]` when
-   * bound, else the run). Bind it to a state consumer: `[state]="btn.state"`.
-   * `lastUpdated` is the last successful own run, or the bound state's value
-   * with no fall back to own runs.
+   * Effective lifecycle as `CngxAsyncState`, for `[state]="btn.state"`. `lastUpdated` is the
+   * last successful own run, or the bound state's value with no fallback to own runs.
    */
   readonly state: CngxAsyncState<unknown> = this.actionStatus.state;
 }

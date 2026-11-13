@@ -12,21 +12,9 @@ import { provideButtonHost } from './button-host.token';
 import { CngxButtonEnd, CngxButtonStart } from './slots';
 
 /**
- * The cngx base button, an attribute component on the native `<button>` or `<a>`. Forms,
- * `routerLink` and every attribute you write keep working on the real element.
- *
- * `variant` is the selector's own value, `tone` and `size` are inputs. Each resolves
- * `input ?? fixed ?? group ?? config ?? default`, see `CngxButtonConfig`.
- *
- * `disabled` renders `aria-disabled="true"`, so the button stays focusable and `disabledReason`
- * is read through `aria-describedby`. Clicks, `routerLink` and form submission are swallowed
- * while it is set.
- *
- * Co-host `cngxAsyncClick` for an async action. The label keeps its width under a busy layer
- * that follows the `CNGX_LOADING_CONFIG` show delay and min-dwell.
- *
- * State, axes and ARIA come from the `CngxButtonBrain` host directive. Read them through
- * `CngxButtonBrain` or `CNGX_BUTTON_STATE` on the element injector.
+ * The base button, an attribute component on the native `<button>` or `<a>`. `variant` is the
+ * selector value. State and ARIA come from `CngxButtonBrain`; see the README for the axes and
+ * accessibility.
  *
  * ```html
  * <button cngxButton="outline" tone="primary">Save draft</button>

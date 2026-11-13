@@ -2,11 +2,8 @@ const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 
 /**
- * `true` when the host carries a non-blank `aria-label`, `aria-labelledby`
- * or `title`, or non-blank text outside every `[aria-hidden="true"]` and
- * `[hidden]` subtree (a `.cngx-sr-only` label counts, the hidden reason
- * span does not). Read by the development-mode name check of
- * `CngxButtonBrain`.
+ * `true` for a non-blank `aria-label`, `aria-labelledby` or `title`, or non-blank text outside
+ * every `[aria-hidden="true"]` and `[hidden]` subtree. Feeds the dev-mode name check.
  *
  * @internal
  */

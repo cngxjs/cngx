@@ -20,9 +20,8 @@ import type {
 } from './button.types';
 
 /**
- * Input signals a button class hands to {@link injectButtonCore}. Signal
- * inputs must be field initialisers on the class, so the class declares
- * them and the core derives everything else.
+ * Input signals handed to {@link injectButtonCore}. Signal inputs must be class field
+ * initialisers, so the class declares them.
  *
  * @internal
  */
@@ -34,16 +33,12 @@ export interface CngxButtonCoreInputs {
   readonly disabledReason: Signal<string | undefined>;
   readonly describedBy: Signal<string | null>;
   readonly type: Signal<CngxButtonType | undefined>;
-  /**
-   * A run the host reflects that the co-hosted runner does not own; folded
-   * into `busy`. `CngxButtonBrain` passes `CNGX_BUTTON_HOST_STATE.busy`.
-   */
+  /** A run the host reflects that the runner does not own; folded into `busy`. */
   readonly hostBusy?: Signal<boolean>;
 }
 
 /**
- * Class-level fallbacks used when neither input, group nor config sets an
- * axis.
+ * Host fallbacks below the config.
  *
  * @internal
  */
@@ -53,55 +48,34 @@ export interface CngxButtonCoreDefaults {
   readonly fixed?: CngxButtonHostDescriptor['fixed'];
 }
 
-/**
- * Everything a button class binds on its host.
- *
- * @internal
- */
+/** @internal */
 export interface CngxButtonCore {
   readonly variant: Signal<CngxButtonVariant>;
   readonly tone: Signal<CngxButtonTone>;
   readonly size: Signal<CngxButtonSize>;
-  /** `true` while a co-hosted runner runs its action or the host reflects a run. */
+  /** A co-hosted run or a host-reflected run is in flight. Ungated. */
   readonly busy: Signal<boolean>;
   /**
-   * `true` while the busy layer is showing: the run after the show delay,
-   * held for the min-dwell. With a co-hosted runner its gate decides
-   * (`CngxAsyncClick.busyVisible`); without one, a gate over `hostBusy` on
-   * the `CNGX_LOADING_CONFIG` timing. `busy` stays the immediate truth.
+   * The busy layer shows. The co-hosted runner's gate decides; without one, a gate over
+   * `hostBusy` on the `CNGX_LOADING_CONFIG` timing.
    */
   readonly busyVisible: Signal<boolean>;
-  /**
-   * `true` while the button refuses activation: disabled, busy or refused by
-   * the co-hosted `CngxAsyncClick`. The activation guard keys on it, so
-   * `aria-disabled="true"` always means no activation.
-   */
+  /** Disabled, busy or refused by the co-hosted runner. The activation guard keys on it. */
   readonly blocked: Signal<boolean>;
-  /** `data-busy` attribute value, rendered from `busyVisible` (gated). */
+  /** From `busyVisible`. */
   readonly busyAttr: Signal<'true' | null>;
-  /** `data-pending` attribute value, rendered from `busy` (immediate). */
+  /** From `busy`. */
   readonly pendingAttr: Signal<'true' | null>;
-  /**
-   * `aria-disabled`: the co-hosted runner's own value (its single source), or
-   * `blocked` without a runner or while the runner leaves it unset.
-   */
+  /** The co-hosted runner's value, else `blocked`. */
   readonly ariaDisabled: Signal<'true' | null>;
-  /**
-   * `aria-busy`: the co-hosted run, the runner's own busy override, the
-   * host's run, and the busy visual while it is held through its dwell. With
-   * a runner the same value the runner renders, so the two writers agree.
-   */
+  /** Run, runner busy override, host run or held busy visual; matches the runner's value. */
   readonly ariaBusy: Signal<'true' | null>;
-  /**
-   * The element's merged `aria-describedby`: the consumer's static ids, the
-   * `cngxDescribedBy` ids, the reason id while disabled with a reason, and
-   * the ids of co-hosted contributors such as `[cngxTooltip]`.
-   */
+  /** The merged `aria-describedby`. */
   readonly describedBy: Signal<string | null>;
   readonly reasonId: string;
-  /** `reasonId` while it describes the element (`disabled` with a reason), else `null`. */
+  /** `reasonId` while `disabled` has a reason, else `null`. */
   readonly activeReasonId: Signal<string | null>;
-  /** `type` attribute value: the input or `'button'` on a `<button>`, `null` on an `<a>`. */
+  /** The input or `'button'` on a `<button>`, `null` on an `<a>`. */
   readonly hostType: Signal<CngxButtonType | null>;
 }
 
@@ -109,9 +83,7 @@ const DEFAULT_TONE: CngxButtonTone = 'neutral';
 const DEFAULT_SIZE: CngxButtonSize = 'md';
 
 /**
- * The size chain every member of a button group resolves:
- * `input ?? group ?? config ?? md`. Shared by the button core and the group
- * addon, so an addon always sits on the row of the buttons beside it.
+ * `input ?? group ?? config ?? md`, shared with the group addon so it sits on the buttons' row.
  *
  * @internal
  */
@@ -124,18 +96,10 @@ export function resolveButtonSize(
 }
 
 /**
- * Derivation behind `CngxButtonBrain`. Resolves the three visual axes
- * (`input ?? fixed ?? group ?? config ?? default`; tone skips the group),
- * renders `disabled` as `aria-disabled` so the element stays focusable, swallows activation while
- * blocked and reads a co-hosted run through `CNGX_ASYNC_RUN_STATE`.
- *
- * The activation guard is a capture-phase listener on the host: while
- * `blocked` it runs before any bubbling `(click)` handler on the same
- * element (consumer handlers, `RouterLink`, `CngxAsyncClick`), stops them
- * and prevents the default action (link navigation, form submission,
- * including the implicit submission a browser triggers through a click on
- * the default button). The one click it lets through is the one on an
- * expanded popup trigger (`aria-expanded="true"`), which closes the popup.
+ * Derivation behind `CngxButtonBrain`. The activation guard is a capture-phase `click` /
+ * `auxclick` listener: while `blocked` it stops every same-element handler (`RouterLink`,
+ * `CngxAsyncClick` included) and prevents the default, implicit form submission included. A
+ * click on an expanded popup trigger (`aria-expanded="true"`) passes, so it can close the popup.
  *
  * @internal
  */

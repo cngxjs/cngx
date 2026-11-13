@@ -1,16 +1,7 @@
 import { Directive } from '@angular/core';
 
 /**
- * Marks content projected before the label of a `cngxButton`: an icon, an
- * avatar, a badge or a `<kbd>`. Sized in `em`, so it follows the button's
- * font size; a filled start slot trims the inline-start padding.
- *
- * ```html
- * <button cngxButton>
- *   <svg cngxButtonStart aria-hidden="true" viewBox="0 0 24 24">...</svg>
- *   Save
- * </button>
- * ```
+ * Content before the label: icon, avatar, badge or `<kbd>`. Trims the inline-start padding.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
@@ -25,9 +16,7 @@ import { Directive } from '@angular/core';
 export class CngxButtonStart {}
 
 /**
- * Marks content projected after the label of a `cngxButton`: a caret, a
- * count badge or a shortcut hint. A filled end slot trims the inline-end
- * padding.
+ * Content after the label: caret, count or shortcut hint. Trims the inline-end padding.
  *
  * ```html
  * <button cngxButton>Export <kbd cngxButtonEnd>E</kbd></button>

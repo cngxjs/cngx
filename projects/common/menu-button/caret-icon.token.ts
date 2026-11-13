@@ -2,15 +2,8 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
 
 /**
  * The caret glyph component of every `cngxMenuButton` without a projected `cngxButtonEnd`, and of
- * every split caret. Without it the caret is `CNGX_ICON_CHEVRON_DOWN`.
- *
- * Set it with `provideButtonCaretIcon`, for example to a wrapper around a Material
- * `arrow_drop_down` icon. The component renders inside an `aria-hidden` `<cngx-icon>`, so it draws
- * a glyph and nothing else.
- *
- * ```ts
- * providers: [provideButtonCaretIcon(MyCaretIcon)]
- * ```
+ * every split caret. Without it the caret is `CNGX_ICON_CHEVRON_DOWN`. It renders inside an
+ * `aria-hidden` `<cngx-icon>`, so it draws a glyph and nothing else.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
  * @since 0.1.0
@@ -20,8 +13,8 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
 export const CNGX_BUTTON_CARET_ICON = new InjectionToken<Type<unknown>>('CngxButtonCaretIcon');
 
 /**
- * Provides `component` as the caret of every menu button and split caret below the provider.
- * Works in `providers` and `viewProviders`, and the nearest provider wins.
+ * Provides the caret below the provider, in `providers` or `viewProviders`. The nearest provider
+ * wins.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideButtonCaretIcon(MaterialCaret)] });
@@ -39,8 +32,7 @@ export function provideButtonCaretIcon(component: Type<unknown>): Provider {
 }
 
 /**
- * Reads the caret component set with `provideButtonCaretIcon`, or `null` for the default
- * chevron. A custom menu button host calls it in an injection context.
+ * The caret set with `provideButtonCaretIcon`, or `null` for the default chevron.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
  * @since 0.1.0

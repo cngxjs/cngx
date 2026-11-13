@@ -15,11 +15,9 @@ export interface CngxSplitCaretRole {
 }
 
 /**
- * Marks the button that can be the caret of a `cngxSplitButton`: provided
- * by `CngxSplitCaret`, queried by the split as a direct child. Main and
- * caret are compared as the same `CngxButtonState` instances, and the split
- * anchors the caret's popover to the group, so the split never names a
- * concrete class.
+ * Marks a possible caret of a `cngxSplitButton`: provided by
+ * `CngxSplitCaret`, queried by the split as a direct child, so the split
+ * never names a concrete class.
  *
  * @internal
  */

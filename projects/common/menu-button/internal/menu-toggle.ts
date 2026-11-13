@@ -4,29 +4,24 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
 import { injectLazySelf } from '@cngx/core/utils';
 
 /**
- * What a menu button host binds: whether the menu is open and its click
- * toggle.
+ * Open state and click toggle of a menu button host.
  *
  * @internal
  */
 export interface CngxMenuToggle {
-  /** `true` while the menu is open. Mirrors the popover's visibility. */
+  /** `true` while the menu is open. */
   readonly expanded: Signal<boolean>;
   /**
-   * Toggles the popover, but refuses to open it while `blocked` (which holds
-   * through a co-hosted run and its busy dwell, and for a split caret through
-   * the main action's run and dwell); an open menu still closes, so a run
-   * that started with the opening click never leaves a menu that cannot be
-   * clicked shut.
+   * Toggles the popover. Refuses to open while `blocked`, but an open menu
+   * still closes, so a run started by the opening click never leaves a menu
+   * that cannot be clicked shut.
    */
   readonly handleClick: () => void;
 }
 
 /**
- * The open / toggle glue shared by `cngxMenuButton` and
- * `cngxIconMenuButton`. Both triggers are host directives on the same
- * element and inject the `CNGX_HOST_INTERACTION_STATE` the button brain
- * provides, so they resolve on first read. Call it in an injection context.
+ * Open/toggle glue shared by `cngxMenuButton` and `cngxIconMenuButton`.
+ * Both triggers are host directives on the same element, read lazily.
  *
  * @internal
  */
