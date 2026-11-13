@@ -21,24 +21,16 @@ import type { CngxButtonSize, CngxButtonVariant } from './button.types';
 export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
 
 /**
- * Joins buttons, icon buttons, addons and separators into one framed, labelled row or column.
- * Every direct child is a segment: the seams collapse to one border, only the outer ends keep
- * their radius, and a hovered or focused segment is lifted so its focus ring is never clipped.
+ * Joins buttons, icon buttons, addons and separators into one framed `role="group"` row or
+ * column. Seams collapse to one border; a hovered or focused segment is lifted so its ring is
+ * never clipped. `variant` and `size` reach every button inside; `tone` is per button.
  *
- * A group whose direct children are groups is a toolbar. The sub-groups sit apart, with the gap
- * floored to `--cngx-target-gap` on a coarse pointer. One group child is enough to make a
- * toolbar, so wrap a loose button next to sub-groups in a group of its own.
+ * A group with a group child is a toolbar: the sub-groups sit apart, the gap floored to
+ * `--cngx-target-gap` on a coarse pointer. Wrap a loose button next to sub-groups in its own
+ * group.
  *
- * `variant` and `size` set on the group reach every button on `CngxButtonBrain` inside through
- * `CNGX_BUTTON_GROUP`. The close button keeps its pinned axes. A nested group without its own
- * value inherits the outer group's. `tone` is per button and not passed.
- *
- * The host is `role="group"` and needs `aria-label` or `aria-labelledby`. Without either it
- * warns [`CNGX1072`](/error-codes/cngx1072.md) in development. For pressed or selected state use
- * `CngxButtonToggleGroup`.
- *
- * The segment geometry ships in the global `cngx.css` bundle (`cngx-button-group.css`), not on
- * the directive.
+ * Needs `aria-label` or `aria-labelledby`, else warns [`CNGX1072`](/error-codes/cngx1072.md).
+ * The geometry ships in the global `cngx.css` bundle, not on the directive.
  *
  * ```html
  * <div cngxButtonGroup variant="outline" aria-label="History">
@@ -73,21 +65,21 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
 export class CngxButtonGroup implements CngxButtonGroupContext {
   private readonly parent = inject(CNGX_BUTTON_GROUP, { optional: true, skipSelf: true });
 
-  /** Emphasis handed to the buttons inside. Falls through to an outer group. */
+  /** Emphasis for the buttons inside. Falls through to an outer group. */
   readonly variantInput = input<CngxButtonVariant | undefined>(undefined, { alias: 'variant' });
 
-  /** Size handed to the buttons and addons inside. Falls through to an outer group. */
+  /** Size for the buttons and addons inside. Falls through to an outer group. */
   readonly sizeInput = input<CngxButtonSize | undefined>(undefined, { alias: 'size' });
 
-  /** Main axis. `vertical` stacks the segments; seams and radii follow. */
+  /** `vertical` stacks the segments. */
   readonly orientation = input<CngxButtonGroupOrientation>('horizontal');
 
-  /** Resolved emphasis: this group's input, else the outer group's. */
+  /** This group's input, else the outer group's. */
   readonly variant = computed<CngxButtonVariant | undefined>(
     () => this.variantInput() ?? this.parent?.variant(),
   );
 
-  /** Resolved size: this group's input, else the outer group's. */
+  /** This group's input, else the outer group's. */
   readonly size = computed<CngxButtonSize | undefined>(
     () => this.sizeInput() ?? this.parent?.size(),
   );

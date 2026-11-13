@@ -1,15 +1,8 @@
 import { inject, InjectionToken, type Provider, type Type } from '@angular/core';
 
 /**
- * Injection token for a custom busy glyph, rendered in place of the built-in spinner by every
- * host on `CngxButtonBrain`. Set it with {@link provideButtonSpinner} at the root or on a subtree.
- *
- * The layer itself stays: it covers the label, is `aria-hidden` and keeps the run's show delay
- * and min-dwell. The component renders a glyph only.
- *
- * ```ts
- * providers: [provideButtonSpinner(MyDotsSpinner)]
- * ```
+ * Custom busy glyph in place of the built-in spinner. Only the glyph changes: the `aria-hidden`
+ * layer and its show delay and min-dwell stay.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
  * @since 0.1.0
@@ -19,14 +12,11 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
 export const CNGX_BUTTON_SPINNER = new InjectionToken<Type<unknown>>('CngxButtonSpinner');
 
 /**
- * Provides `component` as the busy glyph of every cngx button below the provider
- * (`CNGX_BUTTON_SPINNER`). Works in `providers` and `viewProviders`. The nearest provider wins.
+ * Busy glyph for every cngx button below. `providers` or `viewProviders`; the nearest wins.
  *
  * ```ts
  * bootstrapApplication(App, { providers: [provideButtonSpinner(MyDotsSpinner)] });
  * ```
- *
- * @param component The glyph component; it renders inside the `aria-hidden` busy layer.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
  * @since 0.1.0
@@ -38,10 +28,7 @@ export function provideButtonSpinner(component: Type<unknown>): Provider {
 }
 
 /**
- * Reads the busy glyph provided through {@link provideButtonSpinner}, or
- * `null` when none is set and the built-in spinner renders. Runs in an
- * injection context; `CngxButtonBrain` reads it once for its host as
- * `spinner`.
+ * The {@link provideButtonSpinner} glyph, or `null` for the built-in spinner.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
  * @since 0.1.0

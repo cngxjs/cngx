@@ -5,25 +5,12 @@ import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonHost } from './button-host.token';
 
 /**
- * Square, icon-only button on the same brain as `CngxButton`. It takes the same axes, disabled
- * reason and busy layer. The variant defaults to `ghost`.
+ * Square icon-only button on the `CngxButton` brain, `ghost` by default. Project an `svg`, `img`
+ * or `cngx-icon`; wrap a `mat-icon` in a `cngx-icon`.
  *
- * Project an inline `svg`, an `img` or a `cngx-icon`. A bare `svg` or `img` is sized to `1.25em`
- * of the button font. Wrap a `mat-icon` in a `cngx-icon` so the Material icon bridge sizes it.
- *
- * The glyph is `aria-hidden`, so nothing projected ever becomes the name. Set `aria-label`,
- * `aria-labelledby` or `title` on the host. Without one the host warns
- * [`CNGX1071`](/error-codes/cngx1071.md) in development, once the app is stable, so a label bound
- * after the first render counts. Co-host `[cngxTooltip]` where the icon alone is ambiguous.
- *
- * The box follows `size` and stays square. On a coarse pointer it floors to `--cngx-target-min`
- * on both axes, and the icon keeps its design size.
- *
- * ```html
- * <button cngxIconButton aria-label="Delete row" tone="danger" (click)="remove()">
- *   <svg aria-hidden="true" viewBox="0 0 24 24">...</svg>
- * </button>
- * ```
+ * The glyph is `aria-hidden`, so nothing projected becomes the name. Set `aria-label`,
+ * `aria-labelledby` or `title`, else it warns [`CNGX1071`](/error-codes/cngx1071.md). On a coarse
+ * pointer the box floors to `--cngx-target-min` on both axes; the icon keeps its size.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
