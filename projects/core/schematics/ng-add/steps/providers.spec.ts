@@ -57,15 +57,12 @@ describe('planProviders', () => {
     });
   });
 
-  it('sets the direction to rtl only for an RTL source locale', () => {
+  it('provides no direction for an RTL source locale; the document carries it', () => {
     for (const locale of ['ar', 'he-IL', 'fa_IR', 'UR']) {
-      expect(provided(planProviders(createFacts({ sourceLocale: locale }), createAnswers(), VERSIONS))).toContain(
+      expect(provided(planProviders(createFacts({ sourceLocale: locale }), createAnswers(), VERSIONS))).not.toContain(
         "provideDirection('rtl')",
       );
     }
-    expect(provided(planProviders(createFacts({ sourceLocale: 'de-AT' }), createAnswers(), VERSIONS))).not.toContain(
-      "provideDirection('rtl')",
-    );
   });
 
   it('provides toasts, alerts and banners when ui is selected and feedback confirmed', () => {
@@ -317,7 +314,6 @@ describe('planProviders', () => {
     expect(provided(result)).toEqual([]);
     expect(result.changes.map((change) => [change.kind, change.label, change.reason])).toEqual([
       ['note', 'Skip the a11y preferences', 'it comes from @cngx/core, which is not selected'],
-      ['note', 'Skip the rtl direction', 'it comes from @cngx/core, which is not selected'],
       ['note', 'Skip the German language pack', 'it comes from @cngx/core, which is not selected'],
     ]);
   });
