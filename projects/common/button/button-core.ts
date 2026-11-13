@@ -1,8 +1,9 @@
-import { computed, DestroyRef, ElementRef, inject, type Signal } from '@angular/core';
+import { computed, ElementRef, inject, type Signal } from '@angular/core';
 import { CNGX_ASYNC_RUN_STATE } from '@cngx/common/interactive';
 import {
   CNGX_DESCRIBED_BY,
   createVisibilityGate,
+  injectActivationGuard,
   injectDescribedByContribution,
   injectLazySelf,
   injectLoadingConfig,
@@ -225,19 +226,7 @@ export function injectButtonCore(
   // A click on an expanded popup trigger only closes what it opened, so it
   // passes: a run started by the opening click never leaves a menu that
   // cannot be clicked shut.
-  const guard = (event: Event): void => {
-    if (!blocked() || host.getAttribute('aria-expanded') === 'true') {
-      return;
-    }
-    event.preventDefault();
-    event.stopImmediatePropagation();
-  };
-  host.addEventListener('click', guard, { capture: true });
-  host.addEventListener('auxclick', guard, { capture: true });
-  inject(DestroyRef).onDestroy(() => {
-    host.removeEventListener('click', guard, { capture: true });
-    host.removeEventListener('auxclick', guard, { capture: true });
-  });
+  injectActivationGuard(() => blocked() && host.getAttribute('aria-expanded') !== 'true');
 
   return {
     variant,
