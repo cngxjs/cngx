@@ -328,8 +328,7 @@ describe('CngxPanelToggle', () => {
     expect(drawer.opened()).toBe(false);
   });
 
-  // A11: expected to fail until PR 8 (T8) removes the aria-expanded exemption in the click guard.
-  it.fails('swallows activation while disabled with its panel open', () => {
+  it('swallows activation while disabled with its panel open', () => {
     const { fixture, host, settle, toggle } = mount(DrawerHost);
     const drawer = fixture.debugElement.children[1].injector.get(CngxDrawer);
     toggle.click();

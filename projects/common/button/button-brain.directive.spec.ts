@@ -468,8 +468,7 @@ describe('CngxButtonBrain', () => {
   });
 
   describe('activation while aria-disabled and expanded', () => {
-    // A11: expected to fail until PR 8 (T8) removes the aria-expanded exemption in the click guard.
-    it.fails('a disabled host with aria-expanded="true" does not run its click handler', () => {
+    it('a disabled host with aria-expanded="true" does not run its click handler', () => {
       const { q, host } = render(ExpandedDisabledHost);
       const btn = q('#expanded');
       expect(btn.getAttribute('aria-disabled')).toBe('true');

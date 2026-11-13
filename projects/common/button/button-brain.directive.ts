@@ -154,8 +154,8 @@ export class CngxButtonBrain implements CngxButtonState {
   /** The busy layer shows, gated on the `CNGX_LOADING_CONFIG` show delay and min-dwell. */
   readonly busyVisible = this.core.busyVisible;
   /**
-   * Refusing, busy or refused by the co-hosted runner. Every click is swallowed except the one that
-   * closes an expanded popup.
+   * Refusing, busy or refused by the co-hosted runner. Every click is swallowed, an expanded popup
+   * trigger's included.
    */
   readonly blocked = this.core.blocked;
   /** Busy glyph from `provideButtonSpinner`, or `null` for the built-in spinner. */
