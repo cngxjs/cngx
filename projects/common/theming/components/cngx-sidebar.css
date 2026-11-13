@@ -24,7 +24,8 @@
  *
  * **Inheritance**
  *
- * - `--cngx-sidebar-bg` -> `--cngx-color-surface-alt`
+ * - `--cngx-sidebar-bg` -> `--cngx-color-surface` with a 3% tint of
+ *   `--cngx-color-text`, so it sets off from the page in light and dark
  * - `--cngx-sidebar-border-color` -> `--cngx-color-border`
  * - `--cngx-sidebar-border-width` -> `1px`
  * - `--cngx-sidebar-peek-shadow` -> `--cngx-shadow-md`
@@ -47,8 +48,17 @@
       overflow-x: clip;
       overflow-y: auto;
 
-      /* Themable - token-driven */
-      background: var(--cngx-sidebar-bg, var(--cngx-color-surface-alt, oklch(0.98 0 0)));
+      /* Themable - token-driven; resolved once for the host and the sticky
+         header and footer */
+      --_cngx-sidebar-bg: var(
+        --cngx-sidebar-bg,
+        color-mix(
+          in oklab,
+          var(--cngx-color-surface, oklch(1 0 0)) 97%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
+      background: var(--_cngx-sidebar-bg, oklch(0.98 0 0));
     }
 
     :scope[data-sidebar-side='start'] {
@@ -70,8 +80,8 @@
     .cngx-nav-footer {
       position: sticky;
       z-index: 1;
-      --cngx-nav-header-bg: var(--cngx-sidebar-bg, var(--cngx-color-surface-alt, oklch(0.98 0 0)));
-      --cngx-nav-footer-bg: var(--cngx-sidebar-bg, var(--cngx-color-surface-alt, oklch(0.98 0 0)));
+      --cngx-nav-header-bg: var(--_cngx-sidebar-bg, oklch(0.98 0 0));
+      --cngx-nav-footer-bg: var(--_cngx-sidebar-bg, oklch(0.98 0 0));
     }
 
     .cngx-nav-header {
