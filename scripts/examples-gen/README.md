@@ -249,6 +249,10 @@ is derived, there is no DemoSpec field for it:
   and shows the file verbatim. A sibling resolves next to the story, an app
   fixture under `examples/src/app/_fixtures/`, as the live import does.
 
+The plugin recipe generator (`scripts/plugin-recipes.mjs`) applies the same
+rule through the same helpers, so a recipe carries the file a reader needs
+to compile its wiring as a `## File` section.
+
 ## Things the generator does NOT do
 
 - Lint or format the story file. Run `npm run lint` to check the

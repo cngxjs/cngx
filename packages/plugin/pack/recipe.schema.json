@@ -32,6 +32,19 @@
       "type": "string",
       "description": "Optional class-level TypeScript backing the wiring (state, signals, handlers)."
     },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "source"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 }
+        }
+      },
+      "description": "Optional story-local files the wiring imports (a host or component written in the app), each with its source."
+    },
     "a11y": {
       "type": "string",
       "description": "Optional accessibility notes specific to this composition."

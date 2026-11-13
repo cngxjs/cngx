@@ -249,7 +249,7 @@
     {
       "artifact": "pack/recipes/common-button-composition.md",
       "source": "examples/stories/common/button/composition/custom-host.story.ts",
-      "contentHash": "sha256:5a6e2358d1b5280e07b03bf3ebf212d08a6b63cac48f51f393da4d9d48a07d19"
+      "contentHash": "sha256:aad2fa40c15ba26cd750f9fd6214002dd15bf32ade48c8262315307cf820e443"
     },
     {
       "artifact": "pack/recipes/ui-action-button-async-button.md",

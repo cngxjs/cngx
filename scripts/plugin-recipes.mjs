@@ -6,13 +6,16 @@
 // template (chrome excluded) as the wiring.
 
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import {
   buildDisplayedHtml,
   dedentClassBody,
+  displayedImportLines,
   importedSymbols,
+  storyLocalImports,
+  storyLocalSourcePath,
 } from './examples-gen/code-panel.mjs';
 import { parseStory } from './examples-gen/story.mjs';
 import { computeSourceHash, upsertManifestEntry } from './plugin-token-reference.mjs';
@@ -21,6 +24,7 @@ const STORIES_ROOT = 'examples/stories';
 const PLUGIN_ROOT = 'packages/plugin';
 const RECIPES_DIR = 'packages/plugin/pack/recipes';
 const MANIFEST = 'packages/plugin/pack/pack-manifest.json';
+const APP_FIXTURES_DIR = 'examples/src/app/_fixtures';
 
 // The async-state-machine API surface. A story is a recipe candidate when its
 // artifact touches one of these - the async wiring is the pack's centre of
@@ -29,7 +33,11 @@ const ASYNC_API =
   /\b(AsyncStatus|CngxAsyncState|createAsyncState|createManualState|injectAsyncState|resolveAsyncView|buildAsyncStateView|CngxAsyncContainer|CngxAsyncClick|CngxAsync|CngxAlertOn|CngxToastOn|CngxBannerOn)\b/;
 
 const normalizeDashes = (text) => text.replace(/\s*[\u2014\u2013]\s*/g, ' - ');
-const stripHtml = (text) => (text ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const stripHtml = (text) =>
+  (text ?? '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 export function demonstratesAsync(story) {
   const blob = [
@@ -54,7 +62,19 @@ export function recipeSymbols(story) {
   return [...new Set(imported)];
 }
 
-export function storyToRecipe(story) {
+// The story-local files the artifact imports, by the rule the examples code
+// panel uses for its extra tabs: `{ path, source }` per file, read through
+// `readFile(path)` (null when the file is missing).
+export function recipeFiles(story, storyPath, readFile) {
+  const shown = displayedImportLines({ story, importLines: story.moduleImports ?? [] });
+  const dirs = { storyDir: dirname(storyPath), appFixturesDir: APP_FIXTURES_DIR };
+  return storyLocalImports(shown).flatMap((entry) => {
+    const source = readFile(storyLocalSourcePath(entry, dirs));
+    return source === null ? [] : [{ path: entry.panelPath, source: source.trimEnd() }];
+  });
+}
+
+export function storyToRecipe(story, files = []) {
   const symbols = recipeSymbols(story);
   if (symbols.length === 0) {
     return null;
@@ -78,6 +98,9 @@ export function storyToRecipe(story) {
   const recipe = { title: story.title, whenToUse, symbols, wiring };
   if (template && setup) {
     recipe.setup = setup;
+  }
+  if (files.length > 0) {
+    recipe.files = files.map(({ path, source }) => ({ path, source: normalizeDashes(source) }));
   }
   return recipe;
 }
@@ -107,10 +130,21 @@ export function renderRecipe(recipe) {
     lines.push('## Setup', '', '```ts', recipe.setup, '```', '');
   }
   lines.push('## Wiring', '', `\`\`\`${wiringLang(recipe.wiring)}`, recipe.wiring, '```', '');
+  for (const file of recipe.files ?? []) {
+    lines.push(`## File \`${file.path}\``, '', '```ts', file.source, '```', '');
+  }
   if (recipe.theming) {
     lines.push('## Theming', '', recipe.theming, '');
   }
   return lines.join('\n');
+}
+
+function readIfPresent(path) {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch {
+    return null;
+  }
 }
 
 function* walkStories(root) {
@@ -138,7 +172,8 @@ export function collectStoryEntries(onError) {
   return entries;
 }
 
-const demoFolder = (storyPath) => relative(STORIES_ROOT, storyPath).replace(/\/[^/]+\.story\.ts$/, '');
+const demoFolder = (storyPath) =>
+  relative(STORIES_ROOT, storyPath).replace(/\/[^/]+\.story\.ts$/, '');
 const exampleSlug = (storyPath) => storyPath.replace(/^.*\//, '').replace(/\.story\.ts$/, '');
 const recipeName = (folder) => folder.replace(/\//g, '-');
 
@@ -195,7 +230,7 @@ export function selectRecipeStories(entries) {
 // writes exactly this list and the drift check compares against it.
 export function expectedRecipes(entries) {
   return selectRecipeStories(entries).flatMap((entry) => {
-    const recipe = storyToRecipe(entry.story);
+    const recipe = storyToRecipe(entry.story, recipeFiles(entry.story, entry.path, readIfPresent));
     if (!recipe) {
       return [];
     }

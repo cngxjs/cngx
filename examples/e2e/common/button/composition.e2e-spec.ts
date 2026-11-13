@@ -1,7 +1,7 @@
 import { expect, test } from '../../_test';
 import { clicksOf, countClicks, describedText, gotoDemo } from '../../_helpers';
 
-// Story: CngxButtonBrain on a custom host (the demo chip button) brings the
+// Story: CngxButtonBrain on a custom host (the chip button) brings the
 // whole contract along: the data-* axes with the host's own defaults and
 // fixed size, aria-disabled with the reason through aria-describedby, the
 // activation guard, and the run state of a co-hosted cngxAsyncClick. The
@@ -17,7 +17,7 @@ test.describe('common/button/composition', () => {
     const artifact = page.locator('.cngx-ex-artifact');
 
     const filter = artifact.getByRole('button', { name: 'Filter' });
-    await expect(filter).toHaveClass(/demo-chip-button/);
+    await expect(filter).toHaveClass(/app-chip-button/);
     await expect(filter).toHaveAttribute('data-variant', 'outline');
     await expect(filter).toHaveAttribute('data-tone', 'neutral');
     await expect(filter).toHaveAttribute('data-size', 'sm');
@@ -64,7 +64,7 @@ test.describe('common/button/composition', () => {
     await expect(refresh).toHaveAttribute('data-pending', 'true');
     await expect(refresh).toHaveAttribute('aria-busy', 'true');
     await expect(refresh).toHaveAttribute('data-busy', 'true');
-    await expect(refresh.locator('.demo-chip-button__busy')).toHaveAttribute('aria-hidden', 'true');
+    await expect(refresh.locator('.app-chip-button__busy')).toHaveAttribute('aria-hidden', 'true');
     // Clicks during the run start no second run.
     await refresh.click({ force: true });
     await refresh.click({ force: true });
@@ -73,7 +73,7 @@ test.describe('common/button/composition', () => {
     await expect(refresh).not.toHaveAttribute('data-busy', { timeout: 5_000 });
     await expect(refresh).not.toHaveAttribute('aria-busy', { timeout: 5_000 });
     await expect(refresh).not.toHaveAttribute('data-pending');
-    await expect(refresh.locator('.demo-chip-button__busy')).toHaveCount(0);
+    await expect(refresh.locator('.app-chip-button__busy')).toHaveCount(0);
     await expect(status).toHaveText('Refreshed 1 time(s)');
   });
 

@@ -18,6 +18,7 @@ this prose and the schema stay in sync.
 |`symbols`|yes|The `@cngx/*` exports the recipe composes (array of strings).|
 |`wiring`|yes|The how - the template that composes the symbols.|
 |`setup`|no|Class-level TypeScript backing the wiring (state, signals, handlers).|
+|`files`|no|Story-local files the wiring imports (a host or component written in the app), each as `path` and `source`. Same rule as the examples code panel tabs: a `_*` file or app fixture the artifact imports, never the shared fixtures barrel.|
 |`a11y`|no|Accessibility notes specific to this composition.|
 |`theming`|no|Which `--cngx-*` tokens matter here.|
 

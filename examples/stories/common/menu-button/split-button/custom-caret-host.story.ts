@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSplitButton: Custom caret host',
   subtitle: 'Write your own split caret: <code>CngxButtonBrain</code>, the two menu triggers and <code>CngxSplitCaret</code> in <code>hostDirectives</code>.',
-  description: '<code>cngxIconMenuButton</code> is one caret; any button host can be another. <code>demoOutlineCaret</code> declares <code>CngxButtonBrain</code>, <code>CngxMenuTrigger</code>, <code>CngxPopoverTrigger</code> and <code>CngxSplitCaret</code>. As the direct child of <code>cngxSplitButton</code> it becomes the caret: while the main action runs or is disabled it reads <code>aria-disabled</code>, never opens its menu (an open menu still closes) and points <code>aria-describedby</code> at the cause, the main button\'s reason or the busy note. The host renders the name and the busy note from <code>CngxSplitCaret</code> (<code>label()</code>, <code>busyNote()</code>, <code>busyNoteId</code>), both from the language pack. Run the publish or disable it to see the caret follow. The fixture sits next to this story as <code>_outline-caret.component.ts</code>. The dashed box below mirrors what a screen reader gets for the main button and the caret: role, name, description, state and the announcements are exposed or spoken, not painted.',
+  description: '<code>cngxIconMenuButton</code> is one caret; any button host can be another. <code>appOutlineCaret</code> declares <code>CngxButtonBrain</code>, <code>CngxMenuTrigger</code>, <code>CngxPopoverTrigger</code> and <code>CngxSplitCaret</code>. As the direct child of <code>cngxSplitButton</code> it becomes the caret: while the main action runs or is disabled it reads <code>aria-disabled</code>, never opens its menu (an open menu still closes) and points <code>aria-describedby</code> at the cause, the main button\'s reason or the busy note. The host renders the name and the busy note from <code>CngxSplitCaret</code> (<code>label()</code>, <code>busyNote()</code>, <code>busyNoteId</code>), both from the language pack. Run the publish or disable it to see the caret follow. The fixture sits next to this story as <code>_outline-caret.component.ts</code>. The dashed box below mirrors what a screen reader gets for the main button and the caret: role, name, description, state and the announcements are exposed or spoken, not painted.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
     >
       Publish
     </button>
-    <button demoOutlineCaret [menu]="menu" [popover]="pop"></button>
+    <button appOutlineCaret [menu]="menu" [popover]="pop"></button>
   </div>
   <div cngxPopover placement="bottom-end" #pop="cngxPopover">
     <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">

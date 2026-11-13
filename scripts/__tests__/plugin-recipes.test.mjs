@@ -7,6 +7,7 @@ import {
   collectStoryEntries,
   demonstratesAsync,
   expectedRecipes,
+  recipeFiles,
   renderRecipe,
   selectRecipeStories,
   storyToRecipe,
@@ -98,7 +99,8 @@ describe('storyToRecipe', () => {
   });
 
   it('renders a flush-first-line template at the column of line 1', () => {
-    const template = '<cngx-select [items]="state.value()">\n      <span>x</span>\n    </cngx-select>';
+    const template =
+      '<cngx-select [items]="state.value()">\n      <span>x</span>\n    </cngx-select>';
     expect(storyToRecipe({ ...ASYNC_STORY, template }).wiring).toBe(
       '<cngx-select [items]="state.value()">\n  <span>x</span>\n</cngx-select>',
     );
@@ -125,6 +127,51 @@ describe('storyToRecipe', () => {
 
   it('returns null when no cngx symbol resolves', () => {
     expect(storyToRecipe({ title: 'plain', template: '<div></div>' })).toBeNull();
+  });
+});
+
+describe('recipeFiles', () => {
+  const HOST_STORY = {
+    ...ASYNC_STORY,
+    imports: ['ChipButton'],
+    template: '<button chipButton [cngxAsyncClick]="save">Save</button>',
+    moduleImports: [
+      "import { ChipButton } from './_chip-button.component';",
+      "import { failNext } from './_fail-flag';",
+      "import { mirrorScreenReader } from '../../../../fixtures';",
+    ],
+    setupChrome:
+      'protected readonly fail = failNext; protected readonly sr = mirrorScreenReader();',
+  };
+  const storyPath = 'examples/stories/common/button/composition/custom-host.story.ts';
+  const disk = {
+    'examples/stories/common/button/composition/_chip-button.component.ts':
+      'export class ChipButton {}\n',
+    'examples/stories/common/button/composition/_fail-flag.ts': 'export const failNext = true;\n',
+  };
+  const read = (path) => disk[path] ?? null;
+
+  it('reads the story-local file the artifact imports and nothing the chrome imports', () => {
+    expect(recipeFiles(HOST_STORY, storyPath, read)).toEqual([
+      { path: '_chip-button.component.ts', source: 'export class ChipButton {}' },
+    ]);
+  });
+
+  it('renders the file after the wiring and stays schema-conformant', () => {
+    const recipe = storyToRecipe(HOST_STORY, recipeFiles(HOST_STORY, storyPath, read));
+    expect(schemaViolations(recipe)).toEqual([]);
+    const md = renderRecipe(recipe);
+    expect(md.indexOf('## File `_chip-button.component.ts`')).toBeGreaterThan(
+      md.indexOf('## Wiring'),
+    );
+    expect(md).toContain('export class ChipButton {}');
+    expect(md).not.toContain('failNext = true');
+  });
+
+  it('adds no files key when the artifact imports no story-local file', () => {
+    expect(
+      storyToRecipe(ASYNC_STORY, recipeFiles(ASYNC_STORY, storyPath, read)),
+    ).not.toHaveProperty('files');
   });
 });
 
