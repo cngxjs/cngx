@@ -12,7 +12,7 @@
 
 import { readFile, writeFile, readdir, mkdir, rm } from 'node:fs/promises';
 import { basename, join, relative, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   buildDisplayedHtml,
   buildDisplayedTs,
@@ -229,8 +229,9 @@ async function buildPublicApiImportMap() {
 
 // The library selectors, plus the story-local classes (`_*` files next to a
 // story, the app fixtures), so a story-local class in `imports` counts as
-// artifact only where the artifact template uses it.
-async function buildSelectorMap() {
+// artifact only where the artifact template uses it. The plugin recipe
+// generator reads the same map.
+export async function buildSelectorMap() {
   const map = new Map();
   const sources = [
     walkFiles(join(ROOT, 'projects'), isSelectorSource),
@@ -717,7 +718,11 @@ async function main() {
   console.log(`Wrote ${routes.length} routes from ${routes.length} stories.`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run only as the entry point, so scripts/plugin-recipes.mjs can import
+// buildSelectorMap without rewriting the features folder.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

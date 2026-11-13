@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-// Never import index.mjs here: importing it runs main(), which wipes and
-// rewrites examples/src/app/features.
+// The pure helpers only: index.mjs reads the disk (its main() wipes and
+// rewrites examples/src/app/features when run as a script).
 import * as panel from '../examples-gen/code-panel.mjs';
 
 const {

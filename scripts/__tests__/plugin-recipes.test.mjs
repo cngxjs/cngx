@@ -168,6 +168,18 @@ describe('recipeFiles', () => {
     expect(md).not.toContain('failNext = true');
   });
 
+  it('throws when a story-local file the artifact imports is missing', () => {
+    expect(() => recipeFiles(HOST_STORY, storyPath, () => null)).toThrow(
+      /custom-host\.story\.ts: no file for \.\/_chip-button\.component at .*_chip-button\.component\.ts/,
+    );
+  });
+
+  it('drops a story-local component only the chrome template uses, given its selector', () => {
+    const selectorMap = new Map([['ChipButton', ['button[appChipButton]']]]);
+    const story = { ...HOST_STORY, templateChrome: '<button appChipButton>Chrome</button>' };
+    expect(recipeFiles(story, storyPath, read, selectorMap)).toEqual([]);
+  });
+
   it('adds no files key when the artifact imports no story-local file', () => {
     expect(
       storyToRecipe(ASYNC_STORY, recipeFiles(ASYNC_STORY, storyPath, read)),

@@ -17,6 +17,7 @@ import {
   storyLocalImports,
   storyLocalSourcePath,
 } from './examples-gen/code-panel.mjs';
+import { buildSelectorMap } from './examples-gen/index.mjs';
 import { parseStory } from './examples-gen/story.mjs';
 import { computeSourceHash, upsertManifestEntry } from './plugin-token-reference.mjs';
 
@@ -63,14 +64,24 @@ export function recipeSymbols(story) {
 }
 
 // The story-local files the artifact imports, by the rule the examples code
-// panel uses for its extra tabs: `{ path, source }` per file, read through
-// `readFile(path)` (null when the file is missing).
-export function recipeFiles(story, storyPath, readFile) {
-  const shown = displayedImportLines({ story, importLines: story.moduleImports ?? [] });
+// panel uses for its extra tabs (same `selectorMap`, from buildSelectorMap):
+// `{ path, source }` per file, read through `readFile(path)`, which returns
+// null when the file is missing. A missing file throws: the recipe would
+// otherwise ship without a file its wiring imports.
+export function recipeFiles(story, storyPath, readFile, selectorMap) {
+  const shown = displayedImportLines({
+    story,
+    importLines: story.moduleImports ?? [],
+    selectorMap,
+  });
   const dirs = { storyDir: dirname(storyPath), appFixturesDir: APP_FIXTURES_DIR };
-  return storyLocalImports(shown).flatMap((entry) => {
-    const source = readFile(storyLocalSourcePath(entry, dirs));
-    return source === null ? [] : [{ path: entry.panelPath, source: source.trimEnd() }];
+  return storyLocalImports(shown).map((entry) => {
+    const path = storyLocalSourcePath(entry, dirs);
+    const source = readFile(path);
+    if (source === null) {
+      throw new Error(`${storyPath}: no file for ${entry.module} at ${path}`);
+    }
+    return { path: entry.panelPath, source: source.trimEnd() };
   });
 }
 
@@ -228,9 +239,10 @@ export function selectRecipeStories(entries) {
 // The recipes the pack ships for these stories: one `{ artifact, source, body }`
 // per selected folder whose representative yields a recipe. The generator
 // writes exactly this list and the drift check compares against it.
-export function expectedRecipes(entries) {
+export function expectedRecipes(entries, selectorMap) {
   return selectRecipeStories(entries).flatMap((entry) => {
-    const recipe = storyToRecipe(entry.story, recipeFiles(entry.story, entry.path, readIfPresent));
+    const files = recipeFiles(entry.story, entry.path, readIfPresent, selectorMap);
+    const recipe = storyToRecipe(entry.story, files);
     if (!recipe) {
       return [];
     }
@@ -240,13 +252,13 @@ export function expectedRecipes(entries) {
   });
 }
 
-function main() {
+async function main() {
   const entries = collectStoryEntries((path, err) => {
     process.stderr.write(`Skipping ${path}: ${err.message}\n`);
   });
 
   const selected = selectRecipeStories(entries);
-  const recipes = expectedRecipes(entries);
+  const recipes = expectedRecipes(entries, await buildSelectorMap());
   mkdirSync(resolve(RECIPES_DIR), { recursive: true });
 
   let manifest = JSON.parse(readFileSync(resolve(MANIFEST), 'utf8'));
@@ -265,5 +277,8 @@ function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  main().catch((err) => {
+    process.stderr.write(`${err.message}\n`);
+    process.exitCode = 1;
+  });
 }
