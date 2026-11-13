@@ -43,7 +43,7 @@ test.describe('ui/stepper/stepper-footer complete', () => {
     await expect(finish).toHaveText('Finish');
   });
 
-  // Shared by the precondition test and the expected-fail pin below: reach
+  // Shared by the precondition test and the Back refusal test below: reach
   // the last step and start the Finish run.
   async function startFinish(page: Page) {
     await gotoDemo(page, ROUTE);
@@ -63,12 +63,10 @@ test.describe('ui/stepper/stepper-footer complete', () => {
   });
 
   test('complete-finish-button: Back is refused while Finish runs', async ({ page }) => {
-    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
-    test.fail();
     const { finish, back } = await startFinish(page);
     await expect(back).toHaveAttribute('aria-disabled', 'true', { timeout: 500 });
     await back.click({ force: true });
-    await expect(page.getByText('Confirm and submit.')).toBeVisible();
+    await expect(page.getByText('Confirm and submit.', { exact: true })).toBeVisible();
     await expect(finish).toBeVisible();
     await expect(page.locator('.event-row')).toContainText('Submitted - (completed) fired', {
       timeout: 5_000,

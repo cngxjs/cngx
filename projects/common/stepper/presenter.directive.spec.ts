@@ -300,6 +300,29 @@ describe('CngxStepperPresenter', () => {
       expect(presenter.busy()).toBe(false);
     });
 
+    it('busy is true while a registered source is pending, and its release clears it', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        hostDirectives: [CngxStepperPresenter],
+        template: '',
+      })
+      class RegisteredBusyHost {}
+      const fixture = TestBed.createComponent(RegisteredBusyHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      const pending = signal(false);
+      const release = presenter.registerBusy('finish', pending);
+      expect(presenter.busy()).toBe(false);
+      pending.set(true);
+      expect(presenter.busy()).toBe(true);
+      release();
+      expect(presenter.busy()).toBe(false);
+    });
+
     it('single-source: canGoNext() false ⟺ selectNext() no-op at a linear-blocked boundary', () => {
       const { presenter } = linearSetup();
       presenter.register(reg('a', 'step', 'idle')); // active, not success → linear blocks

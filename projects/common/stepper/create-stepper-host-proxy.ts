@@ -1,10 +1,11 @@
-import { computed } from '@angular/core';
+import { computed, type Signal } from '@angular/core';
 
 import { buildAsyncStateView, type StatusTransition } from '@cngx/core/utils';
 
 import type { CngxStepNode, CngxStepRegistration, CngxStepperHost } from './stepper-host.token';
 
 const EMPTY_NODES: readonly CngxStepNode[] = Object.freeze([]);
+const NO_RELEASE = (): void => undefined;
 
 /**
  * Builds a live delegating {@link CngxStepperHost} proxy over a supplier
@@ -88,5 +89,9 @@ export function createStepperHostProxy(supplier: () => CngxStepperHost | null): 
     register: (handle: CngxStepRegistration, parentId?: string | null) =>
       supplier()?.register(handle, parentId),
     unregister: (id: string) => supplier()?.unregister(id),
+    // Bound to the host current at the call: a later supplier swap leaves
+    // the registration where it is (stepper-accepted-debt §20).
+    registerBusy: (key: string, pending: Signal<boolean>) =>
+      supplier()?.registerBusy?.(key, pending) ?? NO_RELEASE,
   };
 }

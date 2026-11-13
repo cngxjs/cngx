@@ -240,7 +240,7 @@ There is no separate `'free'` value - "free" is just `headerNavigation="visited"
 
 Set the app-wide default with `provideStepperConfig(withStepperHeaderNavigation('none'))`; the per-instance `[headerNavigation]` input wins over it.
 
-While a commit is in flight (`commitAction` pending), the `'visited'` headers lock - they go `aria-disabled`, click and arrow-key navigation no-op - so the strip cannot supersede the pending transition. This matches the footer nav atoms (`cngxStepperPrevious` / `cngxStepperNext`), which disable on `busy()` too; the strip and the footer lock together during an async step.
+While a commit or the finish run is in flight (`commitAction` pending, or a `cngxStepperComplete` run), the `'visited'` headers lock - they go `aria-disabled`, click and arrow-key navigation no-op - so the strip cannot supersede the pending transition. This matches the footer nav atoms (`cngxStepperPrevious` / `cngxStepperNext`), which disable on `busy()` too; the strip and the footer lock together during an async step.
 
 ### Migration
 

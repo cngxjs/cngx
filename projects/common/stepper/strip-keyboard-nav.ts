@@ -86,9 +86,12 @@ export function createStepperStripKeyboardNav(
     // the action settles). The controller retains intendedValue after a
     // rejection for the commit-error surface, so an unguarded read
     // would teleport focus to the refused step on any later no-op key.
-    const intendedIdx = options.presenter.busy()
-      ? options.presenter.intendedStepIndex()
-      : undefined;
+    // Keyed on the commit, not busy(): a finish run must not move focus
+    // to an intendedValue retained from an earlier refused commit.
+    const intendedIdx =
+      options.presenter.commitState.status() === 'pending'
+        ? options.presenter.intendedStepIndex()
+        : undefined;
     const intendedId =
       intendedIdx !== undefined
         ? (options.presenter.stepsOnly()[intendedIdx]?.id ?? null)

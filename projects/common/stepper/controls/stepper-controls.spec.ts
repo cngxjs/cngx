@@ -320,8 +320,7 @@ describe('stepper nav controls', () => {
       }
     });
 
-    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
-    it.fails('refuses Back while the finish run is pending', async () => {
+    it('refuses Back while the finish run is pending', async () => {
       const { fixture, presenter, prev } = await startFinish();
       try {
         expect(prev.getAttribute('aria-disabled')).toBe('true');

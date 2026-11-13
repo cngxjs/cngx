@@ -23,7 +23,8 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
  *
  * `(click)` advances via `selectNext()`. A turnkey re-entrancy guard
  * disables the control when there is no enabled next step
- * (`!canGoNext()`) OR while a commit is in flight (`busy()`) - an opt-in
+ * (`!canGoNext()`) OR while a commit or the finish run is in flight
+ * (`busy()`) - an opt-in
  * guard a consumer forgets is a silent double-commit (Pillar 2). The
  * gate reads the host's `canGoNext` bound, which derives from the same
  * `select()` predicates, so the affordance can never drift from the
