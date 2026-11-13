@@ -14,6 +14,7 @@ import {
   CngxSliderTrack,
 } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
+import { CngxSelect } from '@cngx/forms/select';
 import { mousePick } from '@cngx/testing';
 
 import { focusFirstError } from './focus-first-error';
@@ -493,5 +494,39 @@ describe('field integration - field ids', () => {
 
   it('stays silent for a field with one control and a unique name', () => {
     expect(duplicateIdWarnings(DottedNameHost)).toHaveLength(0);
+  });
+});
+
+describe('field integration - select disabled reason', () => {
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.color">
+        <label cngxLabel>Color</label>
+        <cngx-select [label]="'Color'" [options]="options" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxLabel, CngxSelect],
+  })
+  class SelectReasonHost {
+    readonly options = [
+      { value: 'red', label: 'Red' },
+      { value: 'blue', label: 'Blue' },
+    ];
+    readonly f = form(
+      signal({ color: 'red' }),
+      schema<{ color: string }>((p) => {
+        disabled(p.color, () => 'Locked by an admin');
+      }),
+    );
+  }
+
+  it('references the field disabled reason exactly once from the trigger', () => {
+    const { el } = mount(SelectReasonHost);
+    const trigger = el.querySelector<HTMLElement>('[role="combobox"]')!;
+    const reasonRefs = (trigger.getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((id) => document.getElementById(id)?.textContent?.trim() === 'Locked by an admin');
+    expect(reasonRefs).toHaveLength(1);
   });
 });

@@ -854,8 +854,6 @@ export class CngxTreeSelect<T = unknown>
   /** @internal Trigger ARIA projection, structural-equal; from the shared core. */
   protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly commitErrorId = this.core.commitErrorId;
-  /** @internal */ protected readonly disabledReasonId = this.core.disabledReasonId;
-  /** @internal */ protected readonly disabledReasonText = this.core.disabledReasonText;
   /** @internal */ readonly listboxId = this.core.listboxId;
   /** @internal */ protected readonly commitErrorText = this.core.commitErrorText;
 
