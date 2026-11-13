@@ -116,7 +116,7 @@ The helpers use no runner globals, so they work the same under Vitest, Jasmine /
 
 ## What it does not pin
 
-- **Motion.** No cngx runtime reads the motion preference token, so pinning it changes nothing under jsdom. A browser-mode suite that wants reduced motion adds `provideMotion('reduced')` itself; that sets `<html data-motion>` and leaves it in place when the test module is torn down, so remove it after the spec.
+- **Motion.** Not pinned: the JS motion readers go through `injectEffectiveMotion()`, which follows the OS query for `auto`, and jsdom has no `matchMedia`, so they already resolve to full motion. A suite that wants reduced motion adds `provideMotion('reduced')` itself; that sets `<html data-motion>` and removes it again when the test module is torn down.
 - **Transition settle time.** `onTransitionDone` keeps its fallback timer: the computed transition time plus 50 ms, which is 50 ms under jsdom.
 
 ## Peer dependencies

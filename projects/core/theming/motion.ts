@@ -1,4 +1,14 @@
-import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  InjectionToken,
+  type EnvironmentProviders,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
+import { createMediaQuerySignal } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { createPreferenceAxis } from './preference-axis';
@@ -84,4 +94,38 @@ export function provideMotion(initial: CngxMotionPreference = 'auto'): Environme
  */
 export function injectMotion(): WritableSignal<CngxMotionPreference> {
   return motionAxis.injectValue();
+}
+
+/**
+ * The motion the user gets right now, resolved for JavaScript: the
+ * `CNGX_MOTION` pick when it is `reduced` or `full`, else the OS
+ * `prefers-reduced-motion` query. Read it wherever JS decides on motion
+ * (smooth scrolling, animation fallbacks, shimmer classes), so an in-app
+ * pick in an accessibility panel reaches JS the same way it reaches CSS
+ * through `motion-tokens.css`.
+ *
+ * A subtree `cngxMotionScope` is not seen here: it is CSS-only.
+ *
+ * ```ts
+ * private readonly motion = injectEffectiveMotion();
+ * protected readonly behavior = computed(() => (this.motion() === 'reduced' ? 'auto' : 'smooth'));
+ * ```
+ *
+ * @relatedTo injectMotion, provideMotion
+ * @since 0.3.0
+ */
+export function injectEffectiveMotion(): Signal<'reduced' | 'full'> {
+  const preference = inject(CNGX_MOTION);
+  const osReduce = createMediaQuerySignal(
+    '(prefers-reduced-motion: reduce)',
+    inject(DestroyRef),
+    inject(DOCUMENT).defaultView,
+  );
+  return computed(() => {
+    const pick = preference();
+    if (pick !== 'auto') {
+      return pick;
+    }
+    return osReduce() ? 'reduced' : 'full';
+  });
 }

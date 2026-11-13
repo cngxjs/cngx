@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CNGX_MOTION, injectMotion, provideMotion } from './motion';
+import { CNGX_MOTION, injectEffectiveMotion, injectMotion, provideMotion } from './motion';
 
 // An empty host forces the root environment injector to initialise,
 // which runs the provideMotion reflector's environment initializer.
@@ -63,8 +63,7 @@ describe('provideMotion / injectMotion', () => {
     fixture.detectChanges();
 
     const motion = TestBed.inject(CNGX_MOTION);
-    const motionWrites = () =>
-      setSpy.mock.calls.filter(([attr]) => attr === 'data-motion').length;
+    const motionWrites = () => setSpy.mock.calls.filter(([attr]) => attr === 'data-motion').length;
 
     const afterInit = motionWrites();
     expect(afterInit).toBeGreaterThanOrEqual(1);
@@ -72,5 +71,46 @@ describe('provideMotion / injectMotion', () => {
     motion.set('reduced'); // same value - signal equality short-circuits the effect
     fixture.detectChanges();
     expect(motionWrites()).toBe(afterInit);
+  });
+});
+
+describe('injectEffectiveMotion', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.documentElement.removeAttribute('data-motion');
+  });
+
+  function stubOsReduce(reduce: boolean): void {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      media: query,
+      matches: reduce && query === '(prefers-reduced-motion: reduce)',
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+  }
+
+  it.each([
+    ['auto', false, 'full'],
+    ['auto', true, 'reduced'],
+    ['reduced', false, 'reduced'],
+    ['full', true, 'full'],
+  ] as const)('axis %s with OS reduce %s resolves to %s', (axis, osReduce, expected) => {
+    stubOsReduce(osReduce);
+    TestBed.configureTestingModule({ providers: [provideMotion(axis)] });
+    TestBed.createComponent(Host).detectChanges();
+
+    const effective = TestBed.runInInjectionContext(() => injectEffectiveMotion());
+    expect(effective()).toBe(expected);
+  });
+
+  it('follows a runtime pick on the axis', () => {
+    stubOsReduce(false);
+    TestBed.configureTestingModule({ providers: [provideMotion()] });
+    TestBed.createComponent(Host).detectChanges();
+
+    const effective = TestBed.runInInjectionContext(() => injectEffectiveMotion());
+    expect(effective()).toBe('full');
+    TestBed.inject(CNGX_MOTION).set('reduced');
+    expect(effective()).toBe('reduced');
   });
 });
