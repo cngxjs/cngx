@@ -288,8 +288,8 @@ describe('CngxMenuButton', () => {
       ['after', AsyncAfterHost],
       ['before', AsyncBeforeHost],
     ] as const)(
-      'still closes the open menu on click while a cngxAsyncClick written %s the selector is pending',
-      (_, type) => {
+      'keeps the open menu open on click while a cngxAsyncClick written %s the selector is pending',
+      async (_, type) => {
         const { button, popover, flush } = setup(type as Type<unknown>);
         button.click();
         flush();
@@ -298,6 +298,12 @@ describe('CngxMenuButton', () => {
 
         button.click();
         flush();
+        expect(popover.isVisible()).toBe(true);
+
+        await settle();
+        key(document.activeElement as HTMLElement, 'Escape');
+        flush();
+        await settle();
         expect(popover.isVisible()).toBe(false);
       },
     );

@@ -83,12 +83,11 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
 export class OutlineCaret {
   protected readonly caret = inject(CngxSplitCaret);
   protected readonly brain = inject(CngxButtonBrain);
-  private readonly menu = inject(CngxMenuTrigger);
   private readonly popover = inject(CngxPopoverTrigger);
 
-  // A blocked caret never opens its menu; an open one still closes.
+  // A blocked caret neither opens nor closes its menu on click.
   protected handleClick(): void {
-    if (this.brain.blocked() && !this.menu.isOpen()) {
+    if (this.brain.blocked()) {
       return;
     }
     this.popover.popoverRef().toggle();
