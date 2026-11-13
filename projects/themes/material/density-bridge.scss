@@ -14,12 +14,13 @@
 // per-component arithmetic (Pillar 1) - it is the one place Material density and
 // cngx density meet, so components stay pure derivations of `--cngx-space-*`.
 //
-// Emitted as bare declarations (no `:root` wrapper), like `system-bridge`, so they
-// land on the consumer's theme host (`html { @include ... }`) unlayered. Unlayered
-// beats the `@property` `initial-value` of `--cngx-space-*` (registered in
-// `cngx.tokens`), which is the same mechanism the color tokens rely on; a
-// cngx-native `[data-density]` island on a descendant still overrides via
-// inheritance. `mat.get-theme-density` reads on both M2 and M3, so no version branch.
+// Emitted as declarations on the consumer's theme host (`html { @include ... }`),
+// like `system-bridge`, inside `@layer cngx.components`. That beats the
+// `@property` `initial-value` of `--cngx-space-*` (registered in `cngx.tokens`)
+// and loses to `cngx.theme`, so a root `provideDensity('compact')`, which
+// reflects `[data-density]` onto the same `<html>`, still wins; a cngx-native
+// `[data-density]` island on a descendant overrides via inheritance.
+// `mat.get-theme-density` reads on both M2 and M3, so no version branch.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/density-bridge' as cngx-density;
@@ -65,9 +66,11 @@
     -4: 16px,
   );
 
-  --cngx-space-xs: #{map.get($xs, $scale)};
-  --cngx-space-sm: #{map.get($sm, $scale)};
-  --cngx-space-md: #{map.get($md, $scale)};
-  --cngx-space-lg: #{map.get($lg, $scale)};
-  --cngx-space-xl: #{map.get($xl, $scale)};
+  @layer cngx.components {
+    --cngx-space-xs: #{map.get($xs, $scale)};
+    --cngx-space-sm: #{map.get($sm, $scale)};
+    --cngx-space-md: #{map.get($md, $scale)};
+    --cngx-space-lg: #{map.get($lg, $scale)};
+    --cngx-space-xl: #{map.get($xl, $scale)};
+  }
 }

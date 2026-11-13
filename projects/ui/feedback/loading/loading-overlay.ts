@@ -80,6 +80,7 @@ import { CngxLoadingIndicator } from './loading-indicator';
           #spinnerEl
           tabindex="-1"
           role="status"
+          data-cngx-busy
           [attr.aria-label]="resolvedLabel()"
         >
           <cngx-loading-indicator [loading]="true" variant="spinner" />

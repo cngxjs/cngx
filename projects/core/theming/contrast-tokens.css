@@ -69,9 +69,15 @@
    * text and surface.
    * Border is NOT derived from --cngx-color-text-muted: that token is
    * demoted in the same rule, so a var() reference to it would resolve to
-   * the demoted value and collapse both surfaces onto text. */
+   * the demoted value and collapse both surfaces onto text.
+   * A colour-scheme island below the contrast host re-sets these tokens on
+   * its own element, which beats the inherited boost in any layer, so the
+   * boost is re-applied on the island. The mix then reads the island's own
+   * text and surface. */
   [data-contrast='more'],
-  .cngx-contrast-more {
+  .cngx-contrast-more,
+  [data-contrast='more'] :is([data-color-scheme], .dark, .light),
+  .cngx-contrast-more :is([data-color-scheme], .dark, .light) {
     --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
     --cngx-color-border-strong: color-mix(
       in oklab,
@@ -85,9 +91,11 @@
 /* OS-driven boost with a `normal` escape. `:root:not([data-contrast='normal'])`
  * keeps the boost for `auto` and `more` while letting an explicit
  * `data-contrast='normal'` opt the whole document out. Unlayered so it beats
- * the layered scheme blocks and sidesteps the @scope/layer cascade trap. */
+ * the layered scheme blocks and sidesteps the @scope/layer cascade trap.
+ * Colour-scheme islands get the boost re-applied, as in the attribute rule. */
 @media (prefers-contrast: more) {
-  :root:not([data-contrast='normal']) {
+  :root:not([data-contrast='normal']),
+  :root:not([data-contrast='normal']) :is([data-color-scheme], .dark, .light) {
     --cngx-color-border: color-mix(in oklab, var(--cngx-color-text) 60%, var(--cngx-color-surface));
     --cngx-color-border-strong: color-mix(
       in oklab,
