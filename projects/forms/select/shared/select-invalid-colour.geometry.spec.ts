@@ -51,31 +51,31 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
   encapsulation: ViewEncapsulation.None,
   template: `
     <div style="display: grid; gap: 1rem; inline-size: 20rem">
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[0]">
         <cngx-select class="v-select" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[1]">
         <cngx-multi-select class="v-multi" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[2]">
         <cngx-combobox class="v-combobox" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[3]">
         <cngx-typeahead class="v-typeahead" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[4]">
         <cngx-tree-select class="v-tree" [label]="'C'" [nodes]="options" [nodeIdFn]="nodeId" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[5]">
         <cngx-action-select class="v-action" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[6]">
         <cngx-action-multi-select class="v-action-multi" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[7]">
         <cngx-reorderable-multi-select class="v-reorder" [label]="'C'" [options]="options" />
       </cngx-form-field>
-      <cngx-form-field [field]="field">
+      <cngx-form-field [field]="fields[8]">
         <cngx-select-shell class="v-shell" [label]="'C'">
           <cngx-option [value]="'red'">Red</cngx-option>
         </cngx-select-shell>
@@ -88,11 +88,10 @@ const OPTIONS: CngxSelectOptionDef<string>[] = [
 class InvalidHost {
   readonly options = OPTIONS;
   readonly nodeId = (value: unknown): string => String(value);
-  readonly field: CngxFieldAccessor = createMockField({
-    name: 'colour',
-    invalid: true,
-    touched: true,
-  }).accessor;
+  readonly fields: CngxFieldAccessor[] = Array.from(
+    { length: 9 },
+    (_, i) => createMockField({ name: `colour${i}`, invalid: true, touched: true }).accessor,
+  );
 }
 
 const VARIANTS = [
