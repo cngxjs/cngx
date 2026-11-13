@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButtonMultiToggleGroup: disabled cascade vs per-toggle',
   subtitle:
-    'Group <code>[disabled]</code> blocks every leaf\'s <code>toggle()</code> dispatch and reflects <code>aria-disabled="true"</code> on each toggle. Per-toggle <code>[disabled]</code> blocks only that leaf. Both also reflect the native <code>disabled</code> attribute so form-submission engines see it.',
+    'Group <code>[disabled]</code> blocks every leaf\'s <code>toggle()</code> dispatch and reflects <code>aria-disabled="true"</code> on each toggle. Per-toggle <code>[disabled]</code> blocks only that leaf. Disabled toggles render <code>aria-disabled</code> only, stay focusable, and swallow click, Space and Enter.',
   description:
     'Disabled propagation contract for the multi-select group. Group-level <code>[disabled]</code> short-circuits the group\'s own <code>toggle()</code> entry-point and propagates into every leaf\'s <code>toggleDisabled</code> computed; Space, Enter, and click on a disabled leaf are all suppressed. Per-toggle <code>[disabled]</code> blocks only that leaf without affecting siblings. Accepted debt mirrors the single-mode group: a fully-disabled toolbar still admits visual focus transit because <code>CngxRovingItem.disabled</code> is not yet a writable host-directive surface; every selection pathway short-circuits silently.',
   level: 'molecule',

@@ -37,6 +37,20 @@ test.describe('common/interactive/button-toggle-group', () => {
     const disableBtn = page.getByRole('button', { name: /Disable group|Enable group/ });
     await disableBtn.click();
     await expect(toggles.first()).toHaveAttribute('aria-disabled', 'true');
+
+    // aria-disabled only: the leaf stays focusable and refuses every activation path.
+    const grid = page.getByRole('radio', { name: 'Grid' });
+    const list = page.getByRole('radio', { name: 'List' });
+    for (const leaf of [list, page.getByRole('radio', { name: 'Table (locked)' })]) {
+      await expect(leaf).not.toHaveAttribute('disabled');
+      await leaf.focus();
+      await expect(leaf).toBeFocused();
+      await leaf.click({ force: true });
+      await leaf.press('Space');
+      await leaf.press('Enter');
+      await expect(leaf).toHaveAttribute('aria-checked', 'false');
+      await expect(grid).toHaveAttribute('aria-checked', 'true');
+    }
   });
 
   test('vertical: orientation reflects on the host', async ({ page }) => {

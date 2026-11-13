@@ -146,6 +146,35 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
     expect(host.picked()).toEqual(['open']);
   });
 
+  for (const source of ['group', 'toggle'] as const) {
+    it(`a ${source}-disabled leaf renders aria-disabled only, stays focusable and refuses activation`, () => {
+      const { fixture, host, toggles } = setup();
+      document.body.appendChild(fixture.nativeElement);
+      try {
+        (source === 'group' ? host.off : host.archivedOff).set(true);
+        fixture.detectChanges();
+        const { el } = toggles[2];
+        expect(el.hasAttribute('disabled')).toBe(false);
+        expect(el.getAttribute('aria-disabled')).toBe('true');
+
+        el.focus();
+        expect(document.activeElement).toBe(el);
+
+        let consumerClicks = 0;
+        el.addEventListener('click', () => consumerClicks++);
+        el.click();
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        fixture.detectChanges();
+        expect(consumerClicks).toBe(0);
+        expect(host.picked()).toEqual([]);
+        expect(el.getAttribute('aria-pressed')).toBe('false');
+      } finally {
+        fixture.nativeElement.remove();
+      }
+    });
+  }
+
   it('CNGX_CONTROL_VALUE.value carries the multi ModelSignal<T[]> shape', () => {
     const { fixture, host, groupDe } = setup();
     const cv = groupDe.injector.get(CNGX_CONTROL_VALUE);
