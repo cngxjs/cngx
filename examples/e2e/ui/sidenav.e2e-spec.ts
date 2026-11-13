@@ -1,8 +1,64 @@
+import type { Page } from '@playwright/test';
+
 import { expect, test } from '../_test';
 import { gotoDemo } from '../_helpers';
 import { routesUnder } from '../_routes';
 
 // Story: CngxSidenav (Material-themed) renders a navigation sidebar.
+
+interface Frame {
+  readonly width: number;
+  readonly contentStart: number;
+  readonly rows: readonly number[];
+}
+
+// Samples the sidenav width, the content's inline start and the y of every
+// top-level row on each animation frame until stop() is called.
+async function startSampling(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { __frames: Frame[]; __sampling: boolean };
+    w.__frames = [];
+    w.__sampling = true;
+    const nav = document.querySelector('cngx-sidenav')!;
+    const content = document.querySelector('cngx-sidenav-content')!;
+    const rows = [
+      ...nav.querySelectorAll(
+        ':is(.cngx-nav-link, .cngx-nav-group, .cngx-nav-label):not(.cngx-nav-group-content *)',
+      ),
+    ];
+    const tick = () => {
+      w.__frames.push({
+        width: nav.getBoundingClientRect().width,
+        contentStart: content.getBoundingClientRect().left,
+        rows: rows.map((row) => row.getBoundingClientRect().top),
+      });
+      if (w.__sampling) {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+async function stopSampling(page: Page): Promise<Frame[]> {
+  return page.evaluate(() => {
+    const w = window as unknown as { __frames: Frame[]; __sampling: boolean };
+    w.__sampling = false;
+    return w.__frames;
+  });
+}
+
+const spread = (values: readonly number[]): number => Math.max(...values) - Math.min(...values);
+
+function expectRowsStill(frames: readonly Frame[]): void {
+  expect(frames.length).toBeGreaterThan(5);
+  frames[0].rows.forEach((_, i) => {
+    expect(spread(frames.map((frame) => frame.rows[i])), `row ${i} y`).toBeLessThanOrEqual(0.5);
+  });
+}
+
+const between = (frames: readonly Frame[], low: number, high: number): number =>
+  frames.filter((frame) => frame.width > low + 1 && frame.width < high - 1).length;
 
 test.describe('ui/sidenav', () => {
   for (const { name, path } of routesUnder('ui', 'sidenav')) {
@@ -66,5 +122,61 @@ test.describe('ui/sidenav', () => {
 
     expect(expanded).toBeGreaterThan(0);
     expect(Math.abs(rail - expanded)).toBeLessThanOrEqual(0.5);
+  });
+
+  test('full-navigation-sidebar: toggling and peeking animate the width and move no row', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await gotoDemo(page, 'ui/sidenav/full-navigation-sidebar');
+    const nav = page.locator('cngx-sidenav').first();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'expanded');
+    const expandedWidth = (await nav.boundingBox())?.width ?? 0;
+
+    // Toggle to the rail: the width animates, no row changes its y.
+    await startSampling(page);
+    await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    await page.mouse.move(1500, 850);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+    await page.waitForTimeout(600);
+    const toRail = await stopSampling(page);
+    const railWidth = toRail[toRail.length - 1].width;
+    expectRowsStill(toRail);
+    expect(between(toRail, railWidth, expandedWidth)).toBeGreaterThan(0);
+
+    // Peek: the width animates over the content, which keeps its inline start.
+    const box = (await nav.boundingBox())!;
+    await startSampling(page);
+    await page.mouse.move(box.x + box.width / 2, box.y + 150);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'peek');
+    await page.waitForTimeout(600);
+    await page.mouse.move(1500, 850);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+    await page.waitForTimeout(600);
+    const peek = await stopSampling(page);
+    expectRowsStill(peek);
+    expect(spread(peek.map((frame) => frame.contentStart))).toBeLessThanOrEqual(0.5);
+    expect(between(peek, railWidth, expandedWidth)).toBeGreaterThan(0);
+  });
+
+  test('full-navigation-sidebar: under reduced motion the state switches without intermediate frames', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await gotoDemo(page, 'ui/sidenav/full-navigation-sidebar');
+    const nav = page.locator('cngx-sidenav').first();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'expanded');
+    const expandedWidth = (await nav.boundingBox())?.width ?? 0;
+
+    await startSampling(page);
+    await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    await page.mouse.move(1500, 850);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+    await page.waitForTimeout(400);
+    const frames = await stopSampling(page);
+    const railWidth = frames[frames.length - 1].width;
+    expect(railWidth).toBeLessThan(expandedWidth);
+    expect(between(frames, railWidth, expandedWidth)).toBe(0);
   });
 });

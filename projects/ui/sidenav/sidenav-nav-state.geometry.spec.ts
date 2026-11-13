@@ -182,6 +182,7 @@ class NavStateHost {}
             <a cngxNavLink href="#general" [depth]="1">General</a>
           </div>
         </div>
+        <a cngxNavLink href="#help" class="crop-after">Help</a>
       </cngx-sidenav>
     </div>
   `,
@@ -365,13 +366,27 @@ for (const scheme of SCHEMES) {
 }
 
 describe('nav row shape', () => {
-  it('transitions only background-color and color', () => {
+  it('transitions background-color and color, plus the label fade in a sidenav', () => {
     const root = mount({ still: false });
     for (const selector of ['.row-idle', '.row-group']) {
       expect(computedValue(one(root, selector), 'transition-property')).toBe(
-        'background-color, color',
+        'background-color, color, -webkit-text-fill-color',
       );
     }
+  });
+
+  it('fades the label in after the open delay and drops it at once on the rail', () => {
+    const root = mount({ still: false });
+    const expanded = one(root, '.row-idle');
+    expect(computedValue(expanded, 'transition-delay')).toBe('0s, 0s, 0.15s');
+    expect(computedValue(expanded, '-webkit-text-fill-color')).not.toBe('rgba(0, 0, 0, 0)');
+    const railed = one(root, '.row-mini');
+    expect(computedValue(railed, '-webkit-text-fill-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(railed, 'transition-duration').split(', ')[2]).toBe('0s');
+    // The letter keeps its ink while the label text is transparent.
+    expect(getComputedStyle(railed, '::before').getPropertyValue('-webkit-text-fill-color')).toBe(
+      getComputedStyle(railed, '::before').color,
+    );
   });
 
   it('paints a group head transparent at rest and with the hover fill under the pointer', async () => {
@@ -611,7 +626,15 @@ describe('nav row skin source', () => {
 });
 
 describe('rail as a crop of the expanded sidenav', () => {
-  const CROPPED = ['.crop-label', '.crop-active', '.crop-icon', '.crop-letter', '.crop-group'];
+  // .crop-after sits below a group content, which the rail turns into a popover.
+  const CROPPED = [
+    '.crop-label',
+    '.crop-active',
+    '.crop-icon',
+    '.crop-letter',
+    '.crop-group',
+    '.crop-after',
+  ];
 
   let cropRoot: HTMLElement | null = null;
 
@@ -646,10 +669,7 @@ describe('rail as a crop of the expanded sidenav', () => {
     }
     const row = el('.crop-active');
     const box = row.getBoundingClientRect();
-    out['bar'] = [
-      box.left + parseFloat(bar(row, 'left')),
-      box.top + parseFloat(bar(row, 'top')),
-    ];
+    out['bar'] = [box.left + parseFloat(bar(row, 'left')), box.top + parseFloat(bar(row, 'top'))];
     return out;
   }
 

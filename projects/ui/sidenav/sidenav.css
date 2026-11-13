@@ -535,15 +535,27 @@
   /*
    * Collapsed rail (`data-sidebar-state` from the composed CngxSidebar, which
    * also writes the inline size and the peek's compensating margin). The rail
-   * stays in flex flow. Asymmetric timing - the rail rest carries
-   * `transition: none`, so ending a peek snaps instantly (the width and the
-   * label->initial content swap collapse together, with no wide-rail-then-
-   * shrink jump). The peek rule below re-adds a transition so a peek animates:
-   * the label reveals as the rail grows.
+   * stays in flex flow. The rail is a crop of the expanded sidenav: no row
+   * changes place between rail, peek and expanded, so every move only animates
+   * the width. Rest and peek share the width and margin transition: the
+   * sidebar animates the peek's compensating margin in lockstep with the width,
+   * and a rest without the margin transition would shift the content for one
+   * frame when a peek ends.
    */
   cngx-sidenav[data-sidebar-state='rail'] {
     visibility: visible;
-    transition: none;
+  }
+
+  cngx-sidenav[data-sidebar-state='rail'],
+  cngx-sidenav[data-sidebar-state='peek'] {
+    /* Width and the compensating negative margin in lockstep, so the flex
+       footprint (width + margin) stays at the rail width every frame: a peek
+       grows *over* the content without shifting it. */
+    transition:
+      width var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
+      margin var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease);
   }
 
   /*
@@ -553,14 +565,6 @@
   cngx-sidenav[data-sidebar-state='peek'] {
     z-index: 3;
     box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
-    /* Animate width and the compensating negative margin in lockstep so the
-       flex footprint (width + margin) stays at the rail width every frame -
-       the rail grows *over* the content without shifting it. */
-    transition:
-      width var(--cngx-sidenav-transition-duration, 0.25s)
-        var(--cngx-sidenav-transition-easing, ease),
-      margin var(--cngx-sidenav-transition-duration, 0.25s)
-        var(--cngx-sidenav-transition-easing, ease);
   }
 
   cngx-sidenav.cngx-sidenav--start {
@@ -634,6 +638,63 @@
     overflow: clip;
     white-space: nowrap;
     gap: var(--cngx-sidenav-mini-width, 56px);
+  }
+
+  /* On the rail a group content is a popover: closed it leaves the flow, open
+     it sits in the top layer, so the body gap it held in the expanded sidenav
+     is gone and every row below would rise. The element before it keeps that
+     gap as a margin. */
+  cngx-sidenav[data-sidebar-state='rail']
+    .cngx-sidenav__body
+    > :has(+ .cngx-nav-group-content[popover]) {
+    margin-block-end: calc(var(--cngx-space-xs, 4px) / 2);
+  }
+
+  /*
+   * Labels, badges and the group chevron fade in once the sidenav widens (after
+   * --cngx-duration-fast, while the width grows) and are gone at once on the
+   * way back; on the rail they sit past the clip anyway. The text fades through
+   * -webkit-text-fill-color, not color: the letter, the icon and the active
+   * bar keep reading the row colour (currentColor), and the letter and an icon
+   * font glyph reset the inherited fill. Forced colours keep the clip alone.
+   */
+  cngx-sidenav
+    :is(.cngx-nav-link, .cngx-nav-group, .cngx-nav-label):not(.cngx-nav-group-content *) {
+    transition:
+      background-color var(--cngx-duration-fast, 150ms),
+      color var(--cngx-duration-fast, 150ms),
+      -webkit-text-fill-color var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease) var(--cngx-duration-fast, 150ms);
+  }
+
+  cngx-sidenav .cngx-nav-badge:not(.cngx-nav-group-content *),
+  cngx-sidenav .cngx-nav-group:not(.cngx-nav-group-content *)::after {
+    transition:
+      rotate var(--cngx-duration-fast, 150ms),
+      opacity var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease) var(--cngx-duration-fast, 150ms);
+  }
+
+  cngx-sidenav :is(.cngx-nav-link, .cngx-nav-group)::before,
+  cngx-sidenav .cngx-nav-icon {
+    -webkit-text-fill-color: currentColor;
+  }
+
+  cngx-sidenav[data-sidebar-state='rail']
+    :is(.cngx-nav-link, .cngx-nav-group, .cngx-nav-label):not(.cngx-nav-group-content *) {
+    -webkit-text-fill-color: transparent;
+    transition:
+      background-color var(--cngx-duration-fast, 150ms),
+      color var(--cngx-duration-fast, 150ms),
+      -webkit-text-fill-color 0s;
+  }
+
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-badge:not(.cngx-nav-group-content *),
+  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-group:not(.cngx-nav-group-content *)::after {
+    opacity: 0;
+    transition:
+      rotate var(--cngx-duration-fast, 150ms),
+      opacity 0s;
   }
 
   .cngx-sidenav__resize-handle {
