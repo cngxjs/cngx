@@ -179,8 +179,15 @@
   }
 
   /**
-   * Width of the collapsed rail (icon rail).
+   * Width of the collapsed rail (icon rail). Unset, the host derives it from
+   * the row tokens so the icon box sits centred:
+   * `2 * (inset + inline padding) + icon size + border width`, the width of
+   * `cngx-nav-rail`. `[miniWidth]` writes it inline and wins.
    * @group Variant / Mini
+   * @see [[--cngx-nav-link-inset]]
+   * @see [[--cngx-nav-link-padding-inline]]
+   * @see [[--cngx-nav-icon-size]]
+   * @see [[--cngx-sidenav-border-width]]
    */
   @property --cngx-sidenav-mini-width {
     syntax: '<length>';
@@ -378,6 +385,27 @@
     --cngx-nav-link-padding: var(--cngx-space-sm)
       var(--cngx-nav-link-padding-inline, var(--cngx-space-md));
     --cngx-nav-link-inset: var(--cngx-space-xs);
+    /* The rail width derives from the row geometry, as on cngx-nav-rail, so
+       the icon box sits centred in the rail. A SET, not a use-site fallback:
+       the registered 56px initial would shadow a fallback. The [miniWidth]
+       inline style wins over it; the sidebar's rail rest reads the same
+       value. */
+    --cngx-sidenav-mini-width: calc(
+      2 *
+        (
+          var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
+            var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+        ) +
+        var(--cngx-nav-icon-size, 1.25rem) + var(--cngx-sidenav-border-width, 1px)
+    );
+    --cngx-sidebar-rail-size: var(--cngx-sidenav-mini-width);
+    /* The flyout anchors to the group head, which sits the row inset and the
+       border inside the rail edge: clear both, then keep the gap (the
+       cngx-nav-rail value). */
+    --cngx-nav-flyout-offset: calc(
+      var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
+        var(--cngx-sidenav-border-width, 1px) + var(--cngx-space-xs, 4px)
+    );
     /* Group content inside the sidenav animates with the sidenav duration. */
     --cngx-nav-transition: var(--cngx-sidenav-transition-duration, 0.25s);
     /* Nav row fills: one accent at rising ratios over transparent, so they
@@ -414,6 +442,9 @@
     --cngx-nav-link-active-indicator-inset: var(--cngx-space-sm);
     display: flex;
     flex-direction: column;
+    /* The width and the derived rail width include the edge border, as on
+       cngx-nav-rail, so the icon box sits centred in any app box model. */
+    box-sizing: border-box;
     flex-shrink: 0;
     overflow: hidden;
     z-index: 2;
@@ -562,9 +593,11 @@
     scrollbar-gutter: stable; /* reserve scrollbar space */
   }
 
-  /* On the collapsed rail, constrain to the rail width */
+  /* On the collapsed rail the body takes the host's content box: the rail
+     width includes the edge border, so a body as wide as the rail would push
+     every row a border width off centre. */
   cngx-sidenav[data-sidebar-state='rail'] .cngx-sidenav__body {
-    min-width: var(--cngx-sidenav-mini-width, 56px);
+    min-width: 0;
     /* A reserved classic scrollbar gutter would take a quarter of the rail and
        push every row off centre. The rail still scrolls by wheel, touch and
        focus. */
@@ -588,26 +621,19 @@
     clip-path: inset(100%);
   }
 
-  /* Hide nav group buttons on the collapsed rail */
-  cngx-sidenav[data-sidebar-state='rail'] [cngxNavGroup] {
-    display: none !important;
-  }
-
   /*
-   * Collapsed-rail nav links: the label keeps its font size, so the row keeps
-   * its expanded height, and a gap of the whole rail width pushes it past the
-   * clipped row end (a percentage gap would resolve against the narrow content
-   * box); the letter fallback or the icon (cngx-nav.css) stays in the icon box.
+   * Collapsed-rail rows and group heads: the label keeps its font size, so the
+   * row keeps its expanded height, and a gap of the whole rail width pushes the
+   * label, a badge and the group chevron past the clipped row end (a
+   * percentage gap would resolve against the narrow content box); the letter
+   * fallback or the icon (cngx-nav.css) stays in the icon box. Rows inside a
+   * group content are left alone: the flyout shows them at full width.
    */
-  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-link {
+  cngx-sidenav[data-sidebar-state='rail']
+    :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
     overflow: clip;
     white-space: nowrap;
     gap: var(--cngx-sidenav-mini-width, 56px);
-  }
-
-  /* Hide badges on the collapsed rail */
-  cngx-sidenav[data-sidebar-state='rail'] [cngxNavBadge] {
-    display: none;
   }
 
   .cngx-sidenav__resize-handle {

@@ -5,9 +5,13 @@ import {
   CNGX_HOTKEY_REGISTRY,
   type CngxHotkeyBinding,
   type CngxHotkeyScopeNode,
+  CngxNavGroup,
+  CngxNavGroupContent,
+  CngxNavLink,
   createHotkeyRegistry,
   injectHotkeyRegistryDeps,
 } from '@cngx/common/interactive';
+import { provideNavRailConfig, withNavRailTooltip } from '@cngx/ui/nav-rail';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -18,7 +22,7 @@ import {
   type MatchMediaMock,
   type ResizeObserverMock,
 } from '@cngx/testing';
-import type { SidenavMode } from './sidenav';
+import type { SidenavMode, SidenavPosition } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
@@ -557,6 +561,14 @@ describe('CngxSidenav collapsed rail', () => {
     expect(el.style.inlineSize).toBe('var(--cngx-sidebar-rail-size, 3.5rem)');
     expect(el.style.getPropertyValue('--cngx-sidebar-rail-size')).toBe('56px');
     expect(left.expanded()).toBe(false);
+  });
+
+  it('leaves the rail width to the stylesheet while miniWidth is unbound', () => {
+    const fixture = TestBed.createComponent(StandaloneRailHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-sidenav-mini-width')).toBe('');
+    expect(el.style.getPropertyValue('--cngx-sidebar-rail-size')).toBe('');
   });
 
   it('peeks only after a deliberate hover dwell', () => {
@@ -1490,7 +1502,8 @@ describe('CngxSidenav config cascade', () => {
     const { nav } = getNav(UnboundHost);
 
     expect(nav.width()).toBe('280px');
-    expect(nav.miniWidth()).toBe('56px');
+    // Unset: sidenav.css derives the rail width from the nav row tokens.
+    expect(nav.miniWidth()).toBeUndefined();
     expect(nav.minWidth()).toBe('120px');
     expect(nav.maxWidth()).toBe('600px');
   });
@@ -1744,3 +1757,147 @@ class RailUnboundPersistHost {}
   imports: [CngxSidenav],
 })
 class EndPersistHost {}
+
+@Component({
+  // No layout: it projects only a sidenav with a static position attribute,
+  // and the mode is pinned here.
+  template: `
+    <cngx-sidenav
+      [mode]="mode()"
+      [position]="position()"
+      [(opened)]="open"
+      [(collapsed)]="collapsed"
+      [collapsedAs]="collapsedAs()"
+    >
+      <a cngxNavLink href="#inbox" class="row">Inbox</a>
+      <button type="button" cngxNavGroup #settings="cngxNavGroup" class="head">Settings</button>
+      <div [cngxNavGroupContent]="settings" class="content">
+        <div><a cngxNavLink href="#general" [depth]="1">General</a></div>
+      </div>
+    </cngx-sidenav>
+  `,
+  imports: [
+    CngxSidenav,
+    CngxNavLink,
+    CngxNavGroup,
+    CngxNavGroupContent,
+  ],
+})
+class RailPiecesHost {
+  readonly mode = signal<SidenavMode>('side');
+  readonly position = signal<SidenavPosition>('start');
+  readonly open = signal(true);
+  readonly collapsed = signal(true);
+  readonly collapsedAs = signal<'rail' | 'hidden'>('rail');
+}
+
+describe('CngxSidenav rail pieces', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function setup() {
+    const fixture = TestBed.createComponent(RailPiecesHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const root = fixture.nativeElement as HTMLElement;
+    const nav = root.querySelector<HTMLElement>('cngx-sidenav')!;
+    const el = (selector: string) => root.querySelector<HTMLElement>(selector)!;
+    const settle = () => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+    const tooltip = () => nav.querySelector('.cngx-nav-rail-tooltip');
+    const flyoutWired = () => el('.content').getAttribute('popover') === 'manual';
+    return { fixture, host: fixture.componentInstance, nav, el, settle, tooltip, flyoutWired };
+  }
+
+  it('attaches tooltip and flyout while the sidenav rests as a rail', () => {
+    const { nav, tooltip, flyoutWired } = setup();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(tooltip()).not.toBeNull();
+    expect(tooltip()!.getAttribute('aria-hidden')).toBe('true');
+    expect(flyoutWired()).toBe(true);
+  });
+
+  it('tears both down while expanded', () => {
+    const { host, nav, settle, tooltip, flyoutWired } = setup();
+    host.collapsed.set(false);
+    settle();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('expanded');
+    expect(tooltip()).toBeNull();
+    expect(flyoutWired()).toBe(false);
+  });
+
+  it('tears both down during a hover peek', () => {
+    const { nav, settle, tooltip, flyoutWired } = setup();
+    nav.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(120);
+    settle();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('peek');
+    expect(tooltip()).toBeNull();
+    expect(flyoutWired()).toBe(false);
+  });
+
+  it('attaches neither in overlay mode', () => {
+    const { host, nav, settle, tooltip, flyoutWired } = setup();
+    host.mode.set('over');
+    settle();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('expanded');
+    expect(tooltip()).toBeNull();
+    expect(flyoutWired()).toBe(false);
+  });
+
+  it('attaches neither on a hidden rest', () => {
+    const { host, nav, settle, tooltip, flyoutWired } = setup();
+    host.collapsedAs.set('hidden');
+    settle();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('hidden');
+    expect(tooltip()).toBeNull();
+    expect(flyoutWired()).toBe(false);
+  });
+
+  it('opens a nav group as a flyout on the rail, aria-expanded the one source', () => {
+    const { el, settle } = setup();
+    el('.head').click();
+    settle();
+    expect(el('.head').getAttribute('aria-expanded')).toBe('true');
+    expect(el('.content').hasAttribute('data-cngx-flyout-open')).toBe(true);
+    expect(el('.content').getAttribute('role')).not.toBe('menu');
+  });
+
+  it('closes an open group when the sidenav enters the rail', () => {
+    const { host, el, settle } = setup();
+    host.collapsed.set(false);
+    settle();
+    el('.head').click();
+    settle();
+    expect(el('.head').getAttribute('aria-expanded')).toBe('true');
+    host.collapsed.set(true);
+    settle();
+    expect(el('.head').getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('writes the sidenav position as the rail side', () => {
+    const { host, el, settle, tooltip } = setup();
+    expect(el('.content').getAttribute('data-cngx-rail-side')).toBe('start');
+    host.position.set('end');
+    settle();
+    expect(el('.content').getAttribute('data-cngx-rail-side')).toBe('end');
+    // Pointer path: the tooltip shows after its hover delay (keyboard focus
+    // needs :focus-visible, which jsdom does not match).
+    el('.row').dispatchEvent(new PointerEvent('pointerover', { bubbles: true }));
+    vi.advanceTimersByTime(1000);
+    settle();
+    expect(tooltip()!.getAttribute('data-cngx-rail-side')).toBe('end');
+  });
+
+  it('honours withNavRailTooltip(false) from the nav-rail config', () => {
+    TestBed.configureTestingModule({
+      providers: [provideNavRailConfig(withNavRailTooltip(false))],
+    });
+    const { tooltip, flyoutWired } = setup();
+    expect(tooltip()).toBeNull();
+    expect(flyoutWired()).toBe(true);
+  });
+});

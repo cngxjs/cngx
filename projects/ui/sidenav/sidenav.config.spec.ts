@@ -29,7 +29,7 @@ describe('CNGX_SIDENAV_CONFIG', () => {
     const cfg = TestBed.inject(CNGX_SIDENAV_CONFIG);
 
     expect(cfg.dimensions?.width).toBe('280px');
-    expect(cfg.dimensions?.miniWidth).toBe('56px');
+    expect(cfg.dimensions?.miniWidth).toBeUndefined();
     expect(cfg.dimensions?.minWidth).toBe('120px');
     expect(cfg.dimensions?.maxWidth).toBe('600px');
     expect(cfg.hover?.enterDelay).toBe(120);
@@ -45,7 +45,7 @@ describe('CNGX_SIDENAV_CONFIG', () => {
 
     expect(cfg.dimensions?.width).toBe('320px');
     // sibling dimension keys keep the defaults (deep-merge, not replace)
-    expect(cfg.dimensions?.miniWidth).toBe('56px');
+    expect(cfg.dimensions?.miniWidth).toBeUndefined();
     expect(cfg.dimensions?.minWidth).toBe('120px');
     // untouched sub-trees stay at their defaults
     expect(cfg.hover?.enterDelay).toBe(120);

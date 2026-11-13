@@ -1,10 +1,14 @@
 /// <reference types="@vitest/browser-playwright" />
 
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
+  CngxNavBadge,
   CngxNavGroup,
+  CngxNavGroupContent,
   CngxNavHeader,
+  CngxNavIcon,
+  CngxNavLabel,
   CngxNavLink,
   CngxNavMark,
   CngxNavName,
@@ -13,7 +17,7 @@ import { computedValue, contrastRatio, oklabOf, parkPointer } from '@cngx/testin
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
-import { CngxSidenav } from './sidenav';
+import { CngxSidenav, type SidenavPosition } from './sidenav';
 
 // Runs in a real Chromium (the `test-geometry` target) against the working-tree
 // sidenav.css, the nav row skin (cngx-nav.css, which cngx.css loads) and the
@@ -117,6 +121,75 @@ type Fill = (typeof FILLS)[number];
   `,
 })
 class NavStateHost {}
+
+// One sidenav that moves between rail, peek and expanded: the rail is a crop
+// of the expanded sidenav, so every row keeps its place in all three.
+@Component({
+  selector: 'cngx-sidenav-rail-crop-host',
+  standalone: true,
+  imports: [
+    CngxSidenav,
+    CngxNavLink,
+    CngxNavIcon,
+    CngxNavBadge,
+    CngxNavLabel,
+    CngxNavGroup,
+    CngxNavGroupContent,
+  ],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../../core/theming/density-tokens.css',
+    '../../common/theming/components/cngx-nav.css',
+  ],
+  styles: [
+    '.crop-frame :is(cngx-sidenav, .cngx-nav-link, .cngx-nav-group, .cngx-nav-label) { transition: none; }',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div
+      class="crop-frame"
+      style="display: flex; block-size: 400px; inline-size: 800px"
+      [style.justify-content]="position() === 'end' ? 'flex-end' : null"
+    >
+      <cngx-sidenav
+        class="crop"
+        mode="side"
+        [opened]="true"
+        [position]="position()"
+        [collapsed]="collapsed()"
+        [expandOnHover]="true"
+        ariaLabel="Crop"
+      >
+        <div cngxNavLabel class="crop-label">Main</div>
+        <a cngxNavLink href="#inbox" class="crop-active" [active]="true">
+          <span cngxNavIcon class="crop-icon"
+            ><span
+              style="display:block;inline-size:100%;block-size:100%;background:currentColor"
+            ></span
+          ></span>
+          <span class="crop-active-text">Inbox</span>
+          <span cngxNavBadge [value]="7" class="crop-badge"></span>
+        </a>
+        <a cngxNavLink href="#drafts" class="crop-letter"
+          ><span class="crop-letter-text">Drafts</span></a
+        >
+        <button type="button" cngxNavGroup #settings="cngxNavGroup" class="crop-group">
+          <span class="crop-group-text">Settings</span>
+        </button>
+        <div [cngxNavGroupContent]="settings" class="crop-flyout">
+          <div>
+            <a cngxNavLink href="#general" [depth]="1">General</a>
+          </div>
+        </div>
+      </cngx-sidenav>
+    </div>
+  `,
+})
+class RailCropHost {
+  readonly collapsed = signal(false);
+  readonly position = signal<SidenavPosition>('start');
+}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -535,4 +608,135 @@ describe('nav row skin source', () => {
     expect(computedValue(row, 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(bar(row, 'content')).toBe('none');
   });
+});
+
+describe('rail as a crop of the expanded sidenav', () => {
+  const CROPPED = ['.crop-label', '.crop-active', '.crop-icon', '.crop-letter', '.crop-group'];
+
+  let cropRoot: HTMLElement | null = null;
+
+  afterEach(() => {
+    cropRoot?.remove();
+    cropRoot = null;
+    document.documentElement.removeAttribute('dir');
+  });
+
+  function mountCrop(position: SidenavPosition = 'start') {
+    const fixture = TestBed.createComponent(RailCropHost);
+    fixture.componentInstance.position.set(position);
+    cropRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(cropRoot);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = (selector: string) => one(cropRoot!, selector);
+    const settle = () => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+    };
+    return { fixture, el, settle };
+  }
+
+  type Place = Record<string, readonly [number, number]>;
+
+  function places(el: (selector: string) => HTMLElement): Place {
+    const out: Record<string, readonly [number, number]> = {};
+    for (const selector of CROPPED) {
+      const box = el(selector).getBoundingClientRect();
+      out[selector] = [box.left, box.top];
+    }
+    const row = el('.crop-active');
+    const box = row.getBoundingClientRect();
+    out['bar'] = [
+      box.left + parseFloat(bar(row, 'left')),
+      box.top + parseFloat(bar(row, 'top')),
+    ];
+    return out;
+  }
+
+  // The hover peek settles after the composed hover intent's 120ms dwell.
+  async function peek(el: (selector: string) => HTMLElement, settle: () => void): Promise<void> {
+    el('.crop').dispatchEvent(new PointerEvent('pointerenter'));
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    settle();
+  }
+
+  it('keeps rows, icon box, section label, group head and bar in place in rail, peek and expanded', async () => {
+    const { fixture, el, settle } = mountCrop();
+    const expanded = places(el);
+    fixture.componentInstance.collapsed.set(true);
+    settle();
+    expect(el('.crop').getAttribute('data-sidebar-state')).toBe('rail');
+    const rail = places(el);
+    await peek(el, settle);
+    expect(el('.crop').getAttribute('data-sidebar-state')).toBe('peek');
+    const peeked = places(el);
+    for (const key of Object.keys(expanded)) {
+      for (const state of [rail, peeked]) {
+        expect(Math.abs(state[key][0] - expanded[key][0]), `${key} x`).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(state[key][1] - expanded[key][1]), `${key} y`).toBeLessThanOrEqual(0.5);
+      }
+    }
+  });
+
+  it('paints no label, badge or chevron pixels on the rail', () => {
+    const { fixture, el, settle } = mountCrop();
+    fixture.componentInstance.collapsed.set(true);
+    settle();
+    for (const [row, text] of [
+      ['.crop-active', '.crop-active-text'],
+      ['.crop-active', '.crop-badge'],
+      ['.crop-letter', '.crop-letter-text'],
+      // The chevron is the head's last flex item, after the text.
+      ['.crop-group', '.crop-group-text'],
+    ] as const) {
+      expect(el(text).getBoundingClientRect().left, text).toBeGreaterThanOrEqual(
+        el(row).getBoundingClientRect().right - 0.5,
+      );
+    }
+    expect(getComputedStyle(el('.crop-badge')).display).not.toBe('none');
+    expect(getComputedStyle(el('.crop-group')).display).not.toBe('none');
+  });
+
+  for (const position of ['start', 'end'] as const) {
+    it(`centres the icon box in the default rail width (${position})`, () => {
+      const { fixture, el, settle } = mountCrop(position);
+      fixture.componentInstance.collapsed.set(true);
+      settle();
+      const navEl = el('.crop');
+      const nav = navEl.getBoundingClientRect();
+      const style = getComputedStyle(navEl);
+      const icon = el('.crop-icon').getBoundingClientRect();
+      const left = icon.left - nav.left - parseFloat(style.borderLeftWidth);
+      const right = nav.right - parseFloat(style.borderRightWidth) - icon.right;
+      expect(Math.abs(left - right)).toBeLessThanOrEqual(0.5);
+    });
+  }
+
+  for (const [position, dir] of [
+    ['start', 'ltr'],
+    ['start', 'rtl'],
+    ['end', 'ltr'],
+    ['end', 'rtl'],
+  ] as const) {
+    it(`opens the group flyout clear of the sidenav border (${position}, ${dir})`, async () => {
+      document.documentElement.setAttribute('dir', dir);
+      const { fixture, el, settle } = mountCrop(position);
+      fixture.componentInstance.collapsed.set(true);
+      settle();
+      el('.crop-group').click();
+      settle();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const flyout = el('.crop-flyout');
+      expect(flyout.matches(':popover-open')).toBe(true);
+      const box = flyout.getBoundingClientRect();
+      const nav = el('.crop').getBoundingClientRect();
+      expect(box.width).toBeGreaterThan(0);
+      // Physically right of the sidenav: a start sidenav in LTR, an end one in RTL.
+      if ((position === 'start') === (dir === 'ltr')) {
+        expect(box.left).toBeGreaterThanOrEqual(nav.right);
+      } else {
+        expect(box.right).toBeLessThanOrEqual(nav.left);
+      }
+    });
+  }
 });
