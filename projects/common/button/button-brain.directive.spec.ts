@@ -6,6 +6,7 @@ import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxButtonBrain } from './button-brain.directive';
+import { CngxButton } from './button.component';
 import {
   provideButtonConfig,
   withButtonSize,
@@ -224,6 +225,22 @@ class DemoBare {}
   imports: [DemoBare],
 })
 class BareHost {}
+
+@Component({
+  template: `<button
+    id="expanded"
+    cngxButton
+    [disabled]="true"
+    [attr.aria-expanded]="'true'"
+    (click)="clicks = clicks + 1"
+  >
+    Save
+  </button>`,
+  imports: [CngxButton],
+})
+class ExpandedDisabledHost {
+  clicks = 0;
+}
 
 function render<T>(type: new () => T) {
   const fixture = TestBed.createComponent(type);
@@ -447,6 +464,20 @@ describe('CngxButtonBrain', () => {
       expect(btn.hasAttribute('aria-disabled')).toBe(false);
       btn.click();
       expect(listener).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('activation while aria-disabled and expanded', () => {
+    // A11: expected to fail until PR 8 (T8) removes the aria-expanded exemption in the click guard.
+    it.fails('a disabled host with aria-expanded="true" does not run its click handler', () => {
+      const { q, host } = render(ExpandedDisabledHost);
+      const btn = q('#expanded');
+      expect(btn.getAttribute('aria-disabled')).toBe('true');
+      expect(btn.getAttribute('aria-expanded')).toBe('true');
+      const ev = new MouseEvent('click', { bubbles: true, cancelable: true });
+      btn.dispatchEvent(ev);
+      expect(host.clicks).toBe(0);
+      expect(ev.defaultPrevented).toBe(true);
     });
   });
 
