@@ -1,6 +1,6 @@
 # Async Click
 
-Directive for executing async actions on click with loading state, auto-disable, and success/error feedback.
+Directive for executing async actions on click with loading state, success/error feedback, and click refusal while pending (it sets `aria-disabled`, never the `disabled` attribute, so focus stays on the button).
 
 ## Import
 

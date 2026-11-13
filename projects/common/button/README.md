@@ -6,12 +6,13 @@ Buttons that sit on the native element. `cngxButton` and `cngxIconButton` are at
 
 ```typescript
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CngxButton, CngxButtonStart, CngxIconButton } from '@cngx/common/button';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-toolbar',
-  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxAsyncClick],
+  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxAsyncClick, RouterLink],
   template: `
     <button cngxButton tone="primary" [cngxAsyncClick]="save">
       <svg cngxButtonStart aria-hidden="true" viewBox="0 0 24 24">...</svg>

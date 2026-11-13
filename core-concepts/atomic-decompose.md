@@ -91,7 +91,7 @@ Atoms and molecules have nothing to eject. They are headless directives or singl
 
 If you want to swap how an atom looks, you do not eject it. You compose a different organism that uses the same atom under a different template.
 
-Only organisms carry a template and a stylesheet, which is exactly what decompose ejects.
+Atoms and molecules can carry a template and a stylesheet too (`CngxButton` is an atom component, `CngxMenuButton` a molecule), but that skin belongs to the unit: you restyle it through its tokens, you do not eject it. Only an organism's template and stylesheet are what decompose ejects.
 
 The brain underneath stays in the library:
 
