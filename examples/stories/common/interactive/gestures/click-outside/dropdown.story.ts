@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxClickOutside: dropdown',
-  subtitle: '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the target is outside the host. The directive is sighted-only, so the dropdown also binds <code>(keydown.escape)</code> as the keyboard equivalent (WCAG 2.1.1).',
+  subtitle: '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the target is outside the host. The toggle names the panel in <code>aria-controls</code>, so its own press is not outside and closes the open dropdown. The directive is sighted-only, so the dropdown also binds <code>(keydown.escape)</code> as the keyboard equivalent (WCAG 2.1.1).',
   description: 'Outside-pointer dismissal plus a keyboard-equivalent Escape binding. The directive itself does not bind any keyboard handlers; consumers wire Escape alongside it.',
   level: 'atom',
   audience: ['dev', 'a11y'],
@@ -16,8 +16,21 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxClickOutside'],
   setup: `protected open = signal(false);`,
-  template: `  @if (open()) {
+  template: `  <div class="button-row">
+    <button
+      type="button"
+      class="sort-btn"
+      [attr.aria-controls]="open() ? 'demo-dropdown' : null"
+      [attr.aria-expanded]="open()"
+      (click)="open.set(!open())"
+    >
+      Toggle dropdown ({{ open() ? 'open' : 'closed' }})
+    </button>
+  </div>
+
+  @if (open()) {
     <div
+      id="demo-dropdown"
       cngxClickOutside
       (clickOutside)="open.set(false)"
       (keydown.escape)="open.set(false)"
@@ -34,10 +47,5 @@ export const STORY: DemoSpec = {
 
   <div class="output-badge" style="margin-top:12px">
     Dropdown: <strong>{{ open() ? 'open' : 'closed' }}</strong>
-  </div>`,
-  templateChrome: `<div class="button-row">
-    <button type="button" class="sort-btn" (click)="open.set(!open())">
-      Toggle dropdown ({{ open() ? 'open' : 'closed' }})
-    </button>
   </div>`,
 };
