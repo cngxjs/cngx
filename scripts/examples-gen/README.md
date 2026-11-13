@@ -227,6 +227,27 @@ all of it.
   component keeps the depth-rewritten path.
 - Copies co-located helper files referenced as `from './foo'` in
   `moduleImports` into the feature directory.
+- Shows each story-local file the artifact imports as its own read-only
+  code tab after the Template panel (see below).
+
+## Story-local files as code tabs
+
+A story that teaches a host or a component written in the app keeps that
+class in a `_*` file next to the story (`_chip-button.component.ts`) or in
+the app fixtures (`../_fixtures/<file>`). The TypeScript panel only shows
+the import line, so the generator adds the file itself as a tab. The rule
+is derived, there is no DemoSpec field for it:
+
+- the trigger is the TypeScript panel's own import lines, after the panel
+  filtered them against `setup`, `template` and the decorator. A file only
+  `setupChrome` or `templateChrome` uses has no line there and gets no tab;
+- a line counts when its module is relative and its file name starts with
+  `_`, or when it is an app fixture the panel shows as `'./fixtures/<file>'`.
+  The shared `'./fixtures'` barrel is demo data and never gets a tab;
+- the tab is titled by the path the panel import names, plus `.ts`
+  (`_chip-button.component.ts`, `fixtures/demo-mount-counter.component.ts`),
+  and shows the file verbatim. A sibling resolves next to the story, an app
+  fixture under `examples/src/app/_fixtures/`, as the live import does.
 
 ## Things the generator does NOT do
 
