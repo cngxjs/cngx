@@ -340,3 +340,39 @@ describe('field integration - reveal provided by an ancestor', () => {
     expect(field.classList).toContain('cngx-field--error');
   });
 });
+
+describe('field integration - disabled reason', () => {
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.name">
+        <label cngxLabel>Name</label>
+        <input cngxInput [formField]="f.name" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxLabel, CngxInput, FormField],
+  })
+  class DisabledReasonHost {
+    readonly locked = signal(true);
+    readonly f = form(
+      signal({ name: '' }),
+      schema<{ name: string }>((p) => {
+        disabled(p.name, () => (this.locked() ? 'Locked while the order ships' : false));
+      }),
+    );
+  }
+
+  it('describes the control with the reason only while the field is disabled', () => {
+    const { fixture, host, el } = mount(DisabledReasonHost);
+    const input = el.querySelector('input')!;
+    const reasonId = input.id.replace(/-input$/, '-disabled-reason');
+    expect(input.getAttribute('aria-describedby')?.split(' ')).toContain(reasonId);
+    expect(document.getElementById(reasonId)?.textContent?.trim()).toBe(
+      'Locked while the order ships',
+    );
+
+    host.locked.set(false);
+    flush(fixture);
+    expect(input.getAttribute('aria-describedby') ?? '').not.toContain(reasonId);
+    expect(document.getElementById(reasonId)).not.toBeNull();
+  });
+});

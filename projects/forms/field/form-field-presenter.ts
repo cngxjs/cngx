@@ -154,16 +154,42 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   /** Deterministic error element ID: `cngx-{name}-error`. */
   readonly errorId = computed(() => `cngx-${this.name()}-error`);
 
+  /** Deterministic disabled-reason element ID: `cngx-{name}-disabled-reason`. */
+  readonly disabledReasonId = computed(() => `cngx-${this.name()}-disabled-reason`);
+
+  /**
+   * The messages of the field's disabled reasons, joined; `''` while the
+   * field is enabled or no reason carries a message. `CngxFormField` renders
+   * it in a hidden node with {@link disabledReasonId}.
+   */
+  readonly disabledReasonText = computed(() => {
+    if (!this.disabled()) {
+      return '';
+    }
+    return this.disabledReasons()
+      .map((reason) => reason.message)
+      .filter(Boolean)
+      .join(' ');
+  });
+
   /**
    * Space-separated `aria-describedby` target list for the field's input.
    *
    * The hint ID is always present; the error ID is emitted only while
-   * {@link showError} is true. A directly-referenced node contributes to the
-   * accessible description even when it is `aria-hidden` (accname 1.2 §2A),
-   * so the reference itself is the gate - the containers stay in the DOM.
+   * {@link showError} is true, the disabled-reason ID only while
+   * {@link disabledReasonText} is non-empty. A directly-referenced node
+   * contributes to the accessible description even when it is hidden
+   * (accname 1.2 §2A), so the reference itself is the gate - the containers
+   * stay in the DOM.
    */
   readonly describedBy = computed(() =>
-    this.showError() ? `${this.hintId()} ${this.errorId()}` : this.hintId(),
+    [
+      this.hintId(),
+      this.showError() ? this.errorId() : null,
+      this.disabledReasonText() ? this.disabledReasonId() : null,
+    ]
+      .filter(Boolean)
+      .join(' '),
   );
 
   private readonly controls = contentChildren(CNGX_FORM_FIELD_CONTROL, { descendants: true });
