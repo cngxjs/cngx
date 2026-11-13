@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
     "import { CngxStep, CngxStepContent, CngxStepperPrevious, CngxStepperNext } from '@cngx/common/stepper';",
     "import { CngxAsyncStatus } from '@cngx/common/interactive';",
     "import { CngxStepper, CngxStepperFooter, CngxStepperFooterStart, CngxStepperFooterEnd } from '@cngx/ui/stepper';",
+    "import { failDemoActionWhen } from '../../../../fixtures';",
   ],
   imports: [
     'CngxStepper',
@@ -29,10 +30,15 @@ export const STORY: DemoSpec = {
   ],
   setup: `protected readonly active = signal(0);
   protected readonly commitAction = (): Promise<boolean> =>
-    new Promise((resolve, reject) =>
-      setTimeout(() => (this.failNext() ? reject(new Error('Commit failed')) : resolve(true)), 900),
-    );`,
-  setupChrome: `  protected readonly failNext = signal(false);`,
+    new Promise((resolve) => setTimeout(() => resolve(true), 900));`,
+  setupChrome: `  protected readonly failNext = signal(false);
+  // Makes commitAction fail while the switch below is on.
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'commitAction',
+    () => this.failNext(),
+    () => new Error('Commit failed'),
+  );`,
   template: `  <cngx-stepper
     #s="cngxStepper"
     [(activeStepIndex)]="active"
