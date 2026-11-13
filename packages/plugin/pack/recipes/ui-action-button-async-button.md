@@ -1,12 +1,12 @@
 ---
 title: "CngxActionButton: External state"
-whenToUse: "The button reads its status from a createManualState() that something else drives, here the four chrome buttons standing in for a server push or a second tab. While the state is loading the button carries aria-busy and aria-disabled and refuses clicks, without having been clicked. Each success or error edge the button observes is spoken once in the live region next to it, and the dashed box below logs what that region receives. The [action] only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside."
+whenToUse: "The button reads its status from a createManualState() that something else drives, such as a server push or a second tab. While the state is loading the button carries aria-busy and aria-disabled and refuses clicks, without having been clicked. Each success or error edge the button observes is spoken once in the live region next to it. The [action] only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside."
 symbols: [CngxActionButton]
 ---
 
 # CngxActionButton: External state
 
-The button reads its status from a createManualState() that something else drives, here the four chrome buttons standing in for a server push or a second tab. While the state is loading the button carries aria-busy and aria-disabled and refuses clicks, without having been clicked. Each success or error edge the button observes is spoken once in the live region next to it, and the dashed box below logs what that region receives. The [action] only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside.
+The button reads its status from a createManualState() that something else drives, such as a server push or a second tab. While the state is loading the button carries aria-busy and aria-disabled and refuses clicks, without having been clicked. Each success or error edge the button observes is spoken once in the live region next to it. The [action] only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside.
 
 ## Symbols
 

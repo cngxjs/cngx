@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxActionButton: External state',
   subtitle: 'Bind <code>[externalState]</code> and the button reflects a run it does not own: busy while the state is loading, the result label once it settles.',
-  description: 'The button reads its status from a <code>createManualState()</code> that something else drives, here the four chrome buttons standing in for a server push or a second tab. While the state is loading the button carries <code>aria-busy</code> and <code>aria-disabled</code> and refuses clicks, without having been clicked. Each <code>success</code> or <code>error</code> edge the button observes is spoken once in the live region next to it, and the dashed box below logs what that region receives. The <code>[action]</code> only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside.',
+  description: 'The button reads its status from a <code>createManualState()</code> that something else drives, such as a server push or a second tab. While the state is loading the button carries <code>aria-busy</code> and <code>aria-disabled</code> and refuses clicks, without having been clicked. Each <code>success</code> or <code>error</code> edge the button observes is spoken once in the live region next to it. The <code>[action]</code> only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',

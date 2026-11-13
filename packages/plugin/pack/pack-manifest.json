@@ -249,12 +249,12 @@
     {
       "artifact": "pack/recipes/common-button-composition.md",
       "source": "examples/stories/common/button/composition/custom-host.story.ts",
-      "contentHash": "sha256:aad2fa40c15ba26cd750f9fd6214002dd15bf32ade48c8262315307cf820e443"
+      "contentHash": "sha256:3c30dce3030663e1b1643cc9f0dd5eeee03a55c052b40a1adb6c58ecb15b807a"
     },
     {
       "artifact": "pack/recipes/ui-action-button-async-button.md",
       "source": "examples/stories/ui/action-button/async-button/external-state.story.ts",
-      "contentHash": "sha256:153824bb29db5c3ad38e44aa86780b0b8304afdcc0e8a7c9f437b6d4b945b932"
+      "contentHash": "sha256:5964b84c3d45838a9febe120f108c46809d50419c82251960c778226a40fbaf9"
     }
   ],
   "theming": {
