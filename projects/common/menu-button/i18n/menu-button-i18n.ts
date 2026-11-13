@@ -70,7 +70,10 @@ export function withMenuButtonI18nLabels(
 /**
  * Provider for the menu-button i18n bundle. The features apply on top of the
  * active language pack, so a subtree can override single keys of the app's
- * language.
+ * language. A nested provider does not merge onto an outer one: it starts
+ * again from the language pack, so a subtree provider repeats every override
+ * of the outer scope it still needs (unlike `provideButtonConfigAt`, which
+ * merges onto the parent config).
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
