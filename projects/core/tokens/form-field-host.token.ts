@@ -49,9 +49,10 @@ export type CngxFieldSkin = 'outline' | 'fill' | 'bare';
  *   kept current while it changes (a language flip), so a surface that
  *   repeats the label (a mobile sheet heading) follows it without reading
  *   the DOM itself.
- * - `control?`, `describedBy?`, `errorId?`, `required?` - the discovered
- *   control and the field's description, error and required state, so a
- *   common atom that is that control carries the same ARIA a bridge would.
+ * - `control?`, `describedBy?`, `errorId?`, `required?`, `disabled?` - the
+ *   discovered control and the field's description, error, required and
+ *   disabled state, so a common atom that is that control carries the same
+ *   ARIA a bridge would.
  *
  * Deliberately scoped to these members. The full presenter exposes
  * many more signals (constraints, ARIA IDs, dirty / pending /
@@ -123,6 +124,12 @@ export interface CngxFormFieldHostContract {
   readonly errorId?: Signal<string>;
   /** Whether the field is required. Optional; read as `host.required?.() ?? false`. */
   readonly required?: Signal<boolean>;
+  /**
+   * Whether the field is disabled. An atom that keeps its own `disabled`
+   * input ORs this in instead of having a bridge overwrite its input.
+   * Optional; read as `host.disabled?.() ?? false`.
+   */
+  readonly disabled?: Signal<boolean>;
 }
 
 /**

@@ -4,6 +4,7 @@ import { injectLocale } from '@cngx/core/utils';
 
 import { createSliderCore, formatSliderValue } from './slider-core';
 import { createSliderDisabledReason } from './slider-disabled-reason';
+import { injectSliderFieldHost } from './slider-field-host';
 import { createSliderInteraction, pointerFraction } from './slider-interaction';
 
 /**
@@ -50,9 +51,9 @@ import { createSliderInteraction, pointerFraction } from './slider-interaction';
     '[attr.aria-valuenow]': 'core.clampedValue()',
     '[attr.aria-valuetext]': 'core.ariaValueText()',
     '[attr.aria-orientation]': 'orientation()',
-    '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.aria-disabled]': 'isDisabled() || null',
     '[attr.aria-describedby]': 'reason.resolvedDescribedBy()',
-    '[attr.tabindex]': 'disabled() ? -1 : 0',
+    '[attr.tabindex]': 'isDisabled() ? -1 : 0',
     '[style.touch-action]': "'none'",
     '[style.--cngx-slider-fraction]': 'core.fraction()',
     '(keydown)': 'interaction.handleKeydown($event)',
@@ -78,8 +79,8 @@ export class CngxSliderTrack {
   readonly largeStep = input<number | undefined>(undefined);
   /**
    * Whether the slider is disabled (blocks keyboard and pointer, `tabindex=-1`).
-   * A `ModelSignal` so form-field bridges can drive it programmatically,
-   * mirroring the checkbox/toggle family's bridge write path.
+   * A field that bridges the track never writes it; {@link isDisabled} ORs
+   * the field's disabled state in.
    */
   readonly disabled = model<boolean>(false);
   /**
@@ -93,7 +94,8 @@ export class CngxSliderTrack {
   /**
    * Optional consumer-supplied id of an external description element.
    * Consumers bind via `[cngxDescribedBy]="someId"` - same surface as
-   * `CngxChipInteraction`. The active disabled-reason wins.
+   * `CngxChipInteraction`. Listed after the field ids and the active
+   * disabled reason.
    */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
@@ -105,13 +107,22 @@ export class CngxSliderTrack {
 
   private readonly el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
   private readonly locale = injectLocale();
+  private readonly field = injectSliderFieldHost();
+
+  /**
+   * Effective disabled state: the `disabled` input OR a disabled field that
+   * bridges this track. Gates keyboard, pointer, `tabindex` and
+   * `aria-disabled`; the input itself is never overwritten by the field.
+   */
+  readonly isDisabled = computed(() => this.disabled() || this.field.disabled());
 
   /** Disabled-"why" span + gated `aria-describedby` resolution. */
   protected readonly reason = createSliderDisabledReason({
     idPrefix: 'cngx-slider-desc',
-    disabled: () => this.disabled(),
+    disabled: () => this.isDisabled(),
     reason: () => this.disabledReason(),
     describedBy: () => this.describedBy(),
+    fieldDescribedBy: () => this.field.describedBy(),
   });
 
   /** Shared value/step/aria derivation. */
@@ -146,7 +157,7 @@ export class CngxSliderTrack {
   protected readonly interaction = createSliderInteraction({
     core: this.core,
     el: this.el,
-    disabled: () => this.disabled(),
+    disabled: () => this.isDisabled(),
     pageStep: () => this.pageStep(),
     fractionFromPointer: (x, y) => pointerFraction(this.el, this.orientation(), x, y),
     direction: injectDirection(),
