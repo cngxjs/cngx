@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButton: Busy with cngxAsyncClick',
   subtitle: 'Co-host <code>cngxAsyncClick</code>: the label stays in place under a spinner while the action runs.',
-  description: 'The button does not own async state; <code>cngxAsyncClick</code> on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. <code>aria-busy</code>, the double-click guard and the success or failure announcement all stay with <code>cngxAsyncClick</code>. Under reduced motion the ring stops turning. The label stays fixed on purpose: swapping it per status would change the accessible name under focus and the width after the run. Per-status labels belong to <code>CngxActionButton</code>. So the result of a run is not painted on the button at all: success and failure are spoken through the polite live region <code>cngxAsyncClick</code> renders next to the host. The spinner follows the loading config: a run faster than the show delay (120 ms by default) never shows the ring, and a ring that did appear stays for at least the min-dwell (400 ms) so it never flickers, and the button keeps refusing clicks for that whole held window. <code>aria-busy</code> and the click guard are set at the click and held until the ring releases; the spoken result fires at settle. Pick the fast run (80 ms) to see a save with no ring at all, the medium run (200 ms) to watch the ring appear and then hold through its dwell, or the slow run (1.5 s) to see the ring held through a long save. Toggle the failure switch to run the error path; the button looks the same either way, and the dashed box below mirrors what a screen reader gets.',
+  description: 'The button does not own async state; <code>cngxAsyncClick</code> on the same element does. While its action is pending the button keeps the label in the layout (invisible), so the width never jumps, and draws a spinner ring over it. <code>aria-busy</code>, the double-click guard and the success or failure announcement all stay with <code>cngxAsyncClick</code>. Under reduced motion the ring stops turning. The label stays fixed on purpose: swapping it per status would change the accessible name under focus and the width after the run. Per-status labels belong to <code>CngxActionButton</code>. So the result of a run is not painted on the button at all: success and failure are spoken through the polite live region <code>cngxAsyncClick</code> renders next to the host. The spinner follows the loading config: a run faster than the show delay (120 ms by default) never shows the ring, and a ring that did appear stays for at least the min-dwell (400 ms) so it never flickers, and the button keeps refusing clicks for that whole held window. <code>aria-busy</code> and the click guard are set at the click and held until the ring releases; the spoken result fires at settle. An 80 ms save never shows the ring, a 200 ms save shows it and holds it through the dwell, and a long save keeps it for the whole run. Success and failure look the same on the button; only the announcement differs.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -12,11 +12,12 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxButton } from '@cngx/common/button';",
     "import { CngxAsyncClick } from '@cngx/common/interactive';",
-    "import { mirrorScreenReader } from '../../../../fixtures';",
+    "import { failDemoActionWhen, mirrorScreenReader, wrapDemoAction } from '../../../../fixtures';",
   ],
   imports: ['CngxButton', 'CngxAsyncClick'],
   setup: `
-  protected readonly save = (): Promise<void> => this.simulateSave();`,
+  protected readonly save = (): Promise<void> =>
+    new Promise((resolve) => setTimeout(resolve, 200));`,
   setupChrome: `
   protected readonly fail = signal(false);
   protected readonly latency = signal<'fast' | 'medium' | 'slow'>('medium');
@@ -32,14 +33,19 @@ export const STORY: DemoSpec = {
     }
   }
 
-  protected simulateSave(): Promise<void> {
-    return new Promise((resolve, reject) =>
-      setTimeout(
-        () => (this.fail() ? reject(new Error('Save failed')) : resolve()),
-        this.latencyMs(),
-      ),
-    );
-  }
+  // Runs save with the latency picked below instead of its fixed 200 ms, and
+  // makes it fail while the switch is on.
+  private readonly latencyKnob = wrapDemoAction(
+    this,
+    'save',
+    () => () => new Promise<void>((resolve) => setTimeout(resolve, this.latencyMs())),
+  );
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'save',
+    () => this.fail(),
+    () => new Error('Save failed'),
+  );
 
   // Mirrors the accessibility layer of the button into the box below.
   protected readonly sr = mirrorScreenReader([

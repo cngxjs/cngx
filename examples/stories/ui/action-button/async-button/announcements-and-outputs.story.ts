@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxActionButton: Announcements and outputs',
   subtitle: '<code>succeededAnnouncement</code> / <code>failedAnnouncement</code> set what the live region speaks, <code>(settled)</code> and <code>(outcome)</code> report every result.',
-  description: 'The status cells and the announcement are separate: <code>succeededLabel</code> is what the button shows, <code>succeededAnnouncement</code> what the polite region next to it speaks, so the visible label can stay short while the announcement names the result in full. <code>[feedbackDuration]</code> keeps the result cell (and the region text) up for 4 s instead of the 2 s default. <code>(settled)</code> comes from the run and carries a monotonic <code>generation</code>; <code>(outcome)</code> comes from the status brain and also fires for an <code>[externalState]</code> edge. The second button binds <code>[autoAnnounce]="false"</code>: its region stays in the DOM but receives no text, for a page that announces the result itself. Tick "Fail the next run" to reach the error path.',
+  description: 'The status cells and the announcement are separate: <code>succeededLabel</code> is what the button shows, <code>succeededAnnouncement</code> what the polite region next to it speaks, so the visible label can stay short while the announcement names the result in full. <code>[feedbackDuration]</code> keeps the result cell (and the region text) up for 4 s instead of the 2 s default. <code>(settled)</code> comes from the run and carries a monotonic <code>generation</code>; <code>(outcome)</code> comes from the status brain and also fires for an <code>[externalState]</code> edge. The second button binds <code>[autoAnnounce]="false"</code>: its region stays in the DOM but receives no text, for a page that announces the result itself.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -12,19 +12,14 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxActionButton } from '@cngx/ui';",
     "import type { CngxActionOutcome, CngxAsyncSettle } from '@cngx/common/interactive';",
-    "import { mirrorScreenReader } from '../../../../fixtures';",
+    "import { failDemoActionWhen, mirrorScreenReader } from '../../../../fixtures';",
   ],
   imports: ['CngxActionButton'],
   setup: `
   protected readonly events = signal<readonly string[]>([]);
 
   protected readonly exportReport = () =>
-    new Promise<void>((resolve, reject) =>
-      setTimeout(
-        () => (this.failNext() ? reject(new Error('The export service timed out.')) : resolve()),
-        400,
-      ),
-    );
+    new Promise<void>((resolve) => setTimeout(resolve, 400));
 
   protected handleSettled(name: string, settle: CngxAsyncSettle): void {
     this.log(name + ' (settled) #' + settle.generation + ' ' + settle.status);
@@ -60,6 +55,13 @@ export const STORY: DemoSpec = {
   </div>`,
   setupChrome: `
   protected readonly failNext = signal(false);
+  // Makes exportReport fail while the switch below is on.
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'exportReport',
+    () => this.failNext(),
+    () => new Error('The export service timed out.'),
+  );
 
   // Logs the live regions next to the buttons into the box below.
   protected readonly sr = mirrorScreenReader([]);`,

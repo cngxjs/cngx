@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Compose <code>button[cngxPopoverDismiss]</code> and <code>button[cngxPopoverAction]</code> inside <code>cngxPopoverFooter</code>. The dismiss button closes the panel; the action runs an async <code>[action]</code> with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
   description:
-    'A confirm panel pairs a dismiss button with an async confirm. Both are button-family hosts pinned to <code>sm</code>; the confirm sets <code>cngxPopoverAction="solid"</code> plus a <code>tone</code> and co-hosts <code>CngxAsyncClick</code>, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. Pick fast (80 ms) to see a confirm settle with no busy template, medium (200 ms) to watch the pending template held through its dwell while the action refuses a second click, or slow (1.5 s) for a long run. Each settle is spoken once through the polite live region of the action itself, with the text the button shows; the dashed box below logs both panels.',
+    'A confirm panel pairs a dismiss button with an async confirm. Both are button-family hosts pinned to <code>sm</code>; the confirm sets <code>cngxPopoverAction="solid"</code> plus a <code>tone</code> and co-hosts <code>CngxAsyncClick</code>, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. A confirm that settles inside the show delay never shows the busy template; a longer one holds the pending template through its dwell while the action refuses a second click. Each settle is spoken once through the polite live region of the action itself, with the text the button shows.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
     "import { signal } from '@angular/core';",
     "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter, CngxPopoverAction, CngxPopoverDismiss } from '@cngx/common/popover';",
     "import { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';",
+    "import { wrapDemoAction } from '../../../../fixtures';",
   ],
   imports: [
     'CngxPopoverPanel',
@@ -28,8 +29,8 @@ export const STORY: DemoSpec = {
     'CngxSucceeded',
     'CngxFailed',
   ],
-  setup: `protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, this.latencyMs()));
-  protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), this.latencyMs()));`,
+  setup: `protected simulateSave = () => new Promise<void>(resolve => setTimeout(resolve, 200));
+  protected simulateDelete = () => new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), 200));`,
   setupChrome: `
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
@@ -47,6 +48,14 @@ export const STORY: DemoSpec = {
         return 1500;
     }
   }
+
+  // Runs both confirms with the latency picked above instead of their fixed 200 ms.
+  private readonly saveLatency = wrapDemoAction(this, 'simulateSave', () => () =>
+    new Promise<void>((resolve) => setTimeout(resolve, this.latencyMs())),
+  );
+  private readonly deleteLatency = wrapDemoAction(this, 'simulateDelete', () => () =>
+    new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), this.latencyMs())),
+  );
 
   // Logs the real DOM writes into the live region next to each async button.
   private readonly srMirror = afterNextRender(() => {

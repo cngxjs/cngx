@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncClick: Announcement for aria-live',
   subtitle: 'Opt out of the built-in polite region with <code>[autoAnnounce]="false"</code> and drive your own <code>aria-live</code> region from <code>(settled)</code>.',
-  description: 'By default the directive auto-renders a polite live region next to the host, so success and failure are announced with zero wiring. Opt out with <code>[autoAnnounce]="false"</code> when the announcement belongs somewhere else: a shared page-level announcer, a region with different politeness, or (as here) a region you want to inspect. Write that region from <code>(settled)</code>, once per run: clear it, then put the copy for <code>settle.status</code> in after the next render, the way the built-in region does. Do not bind the <code>announcement()</code> signal into it. That signal is state, so two runs that settle before change detection coalesce into one value and the first one is never spoken. Without the opt-out, the built-in region and yours would both speak every settle. The result reaches the screen reader only; the dashed box below logs what the region receives.',
+  description: 'By default the directive auto-renders a polite live region next to the host, so success and failure are announced with zero wiring. Opt out with <code>[autoAnnounce]="false"</code> when the announcement belongs somewhere else: a shared page-level announcer, a region with different politeness, or (as here) a region you want to inspect. Write that region from <code>(settled)</code>, once per run: clear it, then put the copy for <code>settle.status</code> in after the next render, the way the built-in region does. Do not bind the <code>announcement()</code> signal into it. That signal is state, so two runs that settle before change detection coalesce into one value and the first one is never spoken. Without the opt-out, the built-in region and yours would both speak every settle. The result reaches the screen reader only.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -14,7 +14,8 @@ export const STORY: DemoSpec = {
   moduleImports: [
     'import { Injector } from \'@angular/core\';',
     'import { CngxAsyncClick, type CngxAsyncSettle } from \'@cngx/common/interactive\';',
-    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
+    'import { delay, of } from \'rxjs\';',
+    'import { failDemoActionWhen } from \'../../../../fixtures\';',
   ],
   imports: ['CngxAsyncClick'],
   references: [
@@ -25,9 +26,7 @@ export const STORY: DemoSpec = {
   private readonly injector = inject(Injector);
   protected readonly spoken = signal('');
 
-  protected readonly saveAction = () => this.shouldFail()
-    ? timer(700).pipe(switchMap(() => throwError(() => new Error('save failed'))))
-    : of(undefined).pipe(delay(700));
+  protected readonly saveAction = () => of(undefined).pipe(delay(700));
 
   protected handleSettled(settle: CngxAsyncSettle): void {
     const text = settle.status === 'success' ? 'Note saved to server' : 'Could not save the note';
@@ -36,6 +35,13 @@ export const STORY: DemoSpec = {
   }`,
   setupChrome: `
   protected readonly shouldFail = signal<boolean>(false);
+  // Makes saveAction fail while the switch below is on.
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'saveAction',
+    () => this.shouldFail(),
+    () => new Error('save failed'),
+  );
 
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);

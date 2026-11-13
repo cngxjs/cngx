@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncClick: Settle events',
   subtitle: '<code>(settled)</code> once per run with a <code>generation</code>, and an action that ends early on the <code>AbortSignal</code> the directive hands it.',
-  description: '<code>cngxAsyncClick</code> emits <code>(settled)</code> once per success or error with a <code>CngxAsyncSettle</code> payload: a monotonic <code>generation</code>, the <code>status</code> and the <code>error</code>. Per-run side effects (a toast, a close, a log entry) belong there, because <code>status()</code> is state and coalesces two runs that settle before change detection. The action receives an <code>AbortSignal</code> that aborts when the directive is destroyed. The library never cancels the run itself: this upload listens for the abort and stops its timer. <code>createRetry</code> forwards the signal to every attempt, clears its backoff on abort, settles its state idle and resolves <code>CNGX_ASYNC_CANCELLED</code>. A cancelled run emits no <code>(settled)</code>. Start an upload with failing attempts, then remove the button while it retries. Each settle is also spoken through the polite live region <code>cngxAsyncClick</code> renders next to the button; the dashed box below logs what it receives.',
+  description: '<code>cngxAsyncClick</code> emits <code>(settled)</code> once per success or error with a <code>CngxAsyncSettle</code> payload: a monotonic <code>generation</code>, the <code>status</code> and the <code>error</code>. Per-run side effects (a toast, a close, a log entry) belong there, because <code>status()</code> is state and coalesces two runs that settle before change detection. The action receives an <code>AbortSignal</code> that aborts when the directive is destroyed. The library never cancels the run itself: this upload listens for the abort and stops its timer. <code>createRetry</code> forwards the signal to every attempt, clears its backoff on abort, settles its state idle and resolves <code>CNGX_ASYNC_CANCELLED</code>. A cancelled run emits no <code>(settled)</code>. Each settle is also spoken through the polite live region <code>cngxAsyncClick</code> renders next to the button.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
@@ -14,52 +14,71 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CNGX_ASYNC_CANCELLED, CngxAsyncClick, createRetry, type CngxAsyncSettle } from \'@cngx/common/interactive\';',
+    'import { failDemoActionWhen, wrapDemoAction } from \'../../../../fixtures\';',
   ],
   imports: ['CngxAsyncClick'],
   setup: `
   protected readonly settles = signal<readonly CngxAsyncSettle[]>([]);
-  protected readonly lastRun = signal<'running' | 'settled' | 'cancelled' | '-'>('-');
+  protected readonly mounted = signal(true);
 
   // Stops its own timer when the runner aborts the signal.
   private readonly upload = (signal?: AbortSignal): Promise<void> =>
     new Promise((resolve, reject) => {
       const handleAbort = (): void => {
         clearTimeout(timer);
-        this.abortsSeen.update((n) => n + 1);
         reject(signal?.reason);
       };
       const timer = setTimeout(() => {
         signal?.removeEventListener('abort', handleAbort);
-        if (this.failAttempts()) {
-          reject(new Error('Upload failed'));
-        } else {
-          resolve();
-        }
+        resolve();
       }, 600);
       signal?.addEventListener('abort', handleAbort, { once: true });
     });
 
-  private readonly retry = createRetry(this.upload, { maxAttempts: 3, delay: 1500 });
+  private readonly retry = createRetry((signal?: AbortSignal) => this.upload(signal), {
+    maxAttempts: 3,
+    delay: 1500,
+  });
   protected readonly retryState = this.retry[1];
 
-  protected readonly uploadWithRetry = async (signal?: AbortSignal): Promise<unknown> => {
-    this.lastRun.set('running');
-    let result: unknown;
-    try {
-      result = await this.retry[0](signal);
-      return result;
-    } finally {
-      this.lastRun.set(result === CNGX_ASYNC_CANCELLED ? 'cancelled' : 'settled');
-    }
-  };
+  protected readonly uploadWithRetry = (signal?: AbortSignal) => this.retry[0](signal);
 
   protected handleSettled(settle: CngxAsyncSettle): void {
     this.settles.update((list) => [...list, settle]);
   }`,
   setupChrome: `
   protected readonly failAttempts = signal(false);
-  protected readonly mounted = signal(true);
   protected readonly abortsSeen = signal(0);
+  protected readonly lastRun = signal<'running' | 'settled' | 'cancelled' | '-'>('-');
+
+  // Makes every upload attempt fail while the switch below is on.
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'upload',
+    () => this.failAttempts(),
+    () => new Error('Upload failed'),
+  );
+
+  // Counts the aborts an upload attempt receives while it is in flight.
+  private readonly abortCounter = wrapDemoAction(this, 'upload', (original) => (signal) => {
+    const count = (): void => this.abortsSeen.update((n) => n + 1);
+    signal?.addEventListener('abort', count, { once: true });
+    return Promise.resolve(original(signal)).finally(() =>
+      signal?.removeEventListener('abort', count),
+    );
+  });
+
+  // Tracks whether the last run settled or ended in CNGX_ASYNC_CANCELLED.
+  private readonly runTracker = wrapDemoAction(this, 'uploadWithRetry', (original) => async (signal) => {
+    this.lastRun.set('running');
+    let result: unknown;
+    try {
+      result = await original(signal);
+      return result;
+    } finally {
+      this.lastRun.set(result === CNGX_ASYNC_CANCELLED ? 'cancelled' : 'settled');
+    }
+  });
 
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
