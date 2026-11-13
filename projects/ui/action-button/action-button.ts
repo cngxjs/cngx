@@ -74,6 +74,7 @@ import { CngxActionToast } from './action-toast.directive';
  * <example-url>/#/ui/action-button/async-button/random-outcome</example-url>
  * <example-url>/#/ui/action-button/async-button/string-labels</example-url>
  * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
+ * <example-url>/#/ui/action-button/async-button/app-wide-labels</example-url>
  * @axis level organism
  */
 @Component({
