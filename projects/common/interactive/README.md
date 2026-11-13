@@ -321,3 +321,5 @@ to override the discovered producer.
 `CngxClickOutside`, `CngxDisclosure`, `CngxNavLink`, `CngxNavLabel`, `CngxNavBadge`,
 `CngxNavGroup`, `CngxNavGroupRegistry`, `CngxSearch`, `CngxSpeak`, `CngxSwipeDismiss`,
 `CngxHoverable`, `CNGX_NAV_CONFIG`, `provideNavConfig`, `injectNavConfig`
+
+Button toggles (`CngxButtonToggle`, `CngxButtonToggleGroup`, `CngxButtonMultiToggleGroup`): see [button-toggle/README.md](button-toggle/README.md).
