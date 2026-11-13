@@ -16,8 +16,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { form, schema } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel } from '@cngx/forms/field';",
+    "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput'],
   references: [
     { label: 'WCAG 1.3.1 Info and Relationships', href: 'https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html' },
     { label: 'WCAG 3.3.2 Labels or Instructions', href: 'https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html' },
@@ -27,7 +28,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:8px;max-width:360px">
     <cngx-form-field [field]="basicForm.email">
       <label cngxLabel>Email</label>
-      <input type="email" />
+      <input cngxInput type="email" />
     </cngx-form-field>
   </div>`,
 };

@@ -695,6 +695,11 @@
                 "file": "error-codes/cngx2029.md"
             },
             {
+                "title": "CNGX2030",
+                "label": "CNGX2030: A field label without a control",
+                "file": "error-codes/cngx2030.md"
+            },
+            {
                 "title": "CNGX3001",
                 "label": "CNGX3001: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx3001.md"

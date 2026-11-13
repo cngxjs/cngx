@@ -15,8 +15,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { form, schema, required } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxRequired } from '@cngx/forms/field';",
+    "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule', 'CngxInput'],
   references: [
     {
       label: 'WCAG 3.3.2 Labels or Instructions',
@@ -36,7 +37,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:420px">
     <cngx-form-field [field]="mandatory() ? requiredForm.email : optionalForm.email">
       <label cngxLabel>Email <cngx-required /></label>
-      <input
+      <input cngxInput
         type="email"
         [ngModel]="mandatory() ? requiredForm.email().value() : optionalForm.email().value()"
         (ngModelChange)="mandatory() ? requiredForm.email().value.set($event) : optionalForm.email().value.set($event)"

@@ -7,13 +7,25 @@ import {
   ElementRef,
   inject,
   input,
+  signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { cngxDevWarn } from '@cngx/utils';
 import { injectFormFieldPresenter } from './inject-form-field-presenter';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 
+/** Elements a `<label for>` can name and click-focus (HTML labelable elements). */
+const LABELABLE = 'input:not([type="hidden"]), select, textarea, button, meter, output, progress';
+
 /**
  * Label for a `cngx-form-field`. Sets `for` and `id` automatically.
+ *
+ * `for` is set only while the field's control is a labelable element (an
+ * `<input>`, `<select>`, `<textarea>`). A custom control (a toggle, a
+ * checkbox, a group, a slider, a select) cannot be named or focused through
+ * `for`: it takes the label through `aria-labelledby`, and a click on the
+ * label focuses it.
  *
  * When `withRequiredMarker()` is configured globally, the label auto-appends
  * the required indicator for required fields. Override per-label with
@@ -84,11 +96,12 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
   exportAs: 'cngxLabel',
   host: {
     class: 'cngx-label',
-    '[attr.for]': 'presenter.controlId()',
+    '[attr.for]': 'forTarget()',
     '[id]': 'presenter.labelId()',
     '[class.cngx-label--required]': 'presenter.required()',
     '[class.cngx-label--error]': 'presenter.fieldOrControlError()',
     '[class.cngx-label--disabled]': 'presenter.fieldOrControlDisabled()',
+    '(click)': 'handleClick()',
   },
 })
 export class CngxLabel {
@@ -110,15 +123,54 @@ export class CngxLabel {
     typeof this.config.requiredMarker === 'string' ? this.config.requiredMarker : '*',
   );
 
+  private readonly doc = inject(DOCUMENT);
+  private readonly targetLabelable = signal(false);
+
+  /** @internal - the `for` target, only while it is a labelable element. */
+  protected readonly forTarget = computed(() =>
+    this.targetLabelable() ? this.presenter.controlId() : null,
+  );
+
   constructor() {
     // Publishes the rendered label text on the host contract. Read after
     // every render because the text is projected content: a binding in the
     // consumer's view (a language flip) changes it without this view running.
+    // The same pass checks whether the control element can take `for`.
     const el = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    let warned = false;
     afterEveryRender({
-      read: () => this.presenter.reportLabelText(el.textContent?.trim() ?? ''),
+      read: () => {
+        this.presenter.reportLabelText(el.textContent?.trim() ?? '');
+        const target = this.doc.getElementById(this.presenter.controlId());
+        this.targetLabelable.set(target?.matches(LABELABLE) ?? false);
+        if (typeof ngDevMode !== 'undefined' && ngDevMode && !warned && !this.presenter.control()) {
+          warned = true;
+          cngxDevWarn(
+            'CNGX2030',
+            `[cngxLabel] the field "${this.presenter.name()}" has no control, so the label names ` +
+              'nothing. Put a field control (cngxInput, a select, a common form atom, a field ' +
+              'bridge) inside the cngx-form-field.',
+          );
+        }
+      },
     });
     inject(DestroyRef).onDestroy(() => this.presenter.reportLabelText(''));
+  }
+
+  /**
+   * @internal A label without `for` focuses its control on click; a label
+   * with `for` leaves it to the browser.
+   */
+  protected handleClick(): void {
+    if (this.targetLabelable()) {
+      return;
+    }
+    const control = this.presenter.control();
+    if (control?.focus) {
+      control.focus();
+      return;
+    }
+    this.doc.getElementById(this.presenter.controlId())?.focus();
   }
 
   /** @internal - whether to show the auto-marker. */
