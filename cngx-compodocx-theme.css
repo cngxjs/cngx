@@ -179,7 +179,6 @@
   --color-cdx-snippet-bg: oklch(0.96 0.005 250);
   --color-cdx-snippet-border: transparent;
   --color-cdx-snippet-radius: var(--radius-cdx-md);
-  --color-cdx-code-inline: oklch(0.4 0.01 250);
   --color-cdx-code-dark-surface: oklch(0.18 0.01 250);
   --color-cdx-scrollbar: oklch(0.5 0.01 250 / 0.4);
   --color-cdx-line-number: oklch(0.5 0.01 250 / 0.5);
@@ -602,7 +601,6 @@ code.cdx-shiki-inline {
   /* ── Code blocks ─────────────────────────────────────────── */
   --color-cdx-snippet-bg: oklch(0.26 0.01 250);
   --color-cdx-snippet-border: transparent;
-  --color-cdx-code-inline: oklch(0.7 0.01 250);
   --color-cdx-code-dark-surface: oklch(0.14 0.01 250);
   --color-cdx-scrollbar: oklch(0.7 0.01 250 / 0.4);
   --color-cdx-line-number: oklch(0.6 0.01 250 / 0.6);
