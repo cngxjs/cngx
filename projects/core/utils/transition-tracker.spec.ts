@@ -93,6 +93,18 @@ describe('createTransitionTracker', () => {
     expect(tracker.previous()).toBe('loading');
   });
 
+  it.each([undefined, null])('reports a transition out of a %s value', (from) => {
+    const value = signal<string | null | undefined>(from);
+    const tracker = TestBed.runInInjectionContext(() => createTransitionTracker(() => value()));
+
+    expect(tracker.current()).toBe(from);
+    value.set('a');
+    TestBed.flushEffects();
+
+    expect(tracker.current()).toBe('a');
+    expect(tracker.previous()).toBe(from);
+  });
+
   it('tracks generic boolean sources', () => {
     const flag = signal(false);
     const tracker = TestBed.runInInjectionContext(() => createTransitionTracker(() => flag()));
