@@ -29,6 +29,7 @@ export {
   type CngxMotionPreference,
   provideMotion,
   injectMotion,
+  injectEffectiveMotion,
 } from './theming/motion';
 export { CngxMotionScope } from './theming/cngx-motion-scope.directive';
 export {

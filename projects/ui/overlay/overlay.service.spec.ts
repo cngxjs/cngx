@@ -3,6 +3,8 @@ import { Overlay, OverlayConfig } from '@angular/cdk/overlay';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { provideDirection } from '@cngx/core';
+
 import { CngxOverlay, provideOverlay } from './overlay.service';
 import { CngxOverlayRef } from './overlay-ref';
 
@@ -93,5 +95,33 @@ describe('CngxOverlay', () => {
     expect(ref.isOpen()).toBe(true);
     fixture.destroy();
     expect(ref.isOpen()).toBe(false);
+  });
+});
+
+describe('CngxOverlay direction', () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it('opens the CDK pane in the cngx direction', () => {
+    TestBed.configureTestingModule({ providers: [provideOverlay(), provideDirection('rtl')] });
+    const overlay = TestBed.inject(Overlay);
+    const create = vi.spyOn(overlay, 'create');
+
+    const ref = TestBed.inject(CngxOverlay).open(OverlayContent);
+    const cdkRef = create.mock.results[0].value as ReturnType<Overlay['create']>;
+    expect(cdkRef.getDirection()).toBe('rtl');
+    ref.close();
+  });
+
+  it('lets a caller direction win over the cngx direction', () => {
+    TestBed.configureTestingModule({ providers: [provideOverlay(), provideDirection('rtl')] });
+    const overlay = TestBed.inject(Overlay);
+    const create = vi.spyOn(overlay, 'create');
+
+    const ref = TestBed.inject(CngxOverlay).open(OverlayContent, { direction: 'ltr' });
+    const cdkRef = create.mock.results[0].value as ReturnType<Overlay['create']>;
+    expect(cdkRef.getDirection()).toBe('ltr');
+    ref.close();
   });
 });

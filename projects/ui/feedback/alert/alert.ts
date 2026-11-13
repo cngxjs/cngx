@@ -16,7 +16,8 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
-import { createMediaQuerySignal, type CngxAsyncState } from '@cngx/core/utils';
+import { injectEffectiveMotion } from '@cngx/core';
+import { type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxCloseButton } from '@cngx/common/button';
@@ -247,11 +248,7 @@ export class CngxAlert {
    */
   private readonly motionWindow = inject(DOCUMENT).defaultView;
   private readonly canQueryMotion = !!this.motionWindow?.matchMedia;
-  private readonly prefersReducedMotion = createMediaQuerySignal(
-    '(prefers-reduced-motion: reduce)',
-    this.destroyRef,
-    this.motionWindow,
-  );
+  private readonly motion = injectEffectiveMotion();
 
   /** Active pause holds - pointer hover and focus-within count independently. */
   private interactionHolds = 0;
@@ -408,7 +405,7 @@ export class CngxAlert {
   private scheduleAnimationFallback(): void {
     this.clearAnimationFallback();
     // Safety net if animationend never fires (reduced-motion, SSR, no window).
-    const reducedMotion = !this.canQueryMotion || this.prefersReducedMotion();
+    const reducedMotion = !this.canQueryMotion || this.motion() === 'reduced';
     this.animationFallbackId = setTimeout(
       () => {
         this.animationFallbackId = undefined;

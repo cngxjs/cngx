@@ -15,7 +15,7 @@ the CSS foundation reacts to.
 - `CNGX_DENSITY` / `provideDensity()` / `injectDensity()` + `CngxDensity`
 - `CNGX_TEXT_SCALE` / `provideTextScale()` / `injectTextScale()`
 - `CNGX_TOUCH_TARGET` / `provideTouchTargets()` / `injectTouchTargets()` + `CngxTouchTarget`
-- `CNGX_MOTION` / `provideMotion()` / `injectMotion()` + `CngxMotionScope`
+- `CNGX_MOTION` / `provideMotion()` / `injectMotion()` / `injectEffectiveMotion()` + `CngxMotionScope`
 - `CNGX_CONTRAST` / `provideContrast()` / `injectContrast()` + `CngxContrast`
 
 ### provideA11yPreferences
