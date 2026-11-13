@@ -316,6 +316,7 @@ afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('data-color-scheme');
+  document.documentElement.removeAttribute('data-motion');
 });
 
 for (const scheme of SCHEMES) {
@@ -394,6 +395,27 @@ describe('nav row shape', () => {
     expect(getComputedStyle(railed, '::before').getPropertyValue('-webkit-text-fill-color')).toBe(
       getComputedStyle(railed, '::before').color,
     );
+  });
+
+  it('drops the reveal delay under the data-motion reduced axis', () => {
+    const root = mount({ still: false });
+    const row = one(root, '.row-idle');
+    const name = one(root, '.rail-a [cngxNavName]');
+    expect(computedValue(name, 'transition-delay')).toBe('0.15s');
+    document.documentElement.setAttribute('data-motion', 'reduced');
+    expect(computedValue(row, 'transition-delay')).toBe('0s, 0s, 0s');
+    expect(computedValue(name, 'transition-delay')).toBe('0s');
+  });
+
+  it('drops the reveal delay under the OS preference unless the root opts back into full motion', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
+    });
+    const root = mount({ still: false });
+    const row = one(root, '.row-idle');
+    expect(computedValue(row, 'transition-delay')).toBe('0s, 0s, 0s');
+    document.documentElement.setAttribute('data-motion', 'full');
+    expect(computedValue(row, 'transition-delay')).toBe('0s, 0s, 0.15s');
   });
 
   it('paints a group head transparent at rest and with the hover fill under the pointer', async () => {

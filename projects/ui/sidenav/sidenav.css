@@ -365,6 +365,9 @@
 
 @layer cngx.components {
   cngx-sidenav {
+    /* How long labels, badges and the header name wait before they fade in
+       while the sidenav widens. Zero under reduced motion (below). */
+    --_cngx-sidenav-reveal-delay: var(--cngx-duration-fast, 150ms);
     /* Derive the rail's header/footer padding and the nav-link padding from
        the global scale so a root [data-density] compacts the sidenav (SET-from-
        scale rule; the registered pixel initial defeats a use-site fallback).
@@ -617,11 +620,11 @@
     text-overflow: clip;
   }
 
-  /* The name next to the mark fades like a row label: in after the open delay,
-     out at once. Opacity, so it stays in the accessibility tree. */
+  /* The name next to the mark fades like a row label: in after the reveal
+     delay, out at once. Opacity, so it stays in the accessibility tree. */
   cngx-sidenav :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
     transition: opacity var(--cngx-sidenav-transition-duration, 0.25s)
-      var(--cngx-sidenav-transition-easing, ease) var(--cngx-duration-fast, 150ms);
+      var(--cngx-sidenav-transition-easing, ease) var(--_cngx-sidenav-reveal-delay, 150ms);
   }
 
   cngx-sidenav[data-sidebar-state='rail'] :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
@@ -664,7 +667,7 @@
 
   /*
    * Labels, badges and the group chevron fade in once the sidenav widens (after
-   * --cngx-duration-fast, while the width grows) and are gone at once on the
+   * the reveal delay, while the width grows) and are gone at once on the
    * way back; on the rail they sit past the clip anyway. The text fades through
    * -webkit-text-fill-color, not color: the letter, the icon and the active
    * bar keep reading the row colour (currentColor), and the letter and an icon
@@ -676,7 +679,7 @@
       background-color var(--cngx-duration-fast, 150ms),
       color var(--cngx-duration-fast, 150ms),
       -webkit-text-fill-color var(--cngx-sidenav-transition-duration, 0.25s)
-        var(--cngx-sidenav-transition-easing, ease) var(--cngx-duration-fast, 150ms);
+        var(--cngx-sidenav-transition-easing, ease) var(--_cngx-sidenav-reveal-delay, 150ms);
   }
 
   cngx-sidenav .cngx-nav-badge:not(.cngx-nav-group-content *),
@@ -684,7 +687,7 @@
     transition:
       rotate var(--cngx-duration-fast, 150ms),
       opacity var(--cngx-sidenav-transition-duration, 0.25s)
-        var(--cngx-sidenav-transition-easing, ease) var(--cngx-duration-fast, 150ms);
+        var(--cngx-sidenav-transition-easing, ease) var(--_cngx-sidenav-reveal-delay, 150ms);
   }
 
   cngx-sidenav :is(.cngx-nav-link, .cngx-nav-group)::before,
@@ -707,6 +710,19 @@
     transition:
       rotate var(--cngx-duration-fast, 150ms),
       opacity 0s;
+  }
+
+  /* The reduced-motion net zeroes durations, not delays: with the delay kept,
+     the width would snap open and the labels stay blank for the delay. */
+  [data-motion='reduced'] cngx-sidenav,
+  cngx-sidenav[data-motion='reduced'] {
+    --_cngx-sidenav-reveal-delay: 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) cngx-sidenav {
+      --_cngx-sidenav-reveal-delay: 0s;
+    }
   }
 
   .cngx-sidenav__resize-handle {
