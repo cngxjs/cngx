@@ -41,4 +41,26 @@ test.describe('ui/stepper/stepper-footer complete', () => {
       .toEqual(['aria-busy=true', 'aria-busy=null', 'aria-busy=true', 'aria-busy=null']);
     await expect(finish).toHaveText('Finish');
   });
+
+  test('complete-finish-button: Back is refused while Finish runs', async ({ page }) => {
+    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
+    test.fail();
+    await gotoDemo(page, ROUTE);
+    const footer = page.locator('cngx-stepper-footer');
+
+    await footer.getByRole('button', { name: 'Continue' }).click();
+    await footer.getByRole('button', { name: 'Continue' }).click();
+    const finish = footer.getByRole('button', { name: 'Finish' });
+    const back = footer.getByRole('button', { name: 'Back' });
+
+    await finish.click();
+    await expect(finish).toHaveAttribute('aria-busy', 'true');
+    await expect(back).toHaveAttribute('aria-disabled', 'true', { timeout: 500 });
+    await back.click({ force: true });
+    await expect(page.getByText('Confirm and submit.')).toBeVisible();
+    await expect(finish).toBeVisible();
+    await expect(page.locator('.event-row')).toContainText('Submitted - (completed) fired', {
+      timeout: 5_000,
+    });
+  });
 });
