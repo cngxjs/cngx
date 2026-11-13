@@ -92,8 +92,8 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
 
 /**
  * The `Storage` backend {@link withPersistence} reads from and writes to.
- * Defaults to the browser `localStorage`, or `null` on the server (where
- * persistence is skipped). Override it to persist elsewhere -
+ * Defaults to the browser `localStorage`, or `null` on the server or when
+ * the browser blocks access to it (persistence is then skipped). Override it to persist elsewhere -
  * `sessionStorage`, or a server-backed `Storage` shim for signed-in users -
  * without forking:
  *
@@ -109,7 +109,17 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
  */
 export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_STORAGE', {
   providedIn: 'root',
-  factory: () => inject(DOCUMENT).defaultView?.localStorage ?? null,
+  factory: () => {
+    const view = inject(DOCUMENT).defaultView;
+    // Reading `localStorage` throws SecurityError when site data is blocked
+    // or in a sandboxed iframe without allow-same-origin; persistence is
+    // then skipped like on the server instead of failing the bootstrap.
+    try {
+      return view?.localStorage ?? null;
+    } catch {
+      return null;
+    }
+  },
 });
 
 /**
