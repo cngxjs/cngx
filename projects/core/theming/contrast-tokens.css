@@ -72,7 +72,7 @@
    * the demoted value and collapse both surfaces onto text.
    * A colour-scheme island below the contrast host re-sets these tokens on
    * its own element, which beats the inherited boost in any layer, so the
-   * boost is re-applied on the island; the mix then reads the island's own
+   * boost is re-applied on the island. The mix then reads the island's own
    * text and surface. */
   [data-contrast='more'],
   .cngx-contrast-more,
