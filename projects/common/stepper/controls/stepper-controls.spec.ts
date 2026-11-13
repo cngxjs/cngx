@@ -288,8 +288,7 @@ describe('stepper nav controls', () => {
   });
 
   describe('Back while Finish runs', () => {
-    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
-    it.fails('refuses Back while the finish run is pending', async () => {
+    async function startFinish() {
       vi.useFakeTimers();
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(BackDuringFinishHost);
@@ -301,19 +300,37 @@ describe('stepper nav controls', () => {
       fixture.detectChanges();
       const root = fixture.nativeElement as HTMLElement;
       const [prev, finish] = Array.from(root.querySelectorAll('button'));
-      expect(prev.hasAttribute('aria-disabled')).toBe(false);
+      const backBefore = prev.hasAttribute('aria-disabled');
 
       finish.click();
       fixture.detectChanges();
       TestBed.flushEffects();
       await vi.advanceTimersByTimeAsync(0);
       fixture.detectChanges();
-      expect(finish.getAttribute('aria-busy')).toBe('true');
-      expect(prev.getAttribute('aria-disabled')).toBe('true');
-      prev.click();
-      fixture.detectChanges();
-      expect(presenter.activeStepIndex()).toBe(1);
-      fixture.componentInstance.release();
+      return { fixture, presenter, prev, finish, backBefore };
+    }
+
+    it('Finish is busy while its run is pending', async () => {
+      const { fixture, finish, backBefore } = await startFinish();
+      try {
+        expect(backBefore).toBe(false);
+        expect(finish.getAttribute('aria-busy')).toBe('true');
+      } finally {
+        fixture.componentInstance.release();
+      }
+    });
+
+    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
+    it.fails('refuses Back while the finish run is pending', async () => {
+      const { fixture, presenter, prev } = await startFinish();
+      try {
+        expect(prev.getAttribute('aria-disabled')).toBe('true');
+        prev.click();
+        fixture.detectChanges();
+        expect(presenter.activeStepIndex()).toBe(1);
+      } finally {
+        fixture.componentInstance.release();
+      }
     });
   });
 

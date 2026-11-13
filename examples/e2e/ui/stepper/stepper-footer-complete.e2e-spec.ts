@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { attributeLogOf, gotoDemo, recordAttributes } from '../../_helpers';
 
@@ -42,19 +43,29 @@ test.describe('ui/stepper/stepper-footer complete', () => {
     await expect(finish).toHaveText('Finish');
   });
 
-  test('complete-finish-button: Back is refused while Finish runs', async ({ page }) => {
-    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
-    test.fail();
+  // Shared by the precondition test and the expected-fail pin below: reach
+  // the last step and start the Finish run.
+  async function startFinish(page: Page) {
     await gotoDemo(page, ROUTE);
     const footer = page.locator('cngx-stepper-footer');
-
     await footer.getByRole('button', { name: 'Continue' }).click();
     await footer.getByRole('button', { name: 'Continue' }).click();
     const finish = footer.getByRole('button', { name: 'Finish' });
     const back = footer.getByRole('button', { name: 'Back' });
-
     await finish.click();
+    return { finish, back };
+  }
+
+  test('complete-finish-button: Finish is busy while its run is pending', async ({ page }) => {
+    const { finish, back } = await startFinish(page);
     await expect(finish).toHaveAttribute('aria-busy', 'true');
+    await expect(back).toBeVisible();
+  });
+
+  test('complete-finish-button: Back is refused while Finish runs', async ({ page }) => {
+    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
+    test.fail();
+    const { finish, back } = await startFinish(page);
     await expect(back).toHaveAttribute('aria-disabled', 'true', { timeout: 500 });
     await back.click({ force: true });
     await expect(page.getByText('Confirm and submit.')).toBeVisible();
