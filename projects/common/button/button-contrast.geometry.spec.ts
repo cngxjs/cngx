@@ -214,10 +214,8 @@ describe('toned outline boundary contrast (default palette)', () => {
     expect(ratio, `${tone} / ${scheme}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   }
 
-  it.each([['primary', 'dark']] as const)(title, expectClears);
-
-  // E7: expected to fail until PR 8 (T7) raises the 60% tone mix of the outline border (2.06, 2.37, 2.79 today).
-  it.fails.each([
+  it.each([
+    ['primary', 'dark'],
     ['primary', 'light'],
     ['danger', 'light'],
     ['danger', 'dark'],
