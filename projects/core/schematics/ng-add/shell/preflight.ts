@@ -5,7 +5,7 @@ import { type GitState } from './git-state';
 /** What the preflight checklist reads, gathered once in the shell. */
 export interface PreflightInput {
   readonly facts: ProjectFacts;
-  /** The `@angular/core` range @cngx/core peers on, from versions.json. */
+  /** The `@angular/core` range `@cngx/core` peers on, from versions.json. */
   readonly peerRange: string;
   readonly git: GitState;
   /** `--project` as passed; without it a workspace with several applications gets a picked project. */

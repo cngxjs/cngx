@@ -79,6 +79,12 @@ release (`cngx://provenance` and `groundedVersion` name the one that answered).
   `asset-missing` with a message that starts with `internal:`.
 - An `invalid-version` answer of `migrate_usage` names the argument:
   `from "1.2" is not a release version; ...`.
+- The `category` of three folders follows their new docs pages:
+  `CngxAsyncClick`, `CngxPending`, `CngxFailed` and `CngxSucceeded` answer
+  `common/interactive/async-click` (was `common/interactive/action-status`),
+  the listbox family `common/interactive/listbox` (was
+  `common/interactive/keyboard`), and the select slot directives and
+  `CngxSelectAnnouncer` `forms/select/shared` (was `forms/select`).
 
 ### Fixed
 

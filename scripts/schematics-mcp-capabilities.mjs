@@ -315,7 +315,7 @@ export function renderCapabilityModule(files) {
     '// Do not edit; run `npm run schematics:mcp`.',
     `// Capabilities: ${capabilityHash(capabilities)}`,
     '',
-    '/** A tool the @cngx/mcp server registers, with one question it answers. */',
+    '/** A tool the `@cngx/mcp` server registers, with one question it answers. */',
     'export interface McpTool {',
     '  readonly name: string;',
     '  readonly title: string;',

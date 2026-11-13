@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   DOCS_ORIGIN,
   DOCS_ROOT,
   fallbackPath,
+  listErrorCodePages,
   movedPageHtml,
   movedPages,
   render404Html,
@@ -119,16 +124,17 @@ describe('render404Html', () => {
 
 describe('movedPages', () => {
   const dir = 'additional-documentation/error-codes';
+  const overview = 'additional-documentation/error-codes.html';
 
   it('moves each unversioned page to the same page of the newest release', () => {
-    expect(movedPages(['cngx0001.html', 'index.html'], 'main', [], '/cngx/')).toEqual([
+    expect(movedPages([overview, `${dir}/cngx0001.html`], 'main', [], '/cngx/')).toEqual([
+      { path: overview, target: `/cngx/main/${overview}` },
       { path: `${dir}/cngx0001.html`, target: `/cngx/main/${dir}/cngx0001.html` },
-      { path: `${dir}/index.html`, target: `/cngx/main/${dir}/index.html` },
     ]);
   });
 
   it('moves each page of a dropped release too', () => {
-    expect(movedPages(['cngx0001.html'], 'v0.7.0', ['v0.4.0', 'v0.3.0'], '/cngx/')).toEqual([
+    expect(movedPages([`${dir}/cngx0001.html`], 'v0.7.0', ['v0.4.0', 'v0.3.0'], '/cngx/')).toEqual([
       { path: `${dir}/cngx0001.html`, target: `/cngx/v0.7.0/${dir}/cngx0001.html` },
       { path: `v0.4.0/${dir}/cngx0001.html`, target: `/cngx/v0.7.0/${dir}/cngx0001.html` },
       { path: `v0.3.0/${dir}/cngx0001.html`, target: `/cngx/v0.7.0/${dir}/cngx0001.html` },
@@ -136,21 +142,58 @@ describe('movedPages', () => {
   });
 
   it('writes only the pages of the newest release', () => {
-    const paths = movedPages(['cngx1071.html'], 'v0.7.0', ['v0.3.0'], '/cngx/').map(
+    const paths = movedPages([`${dir}/cngx1071.html`], 'v0.7.0', ['v0.3.0'], '/cngx/').map(
       (page) => page.path,
     );
     expect(paths).toEqual([`${dir}/cngx1071.html`, `v0.3.0/${dir}/cngx1071.html`]);
   });
 
   it('writes no page under the newest label', () => {
-    const paths = movedPages(['cngx0001.html'], 'v0.7.0', ['v0.7.0'], '/cngx/').map(
+    const paths = movedPages([`${dir}/cngx0001.html`], 'v0.7.0', ['v0.7.0'], '/cngx/').map(
       (page) => page.path,
     );
     expect(paths).toEqual([`${dir}/cngx0001.html`]);
   });
 
   it('writes nothing without a newest label', () => {
-    expect(movedPages(['cngx0001.html'], '', ['v0.3.0'], '/cngx/')).toEqual([]);
+    expect(movedPages([`${dir}/cngx0001.html`], '', ['v0.3.0'], '/cngx/')).toEqual([]);
+  });
+});
+
+describe('listErrorCodePages', () => {
+  let release;
+
+  beforeEach(() => {
+    release = mkdtempSync(join(tmpdir(), 'docs-404-'));
+  });
+
+  afterEach(() => {
+    rmSync(release, { recursive: true, force: true });
+  });
+
+  it('lists the overview and every page of the error-code folder', () => {
+    mkdirSync(join(release, 'additional-documentation/error-codes'), { recursive: true });
+    writeFileSync(join(release, 'additional-documentation/error-codes.html'), '');
+    writeFileSync(join(release, 'additional-documentation/error-codes/cngx1071.html'), '');
+    writeFileSync(join(release, 'additional-documentation/error-codes/cngx0001.html'), '');
+    writeFileSync(join(release, 'additional-documentation/error-codes/notes.txt'), '');
+    expect(listErrorCodePages(release)).toEqual([
+      'additional-documentation/error-codes.html',
+      'additional-documentation/error-codes/cngx0001.html',
+      'additional-documentation/error-codes/cngx1071.html',
+    ]);
+  });
+
+  it('skips a missing overview', () => {
+    mkdirSync(join(release, 'additional-documentation/error-codes'), { recursive: true });
+    writeFileSync(join(release, 'additional-documentation/error-codes/cngx0001.html'), '');
+    expect(listErrorCodePages(release)).toEqual([
+      'additional-documentation/error-codes/cngx0001.html',
+    ]);
+  });
+
+  it('refuses a release without an error-code folder', () => {
+    expect(() => listErrorCodePages(release)).toThrow(/error-codes missing/);
   });
 });
 

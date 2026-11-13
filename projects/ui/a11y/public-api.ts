@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/a11y
+ * @module `@cngx/ui/a11y`
  */
 
 export { CngxA11yPanel } from './a11y-panel.component';

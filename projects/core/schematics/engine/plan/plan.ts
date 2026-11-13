@@ -35,7 +35,7 @@ export interface PlanSection {
 
 const CNGX_SCOPE = '@cngx/';
 
-/** Why every @cngx package is pinned to one version; a folded line leaves it out. */
+/** Why every `@cngx` package is pinned to one version; a folded line leaves it out. */
 export const LOCKSTEP_REASON = 'every @cngx package stays on one version';
 
 // A package on the release line: what one fold line stands for.

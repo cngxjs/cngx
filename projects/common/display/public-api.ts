@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/display
+ * @module `@cngx/common/display`
  *
  * Display-only atoms: no behavior, no state beyond presentational flags.
  * Icons, avatars, badges, dividers - building blocks that render content

@@ -10,7 +10,7 @@ export const SCAFFOLD_SELECTOR_PLACEHOLDER = 'cngx-scaffold-selector';
 /** Stands in for the class-cased project name, the `<title>` of `index.html`. */
 export const SCAFFOLD_TITLE_PLACEHOLDER = '__cngx_scaffold_title__';
 
-/** One `ng new` file as @schematics/angular renders it for one variant. */
+/** One `ng new` file as `@schematics/angular` renders it for one variant. */
 export interface ScaffoldEntry {
   /** The Angular CLI major the templates belong to. */
   readonly major: number;
@@ -21,7 +21,7 @@ export interface ScaffoldEntry {
   readonly variant: string;
   /** `raw` as rendered, `prettier` as formatted with the `ng new` `.prettierrc`. */
   readonly form: 'raw' | 'prettier';
-  /** The template path inside @schematics/angular. */
+  /** The template path inside `@schematics/angular`. */
   readonly template: string;
   /** `sha256:<hex>` of the body with LF line endings. */
   readonly fingerprint: string;

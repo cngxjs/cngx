@@ -1,6 +1,6 @@
 /**
- * Public API Surface of @cngx/forms
- * @module @cngx/forms
+ * Public API Surface of `@cngx/forms`
+ * @module `@cngx/forms`
  */
 
 export * from './forms';

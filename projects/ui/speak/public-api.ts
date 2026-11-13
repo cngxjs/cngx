@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/speak
+ * @module `@cngx/ui/speak`
  */
 
 export { CngxSpeakButton } from './speak-button';

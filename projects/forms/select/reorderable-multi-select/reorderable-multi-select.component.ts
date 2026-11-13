@@ -1400,7 +1400,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * or a rejected pessimistic move. Focus follows the value, not `toIndex`,
    * because a pending or failed commit leaves another chip at that index.
    * `setActive` runs at once so tabindex='0' is right before the render; the
-   * focus move waits for the @for ordering and runs only while focus is still
+   * focus move waits for the `@for` ordering and runs only while focus is still
    * on a chip or was dropped by the re-render, so a Retry click keeps its
    * focus.
    */

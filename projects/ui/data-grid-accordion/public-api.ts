@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/data-grid-accordion
+ * @module `@cngx/ui/data-grid-accordion`
  */
 export { CngxDataGridAccordion } from './data-grid-accordion.component';
 export { CngxDataGridRow } from './data-grid-row.component';

@@ -1,17 +1,17 @@
 /**
- * Public API Surface of @cngx/common
+ * Public API Surface of `@cngx/common`
  *
  * Re-exports all secondary entry points for backwards compatibility.
  * Prefer importing from specific entry points:
- *   @cngx/common/a11y
- *   @cngx/common/display
- *   @cngx/common/interactive
- *   @cngx/common/layout
- *   @cngx/common/data
- *   @cngx/common/dialog
- *   @cngx/common/popover
+ *   `@cngx/common/a11y`
+ *   `@cngx/common/display`
+ *   `@cngx/common/interactive`
+ *   `@cngx/common/layout`
+ *   `@cngx/common/data`
+ *   `@cngx/common/dialog`
+ *   `@cngx/common/popover`
  *
- * @module @cngx/common
+ * @module `@cngx/common`
  */
 
 export * from '@cngx/common/a11y';

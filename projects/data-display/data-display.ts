@@ -1,9 +1,9 @@
 /**
- * @cngx/data-display
+ * `@cngx/data-display`
  *
  * Data display components for cngx composable Angular extensions.
  * Secondary entry points:
- *   @cngx/data-display/treetable – hierarchical table component
+ *   `@cngx/data-display/treetable` – hierarchical table component
  */
 
 import { makeVersion } from '@cngx/utils';

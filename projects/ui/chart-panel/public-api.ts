@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/chart-panel
+ * @module `@cngx/ui/chart-panel`
  */
 
 export { CngxChartPanel, type CngxChartPanelLegendPosition } from './chart-panel.component';

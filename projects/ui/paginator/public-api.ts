@@ -6,7 +6,7 @@
  * `CngxListbox`, loading and infinite-scroll bridges. The Material twin
  * lives in `@cngx/ui/mat-paginator`.
  *
- * @module @cngx/ui/paginator
+ * @module `@cngx/ui/paginator`
  */
 export {
   CngxPaginator,

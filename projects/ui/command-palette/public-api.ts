@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/command-palette
+ * @module `@cngx/ui/command-palette`
  */
 export { CngxCommandPalette } from './palette/command-palette.component';
 export { CngxCommandPaletteTrigger } from './palette/command-palette-trigger.directive';

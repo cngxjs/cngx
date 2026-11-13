@@ -1,10 +1,10 @@
 /**
- * @cngx/interop
+ * `@cngx/interop`
  *
  * Adapters that bridge external state engines onto the cngx async-state
  * protocol. Secondary entry points:
- *   @cngx/interop/query   - TanStack Query adapter (fromQuery)
- *   @cngx/interop/signals - NgRx SignalStore feature (withCngxAsyncState)
+ *   `@cngx/interop/query`   - TanStack Query adapter (fromQuery)
+ *   `@cngx/interop/signals` - NgRx SignalStore feature (withCngxAsyncState)
  */
 
 import { makeVersion } from '@cngx/utils';

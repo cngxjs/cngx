@@ -1,9 +1,9 @@
 /**
- * @cngx/testing - Test utilities for the cngx component library.
+ * `@cngx/testing` - Test utilities for the cngx component library.
  *
  * Not published to npm. Consumed directly from source via tsconfig paths.
  *
- * @module @cngx/testing
+ * @module `@cngx/testing`
  */
 // './geometry' is NOT re-exported here: its reads (getComputedStyle) return ''
 // under jsdom, so it is reachable only through the '@cngx/testing/geometry'

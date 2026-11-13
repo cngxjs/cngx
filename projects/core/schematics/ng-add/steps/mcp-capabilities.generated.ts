@@ -2,7 +2,7 @@
 // Do not edit; run `npm run schematics:mcp`.
 // Capabilities: sha256:aad9b132c1c355f56d488028db60de709a5e4f2600d398e02412d906f8f95ed9
 
-/** A tool the @cngx/mcp server registers, with one question it answers. */
+/** A tool the `@cngx/mcp` server registers, with one question it answers. */
 export interface McpTool {
   readonly name: string;
   readonly title: string;
