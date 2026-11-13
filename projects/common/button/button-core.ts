@@ -49,7 +49,6 @@ export interface CngxButtonCoreDefaults {
 }
 
 /** @internal */
- */
 export interface CngxButtonCore {
   readonly variant: Signal<CngxButtonVariant>;
   readonly tone: Signal<CngxButtonTone>;
