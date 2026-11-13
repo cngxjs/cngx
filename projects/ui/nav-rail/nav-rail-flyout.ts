@@ -315,10 +315,10 @@ export type CngxNavRailFlyoutFactory = (sources: CngxNavRailFlyoutSources) => vo
 
 /**
  * Swap token for the rail's group flyout. The default resolves to
- * {@link injectNavRailFlyout}; `cngx-nav-rail` calls
- * `inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)(sources)` in its constructor, so an
- * override runs in the rail's injection context and gets the same group and
- * content queries. Provide `() => {}` to keep groups as plain inline
+ * {@link injectNavRailFlyout}; `cngx-nav-rail` and `cngx-sidenav` call
+ * `inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)(sources)` in their constructors, so
+ * one override reaches both, runs in the organism's injection context and
+ * gets the same group and content queries. Provide `() => {}` to keep groups as plain inline
  * disclosures (a group's content is then clipped by the narrow rail).
  *
  * ```ts

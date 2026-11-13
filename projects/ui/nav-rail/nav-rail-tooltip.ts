@@ -81,11 +81,11 @@ function rowLabel(row: HTMLElement): string {
 /**
  * Shows the clipped label of a nav row in a tooltip while a navigation rail
  * is collapsed. Call it in the constructor of the organism that hosts the
- * rows (today `cngx-nav-rail`) and pass `railed`, a derived signal that is
+ * rows (`cngx-nav-rail`, `cngx-sidenav`) and pass `railed`, a derived signal that is
  * `true` while the rows are railed and the tooltip is wanted, and `side`.
  * While `railed()` is `false` no tooltip element exists and no listener is
  * attached; each flip sets the tooltip up or tears it down, so an organism
- * can switch it off at runtime (`cngx-nav-rail` folds its `tooltip` input
+ * can switch it off at runtime (both organisms fold their `tooltip` input
  * in).
  *
  * One tooltip element per host, created like the one of `CngxTooltip`
@@ -280,15 +280,16 @@ export type CngxNavRailTooltipFactory = (sources: CngxNavRailTooltipSources) => 
 
 /**
  * Swap token for the rail's label tooltip. The default resolves to
- * {@link injectNavRailTooltip}; `cngx-nav-rail` calls
- * `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(sources)` in its constructor, so an
- * override runs in the rail's injection context and may inject what it needs
- * (`ElementRef`, `Renderer2`, `CngxTooltip` infrastructure). Provide
- * `() => {}` to drop the tooltip machinery entirely.
+ * {@link injectNavRailTooltip}; `cngx-nav-rail` and `cngx-sidenav` call
+ * `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(sources)` in their constructors, so
+ * one override reaches both, runs in the organism's injection context and may
+ * inject what it needs (`ElementRef`, `Renderer2`, `CngxTooltip`
+ * infrastructure). Provide `() => {}` to drop the tooltip machinery entirely.
  *
- * `sources.railed` already folds in the look and the `[tooltip]` /
- * `withNavRailTooltip` switch: it is `true` only in the `'end'` look with the
- * tooltip on, so an override honours the switch by reading it.
+ * `sources.railed` already folds in the organism's `[tooltip]` /
+ * `withNavRailTooltip` switch: on `cngx-nav-rail` it is `true` only in the
+ * `'end'` look with the tooltip on, on `cngx-sidenav` only while it rests as a
+ * rail with the tooltip on. An override honours the switch by reading it.
  *
  * ```ts
  * providers: [{ provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY, useValue: () => {} }];

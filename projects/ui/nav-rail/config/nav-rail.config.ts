@@ -2,7 +2,8 @@ import type { CngxNavRailLabelPlacement, CngxNavRailSide } from '../nav-rail';
 
 /**
  * App-wide cascade for the nav rail's look, its side and its label tooltip. Settings
- * only; the rail's copy lives on `CNGX_NAV_RAIL_I18N`.
+ * only; the rail's copy lives on `CNGX_NAV_RAIL_I18N`. The tooltip keys also
+ * reach the rail of `cngx-sidenav`.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding (`[labelPlacement]`, `[side]`, `[tooltip]`).
@@ -32,9 +33,10 @@ export interface CngxNavRailConfig {
   readonly side?: CngxNavRailSide;
 
   /**
-   * Whether a railed row shows its label in a tooltip (default `true`). Only
-   * the `'end'` look has a tooltip; `'below'` never shows one. A bound
-   * `[tooltip]` still wins.
+   * Whether a railed row shows its label in a tooltip (default `true`), on
+   * `cngx-nav-rail` and on a `cngx-sidenav` resting as a rail. Only the
+   * `'end'` look of the nav rail has a tooltip; `'below'` never shows one. A
+   * bound `[tooltip]` on either organism still wins.
    */
   readonly tooltip?: boolean;
 

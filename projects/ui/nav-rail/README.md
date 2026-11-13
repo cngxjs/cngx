@@ -27,7 +27,10 @@ import {
 
 `cngx-nav-rail` has no open state, no backdrop and no focus trap. It is a
 `navigation` landmark with rows in it. `@cngx/ui/nav-rail` imports nothing from
-`@cngx/ui/sidenav`.
+`@cngx/ui/sidenav`; the other way round, a `cngx-sidenav` resting as a rail
+uses the same tooltip and flyout (`CNGX_NAV_RAIL_TOOLTIP_FACTORY`,
+`CNGX_NAV_RAIL_FLYOUT_FACTORY`) and the same tooltip config, so one override
+or one `withNavRailTooltip` reaches both.
 
 ## Quick start
 
