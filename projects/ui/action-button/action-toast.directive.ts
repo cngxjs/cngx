@@ -19,15 +19,14 @@ import { cngxDevWarn } from '@cngx/utils';
  * and each `success` / `error` edge of a bound `[externalState]`, read from
  * `CNGX_ACTION_STATUS.outcome`. Two settles before one render are two toasts.
  *
- * A selector-less host directive. `CngxActionButton` co-hosts it; an ejected action host lists
- * it in its `hostDirectives`. It needs a `CngxToaster` (`provideFeedback(withToasts())` or
- * `provideToasts()`) and does nothing without one.
+ * Host directive only: `CngxActionButton` co-hosts it, an ejected action host lists it in
+ * `hostDirectives`. Without a `CngxToaster` (`provideFeedback(withToasts())` or
+ * `provideToasts()`) it does nothing.
  *
- * A shown toast already announces its outcome, so the directive provides
- * `CNGX_ANNOUNCEMENT_COVER` and the live region next to the host stays empty for that outcome,
- * unless the brain's `autoAnnounce` is `true`.
+ * A shown toast already announces its outcome, so via `CNGX_ANNOUNCEMENT_COVER` the live region
+ * stays empty for that outcome unless the brain's `autoAnnounce` is `true`.
  *
- * Do not combine it with `[cngxToastOn]` on the same element. Both toast the same outcome, and
+ * Do not combine it with `[cngxToastOn]` on the same element: both toast the same outcome, and
  * development builds warn [`CNGX3008`](/error-codes/cngx3008.md).
  *
  * ```ts
