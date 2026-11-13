@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButton: Disabled with a reason',
   subtitle: '<code>disabled</code> renders <code>aria-disabled</code>; the button stays focusable and says why.',
-  description: 'A natively disabled button drops out of the tab order, so a keyboard or screen reader user never learns it exists or why it is off. <code>CngxButton</code> renders <code>[disabled]</code> as <code>aria-disabled="true"</code> instead: the button keeps focus, clicks, <code>routerLink</code> and form submission are swallowed, and <code>disabledReason</code> is read through <code>aria-describedby</code> while (and only while) the button is disabled. Tab to the Publish button and toggle the permission to hear the difference. The dashed box below mirrors what a screen reader gets for the Publish button: role, name, description and state are exposed, not painted.',
+  description: 'A natively disabled button drops out of the tab order, so a keyboard or screen reader user never learns it exists or why it is off. <code>CngxButton</code> renders <code>[disabled]</code> as <code>aria-disabled="true"</code> instead: the button keeps focus, clicks, <code>routerLink</code> and form submission are swallowed, and <code>disabledReason</code> is read through <code>aria-describedby</code> while (and only while) the button is disabled. Role, name, description and state are exposed to assistive technology, not painted.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -11,15 +11,14 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxButton'],
   moduleImports: [
     "import { CngxButton } from '@cngx/common/button';",
-    "import { mirrorScreenReader } from '../../../../fixtures';",
+    "import { mirrorScreenReader, wrapDemoAction } from '../../../../fixtures';",
   ],
   imports: ['CngxButton'],
   setup: `
   protected readonly canPublish = signal(false);
-  protected readonly published = signal(0);
 
   protected handlePublish(): void {
-    this.published.update((n) => n + 1);
+    // Publish the post. A click on the disabled button never gets here.
   }`,
   template: `
   <button
@@ -30,6 +29,14 @@ export const STORY: DemoSpec = {
     (click)="handlePublish()"
   >Publish</button>`,
   setupChrome: `
+  protected readonly published = signal(0);
+
+  // Counts the clicks that reach handlePublish.
+  private readonly publishCounter = wrapDemoAction<() => void>(this, 'handlePublish', (original) => () => {
+    this.published.update((n) => n + 1);
+    original();
+  });
+
   // Mirrors the accessibility layer of the buttons into the box below.
   protected readonly sr = mirrorScreenReader([
     { label: 'publish', selector: 'button[cngxbutton]' },

@@ -1,42 +1,37 @@
 ---
-title: "CngxActionButton: Ejected host"
-whenToUse: "cngxActionButton is skin over host directives; this host is another skin over the same ones. demoEjectedAction declares CngxButtonBrain (aria-disabled, the activation guard, data-busy), CngxAsyncClick (the run and the live region next to the button) and CngxActionStatusBrain (which label cell shows, and what the region speaks). provideButtonHost() names the host; provideActionStatusHost() hands the status announcement to the region and makes a bound [externalState] refuse clicks while it runs. CngxActionStatusStack on the label span of the host renders the label cells, each a [cngxActionStatusCell], so only the active cell is visible and names the button; the stack ships the one-grid-cell rule, and the host brings only its own look. A cngxSucceeded template replaces a label, and its text is what the region speaks. The fixture sits next to this story as _ejected-action.component.ts. The dashed box below mirrors what a screen reader gets for both buttons."
-symbols: [CngxActionStatusBrain, CngxActionStatusStack, CngxActionStatusCell, CngxButtonBrain, CngxAsyncClick, CngxActionButton]
+title: "CngxActionButton: External state"
+whenToUse: "The button reads its status from a createManualState() that something else drives, such as a server push or a second tab. While the state is loading the button carries aria-busy and aria-disabled and refuses clicks, without having been clicked. Each success or error edge the button observes is spoken once in the live region next to it. The [action] only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside."
+symbols: [CngxActionButton]
 ---
 
-# CngxActionButton: Ejected host
+# CngxActionButton: External state
 
-cngxActionButton is skin over host directives; this host is another skin over the same ones. demoEjectedAction declares CngxButtonBrain (aria-disabled, the activation guard, data-busy), CngxAsyncClick (the run and the live region next to the button) and CngxActionStatusBrain (which label cell shows, and what the region speaks). provideButtonHost() names the host; provideActionStatusHost() hands the status announcement to the region and makes a bound [externalState] refuse clicks while it runs. CngxActionStatusStack on the label span of the host renders the label cells, each a [cngxActionStatusCell], so only the active cell is visible and names the button; the stack ships the one-grid-cell rule, and the host brings only its own look. A cngxSucceeded template replaces a label, and its text is what the region speaks. The fixture sits next to this story as _ejected-action.component.ts. The dashed box below mirrors what a screen reader gets for both buttons.
+The button reads its status from a createManualState() that something else drives, such as a server push or a second tab. While the state is loading the button carries aria-busy and aria-disabled and refuses clicks, without having been clicked. Each success or error edge the button observes is spoken once in the live region next to it. The [action] only asks for a sync: it flips the shared state to loading and returns, the outcome still arrives from outside.
 
 ## Symbols
 
-- `CngxActionStatusBrain`
-- `CngxActionStatusStack`
-- `CngxActionStatusCell`
-- `CngxButtonBrain`
-- `CngxAsyncClick`
 - `CngxActionButton`
 
 ## Setup
 
 ```ts
-protected readonly save = (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 1200));
+protected readonly sync = createManualState<void>();
 
-protected readonly remove = (): Promise<void> =>
-  new Promise((_, reject) => setTimeout(() => reject(new Error('403 Forbidden')), 1000));
+protected readonly requestSync = async (): Promise<void> => {
+  this.sync.set('loading');
+};
 ```
 
 ## Wiring
 
 ```html
-<div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-  <button demoEjectedAction [action]="save" pendingLabel="Saving...">
-    Save draft
-    <ng-template cngxSucceeded>Draft saved</ng-template>
-  </button>
-  <button demoEjectedAction [action]="remove" pendingLabel="Deleting..." failedLabel="Not allowed">
-    Delete
-  </button>
-</div>
+<button
+  cngxActionButton
+  tone="primary"
+  [action]="requestSync"
+  [externalState]="sync"
+  pendingLabel="Syncing..."
+  succeededLabel="Synced"
+  failedLabel="Sync failed"
+>Sync now</button>
 ```

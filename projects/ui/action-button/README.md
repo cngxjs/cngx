@@ -14,7 +14,8 @@ import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive
 ## Quick Start
 
 ```typescript
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
 import { CngxActionButton } from '@cngx/ui/action-button';
 
 @Component({
@@ -27,6 +28,8 @@ import { CngxActionButton } from '@cngx/ui/action-button';
   imports: [CngxActionButton],
 })
 export class ExampleComponent {
+  private readonly http = inject(HttpClient);
+
   save = () => this.http.post('/api/draft', {});
 }
 ```

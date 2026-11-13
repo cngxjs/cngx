@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'On the last step the footer swaps Continue for a <code>[cngxStepperComplete]</code> button. Unlike Next (which reflects and advances), Complete <em>runs</em> an async finish action - it composes <code>CngxAsyncClick</code>, busy-disables while in flight, and emits <code>(completed)</code> after success.',
   description:
-    'Finish keeps its label while the action runs and after it settles, so the result is not painted on the button: it is spoken through the polite live region <code>cngxAsyncClick</code> renders next to it. The dashed box below logs what that region receives and mirrors <code>aria-busy</code> while the action is in flight.',
+    'Finish keeps its label while the action runs and after it settles, so the result is not painted on the button: it is spoken through the polite live region <code>cngxAsyncClick</code> renders next to it.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'standalone',
@@ -29,12 +29,13 @@ export const STORY: DemoSpec = {
   setup: `protected readonly active = signal(0);
   protected readonly lastIndex = 2;
   protected readonly finishAction = (): Promise<void> =>
-    new Promise((resolve) => setTimeout(resolve, 800));`,
-  setupChrome: `  protected readonly submitted = signal(false);
+    new Promise((resolve) => setTimeout(resolve, 800));
+  protected readonly submitted = signal(false);
+
   protected onCompleted(): void {
     this.submitted.set(true);
-  }
-
+  }`,
+  setupChrome: `
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly heard = signal<readonly { n: number; text: string }[]>([]);
@@ -104,6 +105,7 @@ export const STORY: DemoSpec = {
           class="chip"
           cngxStepperFooterEnd
           [cngxStepperComplete]="finishAction"
+          succeededAnnouncement="Sign-up complete. Your account is ready."
           (completed)="onCompleted()"
         >
           Finish

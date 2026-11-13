@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxActionButton: Random outcome',
   subtitle: 'The action resolves or rejects randomly. Click multiple times to see both states. Feedback auto-resets after 2 seconds. Uses string labels - no templates needed.',
-  description: 'String-label fast-path: success/failure decided by a random Promise resolver, both terminal states reachable from a single button. Shows the organism has zero boilerplate when you only need the default templates. It sits on the native <code>&lt;button&gt;</code> with the <code>cngxButton</code> axes, and the labels share one cell, so the button keeps the width of its widest label in every state. Pick fast (80 ms) to see idle go straight to the result with no spinner, medium (200 ms) to watch the pending cell held through its dwell and the button refuse a second click until the result lands, or slow (1.5 s) for a long run. The outcome is spoken as well: the polite live region <code>cngxAsyncClick</code> renders next to the button receives the succeeded or failed label, and the dashed box below logs what it receives.',
+  description: 'String-label fast-path: success/failure decided by a random Promise resolver, both terminal states reachable from a single button. Shows the organism has zero boilerplate when you only need the default templates. It sits on the native <code>&lt;button&gt;</code> with the <code>cngxButton</code> axes, and the labels share one cell, so the button keeps the width of its widest label in every state. A run under the show delay goes from idle straight to the result with no spinner; a longer run holds the pending cell through its dwell, and the button refuses a second click until the result lands. The outcome is spoken as well: the polite live region <code>cngxAsyncClick</code> renders next to the button receives the succeeded or failed label.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -13,10 +13,11 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxActionButton } from \'@cngx/ui\';',
+    'import { wrapDemoAction } from \'../../../../fixtures\';',
   ],
   imports: ['CngxActionButton'],
   setup: `protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
-    setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), this.latencyMs()),
+    setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 80),
   );`,
   setupChrome: `
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -25,16 +26,22 @@ export const STORY: DemoSpec = {
   protected readonly heard = signal<readonly { n: number; text: string }[]>([]);
   protected readonly ariaBusy = signal('-');
 
-  protected latencyMs(): number {
+  // The wait added in front of submitAction's own 80 ms, per latency picked below.
+  private extraMs(): number {
     switch (this.latency()) {
       case 'fast':
-        return 80;
+        return 0;
       case 'medium':
-        return 200;
+        return 120;
       default:
-        return 1500;
+        return 1420;
     }
   }
+
+  // Runs submitAction after the picked extra wait; its own outcome decides the run.
+  private readonly latencyKnob = wrapDemoAction(this, 'submitAction', (original) => () =>
+    new Promise<void>((resolve) => setTimeout(resolve, this.extraMs())).then(() => original()),
+  );
 
   // Logs the real DOM writes into the live region next to each async button.
   private readonly srMirror = afterNextRender(() => {

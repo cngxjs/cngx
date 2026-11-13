@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSplitButton: Basic',
   subtitle: 'A main <code>cngxButton</code> and a <code>cngxIconMenuButton</code> caret in one <code>cngxSplitButton</code> group.',
-  description: 'The main button runs the default action through <code>cngxAsyncClick</code>; the caret opens the alternatives. The caret needs no <code>[disabled]</code> and no <code>aria-label</code>: inside a split button it renders the caret glyph, is named "More options" from the language pack, and follows the main button. While the action runs, the main button shows its busy layer and the caret reads <code>aria-disabled</code>, opens on nothing and closes an open menu. A menu choice runs immediately, through the main button, so <code>cngxAsyncClick</code> owns the busy state, <code>aria-busy</code> and the announcement for both entry points. The settle announcement names the action that ran ("Saved as draft", not a generic "Action succeeded"). Both parts are separate Tab stops; the group carries <code>role="group"</code> and its own name. The dashed box below mirrors what a screen reader gets for the main button and the caret: role, name, description, state and the announcements are exposed or spoken, not painted.',
+  description: 'The main button runs the default action through <code>cngxAsyncClick</code>; the caret opens the alternatives. The caret needs no <code>[disabled]</code> and no <code>aria-label</code>: inside a split button it renders the caret glyph, is named "More options" from the language pack, and follows the main button. While the action runs, the main button shows its busy layer and the caret reads <code>aria-disabled</code>, opens on nothing and closes an open menu. A menu choice runs immediately, through the main button, so <code>cngxAsyncClick</code> owns the busy state, <code>aria-busy</code> and the announcement for both entry points. The settle announcement names the action that ran ("Saved as draft", not a generic "Action succeeded"). Both parts are separate Tab stops; the group carries <code>role="group"</code> and its own name. For both parts, role, name, description, state and the announcements are exposed or spoken, not painted.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
     "import { CngxAsyncClick, CngxMenu, CngxMenuItem } from '@cngx/common/interactive';",
     "import { CngxIconMenuButton, CngxSplitButton } from '@cngx/common/menu-button';",
     "import { CngxPopover } from '@cngx/common/popover';",
-    "import { mirrorScreenReader } from '../../../../fixtures';",
+    "import { mirrorScreenReader, wrapDemoAction } from '../../../../fixtures';",
   ],
   imports: [
     'CngxButton',
@@ -43,17 +43,11 @@ export const STORY: DemoSpec = {
 
   private readonly nextMode = signal('now');
   protected readonly running = signal('now');
-  protected readonly lastRun = signal<string | null>(null);
 
   protected readonly publish = (): Promise<void> => {
     this.running.set(this.nextMode());
     this.nextMode.set('now');
-    return new Promise((resolve) =>
-      setTimeout(() => {
-        this.lastRun.set(this.running());
-        resolve();
-      }, 1500),
-    );
+    return new Promise((resolve) => setTimeout(resolve, 1500));
   };
 
   private readonly main = viewChild.required('main', { read: ElementRef });
@@ -93,6 +87,14 @@ export const STORY: DemoSpec = {
     </ul>
   </div>`,
   setupChrome: `
+  protected readonly lastRun = signal<string | null>(null);
+
+  // Records which action the last finished run was.
+  private readonly runTracker = wrapDemoAction(this, 'publish', (original) => async () => {
+    await original();
+    this.lastRun.set(this.running());
+  });
+
   // Mirrors the accessibility layer of the buttons into the box below.
   protected readonly sr = mirrorScreenReader([
     { label: 'main', selector: '[cngxsplitbutton] > button:first-of-type' },

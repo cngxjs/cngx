@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Your own action button on the brains: <code>CngxButtonBrain</code>, <code>CngxAsyncClick</code> and <code>CngxActionStatusBrain</code> in <code>hostDirectives</code>, plus <code>provideActionStatusHost()</code>.',
   description:
-    '<code>cngxActionButton</code> is skin over host directives; this host is another skin over the same ones. <code>demoEjectedAction</code> declares <code>CngxButtonBrain</code> (<code>aria-disabled</code>, the activation guard, <code>data-busy</code>), <code>CngxAsyncClick</code> (the run and the live region next to the button) and <code>CngxActionStatusBrain</code> (which label cell shows, and what the region speaks). <code>provideButtonHost()</code> names the host; <code>provideActionStatusHost()</code> hands the status announcement to the region and makes a bound <code>[externalState]</code> refuse clicks while it runs. <code>CngxActionStatusStack</code> on the label span of the host renders the label cells, each a <code>[cngxActionStatusCell]</code>, so only the active cell is visible and names the button; the stack ships the one-grid-cell rule, and the host brings only its own look. A <code>cngxSucceeded</code> template replaces a label, and its text is what the region speaks. The fixture sits next to this story as <code>_ejected-action.component.ts</code>. The dashed box below mirrors what a screen reader gets for both buttons.',
+    '<code>cngxActionButton</code> is skin over host directives; this host is another skin over the same ones. <code>appEjectedAction</code> declares <code>CngxButtonBrain</code> (<code>aria-disabled</code>, the activation guard, <code>data-busy</code>), <code>CngxAsyncClick</code> (the run and the live region next to the button) and <code>CngxActionStatusBrain</code> (which label cell shows, and what the region speaks). <code>provideButtonHost()</code> names the host; <code>provideActionStatusHost()</code> hands the status announcement to the region and makes a bound <code>[externalState]</code> refuse clicks while it runs. <code>CngxActionStatusStack</code> on the label span of the host renders the label cells, each a <code>[cngxActionStatusCell]</code>, so only the active cell is visible and names the button; the stack ships the one-grid-cell rule, and the host brings only its own look. A <code>cngxSucceeded</code> template replaces a label, and its text is what the region speaks. The fixture sits next to this story as <code>_ejected-action.component.ts</code>. The dashed box below mirrors what a screen reader gets for both buttons.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -32,19 +32,19 @@ export const STORY: DemoSpec = {
     new Promise((_, reject) => setTimeout(() => reject(new Error('403 Forbidden')), 1000));`,
   template: `
   <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-    <button demoEjectedAction [action]="save" pendingLabel="Saving...">
+    <button appEjectedAction [action]="save" pendingLabel="Saving...">
       Save draft
       <ng-template cngxSucceeded>Draft saved</ng-template>
     </button>
-    <button demoEjectedAction [action]="remove" pendingLabel="Deleting..." failedLabel="Not allowed">
+    <button appEjectedAction [action]="remove" pendingLabel="Deleting..." failedLabel="Not allowed">
       Delete
     </button>
   </div>`,
   setupChrome: `
   // Mirrors the accessibility layer of the buttons into the box below.
   protected readonly sr = mirrorScreenReader([
-    { label: 'save', selector: 'button[demoejectedaction]:first-of-type' },
-    { label: 'delete', selector: 'button[demoejectedaction]:last-of-type' },
+    { label: 'save', selector: 'button[appejectedaction]:first-of-type' },
+    { label: 'delete', selector: 'button[appejectedaction]:last-of-type' },
   ]);`,
   templateChrome: `
   <div class="cngx-ex-sr-output">

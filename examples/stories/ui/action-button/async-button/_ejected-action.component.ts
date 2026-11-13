@@ -19,7 +19,7 @@ import {
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
-  selector: 'button[demoEjectedAction]',
+  selector: 'button[appEjectedAction]',
   standalone: true,
   imports: [CngxActionStatusStack],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +27,7 @@ import {
   hostDirectives: [
     {
       directive: CngxButtonBrain,
-      inputs: ['variant: demoEjectedAction', 'disabled', 'disabledReason'],
+      inputs: ['variant: appEjectedAction', 'disabled', 'disabledReason'],
     },
     { directive: CngxAsyncClick, inputs: ['cngxAsyncClick: action'] },
     {
@@ -37,10 +37,10 @@ import {
     },
   ],
   providers: [
-    provideButtonHost('demoEjectedAction', { defaultVariant: 'outline' }),
+    provideButtonHost('appEjectedAction', { defaultVariant: 'outline' }),
     provideActionStatusHost(),
   ],
-  host: { class: 'demo-ejected-action' },
+  host: { class: 'app-ejected-action' },
   template: `
     <span cngxActionStatusStack>
       <ng-content />
@@ -50,7 +50,7 @@ import {
     }
   `,
   styles: `
-    .demo-ejected-action {
+    .app-ejected-action {
       display: inline-flex;
       align-items: center;
       min-block-size: var(--cngx-target-min, 32px);
@@ -62,15 +62,15 @@ import {
       font: inherit;
       cursor: pointer;
     }
-    .demo-ejected-action[data-busy] {
+    .app-ejected-action[data-busy] {
       cursor: progress;
     }
-    .demo-ejected-action[aria-disabled='true']:not([data-busy], [data-pending]) {
+    .app-ejected-action[aria-disabled='true']:not([data-busy], [data-pending]) {
       color: var(--cngx-color-text-muted, #6b7280);
       cursor: not-allowed;
     }
     @media (forced-colors: active) {
-      .demo-ejected-action {
+      .app-ejected-action {
         border-color: ButtonText;
       }
     }

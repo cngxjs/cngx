@@ -9,12 +9,13 @@ button.
 
 ```typescript
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CngxButton, CngxButtonStart, CngxIconButton } from '@cngx/common/button';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-toolbar',
-  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxAsyncClick],
+  imports: [CngxButton, CngxButtonStart, CngxIconButton, CngxAsyncClick, RouterLink],
   template: `
     <button cngxButton tone="primary" [cngxAsyncClick]="save">
       <svg cngxButtonStart aria-hidden="true" viewBox="0 0 24 24">...</svg>
@@ -126,6 +127,25 @@ Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: 
 `<button cngxCloseButton aria-label="...">` and drop `.cngx-close-button__btn` from selectors.
 `--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and
 `-transition` are gone. The button tokens and the global focus ring take over.
+
+## Button group
+
+`[cngxButtonGroup]` joins buttons, icon buttons, addons and separators into one framed row. The host is `role="group"` and needs a name: set `aria-label` or `aria-labelledby`, else it warns [`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md) in development.
+
+```html
+<div cngxButtonGroup variant="outline" aria-label="History">
+  <button cngxButton>Undo</button>
+  <button cngxButton>Redo</button>
+</div>
+```
+
+- **Orientation.** `orientation="horizontal"` is the default; `vertical` stacks the segments into a column.
+- **Shared variant and size.** `variant` and `size` set on the group reach every `cngxButton` and `cngxIconButton` inside through `CNGX_BUTTON_GROUP`; a button's own input still wins (`input ?? group ?? config ?? default`). `tone` is not passed, intent is per button. A nested group without its own value inherits the outer group's.
+- **Toolbar.** A group whose direct children are groups is a toolbar: the sub-groups sit apart, the gap floored to `--cngx-target-gap` on a coarse pointer. One group child is enough, so a loose button next to sub-groups gets no segment geometry; wrap it in a group of its own.
+- **Separator.** `cngxButtonGroupSeparator` draws a divider that follows the orientation. It is decorative (`aria-hidden="true"`); when the split carries meaning, use two labelled groups.
+- **Addon.** `cngxButtonGroupAddon` gives non-interactive content (an avatar, an icon, a count, a short status) a segment of the group's size. It adds no role; its text is read in document order between the buttons.
+- **Geometry.** The segment geometry (collapsed seams, outer radius only, lifted hover and focus) ships in the `cngx.css` bundle (`cngx-button-group.css`), not on the directive.
+- **Selection** is not the group's job; use `CngxButtonToggleGroup` for pressed state.
 
 ## Opening a menu
 

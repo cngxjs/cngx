@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
 
+import { moduleFilesOf } from '../dev-diagnostics.mjs';
 import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
 
 /**
@@ -30,7 +31,15 @@ import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
  *     future row must still be a real query without a `@slot` tag (rendering
  *     the slot means deleting its row);
  *   - the scan found more than 100 slot directives and more than 200 host-slot
- *     pairs, so a scan that silently finds nothing fails.
+ *     pairs, so a scan that silently finds nothing fails;
+ *   - every slot directive is reachable from a `public-api.ts` barrel, through
+ *     `export * from` chains or a named `export { X }`: a slot directive a
+ *     consumer cannot import never matches in a consumer template, so the host
+ *     renders its default. {@link UNEXPORTED_EXEMPT} is exact and empty.
+ *
+ * Marker slots (attribute directives on projected content: `cngxButtonStart`,
+ * the card and tag slots) carry no `@slot` tag; the tag names `ng-template`
+ * slots only.
  *
  * Scanned: `projects/**` `.ts`, minus `*.spec.ts` and the directories
  * `walkSources` skips. Queries are resolved on the TypeScript AST, so generic
@@ -47,6 +56,12 @@ import { REPO_ROOT, walkSources } from './_i18n-ast.mjs';
  * Row shape: `{ host, attr, reason, source }`.
  */
 export const EXEMPT = [];
+
+/**
+ * Slot directives no `public-api.ts` barrel reaches. Exact, shrink-only, empty.
+ * Row shape: `{ file, slot, reason }`, keyed `<file> <slot>` like the scan.
+ */
+export const UNEXPORTED_EXEMPT = [];
 
 const QUERY_FNS = new Set(['contentChild', 'contentChildren']);
 const SLOT_SELECTOR = /ng-template\[([\w-]+)\]/g;
@@ -194,6 +209,8 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
 
   /** className -> attrs */
   const slotDirectives = new Map();
+  /** className -> declaring file */
+  const slotDirectiveFiles = new Map();
   /** @type {{ path: string, node: ts.ClassDeclaration, hostDirectives: string[] }[]} */
   const hosts = [];
 
@@ -207,6 +224,7 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
           const attrs = selector ? [...selector.matchAll(SLOT_SELECTOR)].map((m) => m[1]) : [];
           if (attrs.length > 0) {
             slotDirectives.set(node.name.text, attrs);
+            slotDirectiveFiles.set(node.name.text, path);
           }
         }
       }
@@ -286,6 +304,7 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
 
   return {
     slotDirectives,
+    slotDirectiveFiles,
     pairs,
     documented,
     missing,
@@ -294,6 +313,102 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
     exemptWithSlot,
     exemptNotQueried,
   };
+}
+
+const BARREL = /(^|\/)public-api\.ts$/;
+
+/**
+ * What the `public-api.ts` barrels expose, as `<file>::*` (every export of the
+ * file, reached through an `export * from` chain) and `<file>::<name>` (one
+ * name, reached through `export { X } from` or a local `export { X }` of an
+ * imported binding). A relative specifier resolves to `x.ts`, `x/index.ts` or
+ * `x/public-api.ts`. A named re-export is followed to the module it names, so a
+ * same-named export elsewhere never reaches a slot directive.
+ *
+ * @param {{ path: string, text: string }[]} files
+ */
+export function barrelReach(files) {
+  const byPath = new Map(files.map((file) => [file.path, file.text]));
+  const resolveSpecifier = (from, specifier) =>
+    ts.isStringLiteral(specifier)
+      ? moduleFilesOf(from, specifier.text)?.find((c) => byPath.has(c))
+      : undefined;
+  const reached = new Set();
+  /** @type {{ path: string, name: string | null }[]} */
+  const queue = files
+    .filter((file) => BARREL.test(file.path))
+    .map((file) => ({ path: file.path, name: null }));
+  const push = (path, name) => {
+    if (path) {
+      queue.push({ path, name });
+    }
+  };
+  while (queue.length > 0) {
+    const { path, name } = queue.pop();
+    const key = `${path}::${name ?? '*'}`;
+    if (reached.has(key)) {
+      continue;
+    }
+    reached.add(key);
+    const sf = ts.createSourceFile(path, byPath.get(path), ts.ScriptTarget.Latest, true);
+    /** local name -> { path, name } of the import it binds */
+    const imports = new Map();
+    for (const statement of sf.statements) {
+      const bindings = ts.isImportDeclaration(statement)
+        ? statement.importClause?.namedBindings
+        : undefined;
+      if (!bindings || !ts.isNamedImports(bindings)) {
+        continue;
+      }
+      const target = resolveSpecifier(path, statement.moduleSpecifier);
+      bindings.elements.forEach((el) =>
+        imports.set(el.name.text, { path: target, name: (el.propertyName ?? el.name).text }),
+      );
+    }
+    for (const statement of sf.statements) {
+      if (!ts.isExportDeclaration(statement)) {
+        continue;
+      }
+      const clause = statement.exportClause;
+      const target = statement.moduleSpecifier
+        ? resolveSpecifier(path, statement.moduleSpecifier)
+        : undefined;
+      if (!clause) {
+        push(target, name);
+        continue;
+      }
+      if (!ts.isNamedExports(clause)) {
+        continue;
+      }
+      for (const el of clause.elements) {
+        if (name !== null && el.name.text !== name) {
+          continue;
+        }
+        const local = (el.propertyName ?? el.name).text;
+        if (statement.moduleSpecifier) {
+          push(target, local);
+          continue;
+        }
+        const imported = imports.get(local);
+        push(imported?.path, imported?.name);
+      }
+    }
+  }
+  return reached;
+}
+
+/**
+ * Slot directives whose declaring file is neither reached whole nor reached
+ * for their own name, as `<file> <class>` keys.
+ *
+ * @param {Map<string, string>} slotDirectiveFiles className -> file
+ * @param {Set<string>} reached output of {@link barrelReach}
+ */
+export function unreachableSlotDirectives(slotDirectiveFiles, reached) {
+  return [...slotDirectiveFiles]
+    .filter(([slot, path]) => !reached.has(`${path}::*`) && !reached.has(`${path}::${slot}`))
+    .map(([slot, path]) => `${path} ${slot}`)
+    .sort();
 }
 
 const describePair = (p) => `${p.path} ${p.host}: ${p.attr}`;
@@ -325,6 +440,19 @@ describe('slot JSDoc coverage (repo)', () => {
 
   it('keeps the exemption list empty', () => {
     expect(EXEMPT).toHaveLength(0);
+  });
+
+  it('exports every slot directive from a public-api barrel', () => {
+    const unreachable = unreachableSlotDirectives(result.slotDirectiveFiles, barrelReach(files));
+    expect(
+      unreachable,
+      'a slot directive no public-api.ts reaches cannot be imported, so it never matches in a consumer template; export it from its entry barrel',
+    ).toEqual(UNEXPORTED_EXEMPT.map((row) => `${row.file} ${row.slot}`).sort());
+  });
+
+  it('keeps the barrel exemption list empty and every row reasoned', () => {
+    expect(UNEXPORTED_EXEMPT).toHaveLength(0);
+    expect(UNEXPORTED_EXEMPT.filter((row) => !row.reason || row.reason.trim() === '')).toEqual([]);
   });
 
   it('matches every exemption row to a real query without a @slot line', () => {
@@ -478,6 +606,64 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
       host('// readonly foo = contentChild(CngxFoo);\n/* contentChildren(CngxBar) */'),
     );
     expect(result.pairs).toEqual([]);
+  });
+
+  it('reports a slot directive no barrel reaches and passes one reached through export *', () => {
+    const files = [
+      slotFile,
+      { path: 'projects/x/public-api.ts', text: "export * from './reached';" },
+      { path: 'projects/x/reached/index.ts', text: "export * from '../slots';" },
+      {
+        path: 'projects/x/hidden.ts',
+        text: "@Directive({ selector: 'ng-template[cngxHidden]' }) export class CngxHidden {}",
+      },
+    ];
+    const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
+    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([
+      'projects/x/hidden.ts CngxHidden',
+    ]);
+  });
+
+  it('does not let a same-named export from another module reach a slot directive', () => {
+    const files = [
+      {
+        path: 'projects/x/hidden.ts',
+        text: "@Directive({ selector: 'ng-template[cngxHidden]' }) export class CngxHidden {}",
+      },
+      { path: 'projects/x/other.ts', text: 'export class CngxHidden {}' },
+      { path: 'projects/x/public-api.ts', text: "export { CngxHidden } from './other';" },
+    ];
+    const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
+    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([
+      'projects/x/hidden.ts CngxHidden',
+    ]);
+  });
+
+  it('follows an imported binding the barrel exports locally', () => {
+    const files = [
+      {
+        path: 'projects/x/hidden.ts',
+        text: "@Directive({ selector: 'ng-template[cngxHidden]' }) export class CngxHidden {}",
+      },
+      {
+        path: 'projects/x/public-api.ts',
+        text: "import { CngxHidden } from './hidden';\nexport { CngxHidden };",
+      },
+    ];
+    const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
+    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([]);
+  });
+
+  it('passes a slot directive a barrel re-exports by name', () => {
+    const files = [
+      {
+        path: 'projects/x/hidden.ts',
+        text: "@Directive({ selector: 'ng-template[cngxHidden]' }) export class CngxHidden {}",
+      },
+      { path: 'projects/x/public-api.ts', text: "export { CngxHidden } from './hidden';" },
+    ];
+    const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
+    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([]);
   });
 
   it('resolves contentChild.required and contentChildren', () => {

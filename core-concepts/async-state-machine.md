@@ -407,7 +407,7 @@ protected readonly commitAction: CngxTabsCommitAction = () => {
 
 <aside class="cc-note">
 
-**Note.** `CngxActionButton` and `dialog[cngxDialog]` expose a public `state` property but do **not** provide `CNGX_STATEFUL` via DI. The dialog accepts `[state]` as input; the action button reflects an external run through `[externalState]`. Bind explicitly: `[cngxToastOn]="btn.state"`.
+**Note.** `CngxActionButton` exposes `state` and accepts `[externalState]`; `dialog[cngxDialog]` exposes `submitState` and accepts `[state]`. Neither provides `CNGX_STATEFUL`. Bind explicitly: `[cngxToastOn]="btn.state"` / `[cngxToastOn]="dlg.submitState"`.
 
 </aside>
 
@@ -525,7 +525,7 @@ Current providers:
 
 <aside class="cc-note">
 
-**Note.** `CngxActionButton` and `dialog[cngxDialog]` are stateful too but do not currently provide the token. Bind their `state` explicitly when wiring a bridge.
+**Note.** `CngxActionButton` and `dialog[cngxDialog]` are stateful too but do not provide the token. Bind `btn.state` / `dlg.submitState` explicitly when wiring a bridge.
 
 </aside>
 

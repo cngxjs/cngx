@@ -4,36 +4,9 @@ import { By } from '@angular/platform-browser';
 import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
 import { CngxMenu, CngxMenuItem, CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { injectMenuToggle } from './menu-toggle';
-
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 // A minimal host on the brain and both triggers, outside the shipped components.
 @Component({
@@ -81,8 +54,6 @@ function setup() {
 }
 
 describe('injectMenuToggle', () => {
-  beforeEach(() => polyfillPopover());
-
   it('toggles the menu on click', () => {
     const { button, popover, flush } = setup();
     button.click();

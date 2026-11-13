@@ -21,6 +21,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { buildSelectorMap } from './examples-gen/index.mjs';
 import { collectStoryEntries, expectedRecipes } from './plugin-recipes.mjs';
 import { computeSourceHash } from './plugin-token-reference.mjs';
 
@@ -101,7 +102,7 @@ function readArtifactFile(artifact) {
   return existsSync(abs) ? readFileSync(abs, 'utf8') : null;
 }
 
-function main() {
+async function main() {
   const manifest = JSON.parse(readFileSync(resolve(MANIFEST), 'utf8'));
   const unparseable = [];
   const entries = collectStoryEntries((path, err) => {
@@ -109,7 +110,11 @@ function main() {
   });
   const drifted = [
     ...unparseable,
-    ...computeCoverage(manifest, expectedRecipes(entries), readArtifactFile),
+    ...computeCoverage(
+      manifest,
+      expectedRecipes(entries, await buildSelectorMap()),
+      readArtifactFile,
+    ),
     ...computeDrift(manifest, readSourceFile),
   ];
   const total = (manifest.sources ?? []).length;
@@ -127,5 +132,8 @@ function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main();
+  main().catch((err) => {
+    process.stdout.write(`plugin:drift - ${err.message}\n`);
+    process.exitCode = 1;
+  });
 }

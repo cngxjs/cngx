@@ -112,7 +112,7 @@ export class CngxSplitButton implements CngxSplitButtonContext {
         }
         cngxDevWarn(
           'CNGX1073',
-          '[cngxSplitButton] has no main cngxButton. Place a <button cngxButton> as a direct child; the caret derives its blocked state from it.',
+          '[cngxSplitButton] has no main button. Place a button host (cngxButton, cngxIconButton, cngxActionButton or a custom CngxButtonBrain host) as a direct child; the caret derives its blocked state from it.',
           host,
         );
       });

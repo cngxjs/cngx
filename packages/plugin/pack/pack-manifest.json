@@ -69,7 +69,7 @@
     {
       "artifact": "pack/recipes/common-interactive-async-click.md",
       "source": "examples/stories/common/interactive/async-click/basic-happy-path.story.ts",
-      "contentHash": "sha256:9df675d81157cfec302acac1ac9a8240b00c64a23f75749d20e9b6165b673f4b"
+      "contentHash": "sha256:ab3e4ddfdc4187503ba3758d89d96ab9c8a64259cf7e3fc67c14571c11e80f43"
     },
     {
       "artifact": "pack/recipes/common-interactive-retry.md",
@@ -239,22 +239,22 @@
     {
       "artifact": "pack/recipes/common-button-button.md",
       "source": "examples/stories/common/button/button/async-click-busy.story.ts",
-      "contentHash": "sha256:ed2df1d57c3eb294fbc7b9c88651309d3d2729a2ded9bbd9525538c5f96eedef"
+      "contentHash": "sha256:100d61cbc0a178ea81e8dbfd16d21bfad0a9eb66a1ce9c67d2f48b9dfab3df61"
     },
     {
       "artifact": "pack/recipes/common-menu-button-split-button.md",
       "source": "examples/stories/common/menu-button/split-button/basic.story.ts",
-      "contentHash": "sha256:f73813a90c267d0cffdc88d421eab6c8baf9536cf1730c07e13652c51999712c"
+      "contentHash": "sha256:19b0d6a1527e9fde72ea87736717f962e187b561b7d4e8be6a982c700213753c"
     },
     {
       "artifact": "pack/recipes/common-button-composition.md",
       "source": "examples/stories/common/button/composition/custom-host.story.ts",
-      "contentHash": "sha256:5a6e2358d1b5280e07b03bf3ebf212d08a6b63cac48f51f393da4d9d48a07d19"
+      "contentHash": "sha256:3c30dce3030663e1b1643cc9f0dd5eeee03a55c052b40a1adb6c58ecb15b807a"
     },
     {
       "artifact": "pack/recipes/ui-action-button-async-button.md",
-      "source": "examples/stories/ui/action-button/async-button/ejected-host.story.ts",
-      "contentHash": "sha256:a10cf9a4396d9ba882dea7974a9729c2a7effe2496890948e9e3df55ef9614f2"
+      "source": "examples/stories/ui/action-button/async-button/external-state.story.ts",
+      "contentHash": "sha256:5964b84c3d45838a9febe120f108c46809d50419c82251960c778226a40fbaf9"
     }
   ],
   "theming": {

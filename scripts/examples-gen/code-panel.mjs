@@ -3,6 +3,8 @@
 // No fs access, so scripts/__tests__ can import this module without running
 // the generator (index.mjs calls main() on import).
 
+import { posix } from 'node:path';
+
 export function stripCommentsForScan(s) {
   return String(s ?? '')
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -165,11 +167,12 @@ export function filterImportLine(line, isReferenced) {
 
 /**
  * Whether a template uses a class: by name, or by one of its selectors
- * (`selectorMap` maps class name to selectors). Non-Cngx classes and Cngx
- * classes with no known selector always count as used.
+ * (`selectorMap` maps class name to selectors). A class with no known
+ * selector always counts as used; a non-Cngx class counts as used unless the
+ * map knows it (the story-local classes).
  */
 export function templateUsesClass(cls, tpl, selectorMap) {
-  if (!cls.startsWith('Cngx')) return true;
+  if (!cls.startsWith('Cngx') && !selectorMap?.has(cls)) return true;
   if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
   const selectors = selectorMap?.get(cls) ?? [];
   if (selectors.length === 0) return true;
@@ -408,6 +411,78 @@ export function mergeImportLines(lines) {
   return out;
 }
 
+/** The Cngx `imports` the panel decorator lists: those the artifact `template` uses. */
+function panelImports(story, selectorMap) {
+  return (story.imports ?? []).filter((cls) =>
+    templateUsesClass(cls, story.template ?? '', selectorMap),
+  );
+}
+
+/**
+ * The non-core import lines of the TypeScript panel, as the reader sees them:
+ * `importLines` filtered against what the panel shows (`setup`, `template`,
+ * the decorator), fixture paths rewritten by {@link displayImportPath} and
+ * lines from one module merged.
+ */
+export function displayedImportLines({ story, importLines, selectorMap }) {
+  const classText = stripCommentsForScan(story.setup ?? '');
+  const hostDirectives = (story.hostDirectives ?? []).filter(Boolean);
+  const viewProviders = (story.viewProviders ?? []).filter(Boolean);
+  const scan = [classText, story.template ?? '', ...hostDirectives, ...viewProviders].join('\n');
+  const explicitRefs = new Set([...panelImports(story, selectorMap), ...hostDirectives]);
+  const isReferenced = (id) =>
+    explicitRefs.has(id) || new RegExp(String.raw`\b${escapeRegExp(id)}\b`).test(scan);
+  return mergeImportLines(
+    (importLines ?? [])
+      .filter((l) => !l.includes("from '@angular/core'"))
+      .map((line) => filterImportLine(line, isReferenced))
+      .filter((l) => l !== null)
+      .map(displayImportPath),
+  );
+}
+
+/**
+ * The story-local files among the panel's import lines (from
+ * {@link displayedImportLines}): a relative module whose file name starts
+ * with `_` (a sibling such as `'./_chip-button.component'`), or a file under
+ * the app fixtures, which the panel shows as `'./fixtures/<file>'`. The shared
+ * `'./fixtures'` barrel is data, not the artifact, and stays out. Each entry
+ * carries the `module` specifier and the `panelPath` that titles its code tab
+ * (the specifier without `./`, with `.ts` when it names no extension).
+ */
+export function storyLocalImports(displayedLines) {
+  const seen = new Set();
+  const out = [];
+  for (const line of displayedLines ?? []) {
+    const module = /\bfrom\s*['"]([^'"]+)['"]/.exec(line)?.[1];
+    if (!module || !module.startsWith('.') || seen.has(module)) {
+      continue;
+    }
+    const fileName = module.split('/').at(-1);
+    const isAppFixture = module.startsWith('./fixtures/');
+    if (!isAppFixture && !fileName.startsWith('_')) {
+      continue;
+    }
+    seen.add(module);
+    const withExt = /\.[cm]?[jt]s$/.test(fileName) ? module : `${module}.ts`;
+    out.push({ module, panelPath: withExt.replace(/^\.\//, '') });
+  }
+  return out;
+}
+
+/**
+ * Where a {@link storyLocalImports} entry lives on disk, resolved the way the
+ * live component resolves it: a `'./fixtures/<file>'` entry under
+ * `appFixturesDir` (the depth-rewritten `_fixtures` import), any other entry
+ * next to the story in `storyDir`.
+ */
+export function storyLocalSourcePath({ panelPath, module }, { storyDir, appFixturesDir }) {
+  if (module.startsWith('./fixtures/')) {
+    return posix.join(appFixturesDir, panelPath.slice('fixtures/'.length));
+  }
+  return posix.join(storyDir, panelPath);
+}
+
 /**
  * The text of the TypeScript code panel: the component a consumer would
  * write for the artifact half of a story. The decorator mirrors the live one
@@ -427,12 +502,9 @@ export function buildDisplayedTs({
   selectorMap,
 }) {
   const classText = stripCommentsForScan(story.setup ?? '');
-  const template = story.template ?? '';
   const hostDirectives = (story.hostDirectives ?? []).filter(Boolean);
   const viewProviders = (story.viewProviders ?? []).filter(Boolean);
-  const imports = (story.imports ?? []).filter((cls) =>
-    templateUsesClass(cls, template, selectorMap),
-  );
+  const imports = panelImports(story, selectorMap);
 
   const coreSymbols = [
     'ChangeDetectionStrategy',
@@ -441,17 +513,7 @@ export function buildDisplayedTs({
   ];
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
-  const scan = [classText, template, ...hostDirectives, ...viewProviders].join('\n');
-  const explicitRefs = new Set([...imports, ...hostDirectives]);
-  const isReferenced = (id) =>
-    explicitRefs.has(id) || new RegExp(String.raw`\b${escapeRegExp(id)}\b`).test(scan);
-  const otherLines = mergeImportLines(
-    importLines
-      .filter((l) => !l.includes("from '@angular/core'"))
-      .map((line) => filterImportLine(line, isReferenced))
-      .filter((l) => l !== null)
-      .map(displayImportPath),
-  );
+  const otherLines = displayedImportLines({ story, importLines, selectorMap });
 
   const decorator = [
     '@Component({',

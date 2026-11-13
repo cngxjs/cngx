@@ -1534,7 +1534,7 @@
       "lib": "common",
       "severity": "warn",
       "production": "stripped",
-      "title": "Split button without a main cngxButton",
+      "title": "Split button without a main button",
       "page": "core-concepts/error-codes/cngx1073.md",
       "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1073.html",
       "status": "active",
@@ -1542,7 +1542,7 @@
       "messages": [
         {
           "file": "projects/common/menu-button/split-button.directive.ts",
-          "text": "[cngxSplitButton] has no main cngxButton. Place a <button cngxButton> as a direct child; the caret derives its blocked state from it."
+          "text": "[cngxSplitButton] has no main button. Place a button host (cngxButton, cngxIconButton, cngxActionButton or a custom CngxButtonBrain host) as a direct child; the caret derives its blocked state from it."
         }
       ]
     },
