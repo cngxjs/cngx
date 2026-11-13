@@ -197,10 +197,6 @@ describe('solid button label contrast on hover and press (default palette)', () 
     ['primary', 'dark', 'hover'],
     ['danger', 'light', 'hover'],
     ['danger', 'light', 'pressed'],
-  ] as const)(title, expectClears);
-
-  // E10: expected to fail until PR 8 (T6) shades the dark-scheme fill away from the dark ink (3.92, 4.22, 3.40 today).
-  it.fails.each([
     ['primary', 'dark', 'pressed'],
     ['danger', 'dark', 'hover'],
     ['danger', 'dark', 'pressed'],

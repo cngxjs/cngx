@@ -198,7 +198,10 @@
   /**
    * Colour a solid button's tone mixes towards on hover and press (by
    * `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill
-   * darkens without a second tone token.
+   * shifts without a second tone token. By default it is the opposite of
+   * `--cngx-button-on-tone` (black under white ink, white under dark ink), so
+   * the shaded fill keeps its label contrast; black is only the registered
+   * initial.
    * @group Tone
    */
   @property --cngx-button-hover-shade {
@@ -369,9 +372,13 @@
   }
 
   /* Derive the colour transition from the motion scale; the registered
-   * initial-value wins over a read-site fallback, so the token must be SET. */
+   * initial-value wins over a read-site fallback, so the token must be SET.
+   * The solid hover / press shade is the ink's opposite (white ink gives
+   * black, dark ink gives white), so the shaded fill moves away from the
+   * label in both schemes. */
   :where(.cngx-button) {
     --cngx-button-transition: var(--cngx-duration-fast);
+    --cngx-button-hover-shade: oklch(from var(--cngx-button-on-tone) round(1 - l, 1) 0 0);
   }
 }
 
