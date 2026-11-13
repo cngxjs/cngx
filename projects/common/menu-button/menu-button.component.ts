@@ -21,33 +21,27 @@ import { injectButtonCaretIcon } from './caret-icon.token';
 import { injectMenuToggle } from './internal/menu-toggle';
 
 /**
- * A button that opens a menu: the WAI-ARIA APG Menu Button Pattern as its
- * own button type. Sits on the native `<button>` and renders on
- * `CngxButtonBrain`, so variant, tone, size, group, disabled and busy behave
- * exactly as on `cngxButton`.
+ * A button that opens a menu, after the WAI-ARIA APG Menu Button Pattern. It renders on
+ * `CngxButtonBrain`, so variant, tone, size, group, `disabled` with a reason and the busy layer
+ * work as on `cngxButton`.
  *
- * Two bindings wire it: `[menu]` is the `cngxMenu` it drives and
- * `[popover]` the `cngxPopover` that wraps the menu. The button composes
- * `CngxMenuTrigger` (keyboard model, focus, dismissal, the `menu` haspopup
- * hint) and `CngxPopoverTrigger` (anchor, `aria-haspopup`, `aria-expanded`,
- * `aria-controls`) as host directives, and toggles the popover on click.
- * `aria-haspopup` reads `menu` and `aria-controls` names the `role="menu"`
- * element; a sheet or fullscreen presentation reads `dialog` and names the
- * popover. ArrowDown, Enter or Space opens the menu and highlights the
- * first item, ArrowUp the last. After open, focus moves into the menu,
- * which carries `aria-activedescendant`. Escape or an activation closes it
- * and returns focus to the button; Tab or Shift+Tab closes it and leaves
- * focus where it went.
+ * `[menu]` takes the `cngxMenu` and `[popover]` the `cngxPopover` around it. The button carries
+ * `CngxMenuTrigger` and `CngxPopoverTrigger` as host directives and toggles the popover on click.
+ * `aria-haspopup` reads `menu` and `aria-controls` names the `role="menu"` element. A sheet or
+ * fullscreen popover reads `dialog` and names the popover.
  *
- * The end of the button renders a caret that turns while the menu is open:
- * the chevron of the shared icon set (`CNGX_ICON_CHEVRON_DOWN`). Swap the
- * glyph app-wide with `provideButtonCaretIcon`, or project your
- * own `cngxButtonEnd` content, which replaces the caret. The caret is
- * decorative and hidden from assistive technology.
+ * - ArrowDown, Enter or Space opens the menu on the first item, ArrowUp on the last.
+ * - Focus moves into the menu, which tracks the highlighted item with `aria-activedescendant`.
+ * - Escape or an activation closes the menu and returns focus to the button.
+ * - Tab and Shift+Tab close it and leave focus where it went.
  *
- * `disabled` renders `aria-disabled`: the button stays focusable, opens on
- * neither click nor key, closes an open menu, and reads its
- * `disabledReason` through `aria-describedby`.
+ * A disabled menu button opens on neither click nor key, and an open menu closes when it becomes
+ * disabled. The button has no action of its own: put async work on the menu items, not on a
+ * co-hosted `cngxAsyncClick`.
+ *
+ * The end renders the `CNGX_ICON_CHEVRON_DOWN` caret, turned while the menu is open and hidden
+ * from assistive technology. `provideButtonCaretIcon` swaps it app-wide, a projected
+ * `cngxButtonEnd` replaces it on one button. A `cngxButtonStart` element leads the label.
  *
  * ```html
  * <button cngxMenuButton="outline" [menu]="menu" [popover]="pop">Export</button>

@@ -8,14 +8,9 @@ import {
 } from './menu-button-language-section';
 
 /**
- * Menu-button i18n surface. Library defaults are English; consumers override
- * via {@link provideMenuButtonI18n}. Sibling to `CNGX_CARD_I18N`.
- *
- * `splitToggle` is the default accessible name of a `cngxIconMenuButton`
- * inside a `cngxSplitButton`. A consumer `aria-label` on the button wins
- * over it. `splitMainBusy` describes that caret while the main action runs.
- * The same shape as the menu-button section of a language pack,
- * declared once as {@link CngxMenuButtonLanguageSection}.
+ * The menu-button copy: the name of a split caret and its description while the main action
+ * runs. Same shape as the `menuButton` section of a language pack, declared once as
+ * {@link CngxMenuButtonLanguageSection}.
  */
 export type CngxMenuButtonI18n = CngxMenuButtonLanguageSection;
 
@@ -23,9 +18,11 @@ export type CngxMenuButtonI18n = CngxMenuButtonLanguageSection;
 const menuButtonBundleFromPack = createLanguageSection('menuButton', CNGX_MENU_BUTTON_LANGUAGE_EN);
 
 /**
- * DI token for the menu-button i18n bundle, a `Signal` so the names follow a
- * runtime language switch. `providedIn: 'root'`: the menu-button section of
- * the active language pack over the English defaults.
+ * The resolved menu-button copy, a `Signal` so the names follow a runtime language switch. By
+ * default the `menuButton` section of the active language pack over the English defaults.
+ *
+ * Override single keys with `provideMenuButtonI18n(withMenuButtonI18nLabels({ ... }))` or
+ * `provideCngxMenuButton(withMenuButtonI18nLabels({ ... }))`. `CngxSplitCaret` reads it.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
@@ -41,7 +38,7 @@ export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18
 );
 
 /**
- * Branded feature-fn for {@link provideMenuButtonI18n}.
+ * A label override feature for `provideMenuButtonI18n` and `provideCngxMenuButton(At)`.
  */
 export type CngxMenuButtonI18nFeature = ((
   bundle: Signal<CngxMenuButtonI18n>,
@@ -57,9 +54,10 @@ function defineMenuButtonI18nFeature(
 }
 
 /**
- * Override i18n labels via a partial bundle - unset keys keep the language
- * pack's phrase, or the English default. Pass a `Signal` to switch the
- * language at runtime.
+ * Overrides `splitToggle` and `splitMainBusy` with a partial bundle. Unset keys keep the language
+ * pack's phrase, or the English default. Pass a `Signal` to switch the language at runtime.
+ *
+ * Hand it to `provideMenuButtonI18n` or `provideCngxMenuButton(At)`.
  */
 export function withMenuButtonI18nLabels(
   overrides: Partial<CngxMenuButtonI18n> | Signal<Partial<CngxMenuButtonI18n>>,
@@ -68,9 +66,8 @@ export function withMenuButtonI18nLabels(
 }
 
 /**
- * Provider for the menu-button i18n bundle. The features apply on top of the
- * active language pack, so a subtree can override single keys of the app's
- * language.
+ * Provides the menu-button copy. The features apply on top of the active language pack, so a
+ * subtree overrides single keys of the app's language.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -90,7 +87,8 @@ export function provideMenuButtonI18n(...features: readonly CngxMenuButtonI18nFe
 }
 
 /**
- * Inject the resolved menu-button i18n bundle.
+ * Reads the resolved menu-button copy in an injection context. `CngxSplitCaret` already exposes
+ * it as `label()` and `busyNote()`, so only a host outside that directive needs this.
  */
 export function injectMenuButtonI18n(): Signal<CngxMenuButtonI18n> {
   return inject(CNGX_MENU_BUTTON_I18N);

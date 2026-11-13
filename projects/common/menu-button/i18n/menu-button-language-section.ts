@@ -2,31 +2,24 @@
 import type {} from '@cngx/core/i18n';
 
 /**
- * The menu-button section of a {@link CngxLanguagePack}. Same keys as
- * {@link CngxMenuButtonI18n}: the names the menu buttons fall back to when
- * the consumer sets none.
+ * The `menuButton` section of a `CngxLanguagePack`: the copy a split caret falls back to
+ * when the consumer sets none.
  *
  * @since 0.1.0
  * @relatedTo CngxIconMenuButton, CngxSplitButton
  */
 export interface CngxMenuButtonLanguageSection {
-  /**
-   * Accessible name of an icon menu button inside a split button, the caret
-   * that opens the alternative actions. Outside a split button the consumer
-   * names the icon menu button.
-   */
+  /** Accessible name of a split caret. An `aria-label` on the caret wins. */
   readonly splitToggle: string;
   /**
-   * Description of the split caret while the main action runs, so the
-   * caret's refusal says why. Referenced through `aria-describedby`, never
-   * part of the caret's name.
+   * Description of the split caret while the main action runs, referenced through
+   * `aria-describedby`, never part of the name.
    */
   readonly splitMainBusy: string;
 }
 
 /**
- * The English menu-button section: the single source of the menu buttons'
- * English copy. `CNGX_MENU_BUTTON_I18N` defaults to it, and the shipped
+ * The English `menuButton` section. `CNGX_MENU_BUTTON_I18N` defaults to it, and the shipped
  * English pack is built from it.
  *
  * @since 0.1.0
