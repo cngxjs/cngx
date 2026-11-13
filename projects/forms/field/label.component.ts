@@ -15,6 +15,16 @@ import { cngxDevWarn } from '@cngx/utils';
 import { injectFormFieldPresenter } from './inject-form-field-presenter';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 
+/**
+ * The text of `el` without its `aria-hidden` parts (the required marker),
+ * whitespace collapsed.
+ */
+function visibleText(el: HTMLElement): string {
+  const copy = el.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
+  return copy.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+}
+
 /** Elements a `<label for>` can name and click-focus (HTML labelable elements). */
 const LABELABLE = 'input:not([type="hidden"]), select, textarea, button, meter, output, progress';
 
@@ -140,7 +150,7 @@ export class CngxLabel {
     let warned = false;
     afterEveryRender({
       read: () => {
-        this.presenter.reportLabelText(el.textContent?.trim() ?? '');
+        this.presenter.reportLabelText(visibleText(el));
         const target = this.doc.getElementById(this.presenter.controlId());
         this.targetLabelable.set(target?.matches(LABELABLE) ?? false);
         if (typeof ngDevMode !== 'undefined' && ngDevMode && !warned && !this.presenter.control()) {

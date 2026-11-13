@@ -30,7 +30,7 @@ field from the next.
 | `CngxFormFieldPresenter` | `[cngxFormFieldPresenter]` | Core coordination directive (used via `hostDirectives`) |
 | `CngxLabel` | `[cngxLabel]` | Label with `for`/`id` linkage, auto-required marker, CSS state classes |
 | `CngxHint` | `[cngxHint]` | Hint element with `aria-describedby` linkage |
-| `CngxError` | `[cngxError]` | Manual error container with `aria-hidden`/`role="alert"` management |
+| `CngxError` | `[cngxError]` | Manual error container: a stable polite status region; gate the content on its `visible()` |
 | `CngxFieldSkinHost` | `[cngxFieldSkin]` | Resolves the field skin and writes it to its host as `data-skin`. Composed by `CngxInput`, `CngxFieldBox` and the select-family triggers |
 | `CngxFieldBox` | `[cngxFieldBox]` | The painted box around a control and its `CngxPrefix` / `CngxSuffix` affixes, in every skin. Resets its direct-child controls, paints the main control's state, forwards a click on its padding to the main control. |
 

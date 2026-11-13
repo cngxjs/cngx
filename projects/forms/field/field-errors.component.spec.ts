@@ -78,30 +78,19 @@ describe('CngxFieldErrors', () => {
       expect(errorsEl.getAttribute('aria-live')).toBe('polite');
     });
 
-    it('is aria-hidden when no errors visible', () => {
-      expect(errorsEl.getAttribute('aria-hidden')).toBe('true');
-    });
-
-    it('has no role when errors hidden', () => {
-      expect(errorsEl.getAttribute('role')).toBeNull();
-    });
-
-    it('removes aria-hidden when showError', () => {
-      ref.touched.set(true);
-      ref.invalid.set(true);
-      ref.errors.set([mockValidationError('required')]);
-      fixture.detectChanges();
-      TestBed.flushEffects();
+    it('is a status region and never aria-hidden while the errors are hidden', () => {
+      expect(errorsEl.getAttribute('role')).toBe('status');
       expect(errorsEl.getAttribute('aria-hidden')).toBeNull();
     });
 
-    it('sets role=alert when showError', () => {
+    it('keeps the same shape while the errors show', () => {
       ref.touched.set(true);
       ref.invalid.set(true);
       ref.errors.set([mockValidationError('required')]);
       fixture.detectChanges();
       TestBed.flushEffects();
-      expect(errorsEl.getAttribute('role')).toBe('alert');
+      expect(errorsEl.getAttribute('role')).toBe('status');
+      expect(errorsEl.getAttribute('aria-hidden')).toBeNull();
     });
   });
 

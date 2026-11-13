@@ -23,7 +23,7 @@ import { cngxDevWarn } from '@cngx/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import { CNGX_FIELD_AFFIX } from './field-box.token';
-import { registerFieldControl } from './field-control-registry';
+import { registerFieldControl, registerFieldLabel } from './field-control-registry';
 import {
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
@@ -121,6 +121,11 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
       }
       onCleanup(registerFieldControl(this.fieldState(), control));
     });
+    // The error summary names the field through this label text.
+    const label = { text: this.labelText, present: computed(() => this.labelText() !== '') };
+    effect((onCleanup) => {
+      onCleanup(registerFieldLabel(this.fieldState(), label));
+    });
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       const doc = inject(DOCUMENT);
@@ -166,9 +171,11 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   readonly labelId = computed(() => `cngx-${this.idName()}-label`);
   private readonly labelTextState = signal('');
   /**
-   * Rendered text of the projected `cngxLabel`, trimmed; `''` without one.
-   * Published on the host contract so surfaces that repeat the label (the
-   * select family's mobile sheet heading) follow a label text change.
+   * Visible text of the projected `cngxLabel` without its `aria-hidden` parts
+   * (the required marker), whitespace collapsed; `''` without one. Published
+   * on the host contract so surfaces that repeat the label (the select
+   * family's mobile sheet heading, the error summary) follow a label text
+   * change.
    */
   readonly labelText: Signal<string> = this.labelTextState.asReadonly();
 

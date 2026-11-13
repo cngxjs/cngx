@@ -97,8 +97,9 @@ export interface CngxFormFieldHostContract {
    */
   readonly readonly?: Signal<boolean>;
   /**
-   * Rendered text of the field's label element, trimmed; `''` while no
-   * label is rendered. Updates when the label text changes, for example on
+   * Visible text of the field's label element without its `aria-hidden`
+   * parts (the required marker), whitespace collapsed; `''` while no label
+   * is rendered. Updates when the label text changes, for example on
    * a language flip. Optional so hosts without a label surface keep
    * satisfying the contract; consumers read it as `host.labelText?.() ?? ''`.
    */
