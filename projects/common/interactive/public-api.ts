@@ -254,7 +254,7 @@ export {
   CngxClickOutside,
   CNGX_CLICK_OUTSIDE_DRIVER,
   type CngxClickOutsideDriver,
-} from './keyboard/click-outside.directive';
+} from './click-outside/click-outside.directive';
 export { CngxBeforeUnload } from './guard/before-unload.directive';
 export { canDeactivateWhenClean } from './guard/can-deactivate';
 export { CngxHoverable } from './hoverable/hoverable.directive';
