@@ -10,7 +10,9 @@ export {
 } from './nav-rail-tooltip';
 export {
   CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  type CngxNavRailFlyoutContent,
   type CngxNavRailFlyoutFactory,
+  type CngxNavRailFlyoutGroup,
   type CngxNavRailFlyoutSources,
   injectNavRailFlyout,
 } from './nav-rail-flyout';

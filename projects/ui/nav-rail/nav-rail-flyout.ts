@@ -9,10 +9,31 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
-import type { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
 import type { CngxNavRailSide } from './nav-rail';
+
+/**
+ * A group head the flyout drives: its open state, a way to close it and
+ * focus for Escape. `CngxNavGroup` matches it; another disclosure head with
+ * the same members joins the flyout without a fork.
+ *
+ * @since 0.3.0
+ */
+export interface CngxNavRailFlyoutGroup {
+  readonly disclosure: { readonly opened: Signal<boolean>; close(): void };
+  focus(options?: FocusOptions): void;
+}
+
+/**
+ * A group content the flyout shows beside its head; it names that head.
+ * `CngxNavGroupContent` matches it.
+ *
+ * @since 0.3.0
+ */
+export interface CngxNavRailFlyoutContent {
+  readonly group: Signal<CngxNavRailFlyoutGroup>;
+}
 
 /**
  * What `injectNavRailFlyout` reads from the organism that projects the rows.
@@ -25,18 +46,18 @@ export interface CngxNavRailFlyoutSources {
   readonly railed: Signal<boolean>;
   /** The edge the rows sit on; the flyout opens away from it. */
   readonly side: Signal<CngxNavRailSide>;
-  /** The projected group heads. */
-  readonly groups: Signal<readonly CngxNavGroup[]>;
+  /** The projected group heads (`CngxNavGroup`). */
+  readonly groups: Signal<readonly CngxNavRailFlyoutGroup[]>;
   /** The host elements of `groups`, in the same order. */
   readonly groupElements: Signal<readonly ElementRef<HTMLElement>[]>;
   /** The projected group contents; each one names its head through `group()`. */
-  readonly contents: Signal<readonly CngxNavGroupContent[]>;
+  readonly contents: Signal<readonly CngxNavRailFlyoutContent[]>;
   /** The host elements of `contents`, in the same order. */
   readonly contentElements: Signal<readonly ElementRef<HTMLElement>[]>;
 }
 
 interface FlyoutPair {
-  readonly group: CngxNavGroup;
+  readonly group: CngxNavRailFlyoutGroup;
   readonly head: HTMLElement;
   readonly content: HTMLElement;
 }
@@ -44,8 +65,9 @@ interface FlyoutPair {
 /**
  * Shows an open nav group as a flyout beside its head, away from `side`,
  * while the rows are railed. Call it in the constructor of the organism that projects the rows
- * and pass its content queries for `CngxNavGroup` and `CngxNavGroupContent`,
- * each with its `read: ElementRef` twin. A content is paired with its head
+ * and pass its content queries for `CngxNavGroup` and `CngxNavGroupContent`
+ * (or any head and content matching `CngxNavRailFlyoutGroup` and
+ * `CngxNavRailFlyoutContent`), each with its `read: ElementRef` twin. A content is paired with its head
  * through `CngxNavGroupContent.group()`, never by position.
  *
  * While railed, each `cngxNavGroupContent` becomes a native
