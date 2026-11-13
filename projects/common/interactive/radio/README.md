@@ -99,7 +99,7 @@ export interface CngxRadioGroupContract<T = unknown> {
   readonly skin: Signal<CngxRadioSkin | undefined>;
   register(radio: CngxRadioRegistration<T>): void;
   unregister(id: string): void;
-  consumePendingArrowSelect(value: T): boolean;
+  consumePendingArrowSelect(value: T, leafDisabled?: boolean): boolean;
 }
 
 export interface CngxRadioRegistration<T = unknown> {

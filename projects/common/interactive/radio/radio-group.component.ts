@@ -242,15 +242,15 @@ export class CngxRadioGroup<T = unknown>
    * Implements `CngxRadioGroupContract.consumePendingArrowSelect`: when the host
    * `CngxRovingTabindex` reports that focus just moved by a navigation key, sets the
    * group `value` to `value` and returns `true`. Returns `false` for any other focus
-   * (such as Tab) or while the group is disabled. The transient flag is cleared on
-   * every call. Called by each `CngxRadio` from its focus handler, so arrow navigation
-   * selects.
+   * (such as Tab), while the group is disabled and while `leafDisabled` is set. The
+   * transient flag is cleared on every call. Called by each `CngxRadio` from its focus
+   * handler, disabled or not, so arrow navigation selects.
    */
-  consumePendingArrowSelect(value: T): boolean {
+  consumePendingArrowSelect(value: T, leafDisabled = false): boolean {
     if (!this.roving.consumeNavigationKey()) {
       return false;
     }
-    if (this.disabled()) {
+    if (this.disabled() || leafDisabled) {
       return false;
     }
     this.value.set(value);

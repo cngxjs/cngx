@@ -176,11 +176,11 @@ export class CngxRadio<T = unknown> {
     inject(DestroyRef).onDestroy(() => this.group.unregister(this.id));
   }
 
+  // A group-disabled radio is focusable, so it still consumes the roving flag; the group
+  // refuses the selection. Returning early here would leave the flag set for the next,
+  // unrelated focus.
   protected handleFocus(): void {
-    if (this.radioDisabled()) {
-      return;
-    }
-    this.group.consumePendingArrowSelect(this.value());
+    this.group.consumePendingArrowSelect(this.value(), this.radioDisabled());
   }
 
   protected handleSelect(): void {

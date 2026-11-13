@@ -56,8 +56,13 @@ export interface CngxRadioGroupContract<T = unknown> {
    * cleared so a subsequent Tab-into focus does not double-select.
    * Returns whether the group actually consumed the flag, so the
    * leaf can short-circuit redundant work.
+   *
+   * Called on every focus, a disabled leaf included: a group-disabled
+   * radio stays focusable, and a flag it skipped would select on the
+   * next unrelated focus. `leafDisabled` makes the group consume the
+   * flag and refuse the selection.
    */
-  consumePendingArrowSelect(value: T): boolean;
+  consumePendingArrowSelect(value: T, leafDisabled?: boolean): boolean;
 }
 
 /**
