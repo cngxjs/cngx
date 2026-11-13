@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { focusFieldControl } from './field-control-registry';
+import { fieldIdName } from './form-field-presenter';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n';
 import type { CngxFieldAccessor } from './models';
@@ -58,7 +59,7 @@ function segmentsEqual(a: readonly SummarySegment[], b: readonly SummarySegment[
  * when the field renders no label.
  */
 function visibleLabelOf(doc: Document, name: string): string | undefined {
-  const label = doc.getElementById(`cngx-${name}-label`);
+  const label = doc.getElementById(`cngx-${fieldIdName(name)}-label`);
   if (!label) {
     return undefined;
   }

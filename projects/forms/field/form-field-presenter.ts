@@ -1,4 +1,6 @@
+import { DOCUMENT } from '@angular/common';
 import {
+  afterRenderEffect,
   computed,
   contentChildren,
   Directive,
@@ -17,6 +19,7 @@ import {
   type CngxFormFieldHostContract,
 } from '@cngx/core/tokens';
 import { coerceSignal, createKeyedRegistry, nextUid } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import { CNGX_FIELD_AFFIX } from './field-box.token';
@@ -58,6 +61,17 @@ function buildHint(
     return high(max);
   }
   return undefined;
+}
+
+/**
+ * The field name as it appears in the field's ids: every character outside
+ * `[A-Za-z0-9_-]` becomes `-`, so a Signal Forms name such as `a.form0.email`
+ * gives `a-form0-email` and the ids need no escaping in a selector.
+ *
+ * @internal
+ */
+export function fieldIdName(name: string): string {
+  return name.replace(/[^A-Za-z0-9_-]/g, '-');
 }
 
 /**
@@ -107,6 +121,21 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
       }
       onCleanup(registerFieldControl(this.fieldState(), control));
     });
+
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      const doc = inject(DOCUMENT);
+      afterRenderEffect(() => {
+        const id = this.inputId();
+        const count = doc.querySelectorAll(`[id="${id}"]`).length;
+        if (count > 1) {
+          cngxDevWarn(
+            'CNGX2029',
+            `[cngx-form-field] ${count} elements carry the id "${id}". Give every ` +
+              'adaptFormControl() field a unique name and put one control in each field.',
+          );
+        }
+      });
+    }
   }
 
   /**
@@ -129,10 +158,12 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
 
   /** The field's name from Signal Forms (e.g. `'email'`, `'password'`). */
   readonly name = computed(() => this.fieldState().name());
+  /** The {@link name} as it appears in ids, see `fieldIdName`. */
+  private readonly idName = computed(() => fieldIdName(this.name()));
   /** Deterministic input element ID: `cngx-{name}-input`. */
-  readonly inputId = computed(() => `cngx-${this.name()}-input`);
+  readonly inputId = computed(() => `cngx-${this.idName()}-input`);
   /** Deterministic label element ID: `cngx-{name}-label`. */
-  readonly labelId = computed(() => `cngx-${this.name()}-label`);
+  readonly labelId = computed(() => `cngx-${this.idName()}-label`);
   private readonly labelTextState = signal('');
   /**
    * Rendered text of the projected `cngxLabel`, trimmed; `''` without one.
@@ -150,7 +181,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   }
 
   /** Deterministic hint element ID: `cngx-{name}-hint`. */
-  readonly hintId = computed(() => `cngx-${this.name()}-hint`);
+  readonly hintId = computed(() => `cngx-${this.idName()}-hint`);
 
   private readonly hints = createKeyedRegistry<object>({ name: 'CngxFormFieldPresenter hints' });
 
@@ -165,10 +196,10 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     return () => this.hints.unregister(key, hint);
   }
   /** Deterministic error element ID: `cngx-{name}-error`. */
-  readonly errorId = computed(() => `cngx-${this.name()}-error`);
+  readonly errorId = computed(() => `cngx-${this.idName()}-error`);
 
   /** Deterministic disabled-reason element ID: `cngx-{name}-disabled-reason`. */
-  readonly disabledReasonId = computed(() => `cngx-${this.name()}-disabled-reason`);
+  readonly disabledReasonId = computed(() => `cngx-${this.idName()}-disabled-reason`);
 
   /**
    * The messages of the field's disabled reasons, joined; `''` while the

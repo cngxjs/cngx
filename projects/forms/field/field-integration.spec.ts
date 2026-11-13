@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { disabled, form, FormField, required, schema } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CngxListbox,
@@ -410,5 +410,88 @@ describe('field integration - hint reference', () => {
     host.withHint.set(false);
     flush(fixture);
     expect(input.getAttribute('aria-describedby') ?? '').not.toContain(hintId);
+  });
+});
+
+describe('field integration - field ids', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.email">
+        <label cngxLabel>Email</label>
+        <input cngxInput [formField]="f.email" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxLabel, CngxInput, FormField],
+  })
+  class DottedNameHost {
+    readonly f = form(signal({ email: '' }));
+  }
+
+  it('builds ids without the dots of a Signal Forms field name', () => {
+    const { el } = mount(DottedNameHost);
+    const input = el.querySelector('input')!;
+    expect(input.id).toMatch(/^cngx-[A-Za-z0-9_-]+-input$/);
+    expect(el.querySelector('label')!.getAttribute('for')).toBe(input.id);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="first">
+        <input cngxInput [formControl]="one" />
+      </cngx-form-field>
+      <cngx-form-field [field]="second">
+        <input cngxInput [formControl]="two" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput, ReactiveFormsModule],
+  })
+  class DuplicateNameHost {
+    readonly one = new FormControl('');
+    readonly two = new FormControl('');
+    readonly first = adaptFormControl(this.one, 'email', inject(DestroyRef));
+    readonly second = adaptFormControl(this.two, 'email', inject(DestroyRef));
+  }
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.pair">
+        <input cngxInput [formField]="f.pair" />
+        <input cngxInput />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput, FormField],
+  })
+  class TwoControlsHost {
+    readonly f = form(signal({ pair: '' }));
+  }
+
+  function duplicateIdWarnings(type: Type<unknown>): string[] {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mount(type);
+    return warn.mock.calls
+      .map((call: unknown[]) => String(call[0]))
+      .filter((message) => message.startsWith('CNGX2029: '));
+  }
+
+  it('warns when two fields share a name and so an id', () => {
+    const [first] = duplicateIdWarnings(DuplicateNameHost);
+    expect(first).toMatch(
+      /^CNGX2029: \[cngx-form-field\] 2 elements carry the id "cngx-email-input"/,
+    );
+  });
+
+  it('warns when one field holds two controls that take its id', () => {
+    const [first] = duplicateIdWarnings(TwoControlsHost);
+    expect(first).toMatch(
+      /^CNGX2029: \[cngx-form-field\] 2 elements carry the id "cngx-[\w-]+-pair-input"/,
+    );
+  });
+
+  it('stays silent for a field with one control and a unique name', () => {
+    expect(duplicateIdWarnings(DottedNameHost)).toHaveLength(0);
   });
 });

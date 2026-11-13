@@ -2244,6 +2244,23 @@
       ]
     },
     {
+      "code": "CNGX2029",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Two elements carry one field id",
+      "page": "core-concepts/error-codes/cngx2029.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2029.html",
+      "status": "active",
+      "files": ["projects/forms/field/form-field-presenter.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/form-field-presenter.ts",
+          "text": "[cngx-form-field] ${...} elements carry the id \"${...}\". Give every adaptFormControl() field a unique name and put one control in each field."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",
