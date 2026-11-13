@@ -1,9 +1,6 @@
-import {
-  InjectionToken,
-  signal,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -29,10 +26,24 @@ export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
  */
 export const CNGX_MOTION = new InjectionToken<WritableSignal<CngxMotionPreference>>('CNGX_MOTION', {
   providedIn: 'root',
-  factory: () => signal<CngxMotionPreference>('auto'),
+  factory: (): WritableSignal<CngxMotionPreference> => motionAxis.unprovided('auto'),
 });
 
 const motionAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideMotion() in a child injector does not write <html data-motion> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideMotion() is not installed, so this write changes the signal but not <html data-motion>; call it in the application config.',
+    ),
   token: CNGX_MOTION,
   attribute: 'data-motion',
   removeValue: 'auto',

@@ -1,9 +1,6 @@
-import {
-  InjectionToken,
-  signal,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -32,11 +29,25 @@ export const CNGX_TOUCH_TARGET = new InjectionToken<WritableSignal<CngxTouchTarg
   'CNGX_TOUCH_TARGET',
   {
     providedIn: 'root',
-    factory: () => signal<CngxTouchTargetValue>('auto'),
+    factory: (): WritableSignal<CngxTouchTargetValue> => touchTargetAxis.unprovided('auto'),
   },
 );
 
 const touchTargetAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideTouchTargets() in a child injector does not write <html data-touch> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideTouchTargets() is not installed, so this write changes the signal but not <html data-touch>; call it in the application config.',
+    ),
   token: CNGX_TOUCH_TARGET,
   attribute: 'data-touch',
   removeValue: 'auto',

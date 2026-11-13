@@ -115,6 +115,84 @@
       ]
     },
     {
+      "code": "CNGX0007",
+      "lib": "core",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Preference axis installed below the root injector",
+      "page": "core-concepts/error-codes/cngx0007.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0007.html",
+      "status": "active",
+      "files": [
+        "projects/core/theming/contrast.ts",
+        "projects/core/theming/density.ts",
+        "projects/core/theming/motion.ts",
+        "projects/core/theming/text-scale.ts",
+        "projects/core/theming/touch-target.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/core/theming/contrast.ts",
+          "text": "provideContrast() in a child injector does not write <html data-contrast> and shares the root signal; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/density.ts",
+          "text": "provideDensity() in a child injector does not write <html data-density> and shares the root signal; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/motion.ts",
+          "text": "provideMotion() in a child injector does not write <html data-motion> and shares the root signal; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/text-scale.ts",
+          "text": "provideTextScale() in a child injector does not write <html data-text-size> and shares the root signal; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/touch-target.ts",
+          "text": "provideTouchTargets() in a child injector does not write <html data-touch> and shares the root signal; call it in the application config."
+        }
+      ]
+    },
+    {
+      "code": "CNGX0008",
+      "lib": "core",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Preference axis written without its installer",
+      "page": "core-concepts/error-codes/cngx0008.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx0008.html",
+      "status": "active",
+      "files": [
+        "projects/core/theming/contrast.ts",
+        "projects/core/theming/density.ts",
+        "projects/core/theming/motion.ts",
+        "projects/core/theming/text-scale.ts",
+        "projects/core/theming/touch-target.ts"
+      ],
+      "messages": [
+        {
+          "file": "projects/core/theming/contrast.ts",
+          "text": "provideContrast() is not installed, so this write changes the signal but not <html data-contrast>; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/density.ts",
+          "text": "provideDensity() is not installed, so this write changes the signal but not <html data-density>; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/motion.ts",
+          "text": "provideMotion() is not installed, so this write changes the signal but not <html data-motion>; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/text-scale.ts",
+          "text": "provideTextScale() is not installed, so this write changes the signal but not <html data-text-size>; call it in the application config."
+        },
+        {
+          "file": "projects/core/theming/touch-target.ts",
+          "text": "provideTouchTargets() is not installed, so this write changes the signal but not <html data-touch>; call it in the application config."
+        }
+      ]
+    },
+    {
       "code": "CNGX0901",
       "lib": "utils",
       "severity": "warn",
