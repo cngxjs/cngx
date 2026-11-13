@@ -222,27 +222,6 @@ a.cdx-related-pill:focus-visible {
   background: var(--color-cdx-bg-alt);
 }
 
-/* Inline <code> in prose. The default bundle ships `.cdx-readme
- * :not(pre)>code { background: bg-elevated; border: 1px solid
- * border; }` which on a white page reads as a button chip rather
- * than inline code. Drop the border, lean on bg-alt for the
- * subtle pill effect. Matches the bundle's selector specificity
- * (class + pseudo + type) so source-order wins. */
-.cdx-readme :not(pre) > code {
-  border: none;
-  background: var(--color-cdx-bg-alt);
-  color: var(--color-cdx-text);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-:not(pre) > code {
-  border: none;
-  background: var(--color-cdx-bg-alt);
-  color: var(--color-cdx-text);
-  padding: 1px 6px;
-  border-radius: 4px;
-}
-
 /* Inline <code> inside headings has no business being a chip - the
  * surrounding heading already owns the visual weight. Strip the
  * chip background and padding so the code reads as part of the
