@@ -133,6 +133,6 @@ The `[attr.name]` on each leaf mirrors the group's `name()` for parity with `<in
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for full input/output reference.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/radio/) for full input/output reference.
 - Stories: `examples/stories/common/interactive/radio/`.
 - `CngxRadioIndicator` (`@cngx/common/display`) is the visual glyph the leaf renders; swap its dot with `[dotGlyph]`.

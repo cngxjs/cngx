@@ -346,5 +346,5 @@ the status colours onto `--mat-sys-*`.
 - [CngxTimelineItem](../../common/timeline/) - the row molecule, usable standalone
 - [CngxAsyncState](../../core/utils/) - async state contract
 - [CngxSkeleton](../skeleton/) - the loading body
-- [API on compodocx](../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/ui/timeline/)
 - Tests: `projects/ui/timeline/timeline.component.spec.ts`, `timeline-async.spec.ts`

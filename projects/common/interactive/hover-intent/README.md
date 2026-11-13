@@ -137,7 +137,7 @@ CngxHoverIntent has no built-in styling. Drive visuals from `active()`:
 
 ## See Also
 
-- [API on compodocx](../../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/hover-intent/)
 - [CngxHoverable](../hoverable/) - instant, undebounced hover state
 - [CngxLongPress](../gestures/) - held-pointer gesture with a threshold timer
 - Demo: `examples/stories/common/interactive/hover-intent/`

@@ -499,6 +499,6 @@ export class FAQComponent {
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/interactive/nav/)
 - Demo: `examples/stories/common/nav-demo/`
 - Tests: `projects/common/interactive/nav/nav-group.directive.spec.ts`

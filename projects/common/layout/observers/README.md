@@ -519,7 +519,7 @@ export class ResponsiveTableComponent {}
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/layout/observers/)
 - Demo: `examples/stories/common/observers-demo/`
 - Tests: `projects/common/layout/observers/*.spec.ts`
 - `CngxScrollSpy` in `@cngx/common/layout` - Uses `CngxIntersectionObserver` internally
