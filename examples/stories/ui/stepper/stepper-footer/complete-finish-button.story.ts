@@ -105,6 +105,7 @@ export const STORY: DemoSpec = {
           class="chip"
           cngxStepperFooterEnd
           [cngxStepperComplete]="finishAction"
+          succeededAnnouncement="Sign-up complete. Your account is ready."
           (completed)="onCompleted()"
         >
           Finish

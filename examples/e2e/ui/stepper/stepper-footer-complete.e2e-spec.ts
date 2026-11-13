@@ -4,8 +4,8 @@ import { attributeLogOf, gotoDemo, recordAttributes } from '../../_helpers';
 // Story: on the last step the footer swaps Continue for a
 // [cngxStepperComplete] button that composes cngxAsyncClick. Finish keeps its
 // label while the action runs, is aria-busy and aria-disabled in flight, and
-// speaks the result through the polite region next to it; (completed) fires
-// after the run succeeds.
+// speaks its succeededAnnouncement through the polite region next to it;
+// (completed) fires after the run succeeds.
 
 const ROUTE = 'ui/stepper/stepper-footer/complete-finish-button';
 
@@ -29,7 +29,7 @@ test.describe('ui/stepper/stepper-footer complete', () => {
     await expect(finish).toHaveText('Finish');
 
     const region = footer.locator('button + [aria-live="polite"]');
-    await expect(region).toHaveText('Action succeeded', { timeout: 5_000 });
+    await expect(region).toHaveText('Sign-up complete. Your account is ready.', { timeout: 5_000 });
     await expect(page.locator('.event-row')).toContainText('Submitted - (completed) fired');
     await expect(finish).not.toHaveAttribute('aria-busy');
     expect(await attributeLogOf(finish)).toEqual(['aria-busy=true', 'aria-busy=null']);
