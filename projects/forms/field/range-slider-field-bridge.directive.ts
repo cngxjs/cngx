@@ -1,4 +1,4 @@
-import { computed, Directive, effect, inject, untracked } from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, untracked } from '@angular/core';
 
 import { CngxRangeSliderTrack } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
@@ -56,6 +56,7 @@ import type { CngxFormFieldControl } from './models';
 export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
   private readonly slider = inject(CngxRangeSliderTrack, { self: true, host: true });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   private readonly aria = createFieldControlAria(this.presenter);
 
@@ -69,6 +70,11 @@ export class CngxRangeSliderFieldBridge implements CngxFormFieldControl {
   readonly disabled = this.aria.disabled;
 
   readonly errorState = this.aria.errorState;
+
+  /** Focuses the start thumb; the error summary and `focusFirstError` reach it here. */
+  focus(options?: FocusOptions): void {
+    this.hostEl.querySelector<HTMLElement>('[role="slider"]')?.focus(options);
+  }
 
   /** @internal */
   protected readonly describedBy = this.aria.describedBy;

@@ -10,6 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { focusFieldControl } from './field-control-registry';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n';
 import type { CngxFieldAccessor } from './models';
@@ -71,7 +72,9 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
  * Form-level error summary - lists all validation errors across all fields.
  *
  * Place outside (or at the top/bottom of) the form. Each error is a focusable link
- * that jumps to the invalid field via `focusBoundControl()`.
+ * that jumps to the invalid field's control: through `focusBoundControl()` for
+ * `[formField]`, else through the control's own `focus()` (an adapted Reactive
+ * Forms control, a field bridge, a select).
  *
  * Only visible when `showErrors()` is `true` (controlled by the consumer, typically
  * set after a failed submit).
@@ -211,7 +214,9 @@ export class CngxFormErrors {
           label,
           message: resolveErrorMessage(err, map, i18n),
           kind: err.kind,
-          focus: () => state.focusBoundControl(),
+          focus: () => {
+            focusFieldControl(state, this.doc);
+          },
         }));
       });
     });
