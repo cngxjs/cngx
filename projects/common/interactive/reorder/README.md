@@ -225,6 +225,6 @@ Keyboard contract:
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the full input / output / signal surface.
+- [API on compodocx](../../../../README.md) for the full input / output / signal surface.
 - `CngxReorderableMultiSelect` in `@cngx/forms/select`: primary consumer, wires `CngxReorder` to a commit controller and the chip-strip roving factory into the multi-select trigger.
 - Stories: `examples/stories/forms/select/reorderable-multi-select/`.

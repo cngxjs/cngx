@@ -4,11 +4,11 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  CNGX_STEPPER_CONFIG,
   CngxStep,
   CngxStepperEmpty,
   provideStepperConfig,
   provideStepperI18n,
-  withStepperAriaLabels,
   withStepperFallbackLabels,
   withStepperI18nLabels,
   type CngxStepperI18nOverrides,
@@ -153,18 +153,18 @@ describe('CngxProgressBarStepper', () => {
       return fixture.nativeElement.querySelector('cngx-progress-bar-stepper') as HTMLElement;
     }
 
-    it('falls back to the config/i18n accname when no aria-label is bound', () => {
+    it('falls back to the i18n accname when no aria-label is bound', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(UnlabelledHost);
       fixture.detectChanges();
       expect(hostEl(fixture).getAttribute('aria-label')).toBe('Steps');
     });
 
-    it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {
+    it('withStepperI18nLabels({ stepperLabel }) moves the accname fallback', () => {
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),
-          provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Onboarding-Assistent' })),
+          provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Onboarding-Assistent' })),
         ],
       });
       const fixture = TestBed.createComponent(UnlabelledHost);
@@ -202,6 +202,21 @@ describe('CngxProgressBarStepper', () => {
       const fixture = TestBed.createComponent(UnlabelledHost);
       fixture.detectChanges();
       expect(hostEl(fixture).getAttribute('aria-roledescription')).toBe('wizard');
+    });
+
+    it('a config without fallbackLabels keeps the roledescription apart from the name', () => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          { provide: CNGX_STEPPER_CONFIG, useValue: {} },
+          provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Bestellschritte' })),
+        ],
+      });
+      const fixture = TestBed.createComponent(UnlabelledHost);
+      fixture.detectChanges();
+      const host = hostEl(fixture);
+      expect(host.getAttribute('aria-label')).toBe('Bestellschritte');
+      expect(host.getAttribute('aria-roledescription')).toBe('stepper');
     });
   });
 

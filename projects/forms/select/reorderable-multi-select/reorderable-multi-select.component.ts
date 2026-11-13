@@ -106,7 +106,11 @@ import {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
-import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
+import {
+  isOptionDisabled,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionsInput,
+} from '../shared/option.model';
 import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
@@ -173,7 +177,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  *
  * Reorder commits bypass `ArrayCommitHandler.beginToggle` (its
  * `sameArrayContents` guard would skip same-membership reorders) and
- * drive the commit controller directly.
+ * record kind `reorder` on the commit ledger with order-sensitive
+ * equality.
  *
  * Slot tiers: `cngxSelectCheck`, `cngxSelectCaret`, `cngxSelectOptgroup`,
  * `cngxSelectPlaceholder`, `cngxSelectEmpty`, `cngxSelectLoading`,
@@ -199,7 +204,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/reorderable-multi-select/reorderable-multi-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxSelect, CngxCombobox, CngxTreeSelect
+ * @relatedTo CngxMultiSelect, CngxSelect, CngxCombobox, CngxTreeSelect, CngxMultiSelectChipHandle, CngxMultiSelectMoveGlyph, withReorderKeyboardModifier, withReorderStripFreeze
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>/#/forms/select/reorderable-multi-select/keyboard-reorder-alt-arrow-home-end</example-url>
@@ -270,8 +275,14 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxReorderableMultiSelect).panelHost },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxReorderableMultiSelect).panelHost },
+    {
+      provide: CNGX_SELECT_PANEL_HOST,
+      useFactory: () => inject(CngxReorderableMultiSelect).panelHost,
+    },
+    {
+      provide: CNGX_SELECT_PANEL_VIEW_HOST,
+      useFactory: () => inject(CngxReorderableMultiSelect).panelHost,
+    },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -1289,7 +1300,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
           },
           key,
         );
-        if (action.kind === 'select') {
+        if (action.kind === 'select' && !isOptionDisabled(action.option)) {
           event.preventDefault();
           this.toggleDispatch.toggleByUser(action.option);
           this.typeaheadController.clearBuffer();
@@ -1389,7 +1400,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * or a rejected pessimistic move. Focus follows the value, not `toIndex`,
    * because a pending or failed commit leaves another chip at that index.
    * `setActive` runs at once so tabindex='0' is right before the render; the
-   * focus move waits for the @for ordering and runs only while focus is still
+   * focus move waits for the `@for` ordering and runs only while focus is still
    * on a chip or was dropped by the re-render, so a Retry click keeps its
    * focus.
    */

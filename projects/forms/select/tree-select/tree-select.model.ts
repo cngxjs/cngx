@@ -42,8 +42,17 @@ export interface CngxTreeSelectedItem<T = unknown> {
 }
 
 /**
- * Context for `*cngxTreeSelectChip`. Mirrors `CngxMultiSelectChipContext`
- * shape so consumer snippets share across variants.
+ * Values the `*cngxTreeSelectChip` template receives for each selected item
+ * in the trigger strip of `CngxTreeSelect`.
+ *
+ * The shape mirrors `CngxMultiSelectChipContext`, so one chip template works
+ * on both hosts. Which items arrive depends on `chipDisplay`: with
+ * `'parents'` one item can stand for a whole selected subtree. The strip, and
+ * with it this template, renders only while the touch floor is off; under the
+ * touch floor (coarse pointer or `data-touch="on"`) the trigger shows the
+ * touch summary instead. `remove` runs the same commit-aware path
+ * as the built-in chip and returns focus to the trigger, so a custom remove
+ * button needs only its own accessible name.
  */
 export interface CngxTreeSelectChipContext<T = unknown> {
   readonly $implicit: CngxTreeSelectedItem<T>;
@@ -57,8 +66,15 @@ export interface CngxTreeSelectChipContext<T = unknown> {
 }
 
 /**
- * Context for `*cngxTreeSelectTriggerLabel`. Mirrors the flat-family
- * trigger-label context so `"3 selected"` summaries share templates.
+ * Values the `*cngxTreeSelectTriggerLabel` template receives while at least
+ * one value is selected.
+ *
+ * The template replaces the whole chip strip and the touch summary of
+ * `CngxTreeSelect`, so it renders with and without the touch floor. The shape mirrors the
+ * trigger-label context of the flat composites, so a `"3 selected"` template
+ * can be shared. `count` counts every selected value, independent of
+ * `chipDisplay`, and `selected` carries the resolved labels so the template
+ * never calls `labelFn`.
  */
 export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxTreeSelectedItem<T>[];
@@ -68,10 +84,16 @@ export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
 }
 
 /**
- * Context for `*cngxTreeSelectNode`. Carries the flat-projected node
- * plus the reactive derivations the panel uses (selected,
- * indeterminate, expanded), so custom markup mirrors the built-in row
- * without re-querying.
+ * Values the `*cngxTreeSelectNode` template receives for each visible row of
+ * the `CngxTreeSelect` panel.
+ *
+ * The template replaces the whole treeitem, so it owns the row ARIA the
+ * built-in row sets: `role="treeitem"`, `id` from `node.id` (the
+ * active-descendant target), `aria-level` from `depth + 1`, `aria-posinset` and
+ * `aria-setsize` from `node`, `aria-expanded` on parents and `aria-checked`
+ * (`'mixed'` while `indeterminate`). The context carries the flat-projected
+ * node plus the reactive derivations the panel uses, so custom markup mirrors
+ * the built-in row without re-querying.
  *
  * `toggleExpand` / `handleSelect` are closed callbacks bound to the
  * surrounding component - wire into `(click)` on a custom twisty

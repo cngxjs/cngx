@@ -111,3 +111,16 @@ export function withDismissOnBlur(dismiss: boolean): CngxMenuConfigFeature {
 export function withDismissOnFocusOut(dismiss: boolean): CngxMenuConfigFeature {
   return defineMenuConfigFeature((cfg) => ({ ...cfg, dismissOnFocusOut: dismiss }));
 }
+
+/**
+ * The `position-try-fallbacks` chain every menu trigger in scope
+ * (`CngxMenuTrigger`, and the context-menu triggers before each open) claims
+ * on its popover. Default: {@link CNGX_MENU_TRY_FALLBACKS}
+ * (`flip-block, flip-inline, flip-block flip-inline`). Pass `[]` to keep
+ * menus on their placement; a `[positionTryFallbacks]` bound on a popover
+ * still wins. Entries are CSS `<try-tactic>` values, as on the popover's
+ * input.
+ */
+export function withTryFallbacks(fallbacks: readonly string[]): CngxMenuConfigFeature {
+  return defineMenuConfigFeature((cfg) => ({ ...cfg, tryFallbacks: fallbacks }));
+}

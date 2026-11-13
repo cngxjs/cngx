@@ -141,13 +141,13 @@ import { installTabGroupDevChecks } from './tab-group-dev-checks';
 export class CngxTabGroup implements CngxTabPanelHost {
   /**
    * Accessible name of the tab group host, bound as `[aria-label]`. When unset it falls back to the
-   * `tabsRegion` entry of the tabs aria-label config, then to the `tabsLabel` i18n copy. It is dropped
-   * while a non-empty `[aria-labelledby]` is set.
+   * `tabsLabel` i18n copy, which names the group by default. It is dropped while a non-empty
+   * `[aria-labelledby]` is set.
    */
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   /**
    * Id reference of the element that names the tab group host, bound as `[aria-labelledby]`. A non-empty
-   * value suppresses the host `aria-label`, including the config and i18n fallbacks. Unset by default.
+   * value suppresses the host `aria-label`, including the i18n fallback. Unset by default.
    */
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 

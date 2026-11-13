@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/toc
+ * @module `@cngx/ui/toc`
  */
 
 export { CngxToc } from './toc.component';

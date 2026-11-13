@@ -703,7 +703,7 @@ const SCOPED_RANGE = /^[~^]?21(\.\d+){0,2}(-[0-9A-Za-z.-]+)?$/;
 
 /**
  * Whether the app's unit-test build compiles the root NgModule with the
- * specs: an installed @angular/build on major 21, or, with none installed,
+ * specs: an installed `@angular/build` on major 21, or, with none installed,
  * a declared range that admits only major 21. An installed manifest cngx
  * cannot read, a range that spans majors, a tag or nothing at all count as
  * no (fail-closed).

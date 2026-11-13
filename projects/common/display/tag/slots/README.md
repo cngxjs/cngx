@@ -100,7 +100,7 @@ For an app-wide override use `withTagSlots(...)` inside `provideTagConfig(...)` 
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the directive classes, selectors, and context interfaces.
+- [API on compodocx](../../../../../README.md) for the directive classes, selectors, and context interfaces.
 - [`CngxTag`](../README.md): the host directive that consumes these slots.
 - [`CngxTagGroup`](../../tag-group/README.md): layout container with its own header / accessory slots.
 - Stories: `examples/stories/common/display/tag/slot-overrides-*`.

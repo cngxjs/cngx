@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/collection
+ * @module `@cngx/ui/collection`
  */
 
 export { CngxIncrementalList, type CngxIncrementalListSkin } from './incremental-list.component';

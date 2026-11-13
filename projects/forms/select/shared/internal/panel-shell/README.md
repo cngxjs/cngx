@@ -25,8 +25,10 @@ Variant-side composition. The variant provides `CNGX_SELECT_PANEL_VIEW_HOST` (a 
 
 ```ts
 providers: [
-  { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: forwardRef(() => CngxMyVariant) },
+  { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxMyVariant).panelHost },
 ],
+// in the class body: readonly panelHost = this.core.createPanelHost({ ... });
+// a variant without the option loop uses this.core.createPanelViewHost({ ... })
 ```
 
 The shell reads only the narrow `CngxSelectPanelViewHost<T>` contract (`activeView`, `tpl`, `fallbackLabels`, `ariaLabels`, `errorContext`, `commitErrorContext`, `showInlineError`, `showCommitError`, `showRefreshIndicator`, `loadingVariant`, `refreshingVariant`, `commitErrorDisplay`, `skeletonIndices`, `handleRetry`, optional `searchTerm` / `unfilteredCount` / `previousLoadedCount` / `action*`). No option-loop or selection state.
@@ -46,12 +48,12 @@ Non-default branches (`skeleton`, `empty`, `none`, `error`) bypass the body enti
 
 ## Action slot
 
-`actionPosition` is the only public input on this component. Default `'bottom'`. When the view-host omits the optional `action*` fields, the shell substitutes `NOOP_ACTION_CALLBACKS` so action-unaware variants pass through unchanged. The `actionContext` `computed` carries a structural `equal` so per-keystroke `searchTerm` flips don't rebuild the outlet binding.
+`actionPosition` is the only own input of this component. Default `'bottom'`. `actionFocusTrapEnabled` comes from the `CngxFocusTrap` host directive. When the view-host omits the optional `action*` fields, the shell substitutes `NOOP_ACTION_CALLBACKS` so action-unaware variants pass through unchanged. The `actionContext` `computed` carries a structural `equal` so per-keystroke `searchTerm` flips don't rebuild the outlet binding.
 
 `CngxFocusTrap` rides as a host directive, re-exposed as `actionFocusTrapEnabled` - action-host variants flip it true on dirty workflows; everyone else leaves it `false`.
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for the host contract and template slots.
+- [API on compodocx](../../../../../../README.md) for the host contract and template slots.
 - `select/shared/panel/` for the flat option-loop body that sits inside this shell.
 - `@cngx/forms/select/shared` for the wider infrastructure overview.

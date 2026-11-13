@@ -12,6 +12,9 @@
  *
  * - seams collapse: each segment after the first overlaps its predecessor by
  *   one border width, so neighbouring borders draw one line
+ * - an overlapped segment floors at `--cngx-target-min` plus one border
+ *   width along the group axis, so the seam never shrinks its exclusive hit
+ *   span below the touch target (inert on a fine pointer)
  * - only the two outer ends keep the radius, on logical corners, so the
  *   frame follows `dir="rtl"` and `data-orientation="vertical"`
  * - a hovered segment is lifted above its neighbours (`z-index: 1`), a
@@ -149,6 +152,16 @@
     :scope:not(:has(> .cngx-button-group)) > :nth-child(n + 2 of :not([aria-live])) {
       margin-inline-start: calc(-1 * var(--cngx-button-border-width, 1px));
     }
+    /* A segment its successor overlaps keeps the full touch target as its
+     * exclusive span. Separators (a 0-width border) and addons (no target)
+     * are left alone. */
+    :scope:not(:has(> .cngx-button-group))
+      > :nth-last-child(n + 2 of :not([aria-live])):not(
+        .cngx-button-group__separator,
+        .cngx-button-group__addon
+      ) {
+      min-inline-size: calc(var(--cngx-target-min, 0px) + var(--cngx-button-border-width, 1px));
+    }
     :scope:not(:has(> .cngx-button-group)) > :nth-child(1 of :not([aria-live])) {
       border-start-start-radius: var(--cngx-button-group-radius, 0.5rem);
       border-end-start-radius: var(--cngx-button-group-radius, 0.5rem);
@@ -161,6 +174,13 @@
     :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :nth-child(n + 2 of :not([aria-live])) {
       margin-inline-start: 0;
       margin-block-start: calc(-1 * var(--cngx-button-border-width, 1px));
+    }
+    :scope[data-orientation='vertical']:not(:has(> .cngx-button-group))
+      > :nth-last-child(n + 2 of :not([aria-live])):not(
+        .cngx-button-group__separator,
+        .cngx-button-group__addon
+      ) {
+      min-block-size: calc(var(--cngx-target-min, 0px) + var(--cngx-button-border-width, 1px));
     }
     :scope[data-orientation='vertical']:not(:has(> .cngx-button-group)) > :nth-child(1 of :not([aria-live])) {
       border-radius: 0;

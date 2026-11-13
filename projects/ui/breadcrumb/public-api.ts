@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/breadcrumb
+ * @module `@cngx/ui/breadcrumb`
  */
 export { CngxBreadcrumbBar } from './breadcrumb-bar.component';
 export { CngxBreadcrumbOverflow } from './breadcrumb-overflow.component';

@@ -63,8 +63,6 @@ export function injectActionSelectConfig(): ReturnType<typeof resolveActionSelec
  * context required. Sibling of {@link injectSelectConfig} for the
  * `CngxReorderableMultiSelect` composite.
  */
-export function injectReorderableSelectConfig(): ReturnType<
-  typeof resolveReorderableSelectConfig
-> {
+export function injectReorderableSelectConfig(): ReturnType<typeof resolveReorderableSelectConfig> {
   return resolveReorderableSelectConfig();
 }

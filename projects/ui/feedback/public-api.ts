@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/feedback
+ * @module `@cngx/ui/feedback`
  */
 
 export { CngxLoadingIndicator, type LoadingIndicatorVariant } from './loading/loading-indicator';

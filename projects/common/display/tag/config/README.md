@@ -86,6 +86,6 @@ provideTagConfig(
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for token, provider, and factory signatures.
+- [API on compodocx](../../../../../README.md) for token, provider, and factory signatures.
 - [`CngxTag`](../README.md): the directive whose inputs the `defaults` / `colors` / `templates` sub-trees back.
 - [`CngxTagGroup`](../../tag-group/README.md): the container whose inputs the `groupDefaults` sub-tree backs.

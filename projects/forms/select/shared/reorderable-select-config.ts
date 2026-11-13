@@ -29,8 +29,8 @@ export interface CngxReorderableSelectConfig {
    */
   readonly ariaLabel?: string | Signal<string>;
   /**
-   * Drag-handle glyph. `null` keeps the six-dot grip. Per-instance
-   * `[chipDragHandle]` wins.
+   * Drag-handle glyph. `null` (default) renders no grip and the whole chip
+   * stays the drag surface. Per-instance `[chipDragHandle]` wins.
    */
   readonly dragHandle?: TemplateRef<void> | null;
   /**
@@ -123,8 +123,11 @@ export const CNGX_REORDERABLE_SELECT_CONFIG = new InjectionToken<CngxReorderable
 );
 
 /**
- * Feature returned by the `with*` helpers. Merged by
- * {@link provideReorderableSelectConfig}.
+ * One config slice returned by a reorderable-select `with*` helper.
+ *
+ * Pass them to `provideReorderableSelectConfig`,
+ * `provideReorderableSelectConfigAt` or `provideCngxSelect`. A later feature
+ * replaces the keys an earlier one set.
  */
 export interface CngxReorderableSelectConfigFeature {
   readonly config: Partial<CngxReorderableSelectConfig>;
@@ -137,7 +140,13 @@ function feature(config: Partial<CngxReorderableSelectConfig>): CngxReorderableS
 }
 
 /**
- * Sets the keyboard modifier gating reorder moves.
+ * Sets the modifier key that turns an arrow key on a focused chip into a
+ * move.
+ *
+ * `'alt'` (default), `'ctrl'` or `'meta'`. The default accessible name of the
+ * chip strip names the active modifier, so screen-reader users hear the
+ * gesture when they enter the strip. A per-instance
+ * `[reorderKeyboardModifier]` wins.
  */
 export function withReorderKeyboardModifier(
   modifier: CngxReorderModifier,
@@ -146,8 +155,18 @@ export function withReorderKeyboardModifier(
 }
 
 /**
- * Sets the chip-strip ARIA label. Pass a `Signal` to follow a runtime
- * language switch.
+ * Sets the accessible name of the reorderable chip strip.
+ *
+ * Unset, the name reads `reorderHint` of the `select` language section, built
+ * for the active keyboard modifier (English `'Reorder with Alt + arrow
+ * keys'`). A fixed string does not follow a modifier change, so name the
+ * gesture in it. Pass a `Signal` to follow a runtime language switch. A
+ * per-instance `[reorderAriaLabel]` wins.
+ *
+ * @example
+ * ```ts
+ * provideReorderableSelectConfig(withReorderAriaLabel('Sort with Alt and the arrow keys'));
+ * ```
  */
 export function withReorderAriaLabel(
   label: string | Signal<string>,
@@ -172,7 +191,14 @@ export function withReorderListLabels(
 }
 
 /**
- * Sets the default drag-handle glyph app-wide via `TemplateRef<void>`.
+ * Sets the drag-handle glyph rendered before each chip of
+ * `CngxReorderableMultiSelect`.
+ *
+ * `null` (default) renders no grip and the whole chip stays the drag surface.
+ * The glyph sits in an `aria-hidden` span; the keyboard move belongs to the
+ * chip itself. A per-instance `[chipDragHandle]` or a projected
+ * `*cngxMultiSelectChipHandle` wins. A `TemplateRef` needs a live view, so
+ * build this config in a `useFactory`, as `withTemplates` describes.
  */
 export function withDefaultDragHandle(
   template: TemplateRef<void> | null,
@@ -192,8 +218,17 @@ export function withDefaultMoveGlyph(
 }
 
 /**
- * Sets strip-freeze-on-commit. `false` lets reorders supersede in-flight
- * commits via the commit-controller's supersede semantics.
+ * Sets whether reordering pauses while a commit is in flight.
+ *
+ * Default `true`: the chip strip and the touch reorder list stop accepting
+ * moves until the commit settles, and the list reports `aria-busy`. `false`
+ * keeps them live, and a new reorder supersedes the pending commit through
+ * the commit controller. There is no per-instance input.
+ *
+ * @example
+ * ```ts
+ * provideReorderableSelectConfig(withReorderStripFreeze(false));
+ * ```
  */
 export function withReorderStripFreeze(freeze: boolean): CngxReorderableSelectConfigFeature {
   return feature({ freezeStripOnCommit: freeze });

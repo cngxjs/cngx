@@ -12,14 +12,28 @@
 // redirect never loops. Error-code pages have the same path in every release,
 // so a runtime URL of a dropped release lands on the same page.
 //
+// The script only helps a browser: an agent or curl gets a bare 404. So the
+// error-code pages, the URLs diagnostics print, and their overview also get
+// static moved pages that answer 200 and name the target without a script, for
+// the unversioned path and for every dropped release. The 404 page stays the
+// net for the rest.
+//
 // Usage:
-//   node scripts/docs-404.mjs <outDir> [--root=/cngx/]   # writes <outDir>/404.html
+//   node scripts/docs-404.mjs <outDir> [--root=/cngx/]
+//     writes <outDir>/404.html and the moved pages; reads <outDir>/versions.json,
+//     the error-code pages of the newest release and the dropped tags (git)
 
-import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { parseReleaseTagOptions, selectDroppedTags } from './docs-release-tags.mjs';
+
 export const DOCS_ROOT = '/cngx/';
+export const DOCS_ORIGIN = 'https://cngxjs.github.io';
+export const ERROR_CODES_DIR = 'additional-documentation/error-codes';
+export const ERROR_CODES_OVERVIEW = 'additional-documentation/error-codes.html';
 
 /**
  * Where a missing `pathname` of the site under `root` goes, given the label of
@@ -68,6 +82,9 @@ export function render404Html(root = DOCS_ROOT) {
     '<head>',
     '<meta charset="utf-8">',
     '<meta name="robots" content="noindex">',
+    // Without an icon the browser asks for /favicon.ico at the host root,
+    // outside the project site, and logs a second 404.
+    '<link rel="icon" href="data:,">',
     '<title>Page not found - cngx</title>',
     `<script>${script}</script>`,
     '</head>',
@@ -77,6 +94,94 @@ export function render404Html(root = DOCS_ROOT) {
     '</html>',
     '',
   ].join('\n');
+}
+
+/**
+ * The error-code pages of the release folder `releaseDir`, relative to it: the
+ * overview when the release has one, then every `.html` of the error-code
+ * folder. A release without that folder throws.
+ */
+export function listErrorCodePages(releaseDir) {
+  const pagesDir = join(releaseDir, ERROR_CODES_DIR);
+  if (!existsSync(pagesDir)) {
+    throw new Error(`${pagesDir} missing`);
+  }
+  const overview = existsSync(join(releaseDir, ERROR_CODES_OVERVIEW)) ? [ERROR_CODES_OVERVIEW] : [];
+  const pages = readdirSync(pagesDir)
+    .filter((name) => name.endsWith('.html'))
+    .sort()
+    .map((name) => `${ERROR_CODES_DIR}/${name}`);
+  return [...overview, ...pages];
+}
+
+/**
+ * The moved pages for the error-code `pages` of the newest release (paths
+ * relative to its folder): one at the unversioned path, one per dropped label,
+ * each pointing at the same page under `newestLabel`. `path` is relative to the
+ * site folder. Nothing is written under the newest label itself.
+ */
+export function movedPages(pages, newestLabel, droppedLabels, root) {
+  if (!newestLabel) {
+    return [];
+  }
+  const prefixes = [
+    '',
+    ...droppedLabels.filter((label) => label !== newestLabel).map((label) => `${label}/`),
+  ];
+  return prefixes.flatMap((prefix) =>
+    pages.map((page) => ({
+      path: `${prefix}${page}`,
+      target: `${root}${newestLabel}/${page}`,
+    })),
+  );
+}
+
+/** A moved page: answers 200 and names `origin` + `target` without a script. */
+export function movedPageHtml(target, origin) {
+  const url = `${origin}${target}`;
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="robots" content="noindex">',
+    '<link rel="icon" href="data:,">',
+    `<link rel="canonical" href="${url}">`,
+    `<meta http-equiv="refresh" content="0; url=${url}">`,
+    '<title>Page moved - cngx</title>',
+    '</head>',
+    '<body>',
+    `<p>This page moved to <a href="${url}">${url}</a>.</p>`,
+    '</body>',
+    '</html>',
+    '',
+  ].join('\n');
+}
+
+function writeMovedPages(outDir, root) {
+  const manifestPath = join(outDir, 'versions.json');
+  if (!existsSync(manifestPath)) {
+    throw new Error(`${manifestPath} missing; build the docs first`);
+  }
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const newestLabel = manifest?.versions?.[0]?.label;
+  if (!newestLabel) {
+    throw new Error(`${manifestPath} lists no version`);
+  }
+  const pages = listErrorCodePages(join(outDir, newestLabel));
+  const tags = execFileSync('git', ['tag', '--list', 'v*'], { encoding: 'utf8' })
+    .split('\n')
+    .filter(Boolean);
+  const dropped = selectDroppedTags(tags, parseReleaseTagOptions(process.env));
+  const moved = movedPages(pages, newestLabel, dropped, root);
+  for (const { path, target } of moved) {
+    const file = join(outDir, path);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, movedPageHtml(target, DOCS_ORIGIN));
+  }
+  console.log(
+    `docs-404: wrote ${moved.length} moved pages (${pages.length} error-code pages, newest ${newestLabel}, dropped: ${dropped.join(' ') || 'none'})`,
+  );
 }
 
 function main() {
@@ -94,6 +199,12 @@ function main() {
   }
   writeFileSync(join(outDir, '404.html'), render404Html(root));
   console.log(`docs-404: wrote ${join(outDir, '404.html')} (root ${root})`);
+  try {
+    writeMovedPages(outDir, root);
+  } catch (error) {
+    console.error(`docs-404: ${error.message}`);
+    process.exit(1);
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

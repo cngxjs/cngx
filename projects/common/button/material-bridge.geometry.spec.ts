@@ -362,6 +362,15 @@ describe('Material bridge: M3 metrics and label type', () => {
     expect(metrics(root, '.close-default-spacious').height).toBe(50);
   });
 
+  it('floors the M3 40px icon button and the bridged close button to 44px on a coarse pointer', () => {
+    const root = mountMetrics();
+    root.setAttribute('data-touch', 'on');
+    for (const selector of ['.icon-comfortable', '.close-default-comfortable']) {
+      const m = metrics(root, selector);
+      expect([m.width, m.height], selector).toEqual([44, 44]);
+    }
+  });
+
   it('re-scales the bridged button in compact and spacious islands', () => {
     const root = mountMetrics();
     const compact = metrics(root, '.solid-compact');

@@ -12,11 +12,23 @@ import type { CngxListboxSearch } from '@cngx/common/interactive';
 import { isEmptyScalar } from './internal/compare';
 
 /**
- * Configuration for {@link createDisplayBinding}.
+ * Inputs an input-trigger composite hands to its display binding.
+ *
+ * `CngxTypeahead` and `CngxActionSelect` pass it, the two hosts whose trigger
+ * is a text field showing the committed value. A consumer meets this shape
+ * only when it replaces the binding through
+ * {@link CNGX_DISPLAY_BINDING_FACTORY}. The binding never writes into the
+ * field while it has focus, so a formatter change cannot overwrite what the
+ * user is typing.
  */
 export interface DisplayBindingOptions<T> {
   /** Committed value, mirrored into the input as display text while unfocused. */
   readonly value: Signal<T | undefined>;
+  /**
+   * Formatter for the input text. Tracked: a new formatter rewrites the
+   * unfocused input even when the value is unchanged, so a source should
+   * hand out a new function only when the text it produces changes.
+   */
   readonly displayWith: Signal<(v: T) => string>;
   /** Value→input writes only fire while `false` so typing isn't clobbered. */
   readonly focused: Signal<boolean>;
@@ -30,7 +42,12 @@ export interface DisplayBindingOptions<T> {
 }
 
 /**
- * API returned from {@link createDisplayBinding}.
+ * Write hook and guard flag the input-trigger composites read from their
+ * display binding.
+ *
+ * The scalar commit handler calls `writeFromValue` through `onValueWrite`
+ * after a success or a rollback. The composites gate their open-on-typing
+ * reaction on `isWritingFromValue`, so a library write never opens the panel.
  */
 export interface DisplayBinding<T> {
   /**
@@ -112,18 +129,23 @@ export function createDisplayBinding<T>(opts: DisplayBindingOptions<T>): Display
 }
 
 /**
- * Factory signature for {@link CNGX_DISPLAY_BINDING_FACTORY}.
+ * Function shape a replacement display binding must have.
+ *
+ * `CngxTypeahead` and `CngxActionSelect` call it once during construction, in
+ * an injection context, so a replacement may create effects. Provide it
+ * through {@link CNGX_DISPLAY_BINDING_FACTORY}.
  */
 export type CngxDisplayBindingFactory = <T>(opts: DisplayBindingOptions<T>) => DisplayBinding<T>;
 
 /**
- * Factory for the `DisplayBinding` that turns a select's current value into the
- * trigger's display text. Default `createDisplayBinding`. Override to change how
- * selected values render in the closed trigger.
+ * Factory for the `DisplayBinding` that writes the committed value into the
+ * text input of `CngxTypeahead` and `CngxActionSelect`. Default
+ * `createDisplayBinding`. Override to change how a value is formatted into the
+ * input or when that write is held back while the user types.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/display-binding.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxSelectTriggerLabel
+ * @relatedTo CngxTypeahead, CngxActionSelect
  */
 export const CNGX_DISPLAY_BINDING_FACTORY = new InjectionToken<CngxDisplayBindingFactory>(
   'CngxDisplayBindingFactory',

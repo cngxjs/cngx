@@ -169,5 +169,5 @@ error, and the retry button onto `--mat-sys-*`.
 
 - [CngxAsyncState](../../core/utils/) - async state contract
 - [CngxPaginate](../../common/data/paginate/) - the pagination brain
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../README.md)
 - Tests: `projects/ui/collection/incremental-list.component.spec.ts`

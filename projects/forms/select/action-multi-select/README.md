@@ -1,7 +1,6 @@
 # CngxActionMultiSelect
 
 Multi-value variant of [`CngxActionSelect`](../action-select/README.md) - the same inline `*cngxSelectAction` workflow, but with a chip strip + inline `<input>` like [`CngxCombobox`](../combobox/README.md).
-Pick multiple values, create new ones inline, all without leaving the panel.
 
 ## When to use
 
@@ -42,7 +41,7 @@ interface Tag {
       <ng-template cngxSelectAction let-term let-commit="commit" let-pending="isPending">
         <button type="button" [disabled]="!term || pending" (click)="commit()">
           @if (pending) {
-            ⏳ Creating…
+            Creating…
           } @else {
             + Create tag "{{ term }}"
           }
@@ -69,7 +68,7 @@ Identical to [`CngxCombobox`](../combobox/README.md#forms-integration). The `Fie
 
 ## Action slot context
 
-Same shape as `CngxActionSelect` - see [`../action-select/README.md`](../action-select/README.md#action-slot-context). The bridge tracks `dirty` automatically while the `<input>` term is non-empty.
+Same shape as `CngxActionSelect` - see [`../action-select/README.md`](../action-select/README.md#action-slot-context). `dirty` is `false` until the action template calls `setDirty(true)`; `cancel()` (Escape under the focus-trap policy) and a successful create reset it. Nothing else writes it, typing included.
 
 ## Common patterns
 
@@ -155,7 +154,7 @@ All [`CngxCombobox` slots](../combobox/README.md#template-slots) except `*cngxCo
 
 ## Keyboard
 
-Same as [`CngxCombobox`](../combobox/README.md#keyboard) plus the action-slot interception per `focusTrapBehavior`.
+Same as [`CngxCombobox`](../combobox/README.md#keyboard) plus the action-slot interception per `focusTrapBehavior`, and Enter as on [`CngxActionSelect`](../action-select/README.md#keyboard): with no option highlighted, a bound `quickCreateAction` and a non-empty term it runs the create flow, after a still-debouncing term has settled and only while the panel is still open.
 The bridge intercepts Escape while the action workflow is `dirty`, so users don't accidentally dump unsaved input.
 
 ## Configuration
@@ -176,3 +175,5 @@ provideCngxSelect(
   withFocusTrapBehavior('dirty'),
 );
 ```
+
+Per-instance inputs win over the config: `[closeOnCreate]` (`withCloseOnCreate`; `false` when neither is set), `[liveInputFallback]` (`withLiveInputFallback`), `[actionPosition]` (`withActionPosition`), `[popoverPlacement]` (`withActionPopoverPlacement`), `[inputMode]` (`withInputMode`), `[enterKeyHint]` (`withEnterKeyHint`). `(created)` emits the created option after a successful quick-create.

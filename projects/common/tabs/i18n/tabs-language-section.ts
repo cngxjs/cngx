@@ -4,16 +4,14 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * The tabs section of a {@link CngxLanguagePack}: the copy of
  * `@cngx/common/tabs` and of the tab organisms in `@cngx/ui/tabs` and
  * `@cngx/ui/mat-tabs`. It feeds `CNGX_TABS_I18N` and the copy keys of
- * `CNGX_TABS_CONFIG` (`ariaLabels`, `fallbackLabels`). Messages use `{name}`
+ * `CNGX_TABS_CONFIG` (`fallbackLabels`). Messages use `{name}`
  * placeholders; a plural message picks its form from `{count}`.
  *
  * @since 0.1.0
  * @relatedTo CNGX_TABS_I18N, CNGX_TABS_CONFIG
  */
 export interface CngxTabsLanguageSection {
-  /** Accessible name of the tab-group landmark. */
-  readonly tabsRegion: string;
-  /** Last-tier tab-group label, used when `tabsRegion` is unset. */
+  /** Accessible name of the tab group. */
   readonly tabsLabel: string;
   /** `aria-roledescription` of the tablist. */
   readonly tabRoleDescription: string;
@@ -77,7 +75,6 @@ export interface CngxTabsLanguageSection {
  * @relatedTo CNGX_TABS_I18N, CNGX_TABS_CONFIG
  */
 export const CNGX_TABS_LANGUAGE_EN: CngxTabsLanguageSection = {
-  tabsRegion: 'Tabs',
   tabsLabel: 'Tabs',
   tabRoleDescription: 'tab list',
   tabPanelRoleDescription: 'tab panel',

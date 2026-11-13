@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -40,6 +40,24 @@ class ShellHost {
 class LiveLabelHost {
   readonly value = signal<string | undefined>('a');
   readonly label = signal('Apple');
+}
+
+@Component({
+  selector: 'cngx-select-shell-many-host',
+  standalone: true,
+  imports: [CngxSelectShell, CngxSelectOption],
+  template: `
+    <cngx-select-shell #s [label]="'Item'" [(value)]="value">
+      @for (i of items; track i) {
+        <cngx-option [value]="i">Option {{ i }}</cngx-option>
+      }
+    </cngx-select-shell>
+  `,
+})
+class ManyHost {
+  readonly items = Array.from({ length: 1000 }, (_, i) => i);
+  readonly value = signal<number | undefined>(undefined);
+  readonly shell = viewChild.required<CngxSelectShell<number>>('s');
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -113,5 +131,161 @@ describe('CngxSelectShell geometry', () => {
     const trigger = query(host, '.cngx-field-trigger');
     expect(computedValue(trigger, 'padding-inline-start')).toBe('16px');
     expect(computedValue(trigger, 'padding-inline-end')).toBe('16px');
+  });
+});
+
+// 1000 projected options at the 44px touch floor: the shell never windows, so
+// every row stays in the DOM and the a11y tree, and scrolling, keyboard reach
+// and the active-row chrome still behave.
+describe('CngxSelectShell with 1000 projected options', () => {
+  async function mountMany(
+    value?: number,
+    targetMin: string | null = '44px',
+    beforeOpen?: (root: HTMLElement) => void,
+  ) {
+    const fixture = TestBed.createComponent(ManyHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    if (targetMin !== null) {
+      mountedRoot.style.setProperty('--cngx-target-min', targetMin);
+    }
+    document.body.appendChild(mountedRoot);
+    if (value !== undefined) {
+      fixture.componentInstance.value.set(value);
+    }
+    fixture.detectChanges();
+    await fixture.whenStable();
+    beforeOpen?.(mountedRoot);
+    fixture.componentInstance.shell().open();
+    const settle = async (): Promise<void> => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      await frames(4);
+      fixture.detectChanges();
+    };
+    await settle();
+    const root = mountedRoot;
+    const scroller = query(root, '.cngx-select__panel');
+    const options = () => Array.from(root.querySelectorAll<HTMLElement>('[role="option"]'));
+    return { fixture, settle, scroller, options, root };
+  }
+
+  const inView = (scroller: HTMLElement, row: HTMLElement): boolean => {
+    const s = scroller.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    return r.height > 0 && r.bottom > s.top && r.top < s.bottom;
+  };
+
+  const fullyInView = (scroller: HTMLElement, row: HTMLElement): boolean => {
+    const s = scroller.getBoundingClientRect();
+    const r = row.getBoundingClientRect();
+    return r.height > 0 && r.top >= s.top - 0.5 && r.bottom <= s.bottom + 0.5;
+  };
+
+  const pressEnd = (root: HTMLElement): void => {
+    query(root, '.cngx-select-shell__trigger').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }),
+    );
+  };
+
+  // No touch floor: a 44px floor would hold two text lines and hide the
+  // difference between a one-line estimate and the real row.
+  it('End onto a 2-line row is fully in view after 30 frames and after a second End', async () => {
+    const { root, settle, scroller, options } = await mountMany(undefined, null);
+    for (const row of options().slice(900)) {
+      row.innerHTML = `Line one ${row.id}<br>Line two`;
+    }
+    await settle();
+    pressEnd(root);
+    await settle();
+    await frames(30);
+    const last = options()[999];
+    expect(fullyInView(scroller, last)).toBe(true);
+    pressEnd(root);
+    await settle();
+    expect(fullyInView(scroller, last)).toBe(true);
+  });
+
+  it('after every row rendered once, a root font-size change then End keeps the active option in view', async () => {
+    const { root, settle, scroller, options } = await mountMany(undefined, null);
+    const html = document.documentElement;
+    try {
+      for (let top = 0; top <= scroller.scrollHeight; top += 200) {
+        scroller.scrollTop = top;
+        await frames(2);
+      }
+      scroller.scrollTop = scroller.scrollHeight / 2;
+      await frames(2);
+      html.style.fontSize = '20px';
+      await frames(4);
+      pressEnd(root);
+      await settle();
+      await frames(30);
+      expect(fullyInView(scroller, options()[999])).toBe(true);
+    } finally {
+      html.style.fontSize = '';
+    }
+  });
+
+  it('keeps the panel inline size when a long label far down the list scrolls into view', async () => {
+    const { settle, scroller, options } = await mountMany(undefined, '44px', (root) => {
+      const row = root.querySelectorAll<HTMLElement>('cngx-option')[900];
+      row.textContent = 'Quarterly revenue by region and product line';
+    });
+    const before = scroller.getBoundingClientRect().width;
+    options()[900].scrollIntoView({ block: 'center' });
+    await settle();
+    expect(scroller.getBoundingClientRect().width).toBe(before);
+  });
+
+  it('keeps all 1000 options in the tree with off-screen ones laid out, not collapsed', async () => {
+    const { scroller, options } = await mountMany();
+    const all = options();
+    expect(all.length).toBe(1000);
+    const far = all[900];
+    expect(inView(scroller, far)).toBe(false);
+    expect(far.getBoundingClientRect().height).toBeGreaterThan(0);
+  });
+
+  it('shows the last option after a jump to the end', async () => {
+    const { settle, scroller, options } = await mountMany();
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+    scroller.scrollTop = scroller.scrollHeight;
+    await settle();
+    expect(inView(scroller, options()[999])).toBe(true);
+  });
+
+  it('scrolls a far option reached by keyboard into view', async () => {
+    const { root, settle, scroller, options } = await mountMany();
+    const trigger = query(root, '.cngx-select-shell__trigger');
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }),
+    );
+    await settle();
+    const last = options()[999];
+    expect(
+      root.querySelector('[aria-activedescendant]')?.getAttribute('aria-activedescendant'),
+    ).toBe(last.id);
+    expect(inView(scroller, last)).toBe(true);
+  });
+
+  // The active-row tint and every painted part of the row sit inside the row box.
+  it('paints the highlight and the row chrome inside the active option box', async () => {
+    const { settle, scroller, options } = await mountMany(500);
+    await settle();
+    const active = options()[500];
+    expect(active.getAttribute('aria-selected')).toBe('true');
+    expect(active.classList).toContain('cngx-option--highlighted');
+    expect(inView(scroller, active)).toBe(true);
+    expect(computedValue(active, 'background-color')).not.toBe('rgba(0, 0, 0, 0)');
+    const box = active.getBoundingClientRect();
+    for (const part of Array.from(active.querySelectorAll<HTMLElement>('*'))) {
+      const r = part.getBoundingClientRect();
+      expect(r.left).toBeGreaterThanOrEqual(box.left);
+      expect(r.right).toBeLessThanOrEqual(box.right);
+      expect(r.top).toBeGreaterThanOrEqual(box.top);
+      expect(r.bottom).toBeLessThanOrEqual(box.bottom);
+    }
   });
 });

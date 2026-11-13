@@ -55,6 +55,20 @@ type Density = 'comfortable' | 'compact' | 'spacious';
         >
       </p>
       <p>
+        <span class="g-icons3" cngxButtonGroup variant="outline" size="sm" aria-label="Align"
+          ><button cngxIconButton class="h-1" aria-label="Left">L</button
+          ><button cngxIconButton class="h-2" aria-label="Centre">C</button
+          ><button cngxIconButton class="h-3" aria-label="Right">R</button></span
+        >
+      </p>
+      <p>
+        <span class="g-icons3v" cngxButtonGroup orientation="vertical" variant="outline" size="sm" aria-label="Valign"
+          ><button cngxIconButton class="w-1" aria-label="Top">T</button
+          ><button cngxIconButton class="w-2" aria-label="Middle">M</button
+          ><button cngxIconButton class="w-3" aria-label="Bottom">B</button></span
+        >
+      </p>
+      <p>
         <span class="g-addon" cngxButtonGroup variant="outline" size="sm" aria-label="Assignee"
           ><span cngxButtonGroupAddon class="a-addon">3 open</span
           ><button cngxButton class="a-btn">Reassign</button></span
@@ -184,6 +198,31 @@ describe.each(['comfortable', 'compact', 'spacious'] as const)('CngxButtonGroup 
     expect(coarseGap).toBeGreaterThanOrEqual(8 - 0.01);
     // Inside each sub-group the seam stays collapsed.
     expect(rect(coarse, '.t-1b').left).toBeCloseTo(rect(coarse, '.t-1a').right - 1, 1);
+  });
+});
+
+describe('CngxButtonGroup geometry: touch spans', () => {
+  it('keeps a 44px exclusive span for every horizontal segment on a coarse pointer', () => {
+    const root = mount({ touch: true });
+    const [a, b, c] = ['.h-1', '.h-2', '.h-3'].map((s) => rect(root, s));
+    expect(b.left - a.left).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(c.left - b.left).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(c.width).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(b.left).toBeCloseTo(a.right - 1, 1);
+  });
+
+  it('keeps a 44px exclusive span for every vertical segment on a coarse pointer', () => {
+    const root = mount({ touch: true });
+    const [a, b, c] = ['.w-1', '.w-2', '.w-3'].map((s) => rect(root, s));
+    expect(b.top - a.top).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(c.top - b.top).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(c.height).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(b.top).toBeCloseTo(a.bottom - 1, 1);
+  });
+
+  it('keeps the separator at its one border line on a coarse pointer', () => {
+    const root = mount({ touch: true });
+    expect(query(root, '.p-sep').getBoundingClientRect().width).toBeCloseTo(1, 1);
   });
 });
 

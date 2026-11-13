@@ -92,7 +92,11 @@ import {
 } from '../shared/commit-action.types';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
+import {
+  isOptionDisabled,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionsInput,
+} from '../shared/option.model';
 import { CNGX_PROJECTED_OPTION_MODEL_FACTORY } from '../shared/projected-option-model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
@@ -193,7 +197,7 @@ export interface CngxSelectShellChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/select-shell/select-shell.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch
+ * @relatedTo CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, withSearchMatchFn
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/select-shell/basic-flat-declarative-options</example-url>
  * <example-url>/#/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
@@ -1307,7 +1311,7 @@ export class CngxSelectShell<T = unknown>
           },
           key,
         );
-        if (action.kind === 'select') {
+        if (action.kind === 'select' && !isOptionDisabled(action.option)) {
           event.preventDefault();
           this.commitClosedPick(action.option, v);
           return;

@@ -3,8 +3,8 @@
  * Panel-toggle layer over the icon-button geometry. The host is the native
  * `<button>` and carries `.cngx-button.cngx-icon-button.cngx-panel-toggle`;
  * paint (variant x tone, disabled, busy, contrast, forced colors) comes from
- * the shared `.cngx-button` sheet, the square box, the `::before` hit area
- * and the `1.25em` glyph box from `.cngx-icon-button`. This sheet only adds
+ * the shared `.cngx-button` sheet, the square box with its touch floor and
+ * the `1.25em` glyph box from `.cngx-icon-button`. This sheet only adds
  * the mirrored panel glyph.
  *
  * **Slots**

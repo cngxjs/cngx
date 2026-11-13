@@ -15,7 +15,13 @@ import {
   CngxMenuTrigger,
   type AsyncAction,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import {
+  CngxPopover,
+  CngxPopoverAnchor,
+  CngxPopoverSheet,
+  CngxPopoverSheetTitle,
+  CngxPopoverTrigger,
+} from '@cngx/common/popover';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -266,6 +272,76 @@ class CustomCaretHost {
   release: () => void = () => undefined;
   readonly publish: AsyncAction = () => new Promise<void>((resolve) => (this.release = resolve));
 }
+
+@Component({
+  template: `
+    @if (shown()) {
+      <div cngxSplitButton aria-label="Publish">
+        <button id="main" cngxButton>Publish</button>
+        <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+      </div>
+    }
+    ${MENU}
+  `,
+  imports: [CngxSplitButton, CngxButton, CngxIconMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
+})
+class ToggleSplitHost {
+  readonly shown = signal(true);
+}
+
+@Component({
+  template: `
+    @if (anchorFirst()) {
+      <div id="box" [cngxPopoverAnchor]="pop"></div>
+    }
+    <div cngxSplitButton aria-label="Publish">
+      <button id="main" cngxButton>Publish</button>
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+    </div>
+    @if (!anchorFirst()) {
+      <div id="box" [cngxPopoverAnchor]="pop"></div>
+    }
+    ${MENU}
+  `,
+  imports: [
+    CngxSplitButton,
+    CngxButton,
+    CngxIconMenuButton,
+    CngxMenu,
+    CngxMenuItem,
+    CngxPopover,
+    CngxPopoverAnchor,
+  ],
+})
+class ConsumerAnchorHost {
+  readonly anchorFirst = signal(true);
+}
+
+@Component({
+  template: `
+    <div cngxSplitButton aria-label="Publish">
+      <button id="main" cngxButton>Publish</button>
+      <button id="caret" cngxIconMenuButton [menu]="menu" [popover]="pop"></button>
+    </div>
+    <div cngxPopover cngxPopoverSheet="sheet" #pop="cngxPopover">
+      <h2 cngxPopoverSheetTitle>Publish options</h2>
+      <ul cngxMenu [label]="'Publish options'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="schedule">Schedule</li>
+      </ul>
+    </div>
+  `,
+  imports: [
+    CngxSplitButton,
+    CngxButton,
+    CngxIconMenuButton,
+    CngxMenu,
+    CngxMenuItem,
+    CngxPopover,
+    CngxPopoverSheet,
+    CngxPopoverSheetTitle,
+  ],
+})
+class SheetSplitHost {}
 
 function setup<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
@@ -663,5 +739,58 @@ describe('CngxSplitButton', () => {
     const { fixture } = setup(UnnamedGroupHost);
     await fixture.whenStable();
     expect(warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1072'))).toHaveLength(1);
+  });
+  describe('menu anchor', () => {
+    it('anchors the caret popover to the whole group', () => {
+      const { group, popover } = setup(ToggleSplitHost);
+      expect(popover.explicitAnchorElement()).toBe(group);
+      expect(popover.anchorElement()).toBe(group);
+    });
+
+    it('releases the anchor when the split is destroyed', () => {
+      const { host, popover, flush } = setup(ToggleSplitHost);
+      host.shown.set(false);
+      flush();
+      expect(popover.explicitAnchorElement()).toBeNull();
+    });
+
+    it('still closes an open menu on a pointerdown on the main button', () => {
+      const { q, popover, flush } = setup(ToggleSplitHost);
+      q('#caret').click();
+      flush();
+      expect(popover.isVisible()).toBe(true);
+
+      q('#main').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      flush();
+      expect(popover.isVisible()).toBe(false);
+    });
+
+    it('restores sheet focus to the caret when the tap focused nothing', () => {
+      const { q, popover, flush } = setup(SheetSplitHost);
+      const caret = q('#caret');
+      (document.activeElement as HTMLElement | null)?.blur();
+      caret.click();
+      flush();
+      expect(popover.isVisible()).toBe(true);
+
+      popover.hide();
+      flush();
+      expect(document.activeElement).toBe(caret);
+    });
+
+    for (const anchorFirst of [true, false]) {
+      it(`yields to a consumer anchor rendered ${anchorFirst ? 'before' : 'after'} the split`, () => {
+        const fixture = TestBed.createComponent(ConsumerAnchorHost);
+        fixture.componentInstance.anchorFirst.set(anchorFirst);
+        fixture.detectChanges();
+        TestBed.flushEffects();
+        fixture.detectChanges();
+        const popover = fixture.debugElement
+          .query(By.directive(CngxPopover))
+          .injector.get(CngxPopover);
+        const box = (fixture.nativeElement as HTMLElement).querySelector('#box');
+        expect(popover.anchorElement()).toBe(box);
+      });
+    }
   });
 });

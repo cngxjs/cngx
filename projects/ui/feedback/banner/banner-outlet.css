@@ -707,8 +707,8 @@
 
     .cngx-banner__dismiss {
       flex-shrink: 0;
-      /* The close button grows its hit area through ::before on a coarse
-         pointer; the visual box keeps its size. */
+      /* The close button floors its box to --cngx-target-min on a coarse
+         pointer. */
     }
 
     @media (prefers-reduced-motion: reduce) {

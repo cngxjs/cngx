@@ -4,6 +4,7 @@ import {
   ViewEncapsulation,
   computed,
   DestroyRef,
+  HostAttributeToken,
   inject,
   input,
   model,
@@ -157,10 +158,11 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
    */
   readonly errorMessageId = input<string | null>(null);
   /**
-   * Layout direction of the group. `'horizontal'` adds the
-   * `cngx-checkbox-group--horizontal` class. Default `'vertical'`. An explicit binding is also
-   * forwarded to the host `CngxRovingTabindex` as its arrow-key axis; while unbound, the layout is
-   * vertical but the roving axis keeps its own default `'horizontal'`.
+   * Layout direction of the group and the arrow-key axis of the host `CngxRovingTabindex`.
+   * `'horizontal'` adds the `cngx-checkbox-group--horizontal` class and moves focus with
+   * ArrowLeft/ArrowRight; `'vertical'` moves it with ArrowUp/ArrowDown. Unset, layout and axis
+   * are both vertical; a static `orientation="..."` attribute and an `[orientation]` binding
+   * both set layout and axis together. Default `'vertical'`.
    */
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   /**
@@ -206,7 +208,17 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     keyFn: (v) => this.keyFn()(v),
   });
 
+  private readonly roving = inject(CngxRovingTabindex, { host: true });
+
   constructor() {
+    // A static orientation attribute already reached the roving directive (host directives get
+    // their attribute inputs before this constructor runs) while this.orientation() still holds
+    // the default, so only the attribute-less case is seeded. A [orientation] property binding
+    // lands in the update pass and overwrites the seed.
+    const staticOrientation = inject(new HostAttributeToken('orientation'), { optional: true });
+    if (staticOrientation === null) {
+      this.roving.orientation.set(this.orientation());
+    }
     inject(DestroyRef).onDestroy(() => this.controller.destroy());
   }
 

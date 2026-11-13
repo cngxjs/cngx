@@ -648,9 +648,7 @@ code.cdx-shiki-inline {
 .cdx-content-section h3:not(.cdx-section-heading) {
   font-family: var(--font-sans);
   color: var(--color-cdx-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   margin-top: var(--spacing-cdx-lg);
   margin-bottom: 0.75rem;
@@ -661,6 +659,25 @@ code.cdx-shiki-inline {
 }
 .cdx-content-section h3:not(.cdx-section-heading):hover > a.cdx-member-permalink {
   opacity: 1;
+}
+
+/* Headings read in normal case: the base theme sets them in uppercase with
+   extra tracking, which turns `@`-words, symbol names and sentences into
+   shouting. Labels on tables, chips and stats keep the base look. */
+.cdx-section-heading,
+[data-compodoc^='block-'] > h3,
+.cdx-overview-section-heading,
+.cdx-index-group-label,
+.cdx-shortcuts-grid section h3,
+.cdx-readme h5,
+.cdx-readme h6 {
+  text-transform: none;
+  letter-spacing: normal;
+}
+.cdx-section-heading,
+[data-compodoc^='block-'] > h3,
+.cdx-overview-section-heading {
+  font-size: 15px;
 }
 
 /* The playground tab shows only the launch button: the source snippet is

@@ -23,7 +23,7 @@ const PROJECTS = join(ROOT, 'projects');
 const DOCS_SITE = 'https://cngxjs.github.io/cngx/';
 const GITHUB_BLOB = 'https://github.com/cngxjs/cngx/blob/main/';
 /** Folders whose READMEs belong to no docs page (internal select spine). */
-const NO_DOCS_PAGE = ['projects/forms/select/shared/'];
+const NO_DOCS_PAGE = ['projects/forms/select/shared/internal/'];
 
 function readmes(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -118,17 +118,30 @@ describe('README relative links', () => {
     expect(fixed).toEqual([]);
   });
 
+  it('links the docs start page through the root README, never by its fixed URL', () => {
+    // The docs site renders the root README.md as its start page. The fixed
+    // URL opens the newest release from any version; the relative link stays
+    // in the version being read and opens the repository README on GitHub.
+    const root = new RegExp(`${DOCS_SITE.replaceAll('.', '\\.')}?(?=[)\\s]|$)`, 'gm');
+    const fixed = README_FILES.flatMap((file) =>
+      [...withoutFences(readFileSync(file, 'utf8')).matchAll(root)].map(
+        () => `${relative(ROOT, file)}: link ${relative(dirname(file), join(ROOT, 'README.md'))}`,
+      ),
+    );
+    expect(fixed).toEqual([]);
+  });
+
   it('links only Markdown the docs build renders as a page', () => {
-    // compodocx gives a README and a core-concepts file a page; any other
-    // Markdown file (ARCHITECTURE.md, a migration note) and the READMEs under
-    // NO_DOCS_PAGE have none, so a relative link to one is dead on the docs
-    // site. Link those through GitHub (`GITHUB_BLOB`) instead. A
-    // README without a page of its own is only read on GitHub and may link
-    // anything there.
+    // compodocx gives a README (the root one is the start page) and a
+    // core-concepts file a page; any other Markdown file (ARCHITECTURE.md, a
+    // migration note) and the READMEs under NO_DOCS_PAGE have none, so a
+    // relative link to one is dead on the docs site. Link those through
+    // GitHub (`GITHUB_BLOB`) instead. A README without a page of its own is
+    // only read on GitHub and may link anything there.
     const noPage = (path) => NO_DOCS_PAGE.some((dir) => path.startsWith(dir));
     const rendered = (path) =>
       !noPage(path) &&
-      (path.endsWith('/README.md') || path.startsWith('core-concepts/'));
+      (path === 'README.md' || path.endsWith('/README.md') || path.startsWith('core-concepts/'));
     const offenders = README_FILES.filter((file) => !noPage(relative(ROOT, file))).flatMap(
       (file) =>
         links(readFileSync(file, 'utf8'))

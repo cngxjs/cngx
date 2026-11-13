@@ -5,7 +5,7 @@
    Thematic values flow through --cngx-* custom properties with fallbacks. */
 
 /* The trigger is a `cngxIconMenuButton`: box, square size, focus ring, touch
-   floor (`::before` hit area), pressed and forced-colors paint come from the
+   floor (the box floors to --cngx-target-min), pressed and forced-colors paint come from the
    icon-button skin. This sheet keeps the boxed ellipsis look and routes the
    public --cngx-breadcrumb-overflow-trigger-* tokens into it. Layered with the
    button sheet: (0,3,0) at rest and (0,4,0) on hover outrank its scoped

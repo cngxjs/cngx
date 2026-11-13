@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/timeline
+ * @module `@cngx/common/timeline`
  */
 export {
   CNGX_TIMELINE_GROUPING_FACTORY,

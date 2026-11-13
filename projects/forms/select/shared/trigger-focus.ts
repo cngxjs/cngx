@@ -45,7 +45,13 @@ export function createTriggerFocusState(): CngxTriggerFocusState {
 }
 
 /**
- * Factory signature for {@link CNGX_TRIGGER_FOCUS_FACTORY}.
+ * Function shape a replacement trigger focus state must have.
+ *
+ * All nine composites call it once during construction, in an injection
+ * context, with no arguments. A replacement that reads focus from an
+ * external source should still answer `markFocused` and `markBlurred`, since
+ * the composites call them from their trigger handlers. Provide it through
+ * {@link CNGX_TRIGGER_FOCUS_FACTORY}.
  */
 export type CngxTriggerFocusFactory = () => CngxTriggerFocusState;
 

@@ -1,6 +1,6 @@
 # Select Shell
 
-`CngxSelectShell` is the projection variant of the select family. Single-value dropdown that takes `<cngx-option>` / `<cngx-optgroup>` / `<cngx-select-divider>` / `<cngx-select-search>` children projected by the consumer and derives the option model from the DOM. Same shared core as the data-mode `CngxSelect` (`createSelectCore<T, T>`), same trigger ARIA, same template-slot cascade, same async commit machinery - the difference is where the options come from. Bridge between the raw-listbox compose-yourself path and the data-mode `[options]` path.
+`CngxSelectShell` is the projection variant of the select family. Single-value dropdown that takes `<cngx-option>` / `<cngx-optgroup>` / `<cngx-select-divider>` / `<cngx-select-search>` children projected by the consumer and derives the option model from the DOM. It shares core (`createSelectCore<T, T>`), trigger ARIA, slot cascade and commit machinery with `CngxSelect`; only the option source differs. Bridge between the raw-listbox compose-yourself path and the data-mode `[options]` path.
 
 ## Import
 
@@ -96,6 +96,6 @@ Trigger carries `role="combobox"` with `aria-expanded`, `aria-controls`, `aria-h
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, outputs, slot directives, and the 18 DI factory tokens.
+- [API on compodocx](../../../../README.md) for inputs, outputs, slot directives, and the 18 DI factory tokens.
 - The eight data-driven sibling variants in `@cngx/forms/select`: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`.
-- [`@cngx/forms/select/shared`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/README.md) for the core factory, commit machinery, panel infrastructure, and configuration cascade.
+- [`@cngx/forms/select/shared`](../shared/README.md) for the core factory, commit machinery, panel infrastructure, and configuration cascade.

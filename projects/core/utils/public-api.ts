@@ -1,5 +1,5 @@
 /**
- * @module @cngx/core/utils
+ * @module `@cngx/core/utils`
  */
 export { coerceBooleanProperty, coerceNumberProperty, coerceSignal } from './coerce.util';
 export {

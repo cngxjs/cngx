@@ -8,6 +8,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -50,6 +51,7 @@ import { injectSelectCopy } from '../i18n/select-i18n';
 import { CngxSelectPanel } from '../shared/internal/panel/panel.component';
 import { CngxSelectPanelShell } from '../shared/internal/panel-shell/panel-shell.component';
 import { toListboxMatchFn } from '../shared/internal/listbox-match';
+import { createOptionLabelFormatter } from '../shared/internal/option-label-formatter';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -170,8 +172,7 @@ export interface CngxActionSelectChange<T = unknown> {
  *
  * Pessimistic commit only: panel stays open while pending, `isPending`
  * flips on the slot context, error surfaces in the commit-error
- * banner. True optimistic create requires a consumer-supplied
- * `tempValueFactory`.
+ * banner.
  *
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
@@ -197,7 +198,7 @@ export interface CngxActionSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxActionMultiSelect, CngxCombobox, CngxSelectAction
+ * @relatedTo CngxSelect, CngxActionMultiSelect, CngxSelectAction, CngxTypeahead, withActionPosition, withCloseOnCreate, withLiveInputFallback, withActionPopoverPlacement
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/action-select/basic-sync-quick-create</example-url>
  * <example-url>/#/forms/select/action-select/custom-action-template-split-actions</example-url>
@@ -332,12 +333,17 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Formats a value into the input text. The input is rewritten through it
-   * after a commit, a rollback, a clear and a blur. Defaults to `String`.
+   * after a commit, a rollback, a clear and a blur. Unbound, the input shows
+   * the label last resolved for the committed value: a refetch that renames
+   * the option updates it, a result set without the option keeps it. A value
+   * no option ever matched shows `String(value)`; bind `displayWith` when
+   * the value is a server id the options may not contain.
    */
-  readonly displayWith = input<(value: T) => string>(String);
+  readonly displayWith = input<((value: T) => string) | undefined>(undefined);
   /**
-   * Rewrites the input from the committed value when focus leaves the control,
-   * dropping unfinished search text. Defaults to `true`.
+   * Rewrites the input from the committed value (`displayWith`, else the
+   * option label) when focus leaves the control, dropping unfinished search
+   * text. Defaults to `true`.
    */
   readonly clearOnBlur = input<boolean>(true);
   /**
@@ -908,12 +914,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       if (isEmptyScalar(v)) {
         return null;
       }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        return map.get(v as unknown) ?? null;
-      }
-      const eq = this.compareWith();
-      return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+      return this.findOption(v);
     },
     {
       equal: (a, b) => {
@@ -928,6 +929,16 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
+  /** The option for `v` in the current options, by `compareWith`; not equality-guarded. */
+  private findOption(v: T): CngxSelectOptionDef<T> | null {
+    const map = this.core.valueToOptionMap();
+    if (map) {
+      return map.get(v as unknown) ?? null;
+    }
+    const eq = this.compareWith();
+    return this.core.unfilteredFlatOptions().find((o) => eq(o.value, v)) ?? null;
+  }
+
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
@@ -941,9 +952,15 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly announceCommitError = this.core.createCommitErrorAnnouncer({
     policy: this.commitErrorAnnouncePolicy,
   });
+  private readonly resolvedDisplayWith = createOptionLabelFormatter(
+    this.displayWith,
+    this.value,
+    (v) => this.findOption(v),
+    this.compareWith,
+  );
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
-    displayWith: this.displayWith,
+    displayWith: this.resolvedDisplayWith,
     focused: this.focusState.focused,
     inputEl: this.inputEl,
     searchRef: this.searchInputRef,
@@ -1139,6 +1156,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
+    injector: inject(Injector),
   });
 
   /** @internal - Enter-to-quick-create (see createActionTriggerInput). */

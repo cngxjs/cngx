@@ -42,7 +42,7 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/common/interactive/copy/copy-block.css', note: 'copy button' },
   // @cngx/common/button
   { file: 'projects/common/button/button.component.css', note: 'button row (link variant exempt: inline text); also floors cngxActionButton' },
-  { file: 'projects/common/button/icon-button.component.css', note: 'icon button hit area (::before) + adjacent gap; also floors cngxCloseButton' },
+  { file: 'projects/common/button/icon-button.component.css', note: 'icon button box floor + adjacent gap; also floors cngxCloseButton and cngxIconMenuButton' },
   // @cngx/common - display + directive-base skins (theming/components)
   { file: 'projects/common/display/chip/chip.component.css', note: 'interactive chip + remove button' },
   { file: 'projects/common/theming/components/cngx-button-toggle.css', note: 'segmented toggle button' },

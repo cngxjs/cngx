@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/sidenav
+ * @module `@cngx/ui/sidenav`
  */
 
 export { CngxSidenavLayout } from './sidenav-layout';

@@ -474,7 +474,6 @@ export const CNGX_LANGUAGE_DE = {
     emptyFallback: 'Keine Daten',
   },
   stepper: {
-    stepperRegion: 'Schritte',
     stepperLabel: 'Schritte',
     stepRoleDescription: 'Schrittfolge',
     stepIndicatorRoleDescription: 'Schrittanzeige',
@@ -515,7 +514,6 @@ export const CNGX_LANGUAGE_DE = {
     stepFallbackLabel: 'Schritt {id}',
   },
   tabs: {
-    tabsRegion: 'Tabs',
     tabsLabel: 'Tabs',
     tabRoleDescription: 'Tableiste',
     tabPanelRoleDescription: 'Tabinhalt',

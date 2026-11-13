@@ -4,11 +4,12 @@ import {
   CNGX_BUTTON_STATE,
   type CngxButtonHostState,
 } from '@cngx/common/button';
+import { CngxPopoverTrigger } from '@cngx/common/popover';
 import { injectDescribedByContribution, nextUid } from '@cngx/core/utils';
 
 import { injectMenuButtonI18n } from './i18n/menu-button-i18n';
 import { CNGX_SPLIT_BUTTON } from './split-button.token';
-import { CNGX_SPLIT_CARET } from './split-caret.token';
+import { CNGX_SPLIT_CARET, type CngxSplitCaretRole } from './split-caret.token';
 
 /**
  * The caret role of a `cngxSplitButton`, as a host directive. A button host
@@ -77,8 +78,8 @@ import { CNGX_SPLIT_CARET } from './split-caret.token';
   standalone: true,
   exportAs: 'cngxSplitCaret',
   providers: [
-    // Same instance as CNGX_BUTTON_STATE, so the split compares main and caret as states.
-    { provide: CNGX_SPLIT_CARET, useExisting: CNGX_BUTTON_STATE },
+    // The same CNGX_BUTTON_STATE instance, so the split compares main and caret as states.
+    { provide: CNGX_SPLIT_CARET, useFactory: splitCaretRole },
     { provide: CNGX_BUTTON_HOST_STATE, useExisting: CngxSplitCaret },
   ],
 })
@@ -115,4 +116,12 @@ export class CngxSplitCaret implements CngxButtonHostState {
   constructor() {
     injectDescribedByContribution(this.busyNoteId, this.mainDescriptionIds);
   }
+}
+
+function splitCaretRole(): CngxSplitCaretRole {
+  const trigger = inject(CngxPopoverTrigger, { self: true, optional: true });
+  return {
+    state: inject(CNGX_BUTTON_STATE, { self: true }),
+    popover: computed(() => trigger?.popoverRef() ?? null),
+  };
 }

@@ -7,9 +7,9 @@ import { CngxButton } from './button.component';
 import { CngxIconButton } from './icon-button.component';
 
 // Runs in a real Chromium (the `test-geometry` target). A co-hosted
-// `cngxRipple` must not clip the button: the touch hit area is a centred
-// `::before` that overhangs the box on a coarse pointer, and only the wave
-// may be cut to the button shape. jsdom has no layout or hit testing.
+// `cngxRipple` cuts only the wave to the button shape; the box itself is the
+// touch target and floors to 44px on a coarse pointer, clipped or not. jsdom
+// has no layout or hit testing.
 
 @Component({
   selector: 'cngx-icon-button-ripple-geometry-host',
@@ -69,48 +69,20 @@ function press(btn: HTMLElement): void {
   );
 }
 
-/**
- * Points inside the 44px hit area but outside the visual box, above and
- * before it. Hit testing snaps to whole pixels and the hit area's far edge is
- * exclusive, so the points sit on whole pixels from the box's start edges:
- * 1px out (the whole md overhang) and the deepest whole pixel of the
- * overhang (7px at sm).
- */
-function pointsOutsideBox(btn: HTMLElement): { x: number; y: number }[] {
-  const rect = btn.getBoundingClientRect();
-  const deep = Math.max(1, Math.floor((44 - rect.height) / 2));
-  const cx = Math.round(rect.left + rect.width / 2);
-  const cy = Math.round(rect.top + rect.height / 2);
-  return [1, deep].flatMap((d) => [
-    { x: cx, y: rect.top - d },
-    { x: rect.left - d, y: cy },
-  ]);
-}
-
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
 });
 
 describe.each(['sm', 'md'] as const)('CngxIconButton + CngxRipple geometry: %s on touch', (size) => {
-  it('keeps the 44px hit area hittable outside the box after a ripple', () => {
-    const btn = query(mount(), `.i-${size}`);
-    press(btn);
-    expect(btn.querySelector('.cngx-ripple__wave')).not.toBeNull();
-
-    const rect = btn.getBoundingClientRect();
-    expect(rect.height).toBeLessThan(44);
-    for (const { x, y } of pointsOutsideBox(btn)) {
-      expect(document.elementFromPoint(x, y)).toBe(btn);
-    }
-  });
-
-  it('loses those points once the host clips (the regression this guards)', () => {
+  it('keeps the box itself at the 44px floor with the host clipped', () => {
     const btn = query(mount(), `.i-${size}`);
     btn.style.overflow = 'hidden';
-    for (const { x, y } of pointsOutsideBox(btn)) {
-      expect(document.elementFromPoint(x, y)).not.toBe(btn);
-    }
+    press(btn);
+    expect(btn.querySelector('.cngx-ripple__wave')).not.toBeNull();
+    const rect = btn.getBoundingClientRect();
+    expect(rect.width).toBeGreaterThanOrEqual(44 - 0.5);
+    expect(rect.height).toBeGreaterThanOrEqual(44 - 0.5);
   });
 
   it('clips the wave to the button radius, not the host', () => {

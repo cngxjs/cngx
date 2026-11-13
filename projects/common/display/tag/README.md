@@ -180,7 +180,7 @@ AT reads "Filters, list, 3 items". Drop `[semanticList]` and the group is layout
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for inputs, types, and tokens.
+- [API on compodocx](../../../../README.md) for inputs, types, and tokens.
 - Stories: `examples/stories/common/display/tag/`.
 - `CngxTagGroup`: layout container plus optional `role="list"` semantics.
 - `CngxChip`: removable, ephemeral counterpart with its own remove button and announcer.

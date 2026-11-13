@@ -46,7 +46,7 @@ Selector: `cngx-radio-group, [cngxRadioGroup]`. `exportAs: 'cngxRadioGroup'`. Ge
 | `required` | `boolean` | `false` | `model()`. Sets `aria-required="true"`. |
 | `invalid` | `boolean` | `false` | `model()`. Bridge-writable; sets `aria-invalid="true"`. |
 | `errorMessageId` | `string \| null` | `null` | Forwarded to `aria-errormessage` when set. |
-| `orientation` | `'horizontal' \| 'vertical'` | `'vertical'` | Forwarded to host `CngxRovingTabindex` and `aria-orientation`. |
+| `orientation` | `'horizontal' \| 'vertical'` | `'vertical'` | Emitted as `aria-orientation` and drives the layout. The arrow-key axis of the host `CngxRovingTabindex` is fixed to `'both'`. |
 | `label` | `string \| undefined` | `undefined` | Forwarded to `aria-label`. |
 | `state` | `CngxAsyncState<unknown> \| undefined` | `undefined` | Drives `aria-busy` when status is `'loading'`. |
 | `name` (`nameInput`) | `string \| undefined` | auto `nextUid('cngx-radio-group')` | HTML-style `name` applied per radio. |
@@ -116,7 +116,7 @@ export interface CngxRadioRegistration<T = unknown> {
 | Concern | How it is wired |
 |-|-|
 | Role | Host renders `role="radiogroup"` on the group and `role="radio"` on each leaf. |
-| Orientation | `[orientation]` is forwarded to host `CngxRovingTabindex` and emitted as `aria-orientation`. |
+| Orientation | `[orientation]` is emitted as `aria-orientation` and drives the layout only; the host `CngxRovingTabindex` axis is fixed to `'both'`, so all four arrow keys navigate in either layout. |
 | Focus traversal | `Tab` enters the group; `CngxRovingTabindex` puts `tabindex="0"` on the active radio and `-1` on the rest. |
 | Arrow keys | `ArrowDown` / `ArrowRight` advance focus, `ArrowUp` / `ArrowLeft` retreat, `Home` / `End` jump to first / last. Movement also selects (W3C auto-select variant). |
 | Space / Enter | Select the focused leaf. Idempotent on the active one. |
@@ -133,6 +133,6 @@ The `[attr.name]` on each leaf mirrors the group's `name()` for parity with `<in
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for full input/output reference.
+- [API on compodocx](../../../../README.md) for full input/output reference.
 - Stories: `examples/stories/common/interactive/radio/`.
 - `CngxRadioIndicator` (`@cngx/common/display`) is the visual glyph the leaf renders; swap its dot with `[dotGlyph]`.

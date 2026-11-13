@@ -92,7 +92,7 @@ On the first press the directive appends one `<span class="cngx-ripple__containe
 - `.cngx-ripple__container` covers the host (`position: absolute; inset: 0`), inherits its `border-radius`, clips with `overflow: hidden` and ignores pointer events.
 - `.cngx-ripple__wave` is positioned from `--cngx-ripple-x`, `--cngx-ripple-y` and `--cngx-ripple-size` (set inline per press) and animates with `--cngx-ripple-duration` / `--cngx-ripple-opacity`.
 
-Only the wave is clipped. The host is never clipped, so the coarse-pointer hit area of `cngxButton` / `cngxIconButton` (a `::before` that overhangs the box up to `--cngx-target-min`), a corner badge or a focus ring stay intact.
+Only the wave is clipped. The host is never clipped, so a corner badge or a focus ring stay intact.
 
 Override in your component:
 
@@ -222,7 +222,7 @@ The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-su
 
 ## See Also
 
-- [compodocx API documentation](https://cngxjs.github.io/cngx/)
+- [compodocx API documentation](../../../../README.md)
 - `cngx-ripple.css` - Default container and wave styles
 - Demo: `examples/stories/common/interactive/ripple/`
 - Tests: `projects/common/interactive/ripple/ripple.directive.spec.ts`

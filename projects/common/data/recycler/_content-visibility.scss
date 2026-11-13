@@ -4,6 +4,9 @@
 ///
 /// @param {length} $height - Estimated intrinsic height per item (e.g. 48px).
 ///   Used by `contain-intrinsic-size` so the scrollbar reflects the correct total height.
+///   The single value sets both axes: a block item still takes its inline size from its
+///   container, but inside a shrink-to-fit container (a popover sized to its content) a
+///   skipped item adds `$height` to that container's inline size, not its real width.
 ///
 /// @example scss
 ///   .item { @include cngx-content-visibility(48px); }

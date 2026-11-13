@@ -478,7 +478,6 @@ export const CNGX_LANGUAGE_EN = {
     emptyFallback: 'No data',
   },
   stepper: {
-    stepperRegion: 'Steps',
     stepperLabel: 'Steps',
     stepRoleDescription: 'stepper',
     stepIndicatorRoleDescription: 'step indicator',
@@ -519,7 +518,6 @@ export const CNGX_LANGUAGE_EN = {
     stepFallbackLabel: 'Step {id}',
   },
   tabs: {
-    tabsRegion: 'Tabs',
     tabsLabel: 'Tabs',
     tabRoleDescription: 'tab list',
     tabPanelRoleDescription: 'tab panel',

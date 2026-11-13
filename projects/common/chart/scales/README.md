@@ -57,6 +57,6 @@ Unknown lookups: `createBandScale` returns `NaN`, `createOrdinalScale` returns t
 
 ## See also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/) for full signatures.
+- [API on compodocx](../../../../README.md) for full signatures.
 - `@cngx/common/chart/axis` for the directive that renders ticks against these scales.
 - `@cngx/common/chart/layers` for the atoms (`CngxBar`, `CngxLine`, `CngxArea`, ...) that consume them.

@@ -24,8 +24,9 @@ import {
  * Radio-group molecule that owns the canonical `value` for a set of
  * `CngxRadio` leaves and provides the parent contract via
  * `CNGX_RADIO_GROUP`. The group composes `CngxRovingTabindex` as a
- * host directive (with `inputs: ['orientation']` exposed) so arrow-
- * key navigation across radios is wired from day one. Leaf
+ * host directive and fixes its arrow-key axis to `'both'`, so all four
+ * arrow keys move across radios whatever the layout; `orientation`
+ * drives `aria-orientation` and the layout only. Leaf
  * registration is imperative - `register()` / `unregister()` keep a
  * Map in declaration order so the group can resolve the active
  * radio by id without re-querying content children on every change

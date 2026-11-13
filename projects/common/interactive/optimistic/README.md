@@ -267,7 +267,7 @@ private readonly [setRating, ratingState] = createOptimistic(
 
 ## See Also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../../README.md)
 - [CngxAsyncState](../../../core/utils/) - The shared state interface
 - [createRetry](../retry/) - Combines well with createOptimistic for resilient updates
 - Demo: `examples/stories/common/optimistic-demo/`

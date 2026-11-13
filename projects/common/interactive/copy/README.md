@@ -179,6 +179,6 @@ CngxCopyText automatically uses `document.execCommand('copy')` fallback when the
 
 ## See Also
 
-- [API on compodocx](https://cngxjs.github.io/cngx/)
+- [API on compodocx](../../../../README.md)
 - Demo: `examples/stories/common/interactive/copy/`
 - Tests: `projects/common/interactive/copy/copy-text.directive.spec.ts`

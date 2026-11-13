@@ -7,7 +7,7 @@ Reorder commits flow through the same `[commitAction]` machinery - useful for ra
 ## When to use
 
 - Ordered selection lists (priorities, route stops, recipient sequences, playlist tracks).
-- Need both selection AND ordering in one widget without dropping into a custom drag-and-drop component.
+- Need both selection and ordering in one widget without dropping into a custom drag-and-drop component.
 
 ## Quick start
 
@@ -39,7 +39,7 @@ export class RankPicker {
 
 ## Forms integration
 
-Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs both membership AND order - your form model is the source of truth for sequence.
+Identical to [`CngxMultiSelect`](../multi-select/README.md#forms-integration). The `Field<T[]>` syncs both membership and order - your form model is the source of truth for sequence.
 
 ## Common patterns
 
@@ -61,7 +61,8 @@ protected readonly commitAction: CngxSelectCommitAction<string[]> = (intended) =
 />
 ```
 
-Reorder paths bypass `ArrayCommitHandler.beginToggle` (whose `sameArrayContents` guard would skip same-membership changes) and talk to the commit controller directly.
+Reorder paths bypass `ArrayCommitHandler.beginToggle` (whose `sameArrayContents` guard would skip same-membership changes) and record kind `reorder` on the commit ledger with order-sensitive equality.
+`(reordered)` fires after `selectionChange` with the same payload for position changes only; with `commitAction` bound it fires on commit success only.
 The chip strip freezes during a commit in flight (`reorderDisabled = disabled() || isCommitting()`) to prevent racing moves.
 
 ### Chip drag-handle override
@@ -164,7 +165,9 @@ drag cancels without commit; pointer release commits.
 ```typescript
 import {
   provideCngxSelect,
+  withReorderAriaLabel,
   withReorderKeyboardModifier,
+  withReorderListLabels,
   withReorderStripFreeze,
   withDefaultDragHandle,
   withDefaultMoveGlyph,
@@ -174,6 +177,8 @@ bootstrapApplication(App, {
   providers: [
     provideCngxSelect(
       withReorderKeyboardModifier('meta'),
+      withReorderAriaLabel('Sort the selected tags'), // chip-strip name
+      withReorderListLabels({ listLabel: 'Order of the selected tags' }), // touch reorder list copy
       withReorderStripFreeze(true),
       withDefaultDragHandle(myDragHandleTemplate),
       withDefaultMoveGlyph(myMoveGlyphTemplate),

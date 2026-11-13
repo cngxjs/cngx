@@ -25,15 +25,15 @@ All nine integrate directly with `<cngx-form-field>` - no bridge directive neede
 
 Each variant is a thin orchestrator on top of one shared core (`createSelectCore`). The core owns the option model, the panel view machine, the ARIA projection, the disabled cascade, and the selection / commit controllers. The variants own only what is actually variant-specific: which value shape they take, whether the trigger has an inline input, which slot directives they expose.
 
-Three properties make the family feel consistent:
+Bind `[state]` and the panel switches between skeleton, content, refresh, empty and error views. Bind `[commitAction]` and each pick is a dispatch with optimistic or pessimistic rollback.
 
-- **Async-aware out of the box.** Bind `[state]` and the panel switches between skeleton, content, refresh, empty, and error views automatically. Bind `[commitAction]` and each pick is a transactional dispatch with optimistic or pessimistic rollback.
-- **Communicates through DI.** Every variant provides `CNGX_STATEFUL`, so descendant transition bridges (`[cngxToastOn]`, `[cngxBannerOn]`, `[cngxAlertOn]`) auto-discover the commit state without explicit binding.
-- **Replaceable by composition, not by configuration.** Every controller (selection, commit, display binding, focus, chip removal, navigation strategy, template registry) ships behind a factory token. Override the token in `viewProviders` to inject telemetry, retry-with-backoff, offline queues, or audit logging without forking the component.
+Every variant provides `CNGX_STATEFUL`, so descendant transition bridges (`[cngxToastOn]`, `[cngxBannerOn]`, `[cngxAlertOn]`) find the commit state without an explicit binding.
+
+Every controller (selection, commit, display binding, focus, chip removal, navigation strategy, template registry) ships behind a factory token; override it in `viewProviders` to replace the behaviour without forking the component. [`ARCHITECTURE.md`](https://github.com/cngxjs/cngx/blob/main/projects/forms/select/ARCHITECTURE.md#di-factory-tokens-18) lists the tokens.
 
 ## A11y
 
-Every variant ships full WAI-ARIA 1.2:
+Every variant follows the WAI-ARIA 1.2 combobox pattern:
 
 - `role="combobox"` on the focusable trigger.
 - `aria-expanded`, `aria-controls`, `aria-haspopup`, `aria-busy`, `aria-invalid`, `aria-required` all reactive - derived in the `computed` graph.
@@ -73,7 +73,15 @@ In a multi-value panel whose rows show their checkbox, a selected row has no fil
 
 To translate the whole app, set a language pack with `provideCngxI18n(withPack(...))` from `@cngx/core/i18n` (see the localisation guide); the `select` section covers every string below.
 
-Library defaults are English. Override on the per-instance level through ARIA-label inputs, or globally via `withAriaLabels` and `withFallbackLabels` features in the `provideCngxSelect(...)` aggregator.
+Library defaults are English. Override on the per-instance level through ARIA-label inputs, or globally via `withAriaLabels` and `withFallbackLabels` features in the `provideCngxSelect(...)` aggregator; `provideCngxSelectAt(...)` scopes the same features to one component's `viewProviders`. `CNGX_SELECT_LANGUAGE_EN` is the English `select` section, typed `CngxSelectLanguageSection`; a translated pack fills the same shape.
+
+## Programmatic API
+
+Every composite exposes `open()`, `close()`, `toggle()` and `focus()`. All but `CngxTreeSelect` add `patchData(option)`, which appends an option to the local buffer until the server list contains it, and `clearLocalItems()`. Signatures are in the **API** tab.
+
+## Appearance
+
+Every composite hosts `CngxFieldSkinHost` from `@cngx/forms/field` as `[skin]` (`'outline'`, `'fill'`, `'bare'`). Unset, it follows the surrounding field's `[skin]`, then `withFieldSkin(...)`.
 
 ## See also
 

@@ -100,7 +100,11 @@ import {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
-import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
+import {
+  isOptionDisabled,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionsInput,
+} from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -183,7 +187,7 @@ export interface CngxMultiSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/multi-select/multi-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip
+ * @relatedTo CngxSelect, CngxCombobox, CngxReorderableMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxActionMultiSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/multi-select/multi-basic</example-url>
  * <example-url>/#/forms/select/multi-select/multi-clearable</example-url>
@@ -1142,7 +1146,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
           },
           key,
         );
-        if (action.kind === 'select') {
+        if (action.kind === 'select' && !isOptionDisabled(action.option)) {
           event.preventDefault();
           this.toggleDispatch.toggleByUser(action.option);
           // Multi-toggle semantics: each keystroke is an independent

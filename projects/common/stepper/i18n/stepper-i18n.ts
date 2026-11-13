@@ -25,12 +25,8 @@ export type CngxStepperStatusLabels = CngxStepperStatusLanguage;
  */
 export interface CngxStepperI18n {
   /**
-   * Last tier of the landmark `aria-label` and of the organism's
-   * `aria-roledescription`. The label applies only while
-   * `CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion` (default `'Steps'`) is
-   * unset, the role description only while `fallbackLabels.stepRoleDescription`
-   * (default `'stepper'`) is unset. Localise both through
-   * `withStepperAriaLabels(...)` and `withStepperFallbackLabels(...)`.
+   * Accessible name of the stepper; only a per-instance `[aria-label]` or
+   * `[aria-labelledby]` overrides it.
    */
   readonly stepperLabel: string;
   /**
@@ -233,7 +229,7 @@ function defineStepperI18nFeature(
  * the language pack's copy, or the English default. {@link CngxStepperStatusLabels} is merged
  * key-by-key so consumers can override one pill label without
  * restating the rest. Pass a `Signal` to switch the language at runtime.
- * Sibling of `withStepperAriaLabels` / `withStepperFallbackLabels`.
+ * Sibling of `withStepperFallbackLabels`.
  */
 export function withStepperI18nLabels(
   overrides: CngxStepperI18nOverrides | Signal<CngxStepperI18nOverrides>,
@@ -252,7 +248,7 @@ export function withStepperI18nLabels(
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideStepperI18n(
- *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge', previousStep: 'Vorheriger' }),
+ *       withStepperI18nLabels({ stepperLabel: 'Bestellschritte', previousStep: 'Vorheriger' }),
  *     ),
  *   ],
  * });

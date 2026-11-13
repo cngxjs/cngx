@@ -1,5 +1,5 @@
 /**
- * @cngx/ui
+ * `@cngx/ui`
  *
  * Organism layer of cngx: 26 secondary entry points (layout, overlay,
  * feedback, stepper/mat-stepper, tabs/mat-tabs, accordion/mat-accordion,

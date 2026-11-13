@@ -58,7 +58,7 @@
 
   /* X is a cngxCloseButton and Done a cngxButton: the button sheets own the
      box, the paint, the disabled colour (GrayText under forced colors) and
-     the touch floor (X through its ::before hit area). */
+     the touch floor (X floors its square box). */
   .cngx-select-sheet-header__done,
   .cngx-select-sheet-header__close {
     flex: none;

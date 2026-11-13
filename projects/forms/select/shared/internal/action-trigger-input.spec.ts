@@ -1,4 +1,4 @@
-import { signal, type ElementRef } from '@angular/core';
+import { Injector, signal, type ElementRef } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createDefaultFlatNavStrategy } from '../flat-nav-strategy';
@@ -43,6 +43,8 @@ function makeHarness(): Harness {
     hasQuickCreateAction: () => h.hasAction,
     snapshotPrevious: () => h.previous,
     dispatch: (draft, term, previous) => h.dispatchLog.push([draft, term, previous]),
+    // The deferred Enter path is covered by search-debounce-window.spec.ts.
+    injector: Injector.NULL,
   });
   return h;
 }
@@ -149,7 +151,9 @@ describe('createActionTriggerInput', () => {
       h.trigger.handleTriggerEnter(safari);
       expect(h.dispatchLog).toEqual([]);
 
-      h.trigger.handleTriggerEnter(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+      h.trigger.handleTriggerEnter(
+        new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }),
+      );
       expect(h.dispatchLog).toEqual([[{ label: 'にほん' }, 'にほん', undefined]]);
     });
   });

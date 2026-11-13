@@ -77,3 +77,17 @@ another release.
 - `cngx doctor` exits 2 for a `<projectDir>` it cannot read (a locked directory,
   or a path component that denies access) instead of a clean `[]` or an internal
   error.
+- `cngx find` and `cngx list` print the `category` of three folders after their
+  new docs pages: `CngxAsyncClick`, `CngxPending`, `CngxFailed` and
+  `CngxSucceeded` show `common/interactive/async-click` (was
+  `common/interactive/action-status`), the listbox family
+  `common/interactive/listbox` (was `common/interactive/keyboard`), and the
+  select slot directives and `CngxSelectAnnouncer` `forms/select/shared` (was
+  `forms/select`).
+
+### Fixed
+
+- A fetched release (`--cngx-version` or the installed release) links its
+  examples to the examples build of that release (`/cngx/examples/v<version>`),
+  like the bundled snapshot; it linked them to `main`. A prerelease keeps the
+  links to `main`.

@@ -1,7 +1,7 @@
 # CngxActionSelect
 
 Single-value variant of [`CngxTypeahead`](../typeahead/README.md) that hosts an inline action workflow inside the panel.
-The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel - the slot context exposes `commit()` / `close()` / `isPending` / `dirty` / `retry()` / `error` so consumer markup orchestrates the inline workflow declaratively.
+The `*cngxSelectAction` slot lets consumers render a quick-create form, a filter bar, or a "manage tags" pop-out without closing the panel; the slot context is listed under [Action slot context](#action-slot-context).
 
 ## When to use
 
@@ -65,6 +65,16 @@ export class TagPicker {
 
 Identical to [`CngxTypeahead`](../typeahead/README.md#forms-integration). The bound `Field<T>` syncs with `(value)`.
 
+## Input text
+
+Unfocused, the input shows the committed value as text:
+
+- a bound `displayWith` formats it;
+- unbound, the input shows the label last resolved for the value. A refetch that renames the option updates the text, a result set that no longer contains the option keeps it;
+- a value no option has matched yet shows `String(value)`.
+
+Bind `displayWith` when the value is a server id or object the current options may not contain, for example a server-driven search that drops the selected entry.
+
 ## Action slot context
 
 The `*cngxSelectAction` template receives a context object with:
@@ -75,12 +85,14 @@ The `*cngxSelectAction` template receives a context object with:
 | `commit()`                 | `() => void` | Invoke the bound `quickCreateAction`                                        |
 | `close()`                  | `() => void` | Force-close the panel                                                       |
 | `isPending`                | `boolean`    | `true` while `quickCreateAction` is in flight                               |
-| `dirty`                    | `boolean`    | `true` after the user has typed at least once                               |
+| `dirty`                    | `boolean`    | `true` after the template called `setDirty(true)`, see below                |
 | `retry()`                  | `() => void` | Replay the last failed `commit()`                                           |
 | `error`                    | `unknown`    | Last `commit()` error (or `null`)                                           |
 | `hasError`                 | `boolean`    | Convenience flag                                                            |
 | `value`                    | `T`          | Current `value()` (type-erased)                                             |
-| `setDirty(dirty: boolean)` | `() => void` | Imperative dirty-flag write (rare - usually the bridge tracks this for you) |
+| `setDirty(dirty: boolean)` | `(dirty: boolean) => void` | Marks the action workflow dirty or clean |
+
+`dirty` is `false` until the action template calls `setDirty(true)`; `cancel()` (Escape under the focus-trap policy) and a successful create reset it. Nothing else writes it, typing included.
 
 ## Common patterns
 
@@ -102,7 +114,7 @@ The `*cngxSelectAction` template receives a context object with:
   </div>
   } @else {
   <button type="button" [disabled]="!term || pending" (click)="commit()">
-    @if (pending) { ⏳ } @else { + Create "{{ term }}" }
+    @if (pending) { Creating... } @else { + Create "{{ term }}" }
   </button>
   }
 </ng-template>
@@ -112,7 +124,7 @@ The retry replays with the same term that failed, no need to re-type.
 
 ### Use the shared OK/Cancel fixture
 
-For demos that just need a canonical button pair, drop in the shared fixture from `examples/fixtures/`:
+For demos that just need a canonical button pair, drop in the demo fixture from `examples/src/app/_fixtures/demo-action-buttons.component.ts`:
 
 ```html
 <ng-template
@@ -194,7 +206,8 @@ Same as `CngxTypeahead` plus:
 
 | Key | Behaviour |
 |-|-|
-| `Enter` (in action slot when no option highlighted) | Whatever the action template wires up - typically `commit()`                                     |
+| `Enter` on the input | With an option highlighted it picks that option. With none highlighted, a bound `quickCreateAction` and a non-empty term it runs the create flow. While the typed term is still debouncing, the trigger settles it and defers the key to after the next render; the create check then runs once, only while the panel is still open. The Enter that confirms an IME composition never creates |
+| `Enter` inside the action slot | Whatever the action template wires up, typically `commit()` |
 | `Escape` (action workflow dirty)                    | Intercepted per `focusTrapBehavior` - the consumer's `close()` callback owns the cancel decision |
 
 ## Configuration
@@ -213,3 +226,5 @@ provideCngxSelect(
   withFocusTrapBehavior('dirty'), // intercept Escape only when dirty
 );
 ```
+
+Per-instance inputs win over the config: `[closeOnCreate]` (`withCloseOnCreate`; `true` when neither is set), `[liveInputFallback]` (`withLiveInputFallback`), `[actionPosition]` (`withActionPosition`), `[popoverPlacement]` (`withActionPopoverPlacement`). `[clearOnBlur]` (default `true`) rewrites the input from the committed value when focus leaves and drops unfinished search text. `(created)` emits the created option after a successful quick-create.

@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/popover
+ * @module `@cngx/common/popover`
  */
 
 // Atoms

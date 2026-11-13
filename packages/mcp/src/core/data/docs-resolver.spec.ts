@@ -326,18 +326,38 @@ describe('createDocsResolver cache and offline', () => {
 });
 
 describe('createDocsResolver example urls', () => {
-  it('answers a fetched release snapshot with public example urls', async () => {
-    const raw = createDocsIndex({
-      schemaVersion: 6,
-      cngxVersion: '0.2.0',
-      injectables: [{ name: 'CngxToaster', exampleUrls: ['http://localhost:4200/#/ui/feedback/toast/basic'] }],
-    });
-    const deps: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: 'unused' }), loadDocs: () => raw };
+  // A release asset is the raw docs:json export: no cngxVersion, localhost example urls.
+  const raw = createDocsIndex({
+    schemaVersion: 6,
+    injectables: [{ name: 'CngxToaster', exampleUrls: ['http://localhost:4200/#/ui/feedback/toast/basic'] }],
+  });
+  const fetched: DocsResolverDeps = { fetchSnapshot: async () => ({ ok: true, path: 'unused' }), loadDocs: () => raw };
 
-    const resolution = await createDocsResolver(bundled, deps)('0.2.0');
+  it('answers a fetched final release with the example urls of that release', async () => {
+    const resolution = await createDocsResolver(bundled, fetched)('0.2.0');
+
+    expect(resolution.ok && resolution.docs.injectables[0].exampleUrls).toEqual([
+      'https://cngxjs.github.io/cngx/examples/v0.2.0/#/ui/feedback/toast/basic',
+    ]);
+  });
+
+  it('answers a fetched prerelease with the example urls of main', async () => {
+    const resolution = await createDocsResolver(bundled, fetched)('0.2.0-rc.1');
 
     expect(resolution.ok && resolution.docs.injectables[0].exampleUrls).toEqual([
       'https://cngxjs.github.io/cngx/examples/#/ui/feedback/toast/basic',
+    ]);
+  });
+
+  it('answers a disk-cache hit for a final release with the example urls of that release', async () => {
+    const fetchSnapshot = vi.fn<DocsResolverDeps['fetchSnapshot']>();
+    const cache = { read: vi.fn(() => 'cached.json'), write: vi.fn(), discard: vi.fn() };
+
+    const resolution = await createDocsResolver(bundled, { fetchSnapshot, loadDocs: () => raw, cache })('v0.3.0');
+
+    expect(fetchSnapshot).not.toHaveBeenCalled();
+    expect(resolution.ok && resolution.docs.injectables[0].exampleUrls).toEqual([
+      'https://cngxjs.github.io/cngx/examples/v0.3.0/#/ui/feedback/toast/basic',
     ]);
   });
 });

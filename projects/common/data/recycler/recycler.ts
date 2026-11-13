@@ -427,8 +427,9 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     // lead with velocity, capped at one viewport of items so a teleport jump
     // never expands the window unbounded. Trailing edge keeps the base overscan.
     const estimate = config.estimateSize;
+    const uniform = isSignal(estimate) ? estimate() : estimate;
     const refPx =
-      typeof estimate === 'number' && estimate > 0 ? estimate : Math.max(1, clientHeight / 8);
+      typeof uniform === 'number' && uniform > 0 ? uniform : Math.max(1, clientHeight / 8);
     const itemsPerViewport = Math.max(1, Math.ceil(clientHeight / refPx));
     const velocity = scrollVelocity();
     const leadItems = Math.min(Math.ceil(Math.abs(velocity) / refPx), itemsPerViewport);

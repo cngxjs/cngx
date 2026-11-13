@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/tabs
+ * @module `@cngx/common/tabs`
  */
 export {
   CngxTabGroupPresenter,
@@ -53,7 +53,6 @@ export {
   withTabOverflowStabilizeMs,
   withTabOverflowTriggerTemplate,
   withTabRejectionIconTemplate,
-  withTabsAriaLabels,
   withTabsCommitMode,
   withTabsDefaultOrientation,
   withTabAddIconTemplate,
@@ -73,7 +72,6 @@ export {
   withTabsSkin,
   type CngxTabAlign,
   type CngxTabIconLayout,
-  type CngxTabsAriaLabels,
   type CngxTabsConfig,
   type CngxTabsConfigFeature,
   type CngxTabsFallbackLabels,

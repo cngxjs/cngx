@@ -25,8 +25,10 @@ import {
   withDismissOnScroll,
   withSubmenuCloseDelay,
   withSubmenuOpenDelay,
+  withTryFallbacks,
   withTypeaheadDebounce,
 } from './menu-config-features';
+import { CNGX_MENU_TRY_FALLBACKS } from './submenu-defaults';
 
 describe('CNGX_MENU_CONFIG', () => {
   it('default factory provides English defaults', () => {
@@ -93,7 +95,9 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.submenuOpenDelay).toBe(150);
     expect(config.submenuCloseDelay).toBe(75);
     expect(config.closeOnSelect).toBe(false);
-    expect(coerceSignal(config.ariaLabels)()).toEqual(coerceSignal(DEFAULT_MENU_CONFIG.ariaLabels)());
+    expect(coerceSignal(config.ariaLabels)()).toEqual(
+      coerceSignal(DEFAULT_MENU_CONFIG.ariaLabels)(),
+    );
   });
 
   it('repeat applications of withAriaLabels merge incrementally', () => {
@@ -120,6 +124,14 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(captured.typeaheadDebounce).toBe(123);
   });
 
+  it('defaults the menu flip chain to CNGX_MENU_TRY_FALLBACKS and lets withTryFallbacks replace it', () => {
+    expect(DEFAULT_MENU_CONFIG.tryFallbacks).toBe(CNGX_MENU_TRY_FALLBACKS);
+    TestBed.configureTestingModule({
+      providers: [provideMenuConfig(withTryFallbacks(['flip-inline']))],
+    });
+    expect(TestBed.inject(CNGX_MENU_CONFIG).tryFallbacks).toEqual(['flip-inline']);
+  });
+
   it('every with* feature carries the _target=config discriminator', () => {
     const features = [
       withAriaLabels({ submenuOpened: 'X' }),
@@ -131,6 +143,7 @@ describe('CNGX_MENU_CONFIG', () => {
       withDismissOnScroll(true),
       withDismissOnBlur(false),
       withDismissOnFocusOut(false),
+      withTryFallbacks([]),
     ];
     for (const f of features) {
       expect((f as { _target?: string })._target).toBe('config');

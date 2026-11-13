@@ -1,4 +1,4 @@
 /**
- * @module @cngx/core/testing/vitest
+ * @module `@cngx/core/testing/vitest`
  */
 export { cngxAnnouncementMatchers } from './announcement-matchers';

@@ -82,7 +82,11 @@ import {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
-import { type CngxSelectOptionDef, type CngxSelectOptionsInput } from '../shared/option.model';
+import {
+  isOptionDisabled,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionsInput,
+} from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/internal/resolve-config';
 import { coerceScalarFromField, isEmptyScalar } from '../shared/internal/compare';
 import { setupVirtualization } from '../shared/internal/setup-virtualization';
@@ -141,8 +145,8 @@ export interface CngxSelectChange<T = unknown> {
 }
 
 /**
- * Native-feeling single-select dropdown. Behaves like `<select>`,
- * exceeds `mat-select` on a11y. Stateless signal graph (ARIA, panel
+ * Single-select dropdown. Behaves like `<select>`; combobox ARIA is in
+ * the computed graph. Stateless signal graph (ARIA, panel
  * view, option model, commit-controller surface) lives in
  * {@link createSelectCore}.
  *
@@ -163,7 +167,7 @@ export interface CngxSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/single-select/select.component.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell
+ * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell, CngxActionSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
  * <example-url>/#/forms/select/single-select/autofocus-on-mount</example-url>
@@ -1157,7 +1161,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           },
           key,
         );
-        if (action.kind === 'select') {
+        if (action.kind === 'select' && !isOptionDisabled(action.option)) {
           event.preventDefault();
           this.commitClosedPick(action.option, v);
           return;

@@ -8,6 +8,7 @@ import {
   computed,
   contentChild,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -222,7 +223,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-multi-select/action-multi-select.component.ts
  * @since 0.1.0
- * @relatedTo CngxMultiSelect, CngxActionSelect, CngxCombobox, CngxSelectAction
+ * @relatedTo CngxMultiSelect, CngxActionSelect, CngxCombobox, CngxSelectAction, withActionPosition, withCloseOnCreate, withLiveInputFallback, withActionPopoverPlacement
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/action-multi-select/basic</example-url>
  * <example-url>/#/forms/select/mobile-sheet/all-variants</example-url>
@@ -294,7 +295,10 @@ export interface CngxActionMultiSelectChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useFactory: () => inject(CngxActionMultiSelect).panelHost },
-    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: () => inject(CngxActionMultiSelect).panelHost },
+    {
+      provide: CNGX_SELECT_PANEL_VIEW_HOST,
+      useFactory: () => inject(CngxActionMultiSelect).panelHost,
+    },
   ],
   hostDirectives: [{ directive: CngxFieldSkinHost, inputs: ['cngxFieldSkin: skin'] }],
   host: {
@@ -1342,6 +1346,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       this.lastCreateLabel.set(draft.label);
       this.createHandler.dispatch(draft, term, previous);
     },
+    injector: inject(Injector),
   });
 
   /** @internal - Enter-to-quick-create, tag-input UX: type, Enter, chip appears. */
@@ -1415,5 +1420,4 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   // True only inside the lifecycle emitter's post-close focus restore -
   // the programmatic refocus must not re-open under openOn: 'focus'.
   private suppressOpenOnFocus = false;
-
 }

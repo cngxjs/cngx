@@ -50,6 +50,12 @@ export interface CngxFlatNavContext<T> {
 
 /**
  * Strategy result. Pure policy - variant dispatches.
+ *
+ * The strategy only decides; the composite acts on the result. `select` runs
+ * the composite's normal pick, including a bound commit; `highlight` opens the
+ * panel and moves the active option; `noop` leaves the key to the browser.
+ * The composite drops a `select` whose option is disabled and treats it as
+ * `noop`, so a custom strategy cannot pick a disabled option.
  */
 export type CngxFlatNavAction<T> =
   /** Typeahead hit; variant runs its pick semantics. */
@@ -81,6 +87,13 @@ export interface CngxFlatNavStrategy {
  * Canonical W3C listbox flat-nav: PageUp/Down step 10 with disabled
  * back-probe; typeahead delegates to the variant's
  * {@link TypeaheadController}.
+ *
+ * @example
+ * ```ts
+ * providers: [
+ *   { provide: CNGX_FLAT_NAV_STRATEGY, useValue: createDefaultFlatNavStrategy({ pageStep: 5 }) },
+ * ];
+ * ```
  */
 export function createDefaultFlatNavStrategy(
   options: { readonly pageStep?: number } = {},

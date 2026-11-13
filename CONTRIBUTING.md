@@ -153,7 +153,11 @@ a JSDoc description, and `npm run test:scripts` fails on a gap
 regenerate it. The only opt-out is `@internal`, for a member that implements an
 unexported contract or that only the own template or class calls. Never put
 `@internal` on an aliased `input()` / `model()` field: the aliased field is the
-binding and carries the doc.
+binding and carries the doc. An `@word` after a space in JSDoc prose is read as
+a block tag and ends the description, so write it as inline code (`` `@switch` ``,
+`` `@cngx/ui` ``) and put Angular templates and decorator examples in a fenced
+block; `scripts/__tests__/jsdoc-tag-names.test.mjs` fails on any tag name it
+does not know.
 
 ### End-to-end tests (Playwright)
 

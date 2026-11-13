@@ -1,5 +1,5 @@
 /**
- * @module @cngx/ui/mat-tabs
+ * @module `@cngx/ui/mat-tabs`
  *
  * Material instrumentation directive for `<mat-tab-group>`.
  */

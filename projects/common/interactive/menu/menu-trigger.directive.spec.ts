@@ -9,21 +9,19 @@ import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 import { CNGX_HOST_INTERACTION_STATE } from '../async-click/host-interaction-state.token';
 
-import {
-  CNGX_MENU_DISMISS_HANDLER_FACTORY,
-  type CngxMenuDismissHandler,
-} from './dismiss-handler';
+import { CNGX_MENU_DISMISS_HANDLER_FACTORY, type CngxMenuDismissHandler } from './dismiss-handler';
 import {
   CNGX_MENU_FOCUS_STACK_FACTORY,
   createMenuFocusStack,
   type CngxMenuFocusStack,
 } from './menu-focus-stack';
-import { provideMenuConfig } from './menu-config';
+import { CNGX_MENU_CONFIG, DEFAULT_MENU_CONFIG, provideMenuConfig } from './menu-config';
 import {
   withDismissOnBlur,
   withDismissOnFocusOut,
   withDismissOnOutsideClick,
   withDismissOnScroll,
+  withTryFallbacks,
 } from './menu-config-features';
 import { CngxMenuTrigger } from './menu-trigger.directive';
 import { CngxMenuItem } from './menu-item.directive';
@@ -93,6 +91,21 @@ class TriggerHost {}
 })
 class BareTriggerHost {}
 
+@Component({
+  template: `
+    <button type="button" [cngxMenuTrigger]="menu" [popover]="pop" [cngxPopoverTrigger]="pop">
+      Actions
+    </button>
+    <div cngxPopover #pop="cngxPopover" [positionTryFallbacks]="['flip-inline']">
+      <ul cngxMenu [label]="'Actions'" tabindex="0" #menu="cngxMenu">
+        <li cngxMenuItem value="cut">Cut</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger],
+})
+class BoundFallbacksTriggerHost {}
+
 /** Lets the open-time focus microtask (and a close-time restore) run. */
 async function settle(): Promise<void> {
   TestBed.flushEffects();
@@ -113,9 +126,7 @@ describe('CngxMenuTrigger', () => {
   });
 
   afterEach(() => {
-    document.body
-      .querySelectorAll('.cngx-menu-announcer')
-      .forEach((el) => el.remove());
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
   });
 
   function setup(): {
@@ -150,6 +161,39 @@ describe('CngxMenuTrigger', () => {
 
     fixture.destroy();
     expect(popover.restoreFocusHint()).toBeUndefined();
+  });
+
+  it('claims a flip chain so a clipped menu flips', () => {
+    const { popover } = setup();
+    const popoverEl = popover.elementRef.nativeElement as HTMLElement;
+    expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe(
+      'flip-block, flip-inline, flip-block flip-inline',
+    );
+  });
+
+  it('claims the chain the menu config resolves', () => {
+    TestBed.overrideProvider(CNGX_MENU_CONFIG, {
+      useValue: { ...DEFAULT_MENU_CONFIG, tryFallbacks: ['flip-inline'] },
+    });
+    const { popover } = setup();
+    const popoverEl = popover.elementRef.nativeElement as HTMLElement;
+    expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
+  });
+
+  it('writes no chain when the menu config opts out with an empty list', () => {
+    TestBed.configureTestingModule({ providers: [provideMenuConfig(withTryFallbacks([]))] });
+    const { popover } = setup();
+    const popoverEl = popover.elementRef.nativeElement as HTMLElement;
+    expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('');
+  });
+
+  it('lets a consumer-bound fallback chain win over the menu chain', () => {
+    const fixture = TestBed.createComponent(BoundFallbacksTriggerHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const popoverEl = fixture.nativeElement.querySelector('[cngxpopover]') as HTMLElement;
+    expect(popoverEl.style.getPropertyValue('position-try-fallbacks')).toBe('flip-inline');
   });
 
   it('aria-controls names the role=menu element, not the popover wrapper', () => {
@@ -278,7 +322,12 @@ describe('CngxMenuTrigger', () => {
   it('Ctrl/Cmd/Alt+ArrowDown on a closed trigger neither opens nor swallows the event', () => {
     const { triggerEl, popover } = setup();
     for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
-      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true, ...modifier });
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+        cancelable: true,
+        ...modifier,
+      });
       const prevented = !triggerEl.dispatchEvent(event);
       TestBed.flushEffects();
       expect(popover.isVisible()).toBe(false);
@@ -293,7 +342,12 @@ describe('CngxMenuTrigger', () => {
     menu.ad.highlightByValue('cut');
     TestBed.flushEffects();
 
-    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true, ctrlKey: true });
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowDown',
+      bubbles: true,
+      cancelable: true,
+      ctrlKey: true,
+    });
     const prevented = !triggerEl.dispatchEvent(event);
     TestBed.flushEffects();
 
@@ -453,7 +507,9 @@ describe('CngxMenuTrigger', () => {
     function getTrigger(
       fixture: ReturnType<typeof TestBed.createComponent<TriggerHost>>,
     ): CngxMenuTrigger {
-      return fixture.debugElement.query(By.directive(CngxMenuTrigger)).injector.get(CngxMenuTrigger);
+      return fixture.debugElement
+        .query(By.directive(CngxMenuTrigger))
+        .injector.get(CngxMenuTrigger);
     }
 
     it('Tab out of the menu closes it without pulling focus back', async () => {
@@ -531,7 +587,9 @@ describe('CngxMenuTrigger', () => {
     function getTrigger(
       fixture: ReturnType<typeof TestBed.createComponent<TriggerHost>>,
     ): CngxMenuTrigger {
-      return fixture.debugElement.query(By.directive(CngxMenuTrigger)).injector.get(CngxMenuTrigger);
+      return fixture.debugElement
+        .query(By.directive(CngxMenuTrigger))
+        .injector.get(CngxMenuTrigger);
     }
 
     it('records pointerdown outside as outside-click', () => {
@@ -591,9 +649,7 @@ describe('CngxMenuTrigger submenu arrows under dir', () => {
     fixture.detectChanges();
     const triggerEl = fixture.debugElement.query(By.directive(CngxMenuTrigger))
       .nativeElement as HTMLElement;
-    const popover = fixture.debugElement
-      .query(By.directive(CngxPopover))
-      .injector.get(CngxPopover);
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
     popover.show();
     TestBed.flushEffects();
     return { triggerEl, stack: stack as CngxMenuFocusStack };
@@ -651,9 +707,7 @@ describe('CngxMenuTrigger focus settle per open cycle', () => {
     const settleFocus = (stack as CngxMenuFocusStack).settleFocus;
     expect(settleFocus).not.toHaveBeenCalled();
 
-    const popover = fixture.debugElement
-      .query(By.directive(CngxPopover))
-      .injector.get(CngxPopover);
+    const popover = fixture.debugElement.query(By.directive(CngxPopover)).injector.get(CngxPopover);
     popover.show();
     TestBed.flushEffects();
     expect(settleFocus).not.toHaveBeenCalled();
@@ -718,7 +772,14 @@ class ProbeHostState {}
       </ul>
     </div>
   `,
-  imports: [CngxMenu, CngxMenuItem, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger, ProbeHostState],
+  imports: [
+    CngxMenu,
+    CngxMenuItem,
+    CngxMenuTrigger,
+    CngxPopover,
+    CngxPopoverTrigger,
+    ProbeHostState,
+  ],
 })
 class BlockedTriggerHost {}
 
@@ -893,7 +954,12 @@ describe('CngxMenuTrigger without a co-hosted popover trigger', () => {
 
 @Component({
   template: `
-    <button type="button" [cngxMenuTrigger]="outer" [popover]="outerPop" [cngxPopoverTrigger]="outerPop">
+    <button
+      type="button"
+      [cngxMenuTrigger]="outer"
+      [popover]="outerPop"
+      [cngxPopoverTrigger]="outerPop"
+    >
       Actions
     </button>
     <div cngxPopover #outerPop="cngxPopover">
@@ -912,7 +978,14 @@ describe('CngxMenuTrigger without a co-hosted popover trigger', () => {
       </ul>
     </div>
   `,
-  imports: [CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxMenuTrigger, CngxPopover, CngxPopoverTrigger],
+  imports: [
+    CngxMenu,
+    CngxMenuItem,
+    CngxMenuItemSubmenu,
+    CngxMenuTrigger,
+    CngxPopover,
+    CngxPopoverTrigger,
+  ],
 })
 class SubmenuTriggerHost {}
 

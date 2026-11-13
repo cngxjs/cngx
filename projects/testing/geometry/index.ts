@@ -1,8 +1,8 @@
 /**
- * @cngx/testing/geometry - assertion helpers for `*.geometry.spec.ts`, which
+ * `@cngx/testing/geometry` - assertion helpers for `*.geometry.spec.ts`, which
  * run in a real Chromium rather than jsdom. Browser-only reads over the CSSOM.
  *
- * @module @cngx/testing/geometry
+ * @module `@cngx/testing/geometry`
  */
 export { accessibleName } from './accessible-name';
 export { contrastRatio, oklabOf, rasterise, type Oklab, type Rgba } from './colour';

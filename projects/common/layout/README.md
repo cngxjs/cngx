@@ -132,7 +132,7 @@ Manages text truncation with expand/collapse state detection. Applies `-webkit-l
 
 ## injectQueryParamSync
 
-Bidirectional sync between a caller-owned `WritableSignal<T>` and a named URL query param. The URL wins on initial load (deep-link / shareable-link intent); after that the signal is the source and reflects outward. Re-hydrates on browser back/forward, dev-warns once and no-ops when `@angular/router` is absent.
+Bidirectional sync between a caller-owned `WritableSignal<T>` and a named URL query param. The URL wins on initial load (deep-link / shareable-link intent): the hydrate happens on the first effect run, before the caller's view first renders, not synchronously in the call, so a key bound through an input is read after binding. After that the signal is the source and reflects outward. Re-hydrates on browser back/forward, dev-warns once and no-ops when `@angular/router` is absent.
 
 Call it in an injection context (a component field/constructor, a directive) on a signal you own:
 

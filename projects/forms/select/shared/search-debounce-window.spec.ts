@@ -64,6 +64,61 @@ describe('search debounce window keeps the filter in step with the keys', () => 
   }
 });
 
+// Blue sits between Red and Green so a key that overtakes the deferred first
+// key (moving on the stale rows) lands on a different row than the ordered run.
+const ORDERED_OPTIONS = [
+  { value: 'red', label: 'Red' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'green', label: 'Green' },
+  { value: 'grey', label: 'Grey' },
+];
+
+describe('later keys inside the debounce window run behind the deferred first key', () => {
+  for (const key of INPUT_KEYS) {
+    const kind = KINDS[key];
+
+    function typeGr(m: ReturnType<typeof mount>): HTMLInputElement {
+      m.open();
+      const input = m.el.querySelector<HTMLInputElement>('input');
+      if (!input) {
+        expect.fail(`no input for ${kind.name}`);
+      }
+      input!.value = 'gr';
+      input!.dispatchEvent(new Event('input', { bubbles: true }));
+      m.settle();
+      return input!;
+    }
+
+    it(`${kind.name}: two ArrowDowns without a render between them reach the second filtered row`, () => {
+      vi.useFakeTimers();
+      const m = mount(kind, {
+        options: ORDERED_OPTIONS,
+        providers: [provideSelectConfig(withSearchDebounce(300))],
+      });
+      const input = typeGr(m);
+      // No settle between the keys: a render would run the first deferred key.
+      keydown(input, 'ArrowDown');
+      keydown(input, 'ArrowDown');
+      m.settle();
+      expect(activeLabel(m, input), `${kind.name} active option`).toBe('Grey');
+    });
+
+    it(`${kind.name}: Escape after a deferred key leaves no highlight on the closed panel`, () => {
+      vi.useFakeTimers();
+      const m = mount(kind, {
+        options: ORDERED_OPTIONS,
+        providers: [provideSelectConfig(withSearchDebounce(300))],
+      });
+      const input = typeGr(m);
+      keydown(input, 'ArrowDown');
+      keydown(input, 'Escape');
+      m.settle();
+      expect(m.v.panelOpen(), `${kind.name} closed`).toBe(false);
+      expect(input.getAttribute('aria-activedescendant'), `${kind.name} no highlight`).toBeNull();
+    });
+  }
+});
+
 describe('a blur inside the debounce window does not open the panel once the term settles', () => {
   for (const key of ['combobox', 'typeahead'] as const) {
     const kind = KINDS[key];
@@ -87,6 +142,63 @@ describe('a blur inside the debounce window does not open the panel once the ter
       vi.advanceTimersByTime(400);
       m.settle();
       expect(m.v.panelOpen(), `${kind.name} closed after the term settled`).toBe(false);
+    });
+  }
+});
+
+describe('a deferred Enter on an action host is the only Enter', () => {
+  for (const key of ['actionSelect', 'actionMulti'] as const) {
+    const kind = KINDS[key];
+
+    function mountWithCreate(): { m: ReturnType<typeof mount>; created: string[] } {
+      const created: string[] = [];
+      const m = mount(kind, {
+        options: ORDERED_OPTIONS,
+        noCommit: true,
+        extraInputs: '[quickCreateAction]="createFn"',
+        providers: [provideSelectConfig(withSearchDebounce(300))],
+      });
+      m.h.createImpl = (term: string) => {
+        created.push(term);
+        return term;
+      };
+      return { m, created };
+    }
+
+    function burst(m: ReturnType<typeof mount>, term: string): void {
+      m.open();
+      const input = m.el.querySelector<HTMLInputElement>('input');
+      if (!input) {
+        expect.fail(`no input for ${kind.name}`);
+      }
+      input!.value = term;
+      input!.dispatchEvent(new Event('input', { bubbles: true }));
+      m.settle();
+      // No render between the keys: both join the deferral.
+      keydown(input!, 'ArrowDown');
+      keydown(input!, 'Enter');
+      m.settle();
+      m.settle();
+      vi.advanceTimersByTime(1000);
+      m.settle();
+    }
+
+    it(`${kind.name}: a matching term picks the highlighted option and creates nothing`, () => {
+      vi.useFakeTimers();
+      const { m, created } = mountWithCreate();
+      burst(m, 'gr');
+      expect(created, `${kind.name} created`).toEqual([]);
+      const expected = kind.model === 'value' ? 'green' : ['green'];
+      expect(m.readModel(), `${kind.name} model`).toEqual(expected);
+    });
+
+    it(`${kind.name}: a term without a match creates it once and toggles nothing`, () => {
+      vi.useFakeTimers();
+      const { m, created } = mountWithCreate();
+      burst(m, 'zz');
+      expect(created, `${kind.name} created`).toEqual(['zz']);
+      const expected = kind.model === 'value' ? 'zz' : ['zz'];
+      expect(m.readModel(), `${kind.name} model`).toEqual(expected);
     });
   }
 });

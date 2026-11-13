@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/dialog
+ * @module `@cngx/common/dialog`
  */
 export { type DialogRef, type DialogState, DIALOG_REF } from './dialog/dialog-ref';
 export { CngxDialog } from './dialog/dialog.directive';

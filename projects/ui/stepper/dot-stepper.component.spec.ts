@@ -12,7 +12,6 @@ import {
   provideStepperConfig,
   provideStepperI18n,
   withDotStepperDotTemplate,
-  withStepperAriaLabels,
   withStepperI18nLabels,
   type CngxStepperI18nOverrides,
 } from '@cngx/common/stepper';
@@ -440,7 +439,7 @@ describe('CngxDotStepper', () => {
     })
     class UnlabelledHost {}
 
-    it('falls back to the config/i18n accname when no aria-label is bound', () => {
+    it('falls back to the i18n accname when no aria-label is bound', () => {
       TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
       const fixture = TestBed.createComponent(UnlabelledHost);
       fixture.detectChanges();
@@ -448,11 +447,11 @@ describe('CngxDotStepper', () => {
       expect(host.getAttribute('aria-label')).toBe('Steps');
     });
 
-    it('withStepperAriaLabels({ stepperRegion }) moves the accname fallback', () => {
+    it('withStepperI18nLabels({ stepperLabel }) moves the accname fallback', () => {
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),
-          provideStepperConfig(withStepperAriaLabels({ stepperRegion: 'Fortschritt' })),
+          provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Fortschritt' })),
         ],
       });
       const fixture = TestBed.createComponent(UnlabelledHost);

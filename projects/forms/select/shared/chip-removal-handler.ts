@@ -15,7 +15,12 @@ export interface CngxChipRemovableItem<T> {
 }
 
 /**
- * Config for {@link createChipRemovalHandler}.
+ * Inputs a chip-strip composite hands to the chip-removal handler.
+ * `CngxMultiSelect`, `CngxCombobox`, `CngxReorderableMultiSelect` and
+ * `CngxActionMultiSelect` use the standard body and route a bound commit to
+ * their array handler's `beginToggle`; `CngxTreeSelect` passes
+ * `removeOverride`. A consumer meets this shape only when it replaces the
+ * handler through {@link CNGX_CHIP_REMOVAL_HANDLER_FACTORY}.
  *
  * Standard-body flow: disabled-guard → snapshot → `compareWith` filter →
  * commit branch (optimistic write + `beginCommit`) or sync branch
@@ -70,7 +75,12 @@ export interface CngxChipRemovalHandlerOptions<
 }
 
 /**
- * API returned from {@link createChipRemovalHandler}.
+ * Remove callbacks a chip-strip composite hands to its chips.
+ *
+ * Each composite wraps `removeFor(item)` in its refocus helper and hands the
+ * result to the chip slot context, so a custom chip template removes through
+ * the same path as the default chip. `removeFor` caches one closure per item,
+ * which keeps the chip context stable across reads.
  */
 export interface CngxChipRemovalHandler<Item extends CngxChipRemovableItem<unknown>> {
   /** Apply the removal body. Bind directly to `(remove)` or Backspace. */
@@ -177,7 +187,12 @@ export function createChipRemovalHandler<
 }
 
 /**
- * Factory signature for {@link CNGX_CHIP_REMOVAL_HANDLER_FACTORY}.
+ * Function shape a replacement chip-removal handler must have.
+ *
+ * It is generic over the value and the chip item type, because a composite
+ * may remove items other than option defs through `removeOverride`. Each
+ * composite calls it once during construction. Provide it through
+ * {@link CNGX_CHIP_REMOVAL_HANDLER_FACTORY}.
  */
 export type CngxChipRemovalHandlerFactory = <
   T,

@@ -4,6 +4,7 @@ import {
   DOCS_KEEP_VERSIONS,
   DOCS_MIN_VERSION,
   parseReleaseTagOptions,
+  selectDroppedTags,
   selectReleaseTags,
 } from '../docs-release-tags.mjs';
 
@@ -45,6 +46,41 @@ describe('selectReleaseTags', () => {
   it('answers an empty list before the first release', () => {
     expect(selectReleaseTags(['v0.1.0-rc.9', 'v0.2.0'], { min: '0.3.0', keep: 4 })).toEqual([]);
     expect(selectReleaseTags([], { min: '0.3.0', keep: 4 })).toEqual([]);
+  });
+});
+
+describe('selectDroppedTags', () => {
+  it('drops nothing before the first release', () => {
+    expect(selectDroppedTags([], { min: '0.3.0', keep: 4 })).toEqual([]);
+  });
+
+  it('drops nothing while exactly `keep` releases exist', () => {
+    const tags = ['v0.3.0', 'v0.4.0', 'v0.5.0', 'v0.6.0'];
+    expect(selectDroppedTags(tags, { min: '0.3.0', keep: 4 })).toEqual([]);
+  });
+
+  it('drops the releases below the newest `keep`, newest first', () => {
+    const tags = ['v0.3.0', 'v0.4.0', 'v0.5.0', 'v0.6.0', 'v0.7.0'];
+    expect(selectDroppedTags(tags, { min: '0.3.0', keep: 4 })).toEqual(['v0.3.0']);
+    expect(selectDroppedTags([...tags, 'v0.7.1'], { min: '0.3.0', keep: 4 })).toEqual([
+      'v0.4.0',
+      'v0.3.0',
+    ]);
+  });
+
+  it('ignores prereleases, other tags and releases below the minimum', () => {
+    const tags = [
+      'v0.1.0-rc.9',
+      'v0.2.0',
+      'v0.3.0',
+      'v0.4.0',
+      'v0.5.0',
+      'v0.6.0-rc.1',
+      'v0.6.0',
+      'v0.7.0',
+      'latest',
+    ];
+    expect(selectDroppedTags(tags, { min: '0.3.0', keep: 4 })).toEqual(['v0.3.0']);
   });
 });
 

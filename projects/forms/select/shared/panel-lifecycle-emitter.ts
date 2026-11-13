@@ -10,7 +10,13 @@ import {
 import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
- * Config for {@link createPanelLifecycleEmitter}.
+ * Inputs a composite hands to its panel lifecycle emitter.
+ *
+ * All nine composites pass their panel-open signal, their
+ * `openedChange` / `opened` / `closed` outputs and the trigger as
+ * `restoreFocusTarget`. `restoreFocus` comes from `withRestoreFocus` and is
+ * read once at construction. A consumer meets this shape only when it replaces
+ * the emitter through {@link CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY}.
  */
 export interface PanelLifecycleEmitterOptions {
   /**
@@ -39,18 +45,19 @@ export interface PanelLifecycleEmitterOptions {
 /**
  * One `effect()` that emits `openedChange`/`opened`/`closed` on
  * `panelOpen` flips and restores focus to the trigger after an
- * open -> closed flip. The mount value is not a flip: a panel mounted
- * closed emits nothing and never moves focus, a panel mounted open
- * emits no `opened`. Output emits + focus call wrapped in `untracked`.
+ * open -> closed flip. Injection context required (the host is the
+ * injecting component).
+ *
+ * The mount value is not a flip: a panel mounted closed emits nothing and
+ * never moves focus, a panel mounted open emits no `opened`. Output emits
+ * and the focus call run in `untracked`.
+ *
  * The restore is skipped when focus already sits on an element outside
  * the host (Tab out of an open panel, a click into another input): the
  * user moved it there, and pulling it back would cost them a second
  * Tab. Focus on `body` or inside the host is restored as before.
- * Injection context required (the host is the injecting component).
  */
-export function createPanelLifecycleEmitter(
-  opts: PanelLifecycleEmitterOptions,
-): void {
+export function createPanelLifecycleEmitter(opts: PanelLifecycleEmitterOptions): void {
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const flip = createTransitionTracker(() => opts.panelOpen());
   effect(() => {
@@ -96,11 +103,14 @@ function focusMovedOutside(host: HTMLElement): boolean {
 }
 
 /**
- * Factory signature for {@link CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY}.
+ * Function shape a replacement panel lifecycle emitter must have.
+ *
+ * Each composite calls it once during construction, in an injection context,
+ * and reads nothing back: the emitter works through the outputs and the focus
+ * target it receives. Provide it through
+ * {@link CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY}.
  */
-export type CngxPanelLifecycleEmitterFactory = (
-  opts: PanelLifecycleEmitterOptions,
-) => void;
+export type CngxPanelLifecycleEmitterFactory = (opts: PanelLifecycleEmitterOptions) => void;
 
 /**
  * Factory for the panel lifecycle emitter - runs open / close side effects and
@@ -116,10 +126,7 @@ export type CngxPanelLifecycleEmitterFactory = (
  * @relatedTo CngxSelect, withRestoreFocus
  */
 export const CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY =
-  new InjectionToken<CngxPanelLifecycleEmitterFactory>(
-    'CngxPanelLifecycleEmitterFactory',
-    {
-      providedIn: 'root',
-      factory: () => createPanelLifecycleEmitter,
-    },
-  );
+  new InjectionToken<CngxPanelLifecycleEmitterFactory>('CngxPanelLifecycleEmitterFactory', {
+    providedIn: 'root',
+    factory: () => createPanelLifecycleEmitter,
+  });

@@ -1,5 +1,5 @@
 /**
- * @module @cngx/common/stepper
+ * @module `@cngx/common/stepper`
  *
  * Level-2 directive-only logic for stepper / wizard flows. Ships the
  * presenter brain, atom directives, host tokens, router-sync, config
@@ -69,7 +69,6 @@ export { CngxStepperRouterSync } from './router-sync.directive';
 
 export {
   CNGX_STEPPER_CONFIG,
-  type CngxStepperAriaLabels,
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperDensity,
@@ -86,7 +85,6 @@ export {
   provideStepperConfigAt,
   withStepperDefaultOrientation,
   withStepperDensity,
-  withStepperAriaLabels,
   withStepperCommitMode,
   withStepperConnectors,
   withStepperFallbackLabels,

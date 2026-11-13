@@ -67,7 +67,7 @@ export const COPY_TOKENS = [
   {
     token: 'CNGX_STEPPER_CONFIG',
     kind: 'config',
-    copyKeys: ['ariaLabels', 'fallbackLabels'],
+    copyKeys: ['fallbackLabels'],
     settingsKeys: [
       'defaultOrientation',
       'defaultLinear',
@@ -95,7 +95,7 @@ export const COPY_TOKENS = [
   {
     token: 'CNGX_TABS_CONFIG',
     kind: 'config',
-    copyKeys: ['ariaLabels', 'fallbackLabels'],
+    copyKeys: ['fallbackLabels'],
     settingsKeys: [
       'defaultOrientation',
       'defaultLoop',
@@ -189,6 +189,7 @@ export const COPY_TOKENS = [
       'dismissOnScroll',
       'dismissOnBlur',
       'dismissOnFocusOut',
+      'tryFallbacks',
     ],
   },
   {
