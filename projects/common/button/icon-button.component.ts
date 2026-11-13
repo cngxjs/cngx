@@ -5,33 +5,23 @@ import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonHost } from './button-host.token';
 
 /**
- * Square, icon-only button on the same brain as `CngxButton`: the same
- * variant / tone / size axes, `aria-disabled` with a `disabledReason`, the
- * activation guard, `type="button"` by default and the busy layer of a
- * co-hosted `cngxAsyncClick`. The variant defaults to `ghost` unless a group
- * or `provideButtonConfig` picks one.
+ * Square, icon-only button on the same brain as `CngxButton`. It takes the same axes, disabled
+ * reason and busy layer. The variant defaults to `ghost`.
  *
- * Any icon works in the slot: an inline `svg`, an `img`, a `cngx-icon`
- * (recommended, it sizes itself; wrap a `mat-icon` in one, the Material
- * icon bridge sizes it to the rung). A bare `svg` or `img` is sized to
- * `1.25em` of the button font. The glyph is hidden from assistive
- * technology, so nothing projected (alt text, a ligature name, a font
- * glyph) ever becomes the button's name; the name is
- * the consumer's job: set `aria-label` (or `aria-labelledby` / `title`) on
- * the host. A host without any of them warns [`CNGX1071`](/error-codes/cngx1071.md) in development mode,
- * once the app is stable, so a label bound after the first render counts. A tooltip is a separate,
- * per-icon decision; co-host `[cngxTooltip]` where the icon alone is
- * ambiguous. Its id joins the button's `aria-describedby` through
- * `CNGX_DESCRIBED_BY`, next to the static ids, the `[cngxDescribedBy]` ids
- * and the disabled reason.
+ * Project an inline `svg`, an `img` or a `cngx-icon`. A bare `svg` or `img` is sized to `1.25em`
+ * of the button font. Wrap a `mat-icon` in a `cngx-icon` so the Material icon bridge sizes it.
  *
- * The visual box follows `size` and stays square; on a coarse pointer the
- * box floors to `--cngx-target-min` on both axes, so the box is the hit
- * area and the icon keeps its design size.
+ * The glyph is `aria-hidden`, so nothing projected ever becomes the name. Set `aria-label`,
+ * `aria-labelledby` or `title` on the host. Without one the host warns
+ * [`CNGX1071`](/error-codes/cngx1071.md) in development, once the app is stable, so a label bound
+ * after the first render counts. Co-host `[cngxTooltip]` where the icon alone is ambiguous.
+ *
+ * The box follows `size` and stays square. On a coarse pointer it floors to `--cngx-target-min`
+ * on both axes, and the icon keeps its design size.
  *
  * ```html
  * <button cngxIconButton aria-label="Delete row" tone="danger" (click)="remove()">
- *   <cngx-icon name="delete" />
+ *   <svg aria-hidden="true" viewBox="0 0 24 24">...</svg>
  * </button>
  * ```
  *

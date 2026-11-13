@@ -140,17 +140,19 @@ function partitionFeatures(
 }
 
 /**
- * Unified aggregator for the button family. Filters by `_target` and
- * forwards: config features to {@link provideButtonConfig}, the close glyph
- * to {@link provideButtonCloseIcon}, the busy glyph to
- * {@link provideButtonSpinner}, the action status features to
- * `provideActionStatusConfig` (`@cngx/common/interactive`). Mirrors `provideCngxStepper` /
- * `provideCngxTabs`. The menu buttons have their own,
- * `provideCngxMenuButton` in `@cngx/common/menu-button`.
+ * One provider for the whole button family. It routes each feature by its `_target`:
  *
- * Returns {@link EnvironmentProviders} for app-root use; the
- * component-scoped twin {@link provideCngxButtonAt} returns `Provider[]`
- * because `viewProviders` cannot accept opaque `EnvironmentProviders`.
+ * - config features to {@link provideButtonConfig}
+ * - the close glyph to {@link provideButtonCloseIcon}
+ * - the busy glyph to {@link provideButtonSpinner}
+ * - the action status features to `provideActionStatusConfig` (`@cngx/common/interactive`)
+ *
+ * A feature without a `_target` is dropped with [`CNGX1041`](/error-codes/cngx1041.md) in
+ * development. The menu buttons have their own provider, `provideCngxMenuButton` in
+ * `@cngx/common/menu-button`.
+ *
+ * Returns {@link EnvironmentProviders} for the app root. Use {@link provideCngxButtonAt} in
+ * `viewProviders`, which cannot take `EnvironmentProviders`.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {

@@ -45,18 +45,12 @@ export interface CngxButtonHostDescriptor {
 export const CNGX_BUTTON_HOST = new InjectionToken<CngxButtonHostDescriptor>('CngxButtonHost');
 
 /**
- * Provides the {@link CNGX_BUTTON_HOST} descriptor of a button host. Goes in
- * the `providers` of the component (or directive) that declares
- * `CngxButtonBrain` in its `hostDirectives`.
+ * Provides the {@link CNGX_BUTTON_HOST} descriptor of a button host. Goes in the `providers` of
+ * the component or directive that declares `CngxButtonBrain` in its `hostDirectives`. The full
+ * custom-host example is in the package README, section "Building a custom button host".
  *
  * ```ts
- * @Component({
- *   selector: 'button[appChipButton]',
- *   hostDirectives: [{ directive: CngxButtonBrain, inputs: ['variant: appChipButton', 'disabled'] }],
- *   providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
- *   template: '<ng-content />',
- * })
- * class AppChipButton {}
+ * providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })]
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
@@ -87,12 +81,10 @@ export interface CngxButtonHostState {
    */
   readonly refusing: Signal<boolean>;
   /**
-   * `true` while the host reflects a run the co-hosted runner does not own.
-   * Folded into `busy` (so `data-pending`, `aria-busy`, `blocked` and
-   * `aria-disabled`), into `refusing` (the activation guard and the
-   * co-hosted runner's disabled state) and into
-   * `CNGX_HOST_INTERACTION_STATE.busy`. A busy host refuses activation
-   * without setting `refusing` itself.
+   * `true` while the host reflects a run the co-hosted runner does not own. It reads as busy
+   * (`data-pending`, `aria-busy`, `CNGX_HOST_INTERACTION_STATE.busy`) and refuses activation
+   * without `refusing` being set. Without a co-hosted runner it also opens `busyVisible()` and
+   * `data-busy` on the `CNGX_LOADING_CONFIG` show delay and min-dwell.
    */
   readonly busy?: Signal<boolean>;
 }

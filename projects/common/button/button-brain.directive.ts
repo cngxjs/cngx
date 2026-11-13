@@ -35,62 +35,29 @@ import type {
 } from './button.types';
 
 /**
- * The state and ARIA contract of every cngx button, as a host directive. A
- * host declares it in `hostDirectives`, names itself through
- * `provideButtonHost`, and keeps only its template, CSS and its own
- * behaviour; the brain owns the rest on the host element.
+ * The state and ARIA contract of every cngx button, as a host directive. A host declares it in
+ * `hostDirectives`, names itself through `provideButtonHost` and keeps only its template, CSS and
+ * own behaviour. The full custom-host example is in the package README, section "Building a
+ * custom button host".
  *
- * It resolves the axes (`input ?? fixed ?? group ?? config ?? default`;
- * tone skips the group) into `data-variant` / `data-tone` / `data-size`,
- * renders `disabled` as `aria-disabled` so the element stays focusable,
- * swallows activation in the capture phase while `blocked` (so
- * `aria-disabled="true"` always means no activation, a co-located
- * `RouterLink` included), renders
- * `aria-busy` while a run is in flight or its busy layer is held through
- * the dwell (the co-hosted runner's or the host's, with the same value the
- * runner writes), and owns
- * `aria-describedby` through `CNGX_DESCRIBED_BY` (static ids, the
- * `cngxDescribedBy` ids, the reason while disabled, co-hosted contributors
- * such as `[cngxTooltip]`). A co-hosted runner is read through
- * `CNGX_ASYNC_RUN_STATE`: `data-pending` follows its run (the brain is the
- * only writer), `data-busy` its busy gate. A host adds refusal or a run of
- * its own through `CNGX_BUTTON_HOST_STATE`.
+ * On the host element the brain:
  *
- * Provides `CNGX_BUTTON_STATE` (read by `cngxSplitButton`),
- * `CNGX_HOST_INTERACTION_STATE` (read by a co-hosted `cngxAsyncClick` or
- * `cngxMenuTrigger`) and `CNGX_DESCRIBED_BY`. An `iconOnly` host is checked
- * for an accessible name once the app is stable; a miss is confirmed on the
- * next stable cycle before it warns [`CNGX1071`](/error-codes/cngx1071.md). A host without
- * `provideButtonHost` throws [`CNGX1075`](/error-codes/cngx1075.md).
+ * - resolves the axes into `data-variant`, `data-tone` and `data-size`
+ * - renders `disabled` as `aria-disabled`, so the element stays focusable
+ * - swallows activation in the capture phase while `blocked`, so `aria-disabled="true"` always
+ *   means no activation, a co-located `RouterLink` included
+ * - sets `aria-busy` while a run is in flight or its busy layer is held through the dwell
+ * - owns `aria-describedby` through `CNGX_DESCRIBED_BY`
+ * - reads a co-hosted runner through `CNGX_ASYNC_RUN_STATE`: `data-pending` follows the run, with
+ *   the brain as its only writer, and `data-busy` the busy gate
+ * - folds in the host's refusal or run from `CNGX_BUTTON_HOST_STATE`
  *
- * The host template renders the busy layer from `busyVisible()` (the
- * co-hosted runner's gate, or the brain's own gate over a run the host
- * reflects through `CNGX_BUTTON_HOST_STATE.busy`; its glyph
- * is `spinner`, the `provideButtonSpinner` component, or the built-in
- * spinner when it is `null`) and, while `disabledReason()` is set, the
- * reason span with `[id]="brain.reasonId"`.
+ * It provides `CNGX_BUTTON_STATE` (read by `cngxSplitButton`), `CNGX_HOST_INTERACTION_STATE`
+ * (read by a co-hosted `cngxAsyncClick` or `cngxMenuTrigger`) and `CNGX_DESCRIBED_BY`.
  *
- * ```ts
- * @Component({
- *   selector: 'button[appChipButton]',
- *   hostDirectives: [
- *     {
- *       directive: CngxButtonBrain,
- *       inputs: ['variant: appChipButton', 'tone', 'size', 'disabled', 'disabledReason', 'cngxDescribedBy', 'type'],
- *     },
- *   ],
- *   providers: [provideButtonHost('appChipButton', { defaultVariant: 'outline' })],
- *   template: `
- *     <ng-content />
- *     @if (brain.disabledReason(); as reason) {
- *       <span [id]="brain.reasonId" hidden>{{ reason }}</span>
- *     }
- *   `,
- * })
- * class AppChipButton {
- *   protected readonly brain = inject(CngxButtonBrain);
- * }
- * ```
+ * An `iconOnly` host is checked for an accessible name once the app is stable. A miss is
+ * confirmed on the next stable cycle before it warns [`CNGX1071`](/error-codes/cngx1071.md). A
+ * host without `provideButtonHost` throws [`CNGX1075`](/error-codes/cngx1075.md).
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-brain.directive.ts
@@ -156,10 +123,16 @@ export class CngxButtonBrain implements CngxButtonState {
   readonly disabledReason = input<string | undefined>(undefined);
 
   /**
-   * Ids of external description elements, space-separated, joined into the
-   * element's `aria-describedby` after a static `aria-describedby` and
-   * before the disabled reason and co-hosted contributors. `null` removes
-   * them.
+   * Ids of external description elements, space-separated. Bind ids that change at runtime here,
+   * not through `[attr.aria-describedby]`: a static `aria-describedby` is read once at creation.
+   * `null` removes them.
+   *
+   * The element's `aria-describedby` merges, in this order:
+   *
+   * - the static `aria-describedby` attribute
+   * - these ids
+   * - the disabled reason, while `disabled` is set
+   * - co-hosted contributors such as `[cngxTooltip]`
    */
   readonly describedBy = input<string | null>(null, { alias: 'cngxDescribedBy' });
 
