@@ -19,14 +19,17 @@ import { describe, expect, it } from 'vitest';
  * `projects/themes/**` only, which is why that tree is not scanned: for a
  * component stylesheet the default palette is the contract.
  *
- * Rule B - dead fallback on a sentinel registration. A property registered via
+ * Rule B - dead fallback on a registered property. A property registered via
  * `@property` always resolves, so `var(--p, fallback)` never uses its fallback.
- * When the registered `initial-value` is a sentinel (`transparent`, `none`,
- * `0`, `0px`, `initial`) and the fallback is a real value, the author meant the
- * fallback but the sentinel paints. Static stand-in for "never set on an
- * ancestor rule": the guard cannot see the runtime cascade, so a row whose
- * property IS set by an ancestor component is allowlisted with that reason.
- * A sentinel or `inherit` fallback is consistent with the initial and passes.
+ * In `projects/core/**` every fallback that differs from the registered
+ * `initial-value` is a hit (compared after folding case, whitespace and `0` vs
+ * `0px`). Elsewhere only a sentinel registration (`transparent`, `none`, `0`,
+ * `initial`) with a real fallback is a hit: there the author meant the fallback
+ * but the sentinel paints (owner decision 2026-11-13 keeps the general form to
+ * core). Static stand-in for "never set on an ancestor rule": the guard cannot
+ * see the runtime cascade, so a row whose property IS set by an ancestor
+ * component is allowlisted with that reason. A fallback equal to the initial or
+ * `inherit` passes, and so does a sentinel fallback on a sentinel registration.
  *
  * Rules C to E cover the forms component stylesheets (`projects/forms/**`)
  * only. Rule C - a `--mat-sys-*` read: Material system tokens belong to the
@@ -121,33 +124,54 @@ export function undefinedPaletteReads(source, defined, families) {
   return [...found];
 }
 
-const SENTINELS = new Set(['transparent', 'none', '0', '0px', 'initial']);
+const SENTINELS = new Set(['transparent', 'none', '0', 'initial']);
 
-/** Every `@property` whose `initial-value` is a sentinel. */
-export function sentinelRegistrations(source) {
-  const names = new Set();
-  for (const m of source.matchAll(/@property\s+(--[a-z0-9-]+)\s*\{([^}]*)\}/gi)) {
-    const initial = /initial-value\s*:\s*([^;]+)/i.exec(m[2]);
-    if (initial && SENTINELS.has(initial[1].trim().toLowerCase())) {
-      names.add(m[1]);
-    }
-  }
-  return names;
+/** Case, whitespace and a zero length (`0px`, `0rem`, `0em`) folded, so equal values compare equal. */
+export function normalizeValue(value) {
+  const folded = value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([(),/])\s*/g, '$1');
+  return /^0(px|rem|em)?$/.test(folded) ? '0' : folded;
 }
 
-/** Rule B: `var(--p, real-fallback)` reads of a sentinel-registered `--p`. */
-export function deadSentinelFallbacks(source, sentinels) {
+/** Every `@property` name mapped to its normalized `initial-value`s (a name may be registered twice). */
+export function registrations(source, into = new Map()) {
+  for (const m of source.matchAll(/@property\s+(--[a-z0-9-]+)\s*\{([^}]*)\}/gi)) {
+    const initial = /initial-value\s*:\s*([^;]+)/i.exec(m[2]);
+    if (!initial) {
+      continue;
+    }
+    const values = into.get(m[1]) ?? new Set();
+    values.add(normalizeValue(initial[1]));
+    into.set(m[1], values);
+  }
+  return into;
+}
+
+/**
+ * Rule B: `var(--p, fallback)` reads of a registered `--p` whose fallback can
+ * never paint. By default only a sentinel registration with a real fallback
+ * counts; with `anyInitial` every fallback that differs from the registered
+ * initial counts.
+ */
+export function deadFallbacks(source, registered, { anyInitial = false } = {}) {
   const found = new Set();
   for (const body of varBodies(source)) {
     const { name, fallback } = splitVarBody(body);
-    if (!sentinels.has(name) || fallback === null) {
+    const initials = registered.get(name);
+    if (!initials || fallback === null) {
       continue;
     }
-    const value = fallback.toLowerCase();
-    if (value === '' || value === 'inherit' || SENTINELS.has(value)) {
+    const value = normalizeValue(fallback);
+    if (value === '' || value === 'inherit' || initials.has(value)) {
       continue;
     }
-    found.add(name);
+    const sentinelInitial = [...initials].some((initial) => SENTINELS.has(initial));
+    if (anyInitial || (sentinelInitial && !SENTINELS.has(value))) {
+      found.add(name);
+    }
   }
   return [...found];
 }
@@ -222,11 +246,9 @@ for (const full of walkCss(THEMING)) {
 }
 const FAMILIES = paletteFamilies(DEFINED);
 
-const SENTINEL_PROPERTIES = new Set();
+const REGISTERED = new Map();
 for (const { source } of ALL_CSS) {
-  for (const name of sentinelRegistrations(source)) {
-    SENTINEL_PROPERTIES.add(name);
-  }
+  registrations(source, REGISTERED);
 }
 
 function repoOffenders() {
@@ -235,7 +257,8 @@ function repoOffenders() {
     for (const token of undefinedPaletteReads(source, DEFINED, FAMILIES)) {
       rows.push({ rule: 'A', token, file: rel });
     }
-    for (const token of deadSentinelFallbacks(source, SENTINEL_PROPERTIES)) {
+    const anyInitial = rel.startsWith('projects/core/');
+    for (const token of deadFallbacks(source, REGISTERED, { anyInitial })) {
       rows.push({ rule: 'B', token, file: rel });
     }
     if (!rel.startsWith('projects/forms/')) {
@@ -470,27 +493,48 @@ describe('Rule A - undefined palette reads', () => {
   });
 });
 
-describe('Rule B - dead fallback on a sentinel registration', () => {
-  const sentinels = sentinelRegistrations(`
+describe('Rule B - dead fallback on a registered property', () => {
+  const registered = registrations(`
     @property --p { syntax: '<color>'; inherits: true; initial-value: transparent; }
     @property --q { syntax: '<color>'; inherits: true; initial-value: red; }
+    @property --g { syntax: '<length>'; inherits: false; initial-value: 4px; }
+    @property --z { syntax: '<length>'; inherits: false; initial-value: 0px; }
   `);
 
-  it('collects only sentinel registrations', () => {
-    expect([...sentinels]).toEqual(['--p']);
+  it('collects every registration with its normalized initial value', () => {
+    expect([...registered.keys()]).toEqual(['--p', '--q', '--g', '--z']);
+    expect([...registered.get('--z')]).toEqual(['0']);
   });
 
   it('flags a real fallback on a sentinel-registered property', () => {
-    expect(
-      deadSentinelFallbacks('.a { color: var(--p, oklch(0.66 0.19 50)); }', sentinels),
-    ).toEqual(['--p']);
+    expect(deadFallbacks('.a { color: var(--p, oklch(0.66 0.19 50)); }', registered)).toEqual([
+      '--p',
+    ]);
   });
 
-  it('passes a sentinel or inherit fallback and a bare read', () => {
+  it('passes a sentinel or inherit fallback, a bare read and a non-sentinel registration', () => {
     expect(
-      deadSentinelFallbacks(
+      deadFallbacks(
         '.a { color: var(--p, transparent); b: var(--p, inherit); c: var(--p); d: var(--q, blue); }',
-        sentinels,
+        registered,
+      ),
+    ).toEqual([]);
+  });
+
+  it('with anyInitial flags every fallback that differs from the initial', () => {
+    expect(
+      deadFallbacks('.a { gap: var(--g, 8px); color: var(--q, blue); }', registered, {
+        anyInitial: true,
+      }),
+    ).toEqual(['--g', '--q']);
+  });
+
+  it('with anyInitial passes a fallback equal to the initial after normalization', () => {
+    expect(
+      deadFallbacks(
+        '.a { gap: var(--g, 4PX); b: var(--z, 0); c: var(--q, RED); d: var(--p, inherit); }',
+        registered,
+        { anyInitial: true },
       ),
     ).toEqual([]);
   });
