@@ -17,6 +17,7 @@ import {
   CngxNavMark,
   CngxNavName,
   CngxDisclosure,
+  CngxNavRailed,
   injectNavRailTooltip,
   injectNavRailFlyout,
   provideNavConfig,
@@ -244,6 +245,34 @@ Two injection functions turn a container of nav rows into a working rail. `cngx-
 - `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` - while `railed()` is `true`, shows an open `cngxNavGroupContent` as a flyout beside its head. `groups` / `contents` are content queries for `CngxNavGroup` / `CngxNavGroupContent`, the `*Elements` twins the same queries with `read: ElementRef`.
 
 `CNGX_NAV_RAIL_TOOLTIP_FACTORY` and `CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; an override reaches every caller. `cngx-nav.css` draws the flyout surface and places the tooltip.
+
+### On a rail of your own
+
+`[cngxNavRailed]` runs both pieces on any container of nav rows, typically a `cngxSidebar`. Bind the rail state you already have; the directive derives nothing.
+
+```html
+<aside
+  cngxSidebar
+  #sidebar="cngxSidebar"
+  class="cngx-sidebar"
+  [cngxNavRailed]="sidebar.state() === 'rail'"
+  [cngxNavRailedSide]="sidebar.side()"
+>
+  <a cngxNavLink routerLink="/inbox">Inbox</a>
+  <button type="button" cngxNavGroup #reports="cngxNavGroup">Reports</button>
+  <div [cngxNavGroupContent]="reports">
+    <div><a cngxNavLink [depth]="1" routerLink="/reports/weekly">Weekly</a></div>
+  </div>
+</aside>
+```
+
+| Input | Default | |
+|-|-|-|
+| `cngxNavRailed` | `false` | `true` while the rows are railed |
+| `cngxNavRailedSide` | `'start'` | the edge the rows sit on; tooltip and flyout open away from it |
+| `hoverDelay` | `300` | pointer dwell in ms before the tooltip shows |
+
+`cngx-nav-rail` and `cngx-sidenav` do not need it: they derive their rail state and call the pieces themselves.
 
 ## Theming
 

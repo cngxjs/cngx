@@ -105,6 +105,7 @@ export {
   type CngxNavRailFlyoutSources,
   injectNavRailFlyout,
 } from './nav/nav-rail-flyout';
+export { CngxNavRailed } from './nav/nav-railed.directive';
 export { CngxExpandable } from './expandable/expandable.directive';
 export {
   CngxHoverIntent,

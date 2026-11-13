@@ -30,6 +30,10 @@ describe('@cngx/common/interactive public API shape', () => {
     expect(api.CNGX_NAV_RAIL_FLYOUT_FACTORY).toBeDefined();
   });
 
+  it('exports the rail behaviour directive for nav containers of your own', () => {
+    expect(typeof api.CngxNavRailed).toBe('function');
+  });
+
   it('types the flyout on a group contract the nav atoms match', () => {
     expectTypeOf<api.CngxNavGroup>().toMatchTypeOf<api.CngxNavRailFlyoutGroup>();
     expectTypeOf<api.CngxNavGroupContent>().toMatchTypeOf<api.CngxNavRailFlyoutContent>();
