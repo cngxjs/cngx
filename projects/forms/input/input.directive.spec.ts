@@ -2,7 +2,12 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxFormField, CNGX_FORM_FIELD_CONTROL, type CngxFieldAccessor } from '@cngx/forms/field';
+import {
+  CngxFormField,
+  CngxHint,
+  CNGX_FORM_FIELD_CONTROL,
+  type CngxFieldAccessor,
+} from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { CngxInput } from './input.directive';
 
@@ -18,9 +23,10 @@ class SkinHost {}
   template: `
     <cngx-form-field [field]="field()">
       <input cngxInput placeholder="test" />
+      <span cngxHint>Work address</span>
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxInput],
+  imports: [CngxFormField, CngxInput, CngxHint],
 })
 class HostWithFormField {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
@@ -44,9 +50,10 @@ class HostStandaloneWithAria {}
   template: `
     <cngx-form-field [field]="field()">
       <input cngxInput aria-labelledby="custom-label" aria-describedby="extra-note" />
+      <span cngxHint>Work address</span>
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxInput],
+  imports: [CngxFormField, CngxInput, CngxHint],
 })
 class HostFieldWithAria {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);

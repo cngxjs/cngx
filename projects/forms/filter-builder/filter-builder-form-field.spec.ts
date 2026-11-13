@@ -8,6 +8,7 @@ import {
   adaptFormControl,
   CngxFormField,
   CngxFormFieldPresenter,
+  CngxHint,
   CNGX_FORM_FIELD_CONTROL,
   type CngxFieldAccessor,
 } from '@cngx/forms/field';
@@ -66,9 +67,10 @@ const FIELDS: readonly FilterFieldDef[] = [
         [fields]="fields"
         [(value)]="value"
       />
+      <span cngxHint>Combine rules with and / or</span>
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl],
+  imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl, CngxHint],
 })
 class SignalFormsHost {
   readonly fields = FIELDS;
@@ -95,9 +97,10 @@ class SignalFormsHost {
         [fields]="fields"
         [(value)]="value"
       />
+      <span cngxHint>Combine rules with and / or</span>
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl],
+  imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl, CngxHint],
 })
 class PopulatedSignalFormsHost {
   readonly fields = FIELDS;

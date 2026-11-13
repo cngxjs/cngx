@@ -86,6 +86,11 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
 
   readonly errorState = this.aria.errorState;
 
+  /** Focuses the listbox; the error summary and `focusFirstError` reach it here. */
+  focus(options?: FocusOptions): void {
+    this.hostEl.focus(options);
+  }
+
   /** @internal */
   protected readonly describedBy = this.aria.describedBy;
   /** @internal */

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 
@@ -11,7 +11,9 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * and `--cngx-field-hint-gap`, so the container around the fields only
  * spaces one field from the next.
  * All ARIA coordination (IDs, describedby, error gating) and CSS state classes
- * are handled by the hosted {@link CngxFormFieldPresenter}.
+ * are handled by the hosted {@link CngxFormFieldPresenter}. The field renders
+ * one hidden node itself: the disabled reasons of a disabled field, which the
+ * control references through `aria-describedby`.
  *
  * Child directives (`CngxLabel`, `CngxInput`, `CngxHint`, `CngxError`, `CngxFieldErrors`)
  * inject the presenter from this component via DI.
@@ -46,7 +48,10 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
 @Component({
   selector: 'cngx-form-field',
   standalone: true,
-  template: `<ng-content />`,
+  template: `
+    <ng-content />
+    <span hidden [id]="presenter.disabledReasonId()">{{ presenter.disabledReasonText() }}</span>
+  `,
   styles: `
     :host {
       display: contents;
@@ -69,4 +74,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
     },
   ],
 })
-export class CngxFormField {}
+export class CngxFormField {
+  /** @internal */
+  protected readonly presenter = inject(CngxFormFieldPresenter, { self: true });
+}

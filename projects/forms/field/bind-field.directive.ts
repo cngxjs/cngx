@@ -102,6 +102,11 @@ export class CngxBindField implements CngxFormFieldControl {
 
   readonly errorState = this.aria.errorState;
 
+  /** Focuses the bound control; the error summary and `focusFirstError` reach it here. */
+  focus(options?: FocusOptions): void {
+    this.el.nativeElement.focus(options);
+  }
+
   readonly focused = this.aria.focused;
 
   /**

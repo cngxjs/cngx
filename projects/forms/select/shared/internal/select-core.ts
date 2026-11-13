@@ -232,14 +232,6 @@ export interface CngxSelectCore<T, TCommit> extends CngxCommitHandlerCore<T, TCo
   /** Text of the commit-error node; `''` while no commit error shows. */
   readonly commitErrorText: Signal<string>;
   /**
-   * Id of the visually hidden disabled-reason node each host renders outside
-   * the popover. Referenced from the trigger only while the control is
-   * disabled with a reason.
-   */
-  readonly disabledReasonId: string;
-  /** The bound field's disabled reasons (their `message`s), `''` when none. */
-  readonly disabledReasonText: Signal<string>;
-  /**
    * Id of the element carrying the popup role (`role="listbox"` or
    * `role="tree"`); the trigger's `aria-controls` names it while anchored.
    */
@@ -472,16 +464,6 @@ export function createSelectCore<T, TCommit>(
     () => commitState.status() === 'error' && deps.commitErrorDisplay() !== 'none',
   );
 
-  // The "why" of a disabled field: the Signal Forms `disabled()` rule
-  // messages. Consumer copy, so it needs no select default.
-  const disabledReasonId = nextUid('cngx-select-disabled-reason');
-  const disabledReasonText = computed<string>(() =>
-    (presenter?.disabledReasons() ?? [])
-      .map((r) => r.message)
-      .filter(Boolean)
-      .join(' '),
-  );
-
   // Field half of the trigger ARIA: the one projection every field control
   // shares, with the select's own id, labelledby, required, failed commit and
   // loading / committing state fed in as control-side hooks.
@@ -490,7 +472,6 @@ export function createSelectCore<T, TCommit>(
     labelledByOverride: deps.ariaLabelledBy,
     localDisabled: deps.disabledInput,
     localRequired: deps.requiredInput,
-    disabledReason: { id: disabledReasonId, reason: disabledReasonText },
     localInvalid: () => showCommitError() || (deps.createErrorMessage?.() ?? null) !== null,
     localBusy: () => {
       const s = deps.state();
@@ -1075,8 +1056,6 @@ export function createSelectCore<T, TCommit>(
     ariaErrorMessage,
     commitErrorId,
     commitErrorText,
-    disabledReasonId,
-    disabledReasonText,
     listboxId,
     effectiveTabIndex,
     triggerAria,
