@@ -11,7 +11,6 @@ import {
 import { nextUid } from '@cngx/core/utils';
 
 import { injectNavRailConfig } from './config/inject-nav-rail-config';
-import { CNGX_NAV_RAIL_DEFAULTS } from './config/nav-rail.config.defaults';
 import type { CngxNavRailSide } from './nav-rail';
 
 const ROW_SELECTOR = '.cngx-nav-link, .cngx-nav-group';
@@ -129,7 +128,7 @@ export function injectNavRailTooltip(sources: CngxNavRailTooltipSources): void {
   const { railed, side } = sources;
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   const renderer = inject(Renderer2);
-  const hoverDelay = injectNavRailConfig().tooltipDelay ?? CNGX_NAV_RAIL_DEFAULTS.tooltipDelay;
+  const hoverDelay = injectNavRailConfig().tooltipDelay;
   let detach: (() => void) | null = null;
 
   effect(() => {

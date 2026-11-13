@@ -190,7 +190,8 @@ bootstrapApplication(App, {
 default. With the tooltip off, no tooltip element exists and no listener is
 attached; flipping it at runtime sets the tooltip up or tears it down.
 `provideNavRailConfigAt(...)` in a component's `viewProviders` merges over the
-parent scope. `injectNavRailConfig()` returns the configuration in scope;
+parent scope. `injectNavRailConfig()` returns the configuration in scope with
+every key resolved, defaults included;
 `injectNavRailTooltip` reads `tooltipDelay` from it, so the delay reaches every
 organism that calls it.
 
