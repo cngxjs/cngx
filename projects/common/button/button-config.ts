@@ -43,7 +43,7 @@ export interface CngxButtonConfig {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig, injectButtonConfig
+ * @relatedTo provideButtonConfig, injectButtonConfig, withButtonVariant, withButtonTone, withButtonSize
  */
 export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButtonConfig', {
   providedIn: 'root',
@@ -60,6 +60,7 @@ export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButt
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
+ * @relatedTo provideButtonConfig, provideButtonConfigAt
  */
 export interface CngxButtonConfigFeature {
   readonly _target: 'config';
@@ -73,7 +74,7 @@ export interface CngxButtonConfigFeature {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig, provideCngxButton
+ * @relatedTo provideButtonConfig, provideButtonConfigAt, provideCngxButton
  */
 export function withButtonVariant(variant: CngxButtonVariant): CngxButtonConfigFeature {
   return { _target: 'config', config: { variant } };
@@ -86,7 +87,7 @@ export function withButtonVariant(variant: CngxButtonVariant): CngxButtonConfigF
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig, provideCngxButton
+ * @relatedTo provideButtonConfig, provideButtonConfigAt, provideCngxButton
  */
 export function withButtonTone(tone: CngxButtonTone): CngxButtonConfigFeature {
   return { _target: 'config', config: { tone } };
@@ -99,7 +100,7 @@ export function withButtonTone(tone: CngxButtonTone): CngxButtonConfigFeature {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig, provideCngxButton
+ * @relatedTo provideButtonConfig, provideButtonConfigAt, provideCngxButton
  */
 export function withButtonSize(size: CngxButtonSize): CngxButtonConfigFeature {
   return { _target: 'config', config: { size } };
@@ -124,7 +125,7 @@ function mergeFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo withButtonVariant, withButtonTone, withButtonSize, provideButtonConfigAt
+ * @relatedTo withButtonVariant, withButtonTone, withButtonSize, provideButtonConfigAt, provideCngxButton
  */
 export function provideButtonConfig(...features: CngxButtonConfigFeature[]): EnvironmentProviders {
   if (features.length === 0) {
@@ -151,7 +152,7 @@ export function provideButtonConfig(...features: CngxButtonConfigFeature[]): Env
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
  * @since 0.1.0
- * @relatedTo provideButtonConfig
+ * @relatedTo provideButtonConfig, withButtonVariant, withButtonTone, withButtonSize
  */
 export function provideButtonConfigAt(...features: CngxButtonConfigFeature[]): Provider[] {
   if (features.length === 0) {

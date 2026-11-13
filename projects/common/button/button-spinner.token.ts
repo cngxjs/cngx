@@ -13,7 +13,7 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
  * @since 0.1.0
- * @relatedTo provideButtonSpinner, injectButtonSpinner, CngxButtonBrain, CngxButton
+ * @relatedTo provideButtonSpinner, injectButtonSpinner, CngxButtonBrain, CngxButton, withButtonSpinner
  * <example-url>/#/common/button/button/custom-spinner</example-url>
  */
 export const CNGX_BUTTON_SPINNER = new InjectionToken<Type<unknown>>('CngxButtonSpinner');

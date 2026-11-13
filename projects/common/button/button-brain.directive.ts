@@ -62,7 +62,7 @@ import type {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-brain.directive.ts
  * @since 0.1.0
- * @relatedTo provideButtonHost, CNGX_BUTTON_HOST_STATE, CNGX_BUTTON_STATE, CngxButton, CngxAsyncClick
+ * @relatedTo provideButtonHost, CNGX_BUTTON_HOST_STATE, CNGX_BUTTON_STATE, CngxButton, CngxAsyncClick, CNGX_BUTTON_HOST, CngxIconButton, CngxCloseButton, CNGX_ASYNC_RUN_STATE, provideActionStatusHost
  * <example-url>/#/common/button/composition/custom-host</example-url>
  * @axis level molecule
  */

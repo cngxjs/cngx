@@ -37,6 +37,6 @@ export interface CngxButtonState {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxIconButton, CngxSplitButton
+ * @relatedTo CngxButton, CngxIconButton, CngxSplitButton, CngxButtonBrain, CngxSplitCaret, CngxActionButton
  */
 export const CNGX_BUTTON_STATE = new InjectionToken<CngxButtonState>('CngxButtonState');

@@ -22,7 +22,7 @@ import { provideButtonHost } from './button-host.token';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
- * @relatedTo provideButtonCloseIcon, injectButtonCloseIcon, CngxCloseButton
+ * @relatedTo provideButtonCloseIcon, injectButtonCloseIcon, CngxCloseButton, withButtonCloseIcon
  * <example-url>/#/common/button/close-button/provided-icon</example-url>
  */
 export const CNGX_BUTTON_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxButtonCloseIcon');
@@ -84,7 +84,7 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
  * @since 0.1.0
- * @relatedTo provideButtonCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel
+ * @relatedTo provideButtonCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel, withButtonCloseIcon, withCloseIcon
  * <example-url>/#/common/button/close-button/basic</example-url>
  * <example-url>/#/common/button/close-button/projected-icon</example-url>
  * <example-url>/#/common/button/close-button/provided-icon</example-url>

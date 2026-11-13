@@ -55,7 +55,7 @@ export const CNGX_BUTTON_HOST = new InjectionToken<CngxButtonHostDescriptor>('Cn
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
- * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST
+ * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST, CngxActionButton
  */
 export function provideButtonHost(
   name: string,
@@ -102,7 +102,7 @@ export interface CngxButtonHostState {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
  * @since 0.1.0
- * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST
+ * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST, CngxSplitCaret
  */
 export const CNGX_BUTTON_HOST_STATE = new InjectionToken<CngxButtonHostState>(
   'CngxButtonHostState',

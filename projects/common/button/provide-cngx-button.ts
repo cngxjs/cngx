@@ -25,6 +25,7 @@ import { provideButtonCloseIcon } from './close-button.component';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
+ * @relatedTo withButtonCloseIcon, provideCngxButton
  */
 export interface CngxButtonCloseIconFeature {
   readonly _target: 'closeIcon';
@@ -37,6 +38,7 @@ export interface CngxButtonCloseIconFeature {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
+ * @relatedTo withButtonSpinner, provideCngxButton
  */
 export interface CngxButtonSpinnerFeature {
   readonly _target: 'spinner';
@@ -49,6 +51,10 @@ export interface CngxButtonSpinnerFeature {
  * `withButtonSize` helpers), the close glyph, the busy glyph and the action
  * status defaults (`withActionStatusLabels` / `withActionStatusTemplates`
  * from `@cngx/common/interactive`).
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
+ * @since 0.1.0
+ * @relatedTo provideCngxButton, provideCngxButtonAt
  */
 export type CngxButtonFeature =
   | CngxButtonConfigFeature
@@ -169,7 +175,7 @@ function partitionFeatures(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner, provideActionStatusConfig
+ * @relatedTo provideCngxButtonAt, provideButtonConfig, provideButtonCloseIcon, provideButtonSpinner, provideActionStatusConfig, withButtonVariant, withButtonCloseIcon, withButtonSpinner
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButton(...features: readonly CngxButtonFeature[]): EnvironmentProviders {
@@ -196,7 +202,7 @@ export function provideCngxButton(...features: readonly CngxButtonFeature[]): En
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/provide-cngx-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxButton, provideButtonConfigAt, provideActionStatusConfigAt
+ * @relatedTo provideCngxButton, provideButtonConfigAt, provideActionStatusConfigAt, withButtonVariant, withButtonCloseIcon, withButtonSpinner
  * <example-url>/#/common/button/button/scoped-defaults</example-url>
  */
 export function provideCngxButtonAt(...features: readonly CngxButtonFeature[]): Provider[] {
