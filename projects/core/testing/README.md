@@ -60,7 +60,7 @@ The min-dwell timer is only scheduled when the indicator shows, so one advance h
 
 Timing inputs bound on a single component (for example `[showDelay]` / `[minDwell]` on an async container) are not part of the config read; use the values you bound in the same sum.
 
-The same two timers run on every async-click host: the button family (`cngx-button`, `cngx-icon-button`, `cngx-close-button`, `cngx-menu-button`, `cngx-icon-menu-button`), `cngx-action-button`, the popover confirm action and stepper complete. On all of them the busy visual appears after `showDelay` and is held for `minDwell` past the run, and for that whole held window the host refuses activation (`aria-disabled` and `aria-busy` both stay `true`, the click is swallowed). A spec that clicks again inside the dwell has to advance `showDelay + minDwell + 1` before the host accepts a second run.
+The same two timers run on every async-click host: the button family (`cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxMenuButton`, `cngxIconMenuButton`), `cngxActionButton`, the popover confirm action and stepper complete. On all of them the busy visual appears after `showDelay` and is held for `minDwell` past the run, and for that whole held window the host refuses activation (`aria-disabled` and `aria-busy` both stay `true`, the click is swallowed). A spec that clicks again inside the dwell has to advance `showDelay + minDwell + 1` before the host accepts a second run.
 
 ## Announcements
 

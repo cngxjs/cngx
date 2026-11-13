@@ -189,7 +189,7 @@ effect(() => {
 });
 ```
 
-This is the exact pattern in `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`, `CngxActionButton`, `CngxTabsPresenter`, `CngxStepperPresenter`, and the recycler.
+This is the exact pattern in `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`, `CngxActionStatusBrain` (behind `CngxActionButton`), `CngxTabsPresenter`, `CngxStepperPresenter`, and the recycler.
 
 ### Internal equality
 
@@ -347,11 +347,11 @@ CNGX components have a strict access discipline because templates and host bindi
 
 - **`protected readonly`** - members accessed from the component's own template or host bindings.
 
-    Templates and host-binding expressions cannot access `private`. Example: `CngxButtonToggleGroup.ariaBusy`, `CngxButtonToggleGroup.handleKeydown`.
+    Templates and host-binding expressions cannot access `private`. Example: `CngxButtonToggleGroup.ariaBusy`, `CngxButtonToggleGroup.handleFocusIn`.
 
 - **`private readonly`** - implementation-only: internal signals (`signal()` backing state), derived state used inside component methods, view-child queries, injected helpers.
 
-    Example: `CngxSort.sortsState`, `CngxButtonToggleGroup.focusedState`.
+    Example: `CngxSort.sortsState`, `CngxButtonToggleGroup.roving`.
 
 <aside class="cc-warning">
 
