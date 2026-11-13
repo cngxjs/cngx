@@ -152,10 +152,9 @@ export class CngxButtonToggle<T = unknown> {
     }
   }
 
+  // No disabled check: the activation guard stops every click on a disabled toggle before the
+  // host (click) listener runs.
   protected handleSelect(): void {
-    if (this.toggleDisabled()) {
-      return;
-    }
     if (this.resolved.mode === 'single') {
       this.resolved.group.value.set(this.value());
       return;
