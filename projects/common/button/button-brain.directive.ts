@@ -215,7 +215,7 @@ export class CngxButtonBrain implements CngxButtonState {
   }
 }
 
-/** The host's `CNGX_BUTTON_HOST` descriptor, or throws `CNGX1075`. */
+/** The host's `CNGX_BUTTON_HOST` descriptor, or throws [`CNGX1075`](/error-codes/cngx1075.md). */
 function injectButtonHostDescriptor(): CngxButtonHostDescriptor {
   const descriptor = inject(CNGX_BUTTON_HOST, { self: true, optional: true });
   if (descriptor) {
