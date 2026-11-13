@@ -617,6 +617,18 @@
     text-overflow: clip;
   }
 
+  /* The name next to the mark fades like a row label: in after the open delay,
+     out at once. Opacity, so it stays in the accessibility tree. */
+  cngx-sidenav :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
+    transition: opacity var(--cngx-sidenav-transition-duration, 0.25s)
+      var(--cngx-sidenav-transition-easing, ease) var(--cngx-duration-fast, 150ms);
+  }
+
+  cngx-sidenav[data-sidebar-state='rail'] :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
+    opacity: 0;
+    transition: opacity 0s;
+  }
+
   /* Section labels keep their box and their text for assistive technology
      but paint none, so the rows keep their y when the rail collapses. */
   cngx-sidenav[data-sidebar-state='rail'] [cngxNavLabel] {

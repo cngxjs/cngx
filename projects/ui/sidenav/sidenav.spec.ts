@@ -7,7 +7,10 @@ import {
   type CngxHotkeyScopeNode,
   CngxNavGroup,
   CngxNavGroupContent,
+  CngxNavHeader,
   CngxNavLink,
+  CngxNavMark,
+  CngxNavName,
   createHotkeyRegistry,
   injectHotkeyRegistryDeps,
 } from '@cngx/common/interactive';
@@ -1769,6 +1772,10 @@ class EndPersistHost {}
       [(collapsed)]="collapsed"
       [collapsedAs]="collapsedAs()"
     >
+      <cngx-nav-header>
+        <span cngxNavMark class="mark">A</span>
+        <span cngxNavName class="name">Acme</span>
+      </cngx-nav-header>
       <a cngxNavLink href="#inbox" class="row">Inbox</a>
       <button type="button" cngxNavGroup #settings="cngxNavGroup" class="head">Settings</button>
       <div [cngxNavGroupContent]="settings" class="content">
@@ -1778,6 +1785,9 @@ class EndPersistHost {}
   `,
   imports: [
     CngxSidenav,
+    CngxNavHeader,
+    CngxNavMark,
+    CngxNavName,
     CngxNavLink,
     CngxNavGroup,
     CngxNavGroupContent,
@@ -1899,5 +1909,27 @@ describe('CngxSidenav rail pieces', () => {
     const { tooltip, flyoutWired } = setup();
     expect(tooltip()).toBeNull();
     expect(flyoutWired()).toBe(true);
+  });
+
+  it('keeps the header name in the accessibility tree in rail, peek and expanded', () => {
+    const { host, nav, el, settle } = setup();
+    const named = () => {
+      expect(el('.name').closest('[aria-hidden="true"]')).toBeNull();
+      expect(el('.name').textContent).toBe('Acme');
+      expect(el('.mark').getAttribute('aria-hidden')).toBe('true');
+    };
+    expect(nav.getAttribute('data-sidebar-state')).toBe('rail');
+    named();
+    nav.dispatchEvent(new PointerEvent('pointerenter'));
+    vi.advanceTimersByTime(120);
+    settle();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('peek');
+    named();
+    nav.dispatchEvent(new PointerEvent('pointerleave'));
+    vi.advanceTimersByTime(1);
+    host.collapsed.set(false);
+    settle();
+    expect(nav.getAttribute('data-sidebar-state')).toBe('expanded');
+    named();
   });
 });

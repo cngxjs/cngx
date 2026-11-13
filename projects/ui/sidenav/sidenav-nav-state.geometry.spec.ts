@@ -129,6 +129,9 @@ class NavStateHost {}
   standalone: true,
   imports: [
     CngxSidenav,
+    CngxNavHeader,
+    CngxNavMark,
+    CngxNavName,
     CngxNavLink,
     CngxNavIcon,
     CngxNavBadge,
@@ -161,6 +164,10 @@ class NavStateHost {}
         [expandOnHover]="true"
         ariaLabel="Crop"
       >
+        <cngx-nav-header>
+          <span cngxNavMark class="crop-mark">A</span>
+          <span cngxNavName class="crop-name">Acme</span>
+        </cngx-nav-header>
         <div cngxNavLabel class="crop-label">Main</div>
         <a cngxNavLink href="#inbox" class="crop-active" [active]="true">
           <span cngxNavIcon class="crop-icon"
@@ -628,6 +635,7 @@ describe('nav row skin source', () => {
 describe('rail as a crop of the expanded sidenav', () => {
   // .crop-after sits below a group content, which the rail turns into a popover.
   const CROPPED = [
+    '.crop-mark',
     '.crop-label',
     '.crop-active',
     '.crop-icon',
@@ -680,7 +688,7 @@ describe('rail as a crop of the expanded sidenav', () => {
     settle();
   }
 
-  it('keeps rows, icon box, section label, group head and bar in place in rail, peek and expanded', async () => {
+  it('keeps the header mark, rows, icon box, section label, group head and bar in place in rail, peek and expanded', async () => {
     const { fixture, el, settle } = mountCrop();
     const expanded = places(el);
     fixture.componentInstance.collapsed.set(true);
@@ -714,6 +722,11 @@ describe('rail as a crop of the expanded sidenav', () => {
       );
     }
     expect(getComputedStyle(el('.crop-badge')).display).not.toBe('none');
+    // The header name fades but stays rendered, so it stays in the AX tree.
+    const name = getComputedStyle(el('.crop-name'));
+    expect(name.opacity).toBe('0');
+    expect(name.display).not.toBe('none');
+    expect(name.visibility).toBe('visible');
     expect(getComputedStyle(el('.crop-group')).display).not.toBe('none');
   });
 
