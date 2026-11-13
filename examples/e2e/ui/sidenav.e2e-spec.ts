@@ -19,13 +19,13 @@ async function startSampling(page: Page): Promise<void> {
     const w = window as unknown as { __frames: Frame[]; __sampling: boolean };
     w.__frames = [];
     w.__sampling = true;
-    const nav = document.querySelector('cngx-sidenav')!;
-    const content = document.querySelector('cngx-sidenav-content')!;
-    const rows = [
-      ...nav.querySelectorAll(
+    const nav = document.querySelector<HTMLElement>('cngx-sidenav')!;
+    const content = document.querySelector<HTMLElement>('cngx-sidenav-content')!;
+    const rows = Array.from(
+      nav.querySelectorAll<HTMLElement>(
         ':is(.cngx-nav-link, .cngx-nav-group, .cngx-nav-label):not(.cngx-nav-group-content *)',
       ),
-    ];
+    );
     const tick = () => {
       w.__frames.push({
         width: nav.getBoundingClientRect().width,
@@ -41,11 +41,27 @@ async function startSampling(page: Page): Promise<void> {
 }
 
 async function stopSampling(page: Page): Promise<Frame[]> {
+  // Two frames, so the sampler has recorded the layout after the last change.
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
   return page.evaluate(() => {
     const w = window as unknown as { __frames: Frame[]; __sampling: boolean };
     w.__sampling = false;
     return w.__frames;
   });
+}
+
+// Resolves once the sidenav's own transitions (width, margin) have finished.
+async function settled(page: Page): Promise<void> {
+  await expect
+    .poll(() =>
+      page
+        .locator('cngx-sidenav')
+        .first()
+        .evaluate((el) => el.getAnimations().length),
+    )
+    .toBe(0);
 }
 
 const spread = (values: readonly number[]): number => Math.max(...values) - Math.min(...values);
@@ -138,7 +154,7 @@ test.describe('ui/sidenav', () => {
     await page.getByRole('button', { name: 'Toggle navigation' }).click();
     await page.mouse.move(1500, 850);
     await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
-    await page.waitForTimeout(600);
+    await settled(page);
     const toRail = await stopSampling(page);
     const railWidth = toRail[toRail.length - 1].width;
     expectRowsStill(toRail);
@@ -149,10 +165,10 @@ test.describe('ui/sidenav', () => {
     await startSampling(page);
     await page.mouse.move(box.x + box.width / 2, box.y + 150);
     await expect(nav).toHaveAttribute('data-sidebar-state', 'peek');
-    await page.waitForTimeout(600);
+    await settled(page);
     await page.mouse.move(1500, 850);
     await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
-    await page.waitForTimeout(600);
+    await settled(page);
     const peek = await stopSampling(page);
     expectRowsStill(peek);
     expect(spread(peek.map((frame) => frame.contentStart))).toBeLessThanOrEqual(0.5);
@@ -173,7 +189,10 @@ test.describe('ui/sidenav', () => {
     await page.getByRole('button', { name: 'Toggle navigation' }).click();
     await page.mouse.move(1500, 850);
     await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
-    await page.waitForTimeout(400);
+    await expect
+      .poll(async () => (await nav.boundingBox())?.width ?? expandedWidth)
+      .toBeLessThan(expandedWidth);
+    await settled(page);
     const frames = await stopSampling(page);
     const railWidth = frames[frames.length - 1].width;
     expect(railWidth).toBeLessThan(expandedWidth);
