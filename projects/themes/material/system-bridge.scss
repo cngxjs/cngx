@@ -141,10 +141,18 @@
 // + cngx-button atoms, or the consumer's own <mat-*> elements - the
 // system bridge stays a pure token mapping.
 
+// Emitted inside `@layer cngx.components`: that beats every core token block
+// in `cngx.tokens` (the `:root` defaults and the OS dark block, whatever their
+// specificity) and loses to `cngx.theme`, where the root axis providers'
+// `[data-density]` / `[data-contrast]` rules live on the same `<html>`. An
+// unlayered emission beat those axes, so `provideContrast('more')` lost its
+// border boost in a bridged app.
 @mixin theme($theme) {
-  @if mat.get-theme-version($theme) == 1 {
-    @include _m3();
-  } @else {
-    @include _m2($theme);
+  @layer cngx.components {
+    @if mat.get-theme-version($theme) == 1 {
+      @include _m3();
+    } @else {
+      @include _m2($theme);
+    }
   }
 }

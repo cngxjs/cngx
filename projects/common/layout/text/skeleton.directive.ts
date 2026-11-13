@@ -59,6 +59,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
     '[class.cngx-skeleton--loading]': 'loading()',
     '[class.cngx-skeleton--shimmer]': 'showShimmer()',
     '[attr.aria-busy]': 'loading() || null',
+    '[attr.data-cngx-busy]': 'loading() || null',
   },
 })
 export class CngxSkeleton {

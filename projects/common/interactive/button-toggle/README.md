@@ -96,7 +96,7 @@ without a wrapper. With Reactive Forms, put `formControlName` on the group and i
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, outputs and the token contracts.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/button-toggle/) for inputs, outputs and the token contracts.
 - Stories: `examples/stories/common/interactive/button-toggle/group/` and
   `examples/stories/common/interactive/button-toggle/multi-group/`.
 - `CngxToggle` for a single on/off switch without a group.

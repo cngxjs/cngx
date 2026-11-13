@@ -64,6 +64,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
     '[attr.role]': '"status"',
     '[attr.aria-label]': 'visible() ? resolvedLabel() : null',
     '[attr.aria-busy]': 'isActive() || null',
+    '[attr.data-cngx-busy]': 'visible() || null',
   },
   template: `
     @if (visible()) {

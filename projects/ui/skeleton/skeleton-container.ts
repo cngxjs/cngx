@@ -76,6 +76,7 @@ import {
     '[class.cngx-skeleton--loading]': 'gatedLoading()',
     '[class.cngx-skeleton--shimmer]': 'showShimmer()',
     '[attr.aria-busy]': 'gatedLoading() || null',
+    '[attr.data-cngx-busy]': 'gatedLoading() || null',
   },
   template: `
     @if (gatedLoading()) {

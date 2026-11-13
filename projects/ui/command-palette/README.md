@@ -222,6 +222,6 @@ chrome. Spacing stays on `--cngx-space-*` so density tracking keeps working.
 
 - `@cngx/common/command` - the framework-level command registry and matcher
 - [CngxDialog](../../common/dialog/) - the modal surface the palette composes
-- [CngxListbox](../../common/interactive/) - the navigation atom under the rows
-- [API on compodocx](../../../README.md)
+- [CngxListbox](../../common/interactive/listbox/) - the navigation atom under the rows
+- [API on compodocx](https://cngxjs.github.io/cngx/main/ui/command-palette/)
 - Tests: `projects/ui/command-palette/palette/command-palette.component.spec.ts`, `panel/command-panel.component.spec.ts`

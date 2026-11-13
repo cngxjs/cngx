@@ -250,7 +250,7 @@ await retryAction();
 
 ## See Also
 
-- [API on compodocx](../../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/retry/)
 - [CngxAsyncClick](../async-click/) - The most common consumer of retry actions
 - [CngxAsyncState](../../../core/utils/) - The shared state interface
 - Demo: `examples/stories/common/retry-demo/`

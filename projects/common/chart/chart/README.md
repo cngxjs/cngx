@@ -68,6 +68,6 @@ Async envelope - same root, state-machine routes between skeleton, empty, error,
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, host bindings, and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/chart/chart/) for inputs, host bindings, and tokens.
 - Sibling folders: `axis/`, `layers/`, `legend/`, `presets/`, `i18n/`, `scales.ts`, `path.ts`.
 - Entry: [`@cngx/common/chart`](../README.md).

@@ -114,6 +114,6 @@ Test doubles and programmatic groups can satisfy `CngxTagGroupHost` without owni
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, slots, and the token contract.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/display/tag-group/) for inputs, slots, and the token contract.
 - Stories: `examples/stories/common/display/tag/` (`group-semantic-list`, `group-with-header-accessory`, `layout-only-alignment`, `layout-only-gap-variants`).
 - `CngxTag` - the child the cascade targets. Reads `CNGX_TAG_GROUP` to derive `role="listitem"`.

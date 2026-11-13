@@ -359,7 +359,7 @@ Shortcut strings use modifiers and keys separated by `+`:
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/interactive/keyboard/)
 - [CngxLongPress and CngxSwipeDismiss](../gestures/) - Gesture-based interactions
 - [parseKeyCombo from @cngx/core/utils](../../../core/utils/) - Keyboard parsing utilities
 - Demo: `examples/stories/common/keyboard-demo/`

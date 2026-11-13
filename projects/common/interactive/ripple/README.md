@@ -222,7 +222,7 @@ The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-su
 
 ## See Also
 
-- [compodocx API documentation](../../../../README.md)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/interactive/ripple/)
 - `cngx-ripple.css` - Default container and wave styles
 - Demo: `examples/stories/common/interactive/ripple/`
 - Tests: `projects/common/interactive/ripple/ripple.directive.spec.ts`

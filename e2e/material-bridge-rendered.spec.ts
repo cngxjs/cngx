@@ -681,3 +681,60 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
     }
   });
 });
+
+test.describe('material-bridge rendered values: system and density bridge vs the root axes', () => {
+  // The bridges assign on the theme host, the same <html> the root axis
+  // providers reflect data-density / data-contrast onto. The axis rules live
+  // in @layer cngx.theme and must win there; the colour mapping must still
+  // beat every core token block (cngx.tokens, Block 2 included under OS dark).
+  const AXIS_CSS = [
+    'projects/core/theming/system-tokens.css',
+    'projects/core/theming/density-tokens.css',
+    'projects/core/theming/contrast-tokens.css',
+  ] as const;
+
+  const BRIDGE_CSS = compileEntry(`
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as cngx-system;
+@use 'material/density-bridge' as cngx-density;
+
+$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
+
+html {
+  @include cngx-system.theme($theme);
+  @include cngx-density.density($theme);
+}
+`);
+
+  const HTML = `<div id="probe"></div><div id="reference" data-contrast="more"></div>`;
+
+  async function render(page: Page, rootAttrs: Record<string, string> = {}): Promise<void> {
+    await renderFixture(page, { componentCss: AXIS_CSS, bridgeCss: BRIDGE_CSS, html: HTML });
+    await page.evaluate((attrs) => {
+      for (const [name, value] of Object.entries(attrs)) {
+        document.documentElement.setAttribute(name, value);
+      }
+    }, rootAttrs);
+  }
+
+  for (const scheme of ['light', 'dark'] as const) {
+    test(`the colour bridge beats the core token blocks (${scheme} OS)`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await render(page);
+      expect(await computedValue(page, '#probe', '--cngx-color-surface')).toBe(matSys('surface'));
+      expect(await computedValue(page, '#probe', '--cngx-color-text')).toBe(matSys('on-surface'));
+    });
+  }
+
+  test('a root data-density beats the density bridge', async ({ page }) => {
+    await render(page, { 'data-density': 'compact' });
+    expect(await computedValue(page, '#probe', '--cngx-space-md')).toBe('8px');
+  });
+
+  test('a root data-contrast=more beats the border bridge', async ({ page }) => {
+    await render(page, { 'data-contrast': 'more' });
+    const boosted = await computedValue(page, '#reference', '--cngx-color-border');
+    expect(boosted).not.toBe(matSys('outline-variant'));
+    expect(await computedValue(page, '#probe', '--cngx-color-border')).toBe(boosted);
+  });
+});
