@@ -47,12 +47,10 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.component.ts
  * @selector cngx-button-multi-toggle-group
  * @since 0.1.0
- * @relatedTo CngxButtonToggle, CngxButtonToggleGroup
+ * @relatedTo CngxButtonToggle, CngxButtonToggleGroup, CngxCheckboxGroup, CngxMultiChipGroup, CNGX_SELECTION_CONTROLLER_FACTORY, CngxRovingTabindex
  * <example-url>/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
  */
 @Component({

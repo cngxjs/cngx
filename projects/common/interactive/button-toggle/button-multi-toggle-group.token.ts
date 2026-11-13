@@ -9,6 +9,10 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  *   `aria-pressed`.
  * - `toggle(value)` is the only write the leaf makes, on click, Space and Enter.
  * - `disabled` is combined with the leaf's own `disabled`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.token.ts
+ * @since 0.1.0
+ * @relatedTo CNGX_BUTTON_MULTI_TOGGLE_GROUP, CngxButtonMultiToggleGroup, CngxButtonToggle
  */
 export interface CngxButtonMultiToggleGroupContract<T = unknown> {
   readonly selectedValues: ModelSignal<T[]>;
@@ -28,6 +32,7 @@ export interface CngxButtonMultiToggleGroupContract<T = unknown> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.token.ts
  * @since 0.1.0
+ * @relatedTo CngxButtonMultiToggleGroup, CngxButtonToggle, CNGX_BUTTON_TOGGLE_GROUP
  */
 export const CNGX_BUTTON_MULTI_TOGGLE_GROUP =
   new InjectionToken<CngxButtonMultiToggleGroupContract>('CngxButtonMultiToggleGroup');

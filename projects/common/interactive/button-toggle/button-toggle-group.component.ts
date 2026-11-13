@@ -43,7 +43,7 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.component.ts
  * @selector cngx-button-toggle-group
  * @since 0.1.0
- * @relatedTo CngxButtonToggle, CngxRadioGroup
+ * @relatedTo CngxButtonToggle, CngxRadioGroup, CngxButtonMultiToggleGroup, CngxButtonGroup, CngxRovingTabindex, CngxChipGroup
  * <example-url>/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
  * <example-url>/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>/#/common/interactive/button-toggle/group/vertical-orientation</example-url>

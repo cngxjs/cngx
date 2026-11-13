@@ -50,12 +50,13 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle.directive.ts
  * @selector button[cngxButtonToggle]
  * @since 0.1.0
- * @relatedTo CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxRadio
+ * @relatedTo CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxRadio, CngxRovingItem, CngxCheckbox, CngxToggle
  * <example-url>/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
  * <example-url>/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>/#/common/interactive/button-toggle/group/vertical-orientation</example-url>
+ * @axis level molecule
  */
 @Directive({
   selector: 'button[cngxButtonToggle]',
