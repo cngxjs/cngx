@@ -1,3 +1,4 @@
+import type { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import type { CngxSidebarSide } from '@cngx/common/layout';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
@@ -37,6 +38,11 @@ describe('@cngx/ui/nav-rail public API shape', () => {
 
   it('exports the rail group flyout injection function', () => {
     expect(typeof api.injectNavRailFlyout).toBe('function');
+  });
+
+  it('types the flyout on a group contract the nav atoms match', () => {
+    expectTypeOf<CngxNavGroup>().toMatchTypeOf<api.CngxNavRailFlyoutGroup>();
+    expectTypeOf<CngxNavGroupContent>().toMatchTypeOf<api.CngxNavRailFlyoutContent>();
   });
 
   it('exports the tooltip and flyout swap tokens', () => {

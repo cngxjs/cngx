@@ -271,11 +271,12 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `position` | `'start' \| 'end'` | `'start'` | Logical position (flips in RTL) |
 | `mode` | `SidenavMode` | `'auto'` | Interaction mode |
 | `width` | `string` (model) | `'280px'` | Panel width, two-way `[(width)]` for resize |
-| `miniWidth` | `string` | `'56px'` | Width of the collapsed rail |
+| `miniWidth` | `string` | derived | Width of the collapsed rail; unbound, derived from the nav row tokens |
 | `collapsed` | `boolean` (model) | `false` | Rest a docked rail collapsed, two-way `[(collapsed)]` |
 | `collapsedAs` | `'rail' \| 'hidden'` | `'rail'` | How a collapsed rail rests |
 | `expandOnHover` | `boolean` | `true` | Peek a collapsed rail on hover |
 | `modality` | `'page' \| 'contained' \| 'none'` | `'page'` | How far an open overlay takes over the page |
+| `tooltip` | `boolean` | config, else `true` | Label tooltip on the collapsed rail; unbound, `withNavRailTooltip` applies |
 | `resizable` | `boolean` | `false` | Show drag handle for user resize |
 | `minWidth` | `string` | `'120px'` | Min width constraint during resize |
 | `maxWidth` | `string` | `'600px'` | Max width constraint during resize |
@@ -292,7 +293,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | Variable | Default | Description |
 |-|-|-|
 | `--cngx-sidenav-width` | `280px` | Panel width |
-| `--cngx-sidenav-mini-width` | `56px` | Mini mode rail width |
+| `--cngx-sidenav-mini-width` | derived from the row tokens | Collapsed rail width |
 | `--cngx-sidenav-bg` | M3 surface-container | Background |
 | `--cngx-sidenav-color` | M3 on-surface | Text color |
 | `--cngx-sidenav-border-color` | M3 outline-variant | Border color |

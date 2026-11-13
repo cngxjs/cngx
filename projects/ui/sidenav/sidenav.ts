@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   effect,
   ElementRef,
   HostAttributeToken,
@@ -16,7 +17,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { createTransitionTracker, injectLocale, numberFormatterFor } from '@cngx/core/utils';
-import { CNGX_HOVER_INTENT_DEFAULTS, injectHotkeys } from '@cngx/common/interactive';
+import {
+  CNGX_HOVER_INTENT_DEFAULTS,
+  CngxNavGroup,
+  CngxNavGroupContent,
+  injectHotkeys,
+} from '@cngx/common/interactive';
 import {
   CNGX_CONTAINER_SIZE,
   CNGX_DRAWER_SURFACE_DRIVER,
@@ -31,7 +37,13 @@ import {
   CngxSidebar,
   type CngxSidebarCollapsedAs,
   type CngxSidebarDriver,
+  type CngxSidebarSide,
 } from '@cngx/common/layout';
+import {
+  CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+  injectNavRailConfig,
+} from '@cngx/ui/nav-rail';
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
@@ -42,9 +54,10 @@ import { CNGX_SIDENAV, CNGX_SIDENAV_LAYOUT, type CngxSidenavContract } from './s
 const PERCENT_FORMAT: Intl.NumberFormatOptions = { style: 'percent' };
 
 /**
- * Logical position - flips in RTL.
+ * Logical position - flips in RTL. The same union as the composed sidebar's
+ * `side`, which `position` is forwarded to.
  */
-export type SidenavPosition = 'start' | 'end';
+export type SidenavPosition = CngxSidebarSide;
 /**
  * How the sidenav interacts with the content area.
  *
@@ -183,9 +196,9 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
     '[style.--cngx-sidenav-width]': 'width()',
-    '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
+    '[style.--cngx-sidenav-mini-width]': 'miniWidth() ?? null',
     '[style.--cngx-sidebar-size]': 'width()',
-    '[style.--cngx-sidebar-rail-size]': 'miniWidth()',
+    '[style.--cngx-sidebar-rail-size]': 'miniWidth() ?? null',
   },
   imports: [CngxResizable],
   template: `
@@ -263,8 +276,20 @@ export class CngxSidenav
   /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
   readonly width = model<string>(this.cfg.dimensions?.width ?? '280px');
 
-  /** Width of the collapsed rail (`collapsed` with `collapsedAs="rail"`). Any CSS value. */
-  readonly miniWidth = input<string>(this.cfg.dimensions?.miniWidth ?? '56px');
+  /**
+   * Width of the collapsed rail (`collapsed` with `collapsedAs="rail"`). Any CSS
+   * value. Unbound and unconfigured, the rail width derives from the nav row
+   * tokens (`2 * (row inset + row inline padding) + icon size + border width`),
+   * so the icon box sits centred, as on `cngx-nav-rail`.
+   */
+  readonly miniWidth = input<string | undefined>(this.cfg.dimensions?.miniWidth);
+
+  /**
+   * Whether a row on the collapsed rail shows its label in a tooltip. Unbound,
+   * `withNavRailTooltip` of the nav rail config in scope applies, else `true`.
+   * Switching it off removes the tooltip element and its listeners.
+   */
+  readonly tooltip = input<boolean | undefined>(undefined);
 
   /** Whether the sidebar is user-resizable via a drag handle. */
   readonly resizable = input<boolean>(false);
@@ -502,7 +527,48 @@ export class CngxSidenav
     this.rawWidthClass().trim() === '' ? null : this.widthClass(),
   );
 
+  /**
+   * Whether the sidenav rests as a collapsed rail. Peek, expanded and hidden
+   * are not railed, so tooltip and flyout attach only to the narrow rest.
+   */
+  private readonly railed = computed(() => this.sidebar.state() === 'rail');
+
+  private readonly navRailConfig = injectNavRailConfig();
+
+  /** Whether the rail tooltip is on: `[tooltip]`, then the nav rail config. */
+  private readonly resolvedTooltip = computed(() => this.tooltip() ?? this.navRailConfig.tooltip);
+
+  // Each directive query has a `read: ElementRef` twin over the same selector,
+  // so the flyout pairs a directive with its host by index.
+  private readonly navGroups = contentChildren(CngxNavGroup, { descendants: true });
+  private readonly navGroupElements = contentChildren(CngxNavGroup, {
+    descendants: true,
+    read: ElementRef,
+  });
+  private readonly navGroupContents = contentChildren(CngxNavGroupContent, { descendants: true });
+  private readonly navGroupContentElements = contentChildren(CngxNavGroupContent, {
+    descendants: true,
+    read: ElementRef,
+  });
+
   constructor() {
+    // The rail pieces of cngx-nav-rail: a tooltip with the clipped row label
+    // and the nav groups as flyouts, both only while railed. The tooltip
+    // delay comes from CNGX_NAV_RAIL_CONFIG, so one setting covers both
+    // organisms.
+    inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)({
+      railed: computed(() => this.resolvedTooltip() && this.railed()),
+      side: this.position,
+    });
+    inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({
+      railed: this.railed,
+      side: this.position,
+      groups: this.navGroups,
+      groupElements: this.navGroupElements,
+      contents: this.navGroupContents,
+      contentElements: this.navGroupContentElements,
+    });
+
     // Seed the separator's aria-valuenow for non-px rails: the attribute must
     // exist before the first focus, and only layout can resolve a rem width.
     afterNextRender(() => {

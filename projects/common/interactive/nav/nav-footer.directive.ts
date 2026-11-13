@@ -8,6 +8,10 @@ import { Directive } from '@angular/core';
  * `[cngxNavName]` inside for an avatar or account row that lines up with the
  * nav rows.
  *
+ * On a collapsed rail the mark keeps its x and the name fades out, as in
+ * `CngxNavHeader`; the name stays in the accessibility tree, and a control
+ * projected into the footer stays in the tab order in every state.
+ *
  * Two selector forms: the `<cngx-nav-footer>` element, or `[cngxNavFooter]`
  * on a native `<footer>`.
  *

@@ -6,9 +6,11 @@ import type { CngxSidenavConfig } from './sidenav.config';
 /**
  * Library defaults for the sidenav configuration cascade. The values are
  * byte-identical to the per-instance input defaults `CngxSidenav` shipped
- * before the cascade (`width '280px'`, `miniWidth '56px'`, `minWidth '120px'`,
+ * before the cascade (`width '280px'`, `minWidth '120px'`,
  * `maxWidth '600px'`, `enterDelay 120`, `leaveDelay 0`; `shortcut` omitted =
- * `undefined`), so an un-configured consumer sees no change.
+ * `undefined`), so an un-configured consumer sees no change. `miniWidth` is
+ * left out: unset, the rail width derives from the nav row tokens in
+ * `sidenav.css`.
  *
  * The `leaveDelay 0` default is kept deliberately (instant collapse, asymmetric
  * with the 120ms enter): the dwell becomes tunable via `[leaveDelay]` /
@@ -25,7 +27,6 @@ import type { CngxSidenavConfig } from './sidenav.config';
 export const CNGX_SIDENAV_DEFAULTS: CngxSidenavConfig = {
   dimensions: {
     width: '280px',
-    miniWidth: '56px',
     minWidth: '120px',
     maxWidth: '600px',
   },
