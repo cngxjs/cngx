@@ -167,11 +167,12 @@ export function filterImportLine(line, isReferenced) {
 
 /**
  * Whether a template uses a class: by name, or by one of its selectors
- * (`selectorMap` maps class name to selectors). Non-Cngx classes and Cngx
- * classes with no known selector always count as used.
+ * (`selectorMap` maps class name to selectors). A class with no known
+ * selector always counts as used; a non-Cngx class counts as used unless the
+ * map knows it (the story-local classes).
  */
 export function templateUsesClass(cls, tpl, selectorMap) {
-  if (!cls.startsWith('Cngx')) return true;
+  if (!cls.startsWith('Cngx') && !selectorMap?.has(cls)) return true;
   if (new RegExp(String.raw`\b${cls}\b`).test(tpl)) return true;
   const selectors = selectorMap?.get(cls) ?? [];
   if (selectors.length === 0) return true;

@@ -496,6 +496,31 @@ describe('storyLocalImports', () => {
     expect(shownFor(story).map((f) => f.module)).not.toContain('./_fail-flag');
   });
 
+  it('gives a story-local component in imports a tab only when the artifact template uses it', () => {
+    const map = new Map([
+      ...selectorMap,
+      ['DefaultCloseReference', ['demo-default-close-reference']],
+    ]);
+    const story = {
+      imports: ['DefaultCloseReference'],
+      template: '<button>Close</button>',
+      templateChrome: '<demo-default-close-reference />',
+      moduleImports: [
+        "import { DefaultCloseReference } from './_default-close-reference.component';",
+      ],
+    };
+    const tabsFor = (s) =>
+      panel
+        .storyLocalImports(
+          panel.displayedImportLines({ story: s, importLines: s.moduleImports, selectorMap: map }),
+        )
+        .map((f) => f.module);
+    expect(tabsFor(story)).toEqual([]);
+    expect(
+      tabsFor({ ...story, template: '<demo-default-close-reference />', templateChrome: '' }),
+    ).toEqual(['./_default-close-reference.component']);
+  });
+
   it('gives the shared fixtures barrel no tab, even when the artifact uses it', () => {
     const story = fixtureStory({ setup: 'protected readonly sr = mirrorScreenReader();' });
     expect(shownFor(story).map((f) => f.module)).toEqual(['./_chip-button.component']);

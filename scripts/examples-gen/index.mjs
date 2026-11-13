@@ -11,7 +11,7 @@
 //   - examples/src/app/_routes-meta.ts
 
 import { readFile, writeFile, readdir, mkdir, rm } from 'node:fs/promises';
-import { join, relative, dirname } from 'node:path';
+import { basename, join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   buildDisplayedHtml,
@@ -227,18 +227,28 @@ async function buildPublicApiImportMap() {
   return map;
 }
 
+// The library selectors, plus the story-local classes (`_*` files next to a
+// story, the app fixtures), so a story-local class in `imports` counts as
+// artifact only where the artifact template uses it.
 async function buildSelectorMap() {
   const map = new Map();
-  for await (const file of walkFiles(join(ROOT, 'projects'), isSelectorSource)) {
-    let src;
-    try {
-      src = await readFile(file, 'utf8');
-    } catch {
-      continue;
-    }
-    for (const [className, selectors] of selectorsInSource(src)) {
-      const existing = map.get(className) ?? [];
-      map.set(className, [...new Set([...existing, ...selectors])]);
+  const sources = [
+    walkFiles(join(ROOT, 'projects'), isSelectorSource),
+    walkFiles(STORIES_ROOT, (p) => p.endsWith('.ts') && basename(p).startsWith('_')),
+    walkFiles(APP_FIXTURES_DIR, (p) => p.endsWith('.ts')),
+  ];
+  for (const files of sources) {
+    for await (const file of files) {
+      let src;
+      try {
+        src = await readFile(file, 'utf8');
+      } catch {
+        continue;
+      }
+      for (const [className, selectors] of selectorsInSource(src)) {
+        const existing = map.get(className) ?? [];
+        map.set(className, [...new Set([...existing, ...selectors])]);
+      }
     }
   }
   return map;
@@ -275,10 +285,7 @@ function buildImports(story, importMap, featureDepth) {
 
   const viewProvidersText = (story.viewProviders ?? []).join('\n');
   const scanText = setup + '\n' + tpl + '\n' + viewProvidersText;
-  const explicitRefs = new Set([
-    ...(story.imports ?? []),
-    ...(story.hostDirectives ?? []),
-  ]);
+  const explicitRefs = new Set([...(story.imports ?? []), ...(story.hostDirectives ?? [])]);
 
   function isReferenced(id) {
     if (explicitRefs.has(id)) return true;
@@ -366,9 +373,7 @@ function emitComponentSource(meta, story, importMap, fixtureFiles) {
 
   const storyViewProviders = (story.viewProviders ?? []).filter(Boolean);
   const decoratorViewProviders =
-    storyViewProviders.length > 0
-      ? `\n  viewProviders: [${storyViewProviders.join(', ')}],`
-      : '';
+    storyViewProviders.length > 0 ? `\n  viewProviders: [${storyViewProviders.join(', ')}],` : '';
 
   // Live class body - setup (artifact code) + setupChrome (instrumentation).
   // The displayed _exTs panel below shows setup only.
@@ -481,7 +486,12 @@ function emitComponentSource(meta, story, importMap, fixtureFiles) {
   const chromeBeforeBlock = chromeBefore
     ? `<section class="cngx-ex-chrome cngx-ex-chrome--before">\n${indent(chromeBefore, 2)}\n</section>`
     : '';
-  const mainBody = [chromeBeforeBlock, artifactBlock, chromeBlock, sourceBlocks.replace(/^    /gm, '')]
+  const mainBody = [
+    chromeBeforeBlock,
+    artifactBlock,
+    chromeBlock,
+    sourceBlocks.replace(/^    /gm, ''),
+  ]
     .filter(Boolean)
     .join('\n');
 
