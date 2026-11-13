@@ -572,6 +572,23 @@ describe('ngAdd', () => {
       }
     });
 
+    it('does not ask before a dry run on a terminal', async () => {
+      vi.stubEnv('CI', '');
+      vi.stubEnv('NO_COLOR', '1');
+      process.stdout.isTTY = true;
+      terminal.confirms = [];
+      const argv = process.argv;
+      process.argv = [...argv.slice(0, 2), 'add', '@cngx/core', '--dry-run'];
+      try {
+        await runRule(ngAdd({}), inlineBootstrapApp());
+
+        expect(terminal.confirms).not.toContain('Apply these changes?');
+      } finally {
+        process.argv = argv;
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('creates the language file next to main.ts and imports it there', async () => {
       const run = await runRule(ngAdd({ i18n: 'de', runtimeSwitch: true, yes: true }), inlineBootstrapApp());
 

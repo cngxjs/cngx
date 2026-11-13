@@ -85,6 +85,8 @@ release (`cngx://provenance` and `groundedVersion` name the one that answered).
   the listbox family `common/interactive/listbox` (was
   `common/interactive/keyboard`), and the select slot directives and
   `CngxSelectAnnouncer` `forms/select/shared` (was `forms/select`).
+- The `category` of `CngxClickOutside` follows its new docs page:
+  `common/interactive/click-outside` (was `common/interactive/keyboard`).
 
 ### Fixed
 

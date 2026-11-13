@@ -1,9 +1,16 @@
 import {
+  computed,
+  DestroyRef,
+  inject,
   InjectionToken,
-  signal,
   type EnvironmentProviders,
+  type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { injectWindow } from '@cngx/core/tokens';
+import { createMediaQuerySignal } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
@@ -29,10 +36,24 @@ export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
  */
 export const CNGX_MOTION = new InjectionToken<WritableSignal<CngxMotionPreference>>('CNGX_MOTION', {
   providedIn: 'root',
-  factory: () => signal<CngxMotionPreference>('auto'),
+  factory: (): WritableSignal<CngxMotionPreference> => motionAxis.unprovided('auto'),
 });
 
 const motionAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideMotion() in a child injector does not write <html data-motion> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideMotion() is not installed, so this write changes the signal but not <html data-motion>; call it in the application config.',
+    ),
   token: CNGX_MOTION,
   attribute: 'data-motion',
   removeValue: 'auto',
@@ -73,4 +94,38 @@ export function provideMotion(initial: CngxMotionPreference = 'auto'): Environme
  */
 export function injectMotion(): WritableSignal<CngxMotionPreference> {
   return motionAxis.injectValue();
+}
+
+/**
+ * The motion the user gets right now, resolved for JavaScript: the
+ * `CNGX_MOTION` pick when it is `reduced` or `full`, else the OS
+ * `prefers-reduced-motion` query. Read it wherever JS decides on motion
+ * (smooth scrolling, animation fallbacks, shimmer classes), so an in-app
+ * pick in an accessibility panel reaches JS the same way it reaches CSS
+ * through `motion-tokens.css`.
+ *
+ * A subtree `cngxMotionScope` is not seen here: it is CSS-only.
+ *
+ * ```ts
+ * private readonly motion = injectEffectiveMotion();
+ * protected readonly behavior = computed(() => (this.motion() === 'reduced' ? 'auto' : 'smooth'));
+ * ```
+ *
+ * @relatedTo injectMotion, provideMotion
+ * @since 0.3.0
+ */
+export function injectEffectiveMotion(): Signal<'reduced' | 'full'> {
+  const preference = inject(CNGX_MOTION);
+  const osReduce = createMediaQuerySignal(
+    '(prefers-reduced-motion: reduce)',
+    inject(DestroyRef),
+    injectWindow(),
+  );
+  return computed(() => {
+    const pick = preference();
+    if (pick !== 'auto') {
+      return pick;
+    }
+    return osReduce() ? 'reduced' : 'full';
+  });
 }

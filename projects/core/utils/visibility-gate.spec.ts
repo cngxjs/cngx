@@ -1,4 +1,9 @@
-import { signal } from '@angular/core';
+import {
+  createEnvironmentInjector,
+  EnvironmentInjector,
+  runInInjectionContext,
+  signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
@@ -169,6 +174,24 @@ describe('createVisibilityGate', () => {
     vi.advanceTimersByTime(499);
     expect(visible()).toBe(true);
     vi.advanceTimersByTime(1);
+    expect(visible()).toBe(false);
+  });
+  it('clears its pending timers when its injector is destroyed', () => {
+    const isActive = signal(false);
+    const scope = createEnvironmentInjector([], TestBed.inject(EnvironmentInjector));
+    const visible = runInInjectionContext(scope, () =>
+      createVisibilityGate(isActive, signal(200), signal(500)),
+    );
+    TestBed.flushEffects();
+
+    isActive.set(true);
+    TestBed.flushEffects();
+    expect(vi.getTimerCount()).toBe(1);
+
+    scope.destroy();
+
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(1000);
     expect(visible()).toBe(false);
   });
 });

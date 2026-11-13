@@ -1,16 +1,15 @@
-import {
-  InjectionToken,
-  signal,
-  type EnvironmentProviders,
-  type WritableSignal,
-} from '@angular/core';
+import { InjectionToken, type EnvironmentProviders, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
+
 import { createPreferenceAxis } from './preference-axis';
 
 /**
  * The three text-scale rungs the `[data-text-size]` swap ships
  * (`text-scale-tokens.css`). `md` is the library default (multiplier
- * `1`, identity); `sm` and `lg` re-scale `--cngx-font-scale` so every
- * root-relative `font-size` shrinks or grows for the subtree.
+ * `1`, identity); `sm` and `lg` set `--cngx-font-scale`, which the `html`
+ * rule multiplies into the root font size, so every root-relative
+ * `font-size` on the page shrinks or grows. The swap only takes effect on
+ * the root element.
  *
  * @since 0.1.0
  */
@@ -31,11 +30,25 @@ export const CNGX_TEXT_SCALE = new InjectionToken<WritableSignal<CngxTextScaleVa
   'CNGX_TEXT_SCALE',
   {
     providedIn: 'root',
-    factory: () => signal<CngxTextScaleValue>('md'),
+    factory: (): WritableSignal<CngxTextScaleValue> => textScaleAxis.unprovided('md'),
   },
 );
 
 const textScaleAxis = createPreferenceAxis({
+  warnChildInstall: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0007',
+      'provideTextScale() in a child injector does not write <html data-text-size> and shares the root signal; call it in the application config.',
+    ),
+  warnUnprovidedWrite: () =>
+    typeof ngDevMode !== 'undefined' &&
+    ngDevMode &&
+    cngxDevWarn(
+      'CNGX0008',
+      'provideTextScale() is not installed, so this write changes the signal but not <html data-text-size>; call it in the application config.',
+    ),
   token: CNGX_TEXT_SCALE,
   attribute: 'data-text-size',
 });

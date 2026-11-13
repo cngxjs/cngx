@@ -110,6 +110,6 @@ Ring width and dot size live in the SVG's 24-unit grid, so both scale with the s
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/display/radio-indicator/) for inputs and tokens.
 - Stories: `examples/stories/common/display/radio-indicator/`.
 - Sibling: `CngxCheckboxIndicator` for the boxed checkmark / indeterminate case.

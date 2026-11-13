@@ -13,33 +13,32 @@ import type { CngxButtonSize, CngxButtonVariant } from './button.types';
 
 /**
  * Main axis of a `cngxButtonGroup`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.directive.ts
+ * @since 0.1.0
+ * @relatedTo CngxButtonGroup
  */
 export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
 
 /**
- * Joins buttons, icon buttons, addons and separators into one framed,
- * labelled row (or column). Every direct child is a segment: the seams
- * collapse to one border, only the two outer ends keep their radius, and a
- * hovered or focused segment is lifted above its neighbours so its border
- * and focus ring are never clipped at a seam. A group whose direct children
- * are groups is a toolbar: the sub-groups sit apart, the gap floored to
- * `--cngx-target-gap` on a coarse pointer. One group child is enough to make
- * the whole group a toolbar, so a loose button next to sub-groups gets no
- * segment geometry; wrap it in a group of its own.
+ * Joins buttons, icon buttons, addons and separators into one framed, labelled row or column.
+ * Every direct child is a segment: the seams collapse to one border, only the outer ends keep
+ * their radius, and a hovered or focused segment is lifted so its focus ring is never clipped.
  *
- * `variant` and `size` set once on the group reach every `cngxButton` and
- * `cngxIconButton` inside through `CNGX_BUTTON_GROUP`; a child's own input
- * still wins (`input ?? group ?? config ?? default`). A nested group without
- * its own value inherits the outer group's. `tone` is not passed: intent is
- * per button.
+ * A group whose direct children are groups is a toolbar. The sub-groups sit apart, with the gap
+ * floored to `--cngx-target-gap` on a coarse pointer. One group child is enough to make a
+ * toolbar, so wrap a loose button next to sub-groups in a group of its own.
  *
- * The host is `role="group"` and needs a name: set `aria-label` or
- * `aria-labelledby`. A group without either warns [`CNGX1072`](/error-codes/cngx1072.md) in development
- * mode. Selection (pressed state) is not this group's job; use
- * `CngxButtonToggleGroup` for that.
+ * `variant` and `size` set on the group reach every button on `CngxButtonBrain` inside through
+ * `CNGX_BUTTON_GROUP`. The close button keeps its pinned axes. A nested group without its own
+ * value inherits the outer group's. `tone` is per button and not passed.
  *
- * The segment geometry ships in the global `cngx.css` bundle
- * (`cngx-button-group.css`), not on the directive.
+ * The host is `role="group"` and needs `aria-label` or `aria-labelledby`. Without either it
+ * warns [`CNGX1072`](/error-codes/cngx1072.md) in development. For pressed or selected state use
+ * `CngxButtonToggleGroup`.
+ *
+ * The segment geometry ships in the global `cngx.css` bundle (`cngx-button-group.css`), not on
+ * the directive.
  *
  * ```html
  * <div cngxButtonGroup variant="outline" aria-label="History">
@@ -51,7 +50,7 @@ export type CngxButtonGroupOrientation = 'horizontal' | 'vertical';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-group.directive.ts
  * @since 0.1.0
- * @relatedTo CngxButton, CngxIconButton, CngxButtonGroupAddon, CngxButtonGroupSeparator, CNGX_BUTTON_GROUP, CngxSplitButton, CngxIconMenuButton
+ * @relatedTo CngxButton, CngxIconButton, CngxButtonGroupAddon, CngxButtonGroupSeparator, CNGX_BUTTON_GROUP, CngxSplitButton, CngxIconMenuButton, CngxButtonToggleGroup
  * <example-url>/#/common/button/group/basic</example-url>
  * <example-url>/#/common/button/group/vertical</example-url>
  * <example-url>/#/common/button/group/with-addon</example-url>

@@ -96,6 +96,6 @@ Trigger carries `role="combobox"` with `aria-expanded`, `aria-controls`, `aria-h
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, outputs, slot directives, and the 18 DI factory tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/forms/select/select-shell/) for inputs, outputs, slot directives, and the 18 DI factory tokens.
 - The eight data-driven sibling variants in `@cngx/forms/select`: `CngxSelect`, `CngxMultiSelect`, `CngxCombobox`, `CngxTypeahead`, `CngxTreeSelect`, `CngxReorderableMultiSelect`, `CngxActionSelect`, `CngxActionMultiSelect`.
 - [`@cngx/forms/select/shared`](../shared/README.md) for the core factory, commit machinery, panel infrastructure, and configuration cascade.

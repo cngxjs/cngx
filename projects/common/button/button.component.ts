@@ -12,51 +12,36 @@ import { provideButtonHost } from './button-host.token';
 import { CngxButtonEnd, CngxButtonStart } from './slots';
 
 /**
- * The cngx base button. Sits on the native `<button>` or `<a>`, so native
- * semantics, forms and `routerLink` keep working and every attribute the
- * consumer writes lands on the real element.
+ * The cngx base button, an attribute component on the native `<button>` or `<a>`. Forms,
+ * `routerLink` and every attribute you write keep working on the real element.
  *
- * Two orthogonal axes plus a size: `variant` (emphasis: `solid`,
- * `secondary`, `outline`, `ghost`, `link`) is the selector's own value,
- * `tone` (intent: `neutral`, `primary`, `danger`) and `size`
- * (`xs`..`lg`) are inputs. `variant` and `size` resolve `input ?? group ??
- * config ?? default`; `tone` skips the group, which passes only variant and
- * size. Density, text scale, touch floor, motion and contrast come from
- * the preference axes in `@cngx/core`, not from inputs.
+ * `variant` is the selector's own value, `tone` and `size` are inputs. Each resolves
+ * `input ?? fixed ?? group ?? config ?? default`, see `CngxButtonConfig`.
  *
- * `disabled` renders `aria-disabled="true"` instead of the native
- * attribute, so the button stays focusable and a `disabledReason` can be
- * read through `aria-describedby`. Activation is swallowed while disabled:
- * `(click)`, `routerLink`, link navigation and form submission do not run.
- * The button owns `aria-describedby` through `CNGX_DESCRIBED_BY`: a static
- * `aria-describedby`, the `[cngxDescribedBy]` ids, the reason and a
- * co-hosted `[cngxTooltip]` id are merged, so none of them is lost.
+ * `disabled` renders `aria-disabled="true"`, so the button stays focusable and `disabledReason`
+ * is read through `aria-describedby`. Clicks, `routerLink` and form submission are swallowed
+ * while it is set.
  *
- * Co-host `cngxAsyncClick` for an async action: the label stays in place
- * (width stable) under a busy layer while the action runs, and the
- * directive keeps owning `aria-busy` and the announcement. The layer
- * follows the directive's busy gate: it appears once the run outlasts
- * `CNGX_LOADING_CONFIG.showDelay` and stays for at least `minDwell`.
- * `aria-busy` is set at click and held until the busy visual releases, so the
- * button refuses activation for the whole dwell.
+ * Co-host `cngxAsyncClick` for an async action. The label keeps its width under a busy layer
+ * that follows the `CNGX_LOADING_CONFIG` show delay and min-dwell.
+ *
+ * State, axes and ARIA come from the `CngxButtonBrain` host directive. Read them through
+ * `CngxButtonBrain` or `CNGX_BUTTON_STATE` on the element injector.
  *
  * ```html
  * <button cngxButton="outline" tone="primary">Save draft</button>
  * <button [cngxButton]="variant()" type="submit">Submit</button>
  * <a cngxButton="link" routerLink="/help">Help</a>
  * <button cngxButton [cngxAsyncClick]="save">
- *   <cngx-icon cngxButtonStart name="save" /> Save
+ *   <svg cngxButtonStart aria-hidden="true" viewBox="0 0 24 24">...</svg>
+ *   Save
  * </button>
  * ```
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button.component.ts
  * @since 0.1.0
- * State, axes and ARIA come from the `CngxButtonBrain` host directive;
- * read them programmatically through `CngxButtonBrain` or
- * `CNGX_BUTTON_STATE` on the element injector.
- *
- * @relatedTo CngxIconButton, CngxButtonBrain, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig, CngxMenuButton
+ * @relatedTo CngxIconButton, CngxButtonBrain, CngxButtonStart, CngxButtonEnd, CngxAsyncClick, provideButtonConfig, CngxMenuButton, CngxButtonGroup, CngxActionButton
  * <example-url>/#/common/button/button/variants</example-url>
  * <example-url>/#/common/button/button/tones</example-url>
  * <example-url>/#/common/button/button/sizes</example-url>

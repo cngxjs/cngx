@@ -1,6 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { computed, DestroyRef, Directive, inject, input, type Signal } from '@angular/core';
-import { createMediaQuerySignal } from '@cngx/core/utils';
+import { computed, Directive, input } from '@angular/core';
+import { injectEffectiveMotion } from '@cngx/core';
 
 /**
  * Headless skeleton loading placeholder.
@@ -9,7 +8,8 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * No template -- the consumer renders the skeleton UI.
  *
  * Exposes an `indices()` signal for `@for` rendering of repeated skeleton elements.
- * Respects `prefers-reduced-motion` (disables shimmer animation class).
+ * Respects reduced motion, the in-app `CNGX_MOTION` pick or the OS query
+ * (disables shimmer animation class).
  *
  * ### Basic loading placeholder
  * ```html
@@ -59,6 +59,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
     '[class.cngx-skeleton--loading]': 'loading()',
     '[class.cngx-skeleton--shimmer]': 'showShimmer()',
     '[attr.aria-busy]': 'loading() || null',
+    '[attr.data-cngx-busy]': 'loading() || null',
   },
 })
 export class CngxSkeleton {
@@ -71,15 +72,7 @@ export class CngxSkeleton {
   /** Repeat count - exposed via the `indices()` signal for `@for` rendering. */
   readonly count = input<number>(1);
 
-  private readonly prefersReducedMotion: Signal<boolean>;
-
-  constructor() {
-    this.prefersReducedMotion = createMediaQuerySignal(
-      '(prefers-reduced-motion: reduce)',
-      inject(DestroyRef),
-      inject(DOCUMENT).defaultView,
-    );
-  }
+  private readonly motion = injectEffectiveMotion();
 
   /** Whether the skeleton is in loading state. Mirrors the `cngxSkeleton` input. */
   readonly loading = computed(() => this.skeleton());
@@ -89,6 +82,6 @@ export class CngxSkeleton {
 
   /** @internal - shimmer class condition. */
   protected readonly showShimmer = computed(
-    () => this.loading() && this.shimmer() && !this.prefersReducedMotion(),
+    () => this.loading() && this.shimmer() && this.motion() !== 'reduced',
   );
 }

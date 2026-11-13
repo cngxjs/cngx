@@ -17,7 +17,8 @@ import {
   type Signal,
 } from '@angular/core';
 import { arrayEqual } from '@cngx/utils';
-import { CngxScrollSpy, injectMediaQuery } from '@cngx/common/layout';
+import { injectEffectiveMotion } from '@cngx/core';
+import { CngxScrollSpy } from '@cngx/common/layout';
 
 import { injectTocAriaLabels, injectTocConfig } from './config/inject-toc-config';
 import { CngxTocItemSlot } from './toc-item-slot';
@@ -96,7 +97,7 @@ export class CngxToc implements CngxTocContract {
   private readonly doc = inject(DOCUMENT);
   private readonly cfg = injectTocConfig();
   private readonly ariaLabels = injectTocAriaLabels();
-  private readonly reducedMotion = injectMediaQuery('(prefers-reduced-motion: reduce)');
+  private readonly motion = injectEffectiveMotion();
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   /**
@@ -199,8 +200,8 @@ export class CngxToc implements CngxTocContract {
 
   /**
    * Scroll the section with this id into view and move focus to it. Honours
-   * `prefers-reduced-motion` - the configured `scrollBehavior` is swapped for
-   * `'auto'` (instant) whenever reduced motion is requested. A visual-only
+   * reduced motion (the in-app `CNGX_MOTION` pick or the OS query) - the
+   * configured `scrollBehavior` is swapped for `'auto'` (instant). A visual-only
    * jump is a silent state change for screen-reader users, so focus follows
    * the scroll (Pillar 2).
    */
@@ -209,7 +210,7 @@ export class CngxToc implements CngxTocContract {
     if (target === null) {
       return;
     }
-    const behavior = this.reducedMotion() ? 'auto' : (this.cfg.scrollBehavior ?? 'smooth');
+    const behavior = this.motion() === 'reduced' ? 'auto' : (this.cfg.scrollBehavior ?? 'smooth');
     target.scrollIntoView({ behavior });
     this.focusTarget(target);
   }

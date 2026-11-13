@@ -255,7 +255,7 @@ re-declared here.
 
 ## See Also
 
-- [CngxBreadcrumb / CngxBreadcrumbItem / CngxBreadcrumbSeparator](../../common/interactive/) - the headless trio for hand-composed trails
+- [CngxBreadcrumb / CngxBreadcrumbItem / CngxBreadcrumbSeparator](../../common/interactive/breadcrumb/) - the headless trio for hand-composed trails
 - [CngxPopoverPanel](../../common/popover/) - the dropdown surface both menus render into
-- [API on compodocx](../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/ui/breadcrumb/)
 - Tests: `projects/ui/breadcrumb/breadcrumb-bar.component.spec.ts`, `breadcrumb-router-sync.directive.spec.ts`

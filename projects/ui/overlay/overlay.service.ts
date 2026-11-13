@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { Overlay, OverlayConfig, type OverlayRef as CdkOverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { injectDirection } from '@cngx/core';
 import { CngxOverlayRef } from './overlay-ref';
 
 /**
@@ -49,6 +50,9 @@ export class CngxOverlay {
   private readonly overlay = inject(Overlay);
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
+  // The CDK Directionality reads <html dir> once; the cngx direction follows
+  // a runtime pack switch, so every pane opens in the current one.
+  private readonly direction = injectDirection();
   // Held by the only capability the registry needs; the generic CngxOverlayRef
   // is invariant in R (its Subject leaks into the type), so a structural close
   // handle sidesteps that without an unknown-cast.
@@ -80,6 +84,7 @@ export class CngxOverlay {
     const { disableClose, ...cdkConfig } = config;
     const overlayConfig = new OverlayConfig({
       hasBackdrop: true,
+      direction: this.direction(),
       positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
       ...cdkConfig,
     });

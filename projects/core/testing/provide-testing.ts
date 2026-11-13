@@ -45,11 +45,12 @@ import { provideLoadingConfig, withMinDwell, withShowDelay } from '@cngx/core/ut
  * `provideCngxI18n` writes the pack's language and direction to `<html>` and
  * reports the pack's direction instead of `ltr`.
  *
- * Motion is not pinned: no cngx runtime reads the motion preference token,
- * so pinning it would change nothing under jsdom. Browser-mode suites that
+ * Motion is not pinned: the JS motion readers go through
+ * `injectEffectiveMotion()`, which reads `auto` from the OS query, and jsdom
+ * has no `matchMedia`, so they already resolve to full motion. Suites that
  * want reduced motion add `provideMotion('reduced')` themselves; it sets
- * `<html data-motion>` and leaves it in place when the test module is torn
- * down, so remove the attribute after the spec. Either way,
+ * `<html data-motion>` and removes it again when the test module is torn
+ * down. Either way,
  * `onTransitionDone` keeps its fallback timer: the computed transition time
  * plus 50 ms, which is 50 ms under jsdom, where no stylesheet loads.
  *

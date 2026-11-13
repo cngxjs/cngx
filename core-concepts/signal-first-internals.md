@@ -125,7 +125,7 @@ Effects are sharp tools. The non-negotiable rules:
 
 4. **Use `onCleanup` for subscriptions.** When an effect installs a listener (RxJS subscription, `setTimeout`, DOM event, `ResizeObserver`, `IntersectionObserver`), the cleanup callback removes it.
 
-    Effects re-run; without cleanup, listeners stack up. See `CngxInfiniteScroll`, `CngxIntersectionObserverDirective`, `CngxScrollSpy`, `CngxSidenav` (media-query + global-hotkey).
+    Effects re-run; without cleanup, listeners stack up. See `CngxInfiniteScroll`, `CngxIntersectionObserver`, `CngxScrollSpy`, `CngxSidenav` (media-query + global-hotkey).
 
 5. **Use `afterNextRender` for one-shot dev-mode checks**, never `effect()`. An `effect()` lives for the directive's full lifetime and re-runs on every dependency read; a config-validation check ("did the consumer bind a state?") fires exactly once after the first render.
 
@@ -189,7 +189,7 @@ effect(() => {
 });
 ```
 
-This is the exact pattern in `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`, `CngxActionButton`, `CngxTabsPresenter`, `CngxStepperPresenter`, and the recycler.
+This is the exact pattern in `CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`, `CngxActionStatusBrain` (behind `CngxActionButton`), `CngxTabGroupPresenter`, `CngxStepperPresenter`, and the recycler.
 
 ### Internal equality
 
@@ -294,7 +294,7 @@ Real CNGX examples:
 - `CngxSort.active` / `.direction`
 - `CngxDrawer.opened`
 - `CngxStepperPresenter.linear` / `.orientation` / `.commitMode`
-- `CngxRouterSync.mode` / `.paramName`
+- `CngxStepperRouterSync.mode` / `.paramName`
 - `CngxPopoverPanel.showClose` / `.showArrow`
 - `CngxPopoverTrigger.haspopup`
 - `CngxTreeSelect.resolvedId`
@@ -347,11 +347,11 @@ CNGX components have a strict access discipline because templates and host bindi
 
 - **`protected readonly`** - members accessed from the component's own template or host bindings.
 
-    Templates and host-binding expressions cannot access `private`. Example: `CngxButtonToggleGroup.ariaBusy`, `CngxButtonToggleGroup.handleKeydown`.
+    Templates and host-binding expressions cannot access `private`. Example: `CngxButtonToggleGroup.ariaBusy`, `CngxButtonToggleGroup.handleFocusIn`.
 
 - **`private readonly`** - implementation-only: internal signals (`signal()` backing state), derived state used inside component methods, view-child queries, injected helpers.
 
-    Example: `CngxSort.sortsState`, `CngxButtonToggleGroup.focusedState`.
+    Example: `CngxSort.sortsState`, `CngxButtonToggleGroup.roving`.
 
 <aside class="cc-warning">
 

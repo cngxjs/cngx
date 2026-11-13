@@ -115,7 +115,7 @@ Options never take DOM focus. A mouse press on an option cancels the focus move 
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, outputs, signals, and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/listbox/) for inputs, outputs, signals, and tokens.
 - Stories:
   - `examples/stories/common/interactive/listbox/`
   - `examples/stories/common/interactive/listbox-search/`

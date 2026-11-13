@@ -121,6 +121,6 @@ A master checkbox wired to `[value]="group.allSelected()"` and `[indeterminate]=
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for the full input/output surface and DI tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/checkbox-group/) for the full input/output surface and DI tokens.
 - Stories: `examples/stories/common/interactive/checkbox-group/`.
 - Leaf atom: `CngxCheckbox`.

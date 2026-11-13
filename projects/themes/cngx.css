@@ -12,7 +12,7 @@
  * Bundled cascade layers (in declared order):
  *
  * - `cngx.reset` - box-sizing, button neutralize, focus-ring base
- * - `cngx.tokens` - `@property` registration + `light-dark()`
+ * - `cngx.tokens` - `@property` registration + light and dark
  *   defaults for every system token
  * - `cngx.base` - bare-element atoms (input, textarea, select, kbd,
  *   dl, hr; bare button deliberately stays browser-native) plus the
@@ -64,9 +64,12 @@
  *
  * **Dark mode**
  *
- * Foundation tokens use `light-dark()` and follow OS dark mode out
- * of the box. Force a mode by setting `color-scheme` on `:root` or
- * by pinning the foundation tokens in your own theme layer.
+ * Foundation tokens follow OS dark mode out of the box
+ * (`prefers-color-scheme: dark`). Force a mode with
+ * `data-color-scheme="dark"` / `"light"` or the `.dark` / `.light`
+ * class, on `<html>` or on a subtree; setting `color-scheme` alone
+ * does not switch the tokens. Or pin the foundation tokens in your
+ * own theme layer.
  *
  * **Pair with**
  *

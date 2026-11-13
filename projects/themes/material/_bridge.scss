@@ -27,8 +27,9 @@
 // bodies must branch regardless of how `theme()` wraps them.
 //
 // Deliberate non-adopters (each documents why in place): system-bridge
-// and density-bridge emit bare declarations on the theme host, unlayered
-// by design (system-bridge still reads `m2-warn-text()` from here);
+// and density-bridge emit declarations on the consumer's theme host inside
+// `@layer cngx.components` without the `:where()` wrapper (system-bridge
+// still reads `m2-warn-text()` from here);
 // nav-link-theme emits bare declarations consumed inside sidenav's `on()`
 // block; icon-theme's `mat-icon()` sizes a wrapped `.mat-icon`
 // unlayered because Material's own `.mat-icon` rule is unlayered and beats

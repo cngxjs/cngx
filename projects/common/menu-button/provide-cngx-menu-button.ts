@@ -10,11 +10,11 @@ import { provideButtonCaretIcon } from './caret-icon.token';
 import { provideMenuButtonI18n, type CngxMenuButtonI18nFeature } from './i18n/menu-button-i18n';
 
 /**
- * Feature of {@link withButtonCaretIcon}: the caret glyph component, routed
- * to {@link provideButtonCaretIcon} by the hidden `_target: 'caretIcon'`.
+ * The caret glyph feature that `withButtonCaretIcon` returns for `provideCngxMenuButton`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
+ * @relatedTo provideCngxMenuButton, withButtonCaretIcon
  */
 export interface CngxMenuButtonCaretIconFeature {
   readonly _target: 'caretIcon';
@@ -22,15 +22,18 @@ export interface CngxMenuButtonCaretIconFeature {
 }
 
 /**
- * Union of every feature kind {@link provideCngxMenuButton} accepts: the
- * caret glyph and the menu-button labels (`withMenuButtonI18nLabels`).
+ * Every feature `provideCngxMenuButton` accepts: `withButtonCaretIcon` and
+ * `withMenuButtonI18nLabels`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
+ * @since 0.1.0
+ * @relatedTo provideCngxMenuButton, withButtonCaretIcon, withMenuButtonI18nLabels
  */
 export type CngxMenuButtonFeature = CngxMenuButtonCaretIconFeature | CngxMenuButtonI18nFeature;
 
 /**
- * The caret glyph of every menu button and split caret in scope, as a
- * {@link provideCngxMenuButton} feature. Same effect as
- * {@link provideButtonCaretIcon}.
+ * The caret glyph of every menu button and split caret in scope, as a `provideCngxMenuButton`
+ * feature. Same effect as `provideButtonCaretIcon`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
@@ -90,16 +93,12 @@ function toProviders({ caret, i18n }: PartitionedFeatures): Provider[] {
 }
 
 /**
- * Unified aggregator for the menu-button family. Filters by `_target` and
- * forwards: the caret glyph to {@link provideButtonCaretIcon}, labels to
- * {@link provideMenuButtonI18n}. The button-wide config, close glyph and busy
- * glyph go through `provideCngxButton` in `@cngx/common/button`; mirrors
- * `provideCngxStepper` / `provideCngxTabs`.
+ * Sets up the menu-button family in one call at the app root: the caret glyph
+ * (`withButtonCaretIcon`) and the labels (`withMenuButtonI18nLabels`). Button-wide defaults, the
+ * close glyph and the busy glyph go through `provideCngxButton`.
  *
- * Returns {@link EnvironmentProviders} for app-root use; the
- * component-scoped twin {@link provideCngxMenuButtonAt} returns
- * `Provider[]` because `viewProviders` cannot accept opaque
- * `EnvironmentProviders`.
+ * Returns `EnvironmentProviders`, so it works in `ApplicationConfig.providers` and route
+ * providers only. Use `provideCngxMenuButtonAt` for a component subtree.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -115,7 +114,7 @@ function toProviders({ caret, i18n }: PartitionedFeatures): Provider[] {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxMenuButtonAt, provideButtonCaretIcon, provideMenuButtonI18n
+ * @relatedTo provideCngxMenuButtonAt, provideButtonCaretIcon, provideMenuButtonI18n, withButtonCaretIcon, withMenuButtonI18nLabels, provideCngxButton
  * <example-url>/#/common/menu-button/menu-button/scoped-defaults</example-url>
  */
 export function provideCngxMenuButton(
@@ -127,8 +126,8 @@ export function provideCngxMenuButton(
 }
 
 /**
- * Component-scoped twin of {@link provideCngxMenuButton}. Spread into
- * `viewProviders` or `providers`. Same dispatch semantics.
+ * Component-scoped twin of `provideCngxMenuButton`. Returns `Provider[]`: spread it into
+ * `providers` or `viewProviders`.
  *
  * ```ts
  * @Component({
@@ -140,7 +139,7 @@ export function provideCngxMenuButton(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxMenuButton
+ * @relatedTo provideCngxMenuButton, withButtonCaretIcon, withMenuButtonI18nLabels
  * <example-url>/#/common/menu-button/menu-button/scoped-defaults</example-url>
  */
 export function provideCngxMenuButtonAt(...features: readonly CngxMenuButtonFeature[]): Provider[] {

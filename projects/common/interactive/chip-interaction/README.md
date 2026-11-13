@@ -57,7 +57,7 @@ Dev-mode guard: if `[cngxChipInteraction]` is mounted inside a `<cngx-chip-group
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for the full signal surface, tokens, and host bindings.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/chip-interaction/) for the full signal surface, tokens, and host bindings.
 - Stories: `examples/stories/common/interactive/chip-interaction/`.
 - `CngxChip` (`@cngx/common/display`) - the presentation atom this directive composes onto.
 - `CngxChipInGroup` - the group-aware sibling; derives `selected` from the parent controller as a `computed()`.

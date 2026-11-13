@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { CngxTouchTarget } from './cngx-touch-target.directive';
@@ -34,5 +34,26 @@ describe('CngxTouchTarget', () => {
     const inner = fixture.nativeElement.querySelector('article') as HTMLElement;
     expect(outer.getAttribute('data-touch')).toBe('on');
     expect(inner.getAttribute('data-touch')).toBe('off');
+  });
+  it('follows a runtime change of the bound value and removes the attribute for undefined', () => {
+    @Component({
+      imports: [CngxTouchTarget],
+      template: `<section [cngxTouchTarget]="value()"></section>`,
+    })
+    class Host {
+      readonly value = signal<'on' | 'off' | undefined>('on');
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('section') as HTMLElement;
+    expect(section.getAttribute('data-touch')).toBe('on');
+
+    fixture.componentInstance.value.set('off');
+    fixture.detectChanges();
+    expect(section.getAttribute('data-touch')).toBe('off');
+
+    fixture.componentInstance.value.set(undefined);
+    fixture.detectChanges();
+    expect(section.hasAttribute('data-touch')).toBe(false);
   });
 });

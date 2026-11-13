@@ -61,6 +61,6 @@ Both slots are independent - project one, both, or neither.
 
 ## See also
 
-- [API on compodocx](../../../../../README.md) for the slot directives and context interfaces.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/display/tag-group-slots/) for the slot directives and context interfaces.
 - `CngxTagGroup` - the host that drives the slot context and the `semanticList` cascade. See [tag-group/README.md](../README.md).
 - `CngxTag` - the child whose count populates `context.count`.

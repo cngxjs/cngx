@@ -25,29 +25,15 @@ import {
 } from './button-multi-toggle-group.token';
 
 /**
- * Multi-select button-toggle group. Owns a `selectedValues =
- * model<T[]>([])` (the canonical multi-value source) and exposes the
- * parent contract via `CNGX_BUTTON_MULTI_TOGGLE_GROUP`.
- * Behaves as a W3C APG `toolbar` - arrow keys MOVE focus only (no auto-select);
- * Space and Enter on a focused leaf toggle that leaf's membership.
+ * Multi-select segmented control: a `toolbar` of `cngxButtonToggle` buttons that each add or
+ * remove one value in `selectedValues`.
  *
- * Mode is **static**: this is the multi-select half of the
- * deliberate single/multi split (per
- * `feedback_select_family_split`). Consumers pick this component or
- * `<cngx-button-toggle-group>` at template authoring time. Leaves
- * (`CngxButtonToggle`) inject EITHER token with `{ optional: true }`
- * and choose `aria-checked` (single) vs `aria-pressed` (multi)
- * AT INJECTION TIME, never at runtime.
+ * Arrow keys, Home and End only move focus. Click, Space and Enter toggle the button they hit,
+ * which reports its state with `aria-pressed`. For exactly one value use
+ * `CngxButtonToggleGroup`; the leaf is the same, the group decides its mode.
  *
- * Internals lean on `createSelectionController` from
- * `@cngx/core/utils` for membership tracking - the controller's
- * stable per-value `isSelected` signals (memoised by key) let leaves
- * read membership inside their own `computed()` without triggering a
- * fresh array walk on every change-detection pass.
- *
- * `value` is a structural alias of `selectedValues` so the group
- * satisfies `CngxControlValue<T[]>` without owning two synchronised
- * models - both names point to the same `ModelSignal<T[]>` instance.
+ * Membership runs through the controller from `CNGX_SELECTION_CONTROLLER_FACTORY` (default
+ * `createSelectionController`), keyed by `keyFn`. Override the token to swap it for a subtree.
  *
  * ```html
  * <cngx-button-multi-toggle-group label="Filters" [(selectedValues)]="filters">
@@ -61,12 +47,10 @@ import {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.component.ts
  * @selector cngx-button-multi-toggle-group
  * @since 0.1.0
- * @relatedTo CngxButtonToggle, CngxButtonToggleGroup
+ * @relatedTo CngxButtonToggle, CngxButtonToggleGroup, CngxCheckboxGroup, CngxMultiChipGroup, CNGX_SELECTION_CONTROLLER_FACTORY, CngxRovingTabindex
  * <example-url>/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
  */
 @Component({
@@ -119,9 +103,13 @@ export class CngxButtonMultiToggleGroup<T = unknown>
 {
   /**
    * Values of the toggled-on buttons, compared by `keyFn`. Two-way bindable with
-   * `[(selectedValues)]`; `value` is an alias of the same model. Default `[]`.
+   * `[(selectedValues)]`. Default `[]`.
    */
   readonly selectedValues = model<T[]>([]);
+  /**
+   * The `selectedValues` model under the name `CNGX_CONTROL_VALUE` readers expect. Not a template
+   * input: bind `[(selectedValues)]`.
+   */
   readonly value = this.selectedValues;
   /**
    * Disables every toggle in the group: each toggle combines it with its own
@@ -135,19 +123,14 @@ export class CngxButtonMultiToggleGroup<T = unknown>
    */
   readonly required = model<boolean>(false);
   /**
-   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
-   * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path - consumers
-   * typically read only.
+   * Sets `aria-invalid="true"` on the host. A `model` so form bridges and validity adapters can
+   * write it. The surrounding field's error display sets `aria-invalid` too. Default `false`.
    */
   readonly invalid = model<boolean>(false);
   /**
-   * Optional id of an external error message element. When set, the
-   * host emits `aria-errormessage="<id>"`; consumers MUST render an
-   * element with that id. Default `null` skips the attribute.
-   * Note: WAI-ARIA dictates that AT ignores this attribute when
-   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
-   * id is harmless when the field is valid.
+   * Id of the element that holds the error message, emitted as `aria-errormessage`. Render that
+   * element yourself. Assistive technology ignores the attribute while `aria-invalid` is unset, so
+   * a fixed id is safe on a valid group. Default `null` omits it.
    */
   readonly errorMessageId = input<string | null>(null);
   /**
@@ -165,16 +148,13 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly label = input<string | undefined>(undefined);
 
   /**
-   * Explicit `aria-labelledby` target id. Wins over the automatic
-   * field-label reference applied inside a `cngx-form-field`.
+   * Id of the element that names the group, emitted as `aria-labelledby`. Wins over the field
+   * label a `cngx-form-field` would reference.
    */
   readonly labelledBy = input<string | undefined>(undefined);
   /**
-   * Optional async state driving `aria-busy`. An explicit binding wins;
-   * when it is absent or `undefined`, an ancestor `CNGX_STATEFUL`
-   * provider is discovered as fallback. A bare `state` attribute (empty
-   * string) is treated as unset. `aria-busy` reflects
-   * `status() === 'loading'`.
+   * Async state behind `aria-busy`, which is set while its status is `'loading'`. Unbound,
+   * `undefined` or a bare `state` attribute falls back to the nearest `CNGX_STATEFUL` provider.
    */
   readonly state = input<
     CngxAsyncState<unknown> | undefined,
@@ -198,18 +178,16 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   }
 
   /**
-   * Implements `CngxButtonMultiToggleGroupContract.isSelected`: returns a signal that
-   * is true while a value with the same `keyFn` key as `value` is in `selectedValues`.
-   * Called by each `CngxButtonToggle` to derive its pressed state.
+   * Signal that is true while a value with the same `keyFn` key as `value` is in
+   * `selectedValues`. `CngxButtonToggle` reads it for `aria-pressed`.
    */
   isSelected(value: T): Signal<boolean> {
     return this.controller.isSelected(value);
   }
 
   /**
-   * Implements `CngxButtonMultiToggleGroupContract.toggle`: adds `value` to
-   * `selectedValues`, or removes it when its key is already selected. No-op while
-   * `disabled`. Called by each `CngxButtonToggle` on click, Space and Enter.
+   * Adds `value` to `selectedValues`, or removes it when its key is already there. Does nothing
+   * while `disabled`. `CngxButtonToggle` calls it on click, Space and Enter.
    */
   toggle(value: T): void {
     if (this.disabled()) {
@@ -230,13 +208,19 @@ export class CngxButtonMultiToggleGroup<T = unknown>
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 
+  /** Generated host id, written to the `id` attribute. */
   readonly id = this.groupHost.id;
 
+  /** True while focus is inside the group. */
   readonly focused = this.groupHost.focused;
 
   /** Empty when no toggles are selected. */
   readonly empty = computed(() => this.selectedValues().length === 0);
 
+  /**
+   * True while the surrounding `cngx-form-field`, or else a `CngxErrorAggregator`, shows an
+   * error. Turns on `aria-invalid`.
+   */
   readonly errorState = this.groupHost.errorState;
 
   protected handleFocusIn(): void {

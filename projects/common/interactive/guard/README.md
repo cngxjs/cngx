@@ -225,7 +225,7 @@ This ensures SSR doesn't throw errors.
 
 ## See Also
 
-- [API on compodocx](../../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/guard/)
 - [Angular Route Guards](https://angular.io/guide/router-tutorial-toh#preventing-unsaved-changes)
 - [MDN: beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
 - Demo: `examples/stories/common/guard-demo/`

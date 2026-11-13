@@ -164,7 +164,7 @@ The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/sele
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for type details.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/commit/) for type details.
 - `@cngx/common/data/async-state` for the `CngxAsyncState` shape this controller fills.
 - `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) as the select-side delegation point.
 - Consumers: every `CngxSelect` variant, `CngxStepper`.

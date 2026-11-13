@@ -96,7 +96,7 @@ Axis text is decoration. The directive sets `aria-hidden="true"` on its host so 
 
 ## See also
 
-- [API on compodocx](../../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/chart/axis/)
 - `@cngx/common/chart` (entry) for the chart context and the full atom list.
 - `@cngx/common/chart/scales` for `createLinearScale` / `createTimeScale` / `createBandScale`.
 - `@cngx/common/chart/path` for layer-side path building (`CngxLine`, `CngxArea`).

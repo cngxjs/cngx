@@ -142,6 +142,6 @@ Helper that projects a controller's `visibleNodes` into the `ActiveDescendantIte
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for full type signatures and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/tree-controller/) for full type signatures and tokens.
 - `CngxHierarchicalNav` (sibling directive in `@cngx/common/interactive`): wires `ArrowLeft` / `ArrowRight` to a tree controller via a pluggable W3C strategy.
 - `CngxTreeSelect` in `@cngx/forms/select`: the primary consumer, pairs the controller with `CngxSelectionController` and the select-family panel host.

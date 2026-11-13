@@ -1,6 +1,6 @@
 import { effect, untracked, type Injector } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { CNGX_TEXT_SCALE, type CngxTextScaleValue } from '@cngx/core';
+import { CNGX_DENSITY, CNGX_TEXT_SCALE, type CngxDensityValue, type CngxTextScaleValue } from '@cngx/core';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 
@@ -78,49 +78,12 @@ globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',
 
 // Density coordination.
 //
-// The cngx foundation re-scales its spacing T-shirt scale whenever
-// `<html data-density>` is set to `compact` or `spacious` (`comfortable`
-// is the base rung, so it needs no attribute). We persist an explicit
-// preference to `localStorage['cngx_density']` and reflect it onto the
-// document element, mirroring the color-scheme coordination above. There
-// is no OS-level density signal, so a cleared key just means the
-// comfortable base. Compodocx has no density control, so no parent sync
-// is needed; the `storage` listener only keeps multiple tabs aligned.
+// The density is a signal axis like the text scale: `provideDensity()`
+// (app.config, seeded from `localStorage['cngx_density']` so the first paint
+// matches the persisted choice) owns `<html data-density>`, and the floating
+// toggle below drives the `CNGX_DENSITY` signal, never the attribute. There
+// is no OS-level density signal, so a cleared key means the comfortable base.
 const CNGX_DENSITY_KEY = 'cngx_density';
-
-type DensityPref = 'compact' | 'spacious' | null;
-
-function applyDensity(pref: DensityPref): void {
-  const el = document.documentElement;
-  if (pref === null) {
-    delete el.dataset['density'];
-  } else el.dataset['density'] = pref;
-}
-
-function readPersistedDensity(): DensityPref {
-  try {
-    const v = localStorage.getItem(CNGX_DENSITY_KEY);
-    if (v === 'compact' || v === 'spacious') {
-      return v;
-    }
-  } catch {
-    // localStorage may be unavailable in restrictive contexts; treat as comfortable.
-  }
-  return null;
-}
-
-function syncDensityFromState(): void {
-  applyDensity(readPersistedDensity());
-}
-
-syncDensityFromState();
-
-globalThis.addEventListener('storage', (event) => {
-  if (event.key !== CNGX_DENSITY_KEY) {
-    return;
-  }
-  syncDensityFromState();
-});
 
 // Direction coordination.
 //
@@ -235,48 +198,64 @@ function installColorSchemeToggle(): void {
 }
 
 // Floating density debug toggle. Sits just above the color-scheme toggle
-// (bottom-right), cycles comfortable → compact → spacious → comfortable by
-// writing the `cngx_density` localStorage key. Standalone-only, same
-// rationale as the color-scheme toggle: inside the compodocx iframe it
-// would overlap demo content, and compodocx exposes no density control.
-function installDensityToggle(): void {
+// (bottom-right), cycles comfortable -> compact -> spacious -> comfortable by
+// writing the `CNGX_DENSITY` signal; one effect persists it to the
+// `cngx_density` key and renders the button, so an in-page control (the
+// accessibility panel) and the toggle stay in sync. Standalone-only, same
+// rationale as the color-scheme toggle: inside the compodocx iframe it would
+// overlap demo content, and compodocx exposes no density control.
+function installDensityToggle(injector: Injector): void {
+  const density = injector.get(CNGX_DENSITY);
+
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.id = 'cngx-ex-density-toggle';
   btn.setAttribute('aria-label', 'Cycle density: comfortable / compact / spacious');
   togglesContainer().appendChild(btn);
 
-  function setPersistedDensity(pref: DensityPref): void {
-    try {
-      if (pref === null) {
-        localStorage.removeItem(CNGX_DENSITY_KEY);
-      } else {
-        localStorage.setItem(CNGX_DENSITY_KEY, pref);
-      }
-    } catch {
-      // localStorage may be unavailable; the toggle still updates the DOM.
-    }
-  }
+  // Apache-style bracket marker, matching the color-scheme toggle:
+  // [-] tighter (compact), [+] looser (spacious), [=] the comfortable base.
+  const render = (value: CngxDensityValue): void => {
+    btn.textContent = value === 'compact' ? '[-]' : value === 'spacious' ? '[+]' : '[=]';
+    btn.title = `Density: ${value === 'comfortable' ? 'comfortable (base)' : value} - click to cycle`;
+  };
 
-  function render(): void {
-    const pref = readPersistedDensity();
-    // Apache-style bracket marker, matching the color-scheme toggle:
-    // [-] tighter (compact), [+] looser (spacious), [=] the comfortable base.
-    btn.textContent = pref === 'compact' ? '[-]' : pref === 'spacious' ? '[+]' : '[=]';
-    btn.title = `Density: ${pref ?? 'comfortable (base)'} — click to cycle`;
-  }
+  render(density());
 
   btn.addEventListener('click', () => {
-    const current = readPersistedDensity();
-    // comfortable (null) → compact → spacious → comfortable
-    const next: DensityPref =
-      current === null ? 'compact' : current === 'compact' ? 'spacious' : null;
-    setPersistedDensity(next);
-    applyDensity(next);
-    render();
+    const current = density();
+    // comfortable -> compact -> spacious -> comfortable
+    density.set(current === 'comfortable' ? 'compact' : current === 'compact' ? 'spacious' : 'comfortable');
   });
 
-  render();
+  // Multi-tab: another tab wrote the key -> mirror it onto this tab's signal.
+  globalThis.addEventListener('storage', (event) => {
+    if (event.key !== CNGX_DENSITY_KEY) {
+      return;
+    }
+    const v = localStorage.getItem(CNGX_DENSITY_KEY);
+    density.set(v === 'compact' || v === 'spacious' ? v : 'comfortable');
+  });
+
+  // Persist and render from the signal; side effects only, so untracked.
+  effect(
+    () => {
+      const value = density();
+      untracked(() => {
+        try {
+          if (value === 'comfortable') {
+            localStorage.removeItem(CNGX_DENSITY_KEY);
+          } else {
+            localStorage.setItem(CNGX_DENSITY_KEY, value);
+          }
+        } catch {
+          // localStorage may be unavailable; the toggle still updates the DOM.
+        }
+        render(value);
+      });
+    },
+    { injector },
+  );
 }
 
 // Floating field-skin debug toggle. Cycles outline -> fill -> bare -> outline
@@ -383,9 +362,8 @@ function installDirectionToggle(): void {
 
 // Text-size coordination + floating toggle.
 //
-// Unlike density (a bare `data-density` attribute), text-scale is backed by
-// a real signal API: `provideTextScale()` (app.config, seeded from the same
-// localStorage key so the first paint matches the persisted choice) installs
+// Like density, text-scale is backed by a real signal API:
+// `provideTextScale()` (app.config, seeded from the same localStorage key so the first paint matches the persisted choice) installs
 // a reflector that writes `<html data-text-size>` from the `CNGX_TEXT_SCALE`
 // signal, and the foundation's text-scale-tokens.css multiplies the root
 // font-size from there. So the toggle drives the SIGNAL, not the attribute:
@@ -478,7 +456,7 @@ bootstrapApplication(App, appConfig)
   .then((appRef) => {
     if (!isEmbeddedInIframe()) {
       installColorSchemeToggle();
-      installDensityToggle();
+      installDensityToggle(appRef.injector);
       installFieldSkinToggle();
       installTextScaleToggle(appRef.injector);
       installDirectionToggle();

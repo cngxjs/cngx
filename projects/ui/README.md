@@ -198,30 +198,40 @@ label in every state.
 |-|-|-|-|
 | `action` | `AsyncAction` | required | Async action to execute on click (the host directive's `cngxAsyncClick`) |
 | `feedbackDuration` | `number` | `2000` | Duration in ms to show feedback state |
+| `showDelay` | `number` | `CNGX_LOADING_CONFIG.showDelay` (120 ms) | Delay before the busy visual shows |
+| `minDwell` | `number` | `CNGX_LOADING_CONFIG.minDwell` (400 ms) | Minimum time the busy visual stays once shown |
 | `cngxActionButton` | `CngxButtonVariant` | `solid` | Emphasis, bound through the selector; falls through group and config |
 | `tone` | `CngxButtonTone` | `neutral` | Intent |
 | `size` | `CngxButtonSize` | `md` | Size; `md` is the form-control row |
 | `disabled` | `boolean` | `false` | Rendered as `aria-disabled`; the button stays focusable, clicks are swallowed |
 | `disabledReason` | `string` | -- | Referenced through `aria-describedby` while disabled |
+| `cngxDescribedBy` | `string \| null` | `null` | Extra ids for `aria-describedby` |
 | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Native type |
 | `pendingLabel` | `string` | -- | Text while pending (when no `cngxPending` template); shown after the show delay and held for the dwell past the run, so a fast run never flashes it; without one the idle label stays under the spinner |
 | `succeededLabel` | `string` | -- | Text after success (when no `cngxSucceeded` template) |
 | `failedLabel` | `string` | -- | Text after failure (when no `cngxFailed` template) |
-| `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to `succeededLabel`) |
-| `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to `failedLabel`) |
+| `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to the rendered result cell, then `succeededLabel`) |
+| `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to the rendered result cell, then `failedLabel`) |
+| `autoAnnounce` | `boolean \| undefined` | `undefined` | Speaks the outcome unless a shown toast already covers it; `true` always, `false` never |
 | `externalState` | `CngxAsyncState<unknown>` | -- | External state override for visual status |
 | `toastSuccess` | `string` | -- | Toast message on success (requires `CngxToaster`) |
 | `toastError` | `string` | -- | Toast message on error (requires `CngxToaster`) |
 | `toastErrorDetail` | `boolean` | `false` | Append error message to error toast |
-| `toastSuccessDuration` | `number` | `3000` | Success toast duration in ms |
+| `toastSuccessDuration` | `number` | `withToasts({ defaultDuration })`, else `5000` | Success toast duration in ms |
 | `toastErrorDuration` | `number \| 'persistent'` | `'persistent'` | Error toast duration |
 
 **State producer:** `readonly state: CngxAsyncState<unknown>` -- the effective
 lifecycle state (internal or external). Bind to any `[state]` consumer.
 
-**Toast integration:** When `toastSuccess` or `toastError` inputs are set and
-`CngxToaster` is provided (via `provideFeedback(withToasts())` or `provideToasts()`),
-toasts fire automatically on status transitions. If `CngxToaster` is not provided,
+**Outputs:** `(settled)` from `CngxAsyncClick`, once per own run; `(outcome)`
+from `CngxActionStatusBrain`, once per own settle and once per `[externalState]`
+`success` / `error` edge.
+
+**Toast integration:** The co-hosted `CngxActionToast` (also exported from
+`@cngx/ui/action-button` for ejected hosts) owns the toast inputs. When
+`toastSuccess` or `toastError` is set and `CngxToaster` is provided (via
+`provideFeedback(withToasts())` or `provideToasts()`), it shows one toast per
+own settle and per `[externalState]` edge. If `CngxToaster` is not provided,
 toast inputs are silently ignored. Do not combine with `[cngxToastOn]` on the same
 element -- a dev-mode warning is emitted if both are active.
 
