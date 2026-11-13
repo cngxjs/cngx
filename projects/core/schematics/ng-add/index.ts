@@ -237,8 +237,8 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const plan = createChangePlan([steps, unreadable, record], steps.warnings);
 
     const changesFiles = plan.changes.some((change) => change.kind !== 'note');
-    const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true;
     const dryRun = readDryRunFlag(process.argv);
+    const confirmAhead = facts.maturity === 'existing' && changesFiles && options.yes !== true && !dryRun;
     const confirming = confirmAhead && interactive;
     await renderer.todo(plan, { next: todoNext(confirming, dryRun) });
 

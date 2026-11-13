@@ -44,6 +44,21 @@ function initialTextScale(): 'sm' | 'md' | 'lg' {
   return 'md';
 }
 
+// Seed the density from the floating toggle's persisted preference
+// (localStorage 'cngx_density', written by main.ts), like the text scale.
+// 'comfortable' is the base; the key is only present for the other two.
+function initialDensity(): 'comfortable' | 'compact' | 'spacious' {
+  try {
+    const v = localStorage.getItem('cngx_density');
+    if (v === 'compact' || v === 'spacious') {
+      return v;
+    }
+  } catch {
+    // localStorage may be unavailable; fall back to the comfortable base.
+  }
+  return 'comfortable';
+}
+
 // Seed the app-wide field skin from the floating toggle's persisted choice
 // (localStorage 'cngx_field_skin', written by main.ts). The toggle reloads
 // the page, so a static withFieldSkin(...) at bootstrap is enough. 'outline'
@@ -108,7 +123,8 @@ export const appConfig: ApplicationConfig = {
     // Install the density reflector at app root so the accessibility-panel demo's
     // injectDensity().set(...) reflects onto <html data-density>. The other three
     // axes are already installed below; density completes the set the panel binds.
-    provideDensity(),
+    // Seeded from the persisted toggle preference so a reload keeps the density.
+    provideDensity(initialDensity()),
     // Install the text-scale reflector at app root so the text-scale demo's
     // injectTextScale().set(...) reflects onto <html data-text-size> and
     // re-scales the whole rem type ramp globally. Seeded from the persisted

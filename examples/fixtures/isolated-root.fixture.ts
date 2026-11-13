@@ -35,11 +35,16 @@ export function createIsolatedRoot(providers: (Provider | EnvironmentProviders)[
     [
       { provide: DOCUMENT, useValue: document },
       // Root-only checks (CNGX0005) compare against ApplicationRef.injector:
-      // this stand-in root reports itself, everything else delegates.
+      // this stand-in root reports itself, everything else delegates. Its own
+      // no-op ngOnDestroy shadows the real one: the injector registers it as
+      // a destroy hook, and the inherited one would destroy the whole app.
       {
         provide: ApplicationRef,
         useFactory: (): ApplicationRef =>
-          Object.create(appRef, { injector: { value: inject(EnvironmentInjector) } }),
+          Object.create(appRef, {
+            injector: { value: inject(EnvironmentInjector) },
+            ngOnDestroy: { value: () => undefined },
+          }),
       },
       ...providers,
     ],

@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>injectMotion()</code> returns the writable app-wide motion signal. Binding a Full / Reduced / Auto toggle to it reflects <code>data-motion</code> onto <code>&lt;html&gt;</code>, and the shipped safety net collapses motion app-wide - while keeping essential loading affordances legible.',
   description:
-    "This is the global motion switch a consumer builds. <code>provideMotion()</code> is installed once at the app root (already wired in this examples app), reflecting the chosen preference onto <code>&lt;html data-motion&gt;</code>. The shipped <code>motion-tokens.css</code> safety net then collapses <code>animation-duration</code> / <code>transition-duration</code> app-wide - for every element, not just this card. <strong>Auto</strong> (the default) removes the attribute so the OS <code>prefers-reduced-motion</code> preference drives; <strong>Reduced</strong> forces motion off; <strong>Full</strong> opts back into motion even when the OS asks to reduce. Crucially, reduced motion should silence <em>decorative</em> motion without dropping <em>essential</em> status: the safety net carves out <code>role='status'</code> / <code>role='progressbar'</code> hosts (which <code>CngxLoadingIndicator</code> and <code>CngxProgress</code> expose) to a slow opacity pulse instead of freezing them - so a loader never dies into a frozen ring. A skeleton is deliberately not carved out: its static placeholder shape still reads as loading, so its shimmer may freeze. Flip to <strong>Reduced</strong>: the spinner, bar and progress indicators keep pulsing while the skeleton shimmer stops. Set the switch back to <strong>Auto</strong> to follow the OS again.",
+    "This is the global motion switch a consumer builds. <code>provideMotion()</code> is installed once at the app root (already wired in this examples app), reflecting the chosen preference onto <code>&lt;html data-motion&gt;</code>. The shipped <code>motion-tokens.css</code> safety net then collapses <code>animation-duration</code> / <code>transition-duration</code> app-wide - for every element, not just this card. <strong>Auto</strong> (the default) removes the attribute so the OS <code>prefers-reduced-motion</code> preference drives; <strong>Reduced</strong> forces motion off; <strong>Full</strong> opts back into motion even when the OS asks to reduce. Crucially, reduced motion should silence <em>decorative</em> motion without dropping <em>essential</em> status: the safety net keeps a slow opacity pulse on loading hosts instead of freezing them - so a loader never dies into a frozen ring. A loading host is an element with <code>data-cngx-busy</code> (set by <code>CngxLoadingIndicator</code>, the loading overlay and both skeletons while they load), <code>aria-busy='true'</code>, or an indeterminate <code>role='progressbar'</code> without <code>aria-valuenow</code> (<code>CngxProgress</code> without a value). A static <code>role='status'</code> region is not carved out, so an empty state or a status line stays still. Flip to <strong>Reduced</strong>: the spinner, bar, progress indicators and skeleton all fall back to the pulse. Set the switch back to <strong>Auto</strong> to follow the OS again.",
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -61,8 +61,9 @@ export const STORY: DemoSpec = {
   <div class="cngx-ex-chrome" style="margin-bottom:12px">
     This switch is wired to the app root, so it reflects
     <code>data-motion</code> onto the whole examples app (every route), not just
-    this card. Choose <strong>Reduced</strong> to watch the loaders pulse while
-    the skeleton shimmer freezes; <strong>Auto</strong> follows the OS preference.
+    this card. Choose <strong>Reduced</strong> to watch every loader, the
+    skeleton included, fall back to a slow pulse; <strong>Auto</strong> follows
+    the OS preference.
   </div>
   <div style="margin-bottom:20px">
     <cngx-button-toggle-group label="Motion" [(value)]="motion">

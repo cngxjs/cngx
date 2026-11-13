@@ -191,19 +191,19 @@ describe('parseInstallManifest', () => {
   it('reads a manifest cngx wrote and rejects anything else', () => {
     const manifest = file({ 'fixture-app': firstRun() });
 
-    expect(parseInstallManifest(JSON.stringify(manifest))).toEqual(manifest);
-    expect(parseInstallManifest('{ "schemaVersion": 2, "steps": [] }')).toBeUndefined();
-    expect(parseInstallManifest('not json')).toBeUndefined();
+    expect(parseInstallManifest(manifest)).toEqual(manifest);
+    expect(parseInstallManifest({ schemaVersion: 2, steps: [] })).toBeUndefined();
+    expect(parseInstallManifest('not a record')).toBeUndefined();
   });
 
   it('reads no earlier schema', () => {
-    expect(parseInstallManifest(JSON.stringify({ schemaVersion: 1, ...firstRun() }))).toBeUndefined();
-    expect(parseInstallManifest(JSON.stringify({ ...file({ 'fixture-app': firstRun() }), schemaVersion: 1 }))).toBeUndefined();
+    expect(parseInstallManifest({ schemaVersion: 1, ...firstRun() })).toBeUndefined();
+    expect(parseInstallManifest({ ...file({ 'fixture-app': firstRun() }), schemaVersion: 1 })).toBeUndefined();
   });
 
   it('reads the whole file as unreadable when one record is malformed', () => {
     const record = firstRun();
-    const withOther = (other: unknown) => JSON.stringify({ schemaVersion: 2, projects: { 'fixture-app': record, other } });
+    const withOther = (other: unknown) => ({ schemaVersion: 2, projects: { 'fixture-app': record, other } });
 
     expect(parseInstallManifest(withOther({ ...record, steps: [null] }))).toBeUndefined();
     expect(parseInstallManifest(withOther({ ...record, steps: [{ id: 'x', outcome: 'done' }] }))).toBeUndefined();

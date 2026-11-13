@@ -34,6 +34,18 @@ axes as user-settable signals, `injectA11yPreferences()` reads them, and
 
 ## Secondary Entry Points
 
+Seven secondary entries, each deep-import only (the primary entry re-exports none of them):
+
+- `@cngx/core/tokens` -- shared DI tokens: environment, window, form-field contracts
+- `@cngx/core/utils` -- coercion, memoization, locale, keyboard and transition helpers, the async-state kernels, override merges
+- `@cngx/core/i18n` -- the language-pack layer: `provideCngxI18n()`, `formatMessage()`, section helpers
+- `@cngx/core/i18n/en` -- the English pack, `CNGX_LANGUAGE_EN`
+- `@cngx/core/i18n/de` -- the German pack, `CNGX_LANGUAGE_DE`
+- `@cngx/core/testing` -- test kits: `provideCngxTesting()`, `createAsyncStateMock()`, `injectTransitionLog()`, `createAnnouncementCapture()`
+- `@cngx/core/testing/vitest` -- `cngxAnnouncementMatchers` for Vitest
+
+The package also carries the `ng add` schematic for every `@cngx/*` package and the `ng update` migration collection.
+
 ### @cngx/core/tokens
 
 DI tokens and providers for application-wide concerns.
@@ -127,6 +139,6 @@ name: a `px` that reaches `font-size` through a differently-named length token
 (e.g. a `--*-glyph-size` custom property or a registered `@property` with a `px`
 `initial-value`) is out of its heuristic and stays a manifest-review
 responsibility -- the same caveat the touch-target guard carries. This rem-only
-baseline is the precondition for the future global `[data-text-size]` S/M/L
-switch: a strict root-relative baseline lets that switch ride one root-font-size
-multiplier instead of a per-token rule.
+baseline is what the global `[data-text-size]` sm/md/lg switch
+(`provideTextScale()`, `theming/text-scale-tokens.css`) relies on: the switch
+rides one root-font-size multiplier on `html` instead of a per-token rule.

@@ -128,6 +128,8 @@ describe('cngx theme wiring', () => {
       importsCngxStylesheet(readerOf({ 'src/styles.css': "@import '@cngx/themes/cngx.css';\n" }), ['src/styles.css']),
     ).toBe(true);
     expect(importsCngxStylesheet(readerOf({}), ['@cngx/themes/cngx.css', 'src/styles.css'])).toBe(true);
+    expect(importsCngxStylesheet(readerOf({}), ['node_modules/@cngx/themes/cngx.css'])).toBe(true);
+    expect(importsCngxStylesheet(readerOf({}), ['./node_modules/@cngx/themes/cngx.css'])).toBe(true);
     const inThemeFile = readerOf({ 'src/material-theme.scss': `@import '@cngx/themes/cngx.css';\n${DEFINE_THEME}` });
     expect(importsCngxStylesheet(inThemeFile, ['src/material-theme.scss', 'src/styles.css'])).toBe(true);
   });
