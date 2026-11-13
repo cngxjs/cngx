@@ -26,64 +26,25 @@ interface MultiResolution<T> {
 type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
 
 /**
- * Button-toggle leaf. Restricted to `<button>` elements via the
- * `button[cngxButtonToggle]` selector so consumers cannot
- * accidentally apply the directive to a `<div>` and lose the
- * native button semantics (Space + Enter activation, focus ring,
- * disabled propagation to the form-submission engine).
+ * One option in a button toggle group. Applies only to `<button>`, so activation, focus and the
+ * native `disabled` attribute come from the element.
  *
- * Injects EITHER `CNGX_BUTTON_TOGGLE_GROUP` (single, radiogroup) OR
- * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (multi, toolbar) - never the
- * concrete group class - both with `{ optional: true }`.
+ * The leaf reads its mode from the group above it when it is created:
  *
- * Exactly one parent must be present; the constructor throws a
- * `CngxRuntimeError` when both ([`CNGX1052`](/error-codes/cngx1052.md)) or neither ([`CNGX1053`](/error-codes/cngx1053.md)) resolve. The resolved parent is stored as a discriminated
- * union (`{ mode: 'single' | 'multi'; group }`) so every downstream
- * branch narrows without non-null assertions.
+ * - In `CngxButtonToggleGroup` it is a radio: `role="radio"` with `aria-checked`. Click, Space
+ *   and Enter set the group `value`, and arrow-key focus selects it.
+ * - In `CngxButtonMultiToggleGroup` it stays a native button with `aria-pressed`. Click, Space
+ *   and Enter add or remove its value.
  *
- * The present token determines:
+ * It throws when neither group is an ancestor ([`CNGX1053`](/error-codes/cngx1053.md)) or both are
+ * ([`CNGX1052`](/error-codes/cngx1052.md)).
  *
- * - the ARIA pattern, bound on the host AT INJECTION TIME: a single leaf
- *   takes `role="radio"` + `aria-checked` (radiogroup APG); a multi leaf
- *   stays a native `role="button"` toggle with `aria-pressed` (toolbar
- *   APG). Both `aria-checked` and the listbox `selected` state are
- *   undefined for `role="button"` in ARIA 1.2, so the single leaf carries
- *   the radio role that makes `aria-checked` valid rather than dropped,
- * - the activation contract (single: `group.value.set(...)`; multi:
- *   `group.toggle(...)`),
- * - whether `(focus)` consumes the parent's pending arrow-select
- *   flag (single only - multi follows toolbar APG, which does not
- *   auto-select on arrow nav).
+ * The toggle counts as disabled when its own `disabled` or the group's is set. Its own
+ * `disabled` also reaches the host `CngxRovingItem`, so arrow keys skip it. The group's
+ * `disabled` does not reach the roving item, since a host directive input cannot be rebound.
  *
- * Mode is **static** per atom instance.
- * There is no runtime `[selectionMode]` flag. Per `feedback_select_family_split`,
- * single + multi are two distinct groups reusing this leaf; the
- * decision is made by the consumer at template-authoring time.
- *
- * Composes `CngxRovingItem` as a host directive with input
- * forwarding (`'cngxRovingItemDisabled: disabled'`) so arrow-key
- * navigation in either parent group skips per-toggle-disabled leaves
- * automatically.
- *
- * **Group-disabled cascade vs roving.**
- * Thev group-level `[disabled]` cascade short-circuits `handleSelect` /
- * `handleKeydown` / `handleFocus` (see `toggleDisabled` computed),
- * but does NOT propagate into `CngxRovingItem.disabled`.
- * Angular forbids re-binding a host-directive's read-only `InputSignal`
- * input from a wrapping host. As a result, a fully-disabled group
- * lets visual focus transit through its toggles via Arrow keys;
- * every selection pathway short-circuits silently.
- * Re-evaluation is gated on `CngxRovingItem.disabled` becoming a
- * writable surface in `@cngx/common/a11y`.
- *
- * **Disabled "why" via aria-describedby.** Pillar 2 requires
- * disabled state to communicate a reason. The leaf exposes
- * `[describedBy]` (alias `cngxDescribedBy`).
- * A reactive input that binds to the host's `aria-describedby`. Consumers render the
- * description element themselves and pass its id; the directive does
- * not own a sr-only span (it is a `@Directive` on a native
- * `<button>` - no template to inject siblings into).
- * Native `<button aria-describedby>` semantics apply.
+ * Bind `[cngxDescribedBy]` to the id of an element that explains the state, for example why the
+ * toggle is disabled. The directive has no template, so you render that element.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle.directive.ts
@@ -127,22 +88,19 @@ export class CngxButtonToggle<T = unknown> {
   private readonly resolved: ParentResolution<T> = resolveParent<T>();
 
   /**
-   * Value this toggle represents (required). In a single group the toggle is checked
-   * while the group's `value` is strictly equal to it; in a multi group while
-   * `isSelected` reports it as selected.
+   * Value this toggle represents (required). A single group checks it while the group `value`
+   * is `===` to it. A multi group presses it while its `keyFn` key is selected.
    */
   readonly value = input.required<T>();
   /**
-   * Disables this toggle. It also counts as disabled while its group is disabled; that
-   * effective state sets the native `disabled` attribute and `aria-disabled`, and makes
-   * click and keys ignored. Also forwarded to the host `CngxRovingItem`, so arrow-key
-   * navigation skips it. Default `false`.
+   * Disables this toggle. Disabled by this input or by the group, the toggle sets the native
+   * `disabled` attribute and `aria-disabled` and ignores click and keys. Arrow keys skip a
+   * toggle disabled by this input. Default `false`.
    */
   readonly disabled = input<boolean>(false);
   /**
-   * Binding `[cngxDescribedBy]`: id of an element that describes the toggle, for
-   * example why it is disabled. Written to the host `aria-describedby`; the consumer
-   * renders that element. Default `null` omits the attribute.
+   * Binding `[cngxDescribedBy]`: id of an element that describes the toggle, for example why it
+   * is disabled. Written to the host `aria-describedby`. Default `null` omits the attribute.
    */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',

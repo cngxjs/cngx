@@ -19,30 +19,17 @@ import {
 } from './button-toggle-group.token';
 
 /**
- * Single-select button-toggle group. Owns a `value = model<T |
- * undefined>` (the canonical single-value source) and exposes the
- * parent contract via `CNGX_BUTTON_TOGGLE_GROUP`. Behaves as a W3C
- * APG `radiogroup` - arrow keys move focus AND select (auto-select
- * variant); Tab + programmatic focus do not select on focus alone;
- * Space and Enter select the currently-focused toggle.
+ * Single-select segmented control: a `radiogroup` of `cngxButtonToggle` buttons with one
+ * `value`.
  *
- * Mode is **static**: this component is the single-select half of a
- * deliberate split (per `feedback_select_family_split`). Consumers
- * pick `<cngx-button-toggle-group>` for radiogroup semantics or
- * `<cngx-button-multi-toggle-group>` for toolbar semantics - never a
- * runtime `[selectionMode]` flag, never a shape-shifter. The leaf
- * `CngxButtonToggle` injects EITHER this token OR
- * `CNGX_BUTTON_MULTI_TOGGLE_GROUP` (`{ optional: true }` on both)
- * and chooses its ARIA pattern at injection time, not at runtime.
+ * Arrow keys, Home and End move focus and select, like `CngxRadioGroup`. Focus from Tab or a
+ * programmatic `focus()` does not select. Click, Space and Enter select the toggle they hit.
  *
- * Auto-select wiring follows the same contract as `CngxRadioGroup`:
- * the host `CngxRovingTabindex` raises its navigation-key intent before
- * it moves focus; each focused leaf consumes that intent in its
- * `(focus)` handler via `consumePendingArrowSelect()`, which reads
- * `roving.consumeNavigationKey()`. Reading an already-set fact (instead
- * of a group-owned `(keydown)` flag) closes the one-press-behind race
- * (#135). The value write happens inside a DOM event handler - never
- * inside an `effect()`.
+ * For any number of selected values use `CngxButtonMultiToggleGroup`. The leaf is the same, the
+ * group decides its mode.
+ *
+ * Arrow selection runs through the host `CngxRovingTabindex`, which flags a navigation key before
+ * it moves focus. The focused toggle calls `consumePendingArrowSelect`, which reads that flag.
  *
  * ```html
  * <cngx-button-toggle-group label="Layout" [(value)]="view">
@@ -119,19 +106,14 @@ export class CngxButtonToggleGroup<T = unknown>
    */
   readonly required = model<boolean>(false);
   /**
-   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
-   * so external integrations (RF/Signal-Forms bridges, custom validity
-   * adapters) can drive it without a parallel API path - consumers
-   * typically read only.
+   * Sets `aria-invalid="true"` on the host. A `model` so form bridges and validity adapters can
+   * write it. The surrounding field's error display sets `aria-invalid` too. Default `false`.
    */
   readonly invalid = model<boolean>(false);
   /**
-   * Optional id of an external error message element. When set, the
-   * host emits `aria-errormessage="<id>"`; consumers MUST render an
-   * element with that id. Default `null` skips the attribute.
-   * Note: WAI-ARIA dictates that AT ignores this attribute when
-   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
-   * id is harmless when the field is valid.
+   * Id of the element that holds the error message, emitted as `aria-errormessage`. Render that
+   * element yourself. Assistive technology ignores the attribute while `aria-invalid` is unset, so
+   * a fixed id is safe on a valid group. Default `null` omits it.
    */
   readonly errorMessageId = input<string | null>(null);
   /**
@@ -149,16 +131,13 @@ export class CngxButtonToggleGroup<T = unknown>
   readonly label = input<string | undefined>(undefined);
 
   /**
-   * Explicit `aria-labelledby` target id. Wins over the automatic
-   * field-label reference applied inside a `cngx-form-field`.
+   * Id of the element that names the group, emitted as `aria-labelledby`. Wins over the field
+   * label a `cngx-form-field` would reference.
    */
   readonly labelledBy = input<string | undefined>(undefined);
   /**
-   * Optional async state driving `aria-busy`. An explicit binding wins;
-   * when it is absent or `undefined`, an ancestor `CNGX_STATEFUL`
-   * provider is discovered as fallback. A bare `state` attribute (empty
-   * string) is treated as unset. `aria-busy` reflects
-   * `status() === 'loading'`.
+   * Async state behind `aria-busy`, which is set while its status is `'loading'`. Unbound,
+   * `undefined` or a bare `state` attribute falls back to the nearest `CNGX_STATEFUL` provider.
    */
   readonly state = input<
     CngxAsyncState<unknown> | undefined,
@@ -168,12 +147,11 @@ export class CngxButtonToggleGroup<T = unknown>
   private readonly roving = inject(CngxRovingTabindex, { host: true });
 
   /**
-   * Implements `CngxButtonToggleGroupContract.consumePendingArrowSelect`: when the host
-   * `CngxRovingTabindex` reports that focus just moved by a navigation key, sets the
-   * group `value` to `value` and returns `true`. Returns `false` for any other focus
-   * (such as Tab) or while the group is disabled. The transient flag is cleared on
-   * every call. Called by each `CngxButtonToggle` from its focus handler, so arrow
-   * navigation selects.
+   * Selects `value` when the host `CngxRovingTabindex` reports that focus just moved by a
+   * navigation key, and returns `true`. Returns `false` for any other focus, such as Tab, and
+   * while the group is disabled. Each call clears the roving flag.
+   *
+   * Called by `CngxButtonToggle` from its focus handler.
    */
   consumePendingArrowSelect(value: T): boolean {
     if (!this.roving.consumeNavigationKey()) {
@@ -198,13 +176,19 @@ export class CngxButtonToggleGroup<T = unknown>
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
 
+  /** Generated host id, written to the `id` attribute. */
   readonly id = this.groupHost.id;
 
+  /** True while focus is inside the group. */
   readonly focused = this.groupHost.focused;
 
   /** Empty when no toggle is selected. */
   readonly empty = computed(() => this.value() === undefined);
 
+  /**
+   * True while the surrounding `cngx-form-field`, or else a `CngxErrorAggregator`, shows an
+   * error. Turns on `aria-invalid`.
+   */
   readonly errorState = this.groupHost.errorState;
 
   protected handleFocusIn(): void {
