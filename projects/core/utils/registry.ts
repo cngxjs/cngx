@@ -62,9 +62,12 @@ export interface SlotRegistry<T> {
  * demands the holder instance and only removes on identity match.
  *
  * Collision semantics mirror `CngxErrorRegistry`: registering a different
- * value under a live key is silently absorbed (swap-is-noop) with a
- * dev-mode warning, never an in-place swap - downstream readers keep
- * observing the instance they resolved.
+ * value under a live key is absorbed (swap-is-noop) with a dev-mode
+ * warning, never an in-place swap - downstream readers keep observing the
+ * instance they resolved. The absorbed value waits for the key: when the
+ * holder unregisters, the first waiting value takes the key over, so a
+ * successor that registered before its predecessor's teardown stays live.
+ * A waiting value that unregisters first leaves the queue.
  *
  * The registry is plain signals - create it as a field on the owning
  * directive / service, no injection context required.
@@ -74,6 +77,9 @@ export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry
   const entriesState = signal<ReadonlyMap<string, T>>(new Map());
   const entries = entriesState.asReadonly();
   const values = computed<readonly T[]>(() => Array.from(entriesState().values()));
+  // Values absorbed under a live key, in registration order, waiting for the
+  // holder's unregister. Plain map: only unregister reads it.
+  const waiting = new Map<string, T[]>();
 
   function register(key: string, value: T): void {
     const current = entriesState();
@@ -81,6 +87,10 @@ export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry
       return;
     }
     if (current.has(key)) {
+      const queue = waiting.get(key) ?? [];
+      if (!queue.includes(value)) {
+        waiting.set(key, [...queue, value]);
+      }
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
           'CNGX0004',
@@ -97,12 +107,33 @@ export function createKeyedRegistry<T>(options?: RegistryOptions): KeyedRegistry
 
   function unregister(key: string, value: T): void {
     const current = entriesState();
+    const queue = waiting.get(key) ?? [];
     if (current.get(key) !== value) {
+      if (queue.includes(value)) {
+        setWaiting(
+          key,
+          queue.filter((entry) => entry !== value),
+        );
+      }
       return;
     }
     const next = new Map(current);
-    next.delete(key);
+    const [successor, ...rest] = queue;
+    setWaiting(key, rest);
+    if (queue.length > 0) {
+      next.set(key, successor);
+    } else {
+      next.delete(key);
+    }
     entriesState.set(next);
+  }
+
+  function setWaiting(key: string, queue: T[]): void {
+    if (queue.length > 0) {
+      waiting.set(key, queue);
+    } else {
+      waiting.delete(key);
+    }
   }
 
   function get(key: string): T | null {
