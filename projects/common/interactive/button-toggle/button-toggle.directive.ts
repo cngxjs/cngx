@@ -1,5 +1,6 @@
 import { Directive, computed, inject, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
+import { injectActivationGuard } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 
 import {
@@ -26,8 +27,8 @@ interface MultiResolution<T> {
 type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
 
 /**
- * One option in a button toggle group. Applies only to `<button>`, so activation, focus and the
- * native `disabled` attribute come from the element.
+ * One option in a button toggle group. Applies only to `<button>`, so activation and focus come
+ * from the element.
  *
  * The leaf reads its mode from the group above it when it is created:
  *
@@ -42,6 +43,13 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * The toggle counts as disabled when its own `disabled` or the group's is set. Its own
  * `disabled` also reaches the host `CngxRovingItem`, so arrow keys skip it. The group's
  * `disabled` does not reach the roving item, since a host directive input cannot be rebound.
+ *
+ * The effective disabled state renders as `aria-disabled` only, never as the native `disabled`
+ * attribute, so a disabled toggle stays focusable. The core activation guard
+ * (`injectActivationGuard`) swallows click on it, and Space and Enter change nothing. A toggle
+ * disabled only by the group stays reachable with the arrow keys, so its `[cngxDescribedBy]`
+ * reason is announced on focus. A toggle disabled by its own input is still skipped by the arrow
+ * keys; only a programmatic `focus()` reaches it.
  *
  * Bind `[cngxDescribedBy]` to the id of an element that explains the state, for example why the
  * toggle is disabled. The directive has no template, so you render that element.
@@ -76,7 +84,6 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
     '[attr.aria-pressed]': 'ariaPressed()',
     '[attr.aria-disabled]': 'toggleDisabled() ? "true" : null',
     '[attr.aria-describedby]': 'describedBy()',
-    '[attr.disabled]': 'toggleDisabled() ? "" : null',
     '[class.cngx-button-toggle--checked]': 'toggleChecked()',
     '[class.cngx-button-toggle--disabled]': 'toggleDisabled()',
     '(focus)': 'handleFocus()',
@@ -94,9 +101,9 @@ export class CngxButtonToggle<T = unknown> {
    */
   readonly value = input.required<T>();
   /**
-   * Disables this toggle. Disabled by this input or by the group, the toggle sets the native
-   * `disabled` attribute and `aria-disabled` and ignores click and keys. Arrow keys skip a
-   * toggle disabled by this input. Default `false`.
+   * Disables this toggle. Disabled by this input or by the group, the toggle sets
+   * `aria-disabled`, stays focusable and ignores click and keys. Arrow keys skip a toggle
+   * disabled by this input. Default `false`.
    */
   readonly disabled = input<boolean>(false);
   /**
@@ -118,6 +125,10 @@ export class CngxButtonToggle<T = unknown> {
     () => this.resolved.group.disabled() || this.disabled(),
   );
 
+  constructor() {
+    injectActivationGuard(() => this.toggleDisabled());
+  }
+
   // Single leaves are radios in a radiogroup (aria-checked is valid there);
   // multi leaves stay native buttons (implicit role="button" carries
   // aria-pressed). aria-checked is undefined for role="button".
@@ -133,19 +144,17 @@ export class CngxButtonToggle<T = unknown> {
     this.resolved.mode === 'multi' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 
+  // A disabled toggle is focusable, so it still consumes the roving flag; the group refuses the
+  // selection. Returning early here would leave the flag set for the next, unrelated focus.
   protected handleFocus(): void {
-    if (this.toggleDisabled()) {
-      return;
-    }
     if (this.resolved.mode === 'single') {
-      this.resolved.group.consumePendingArrowSelect(this.value());
+      this.resolved.group.consumePendingArrowSelect(this.value(), this.toggleDisabled());
     }
   }
 
+  // No disabled check: the activation guard stops every click on a disabled toggle before the
+  // host (click) listener runs.
   protected handleSelect(): void {
-    if (this.toggleDisabled()) {
-      return;
-    }
     if (this.resolved.mode === 'single') {
       this.resolved.group.value.set(this.value());
       return;

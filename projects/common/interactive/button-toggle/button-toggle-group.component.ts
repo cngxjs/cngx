@@ -148,16 +148,16 @@ export class CngxButtonToggleGroup<T = unknown>
 
   /**
    * Selects `value` when the host `CngxRovingTabindex` reports that focus just moved by a
-   * navigation key, and returns `true`. Returns `false` for any other focus, such as Tab, and
-   * while the group is disabled. Each call clears the roving flag.
+   * navigation key, and returns `true`. Returns `false` for any other focus, such as Tab, while
+   * the group is disabled and while `leafDisabled` is set. Each call clears the roving flag.
    *
-   * Called by `CngxButtonToggle` from its focus handler.
+   * Called by `CngxButtonToggle` from its focus handler, disabled or not.
    */
-  consumePendingArrowSelect(value: T): boolean {
+  consumePendingArrowSelect(value: T, leafDisabled = false): boolean {
     if (!this.roving.consumeNavigationKey()) {
       return false;
     }
-    if (this.disabled()) {
+    if (this.disabled() || leafDisabled) {
       return false;
     }
     this.value.set(value);

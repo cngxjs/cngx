@@ -15,13 +15,15 @@ export interface CngxButtonToggleGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
   readonly disabled: Signal<boolean>;
   /**
-   * Called from the leaf's focus handler. Selects `value` and returns `true` when focus just moved
-   * by a navigation key (arrows, Home, End), otherwise returns `false`.
+   * Called from the leaf's focus handler, disabled or not. Selects `value` and returns `true` when
+   * focus just moved by a navigation key (arrows, Home, End) and neither the group nor the leaf
+   * (`leafDisabled`) is disabled, otherwise returns `false`.
    *
    * The navigation flag lives on `CngxRovingTabindex`: read it with `consumeNavigationKey()`,
-   * which also clears it, so a later Tab focus does not select.
+   * which also clears it, so a later Tab focus does not select. Every focus has to consume it,
+   * including focus on a disabled leaf, or the flag outlives the arrow press that raised it.
    */
-  consumePendingArrowSelect(value: T): boolean;
+  consumePendingArrowSelect(value: T, leafDisabled?: boolean): boolean;
 }
 
 /**

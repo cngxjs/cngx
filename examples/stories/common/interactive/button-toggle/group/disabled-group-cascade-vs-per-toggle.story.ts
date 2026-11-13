@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButtonToggleGroup: disabled cascade vs per-toggle',
   subtitle:
-    'Group <code>[disabled]</code> cascades to every toggle via <code>toggleDisabled = computed(() =&gt; group.disabled() || disabled())</code>. Per-toggle <code>[disabled]</code> blocks only that leaf. Both reflect the native <code>disabled</code> attribute so form-submission engines see it.',
+    'Group <code>[disabled]</code> cascades to every toggle via <code>toggleDisabled = computed(() =&gt; group.disabled() || disabled())</code>. Per-toggle <code>[disabled]</code> blocks only that leaf. Disabled toggles render <code>aria-disabled</code> only, stay focusable, and swallow click, Space and Enter.',
   description:
     'Disabled propagation contract for the single-select group. Group-level <code>[disabled]</code> short-circuits every leaf\'s <code>handleSelect</code> / <code>handleKeydown</code> / <code>handleFocus</code> path and projects <code>aria-disabled="true"</code> onto each toggle. Per-toggle <code>[disabled]</code> blocks only that leaf without affecting siblings. Accepted debt: a fully-disabled group lets visual focus transit through its toggles via Arrow keys because <code>CngxRovingItem.disabled</code> is not a writable host-directive surface yet; every selection pathway still short-circuits silently.',
   level: 'molecule',

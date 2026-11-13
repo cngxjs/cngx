@@ -86,7 +86,9 @@ toggle.
   `CNGX_STATEFUL` producer counts.
 - `required` only sets `aria-required`. Validation belongs to the form.
 - A disabled toggle explains why through `[cngxDescribedBy]`: render the reason yourself and pass
-  its id. The group's `disabled` disables every toggle, natively and with `aria-disabled`.
+  its id. The group's `disabled` disables every toggle with `aria-disabled`; the toggles stay
+  focusable and reachable with the arrow keys, so the reason is announced, and activation is
+  swallowed. A toggle disabled by its own `disabled` is still skipped by the arrow keys.
 
 ## Forms
 
