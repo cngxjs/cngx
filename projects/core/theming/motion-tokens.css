@@ -25,13 +25,16 @@
  *   nearest-ancestor-wins against an inherited media state) - subtree
  *   scoping is for the accessibility-critical *reducing* direction.
  * - Essential-motion carve-out: freezing a loading affordance into a dead
- *   ring removes the "still working" signal (a communication failure), so
- *   `[role='status']` and `[role='progressbar']` hosts swap the freeze for
- *   a slow opacity pulse instead of stopping. Keyed on the ARIA role the
- *   loading components already expose (`CngxLoadingIndicator` /
- *   `CngxProgress`), never on component class names, so core stays
- *   layer-clean. A skeleton is deliberately NOT carved out: its static
- *   placeholder shape still reads as loading, so its shimmer may freeze.
+ *   ring removes the "still working" signal (a communication failure), so a
+ *   host that is still loading swaps the freeze for a slow opacity pulse
+ *   instead of stopping. A loading host is one that carries
+ *   `[data-cngx-busy]` (set by the loading components themselves:
+ *   `CngxLoadingIndicator`, `CngxLoadingOverlay`, the skeletons),
+ *   `[aria-busy='true']`, or an indeterminate `[role='progressbar']` (no
+ *   `aria-valuenow`). A bare `role="status"` is not a loading host: empty
+ *   states, count lines and alerts carry it while static, and they never
+ *   animate under reduced motion. Keyed on attributes, never on component
+ *   class names, so core stays layer-clean.
  *
  * **Duration tokens**
  *
@@ -85,11 +88,12 @@
 
 /* Essential-motion carve-out: a loading affordance must keep communicating
  * "still working" rather than freeze into a dead ring. Higher specificity
- * than the freeze rule above (0,2,0 vs 0,1,0), so its !important pulse wins
- * on the role host while the freeze still stops the host's decorative
- * children. Role-keyed so core never references a ui component class. */
-[data-motion='reduced'] [role='status'],
-[data-motion='reduced'] [role='progressbar'] {
+ * than the freeze rule above (0,3,0 vs 0,1,0), so its !important pulse wins
+ * on the loading host while the freeze still stops the host's decorative
+ * children. Keyed on loading attributes, never on a bare role="status"
+ * (static status regions must not pulse) or a ui component class. */
+[data-motion='reduced']
+  :is([data-cngx-busy], [aria-busy='true'], [role='progressbar']:not([aria-valuenow])) {
   animation: cngx-motion-loading-pulse var(--cngx-pulse-duration, 2s)
     var(--cngx-pulse-easing, ease-in-out) infinite !important;
 }
@@ -107,10 +111,11 @@
     scroll-behavior: auto !important;
   }
 
-  /* Essential-motion carve-out under the OS preference - same intent as the
-   * attribute rule above. Specificity (0,3,0) beats the (0,2,0) freeze. */
-  :root:not([data-motion='full']) [role='status'],
-  :root:not([data-motion='full']) [role='progressbar'] {
+  /* Essential-motion carve-out under the OS preference - same intent and
+   * same loading hosts as the attribute rule above. Specificity (0,4,0)
+   * beats the (0,2,0) freeze. */
+  :root:not([data-motion='full'])
+    :is([data-cngx-busy], [aria-busy='true'], [role='progressbar']:not([aria-valuenow])) {
     animation: cngx-motion-loading-pulse var(--cngx-pulse-duration, 2s)
       var(--cngx-pulse-easing, ease-in-out) infinite !important;
   }
