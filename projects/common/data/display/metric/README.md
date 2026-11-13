@@ -82,7 +82,7 @@ Stays neutral inside any card variant, header, or grid cell. Pair with `CngxTren
 
 ## See also
 
-- [API on compodocx](../../../../../README.md) for inputs and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/metric/) for inputs and tokens.
 - Stories: `examples/stories/common/data/metric/`.
 - `CngxTrend` for the directional-change counterpart.
 - `CngxCard` (`@cngx/common/card`) as the typical container.

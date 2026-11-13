@@ -40,6 +40,6 @@ That is the full integration. Drop `<my-rating [cngxBindField]="form.rating" />`
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for the full token surface.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/control-value/) for the full token surface.
 - `CNGX_FORM_FIELD_CONTROL` (`@cngx/forms`) for the full form-field control contract on top of this value shape.
 - `CngxBindField` (`@cngx/forms`) for the bridge that consumes both tokens.

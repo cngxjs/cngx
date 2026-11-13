@@ -46,6 +46,6 @@ Under forced colors every swatch paints in the user palette with a pattern by en
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/chart/legend/) for inputs and tokens.
 - `@cngx/common/chart` entry: [../README.md](../README.md).
 - Sibling chart subfolders: [chart/](../chart/), [axis/](../axis/), [layers/](../layers/), [presets/](../presets/).

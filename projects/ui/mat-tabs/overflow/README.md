@@ -40,6 +40,6 @@ export class MyTabs {}
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for the full surface.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/ui/mat-tabs/overflow/) for the full surface.
 - `@cngx/common/tabs/overflow` - the underlying overflow molecule and its `CngxTabOverflowDomAdapter` contract.
 - `@cngx/ui/mat-tabs` - the `[cngxMatTabs]` directive that ships this adapter by default.

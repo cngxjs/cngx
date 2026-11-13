@@ -467,7 +467,7 @@ Text utilities expose CSS classes for consumer styling:
 
 ## See Also
 
-- [API on compodocx](../../../../README.md)
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/layout/text/)
 - Demo: `examples/stories/common/text-demo/`
 - Tests: `projects/common/layout/text/*.spec.ts`
 - `CngxResizeObserver` in `@cngx/common/layout` - Used internally by `CngxTruncate` for overflow detection

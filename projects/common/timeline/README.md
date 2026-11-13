@@ -150,6 +150,6 @@ What the headless layer contributes, before any organism ARIA:
 - [`@cngx/ui/timeline`](../../ui/timeline/) - the styled organism: grouping inputs, layout, skins, async body, Material bridge
 - [`@cngx/common/stepper`](../stepper/) - guided process; timeline is history
 - [`CngxTime`](../display/) - relative timestamp formatting for `[cngxTimelineTime]`
-- [`CngxAsyncState`](../../core/) - the per-row `[state]` contract
-- [API on compodocx](../../../README.md)
+- [`CngxAsyncState`](../../core/utils/) - the per-row `[state]` contract
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/timeline/)
 - Tests: `projects/common/timeline/*.spec.ts`

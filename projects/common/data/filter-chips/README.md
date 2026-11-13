@@ -119,7 +119,7 @@ This keeps the chip strip and the announcement decoupled: the same `CngxFilter` 
 
 ## See also
 
-- [API on compodocx](../../../../README.md) for inputs, slot context, and tokens.
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/filter-chips/) for inputs, slot context, and tokens.
 - `@cngx/common/data/filter` - the `CngxFilter` predicate host this bridge registers against.
 - `CngxChip` (`@cngx/common/display`) - the visual atom each chip wrapper composes.
 - Stories: `examples/stories/common/data/filter-chips/`.
