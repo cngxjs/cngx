@@ -14,6 +14,7 @@ import { provideMenuButtonI18n, type CngxMenuButtonI18nFeature } from './i18n/me
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
+ * @relatedTo provideCngxMenuButton, withButtonCaretIcon
  */
 export interface CngxMenuButtonCaretIconFeature {
   readonly _target: 'caretIcon';
@@ -23,6 +24,10 @@ export interface CngxMenuButtonCaretIconFeature {
 /**
  * Every feature `provideCngxMenuButton` accepts: `withButtonCaretIcon` and
  * `withMenuButtonI18nLabels`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
+ * @since 0.1.0
+ * @relatedTo provideCngxMenuButton, withButtonCaretIcon, withMenuButtonI18nLabels
  */
 export type CngxMenuButtonFeature = CngxMenuButtonCaretIconFeature | CngxMenuButtonI18nFeature;
 
@@ -109,7 +114,7 @@ function toProviders({ caret, i18n }: PartitionedFeatures): Provider[] {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxMenuButtonAt, provideButtonCaretIcon, provideMenuButtonI18n
+ * @relatedTo provideCngxMenuButtonAt, provideButtonCaretIcon, provideMenuButtonI18n, withButtonCaretIcon, withMenuButtonI18nLabels, provideCngxButton
  * <example-url>/#/common/menu-button/menu-button/scoped-defaults</example-url>
  */
 export function provideCngxMenuButton(
@@ -134,7 +139,7 @@ export function provideCngxMenuButton(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/provide-cngx-menu-button.ts
  * @since 0.1.0
- * @relatedTo provideCngxMenuButton
+ * @relatedTo provideCngxMenuButton, withButtonCaretIcon, withMenuButtonI18nLabels
  * <example-url>/#/common/menu-button/menu-button/scoped-defaults</example-url>
  */
 export function provideCngxMenuButtonAt(...features: readonly CngxMenuButtonFeature[]): Provider[] {

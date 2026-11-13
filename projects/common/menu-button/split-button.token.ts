@@ -7,7 +7,7 @@ import type { CngxButtonState } from '@cngx/common/button';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.token.ts
  * @since 0.1.0
- * @relatedTo CngxSplitButton, CngxSplitCaret, CngxIconMenuButton
+ * @relatedTo CngxSplitButton, CngxSplitCaret, CngxIconMenuButton, CNGX_SPLIT_BUTTON, CNGX_BUTTON_STATE
  */
 export interface CngxSplitButtonContext {
   /** `true` while the main button refuses activation. The caret is blocked with it. */
@@ -29,6 +29,6 @@ export interface CngxSplitButtonContext {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.token.ts
  * @since 0.1.0
- * @relatedTo CngxSplitButton, CngxSplitCaret, CngxIconMenuButton
+ * @relatedTo CngxSplitButton, CngxSplitCaret, CngxIconMenuButton, CngxSplitButtonContext, CNGX_BUTTON_STATE
  */
 export const CNGX_SPLIT_BUTTON = new InjectionToken<CngxSplitButtonContext>('CngxSplitButton');

@@ -37,7 +37,7 @@ import { CNGX_SPLIT_CARET, type CngxSplitCaretRole } from './split-caret.token';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-caret.directive.ts
  * @since 0.1.0
- * @relatedTo CngxSplitButton, CngxIconMenuButton, CngxButtonBrain, CNGX_SPLIT_BUTTON
+ * @relatedTo CngxSplitButton, CngxIconMenuButton, CngxButtonBrain, CNGX_SPLIT_BUTTON, CNGX_MENU_BUTTON_I18N, CNGX_BUTTON_HOST_STATE, CngxPopoverTrigger
  * <example-url>/#/common/menu-button/split-button/custom-caret-host</example-url>
  * @axis level molecule
  */
