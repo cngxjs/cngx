@@ -162,11 +162,6 @@ const LITERAL_SPACING_EXEMPT = [
     count: 1,
     reason: 'pre-existing literal (font-relative em on the kbd chip), out of feature area',
   },
-  {
-    file: '/projects/ui/sidenav/sidenav.css',
-    count: 1,
-    reason: 'pre-existing literal, out of feature area',
-  },
 ];
 
 // --- helpers ---------------------------------------------------------------
