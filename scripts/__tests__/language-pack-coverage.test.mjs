@@ -65,6 +65,7 @@ const TOKEN_SECTIONS = {
   CNGX_DATA_GRID_ACCORDION_CONFIG: 'dataGridAccordion',
   CNGX_SIDENAV_CONFIG: 'sidenav',
   CNGX_SPEAK_I18N: 'speak',
+  CNGX_NAV_RAIL_I18N: 'navRail',
   CNGX_COMMAND_PALETTE_CONFIG: 'commandPalette',
   CNGX_PAGINATOR_CONFIG: 'paginator',
   CNGX_ACCORDION_CONFIG: 'accordion',

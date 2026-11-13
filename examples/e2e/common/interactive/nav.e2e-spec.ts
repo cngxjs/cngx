@@ -12,10 +12,16 @@ test.describe('common/interactive/nav', () => {
     // so a bare getByRole('link') counts the wrong thing.
     await expect(page.locator('a[cngxnavlink]')).toHaveCount(3);
 
-    // A count badge carrying information must name itself; a decorative one
-    // must stay hidden from AT. That contrast is the point of the demo.
-    await expect(page.getByLabel('12 unread')).toBeVisible();
-    await expect(page.locator('[cngxnavbadge][aria-hidden="true"]')).not.toHaveCount(0);
+    // A badge label joins the link name as visually hidden text; the badge
+    // host itself stays hidden and never carries a prohibited aria-label.
+    await expect(page.getByRole('link', { name: 'Inbox 12 unread' })).toBeVisible();
+    await expect(page.locator('[cngxnavbadge][aria-label]')).toHaveCount(0);
+    await expect(page.locator('[cngxnavbadge]:not([aria-hidden="true"])')).toHaveCount(0);
+
+    // Archive holds 0: the empty badge carries `hidden` and renders nothing.
+    const archiveBadge = page.locator('a[cngxnavlink][href="#archive"] [cngxnavbadge]');
+    await expect(archiveBadge).toHaveAttribute('hidden', '');
+    await expect(archiveBadge).toBeHidden();
   });
 
   test('accordion-sections: clicking a section header expands its panel', async ({ page }) => {

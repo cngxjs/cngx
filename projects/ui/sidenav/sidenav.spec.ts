@@ -1601,6 +1601,30 @@ describe('CngxSidenav panel target', () => {
     expect(nav.panelTarget.mode?.()).toBe('inline');
   });
 
+  it('keeps a peek of the docked rail out of the trigger aria-expanded', () => {
+    const { fixture, nav, outer } = setup();
+    outer.click();
+    fixture.detectChanges();
+    nav.peek();
+    fixture.detectChanges();
+    expect(nav.expanded()).toBe(true);
+    expect(nav.panelTarget.peeked?.()).toBe(true);
+    expect(outer.getAttribute('aria-expanded')).toBe('false');
+
+    nav.toggle();
+    fixture.detectChanges();
+    expect(outer.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('reports an open overlay as expanded, never as a peek', () => {
+    const { fixture, host, nav, outer } = setup();
+    host.mode.set('over');
+    host.open.set(true);
+    fixture.detectChanges();
+    expect(nav.panelTarget.peeked?.()).toBe(false);
+    expect(outer.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('opens the overlay from the same trigger once the rail is an overlay', () => {
     const { fixture, host, nav, outer } = setup();
     host.mode.set('over');

@@ -1,0 +1,232 @@
+import { Component, signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { withNavRailTooltipDelay } from './config/features';
+import { provideNavRailConfig } from './config/provide-nav-rail-config';
+import type { CngxNavRailSide } from './nav-rail';
+import { injectNavRailTooltip } from './nav-rail-tooltip';
+
+@Component({
+  selector: 'test-rail',
+  template: `
+    <a class="cngx-nav-link row-inbox" href="#inbox">
+      <span class="cngx-nav-icon" aria-hidden="true">inbox</span>
+      Inbox
+      <span class="cngx-nav-badge" aria-hidden="true">7</span
+      ><span class="cngx-sr-only">7 unread</span>
+    </a>
+    <button type="button" class="cngx-nav-group row-settings">Settings</button>
+    <button type="button" class="cngx-nav-group row-open" aria-expanded="true">Reports</button>
+    <div class="cngx-nav-group-content">
+      <a class="cngx-nav-link row-flyout" href="#weekly">Weekly</a>
+    </div>
+    <a class="cngx-nav-link row-own-tip" href="#help" aria-describedby="own-tip">Help</a>
+    <div id="own-tip" role="tooltip">Opens the help center</div>
+    <span class="outside">Not a row</span>
+  `,
+})
+class TestRail {
+  readonly railed = signal(true);
+  readonly side = signal<CngxNavRailSide>('start');
+
+  constructor() {
+    injectNavRailTooltip({ railed: this.railed, side: this.side });
+  }
+}
+
+function setup() {
+  const fixture = TestBed.createComponent(TestRail);
+  fixture.detectChanges();
+  TestBed.flushEffects();
+  const host = fixture.nativeElement as HTMLElement;
+  const tip = host.querySelector<HTMLElement>('.cngx-nav-rail-tooltip')!;
+  const row = (selector: string) => host.querySelector<HTMLElement>(selector)!;
+  const isOpen = () => tip.hasAttribute('data-popover-open');
+  return { fixture, host, tip, row, isOpen };
+}
+
+/**
+ * Keyboard focus. jsdom has no `:focus-visible` heuristic, so the row reports
+ * it while it holds focus; the geometry spec covers the real browser.
+ */
+function keyFocus(el: HTMLElement): void {
+  const matches = el.matches.bind(el);
+  Object.defineProperty(el, 'matches', {
+    configurable: true,
+    value: (selector: string) =>
+      selector === ':focus-visible' ? el.ownerDocument.activeElement === el : matches(selector),
+  });
+  el.focus();
+}
+
+function pointer(type: 'pointerover' | 'pointerout', target: Element, related?: Element): void {
+  target.dispatchEvent(new MouseEvent(type, { bubbles: true, relatedTarget: related ?? null }));
+}
+
+describe('injectNavRailTooltip', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('leaves flyout rows, an open group head and rows with their own tooltip alone', () => {
+    const { row, isOpen } = setup();
+    for (const selector of ['.row-flyout', '.row-open', '.row-own-tip']) {
+      keyFocus(row(selector));
+      expect(isOpen()).toBe(false);
+      expect(row(selector).style.getPropertyValue('anchor-name')).toBe('');
+    }
+  });
+
+  it('hides when a row is activated, so an opening group head drops it', () => {
+    const { row, isOpen } = setup();
+    keyFocus(row('.row-settings'));
+    expect(isOpen()).toBe(true);
+    row('.row-settings').click();
+    expect(isOpen()).toBe(false);
+  });
+
+  it('creates one hidden tooltip element with the tooltip skin, out of the accessibility tree', () => {
+    const { host, tip, isOpen } = setup();
+    expect(host.querySelectorAll('.cngx-nav-rail-tooltip[role="tooltip"]')).toHaveLength(1);
+    expect(tip.getAttribute('popover')).toBe('manual');
+    expect(tip.getAttribute('aria-hidden')).toBe('true');
+    expect(tip.classList.contains('cngx-tooltip')).toBe(true);
+    expect(isOpen()).toBe(false);
+  });
+
+  it('shows the row label without icon, badge and the badge spoken text when a row takes focus', () => {
+    const { row, tip, isOpen } = setup();
+    keyFocus(row('.row-inbox'));
+    expect(isOpen()).toBe(true);
+    expect(tip.textContent).toBe('Inbox');
+    expect(row('.row-inbox').style.getPropertyValue('anchor-name')).toBe(
+      tip.style.getPropertyValue('position-anchor'),
+    );
+  });
+
+  it('shows after the hover dwell, not before', () => {
+    vi.useFakeTimers();
+    const { row, isOpen } = setup();
+    pointer('pointerover', row('.row-settings'));
+    vi.advanceTimersByTime(299);
+    expect(isOpen()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('takes the hover dwell from withNavRailTooltipDelay', () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({
+      providers: [provideNavRailConfig(withNavRailTooltipDelay(500))],
+    });
+    const { row, isOpen } = setup();
+    pointer('pointerover', row('.row-settings'));
+    vi.advanceTimersByTime(499);
+    expect(isOpen()).toBe(false);
+    vi.advanceTimersByTime(1);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('marks the tooltip with the rail side on show and takes a flip on the next show', () => {
+    const { fixture, tip, row } = setup();
+    keyFocus(row('.row-inbox'));
+    expect(tip.getAttribute('data-cngx-rail-side')).toBe('start');
+    fixture.componentInstance.side.set('end');
+    row('.row-inbox').blur();
+    keyFocus(row('.row-settings'));
+    expect(tip.getAttribute('data-cngx-rail-side')).toBe('end');
+  });
+
+  it('follows the row: the anchor moves to the row now in focus', () => {
+    const { row, tip } = setup();
+    keyFocus(row('.row-inbox'));
+    keyFocus(row('.row-settings'));
+    expect(tip.textContent).toBe('Settings');
+    expect(row('.row-settings').style.getPropertyValue('anchor-name')).not.toBe('');
+    expect(row('.row-inbox').style.getPropertyValue('anchor-name')).toBe('');
+  });
+
+  it('hides when the pointer leaves the row and on blur', () => {
+    const { row, host, isOpen } = setup();
+    keyFocus(row('.row-inbox'));
+    pointer('pointerout', row('.row-inbox'), host.querySelector('.outside')!);
+    expect(isOpen()).toBe(false);
+    keyFocus(row('.row-inbox'));
+    row('.row-inbox').dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    expect(isOpen()).toBe(false);
+  });
+
+  it('hides on Escape', () => {
+    const { row, isOpen } = setup();
+    keyFocus(row('.row-inbox'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(isOpen()).toBe(false);
+  });
+
+  it('hides when the rows stop being railed and stays hidden while they are not', () => {
+    const { fixture, row, isOpen } = setup();
+    keyFocus(row('.row-inbox'));
+    fixture.componentInstance.railed.set(false);
+    TestBed.flushEffects();
+    expect(isOpen()).toBe(false);
+    keyFocus(row('.row-settings'));
+    expect(isOpen()).toBe(false);
+  });
+
+  it('stays hidden on pointer focus, so a click does not flash it', () => {
+    const { row, isOpen } = setup();
+    row('.row-inbox').dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(isOpen()).toBe(false);
+  });
+
+  it('keeps hover quiet on a clicked row until the pointer leaves it', () => {
+    vi.useFakeTimers();
+    const { row, isOpen } = setup();
+    row('.row-inbox').click();
+    pointer('pointerover', row('.row-inbox'));
+    vi.advanceTimersByTime(400);
+    expect(isOpen()).toBe(false);
+    pointer('pointerout', row('.row-inbox'), row('.row-settings'));
+    pointer('pointerover', row('.row-inbox'));
+    vi.advanceTimersByTime(400);
+    expect(isOpen()).toBe(true);
+  });
+
+  it('ignores elements that are not nav rows', () => {
+    const { host, isOpen } = setup();
+    host.querySelector('.outside')!.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(isOpen()).toBe(false);
+  });
+
+  it('creates no element and attaches no listener while not railed, and sets up on the flip', () => {
+    const listen = vi.spyOn(HTMLElement.prototype, 'addEventListener');
+    const fixture = TestBed.createComponent(TestRail);
+    fixture.componentInstance.railed.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    expect(listen.mock.contexts.filter((el) => el === host)).toHaveLength(0);
+    fixture.componentInstance.railed.set(true);
+    TestBed.flushEffects();
+    expect(host.querySelectorAll('.cngx-nav-rail-tooltip')).toHaveLength(1);
+    expect(listen.mock.contexts.filter((el) => el === host).length).toBeGreaterThan(0);
+    listen.mockRestore();
+  });
+
+  it('removes the tooltip element and its listeners when the rows stop being railed', () => {
+    const { fixture, host, row } = setup();
+    fixture.componentInstance.railed.set(false);
+    TestBed.flushEffects();
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+    keyFocus(row('.row-inbox'));
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+  });
+
+  it('removes the tooltip element on destroy', () => {
+    const { fixture, host } = setup();
+    fixture.destroy();
+    expect(host.querySelector('.cngx-nav-rail-tooltip')).toBeNull();
+  });
+});

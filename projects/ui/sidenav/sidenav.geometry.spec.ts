@@ -73,6 +73,12 @@ describe('CngxSidenav mini-rail geometry', () => {
     expect(computedValue(body, '--cngx-sidenav-mini-width')).toBe('72px');
     expect(parseFloat(computedValue(body, 'min-width'))).toBeCloseTo(72, 1);
   });
+
+  it('insets the body rows from the panel edge like the nav-rail body', () => {
+    const { body } = mount();
+    expect(computedValue(body, 'padding-block-start')).toBe('4px');
+    expect(computedValue(body, 'padding-block-end')).toBe('4px');
+  });
 });
 
 // The overlay drawer parks off-canvas via a physical `translateX(±100%)` (the

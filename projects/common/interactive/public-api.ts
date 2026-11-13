@@ -85,6 +85,11 @@ export { CngxNavGroupRegistry } from './nav/nav-group-registry';
 export { CngxNavLabel } from './nav/nav-label.directive';
 export { CngxNavLink } from './nav/nav-link.directive';
 export { CngxNavBadge, type NavBadgeVariant } from './nav/nav-badge.directive';
+export { CngxNavIcon } from './nav/nav-icon.directive';
+export { CngxNavHeader } from './nav/nav-header.directive';
+export { CngxNavFooter } from './nav/nav-footer.directive';
+export { CngxNavMark } from './nav/nav-mark.directive';
+export { CngxNavName } from './nav/nav-name.directive';
 export { CngxDisclosure } from './nav/disclosure.directive';
 export { CngxExpandable } from './expandable/expandable.directive';
 export {

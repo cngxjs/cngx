@@ -2,6 +2,7 @@ import { DestroyRef, Directive, effect, ElementRef, inject, input, untracked } f
 import { CngxDisclosure } from './disclosure.directive';
 import { CNGX_NAV_CONFIG, CNGX_NAV_DEFAULTS } from './nav-config';
 import { CngxNavGroupRegistry } from './nav-group-registry';
+import { injectNavInitial } from './nav-initial';
 
 /**
  * Navigation accordion group - a collapsible section in a sidebar nav.
@@ -94,7 +95,7 @@ export class CngxNavGroup {
   /** Nesting depth for indentation. Consumer sets manually. */
   readonly depth = input<number>(0);
 
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
   private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
 
@@ -111,10 +112,11 @@ export class CngxNavGroup {
    * `<body>` when the region turns `inert`.
    */
   focus(options?: FocusOptions): void {
-    this.host.focus(options);
+    this.element.focus(options);
   }
 
   constructor() {
+    injectNavInitial(this.element);
     this.registry?.register(this);
     inject(DestroyRef).onDestroy(() => this.registry?.unregister(this));
 

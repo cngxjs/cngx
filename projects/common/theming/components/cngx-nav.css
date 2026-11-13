@@ -1,0 +1,1090 @@
+/**
+ * @overview
+ * Skin of the `@cngx/common/interactive` nav atoms. A `<nav>` of
+ * `cngxNavLink` rows, `cngxNavGroup` heads, `cngxNavLabel` section labels and
+ * `cngxNavBadge` badges renders finished in any container: one row shape,
+ * graded state fills, an active indicator, a double focus ring, nested
+ * indentation and an animated group content. Imported by `cngx.css`, so the
+ * rows look the same inside `cngx-sidenav`, a `cngxSidebar` or a plain
+ * `<nav>`. Containers only SET tokens; no selector here carries a container
+ * prefix.
+ *
+ * **Selectors**
+ *
+ * - `.cngx-nav-link` (`CngxNavLink`), `.cngx-nav-group` (`CngxNavGroup`) -
+ *   one row shape for links and group heads
+ * - `.cngx-nav-label` (`CngxNavLabel`) - section label
+ * - `.cngx-nav-badge` (`CngxNavBadge`) with `--count`, `--dot`, `--status`
+ * - `.cngx-nav-group-content` (`CngxNavGroupContent`) - grid-rows expand
+ *   and collapse wrapper; it needs one child. Open as a popover on a
+ *   collapsed rail (`:popover-open`) it is the group flyout
+ * - `.cngx-nav-icon` (`CngxNavIcon`) - icon slot of a row or group head
+ * - `.cngx-nav-header` (`CngxNavHeader`), `.cngx-nav-footer`
+ *   (`CngxNavFooter`) - top and bottom regions of a nav container
+ * - `.cngx-nav-mark` (`CngxNavMark`) - logo or avatar in the icon box of a
+ *   header or footer, at the row icon x; `.cngx-nav-name` (`CngxNavName`) -
+ *   the name next to it, at the row label x, truncated with an ellipsis
+ * - `.cngx-nav-rail-tooltip` - the label tooltip `injectNavRailTooltip`
+ *   adds to a rail; with `data-cngx-rail-side="end"` it opens at the row's
+ *   inline start, as the group flyout does
+ *
+ * **Row geometry**
+ *
+ * One flex row: inline-start padding, the icon box
+ * (`--cngx-nav-icon-size`), the gap (`--cngx-nav-icon-gap`), the label
+ * text, then a trailing badge or the group chevron. The icon box sits at the
+ * same x on every row. A row or group head without `.cngx-nav-icon` draws its
+ * first letter (`data-initial`, written by the directive) as a round filled
+ * badge in that box; `content: attr(data-initial) / ''` keeps the letter out
+ * of the accessible name. Icon and letter paint in `--cngx-nav-link-ink`.
+ *
+ * **State modifiers**
+ *
+ * - `.cngx-nav-link--active` - active fill, heavier weight, indicator bar on
+ *   the inline-start edge (`::after`, so it coexists with the letter)
+ * - `.cngx-nav-group--open` - the group chevron turns to point down
+ * - `.cngx-nav-group-content--open` - grid rows `0fr -> 1fr`
+ *
+ * **Nav row states**
+ *
+ * Rest (transparent), hover, pressed (`:active`), active and active+hover,
+ * each a stronger fill than the one before: hover < pressed < active <
+ * active+hover. Active beats hover and pressed; hovering or pressing the
+ * active row paints active+hover. Only background and colour transition (the
+ * global reduced-motion net collapses them).
+ *
+ * **Nesting**
+ *
+ * A row with `[depth]` indents its inline-start margin by
+ * `--cngx-nav-depth * --cngx-nav-indent` (12px unless
+ * `provideNavConfig(withNavIndent(...))` emits one), so the fill and the
+ * indicator move in with the row.
+ *
+ * **Inheritance**
+ *
+ * SET at the root from the foundation; a container (`cngx-sidenav`) SETs its
+ * own values on its host, and every token is read on the row:
+ *
+ * - `--cngx-nav-link-hover-bg` / `-pressed-bg` / `-active-bg` /
+ *   `-active-hover-bg` -> `--cngx-color-primary` at 6 / 12 / 16 / 22 % over
+ *   transparent
+ * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-text`
+ * - `--cngx-nav-link-focus-inner-color` -> `--cngx-color-surface`
+ * - `--cngx-nav-link-active-indicator-color` -> `--cngx-color-primary-text`
+ * - `--cngx-nav-link-inset` -> `--cngx-space-xs`
+ * - `--cngx-nav-link-padding` -> `--cngx-space-sm` `--cngx-nav-link-padding-inline`
+ * - `--cngx-nav-link-padding-inline` -> `--cngx-space-md` (read on the row,
+ *   the header, the footer and the section label)
+ * - `--cngx-nav-label-color` -> `--cngx-color-text-muted`
+ * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color` ->
+ *   `--cngx-color-border`
+ * - `--cngx-nav-badge-bg` / `-color` -> `--cngx-color-primary-strong` /
+ *   `--cngx-color-on-primary-strong`
+ *
+ * **Dark mode**
+ *
+ * No hook: the fills are one accent mixed over transparent, so they follow
+ * the scheme through the surface beneath; the other colours derive from
+ * scheme-aware foundation tokens.
+ *
+ * **Forced colors**
+ *
+ * The active row re-signals with Highlight / HighlightText (its fill alone
+ * would collapse to Canvas), with the bar and the ring kept off the row edge;
+ * badges get a CanvasText ring so a filled pill or dot does not vanish into
+ * Canvas.
+ *
+ * **Pair with**
+ *
+ * - `@cngx/themes/material/nav-link-theme` - Material 3 nav row palette
+ *
+ * @themes CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge, CngxNavGroupContent, CngxNavIcon, CngxNavHeader, CngxNavFooter, CngxNavMark, CngxNavName
+ */
+
+@layer cngx.tokens {
+  /**
+   * Padding shorthand of each nav link.
+   * @group Layout
+   */
+  @property --cngx-nav-link-padding {
+    syntax: '*';
+    /* Read on the row; inherits so a container SET reaches it. No initial
+       value: a registered pixel initial would defeat the use-site fallback, so
+       a row outside any container could not follow [data-density]. */
+    inherits: true;
+  }
+
+  /**
+   * Inline padding of a nav row, and the inline offset of the header, footer
+   * and section label past the row inset. One value, so a mark and a label
+   * stay at the row icon x and label x. The default row padding reads it;
+   * a container that SETs the `--cngx-nav-link-padding` shorthand builds it
+   * from this token to keep the slots aligned.
+   * @group Layout
+   * @see [[--cngx-space-md]]
+   */
+  @property --cngx-nav-link-padding-inline {
+    syntax: '*';
+    /* No initial value: the use-site fallback reads --cngx-space-md on the
+       row, so density reaches rows and slots alike. */
+    inherits: true;
+  }
+
+  /**
+   * Font-size of each nav link.
+   * @group Typography
+   */
+  @property --cngx-nav-link-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Text color of a resting nav link.
+   * @group Surface
+   */
+  @property --cngx-nav-link-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Inline inset of each nav row from the container edges.
+   * SET from `--cngx-space-xs` at the root; a container may SET its own.
+   * @group Layout
+   */
+  @property --cngx-nav-link-inset {
+    syntax: '<length>';
+    /* Read on the row; inherits so a container SET reaches it. */
+    inherits: true;
+    initial-value: 4px;
+  }
+
+  /**
+   * Corner radius of each nav link.
+   * @group Layout
+   */
+  @property --cngx-nav-link-radius {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 4px;
+  }
+
+  /**
+   * Text color on hover.
+   * @group State / Hover
+   */
+  @property --cngx-nav-link-hover-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background tint on hover.
+   * @group State / Hover
+   */
+  @property --cngx-nav-link-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.04);
+  }
+
+  /**
+   * Background while a nav row is pressed (`:active`). Sits between the hover
+   * and the active fill; a pressed active row keeps the active-hover fill.
+   * @group State / Pressed
+   */
+  @property --cngx-nav-link-pressed-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.06);
+  }
+
+  /**
+   * Text color of the active nav link.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Background of the active nav link.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.08);
+  }
+
+  /**
+   * Background of the active nav link under the pointer. The strongest fill,
+   * so hovering the active row still answers.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-hover-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0 0 0 / 0.1);
+  }
+
+  /**
+   * Colour of the bar on the inline-start edge of the active nav link. SET
+   * from `--cngx-color-primary-text` (the 4.5:1 text rung), so it holds 3:1
+   * on the active fills; `transparent` drops the bar for a fill-only look.
+   * @group State / Active
+   * @see [[--cngx-color-primary-text]]
+   */
+  @property --cngx-nav-link-active-indicator-color {
+    syntax: '<color>';
+    /* Read on the row's indicator; inherits so a container SET reaches it. */
+    inherits: true;
+    initial-value: oklch(0.54 0.19 50);
+  }
+
+  /**
+   * Inline size of the active indicator bar. SET from `--cngx-space-xs`, so
+   * it follows density; `0` drops the bar.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-indicator-size {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 3px;
+  }
+
+  /**
+   * Block-axis inset of the active indicator bar from the row's top and
+   * bottom edges. SET from `--cngx-space-sm`.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-indicator-inset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 8px;
+  }
+
+  /**
+   * Font-weight of the active nav link.
+   * @group State / Active
+   */
+  @property --cngx-nav-link-active-font-weight {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 600;
+  }
+
+  /**
+   * Outer colour of the double keyboard focus ring on a nav row. SET from
+   * `--cngx-color-text`, so the ring stays apart
+   * from the active hue on every fill.
+   * @group State / Focus
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-nav-link-focus-outline-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.66 0.19 50);
+  }
+
+  /**
+   * Inner colour of the double keyboard focus ring, drawn inside the outer
+   * ring at the same width. SET from `--cngx-color-surface` (a sidenav SETs
+   * its own surface), so the outer ring reads against a band of the container
+   * surface on any fill.
+   * @group State / Focus
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-nav-link-focus-inner-color {
+    syntax: '<color>';
+    /* Read on the row; inherits so a container SET reaches it. */
+    inherits: true;
+    initial-value: oklch(0.97 0.005 250);
+  }
+
+  /**
+   * Stroke width of the keyboard focus ring.
+   * @group State / Focus
+   */
+  @property --cngx-nav-link-focus-outline-width {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 2px;
+  }
+
+  /**
+   * Distance from the link edge to the focus ring. Negative offsets
+   * pull the ring inside the link bounds so a fully-padded link
+   * doesn't shove its neighbours when focused.
+   * @group State / Focus
+   */
+  @property --cngx-nav-link-focus-outline-offset {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: -2px;
+  }
+
+  /**
+   * Font-size of the first-letter fallback drawn in the icon box of a row
+   * without `[cngxNavIcon]`.
+   * @group Typography
+   */
+  @property --cngx-nav-link-initial-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Inline and block size of the icon box at the start of every row. Unset by
+   * default (falls back to `1.25rem`).
+   * @group Layout
+   */
+  @property --cngx-nav-icon-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Gap between the icon box and the row label. Unset by default (falls back
+   * to `--cngx-space-sm`, so it follows `[data-density]`).
+   * @group Layout
+   */
+  @property --cngx-nav-icon-gap {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Ink of the icon and of the letter fallback, independent of the label
+   * text colour. Unset by default (falls back to `currentColor`).
+   * @group Surface
+   */
+  @property --cngx-nav-link-ink {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Block padding of the header. Unset by default (falls back to
+   * `--cngx-space-md`). The inline padding is derived from the row geometry,
+   * so the mark lines up with the row icons.
+   * @group Layout
+   */
+  @property --cngx-nav-header-padding-block {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background of the header.
+   * @group Surface
+   */
+  @property --cngx-nav-header-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Colour of the divider under the header.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-header-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /**
+   * Font-size of the header.
+   * @group Typography
+   */
+  @property --cngx-nav-header-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.875rem;
+  }
+
+  /**
+   * Block padding of the footer. Unset by default (falls back to
+   * `--cngx-space-md`).
+   * @group Layout
+   */
+  @property --cngx-nav-footer-padding-block {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Background of the footer.
+   * @group Surface
+   */
+  @property --cngx-nav-footer-bg {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+  }
+
+  /**
+   * Colour of the divider above the footer.
+   * @group Surface
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-footer-border-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.89 0 0);
+  }
+
+  /**
+   * Font-size of the footer.
+   * @group Typography
+   */
+  @property --cngx-nav-footer-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Text colour of a section label.
+   * @group Typography
+   * @see [[--cngx-color-text-muted]]
+   */
+  @property --cngx-nav-label-color {
+    syntax: '*';
+    inherits: true;
+    initial-value: currentColor;
+  }
+
+  /**
+   * Font-size of a section label.
+   * @group Typography
+   */
+  @property --cngx-nav-label-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Padding shorthand of a section label. Unset by default: the label then
+   * aligns its text with the row text and follows `[data-density]`.
+   * @group Layout
+   */
+  @property --cngx-nav-label-padding {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Fill of a count badge and of a dot badge.
+   * @group Surface
+   * @see [[--cngx-color-primary-strong]]
+   */
+  @property --cngx-nav-badge-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.58 0.19 50);
+  }
+
+  /**
+   * Text colour of a count badge.
+   * @group Surface
+   * @see [[--cngx-color-on-primary-strong]]
+   */
+  @property --cngx-nav-badge-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
+   * Font-size of a count or status badge.
+   * @group Typography
+   */
+  @property --cngx-nav-badge-font-size {
+    syntax: '*';
+    inherits: false;
+    initial-value: 0.75rem;
+  }
+
+  /**
+   * Diameter of a dot badge.
+   * @group Layout
+   */
+  @property --cngx-nav-badge-dot-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 8px;
+  }
+
+  /**
+   * Arm length of the group head chevron.
+   * @group Layout
+   */
+  @property --cngx-nav-chevron-size {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 6px;
+  }
+
+  /**
+   * Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-nav-flyout-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text colour of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-nav-flyout-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Border colour of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-color-border]]
+   */
+  @property --cngx-nav-flyout-border-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Border width of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback (`1px`) applies.
+   * @group State / Flyout
+   */
+  @property --cngx-nav-flyout-border-width {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Elevation of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group State / Flyout
+   * @see [[--cngx-shadow-md]]
+   */
+  @property --cngx-nav-flyout-shadow {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-radius-md]]
+   */
+  @property --cngx-nav-flyout-radius {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-space-xs]]
+   */
+  @property --cngx-nav-flyout-padding {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   */
+  @property --cngx-nav-flyout-min-inline-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Gap between a group head and its flyout. Read on the open flyout; no initial value, so the
+   * use-site fallback follows the foundation.
+   * @group Layout
+   * @see [[--cngx-space-xs]]
+   */
+  @property --cngx-nav-flyout-offset {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /*
+   * Default-theme palette pass. A registered `initial-value` shadows any
+   * `var(...)` fallback, so the colour tokens are SET here from the
+   * foundation. A container that scopes an accent (cngx-sidenav) SETs the
+   * same tokens on its own host, which wins for its rows.
+   */
+  :root {
+    --cngx-nav-link-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%,
+      transparent
+    );
+    --cngx-nav-link-pressed-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%,
+      transparent
+    );
+    --cngx-nav-link-active-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 16%,
+      transparent
+    );
+    --cngx-nav-link-active-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 22%,
+      transparent
+    );
+    --cngx-nav-link-focus-outline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-nav-link-focus-inner-color: var(--cngx-color-surface, oklch(0.97 0.005 250));
+    --cngx-nav-link-active-indicator-color: var(
+      --cngx-color-primary-text,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
+    );
+    --cngx-nav-label-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-nav-header-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-nav-footer-border-color: var(--cngx-color-border, oklch(0.89 0 0));
+    --cngx-nav-badge-bg: var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    );
+    --cngx-nav-badge-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
+  }
+
+  /* The spacing-derived tokens are typed lengths, so they resolve where they
+     are SET. Re-SET them on every density scope, or a [data-density] subtree
+     would inherit the root's pixels. */
+  :root,
+  [data-density],
+  .cngx-density-comfortable,
+  .cngx-density-compact,
+  .cngx-density-spacious {
+    --cngx-nav-link-inset: var(--cngx-space-xs, 4px);
+    --cngx-nav-link-active-indicator-size: calc(var(--cngx-space-xs, 4px) * 0.75);
+    --cngx-nav-link-active-indicator-inset: var(--cngx-space-sm, 8px);
+  }
+}
+
+@layer cngx.components {
+  /*
+   * One row shape for links and group heads. State ladder: rest (0,1,0),
+   * then hover, pressed, active, active+hover, all four at (0,2,0) in this
+   * source order, so the order is the precedence: active beats hover and
+   * pressed, active+hover beats active, a pressed active row stays
+   * active+hover. Only background and colour transition.
+   * `background: transparent` at rest beats the UA button face on group heads.
+   */
+  .cngx-nav-link,
+  .cngx-nav-group {
+    position: relative;
+    box-sizing: border-box;
+    min-block-size: var(--cngx-target-min, 0px);
+    margin-inline: var(--cngx-nav-link-inset, 4px);
+    margin-inline-start: calc(
+      var(--cngx-nav-link-inset, 4px) + var(--cngx-nav-depth, 0) * var(--cngx-nav-indent, 12px)
+    );
+    padding: var(
+      --cngx-nav-link-padding,
+      var(--cngx-space-sm, 8px) var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+    );
+    border-radius: var(--cngx-nav-link-radius, 4px);
+    background: transparent;
+    font-size: var(--cngx-nav-link-font-size, 0.875rem);
+    color: var(--cngx-nav-link-color, currentColor);
+    text-decoration: none;
+    transition:
+      background-color var(--cngx-duration-fast, 150ms),
+      color var(--cngx-duration-fast, 150ms);
+  }
+
+  .cngx-nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
+  }
+
+  /* A group head is a <button>: drop the UA box and stretch it like a link. */
+  .cngx-nav-group {
+    display: flex;
+    align-items: center;
+    gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
+    inline-size: -webkit-fill-available;
+    inline-size: stretch;
+    border: 0;
+    font-family: inherit;
+    line-height: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .cngx-nav-link:hover,
+  .cngx-nav-group:hover {
+    color: var(--cngx-nav-link-hover-color, currentColor);
+    background: var(--cngx-nav-link-hover-bg, oklch(0 0 0 / 0.04));
+  }
+
+  .cngx-nav-link:active,
+  .cngx-nav-group:active {
+    background: var(--cngx-nav-link-pressed-bg, oklch(0 0 0 / 0.06));
+  }
+
+  .cngx-nav-link.cngx-nav-link--active {
+    color: var(--cngx-nav-link-active-color, currentColor);
+    background: var(--cngx-nav-link-active-bg, oklch(0 0 0 / 0.08));
+    font-weight: var(--cngx-nav-link-active-font-weight, 600);
+  }
+
+  .cngx-nav-link--active:hover {
+    color: var(--cngx-nav-link-active-color, currentColor);
+    background: var(--cngx-nav-link-active-hover-bg, oklch(0 0 0 / 0.1));
+  }
+
+  /* Icon box: the projected icon, or the first letter on a row without one. */
+  .cngx-nav-icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--cngx-nav-icon-size, 1.25rem);
+    block-size: var(--cngx-nav-icon-size, 1.25rem);
+    color: var(--cngx-nav-link-ink, currentColor);
+  }
+
+  /* A cngx-icon in the slot fills the icon box. Its own rung is em-based and
+     would follow the row font (the stacked label is smaller), the box does
+     not. Two classes, so it beats the rung of the icon's @scope. */
+  .cngx-nav-icon.cngx-icon {
+    --cngx-icon-size: var(--cngx-nav-icon-size, 1.25rem);
+  }
+
+  :is(.cngx-nav-link, .cngx-nav-group)[data-initial]:not(:has(.cngx-nav-icon))::before {
+    content: attr(data-initial) / '';
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    inline-size: var(--cngx-nav-icon-size, 1.25rem);
+    block-size: var(--cngx-nav-icon-size, 1.25rem);
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--cngx-nav-link-ink, currentColor) 14%, transparent);
+    color: var(--cngx-nav-link-ink, currentColor);
+    font-size: var(--cngx-nav-link-initial-size, 0.875rem);
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* Active indicator: a bar on the inline-start edge (logical, so RTL puts it
+     on the right). On ::after, so it coexists with the letter on ::before. */
+  .cngx-nav-link--active::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: var(--cngx-nav-link-active-indicator-inset, 8px);
+    inline-size: var(--cngx-nav-link-active-indicator-size, 3px);
+    border-radius: var(--cngx-nav-link-active-indicator-size, 3px);
+    background: var(--cngx-nav-link-active-indicator-color, currentColor);
+  }
+
+  /*
+   * Double keyboard focus ring, inset so a focused row doesn't push its
+   * neighbours. Outer ring: the outline in the text colour. Inner ring: an
+   * inset box-shadow in the container surface, twice the outline width, whose
+   * outer half the outline covers. The pair reads on every fill and never
+   * depends on the active hue.
+   */
+  .cngx-nav-link:focus-visible,
+  .cngx-nav-group:focus-visible {
+    outline: var(--cngx-nav-link-focus-outline-width, 2px) solid
+      var(--cngx-nav-link-focus-outline-color, oklch(0.2 0.01 250));
+    outline-offset: var(--cngx-nav-link-focus-outline-offset, -2px);
+    box-shadow: inset 0 0 0 calc(2 * var(--cngx-nav-link-focus-outline-width, 2px))
+      var(--cngx-nav-link-focus-inner-color, oklch(0.97 0.005 250));
+  }
+
+  /* Group chevron: two borders of a square, turned to point inline-end while
+     closed and down while open. Drawn, not a text glyph, and aria-free. */
+  .cngx-nav-group::after {
+    content: '';
+    flex: none;
+    margin-inline-start: auto;
+    inline-size: var(--cngx-nav-chevron-size, 6px);
+    block-size: var(--cngx-nav-chevron-size, 6px);
+    border-block-end: 1.5px solid currentColor;
+    border-inline-end: 1.5px solid currentColor;
+    rotate: -45deg;
+    transition: rotate var(--cngx-duration-fast, 150ms);
+  }
+
+  .cngx-nav-group:dir(rtl)::after {
+    rotate: 135deg;
+  }
+
+  .cngx-nav-group.cngx-nav-group--open::after {
+    rotate: 45deg;
+  }
+
+  /* Section label: text aligned with the row text. */
+  .cngx-nav-label {
+    display: block;
+    padding: var(
+      --cngx-nav-label-padding,
+      var(--cngx-space-md, 16px)
+        calc(
+          var(--cngx-nav-link-inset, 4px) +
+            var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+        )
+        var(--cngx-space-xs, 4px)
+    );
+    font-size: var(--cngx-nav-label-font-size, 0.75rem);
+    font-weight: 600;
+    color: var(--cngx-nav-label-color, currentColor);
+  }
+
+  /* Badges sit at the row's inline end. */
+  .cngx-nav-badge {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin-inline-start: auto;
+    font-size: var(--cngx-nav-badge-font-size, 0.75rem);
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The UA [hidden] rule loses to the display above. */
+  .cngx-nav-badge[hidden] {
+    display: none;
+  }
+
+  .cngx-nav-badge--count {
+    min-inline-size: 1.25rem;
+    block-size: 1.25rem;
+    padding-inline: var(--cngx-space-xs, 4px);
+    border-radius: 999px;
+    background: var(--cngx-nav-badge-bg, oklch(0.58 0.19 50));
+    color: var(--cngx-nav-badge-color, oklch(1 0 0));
+  }
+
+  .cngx-nav-badge--dot {
+    inline-size: var(--cngx-nav-badge-dot-size, 8px);
+    block-size: var(--cngx-nav-badge-dot-size, 8px);
+    border-radius: 50%;
+    background: var(--cngx-nav-badge-bg, oklch(0.58 0.19 50));
+  }
+
+  .cngx-nav-badge--status {
+    block-size: 1.25rem;
+    padding-inline: var(--cngx-space-sm, 8px);
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    color: var(--cngx-nav-label-color, currentColor);
+  }
+
+  /* Header and footer: the inline padding is the row inset plus the row
+     padding, so a mark lands in the icon box at the row icon x. */
+  .cngx-nav-header,
+  .cngx-nav-footer {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--cngx-nav-icon-gap, var(--cngx-space-sm, 8px));
+    box-sizing: border-box;
+    padding-inline: calc(
+      var(--cngx-nav-link-inset, 4px) +
+        var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+    );
+  }
+
+  .cngx-nav-header {
+    padding-block: var(--cngx-nav-header-padding-block, var(--cngx-space-md, 16px));
+    border-block-end: 1px solid var(--cngx-nav-header-border-color, oklch(0.89 0 0));
+    background: var(--cngx-nav-header-bg, transparent);
+    font-size: var(--cngx-nav-header-font-size, 0.875rem);
+    font-weight: 600;
+  }
+
+  .cngx-nav-footer {
+    margin-block-start: auto;
+    padding-block: var(--cngx-nav-footer-padding-block, var(--cngx-space-md, 16px));
+    border-block-start: 1px solid var(--cngx-nav-footer-border-color, oklch(0.89 0 0));
+    background: var(--cngx-nav-footer-bg, transparent);
+    font-size: var(--cngx-nav-footer-font-size, 0.75rem);
+    /* De-emphasis by colour (muted text), never opacity. */
+    color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+  }
+
+  .cngx-nav-mark {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--cngx-nav-icon-size, 1.25rem);
+    block-size: var(--cngx-nav-icon-size, 1.25rem);
+    overflow: hidden;
+    color: var(--cngx-nav-link-ink, currentColor);
+  }
+
+  .cngx-nav-name {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Group content: grid-rows 0fr -> 1fr; one wrapper child required. */
+  .cngx-nav-group-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--cngx-nav-transition, var(--cngx-duration-base, 0.2s)) ease;
+  }
+
+  .cngx-nav-group-content > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .cngx-nav-group-content--open {
+    grid-template-rows: 1fr;
+  }
+
+  /* A closed flyout stays out of the layout: the group content's own display
+     would otherwise beat the UA [popover]:not(:popover-open) rule and paint
+     the UA popover box. */
+  .cngx-nav-group-content[popover]:not(:popover-open) {
+    display: none;
+  }
+
+  /* Group flyout on a collapsed rail: the group content as a top-layer
+     popover at the inline end of its head, or at its inline start for a rail
+     at the inline end (data-cngx-rail-side, written by injectNavRailFlyout,
+     which also wires the anchor). Logical area, so it mirrors under
+     dir="rtl"; it flips when the viewport has no room. */
+  .cngx-nav-group-content:popover-open {
+    inset: auto;
+    margin: 0;
+    margin-inline-start: var(--cngx-nav-flyout-offset, var(--cngx-space-xs, 4px));
+    position-area: inline-end span-block-end;
+    position-try-fallbacks: flip-block, flip-inline;
+    box-sizing: border-box;
+    min-inline-size: var(--cngx-nav-flyout-min-inline-size, 12rem);
+    padding: var(--cngx-nav-flyout-padding, var(--cngx-space-xs, 4px));
+    border: var(--cngx-nav-flyout-border-width, 1px) solid
+      var(--cngx-nav-flyout-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    border-radius: var(--cngx-nav-flyout-radius, var(--cngx-radius-md, 8px));
+    background: var(--cngx-nav-flyout-bg, var(--cngx-color-surface, oklch(1 0 0)));
+    color: var(--cngx-nav-flyout-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+    box-shadow: var(
+      --cngx-nav-flyout-shadow,
+      var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.12))
+    );
+  }
+
+  /* The fallbacks of the base rule stay, so an end-side flyout still flips. */
+  .cngx-nav-group-content[data-cngx-rail-side='end']:popover-open {
+    margin-inline-start: 0;
+    margin-inline-end: var(--cngx-nav-flyout-offset, var(--cngx-space-xs, 4px));
+    position-area: inline-start span-block-end;
+  }
+
+  /* Label tooltip of a railed row (injectNavRailTooltip appends it to the
+     host and wires the anchor): at the row's inline end, or its inline start
+     for an end-side rail (data-cngx-rail-side); flips when the viewport has
+     no room, and the flip swaps the margins with it. Two classes, so it beats
+     the margin reset of the tooltip skin's @scope. The gap token is
+     documented with CngxNavRail (nav-rail.css). */
+  .cngx-tooltip.cngx-nav-rail-tooltip {
+    position-area: inline-end;
+    position-try-fallbacks: flip-inline;
+    margin-inline-start: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
+  }
+
+  .cngx-tooltip.cngx-nav-rail-tooltip[data-cngx-rail-side='end'] {
+    position-area: inline-start;
+    margin-inline-start: 0;
+    margin-inline-end: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
+  }
+
+  /* The flyout already shows the nesting by sitting beside its head, so its
+     rows drop the first indent level; deeper levels still indent. The inline
+     padding steps down to --cngx-space-sm, a menu's density, so the content
+     does not sit three insets deep. */
+  .cngx-nav-group-content:popover-open :is(.cngx-nav-link, .cngx-nav-group) {
+    --cngx-nav-link-padding-inline: var(--cngx-space-sm, 8px);
+    margin-inline-start: calc(
+      var(--cngx-nav-link-inset, 4px) + max(0, var(--cngx-nav-depth, 0) - 1) *
+        var(--cngx-nav-indent, 12px)
+    );
+  }
+}
+
+/* Forced colors (WHCM): the active row signals only with a fill (forced to
+   Canvas) and a heavier weight, too weak a lone cue; re-signal it with
+   Highlight. Unlayered so it beats the layered base rule;
+   forced-color-adjust:none opts the row out of the UA background forcing in
+   case it renders a <button>, so Highlight paints. The indicator inherits that
+   opt-out, so it needs an explicit system colour: HighlightText on the
+   Highlight row. The same opt-out leaves the active row's focus rings
+   unforced, so it gets one HighlightText ring and no inner ring. */
+@media (forced-colors: active) {
+  .cngx-nav-link--active {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  /* HighlightText next to Canvas does not read, so neither the bar nor the
+     ring may touch the row edge: the ring sits one width inside the edge with
+     a Highlight band around it, and the bar starts one more width further in,
+     clear of the ring. */
+  .cngx-nav-link--active::after {
+    inset-inline-start: calc(3 * var(--cngx-nav-link-focus-outline-width, 2px));
+    background: HighlightText;
+  }
+
+  .cngx-nav-link--active:focus-visible {
+    outline-color: HighlightText;
+    outline-offset: calc(-2 * var(--cngx-nav-link-focus-outline-width, 2px));
+    box-shadow: none;
+  }
+
+  /* The flyout loses its shadow: keep its edge in the text colour. */
+  .cngx-nav-group-content:popover-open {
+    border-color: CanvasText;
+  }
+
+  /* A filled pill or dot is forced to Canvas: ring it. */
+  .cngx-nav-badge--count,
+  .cngx-nav-badge--dot {
+    border: 1px solid CanvasText;
+  }
+}

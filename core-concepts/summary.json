@@ -535,6 +535,11 @@
                 "file": "error-codes/cngx1082.md"
             },
             {
+                "title": "CNGX1083",
+                "label": "CNGX1083: Dot nav badge without a label",
+                "file": "error-codes/cngx1083.md"
+            },
+            {
                 "title": "CNGX2001",
                 "label": "CNGX2001: Unknown filter operator",
                 "file": "error-codes/cngx2001.md"

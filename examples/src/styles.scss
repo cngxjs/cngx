@@ -1543,30 +1543,60 @@ button.chip:disabled {
 //   outline-offset: 2px;
 // }
 
-// Demo-specific styles: sidenav-demo. The sidenav demos render their own
-// active-state indicator (brand-coloured left border + tinted background)
-// instead of relying on cngx-sidenav's default neutral active tint. The
-// CSS-var overrides on `.demo-sidenav__container` opt the cngx atom out
-// of its default active styling so the demo's inline `[style.border-
-// left-color]` / `[style.background]` interpolations drive the look.
-// Only the two inheriting tokens work from an ancestor - radius and
-// active-font-weight are registered inherits:false and would need an
-// element-level set on `.cngx-nav-link` to land.
+// Demo-specific styles: sidenav-demo. The library paints the nav row states
+// (fills, active indicator, focus ring); these rules only lay the rows out.
 .demo-sidenav__container {
   height: 420px;
-  margin-top: 0.75rem;
+  margin-top: var(--cngx-space-md, 1rem);
   border: 1px solid var(--cngx-color-border);
   border-radius: 6px;
-  --cngx-nav-link-active-bg: transparent;
-  --cngx-nav-link-active-color: inherit;
 }
 .demo-sidenav__container--short {
   height: 320px;
 }
 .demo-sidenav__header {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 0.5rem);
   padding: 1rem;
   font-size: 1rem;
   font-weight: 700;
+}
+// The rail clips the header to its width (sidenav-header.ts), so the header
+// leads with a mark that fits the rail; the name leaves the flow on the rail
+// but stays in the accessible name.
+.demo-sidenav__brand-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--demo-sidenav-brand-mark-size, 1.5rem);
+  block-size: var(--demo-sidenav-brand-mark-size, 1.5rem);
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: var(--cngx-color-primary, #4a8cff);
+  color: var(--cngx-color-on-primary, #ffffff);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__header {
+  justify-content: center;
+  padding-inline: 0;
+}
+cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__footer {
+  padding-inline: 0;
+  justify-content: center;
+  text-align: center;
+}
+cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sidenav__footer-name) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
 }
 .demo-sidenav__label {
   display: block;
@@ -1580,20 +1610,15 @@ button.chip:disabled {
 .demo-sidenav__link {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0.5rem 1rem;
   text-decoration: none;
-  font-size: 0.85rem;
   color: inherit;
-  border-left: 3px solid transparent;
 }
 .demo-sidenav__link--plain {
-  display: block;
   border-left: 0;
   justify-content: initial;
 }
 .demo-sidenav__link--sub {
-  display: block;
   padding: 0.4rem 1rem 0.4rem calc(1rem + 14px);
   text-decoration: none;
   font-size: 0.8rem;
@@ -1617,21 +1642,17 @@ button.chip:disabled {
   flex-shrink: 0;
 }
 .demo-sidenav__group {
-  width: 100%;
+  // The library insets nav rows by --cngx-nav-link-inset on each side.
+  width: calc(100% - 2 * var(--cngx-nav-link-inset, 0px));
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
   border: none;
-  background: none;
   cursor: pointer;
   text-align: left;
   font-size: 0.85rem;
   color: inherit;
-}
-.demo-sidenav__chevron {
-  font-size: 0.6rem;
-  transition: transform 0.15s;
 }
 .demo-sidenav__footer {
   padding: 0.75rem 1rem;
@@ -1682,32 +1703,6 @@ button.chip:disabled {
   display: flex;
   gap: 0.5rem;
 }
-.demo-sidenav__themes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-.demo-sidenav__theme-label {
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cngx-color-text-muted);
-}
-.demo-sidenav__theme-label--inset {
-  padding: 0.5rem 0.5rem 0;
-}
-.demo-sidenav__theme-panel {
-  height: 300px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-.demo-sidenav__theme-panel--dark {
-  background: var(--cngx-color-surface);
-  color: var(--cngx-color-text);
-  border-radius: 6px;
-}
 // Demo-only resizable frame for the sidenav auto-mode story. Auto mode docks
 // at a 64rem layout width, past the 640px artifact cap, so the artifact that
 // holds this frame drops the cap and the frame resizes freely across the
@@ -1715,10 +1710,18 @@ button.chip:disabled {
 .cngx-ex-artifact:has(> .demo-sidenav-resizable) {
   --demo-artifact-max-width: none;
 }
+// The full navigation story binds no mode, so its rail follows the layout
+// width class. Capped at 640px the layout stays compact and the rail becomes a
+// modal overlay that makes the rest of the page inert; uncapped it docks from
+// 64rem like an app shell.
+.cngx-ex-artifact:has(> .demo-sidenav-uncapped) {
+  --demo-artifact-max-width: none;
+}
 .demo-sidenav-resizable {
   resize: horizontal;
   overflow: auto;
   width: 40rem;
+  margin-top: var(--cngx-space-md, 1rem);
   min-width: 20rem;
   max-width: none;
   border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
@@ -2174,10 +2177,10 @@ button.chip.demo-chip--copied {
   text-decoration: none;
   font-size: 0.875rem;
   color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
-  border-left: 3px solid transparent;
+  border-inline-start: 3px solid transparent;
   transition:
     background 0.15s ease,
-    border-left-color 0.15s ease;
+    border-inline-start-color 0.15s ease;
 }
 .demo-nav__link--row {
   display: flex;
@@ -2185,15 +2188,15 @@ button.chip.demo-chip--copied {
   justify-content: space-between;
 }
 .demo-nav__link--active {
-  border-left-color: var(--cngx-color-primary, #2563eb);
+  border-inline-start-color: var(--cngx-color-primary, #2563eb);
   background: color-mix(in oklch, var(--cngx-color-primary, #2563eb) 8%, transparent);
   font-weight: 600;
 }
 .demo-nav__link--indent-1 {
-  padding-left: calc(1rem + 12px);
+  padding-inline-start: calc(1rem + 12px);
 }
 .demo-nav__link--indent-2 {
-  padding-left: calc(1rem + 24px);
+  padding-inline-start: calc(1rem + 24px);
 }
 .demo-nav__divider {
   margin: 0.5rem 1rem;
@@ -2211,10 +2214,6 @@ button.chip.demo-chip--copied {
   text-align: left;
   font-size: 0.875rem;
   color: var(--cngx-color-text, var(--cngx-ex-text, #1f2937));
-}
-.demo-nav__caret {
-  font-size: 0.75rem;
-  transition: transform 0.15s ease;
 }
 .demo-nav__badge--count {
   padding: 0.1em 0.5em;
@@ -2243,6 +2242,24 @@ button.chip.demo-chip--copied {
   margin-top: 0.5rem;
   font-size: 0.8rem;
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+// Forced colors: the demo paints its own bars and badges, so it owns their
+// system colours. A rest bar forced to CanvasText would mark every row; dots
+// and pills would flatten into Canvas without an outline.
+@media (forced-colors: active) {
+  .demo-nav__link {
+    border-inline-start-color: Canvas;
+  }
+  .demo-nav__link--active {
+    border-inline-start-color: Highlight;
+  }
+  .demo-sidenav__badge,
+  .demo-sidenav__badge-dot,
+  .demo-nav__badge--count,
+  .demo-nav__badge--muted,
+  .demo-nav__badge--dot {
+    border: 1px solid CanvasText;
+  }
 }
 
 // Combobox-typeahead demo. Built from raw <li role="option"> nodes (not
@@ -2644,7 +2661,7 @@ button.chip.demo-chip--copied {
 .demo-app-sidebar__meta small {
   color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
 }
-.demo-app-sidebar[data-sidebar-state='rail'] :is(.demo-app-sidebar__label, .demo-nav__label, .demo-nav__caret) {
+.demo-app-sidebar[data-sidebar-state='rail'] :is(.demo-app-sidebar__label, .demo-nav__label) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2655,20 +2672,26 @@ button.chip.demo-chip--copied {
   padding: 0;
   margin: -1px;
 }
+// The library draws the group chevron; the rail has no room for it.
+.demo-app-sidebar[data-sidebar-state='rail'] .demo-nav__trigger::after {
+  display: none;
+}
 .demo-app-sidebar[data-sidebar-state='peek'] {
   box-shadow: var(--cngx-shadow-md, 0 4px 16px rgb(0 0 0 / 0.12));
 }
 .demo-nav__trigger.demo-nav__link--icon {
   justify-content: flex-start;
 }
-.demo-nav__trigger .demo-nav__caret {
-  margin-inline-start: auto;
-}
 
+// The rail hides the label, so the row keeps one line box of height on its
+// own: 1lh plus the 0.5rem block padding that .demo-nav__link and
+// .demo-nav__trigger share. The rows are border-box, and content-box would
+// push the width: 100% group triggers past the rail.
 .demo-nav__link--icon {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-block-size: calc(1lh + 2 * 0.5rem);
   white-space: nowrap;
 }
 // Sidebar entry icons sit on the 16px box (1rem, the dense icon tier) and
@@ -2685,6 +2708,18 @@ button.chip.demo-chip--copied {
 }
 .demo-app-sidebar .demo-nav__trigger {
   border-inline-start: 3px solid transparent;
+}
+// Forced colors would turn the transparent spacer bar into a CanvasText bar
+// on every group trigger; pin it to Canvas like the demo-nav links.
+@media (forced-colors: active) {
+  .demo-app-sidebar .demo-nav__trigger {
+    border-inline-start-color: Canvas;
+  }
+}
+// The nav scroller clips overflow-x, which cuts the inline sides of the
+// reset's outset ring (outline-offset: 3px); draw it inside the row instead.
+.demo-app-sidebar :is(.demo-nav__link, .demo-nav__trigger):focus-visible {
+  outline-offset: -2px;
 }
 
 // Story chrome marks a mode or modality switch on its chip group for one
@@ -4171,17 +4206,6 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   font-size: 0.9em;
 }
 
-.demo-sidenav-active-link {
-  border-left-color: var(--cngx-color-primary);
-  background: color-mix(in oklch, var(--cngx-color-primary) 8%, transparent);
-  font-weight: 600;
-}
-
-.demo-sidenav-sub-active {
-  color: var(--cngx-color-primary);
-  font-weight: 600;
-}
-
 .demo-async-input {
   padding: 8px 12px;
   border: 1px solid var(--cngx-color-border, #ddd);
@@ -4258,6 +4282,15 @@ app-menu-button-material-bridge {
   @include cngx-button-bridge.theme($demo-material-bridge-theme);
   @include cngx-icon-bridge.theme($demo-material-bridge-theme);
   @include cngx-menu-bridge.theme($demo-material-bridge-theme);
+}
+
+// The nav-rail stories wrap mat-icon in cngx-icon; only the icon bridge sizes
+// the glyph to the icon box, without it a 24px glyph clips in a 20px box.
+app-nav-rail-labels-beside,
+app-nav-rail-labels-below,
+app-nav-rail-end-side,
+app-nav-rail-rail-with-secondary-sidebar {
+  @include cngx-icon-bridge.theme($demo-material-bridge-theme);
 }
 
 // Demo-only accent for the stepper `chips` skin stories (matches the
@@ -5058,4 +5091,35 @@ mat-icon.demo-breadcrumb-icon {
   to {
     --cngx-ex-toast-ring-progress: 0;
   }
+}
+
+// Demo-specific styles: nav-rail-demo. The rail and the nav atoms paint
+// themselves; these rules only frame the rail next to some content.
+.demo-nav-rail__frame {
+  display: flex;
+  block-size: 420px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--cngx-color-border);
+  border-radius: 6px;
+}
+.demo-nav-rail__content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  padding: var(--cngx-space-md, 1rem);
+}
+.demo-nav-rail__layout {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+.demo-nav-rail__mark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--cngx-nav-icon-size, 1.25rem);
+  block-size: var(--cngx-nav-icon-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-color-primary);
+  color: var(--cngx-color-on-primary, white);
+  font-size: 0.625rem;
+  font-weight: 600;
 }

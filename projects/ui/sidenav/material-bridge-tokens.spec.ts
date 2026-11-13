@@ -43,11 +43,13 @@ describe('nav-link Material bridge', () => {
     '--cngx-nav-link-active-bg',
     '--cngx-nav-link-active-color',
     '--cngx-nav-link-active-font-weight',
+    '--cngx-nav-link-active-hover-bg',
+    '--cngx-nav-link-active-indicator-color',
     '--cngx-nav-link-color',
     '--cngx-nav-link-font-size',
     '--cngx-nav-link-hover-bg',
     '--cngx-nav-link-hover-color',
-    '--cngx-nav-link-padding',
+    '--cngx-nav-link-pressed-bg',
     '--cngx-nav-link-radius',
   ];
 
@@ -79,22 +81,37 @@ $theme: mat.define-theme((
     return compileThemeEntry(entry);
   }
 
-  it('broadcasts the layout tokens to host + descendants (inherits:false header/footer/backdrop)', () => {
+  it('broadcasts the layout tokens to host + descendants (inherits:false backdrop)', () => {
     const css = compiledTheme();
     const broadcast = css.match(
       /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*\)\s*\{[^}]*\}/,
     );
     expect(broadcast).not.toBeNull();
-    expect(broadcast![0]).toContain('--cngx-sidenav-header-bg:');
-    expect(broadcast![0]).toContain('--cngx-sidenav-footer-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-backdrop-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-overlay-shadow:');
     expect(broadcast![0]).toContain('--mat-sys-level1');
   });
 
-  it('emits the nav-link tokens on the .cngx-nav-link host class, not nested under the layout', () => {
+  it('emits the nav header and footer tokens on the slot hosts (inherits:false bg and type)', () => {
     const css = compiledTheme();
-    const navLink = css.match(/:where\(\.cngx-nav-link\)\s*\{[^}]*\}/);
+    const slots = css.match(/:where\(\.cngx-nav-header, \.cngx-nav-footer\)\s*\{[^}]*\}/);
+    expect(slots).not.toBeNull();
+    for (const token of [
+      '--cngx-nav-header-bg:',
+      '--cngx-nav-footer-bg:',
+      '--cngx-nav-header-border-color:',
+      '--cngx-nav-footer-border-color:',
+      '--cngx-nav-header-font-size:',
+      '--cngx-nav-footer-font-size:',
+    ]) {
+      expect(slots![0]).toContain(token);
+    }
+    expect(css).not.toMatch(/--cngx-sidenav-(header|footer)-/);
+  });
+
+  it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {
+    const css = compiledTheme();
+    const navLink = css.match(/:where\(\.cngx-nav-link, \[cngxNavGroup\]\)\s*\{[^}]*\}/);
     expect(navLink).not.toBeNull();
     // the inherits:false trio that the former layout nesting killed
     expect(navLink![0]).toContain('--cngx-nav-link-radius:');

@@ -63,7 +63,7 @@ export class CngxNavGroupContent {
   /** Whether the referenced group is open. */
   protected readonly opened = computed(() => this.group().disclosure.opened());
 
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   constructor() {
     // Runs before the host's inert binding is refreshed: focus is still inside
@@ -73,8 +73,8 @@ export class CngxNavGroupContent {
         return;
       }
       untracked(() => {
-        const active = this.host.ownerDocument.activeElement;
-        if (active && this.host.contains(active)) {
+        const active = this.element.ownerDocument.activeElement;
+        if (active && this.element.contains(active)) {
           this.group().focus({ preventScroll: true });
         }
       });

@@ -12,14 +12,14 @@ export const STORY: DemoSpec = {
   focus: ['composition', 'behavior'],
   apiComponents: ['CngxSidenav', 'CngxSidenavLayout'],
   moduleImports: [
-    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, injectSidenavConfig, injectSidenavLabels, provideSidenavConfigAt, withSidenavDimensions, withSidenavLabels, withSidenavShortcut } from '@cngx/ui/sidenav';",
-    "import { CngxNavLink } from '@cngx/common/interactive';",
+    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, injectSidenavConfig, injectSidenavLabels, provideSidenavConfigAt, withSidenavDimensions, withSidenavLabels, withSidenavShortcut } from '@cngx/ui/sidenav';",
+    "import { CngxNavHeader, CngxNavLink } from '@cngx/common/interactive';",
   ],
   imports: [
     'CngxSidenavLayout',
     'CngxSidenav',
     'CngxSidenavContent',
-    'CngxSidenavHeader',
+    'CngxNavHeader',
     'CngxNavLink',
   ],
   viewProviders: [
@@ -42,7 +42,7 @@ export const STORY: DemoSpec = {
       [(collapsed)]="navCollapsed"
       ariaLabel="Projects"
     >
-      <cngx-sidenav-header class="demo-sidenav__header">Projects</cngx-sidenav-header>
+      <cngx-nav-header class="demo-sidenav__header">Projects</cngx-nav-header>
       @for (project of projects; track project) {
         <a
           cngxNavLink
