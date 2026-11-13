@@ -183,7 +183,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   /** Deterministic hint element ID: `cngx-{name}-hint`. */
   readonly hintId = computed(() => `cngx-${this.idName()}-hint`);
 
-  private readonly hints = createKeyedRegistry<object>({ name: 'CngxFormFieldPresenter hints' });
+  private readonly hints = createKeyedRegistry<object>();
 
   /**
    * @internal Called by each `CngxHint` on creation; the returned release
