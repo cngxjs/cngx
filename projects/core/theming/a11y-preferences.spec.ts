@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideWindow } from '@cngx/core/tokens';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CNGX_CONTRAST } from './contrast';
@@ -264,7 +265,10 @@ describe('provideA11yPreferences + withPersistence', () => {
     // Write-back lands in the override, merged with the rehydrated key.
     TestBed.inject(CNGX_DENSITY).set('spacious');
     fixture.detectChanges();
-    expect(JSON.parse(fake.getItem(KEY) ?? '{}')).toEqual({ contrast: 'more', density: 'spacious' });
+    expect(JSON.parse(fake.getItem(KEY) ?? '{}')).toEqual({
+      contrast: 'more',
+      density: 'spacious',
+    });
 
     // The real localStorage was never touched.
     expect(localStorage.getItem(KEY)).toBeNull();
@@ -282,6 +286,14 @@ describe('provideA11yPreferences + withPersistence', () => {
 
     // Persistence skipped entirely: motion stayed at its default, not rehydrated.
     expect(TestBed.inject(CNGX_MOTION)()).toBe('auto');
+  });
+
+  it('reads the storage of the window that provideWindow supplies', () => {
+    const storage = { getItem: () => null, setItem: () => undefined } as unknown as Storage;
+    const fakeWindow = { localStorage: storage } as unknown as Window;
+    TestBed.configureTestingModule({ providers: [provideWindow(fakeWindow)] });
+
+    expect(TestBed.inject(CNGX_A11Y_STORAGE)).toBe(storage);
   });
 
   it('boots without storage when reading localStorage throws (blocked site data)', () => {

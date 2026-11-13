@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   computed,
   DestroyRef,
@@ -8,6 +7,7 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { injectWindow } from '@cngx/core/tokens';
 import { createMediaQuerySignal } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
@@ -119,7 +119,7 @@ export function injectEffectiveMotion(): Signal<'reduced' | 'full'> {
   const osReduce = createMediaQuerySignal(
     '(prefers-reduced-motion: reduce)',
     inject(DestroyRef),
-    inject(DOCUMENT).defaultView,
+    injectWindow(),
   );
   return computed(() => {
     const pick = preference();

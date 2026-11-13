@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideWindow } from '@cngx/core/tokens';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_MOTION, injectEffectiveMotion, injectMotion, provideMotion } from './motion';
 
@@ -101,6 +102,22 @@ describe('injectEffectiveMotion', () => {
 
     const effective = TestBed.runInInjectionContext(() => injectEffectiveMotion());
     expect(effective()).toBe(expected);
+  });
+
+  it('reads the OS query from the window that provideWindow supplies', () => {
+    const fakeWindow = {
+      matchMedia: (query: string) => ({
+        media: query,
+        matches: query === '(prefers-reduced-motion: reduce)',
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    } as unknown as Window;
+    TestBed.configureTestingModule({ providers: [provideMotion(), provideWindow(fakeWindow)] });
+    TestBed.createComponent(Host).detectChanges();
+
+    const effective = TestBed.runInInjectionContext(() => injectEffectiveMotion());
+    expect(effective()).toBe('reduced');
   });
 
   it('follows a runtime pick on the axis', () => {

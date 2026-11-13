@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   effect,
   inject,
@@ -9,6 +8,7 @@ import {
   type EnvironmentProviders,
   type WritableSignal,
 } from '@angular/core';
+import { injectWindow } from '@cngx/core/tokens';
 
 import {
   CNGX_CONTRAST,
@@ -110,7 +110,7 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
 export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_STORAGE', {
   providedIn: 'root',
   factory: () => {
-    const view = inject(DOCUMENT).defaultView;
+    const view = injectWindow();
     // Reading `localStorage` throws SecurityError when site data is blocked
     // or in a sandboxed iframe without allow-same-origin; persistence is
     // then skipped like on the server instead of failing the bootstrap.
@@ -132,7 +132,7 @@ export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_S
  * never clobbered. The write-back skips the initial flush, so an untouched
  * default is never written and a rehydrated value is not re-written (it is
  * already in storage); only a later change (a user pick) is persisted. The
- * whole feature is browser-guarded via `DOCUMENT.defaultView` and is a
+ * whole feature is browser-guarded via `injectWindow()` (`WINDOW`) and is a
  * no-op on the server.
  *
  * ```ts
