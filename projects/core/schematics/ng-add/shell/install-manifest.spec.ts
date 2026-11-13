@@ -32,6 +32,14 @@ describe('readInstallManifest', () => {
     expect(readInstallManifest(tree)).toEqual({ state: 'read', manifest: firstRun() });
   });
 
+  it('reads a hand-edited manifest with comments and a trailing comma', () => {
+    const json = JSON.stringify(firstRun(), null, 2);
+    const content = `// edited by hand\n${json.replace(/\n}$/, ',\n}')}`;
+    const tree = createMemoryTree({ '.cngx/install.json': content });
+
+    expect(readInstallManifest(tree)).toEqual({ state: 'read', manifest: firstRun() });
+  });
+
   it('reads a tree without one as absent', () => {
     expect(readInstallManifest(createMemoryTree())).toEqual({ state: 'absent' });
   });

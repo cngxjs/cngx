@@ -53,17 +53,11 @@ export interface InstallManifest {
 }
 
 /**
- * A previous manifest; `undefined` when the body is not one this release
- * writes. An earlier schema is not read either: no release with schematics
- * wrote one.
+ * A previous manifest from the parsed file; `undefined` when the value is
+ * not one this release writes. An earlier schema is not read either: no
+ * release with schematics wrote one.
  */
-export function parseInstallManifest(content: string): InstallManifest | undefined {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content);
-  } catch {
-    return undefined;
-  }
+export function parseInstallManifest(parsed: unknown): InstallManifest | undefined {
   if (!isRecord(parsed) || parsed['schemaVersion'] !== SCHEMA_VERSION || !isRecord(parsed['projects'])) {
     return undefined;
   }
