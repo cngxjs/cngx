@@ -15,6 +15,7 @@ import type { CngxNavRailConfig } from './nav-rail.config';
  */
 export const CNGX_NAV_RAIL_DEFAULTS: Required<CngxNavRailConfig> = {
   labelPlacement: 'end',
+  side: 'start',
   tooltip: true,
   tooltipDelay: 300,
 };

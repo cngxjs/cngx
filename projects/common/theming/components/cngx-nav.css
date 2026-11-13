@@ -24,6 +24,9 @@
  * - `.cngx-nav-mark` (`CngxNavMark`) - logo or avatar in the icon box of a
  *   header or footer, at the row icon x; `.cngx-nav-name` (`CngxNavName`) -
  *   the name next to it, at the row label x, truncated with an ellipsis
+ * - `.cngx-nav-rail-tooltip` - the label tooltip `injectNavRailTooltip`
+ *   adds to a rail; with `data-cngx-rail-side="end"` it opens at the row's
+ *   inline start, as the group flyout does
  *
  * **Row geometry**
  *
@@ -982,9 +985,10 @@
   }
 
   /* Group flyout on a collapsed rail: the group content as a top-layer
-     popover at the inline end of its head (injectNavRailFlyout wires the
-     anchor). Logical area, so it mirrors under dir="rtl"; it flips when the
-     viewport has no room. */
+     popover at the inline end of its head, or at its inline start for a rail
+     at the inline end (data-cngx-rail-side, written by injectNavRailFlyout,
+     which also wires the anchor). Logical area, so it mirrors under
+     dir="rtl"; it flips when the viewport has no room. */
   .cngx-nav-group-content:popover-open {
     inset: auto;
     margin: 0;
@@ -1003,6 +1007,31 @@
       --cngx-nav-flyout-shadow,
       var(--cngx-shadow-md, 0 4px 12px oklch(0 0 0 / 0.12))
     );
+  }
+
+  /* The fallbacks of the base rule stay, so an end-side flyout still flips. */
+  .cngx-nav-group-content[data-cngx-rail-side='end']:popover-open {
+    margin-inline-start: 0;
+    margin-inline-end: var(--cngx-nav-flyout-offset, var(--cngx-space-xs, 4px));
+    position-area: inline-start span-block-end;
+  }
+
+  /* Label tooltip of a railed row (injectNavRailTooltip appends it to the
+     host and wires the anchor): at the row's inline end, or its inline start
+     for an end-side rail (data-cngx-rail-side); flips when the viewport has
+     no room, and the flip swaps the margins with it. Two classes, so it beats
+     the margin reset of the tooltip skin's @scope. The gap token is
+     documented with CngxNavRail (nav-rail.css). */
+  .cngx-tooltip.cngx-nav-rail-tooltip {
+    position-area: inline-end;
+    position-try-fallbacks: flip-inline;
+    margin-inline-start: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
+  }
+
+  .cngx-tooltip.cngx-nav-rail-tooltip[data-cngx-rail-side='end'] {
+    position-area: inline-start;
+    margin-inline-start: 0;
+    margin-inline-end: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
   }
 
   /* The flyout already shows the nesting by sitting beside its head, so its

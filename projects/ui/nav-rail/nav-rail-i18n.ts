@@ -13,8 +13,9 @@ import {
  * from birth: the token carries a `Signal`, and {@link withNavRailI18nLabels}
  * accepts a `Signal` of a partial bundle.
  *
- * `CngxNavRail` reads `ariaLabel` inside a `computed()` while its `ariaLabel`
- * input is unbound, so the landmark name follows a language switch.
+ * `CngxNavRail` reads `ariaLabel` (a `side="start"` rail) or `endAriaLabel` (a
+ * `side="end"` rail) inside a `computed()` while its `ariaLabel` input is
+ * unbound, so the landmark name follows a language switch and a side flip.
  */
 export type CngxNavRailI18n = CngxNavRailLanguageSection;
 

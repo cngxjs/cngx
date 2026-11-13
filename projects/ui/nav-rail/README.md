@@ -84,6 +84,25 @@ nothing, in every colour mode.
 A row without `cngxNavIcon` draws its first letter in the icon box, as in the
 sidenav.
 
+### Side
+
+`side` names the edge the rail sits on, `'start'` (default) or `'end'`,
+reflected as `data-side` on the host. It is logical: `'end'` is the right edge
+in LTR and the left edge under `dir="rtl"`. `side` does not move the rail; its
+place is its DOM order (put it after the content for an end rail). It turns
+the side-dependent parts: the border goes on the rail's inner edge, and the
+group flyout and the label tooltip open away from the rail, into the page.
+
+Unbound, `[ariaLabel]` names an end rail by the `endAriaLabel` copy (English:
+`Secondary navigation`) instead of `ariaLabel`, so a start rail and an end rail
+on one page never share a landmark name. A lone end rail that is the main
+navigation names itself through `[ariaLabel]`.
+
+```html
+<main>...</main>
+<cngx-nav-rail side="end" ariaLabel="Tools">...</cngx-nav-rail>
+```
+
 ## Slots
 
 | Slot | Position |
@@ -99,7 +118,8 @@ logo or avatar lines up with the icons.
 
 A `cngxNavGroup` with its `cngxNavGroupContent` opens as a flyout beside the
 head, in both looks. The flyout is a native `popover="manual"` positioned with
-CSS anchor positioning at the head's inline end (flips at the viewport edge).
+CSS anchor positioning at the head's inline end, or its inline start on an
+end-side rail (flips at the viewport edge).
 
 - `aria-expanded` on the head stays the one state; the flyout is open exactly
   while the group is.
@@ -116,8 +136,9 @@ flyout opens at the popover's default position.
 ## Accessibility
 
 - The host is a `navigation` landmark. Its name is `[ariaLabel]` or, unbound,
-  the `navRail` section of the language pack (English: `Navigation`). Name it
-  apart from any other navigation landmark on the page.
+  the `navRail` section of the language pack (English: `Navigation`, or
+  `Secondary navigation` for `side="end"`). Name it apart from any other
+  navigation landmark on the page.
 - The clipped label is the row's accessible name; the tooltip is
   `aria-hidden` and only repeats it visually.
 - Mark the active row with `[active]` on `cngxNavLink`; it sets
@@ -133,8 +154,8 @@ bootstrapApplication(App, {
 });
 ```
 
-Resolution order: `[ariaLabel]`, then `CNGX_NAV_RAIL_I18N`, then the English
-default. `withNavRailI18nLabels` also takes a `Signal`, so the name follows a
+Resolution order: `[ariaLabel]`, then `CNGX_NAV_RAIL_I18N` (`ariaLabel`, or
+`endAriaLabel` for an end-side rail), then the English default. `withNavRailI18nLabels` also takes a `Signal`, so the name follows a
 language switch.
 
 ## Configuration
@@ -143,12 +164,17 @@ language switch.
 import {
   provideNavRailConfig,
   withNavRailLabelPlacement,
+  withNavRailSide,
   withNavRailTooltipDelay,
 } from '@cngx/ui/nav-rail';
 
 bootstrapApplication(App, {
   providers: [
-    provideNavRailConfig(withNavRailLabelPlacement('below'), withNavRailTooltipDelay(500)),
+    provideNavRailConfig(
+      withNavRailLabelPlacement('below'),
+      withNavRailSide('end'),
+      withNavRailTooltipDelay(500),
+    ),
   ],
 });
 ```
@@ -156,10 +182,11 @@ bootstrapApplication(App, {
 | Feature | Key | Default |
 |-|-|-|
 | `withNavRailLabelPlacement(placement)` | `labelPlacement` | `'end'` |
+| `withNavRailSide(side)` | `side` | `'start'` |
 | `withNavRailTooltip(enabled)` | `tooltip` | `true` (only the `'end'` look has a tooltip) |
 | `withNavRailTooltipDelay(ms)` | `tooltipDelay` | `300` |
 
-`[labelPlacement]` and `[tooltip]` win over the config, the config over the
+`[labelPlacement]`, `[side]` and `[tooltip]` win over the config, the config over the
 default. With the tooltip off, no tooltip element exists and no listener is
 attached; flipping it at runtime sets the tooltip up or tears it down.
 `provideNavRailConfigAt(...)` in a component's `viewProviders` merges over the
@@ -177,15 +204,16 @@ Rail tokens (`nav-rail.css`):
 | `--cngx-nav-rail-below-size` | `5rem` |
 | `--cngx-nav-rail-below-font-size` | `0.75rem` |
 | `--cngx-nav-rail-bg` | `--cngx-color-surface` |
-| `--cngx-nav-rail-border-color` | `--cngx-color-border` |
-| `--cngx-nav-rail-border-width` | `1px` |
+| `--cngx-nav-rail-border-color` | `--cngx-color-border`, the border on the rail's inner edge |
+| `--cngx-nav-rail-border-width` | `1px`, the border on the rail's inner edge |
 | `--cngx-nav-tooltip-offset` | `--cngx-space-sm`, the gap between a row and its label tooltip |
 
 Flyout tokens (`cngx-nav.css`): `--cngx-nav-flyout-bg`, `-color`,
 `-border-color`, `-border-width`, `-shadow`, `-radius`, `-padding`, `-min-inline-size`,
 `-offset`. The rail sets `--cngx-nav-flyout-offset` so the flyout clears the
-rail edge. The tooltip uses the `cngx-tooltip` skin; `nav-rail.css` places it
-`--cngx-nav-tooltip-offset` past the row.
+rail edge. The tooltip uses the `cngx-tooltip` skin; `cngx-nav.css` places it
+`--cngx-nav-tooltip-offset` past the row, so the placement also reaches an organism that calls `injectNavRailTooltip` without
+loading `nav-rail.css`.
 
 Row tokens (`--cngx-nav-link-*`, `--cngx-nav-icon-size`) come from the nav
 atoms and follow density.
@@ -260,12 +288,13 @@ organism:
 Both are behind swap tokens: `CNGX_NAV_RAIL_TOOLTIP_FACTORY` and
 `CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; `cngx-nav-rail`
 calls the provided factory in its own injection context. Provide `() => {}` to
-drop one. The tooltip factory receives the signal with the `[tooltip]` switch
-already folded in.
+drop one. The tooltip factory receives `railed` with the `[tooltip]` switch
+already folded in. Both take one sources object, and `side` (`'start'` or
+`'end'`) tells them which way to open.
 
-- `injectNavRailTooltip(railed)` - the label tooltip for clipped rows; while
-  `railed()` is `false` no tooltip element or listener exists.
-- `injectNavRailFlyout({ railed, groups, groupElements, contents, contentElements })` -
+- `injectNavRailTooltip({ railed, side })` - the label tooltip for clipped rows;
+  while `railed()` is `false` no tooltip element or listener exists.
+- `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` -
   nav groups as anchored flyouts while `railed()` is `true`; `groups` and
   `contents` are your content queries for `CngxNavGroup` and
   `CngxNavGroupContent`, `groupElements` and `contentElements` the same

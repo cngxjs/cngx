@@ -1,4 +1,4 @@
-import { Component, effect, signal, type Signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   CngxNavFooter,
@@ -10,9 +10,13 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 
 import { CNGX_NAV_RAIL_I18N, provideNavRailI18n, withNavRailI18nLabels } from './nav-rail-i18n';
-import { CngxNavRail, type CngxNavRailLabelPlacement } from './nav-rail';
+import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
 import { CNGX_NAV_RAIL_FLYOUT_FACTORY, injectNavRailFlyout } from './nav-rail-flyout';
-import { CNGX_NAV_RAIL_TOOLTIP_FACTORY, injectNavRailTooltip } from './nav-rail-tooltip';
+import {
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+  type CngxNavRailTooltipSources,
+  injectNavRailTooltip,
+} from './nav-rail-tooltip';
 
 @Component({
   imports: [
@@ -24,7 +28,12 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY, injectNavRailTooltip } from './nav-rail-
     CngxNavFooter,
   ],
   template: `
-    <cngx-nav-rail [labelPlacement]="placement()" [ariaLabel]="label()" [tooltip]="tooltip()">
+    <cngx-nav-rail
+      [labelPlacement]="placement()"
+      [side]="side()"
+      [ariaLabel]="label()"
+      [tooltip]="tooltip()"
+    >
       <cngx-nav-footer class="footer">v1</cngx-nav-footer>
       <a cngxNavLink href="#inbox" class="row-inbox">Inbox</a>
       <button type="button" cngxNavGroup #reports="cngxNavGroup" class="head">Reports</button>
@@ -37,6 +46,7 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY, injectNavRailTooltip } from './nav-rail-
 })
 class RailHost {
   readonly placement = signal<CngxNavRailLabelPlacement>('end');
+  readonly side = signal<CngxNavRailSide | undefined>(undefined);
   readonly label = signal<string | undefined>(undefined);
   readonly tooltip = signal<boolean | undefined>(undefined);
 }
@@ -71,13 +81,13 @@ describe('CngxNavRail', () => {
   });
 
   it('follows a provided copy signal, so the name follows a language switch', () => {
-    const copy = signal({ ariaLabel: 'Hauptnavigation' });
+    const copy = signal({ ariaLabel: 'Hauptnavigation', endAriaLabel: 'Sekundäre Navigation' });
     TestBed.configureTestingModule({
       providers: [{ provide: CNGX_NAV_RAIL_I18N, useValue: copy }],
     });
     const { rail, settle } = setup();
     expect(rail.getAttribute('aria-label')).toBe('Hauptnavigation');
-    copy.set({ ariaLabel: 'Navigazione' });
+    copy.set({ ariaLabel: 'Navigazione', endAriaLabel: 'Navigazione secondaria' });
     settle();
     expect(rail.getAttribute('aria-label')).toBe('Navigazione');
   });
@@ -94,12 +104,46 @@ describe('CngxNavRail', () => {
     expect(rail.getAttribute('aria-label')).toBe('Navigation');
   });
 
+  it('names an end-side rail by endAriaLabel while [ariaLabel] is unbound', () => {
+    const { fixture, rail, settle } = setup();
+    fixture.componentInstance.side.set('end');
+    settle();
+    expect(rail.getAttribute('aria-label')).toBe('Secondary navigation');
+  });
+
+  it('follows a side flip with the landmark name', () => {
+    const { fixture, rail, settle } = setup();
+    expect(rail.getAttribute('aria-label')).toBe('Navigation');
+    fixture.componentInstance.side.set('end');
+    settle();
+    expect(rail.getAttribute('aria-label')).toBe('Secondary navigation');
+    fixture.componentInstance.side.set('start');
+    settle();
+    expect(rail.getAttribute('aria-label')).toBe('Navigation');
+  });
+
+  it('lets a bound [ariaLabel] win on the end side too', () => {
+    const { fixture, rail, settle } = setup();
+    fixture.componentInstance.side.set('end');
+    fixture.componentInstance.label.set('Tools');
+    settle();
+    expect(rail.getAttribute('aria-label')).toBe('Tools');
+  });
+
   it('reflects the look as data-label-placement', () => {
     const { fixture, rail, settle } = setup();
     expect(rail.getAttribute('data-label-placement')).toBe('end');
     fixture.componentInstance.placement.set('below');
     settle();
     expect(rail.getAttribute('data-label-placement')).toBe('below');
+  });
+
+  it('reflects the side as data-side, start by default', () => {
+    const { fixture, rail, settle } = setup();
+    expect(rail.getAttribute('data-side')).toBe('start');
+    fixture.componentInstance.side.set('end');
+    settle();
+    expect(rail.getAttribute('data-side')).toBe('end');
   });
 
   it('projects the header first, the rows in the body and the footer last', () => {
@@ -164,13 +208,17 @@ describe('CngxNavRail', () => {
 
   it('lets the swap tokens replace or drop tooltip and flyout, with the switch folded in', () => {
     const seen: boolean[] = [];
+    const sides: CngxNavRailSide[] = [];
     TestBed.configureTestingModule({
       providers: [
         {
           provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-          useValue: (active: Signal<boolean>) => {
+          useValue: ({ railed, side }: CngxNavRailTooltipSources) => {
             effect(() => {
-              seen.push(active());
+              seen.push(railed());
+            });
+            effect(() => {
+              sides.push(side());
             });
           },
         },
@@ -183,6 +231,9 @@ describe('CngxNavRail', () => {
     fixture.componentInstance.tooltip.set(false);
     settle();
     expect(seen).toEqual([true, false]);
+    fixture.componentInstance.side.set('end');
+    settle();
+    expect(sides).toEqual(['start', 'end']);
   });
 
   it('opens a projected nav group as a flyout', () => {

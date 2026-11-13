@@ -4,8 +4,17 @@
  * rows, header, footer and group flyout it holds are skinned by the nav
  * atoms (`cngx-nav.css` in `@cngx/common/theming/components`, loaded by
  * `cngx.css`); this file SETs the rail width and the rail states of the
- * rows and places the rail's label tooltip. Shipped via the component's `styleUrl`; under `encapsulation: None`
- * the `cngx-nav-rail` tag and its descendants match globally.
+ * rows. The label tooltip is placed by `cngx-nav.css` too, so every organism
+ * that calls the rail helpers gets it. Shipped via the component's
+ * `styleUrl`; under `encapsulation: None` the `cngx-nav-rail` tag and its
+ * descendants match globally.
+ *
+ * **Side** (`data-side`)
+ *
+ * - `start` - the rail sits at the inline start; border on its inline end.
+ * - `end` - the rail sits at the inline end; border on its inline start. The
+ *   rail's place is the consumer's DOM order, the attribute only turns the
+ *   side-dependent parts.
  *
  * **Looks** (`data-label-placement`)
  *
@@ -68,7 +77,8 @@
   }
 
   /**
-   * Colour of the rail's inline-end border.
+   * Colour of the border on the rail's inner edge (inline end for
+   * `side="start"`, inline start for `side="end"`).
    * @group Surface
    * @see [[--cngx-color-border]]
    */
@@ -78,7 +88,8 @@
   }
 
   /**
-   * Width of the rail's inline-end border. The group flyout clears it.
+   * Width of the border on the rail's inner edge (inline end for
+   * `side="start"`, inline start for `side="end"`). The group flyout clears it.
    * @group Surface
    */
   @property --cngx-nav-rail-border-width {
@@ -87,8 +98,9 @@
   }
 
   /**
-   * Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so
-   * the use-site fallback follows the foundation.
+   * Gap between a railed row and its label tooltip. Read on the tooltip,
+   * which `cngx-nav.css` places; no initial value, so the use-site fallback
+   * follows the foundation.
    * @group Layout
    * @see [[--cngx-space-sm]]
    */
@@ -117,8 +129,10 @@
     );
     block-size: 100%;
     overflow: hidden;
-    border-inline-end: var(--cngx-nav-rail-border-width, 1px) solid
-      var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    /* Style and colour on every side, the width only on the inner edge, so
+       an end-side rail only swaps the width. */
+    border: 0 solid var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
+    border-inline-end-width: var(--cngx-nav-rail-border-width, 1px);
     background: var(--cngx-nav-rail-bg, var(--cngx-color-surface, oklch(1 0 0)));
     color: var(--cngx-color-text, oklch(0.2 0.01 250));
     /* The flyout anchors to the group head, which sits the row inset and the
@@ -127,6 +141,11 @@
       var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
         var(--cngx-nav-rail-border-width, 1px) + var(--cngx-space-xs, 4px)
     );
+  }
+
+  cngx-nav-rail[data-side='end'] {
+    border-inline-end-width: 0;
+    border-inline-start-width: var(--cngx-nav-rail-border-width, 1px);
   }
 
   cngx-nav-rail[data-label-placement='below'] {
@@ -220,14 +239,6 @@
     inset-block-start: calc(var(--cngx-space-xs, 4px) / 2);
     inset-inline-start: calc(50% + var(--cngx-space-xs, 4px));
     margin: 0;
-  }
-
-  /* Label tooltip of a railed row (injectNavRailTooltip appends it to the
-     rail and wires the anchor): at the inline end of the row. Two classes,
-     so it beats the margin reset of the tooltip skin's @scope. */
-  .cngx-tooltip.cngx-nav-rail-tooltip {
-    position-area: inline-end;
-    margin-inline-start: var(--cngx-nav-tooltip-offset, var(--cngx-space-sm, 8px));
   }
 
   /* The flyout replaces the chevron in the stacked look. */

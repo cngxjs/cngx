@@ -352,6 +352,7 @@ export const CNGX_LANGUAGE_DE = {
   },
   navRail: {
     ariaLabel: 'Navigation',
+    endAriaLabel: 'Sekundäre Navigation',
   },
   paginator: {
     label: 'Seitennavigation',

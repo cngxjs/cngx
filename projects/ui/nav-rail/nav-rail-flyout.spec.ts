@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
 
+import type { CngxNavRailSide } from './nav-rail';
 import { injectNavRailFlyout } from './nav-rail-flyout';
 
 @Component({
@@ -25,6 +26,7 @@ import { injectNavRailFlyout } from './nav-rail-flyout';
 })
 class TestRail {
   readonly railed = signal(true);
+  readonly side = signal<CngxNavRailSide>('start');
   readonly groups = viewChildren(CngxNavGroup);
   readonly groupElements = viewChildren(CngxNavGroup, { read: ElementRef });
   readonly contents = viewChildren(CngxNavGroupContent);
@@ -33,6 +35,7 @@ class TestRail {
   constructor() {
     injectNavRailFlyout({
       railed: this.railed,
+      side: this.side,
       groups: this.groups,
       groupElements: this.groupElements,
       contents: this.contents,
@@ -68,9 +71,19 @@ describe('injectNavRailFlyout', () => {
     expect(el('.head-b').style.getPropertyValue('anchor-name')).not.toBe(anchor);
   });
 
+  it('marks the flyout content with the rail side and follows a flip', () => {
+    const { fixture, el, settle } = setup();
+    expect(el('.content-a').getAttribute('data-cngx-rail-side')).toBe('start');
+    fixture.componentInstance.side.set('end');
+    settle();
+    expect(el('.content-a').getAttribute('data-cngx-rail-side')).toBe('end');
+    expect(el('.content-b').getAttribute('data-cngx-rail-side')).toBe('end');
+  });
+
   it('leaves the group content inline while not railed', () => {
     const { el } = setup(false);
     expect(el('.content-a').hasAttribute('popover')).toBe(false);
+    expect(el('.content-a').hasAttribute('data-cngx-rail-side')).toBe(false);
     expect(el('.head-a').style.getPropertyValue('anchor-name')).toBe('');
   });
 
@@ -201,5 +214,6 @@ describe('injectNavRailFlyout', () => {
     const content = el('.content-a');
     fixture.destroy();
     expect(content.hasAttribute('popover')).toBe(false);
+    expect(content.hasAttribute('data-cngx-rail-side')).toBe(false);
   });
 });

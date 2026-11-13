@@ -4303,6 +4303,7 @@ app-menu-button-material-bridge {
 // the glyph to the icon box, without it a 24px glyph clips in a 20px box.
 app-nav-rail-labels-beside,
 app-nav-rail-labels-below,
+app-nav-rail-end-side,
 app-nav-rail-rail-with-secondary-sidebar {
   @include cngx-icon-bridge.theme($demo-material-bridge-theme);
 }

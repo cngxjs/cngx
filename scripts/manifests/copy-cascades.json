@@ -1032,17 +1032,6 @@
       ]
     },
     {
-      "class": "CngxNavRail",
-      "file": "projects/ui/nav-rail/nav-rail.ts",
-      "line": 132,
-      "member": "resolvedAriaLabel",
-      "enclosing": "computed",
-      "tiers": [
-        { "kind": "input", "field": "ariaLabel" },
-        { "kind": "bundle", "field": "i18n", "path": ["ariaLabel"], "token": "CNGX_NAV_RAIL_I18N" }
-      ]
-    },
-    {
       "class": "CngxPaginator",
       "file": "projects/ui/paginator/paginator.component.ts",
       "line": 172,
