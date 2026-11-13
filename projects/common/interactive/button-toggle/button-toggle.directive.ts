@@ -45,10 +45,11 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * `disabled` does not reach the roving item, since a host directive input cannot be rebound.
  *
  * The effective disabled state renders as `aria-disabled` only, never as the native `disabled`
- * attribute, so a disabled toggle stays focusable and its `[cngxDescribedBy]` reason is reachable
- * by keyboard. The core activation guard (`injectActivationGuard`) swallows click on it, and
- * Space and Enter change nothing. A toggle disabled only by the group is therefore reachable
- * with the arrow keys.
+ * attribute, so a disabled toggle stays focusable. The core activation guard
+ * (`injectActivationGuard`) swallows click on it, and Space and Enter change nothing. A toggle
+ * disabled only by the group stays reachable with the arrow keys, so its `[cngxDescribedBy]`
+ * reason is announced on focus. A toggle disabled by its own input is still skipped by the arrow
+ * keys; only a programmatic `focus()` reaches it.
  *
  * Bind `[cngxDescribedBy]` to the id of an element that explains the state, for example why the
  * toggle is disabled. The directive has no template, so you render that element.
