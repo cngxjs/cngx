@@ -283,4 +283,21 @@ describe('provideA11yPreferences + withPersistence', () => {
     // Persistence skipped entirely: motion stayed at its default, not rehydrated.
     expect(TestBed.inject(CNGX_MOTION)()).toBe('auto');
   });
+
+  it('boots without storage when reading localStorage throws (blocked site data)', () => {
+    // Chrome with site data blocked, or a sandboxed iframe without
+    // allow-same-origin: the localStorage getter itself throws SecurityError.
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('Failed to read localStorage: access is denied', 'SecurityError');
+    });
+
+    TestBed.configureTestingModule({
+      providers: [provideA11yPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    expect(TestBed.inject(CNGX_A11Y_STORAGE)).toBeNull();
+    expect(TestBed.inject(CNGX_MOTION)()).toBe('auto');
+  });
 });

@@ -52,6 +52,31 @@ describe('createKeyedRegistry', () => {
     expect(registry.get('a')).toBe('successor');
   });
 
+  it('hands the key to a successor that registered before the predecessor tore down', () => {
+    // Angular recreate order without the intermediate unregister: the
+    // successor's register lands while the predecessor still holds the key,
+    // then the predecessor's DestroyRef teardown unregisters it.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const registry = createKeyedRegistry<string>({ name: 'Tabs' });
+    registry.register('tab-1', 'predecessor');
+    registry.register('tab-1', 'successor');
+    registry.unregister('tab-1', 'predecessor');
+    warn.mockRestore();
+    expect(registry.get('tab-1')).toBe('successor');
+    expect(registry.values()).toEqual(['successor']);
+  });
+
+  it('drops a waiting successor that unregisters before the hand-over', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const registry = createKeyedRegistry<string>();
+    registry.register('a', 'holder');
+    registry.register('a', 'waiting');
+    registry.unregister('a', 'waiting');
+    registry.unregister('a', 'holder');
+    warn.mockRestore();
+    expect(registry.get('a')).toBeNull();
+  });
+
   it('ignores an unregister for an unknown key', () => {
     const registry = createKeyedRegistry<string>();
     const before = registry.entries();
