@@ -486,7 +486,7 @@
             },
             {
                 "title": "CNGX1073",
-                "label": "CNGX1073: Split button without a main cngxButton",
+                "label": "CNGX1073: Split button without a main button",
                 "file": "error-codes/cngx1073.md"
             },
             {

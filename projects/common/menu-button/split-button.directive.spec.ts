@@ -691,7 +691,9 @@ describe('CngxSplitButton', () => {
     await fixture.whenStable();
     const calls = warn.mock.calls.filter(([msg]) => String(msg).startsWith('CNGX1073'));
     expect(calls).toHaveLength(1);
-    expect(calls[0][0]).toMatch(/^CNGX1073: \[cngxSplitButton\] has no main cngxButton\./);
+    expect(calls[0][0]).toMatch(
+      /^CNGX1073: \[cngxSplitButton\] has no main button\. Place a button host \(cngxButton, cngxIconButton, cngxActionButton or a custom CngxButtonBrain host\)/,
+    );
     expect(calls[0]).toContain(group);
     expect(split.mainBlocked()).toBe(false);
   });
