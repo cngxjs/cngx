@@ -28,8 +28,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxDrawer, CngxDrawerPanel } from '@cngx/common/layout';",
     "import { CngxAriaExpanded } from '@cngx/common/a11y';",
+    "import { CngxStack } from '@cngx/ui/layout';",
   ],
-  imports: ['CngxDrawer', 'CngxDrawerPanel', 'CngxAriaExpanded'],
+  imports: ['CngxDrawer', 'CngxDrawerPanel', 'CngxAriaExpanded', 'CngxStack'],
   setup: `protected readonly focusedId = signal<string>('(none)');
   protected onFocusIn(ev: FocusEvent): void {
     const t = ev.target as HTMLElement | null;
@@ -42,31 +43,25 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div cngxDrawer #drawer="cngxDrawer"
        (focusin)="onFocusIn($event)" (focusout)="onFocusOut($event)"
-       class="demo-drawer-container demo-drawer-container--bordered">
-    <div class="demo-inline-actions" style="padding: 0.5rem;">
-      <button id="pcw-trigger" type="button" class="sort-btn"
+       class="cngx-drawer">
+    <nav id="pcw-panel" [cngxDrawerPanel]="drawer" position="left"
+         role="navigation" aria-label="Primary">
+      <cngx-stack gap="sm" align="start" style="padding: var(--cngx-space-md, 1rem)">
+        <strong>Sidebar</strong>
+        <button id="pcw-link-home" type="button">Home</button>
+        <button id="pcw-link-profile" type="button">Profile</button>
+        <button id="pcw-close" type="button" (click)="drawer.close()">Close</button>
+      </cngx-stack>
+    </nav>
+
+    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+      <button id="pcw-trigger" type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'pcw-panel'"
               (click)="drawer.toggle()">
         {{ drawer.opened() ? 'Close' : 'Open' }} Menu
       </button>
-    </div>
-
-    <div class="demo-drawer-layout">
-      <nav id="pcw-panel" [cngxDrawerPanel]="drawer" position="left"
-           role="navigation" aria-label="Primary"
-           class="demo-drawer-panel">
-        <div class="demo-drawer-panel-content">
-          <strong>Sidebar</strong>
-          <button id="pcw-link-home" type="button" class="sort-btn">Home</button>
-          <button id="pcw-link-profile" type="button" class="sort-btn">Profile</button>
-          <button id="pcw-close" type="button" class="sort-btn" (click)="drawer.close()">Close</button>
-        </div>
-      </nav>
-
-      <main class="demo-drawer-main">
-        <p>Open the menu, then Tab through the panel. Focus stays trapped inside until the drawer closes; on close, the trigger re-receives focus.</p>
-      </main>
-    </div>
+      <p>Open the menu, then Tab through the panel. Focus stays trapped inside until the drawer closes; on close, the trigger re-receives focus.</p>
+    </main>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">

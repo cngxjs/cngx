@@ -43,6 +43,23 @@ export const STORY: DemoSpec = {
       }
     </div>
   </div>`,
+  css: `.demo-infinite-scroll-frame {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
+.demo-infinite-scroll-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+}
+
+.demo-infinite-scroll-sentinel {
+  padding: 16px;
+  text-align: center;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}`,
   templateChrome: `<div class="status-row" style="margin-bottom:12px">
     <span class="status-badge">Items: {{ items().length }}</span>
     <span class="status-badge">Has more: {{ hasMore() }}</span>

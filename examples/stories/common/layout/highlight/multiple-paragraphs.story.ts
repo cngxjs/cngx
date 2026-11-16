@@ -20,6 +20,18 @@ export const STORY: DemoSpec = {
     <p>The Angular CLI makes it easy to create and maintain Angular apps.</p>
     <p>Use Angular with TypeScript for type safety.</p>
   </div>`,
+  css: `.demo-highlight-passage {
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.demo-highlight-passage p {
+  margin: 0 0 8px;
+}
+
+.demo-highlight-passage p:last-child {
+  margin-bottom: 0;
+}`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Matches for "angular"</span>

@@ -11,36 +11,40 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxSidenav'],
   moduleImports: [
     'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, provideSidenavConfigAt, withSidenavHoverDwell } from \'@cngx/ui\';',
-    'import { CngxNavHeader } from \'@cngx/common/interactive\';',
+    'import { CngxNavHeader, CngxNavMark, CngxNavName } from \'@cngx/common/interactive\';',
+    'import { CngxAvatar } from \'@cngx/common/display\';',
+    'import { CngxStack } from \'@cngx/ui/layout\';',
     'import { CngxNavLink } from \'@cngx/common\';',
   ],
-  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavHeader', 'CngxNavLink'],
+  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavHeader', 'CngxNavMark', 'CngxNavName', 'CngxAvatar', 'CngxStack', 'CngxNavLink'],
   viewProviders: ['provideSidenavConfigAt(withSidenavHoverDwell({ enterDelay: 250 }))'],
   template: `
-  <cngx-sidenav-layout class="demo-sidenav__container" style="height: 180px;">
+  <cngx-stack gap="md">
+  <cngx-sidenav-layout style="block-size: 180px">
     <cngx-sidenav #navConfig="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px" ariaLabel="Scoped default navigation">
-      <cngx-nav-header class="demo-sidenav__header"><span class="demo-sidenav__brand-mark" aria-hidden="true">C</span><span class="demo-sidenav__brand-name">Config</span></cngx-nav-header>
-      <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Dashboard</a>
-      <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Inbox</a>
+      <cngx-nav-header><cngx-avatar cngxNavMark initials="C" shape="square" /><span cngxNavName>Config</span></cngx-nav-header>
+      <a cngxNavLink [active]="false" (click)="$event.preventDefault()">Dashboard</a>
+      <a cngxNavLink [active]="false" (click)="$event.preventDefault()">Inbox</a>
     </cngx-sidenav>
-    <cngx-sidenav-content class="demo-sidenav__content">
-      <h3 class="demo-sidenav__content-title--small" style="margin: 0 0 0.35rem;">Scoped default</h3>
-      <p class="demo-sidenav__content-hint">Rest on the rail - it expands after ~250ms, the dwell this scope's <code>withSidenavHoverDwell</code> sets.</p>
+    <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
+      <h3>Scoped default</h3>
+      <p>Rest on the rail - it expands after ~250ms, the dwell this scope's <code>withSidenavHoverDwell</code> sets.</p>
     </cngx-sidenav-content>
   </cngx-sidenav-layout>
 
-  <cngx-sidenav-layout class="demo-sidenav__container" style="height: 180px; margin-top: 1rem;">
+  <cngx-sidenav-layout style="block-size: 180px">
     <cngx-sidenav #navOverride="cngxSidenav" position="start" mode="side" [collapsed]="true" width="200px" [expandDelay]="600" ariaLabel="Override navigation">
-      <cngx-nav-header class="demo-sidenav__header"><span class="demo-sidenav__brand-mark" aria-hidden="true">O</span><span class="demo-sidenav__brand-name">Override</span></cngx-nav-header>
-      <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Settings</a>
-      <a cngxNavLink class="demo-sidenav__link" [active]="false" (click)="$event.preventDefault()">Help</a>
+      <cngx-nav-header><cngx-avatar cngxNavMark initials="O" shape="square" /><span cngxNavName>Override</span></cngx-nav-header>
+      <a cngxNavLink [active]="false" (click)="$event.preventDefault()">Settings</a>
+      <a cngxNavLink [active]="false" (click)="$event.preventDefault()">Help</a>
     </cngx-sidenav>
-    <cngx-sidenav-content class="demo-sidenav__content">
-      <h3 class="demo-sidenav__content-title--small" style="margin: 0 0 0.35rem;">Per-instance override</h3>
-      <p class="demo-sidenav__content-hint"><code>[expandDelay]="600"</code> wins over the same 250ms scope - this rail waits longer.</p>
+    <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
+      <h3>Per-instance override</h3>
+      <p><code>[expandDelay]="600"</code> wins over the same 250ms scope - this rail waits longer.</p>
     </cngx-sidenav-content>
-  </cngx-sidenav-layout>`,
-  templateChromeBefore: `<p class="demo-sidenav__content-hint" style="margin-bottom: 0.75rem;">
+  </cngx-sidenav-layout>
+  </cngx-stack>`,
+  templateChromeBefore: `<p class="demo-hint" style="margin-bottom: 0.75rem;">
     Rest on the top rail (~250ms, scoped default) or the bottom rail (~600ms, per-instance override). A quick sweep leaves either collapsed.
   </p>`,
   templateChrome: `<div class="status-row" style="margin-top: 0.5rem; gap: 0.5rem;">

@@ -16,23 +16,55 @@ export const STORY: DemoSpec = {
   setup: `
   protected readonly open = signal(false);`,
   template: `
-  <div class="demo-drawer-container demo-drawer-container--bordered demo-app-frame">
-    <div class="demo-app-header">
-      <span class="demo-app-brand">Orders</span>
-      <span class="demo-app-spacer"></span>
+  <div class="demo-drawer-surface">
+    <div class="demo-drawer-surface__header">
+      <strong class="demo-drawer-surface__title">Orders</strong>
       <button type="button" aria-controls="standalone-filters"
               [attr.aria-expanded]="open()" (click)="open.set(!open())">Filters</button>
     </div>
     <aside id="standalone-filters" cngxDrawerSurface [active]="open()" modality="none"
            [role]="null" aria-label="Filters" [hidden]="!open()"
-           (dismiss)="open.set(false)" class="demo-drawer-panel-content">
+           (dismiss)="open.set(false)" class="demo-drawer-surface__panel">
       <label><input type="checkbox" checked /> Open</label>
       <label><input type="checkbox" /> Shipped</label>
     </aside>
-    <main class="demo-app-main">
+    <main class="demo-drawer-surface__main">
       <p>The order list stays operable while the filters are open.</p>
     </main>
   </div>`,
+  css: `.demo-drawer-surface {
+  display: flex;
+  flex-direction: column;
+  block-size: 340px;
+  border: 1px solid var(--cngx-color-border, #e5e7eb);
+  border-radius: var(--cngx-radius-md, 6px);
+  overflow: hidden;
+}
+.demo-drawer-surface__header {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-space-sm, 0.5rem);
+  min-block-size: 3rem;
+  padding-inline: var(--cngx-space-md, 1rem);
+  border-block-end: 1px solid var(--cngx-color-border, #e5e7eb);
+}
+.demo-drawer-surface__title {
+  flex: 1 1 auto;
+}
+/* :not([hidden]), so the closed surface stays hidden. */
+.demo-drawer-surface__panel:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-space-sm, 0.5rem);
+  padding: var(--cngx-space-md, 1rem);
+  border-block-end: 1px solid var(--cngx-color-border, #e5e7eb);
+}
+.demo-drawer-surface__main {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding: var(--cngx-space-md, 1rem);
+}`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row">

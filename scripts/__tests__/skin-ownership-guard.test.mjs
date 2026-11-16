@@ -495,24 +495,6 @@ const STORY_OWNERSHIP_EXEMPT = [
       'ui/feedback is an independent sibling; the story moves to that artifact or renders without it',
   },
   {
-    file: 'examples/stories/ui/nav-rail/rail-with-secondary-sidebar.story.ts',
-    symbol: 'CngxSidenav',
-    reason:
-      'ui/sidenav is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/nav-rail/rail-with-secondary-sidebar.story.ts',
-    symbol: 'CngxSidenavLayout',
-    reason:
-      'ui/sidenav is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/nav-rail/rail-with-secondary-sidebar.story.ts',
-    symbol: 'CngxSidenavContent',
-    reason:
-      'ui/sidenav is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
     file: 'examples/stories/ui/stepper/stepper-footer/mat-stepper-footer.story.ts',
     symbol: 'CngxMatStepper',
     reason:

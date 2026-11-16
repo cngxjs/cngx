@@ -49,6 +49,37 @@ export const STORY: DemoSpec = {
       }
     </div>
   </div>`,
+  css: `.demo-spy-nav-link {
+  text-decoration: none;
+  font-size: 0.8125rem;
+  text-transform: capitalize;
+  padding: 6px 10px;
+}
+
+.demo-spy-container {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
+.demo-spy-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #eaeaea));
+}
+
+.demo-spy-section:last-child {
+  border-bottom: 0;
+}
+
+.demo-spy-section h3 {
+  margin: 0 0 8px;
+  text-transform: capitalize;
+}
+
+.demo-spy-section p {
+  margin: 0;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.875rem;
+}`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Active section</span>

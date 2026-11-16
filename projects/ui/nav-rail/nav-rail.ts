@@ -88,7 +88,7 @@ export type CngxNavRailSide = CngxSidebarSide;
  * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, CNGX_NAV_RAIL_TOOLTIP_FACTORY, CNGX_NAV_RAIL_FLYOUT_FACTORY, provideNavRailConfig, withNavRailTooltip, withNavRailSide
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
- * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
+ * <example-url>/#/ui/sidenav/rail-with-secondary-sidebar</example-url>
  * <example-url>/#/ui/nav-rail/end-side</example-url>
  * @axis level organism
  */

@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
     "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelToggle, type CngxDrawerModality, type DrawerMode } from '@cngx/common/layout';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
@@ -24,6 +25,7 @@ export const STORY: DemoSpec = {
     'CngxPanelToggle',
     'CngxIconButton',
     'CngxIcon',
+    'CngxStack',
     'MatIconModule',
   ],
   setup: `
@@ -49,25 +51,24 @@ export const STORY: DemoSpec = {
     this.shown.set(next);
   }`,
   template: `
-  <div class="demo-drawer-container demo-drawer-container--bordered demo-app-frame">
-    <header class="demo-app-header">
-      <span class="demo-app-brand">Orders</span>
-      <span class="demo-app-spacer"></span>
+  <cngx-stack gap="none">
+    <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+      <strong style="flex: 1 1 auto">Orders</strong>
       <button type="button" [cngxPanelToggle]="filters" label="Filters"></button>
-    </header>
+    </cngx-stack>
 
-    <div cngxDrawer #filters="cngxDrawer" panelId="order-filters" class="cngx-drawer demo-app-body">
+    <div cngxDrawer #filters="cngxDrawer" panelId="order-filters" class="cngx-drawer"
+         style="flex: 1 1 auto; min-block-size: 0">
       <aside [cngxDrawerPanel]="filters" [mode]="mode()" [modality]="modality()"
              [closeOnClickOutside]="mode() === 'over'"
-             aria-label="Filters" class="demo-drawer-panel">
-        <div class="demo-app-header">
-          <strong>Filters</strong>
-          <span class="demo-app-spacer"></span>
+             aria-label="Filters">
+        <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+          <strong style="flex: 1 1 auto">Filters</strong>
           <button type="button" cngxIconButton aria-label="Close filters" (click)="filters.close()">
             <cngx-icon><mat-icon>close</mat-icon></cngx-icon>
           </button>
-        </div>
-        <fieldset class="demo-drawer-panel-content">
+        </cngx-stack>
+        <fieldset style="margin: 0; border: 0; padding: var(--cngx-space-md, 1rem)">
           <legend>Status</legend>
           @for (status of statuses; track status) {
             <label>
@@ -79,16 +80,16 @@ export const STORY: DemoSpec = {
         </fieldset>
       </aside>
 
-      <main [cngxDrawerContent]="filters" class="demo-drawer-main demo-app-main">
+      <main [cngxDrawerContent]="filters" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
         <p>{{ visibleOrders().length }} of {{ orders.length }} orders</p>
-        <ul class="demo-list-flush">
+        <ul>
           @for (order of visibleOrders(); track order.id) {
-            <li class="demo-list-row">Order {{ order.id }}: {{ order.status }}</li>
+            <li>Order {{ order.id }}: {{ order.status }}</li>
           }
         </ul>
       </main>
     </div>
-  </div>`,
+  </cngx-stack>`,
   setupChrome: `
   protected readonly modes: { label: string; value: DrawerMode }[] = [
     { label: 'Overlays the list (over)', value: 'over' },
@@ -100,7 +101,6 @@ export const STORY: DemoSpec = {
     { label: 'Only this area blocked (contained)', value: 'contained' },
     { label: 'Nothing blocked (none)', value: 'none' },
   ];
-  protected readonly switching = signal(false);
   protected readonly modalityLocked = computed(() => this.mode() === 'push');
   protected readonly explanation = computed(() => {
     if (this.mode() === 'push') {
@@ -121,7 +121,7 @@ export const STORY: DemoSpec = {
   });
 
   protected setMode(drawer: CngxDrawer, next: DrawerMode): void {
-    this.snapClosed(drawer);
+    drawer.close();
     this.mode.set(next);
   }
 
@@ -129,20 +129,13 @@ export const STORY: DemoSpec = {
     if (this.modalityLocked()) {
       return;
     }
-    this.snapClosed(drawer);
-    this.modality.set(next);
-  }
-
-  // Close first and snap: the panel changes between an absolute overlay and
-  // an in-flow item, and animating that change makes the layout jump.
-  private snapClosed(drawer: CngxDrawer): void {
-    this.switching.set(true);
     drawer.close();
-    requestAnimationFrame(() => requestAnimationFrame(() => this.switching.set(false)));
+    this.modality.set(next);
   }`,
   templateChromeBefore: `
-  <div [class.demo-drawer-switching]="switching()">
-    <div class="filter-row" role="group" aria-label="Drawer mode">
+  <p class="demo-hint">Open Filters, switch mode and modality, and use the list while the panel is open.</p>
+  <div>
+    <div class="filter-row" role="group" aria-label="Drawer mode" style="margin-top: 8px">
       @for (m of modes; track m.value) {
         <button type="button" class="chip" [attr.aria-pressed]="mode() === m.value"
                 (click)="setMode(filters, m.value)">{{ m.label }}</button>

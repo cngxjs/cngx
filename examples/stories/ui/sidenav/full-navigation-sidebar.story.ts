@@ -18,62 +18,57 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from \'@cngx/ui\';',
-    'import { CngxNavHeader, CngxNavFooter } from \'@cngx/common/interactive\';',
+    'import { CngxNavHeader, CngxNavFooter, CngxNavMark, CngxNavName } from \'@cngx/common/interactive\';',
+    'import { CngxAvatar } from \'@cngx/common/display\';',
     'import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavGroupContent, CngxNavBadge } from \'@cngx/common\';',
     'import { CngxPanelTrigger } from \'@cngx/common/layout\';',
   ],
-  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavHeader', 'CngxNavFooter', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge', 'CngxPanelTrigger'],
+  imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavHeader', 'CngxNavFooter', 'CngxNavMark', 'CngxNavName', 'CngxAvatar', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge', 'CngxPanelTrigger'],
   setup: `protected readonly navOpen = signal(true);
   protected readonly navCollapsed = signal(false);
   protected readonly activeLink = signal('/dashboard');
   protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];`,
+  templateChromeBefore: `<button class="sort-btn" type="button" [cngxPanelTrigger]="nav.panelTarget">Toggle navigation</button>`,
   template: `
-  <div class="filter-row">
-    <button class="sort-btn" type="button" [cngxPanelTrigger]="nav.panelTarget">
-      Toggle navigation
-    </button>
-  </div>
-
-  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav-uncapped">
+  <cngx-sidenav-layout>
     <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
                   width="240px" [resizable]="true" shortcut="mod+b">
-      <cngx-nav-header class="demo-sidenav__header">
-        <span class="demo-sidenav__brand-mark" aria-hidden="true">W</span>
-        <span class="demo-sidenav__brand-name">Workspace</span>
+      <cngx-nav-header>
+        <cngx-avatar cngxNavMark initials="W" shape="square" />
+        <span cngxNavName>Workspace</span>
       </cngx-nav-header>
 
-      <span cngxNavLabel class="demo-sidenav__label">Main</span>
+      <span cngxNavLabel>Main</span>
 
-      <a cngxNavLink class="demo-sidenav__link"
+      <a cngxNavLink
          [active]="activeLink() === '/dashboard'"
          (click)="activeLink.set('/dashboard'); $event.preventDefault()">
         Dashboard
       </a>
 
-      <a cngxNavLink class="demo-sidenav__link"
+      <a cngxNavLink
          [active]="activeLink() === '/inbox'"
          (click)="activeLink.set('/inbox'); $event.preventDefault()">
         Inbox
-        <span cngxNavBadge [value]="7" ariaLabel="7 unread" class="demo-sidenav__badge">7</span>
+        <span cngxNavBadge [value]="7" ariaLabel="7 unread">7</span>
       </a>
 
-      <a cngxNavLink class="demo-sidenav__link"
+      <a cngxNavLink
          [active]="activeLink() === '/calendar'"
          (click)="activeLink.set('/calendar'); $event.preventDefault()">
         Calendar
-        <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New events" class="demo-sidenav__badge-dot"></span>
+        <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New events"></span>
       </a>
 
-      <span cngxNavLabel class="demo-sidenav__label">Manage</span>
+      <span cngxNavLabel>Manage</span>
 
-      <button cngxNavGroup #settingsGroup="cngxNavGroup" [controls]="'settings-items'" id="settings-lbl"
-              class="demo-sidenav__group" type="button">
+      <button cngxNavGroup #settingsGroup="cngxNavGroup" [controls]="'settings-items'" id="settings-lbl" type="button">
         Settings
       </button>
       <div [cngxNavGroupContent]="settingsGroup">
         <div id="settings-items" role="group" [attr.aria-labelledby]="'settings-lbl'">
           @for (sub of ['General', 'Security', 'Notifications', 'Billing']; track sub) {
-            <a cngxNavLink [depth]="1" class="demo-sidenav__link--sub"
+            <a cngxNavLink [depth]="1"
                [active]="activeLink() === '/settings/' + sub.toLowerCase()"
                (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()">
               {{ sub }}
@@ -82,28 +77,27 @@ export const STORY: DemoSpec = {
         </div>
       </div>
 
-      <button cngxNavGroup #teamGroup="cngxNavGroup" [controls]="'team-items'" id="team-lbl"
-              class="demo-sidenav__group" type="button">
+      <button cngxNavGroup #teamGroup="cngxNavGroup" [controls]="'team-items'" id="team-lbl" type="button">
         Team
       </button>
       <div [cngxNavGroupContent]="teamGroup">
         <div id="team-items" role="group" [attr.aria-labelledby]="'team-lbl'">
           @for (sub of ['Members', 'Roles', 'Invites']; track sub) {
-            <a cngxNavLink [depth]="1" class="demo-sidenav__link--sub">
+            <a cngxNavLink [depth]="1">
               {{ sub }}
             </a>
           }
         </div>
       </div>
 
-      <cngx-nav-footer class="demo-sidenav__footer">
-        <span class="demo-sidenav__footer-name">Workspace</span> v2.1
+      <cngx-nav-footer>
+        <span cngxNavName>Workspace</span> v2.1
       </cngx-nav-footer>
     </cngx-sidenav>
 
-    <cngx-sidenav-content class="demo-sidenav__content">
-      <h3 class="demo-sidenav__content-title">{{ activeLink().substring(1) || 'Dashboard' }}</h3>
-      <p class="demo-sidenav__content-hint">
+    <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
+      <h3>{{ activeLink().substring(1) || 'Dashboard' }}</h3>
+      <p>
         Click nav items to change the active state.
         Groups expand with <code>CngxNavGroup</code> + <code>CngxDisclosure</code>.
       </p>
