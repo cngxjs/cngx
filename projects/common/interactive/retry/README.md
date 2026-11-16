@@ -70,10 +70,10 @@ createRetry composes naturally with CngxAsyncClick and the feedback system:
 
 `createRetry` is a pure factory: it needs no injection context. The lifetime of a run comes from the runner that owns it:
 
-- `cngxAsyncClick` passes an `AbortSignal` to the wrapped action, aborted when the runner is destroyed. On abort the backoff timer is cleared, no further attempt starts and an aborted run settles the retry state idle (`attempt` 0, `retrying` false, `lastError` kept). A run a newer call already superseded writes nothing.
-- The library never aborts the in-flight attempt. The signal is forwarded to your action, so passing it on (`fetch(url, { signal })`, an `HttpClient` call ended on the abort event) opts in to cancellation.
+- `cngxAsyncClick` passes an `AbortSignal` to the wrapped action, aborted when the runner is destroyed. Each run gets its own signal, linked to that one, which also aborts on `reset()` and when a newer call supersedes the run. On abort the run ends at once: the awaited attempt and the backoff timer are dropped, no further attempt starts, and the retry state settles idle (`attempt` 0, `retrying` false, `lastError` kept). A run a newer call already superseded writes nothing.
+- Your action receives the run signal. The dropped attempt keeps running unless you pass it on (`fetch(url, { signal })`, an `HttpClient` call ended on the abort event); its late outcome is ignored.
 - A run that ends without an outcome (superseded by a new call, `reset()`, or aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`. Compare the result with it where you `await` the action yourself.
-- A direct call without a signal (`saveWithRetry()`) has no destroy binding and runs to its end.
+- A direct call without a signal (`saveWithRetry()`) has no destroy binding, but `reset()` and a newer call still end it.
 
 ```typescript
 import { CNGX_ASYNC_CANCELLED, createRetry } from '@cngx/common/interactive';
