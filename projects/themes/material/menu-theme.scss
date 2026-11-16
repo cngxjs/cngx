@@ -22,13 +22,12 @@
 // the menu the way Material density scales mat-menu. The item tokens and the
 // list padding are SET per element in `cngx-menu.css` (0,1,0), so metrics()
 // emits layered rules with real specificity (button-theme `metrics()`
-// precedent). A menu inside a CngxPopoverPanel keeps the panel's surface
-// (the breadcrumb overflow strips its own menu, not `cngx-menu.css`) and its
-// owner's metrics: the ui organisms that host a menu in a panel (the breadcrumb
-// overflow) size and set their own rows, so metrics() stops at the panel;
-// colours still apply.
+// precedent). The breadcrumb overflow hosts its menu in a CngxPopoverPanel,
+// strips the menu surface on its own class and sizes its own rows, so
+// metrics() skips that menu class (the same opt-out as the surface);
+// colours still apply. Any other menu, in a panel or not, is bridged in full.
 
-$_menu: "[cngxMenu]:not(.cngx-popover-panel [cngxMenu])";
+$_menu: '[cngxMenu]:not(.cngx-breadcrumb__overflow-menu)';
 $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngxMenuItemSubmenu])';
 
 @mixin color($theme) {
