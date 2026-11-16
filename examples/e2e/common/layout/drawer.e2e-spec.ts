@@ -144,10 +144,13 @@ test.describe('common/layout/drawer: filter panel', () => {
     const contained = page.getByRole('button', { name: 'Only this area blocked (contained)' });
     await expect(contained).toHaveAttribute('aria-disabled', 'true');
     await expect(contained).toHaveAccessibleDescription(/push never blocks/);
+    await expect(contained).toHaveCSS('opacity', '0.5');
+    await expect(contained).toHaveCSS('cursor', 'not-allowed');
     await expect(page.getByText(/push is never blocking/)).toBeVisible();
 
     await page.getByRole('button', { name: 'Overlays the list (over)' }).click();
     await expect(contained).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(contained).toHaveCSS('opacity', '1');
     await contained.click();
     await expect(page.getByText(/Only this area blocked: the scrim/)).toBeVisible();
   });
