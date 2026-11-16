@@ -53,13 +53,93 @@
   }
 }
 
-// Rail surface and flyout only. The aggregate theme.scss includes this one:
-// sidenav-theme.scss already bridges the rows, header and footer app-wide.
+// M3 navigation rail metrics (M3 only).
+//
+// Both looks: the rail is 80px wide with no divider. The host takes the M3
+// navigation drawer item metrics (nav-link drawer-metrics()), so the icon-only
+// look ('end') is 2 * (12px inset + 16px padding) + the 24px icon, and its
+// 56px row with the full pill radius is the M3 56px round indicator.
+//
+// Look 'below': the row is the M3 rail destination, 56px high at
+// comfortable. The 56 x 32 active indicator is a pill behind the icon (the
+// row's ::after), not the row fill: icon + 2 * --cngx-space-md wide, icon +
+// 2 * --cngx-space-xs high, with the label-medium label 4px under it. The
+// row drops its inset and fill; hover, pressed and active paint the pill.
+// These rules SET row tokens and paint the pill per element, so they carry
+// real specificity inside `@layer cngx.components` (button-theme
+// metrics() precedent): the host class lifts them over the nav-rail.css
+// 'below' rules of the same shape. Forced colours keep the row signal of
+// cngx-nav.css, so the pill stays out of that mode.
+$_below: "cngx-nav-rail.cngx-nav-rail[data-label-placement='below'] :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *)";
+
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @include bridge.on(cngx-nav-rail) {
+      @include nav-link.drawer-metrics($theme);
+      --cngx-nav-rail-border-width: 0px;
+    }
+
+    @layer cngx.components {
+      @media (forced-colors: none) {
+        #{$_below} {
+          --cngx-nav-link-inset: 0px;
+          --cngx-nav-link-padding: var(--cngx-space-xs, 4px) calc(var(--cngx-space-xs, 4px) / 2);
+          --cngx-nav-link-line-height: var(--mat-sys-label-medium-line-height, 1rem);
+          --cngx-nav-link-letter-spacing: var(--mat-sys-label-medium-tracking, 0.031rem);
+          --cngx-nav-link-font-weight: var(--mat-sys-label-medium-weight, 500);
+          --cngx-nav-link-active-font-weight: var(--mat-sys-label-medium-weight-prominent, 700);
+          gap: calc(var(--cngx-space-xs, 4px) * 2);
+          isolation: isolate;
+          background-color: transparent;
+        }
+
+        #{$_below}::after {
+          content: '';
+          display: block;
+          position: absolute;
+          z-index: -1;
+          inset-block: 0 auto;
+          inset-inline: 0;
+          margin-inline: auto;
+          inline-size: calc(var(--cngx-nav-icon-size, 1.5rem) + 2 * var(--cngx-space-md, 16px));
+          block-size: calc(var(--cngx-nav-icon-size, 1.5rem) + 2 * var(--cngx-space-xs, 4px));
+          border: 0;
+          border-radius: var(--mat-sys-corner-full, 9999px);
+          background: transparent;
+          rotate: none;
+          transition: background-color var(--cngx-duration-fast, 150ms);
+        }
+
+        #{$_below}:hover::after {
+          background: var(--cngx-nav-link-hover-bg);
+        }
+
+        #{$_below}:active::after {
+          background: var(--cngx-nav-link-pressed-bg);
+        }
+
+        #{$_below}.cngx-nav-link--active::after {
+          background: var(--cngx-nav-link-active-bg);
+        }
+
+        #{$_below}.cngx-nav-link--active:hover::after {
+          background: var(--cngx-nav-link-active-hover-bg);
+        }
+      }
+    }
+  }
+}
+
+// Rail surface, flyout and the M3 rail metrics. The aggregate theme.scss
+// includes this one: sidenav-theme.scss already bridges the row colours and
+// type, header and footer app-wide.
 @mixin surface($theme) {
   @include bridge.on(cngx-nav-rail) {
     @include rail-color($theme);
     @include typography($theme);
   }
+
+  @include metrics($theme);
 
   // Set + read on the open flyout itself (the group content).
   @include bridge.on('cngx-nav-rail .cngx-nav-group-content') {
