@@ -23,9 +23,10 @@
 // list padding are SET per element in `cngx-menu.css` (0,1,0), so metrics()
 // emits layered rules with real specificity (button-theme `metrics()`
 // precedent). A menu inside a CngxPopoverPanel keeps the panel's surface
-// (`cngx-menu.css` strips the menu's own there) and its owner's metrics: the
-// ui organisms that host a menu in a panel (the breadcrumb overflow) size and
-// set their own rows, so metrics() stops at the panel; colours still apply.
+// (the breadcrumb overflow strips its own menu, not `cngx-menu.css`) and its
+// owner's metrics: the ui organisms that host a menu in a panel (the breadcrumb
+// overflow) size and set their own rows, so metrics() stops at the panel;
+// colours still apply.
 
 $_menu: "[cngxMenu]:not(.cngx-popover-panel [cngxMenu])";
 $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngxMenuItemSubmenu])';
