@@ -643,9 +643,10 @@ describe('CngxSplitButton', () => {
   });
 
   it('gives the caret role only to the direct child icon menu button', () => {
-    const { q, split } = setup(NestedCaretHost);
+    const { fixture, q, split } = setup(NestedCaretHost);
     const nested = q('#nested');
-    expect(split.caret()).toBeDefined();
+    const caretState = fixture.debugElement.query(By.css('#caret')).injector.get(CNGX_BUTTON_STATE);
+    expect(split.caret()).toBe(caretState);
     expect(q('#caret').getAttribute('aria-disabled')).toBe('true');
     expect(q('#caret').querySelector('.cngx-sr-only')?.textContent?.trim()).toBe('More options');
     expect(nested.hasAttribute('aria-disabled')).toBe(false);
@@ -681,7 +682,8 @@ describe('CngxSplitButton', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { fixture, split } = setup(WrappedMainHost);
     await fixture.whenStable();
-    expect(split.caret()).toBeDefined();
+    const caretState = fixture.debugElement.query(By.css('#caret')).injector.get(CNGX_BUTTON_STATE);
+    expect(split.caret()).toBe(caretState);
     expect(split.mainBlocked()).toBe(false);
   });
 
