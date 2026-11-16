@@ -1,8 +1,8 @@
 /**
  * @overview
  * Default visuals for `CngxSkeleton` - shimmer placeholder bones.
- * The host carries `.cngx-skeleton` and renders one or more
- * `.cngx-skeleton-bone` children. The keyframe
+ * The host carries `.cngx-skeleton`; the consumer marks each bone
+ * in its placeholder template with `.cngx-skeleton__bone`. The keyframe
  * (`cngx-skeleton-shimmer`) stays top-level outside `@layer`
  * because it is already namespaced and keyframes resolve by name
  * regardless of cascade layer.
@@ -107,7 +107,7 @@
 
 @layer cngx.components {
   @scope (.cngx-skeleton) {
-    :scope.cngx-skeleton--shimmer .cngx-skeleton-bone {
+    :scope.cngx-skeleton--shimmer .cngx-skeleton__bone {
       background-color: var(--cngx-skeleton-bg, oklch(0.88 0 0));
       background-image: linear-gradient(
         90deg,
@@ -122,7 +122,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      :scope.cngx-skeleton--shimmer .cngx-skeleton-bone {
+      :scope.cngx-skeleton--shimmer .cngx-skeleton__bone {
         animation: none;
       }
     }
