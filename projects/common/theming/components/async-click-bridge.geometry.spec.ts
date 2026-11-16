@@ -163,6 +163,14 @@ describe('async-click state under forced colors', () => {
     expect(computedValue(el, 'outline-width')).toBe('2px');
   });
 
+  it('shows the focus ring, not the settle outline, on a focused bare host', async () => {
+    const el = await settle(one(await forced(), '.fail'), 'cngx-async--error');
+    el.focus();
+    expect(el.matches(':focus-visible')).toBe(true);
+    expect(computedValue(el, 'outline-style')).toBe('solid');
+    expect(computedValue(el, 'outline-offset')).toBe('3px');
+  });
+
   it('keeps the bare host box size when the cue appears', async () => {
     const root = await forced();
     for (const [selector, stateClass] of [

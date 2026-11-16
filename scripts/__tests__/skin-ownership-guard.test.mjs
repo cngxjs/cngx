@@ -71,15 +71,7 @@ const CONTEXT_AXIS = /^cngx-(density|text-scale|motion|contrast|touch)(-|$)/;
  *
  * @type {{ file: string; selector: string; count: number; reason: string }[]}
  */
-const SKIN_OWNERSHIP_EXEMPT = [
-  {
-    file: 'projects/common/theming/components/cngx-async.css',
-    selector: '.cngx-button',
-    count: 5,
-    reason:
-      'inverse S1: the async paint excludes button hosts by class instead of offering tokens the button sets on its own host',
-  },
-];
+const SKIN_OWNERSHIP_EXEMPT = [];
 
 /**
  * Stories allowed to list a higher-level or sibling artifact in
