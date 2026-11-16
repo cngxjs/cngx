@@ -28,7 +28,9 @@ import { createInertSiblings } from './inert-siblings';
  * siblings rendered after init are covered too.
  *
  * The directive is purely behavioral - it toggles the
- * `.cngx-backdrop--visible` class and `aria-hidden` attribute. Visual
+ * `.cngx-backdrop--visible` class and `aria-hidden` attribute, and marks
+ * its host with `data-cngx-backdrop`, which keeps it live under the inert
+ * set of a page-modal drawer so its `backdropClick` still fires. Visual
  * styling is opt-in: either consume the shipped default stylesheet or
  * provide your own.
  *
@@ -86,6 +88,7 @@ import { createInertSiblings } from './inert-siblings';
   host: {
     '[class.cngx-backdrop--visible]': 'visible()',
     'aria-hidden': 'true',
+    'data-cngx-backdrop': '',
     '(click)': 'handleHostClick()',
   },
 })

@@ -22,8 +22,10 @@ export type CngxInertScope = 'siblings' | 'outside';
  *   announcement written into it is never spoken.
  * - The CDK overlay container: overlays opened from inside the modal render
  *   there, outside the host.
- * - A visible `CngxBackdrop`: it holds no focusable content, and inerting it
- *   would swallow its `backdropClick`.
+ * - A `CngxBackdrop` (static `data-cngx-backdrop` marker): it holds no
+ *   focusable content, and inerting it would swallow its `backdropClick`. The
+ *   marker does not wait for the visible class, which can land after a modal
+ *   surface engaged in the same pass.
  */
 const KEEP_LIVE_SELECTOR = [
   '.cdk-focus-trap-anchor',
@@ -34,7 +36,7 @@ const KEEP_LIVE_SELECTOR = [
   '.cdk-live-announcer-element',
   CNGX_LIVE_SURFACE_SELECTOR,
   '.cdk-overlay-container',
-  '.cngx-backdrop--visible',
+  '[data-cngx-backdrop]',
 ].join(', ');
 
 /** @internal Options for {@link createInertSiblings}. */
@@ -77,7 +79,7 @@ const LATE_LIVE_SELECTOR = 'dialog, [popover]';
  * modal opened it. Elements that already carry
  * `inert` are skipped and never touched on release, so a consumer-set or
  * other-owner `inert` survives. Focus-trap anchors, live regions, the CDK
- * overlay container, marked live surfaces and a visible backdrop
+ * overlay container, marked live surfaces and a backdrop
  * stay live; an element that only contains one of them is not inerted as a
  * whole, its other children are.
  * Release is idempotent and stops following the scope.

@@ -214,6 +214,44 @@ describe('CngxBackdrop', () => {
     expect(contentEl.hasAttribute('inert')).toBe(true);
   });
 
+  it('marks its host so a page-modal panel keeps it live and clickable', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: FocusTrapFactory,
+          useValue: {
+            create: vi.fn(() => ({
+              enabled: false,
+              hasAttached: () => true,
+              attachAnchors: vi.fn(),
+              focusFirstTabbableElementWhenReady: vi.fn(),
+              focusLastTabbableElementWhenReady: vi.fn(),
+              destroy: vi.fn(),
+            })),
+          },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(CompositionHost);
+    const root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const backdropEl = fixture.debugElement.query(By.directive(CngxBackdrop))
+      .nativeElement as HTMLElement;
+    expect(backdropEl.hasAttribute('data-cngx-backdrop')).toBe(true);
+
+    const drawer = fixture.debugElement.query(By.directive(CngxDrawer)).injector.get(CngxDrawer);
+    drawer.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const panelEl = fixture.debugElement.query(By.directive(CngxDrawerPanel))
+      .nativeElement as HTMLElement;
+    expect(panelEl.getAttribute('aria-modal')).toBe('true');
+    expect(backdropEl.closest('[inert]')).toBeNull();
+    root.remove();
+  });
+
   it('returns focus to an opener the backdrop held inert once it is released', () => {
     TestBed.configureTestingModule({ imports: [LateBackdropHost] });
     const fixture = TestBed.createComponent(LateBackdropHost);

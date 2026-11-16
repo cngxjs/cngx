@@ -1,3 +1,4 @@
+import type { Locator } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';
@@ -54,6 +55,27 @@ test.describe('common/layout/drawer: clipped drawer below a live header', () => 
 
     await expect(panel).not.toHaveClass(/cngx-drawer-panel--open/);
     await expect(hamburger).toBeFocused();
+  });
+});
+
+test.describe('common/layout/drawer: backdrop under a page-modal drawer', () => {
+  const route = 'common/layout/drawer/basic-scroll-lock-backdrop';
+
+  test('the visible backdrop stays live and a click on it closes the drawer', async ({ page }) => {
+    await gotoDemo(page, route);
+    await page.getByRole('button', { name: 'Open Drawer' }).click();
+    const panel = page.locator('#basic-panel');
+    await expect(panel).toHaveAttribute('aria-modal', 'true');
+    const backdrop = page.locator('[data-cngx-backdrop]');
+    await expect(backdrop).toHaveClass(/cngx-backdrop--visible/);
+    expect(await backdrop.evaluate((el) => el.closest('[inert]') === null)).toBe(true);
+
+    const box = await backdrop.boundingBox();
+    expect(box).not.toBeNull();
+    await backdrop.click({ position: { x: (box?.width ?? 0) - 8, y: (box?.height ?? 0) / 2 } });
+
+    await expect(panel).not.toHaveClass(/cngx-drawer-panel--open/);
+    await expect(backdrop).not.toHaveClass(/cngx-backdrop--visible/);
   });
 });
 
@@ -123,13 +145,51 @@ test.describe('common/layout/drawer: filter panel', () => {
     const contained = page.getByRole('button', { name: 'Only this area blocked (contained)' });
     await expect(contained).toHaveAttribute('aria-disabled', 'true');
     await expect(contained).toHaveAccessibleDescription(/push never blocks/);
+    await expect(contained).toHaveCSS('opacity', '0.5');
+    await expect(contained).toHaveCSS('cursor', 'not-allowed');
     await expect(page.getByText(/push is never blocking/)).toBeVisible();
 
     await page.getByRole('button', { name: 'Overlays the list (over)' }).click();
     await expect(contained).not.toHaveAttribute('aria-disabled', 'true');
+    await expect(contained).toHaveCSS('opacity', '1');
     await contained.click();
     await expect(page.getByText(/Only this area blocked: the scrim/)).toBeVisible();
   });
+});
+
+test.describe('common/layout/drawer: scrim of the modal drawer stories', () => {
+  // basic-scroll-lock-backdrop clears the host scrim on purpose: its
+  // [cngxBackdrop] paints the overlay instead (covered above).
+  const stories = [
+    { route: 'common/layout/drawer/full-height-modal', panelId: 'full-height-nav' },
+    { route: 'common/layout/drawer/app-header-clipped', panelId: 'clipped-nav' },
+    { route: 'common/layout/drawer/controlled-mode', panelId: 'ctrl-panel' },
+    { route: 'common/layout/drawer/events-openedchange-closed', panelId: 'ev-panel' },
+    { route: 'common/layout/drawer/direction-all-four-sides', panelId: 'dir-panel' },
+    { route: 'common/layout/drawer/pattern-consumer-wiring', panelId: 'pcw-panel' },
+  ];
+
+  const scrim = (host: Locator) =>
+    host.evaluate((el) => {
+      const style = getComputedStyle(el, '::after');
+      return { opacity: style.opacity, background: style.backgroundColor };
+    });
+
+  for (const { route, panelId } of stories) {
+    test(`${route.split('/').pop()}: the host paints a scrim while the modal panel is open`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, route);
+      const panel = page.locator(`#${panelId}`);
+      const host = page.locator('.cngx-drawer').filter({ has: panel });
+      await expect.poll(async () => (await scrim(host)).opacity).toBe('0');
+
+      await page.locator(`button[aria-controls="${panelId}"]`).first().click();
+      await expect(panel).toHaveClass(/cngx-drawer-panel--modal/);
+      await expect.poll(async () => (await scrim(host)).opacity).toBe('1');
+      expect((await scrim(host)).background).not.toBe('rgba(0, 0, 0, 0)');
+    });
+  }
 });
 
 test.describe('common/layout/drawer: modal panel name', () => {

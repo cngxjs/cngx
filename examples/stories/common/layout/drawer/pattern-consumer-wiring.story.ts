@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The drawer is headless. The consumer wires <code>CngxAriaExpanded</code> on the trigger; the over panel is modal by default, so it traps focus and restores it to the trigger on close without further bindings.',
   description:
-    'Live drawer wired through the consumer-owned a11y seams: CngxAriaExpanded with aria-controls on the <button type="button"> trigger, the panel id it points at, and a single drawer.opened() signal everything reads from. The modal over panel traps focus while open and hands it back to the trigger on close. The readout below shows the live aria-expanded attribute, the opened model, and the currently focused element id so the keyboard semantics are observable.',
+    'Live drawer wired through the consumer-owned a11y seams: CngxAriaExpanded with aria-controls on the <button type="button"> trigger, the panel id it points at, and a single drawer.opened() signal everything reads from. The modal over panel traps focus while open and hands it back to the trigger on close. The readout below shows the opened model, which the trigger reflects as aria-expanded, and the id of the focused element, so the keyboard semantics are observable.',
   level: 'organism',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -58,9 +58,9 @@ export const STORY: DemoSpec = {
       <button id="pcw-trigger" type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'pcw-panel'"
               (click)="drawer.toggle()">
-        {{ drawer.opened() ? 'Close' : 'Open' }} Menu
+        {{ drawer.opened() ? 'Close' : 'Open' }} navigation
       </button>
-      <p>Open the menu, then Tab through the panel. Focus stays trapped inside until the drawer closes; on close, the trigger re-receives focus.</p>
+      <p>Open the navigation, then Tab through the panel. Focus stays trapped inside until the drawer closes; on close, the trigger re-receives focus.</p>
     </main>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
@@ -69,7 +69,7 @@ export const STORY: DemoSpec = {
       <span class="event-value">{{ drawer.opened() }}</span>
     </div>
     <div class="event-row">
-      <span class="event-label">trigger aria-expanded</span>
+      <span class="event-label">trigger aria-expanded (from drawer.opened())</span>
       <span class="event-value">{{ drawer.opened() }}</span>
     </div>
     <div class="event-row">
