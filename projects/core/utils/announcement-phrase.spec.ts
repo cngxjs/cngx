@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createAnnouncementPhrase } from './announcement-phrase';
@@ -70,6 +70,29 @@ describe('createAnnouncementPhrase', () => {
 
     state.set({ selected: true, busy: false });
     expect(phrase()).toBe('Selected');
+  });
+
+  it('collapses the same phrase armed twice in a row into one value', () => {
+    const count = signal(0);
+    const phrase = TestBed.runInInjectionContext(() =>
+      createAnnouncementPhrase({
+        source: () => count(),
+        arm: (curr, prev) => (curr !== prev ? 'Updated' : null),
+      }),
+    );
+    let reads = 0;
+    const observed = computed(() => {
+      reads++;
+      return phrase();
+    });
+
+    expect(observed()).toBe('');
+
+    count.set(1);
+    expect(observed()).toBe('Updated');
+    count.set(2);
+    expect(observed()).toBe('Updated');
+    expect(reads).toBe(2);
   });
 
   it('treats an empty-string arm as a phrase, not a fall-through', () => {
