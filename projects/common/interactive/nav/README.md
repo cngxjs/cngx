@@ -287,7 +287,7 @@ The nav atoms ship their skin in `cngx-nav.css` (`@cngx/common/theming/component
 
 | Group | Tokens |
 |-|-|
-| Row | `--cngx-nav-link-padding`, `-padding-inline`, `-font-size`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
+| Row | `--cngx-nav-link-padding`, `-padding-inline`, `-padding-inline-end`, `-font-size`, `-line-height`, `-letter-spacing`, `-font-weight`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
 | States | `--cngx-nav-link-hover-color`, `-hover-bg`, `-pressed-bg`, `-active-color`, `-active-bg`, `-active-hover-bg`, `-active-font-weight` |
 | Indicator | `--cngx-nav-link-active-indicator-color`, `-size`, `-inset` |
 | Focus | `--cngx-nav-link-focus-outline-color`, `-inner-color`, `-outline-width`, `-outline-offset` |
@@ -311,11 +311,26 @@ A container that wants its own look SETs the tokens on its host; the rows inside
 }
 ```
 
-`--cngx-nav-link-padding-inline` moves the rows, the header and footer marks and the section labels together. The `--cngx-nav-link-padding` shorthand moves only the rows; a container that SETs it builds the inline part from `--cngx-nav-link-padding-inline`, as `cngx-sidenav` does.
+`--cngx-nav-link-padding-inline` moves the rows, the header and footer marks and the section labels together. The `--cngx-nav-link-padding` shorthand moves only the rows; a container that SETs it builds the inline part from `--cngx-nav-link-padding-inline`, as `cngx-sidenav` does. The row end reads `--cngx-nav-link-padding-inline-end`, which falls back to `--cngx-nav-link-padding-inline`: a container whose shorthand carries any other inline value SETs `-padding-inline-end` too, or the row end keeps the inline-start value.
+
+Line-height, letter-spacing and the rest weight are unset by default, so the row inherits them. A theme SETs `--cngx-nav-link-line-height`, `-letter-spacing` and `-font-weight` on the row together with `-font-size`; the active row reads `-active-font-weight`.
 
 To restyle a single row, SET the token on that row instead (`[cngxNavLink].danger { --cngx-nav-link-color: var(--cngx-color-danger-text); }`). Do not write `background` or `padding` on `.cngx-nav-link` directly: the state ladder and the indicator read the tokens, and a raw property only wins for the rest state.
 
 In forced-colors mode the active row paints `Highlight` with a `HighlightText` bar, and filled badges keep a `CanvasText` ring.
+
+### Material
+
+`@cngx/themes/material/sidenav-theme` (which includes `nav-link-theme`) bridges the rows app-wide. Under an M3 theme a row takes the navigation drawer item:
+
+| Axis | M3 value | Tokens |
+|-|-|-|
+| Shape | full pill | `--cngx-nav-link-radius` |
+| Type | label-large, 500 at rest, 700 active | `--cngx-nav-link-font-size`, `-line-height`, `-letter-spacing`, `-font-weight`, `-active-font-weight` |
+| Colour | secondary-container active fill, no bar | the State and Indicator tokens |
+| Metrics (on `cngx-sidenav`) | 56px row, 16px start and 24px end padding, 24px icon, 12px gap and inset | `--cngx-nav-link-padding`, `-padding-inline-end`, `-inset`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap` |
+
+The metrics are rungs and `calc()`s of `--cngx-space-*`, chosen so comfortable equals M3: a Material `density: -N` theme (through `density-bridge`) and a `[data-density]` island both re-scale the row (52 / 48 / 44 / 40px at density -1 to -4; 40px compact, 64px spacious). A row outside `cngx-sidenav` keeps the cngx metrics and takes shape, type and colour.
 
 ## Examples
 

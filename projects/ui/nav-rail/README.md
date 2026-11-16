@@ -233,10 +233,24 @@ html {
 ```
 
 `theme()` bridges the rail surface (`surface`), the flyout (`surface-container`,
-level 2), the stacked label size (`label-medium`) and the rows, header and
-footer. The aggregate `@cngx/themes/material/theme` includes the rail through
+level 2), the stacked label size (`label-medium`), the M3 rail metrics and the
+rows, header and footer. The aggregate `@cngx/themes/material/theme` includes the rail through
 `nav-rail.surface()`, since its sidenav bridge already covers the rows. The
 label tooltip takes `tooltip-theme`.
+
+Under an M3 theme the rail is the M3 navigation rail:
+
+| Look | M3 value | Tokens |
+|-|-|-|
+| Both | 80px wide, no divider | `--cngx-nav-link-inset`, `--cngx-nav-link-padding`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-rail-border-width` |
+| `'end'` | the 56px row with the full pill radius is the round indicator | `--cngx-nav-link-radius` |
+| `'below'` | 56px destination, 56 x 32 indicator pill behind the icon, label-medium label 4px under it, 500 at rest and 700 active | `--cngx-nav-rail-below-font-size`, `--cngx-nav-link-line-height`, `-letter-spacing`, `-font-weight`, `-active-font-weight` |
+
+The metrics are rungs and `calc()`s of `--cngx-space-*`, so density re-scales
+the rail like the sidenav rows. The `'below'` pill is drawn by the bridge, not
+by `nav-rail.css`: without Material the row fill stays the indicator. A
+container that SETs `--cngx-nav-link-padding` with an inline part other than
+`--cngx-nav-link-padding-inline` SETs `--cngx-nav-link-padding-inline-end` too.
 
 ## A rail beside a secondary sidebar
 
