@@ -12,7 +12,8 @@
  * itself on the popover element (`CngxPopoverPanel`, the select panels, the
  * tabs overflow menu, a consumer class) wins by specificity in the same layer;
  * this sheet names none of them. Only the chrome is reset - positioning
- * (`inset`, `position-anchor`) is owned by `CngxPopover`. The anchor offset margin is written by `CngxPopover` as the
+ * (`inset`, `position-anchor`) is owned by `CngxPopover`. The anchor offset
+ * margin is written by `CngxPopover` as the
  * `--cngx-popover-anchor-margin` custom property and applied here in the
  * components layer, so a Material bridge can zero it by setting the variable
  * (no `!important` needed - an inline `margin` could only be beaten by one).
@@ -41,7 +42,9 @@
      directive's inline `--cngx-popover-anchor-margin`, but the override var is
      read first and is not set inline, so the theme's value wins. Sheet and
      fullscreen presentations own their own box, so they are excluded. */
-  [cngxPopover]:not([data-cngx-presentation='sheet']):not([data-cngx-presentation='fullscreen']) {
+  [cngxPopover]:not([data-cngx-presentation='sheet']):not(
+      [data-cngx-presentation='fullscreen']
+    ) {
     margin: var(--cngx-popover-margin-override, var(--cngx-popover-anchor-margin, 0));
   }
 }
