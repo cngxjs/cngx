@@ -54,7 +54,7 @@ type Density = 'compact' | 'comfortable' | 'spacious';
           <input cngxInput />
         </span>
       </cngx-form-field>
-      <cngx-form-field class="f-manual-empty" [field]="plain" [skin]="skin()">
+      <cngx-form-field class="f-manual-empty" [field]="nickname" [skin]="skin()">
         <label cngxLabel>Nickname</label>
         <input cngxInput />
         <span cngxHint>Optional</span>
@@ -64,7 +64,7 @@ type Density = 'compact' | 'comfortable' | 'spacious';
           }
         </div>
       </cngx-form-field>
-      <cngx-form-field class="f-manual-shown" [field]="invalid" [skin]="skin()">
+      <cngx-form-field class="f-manual-shown" [field]="handle" [skin]="skin()">
         <label cngxLabel>Handle</label>
         <input cngxInput />
         <div cngxError><p style="margin: 0">Enter a handle.</p></div>
@@ -87,6 +87,8 @@ class StackHost {
   }).accessor;
   readonly plain = createMockField({ name: 'amount' }).accessor;
   readonly inner = createMockField({ name: 'reference' }).accessor;
+  readonly nickname = createMockField({ name: 'nickname' }).accessor;
+  readonly handle = createMockField({ name: 'handle', invalid: true, touched: true }).accessor;
 }
 
 const GAP: Record<Density, number> = { compact: 2, comfortable: 4, spacious: 6 };

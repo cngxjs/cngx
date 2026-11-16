@@ -1,4 +1,4 @@
-import { computed, Directive, effect, inject, untracked } from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, untracked } from '@angular/core';
 
 import { CngxSliderTrack } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
@@ -62,6 +62,7 @@ import type { CngxFormFieldControl } from './models';
 export class CngxSliderFieldBridge implements CngxFormFieldControl {
   private readonly slider = inject(CngxSliderTrack, { self: true, host: true });
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   private readonly aria = createFieldControlAria(this.presenter);
 
@@ -75,6 +76,11 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   readonly disabled = this.aria.disabled;
 
   readonly errorState = this.aria.errorState;
+
+  /** Focuses the slider; the error summary and `focusFirstError` reach it here. */
+  focus(options?: FocusOptions): void {
+    this.hostEl.focus(options);
+  }
 
   /** @internal */
   protected readonly describedBy = this.aria.describedBy;

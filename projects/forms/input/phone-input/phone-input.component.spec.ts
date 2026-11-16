@@ -1,7 +1,7 @@
 import { Component, LOCALE_ID, signal, viewChild } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { CngxFormField } from '@cngx/forms/field';
+import { CngxFormField, CngxHint } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { CngxInputMask } from '../input-mask.directive';
 import { provideInputConfig, withInputAriaLabels, withPhoneDefaultRegion } from '../input-config';
@@ -394,9 +394,10 @@ describe('CngxPhoneInput', () => {
       template: `
         <cngx-form-field [field]="field">
           <cngx-phone-input />
+          <span cngxHint>Mobile preferred</span>
         </cngx-form-field>
       `,
-      imports: [CngxFormField, CngxPhoneInput],
+      imports: [CngxFormField, CngxPhoneInput, CngxHint],
     })
     class FieldHost {
       readonly field = accessor;
@@ -414,7 +415,7 @@ describe('CngxPhoneInput', () => {
       '.cngx-phone-input__disabled-reason',
     ) as HTMLElement;
     const describedBy = input.getAttribute('aria-describedby') ?? '';
-    expect(describedBy.length).toBeGreaterThan(0); // field hint id unconditional
+    expect(describedBy.length).toBeGreaterThan(0); // the rendered field hint
     expect(describedBy).not.toContain(reasonSpan.id); // reason id gated out
   });
 

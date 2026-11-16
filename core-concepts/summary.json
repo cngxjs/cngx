@@ -690,6 +690,11 @@
                 "file": "error-codes/cngx2028.md"
             },
             {
+                "title": "CNGX2029",
+                "label": "CNGX2029: Two elements carry one field id",
+                "file": "error-codes/cngx2029.md"
+            },
+            {
                 "title": "CNGX3001",
                 "label": "CNGX3001: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx3001.md"
