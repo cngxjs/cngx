@@ -55,10 +55,11 @@
 
 // M3 navigation rail metrics (M3 only).
 //
-// Both looks: the rail is 80px wide with no divider. The host takes the M3
-// navigation drawer item metrics (nav-link drawer-metrics()), so the icon-only
-// look ('end') is 2 * (12px inset + 16px padding) + the 24px icon, and its
-// 56px row with the full pill radius is the M3 56px round indicator.
+// Both looks: the rail is 80px wide with no divider. The icon-only look
+// ('end') is 2 * (12px inset + 16px padding) + the 24px icon, and its 56px
+// row (16px above and below the icon) with the full pill radius is the M3
+// 56px round indicator. Every length is a rung or a calc() of
+// --cngx-space-*, so density re-scales the rail.
 //
 // Look 'below': the row is the M3 rail destination, 56px high at
 // comfortable. The 56 x 32 active indicator is a pill behind the icon (the
@@ -75,7 +76,11 @@ $_below: "cngx-nav-rail.cngx-nav-rail[data-label-placement='below'] :is(.cngx-na
 @mixin metrics($theme) {
   @if mat.get-theme-version($theme) == 1 {
     @include bridge.on(cngx-nav-rail) {
-      @include nav-link.drawer-metrics($theme);
+      --cngx-nav-link-inset: calc(var(--cngx-space-sm, 8px) * 1.5);
+      --cngx-nav-link-padding: var(--cngx-space-md, 16px)
+        var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px));
+      --cngx-nav-icon-size: 1.5rem;
+      --cngx-nav-icon-gap: calc(var(--cngx-space-sm, 8px) * 1.5);
       --cngx-nav-rail-border-width: 0px;
     }
 

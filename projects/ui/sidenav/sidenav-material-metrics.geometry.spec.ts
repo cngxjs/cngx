@@ -9,23 +9,24 @@ import { CngxSidenav } from './sidenav';
 // Runs in a real Chromium (the `test-geometry` target) against the
 // working-tree sidenav and nav-link bridges
 // (`./sidenav-material-metrics.spec-host.scss`). Under an M3 theme a sidenav
-// row is the M3 navigation drawer item: 56px high at density 0, a full pill,
-// 16px start and 24px end padding, a 24px icon 12px from the label, 12px from
-// the drawer edge, label-large at 500 and the prominent 700 when active. The
-// metrics ride the --cngx-space-* scale, so a Material density theme and a
-// cngx [data-density] island both re-scale them.
+// row is the M3 list item of mat-nav-list: 48px high at density 0 with no gap
+// between rows, a full pill edge to edge, 16px start and end padding, a 24px
+// icon 16px from the label, body-large at one weight, the label on-surface and
+// the icon on-surface-variant. The metrics ride the --cngx-space-* scale, so a
+// Material density theme and a cngx [data-density] island both re-scale them;
+// the row height follows Material density step for step.
 
 const MATERIAL_DENSITIES = [
-  ['0', 56],
-  ['-1', 52],
-  ['-2', 48],
-  ['-3', 44],
-  ['-4', 40],
+  ['0', 48],
+  ['-1', 44],
+  ['-2', 40],
+  ['-3', 36],
+  ['-4', 32],
 ] as const;
 
 const CNGX_DENSITIES = [
-  ['compact', 40],
-  ['spacious', 64],
+  ['compact', 32],
+  ['spacious', 56],
 ] as const;
 
 @Component({
@@ -52,6 +53,8 @@ const CNGX_DENSITIES = [
         </cngx-sidenav>
       </div>
     }
+    <span class="probe-on-surface" style="color: var(--mat-sys-on-surface)"></span>
+    <span class="probe-on-surface-variant" style="color: var(--mat-sys-on-surface-variant)"></span>
     @for (density of cngxDensities; track density[0]) {
       <div [attr.data-density]="density[0]">
         <cngx-sidenav mode="side" [opened]="true" ariaLabel="cngx {{ density[0] }}">
@@ -99,6 +102,10 @@ describe('sidenav rows under the M3 bridge', () => {
       expect(height(root, `.row-m${density}`)).toBe(rowHeight);
       expect(height(root, `.idle-m${density}`)).toBe(rowHeight);
       expect(height(root, `.group-m${density}`)).toBe(rowHeight);
+      const pitch =
+        one(root, `.idle-m${density}`).getBoundingClientRect().top -
+        one(root, `.row-m${density}`).getBoundingClientRect().top;
+      expect(pitch).toBe(rowHeight);
     });
   }
 
@@ -115,29 +122,39 @@ describe('sidenav rows under the M3 bridge', () => {
     expect(computedValue(row, 'border-bottom-right-radius')).toBe('9999px');
   });
 
-  it('pads 16px at the start and 24px at the end, 12px in from the drawer edge', () => {
+  it('pads 16px at the start and the end, edge to edge', () => {
     const row = one(mount(), '.row-m0');
     expect(computedValue(row, 'padding-left')).toBe('16px');
-    expect(computedValue(row, 'padding-right')).toBe('24px');
-    expect(computedValue(row, 'margin-left')).toBe('12px');
-    expect(computedValue(row, 'margin-right')).toBe('12px');
+    expect(computedValue(row, 'padding-right')).toBe('16px');
+    expect(computedValue(row, 'margin-left')).toBe('0px');
+    expect(computedValue(row, 'margin-right')).toBe('0px');
   });
 
-  it('sizes the icon box to 24px with a 12px gap to the label', () => {
+  it('sizes the icon box to 24px with a 16px gap to the label', () => {
     const root = mount();
     const icon = one(root, '.icon-m0').getBoundingClientRect();
     expect(icon.width).toBe(24);
     expect(icon.height).toBe(24);
-    expect(computedValue(one(root, '.row-m0'), 'column-gap')).toBe('12px');
+    expect(computedValue(one(root, '.row-m0'), 'column-gap')).toBe('16px');
   });
 
-  it('sets the label-large role: 14px on a 20px line, 500 at rest and 700 when active', () => {
+  it('sets the body-large role: 16px on a 24px line, 400 at rest and when active', () => {
     const root = mount();
     const idle = one(root, '.idle-m0');
-    expect(computedValue(idle, 'font-size')).toBe('14px');
-    expect(computedValue(idle, 'line-height')).toBe('20px');
-    expect(computedValue(idle, 'font-weight')).toBe('500');
-    expect(computedValue(one(root, '.group-m0'), 'font-weight')).toBe('500');
-    expect(computedValue(one(root, '.row-m0'), 'font-weight')).toBe('700');
+    expect(computedValue(idle, 'font-size')).toBe('16px');
+    expect(computedValue(idle, 'line-height')).toBe('24px');
+    expect(computedValue(idle, 'font-weight')).toBe('400');
+    expect(computedValue(one(root, '.group-m0'), 'font-weight')).toBe('400');
+    expect(computedValue(one(root, '.row-m0'), 'font-weight')).toBe('400');
+  });
+
+  it('paints the label on-surface and the icon on-surface-variant, active or not', () => {
+    const root = mount();
+    const onSurface = computedValue(one(root, '.probe-on-surface'), 'color');
+    const variant = computedValue(one(root, '.probe-on-surface-variant'), 'color');
+    expect(onSurface).not.toBe(variant);
+    expect(computedValue(one(root, '.idle-m0'), 'color')).toBe(onSurface);
+    expect(computedValue(one(root, '.row-m0'), 'color')).toBe(onSurface);
+    expect(computedValue(one(root, '.icon-m0'), 'color')).toBe(variant);
   });
 });

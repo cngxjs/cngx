@@ -50,6 +50,7 @@ describe('nav-link Material bridge', () => {
     '--cngx-nav-link-font-weight',
     '--cngx-nav-link-hover-bg',
     '--cngx-nav-link-hover-color',
+    '--cngx-nav-link-ink',
     '--cngx-nav-link-letter-spacing',
     '--cngx-nav-link-line-height',
     '--cngx-nav-link-pressed-bg',
@@ -60,20 +61,21 @@ describe('nav-link Material bridge', () => {
     expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
   });
 
-  it('maps the M3 label-large role, the prominent active weight and the full pill', () => {
+  it('maps the M3 list item: body-large at one weight, on-surface label, on-surface-variant icon, full pill', () => {
     const css = compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/nav-link-theme' as bridge;
 $theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
 .probe { @include bridge.theme($theme); }
 `);
-    expect(css).toContain('--cngx-nav-link-font-size: var(--mat-sys-label-large-size');
-    expect(css).toContain('--cngx-nav-link-line-height: var(--mat-sys-label-large-line-height');
-    expect(css).toContain('--cngx-nav-link-letter-spacing: var(--mat-sys-label-large-tracking');
-    expect(css).toContain('--cngx-nav-link-font-weight: var(--mat-sys-label-large-weight,');
-    expect(css).toContain(
-      '--cngx-nav-link-active-font-weight: var(--mat-sys-label-large-weight-prominent',
-    );
+    expect(css).toContain('--cngx-nav-link-font-size: var(--mat-sys-body-large-size');
+    expect(css).toContain('--cngx-nav-link-line-height: var(--mat-sys-body-large-line-height');
+    expect(css).toContain('--cngx-nav-link-letter-spacing: var(--mat-sys-body-large-tracking');
+    expect(css).toContain('--cngx-nav-link-font-weight: var(--mat-sys-body-large-weight,');
+    expect(css).toContain('--cngx-nav-link-active-font-weight: var(--mat-sys-body-large-weight,');
+    expect(css).toContain('--cngx-nav-link-color: var(--mat-sys-on-surface,');
+    expect(css).toContain('--cngx-nav-link-active-color: var(--mat-sys-on-surface,');
+    expect(css).toContain('--cngx-nav-link-ink: var(--mat-sys-on-surface-variant,');
     expect(css).toContain('--cngx-nav-link-radius: var(--mat-sys-corner-full');
     expect(css).not.toContain('--cngx-nav-link-radius: 8px');
   });
@@ -130,14 +132,13 @@ $theme: mat.define-theme((
     expect(css).not.toMatch(/--cngx-sidenav-(header|footer)-/);
   });
 
-  it('emits the M3 drawer metrics on the sidenav host with real specificity, not under :where()', () => {
+  it('emits the M3 list item metrics on the sidenav host with real specificity, not under :where()', () => {
     const css = compiledTheme();
     const metrics = css.match(/cngx-sidenav\[data-nav-railed\]\s*\{[^}]*\}/);
     expect(metrics).not.toBeNull();
     for (const token of [
       '--cngx-nav-link-inset:',
       '--cngx-nav-link-padding:',
-      '--cngx-nav-link-padding-inline-end:',
       '--cngx-nav-icon-size:',
       '--cngx-nav-icon-gap:',
     ]) {
@@ -145,9 +146,12 @@ $theme: mat.define-theme((
     }
     expect(metrics![0]).toContain('var(--cngx-space-');
     expect(css).not.toMatch(/:where\([^)]*cngx-sidenav\[data-nav-railed\]/);
+    const body = css.match(/cngx-sidenav\[data-nav-railed\] \.cngx-sidenav__body\s*\{[^}]*\}/);
+    expect(body).not.toBeNull();
+    expect(body![0]).toContain('gap: 0');
   });
 
-  it('emits no drawer metrics for an M2 theme', () => {
+  it('emits no list item metrics for an M2 theme', () => {
     const css = compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/sidenav-theme' as sidenav;
@@ -155,8 +159,8 @@ $primary: mat.m2-define-palette(mat.$m2-indigo-palette);
 $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $primary)));
 @include sidenav.theme($theme);
 `);
-    expect(css).not.toContain('--cngx-nav-link-padding-inline-end');
     expect(css).not.toContain('--cngx-nav-icon-size');
+    expect(css).not.toContain('.cngx-sidenav__body');
   });
 
   it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {

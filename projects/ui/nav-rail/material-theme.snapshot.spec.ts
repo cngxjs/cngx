@@ -99,7 +99,7 @@ describe('Material nav-rail-theme bridge baseline', () => {
     expect(tokens.length).toBeGreaterThan(0);
     for (const token of tokens) {
       expect(token).toMatch(
-        /^--cngx-nav-(rail|flyout)-|^--cngx-nav-icon-(size|gap)$|^--cngx-nav-link-(inset|padding|padding-inline-end|line-height|letter-spacing|font-weight|active-font-weight)$/,
+        /^--cngx-nav-(rail|flyout)-|^--cngx-nav-icon-(size|gap)$|^--cngx-nav-link-(inset|padding|line-height|letter-spacing|font-weight|active-font-weight)$/,
       );
     }
   });
