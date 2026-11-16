@@ -538,8 +538,6 @@ const STORY_OWNERSHIP_EXEMPT = [
   },
 ];
 
-// --- source helpers ----------------------------------------------------------
-
 /** Blank comments, keeping every newline so line numbers stay true. */
 function blank(text) {
   return text.replace(/[^\n]/g, ' ');
@@ -618,8 +616,6 @@ export function writtenClasses(source) {
   }
   return out;
 }
-
-// --- levels, owners, closure ---------------------------------------------------
 
 /** `lib -> level` from the `modules` rows of `sheriff.config.ts`. */
 export function readLevels(sheriffSource) {
@@ -713,8 +709,6 @@ export function importClosure(files) {
   return { reach };
 }
 
-// --- verdict -----------------------------------------------------------------
-
 /**
  * The owners that make a class foreign for `own`: an owner on a higher level,
  * or on the same level outside the closure. Empty when any owner is own,
@@ -751,8 +745,9 @@ function isOwnClass(cls, own, index) {
   return [...ownersOf(cls, index)].some((o) => own.entries.has(o));
 }
 
-// --- css selector reading ------------------------------------------------------
-
+// Selectors are read with a small scanner, not a CSS parser: postcss is only a
+// transitive dependency, and the guard needs nothing but class names and their
+// compound.
 const SKIPPED_AT_RULE =
   /^@(layer|media|supports|container|property|keyframes|font-face|page|starting-style)\b/;
 
@@ -912,8 +907,6 @@ function ownEntryOfStylesheet(file, css, index) {
   return { entries: new Set([entryOf(file)]), level, block: `cngx-${name}` };
 }
 
-// --- stories ---------------------------------------------------------------------
-
 /**
  * S5 hits of one story: `apiComponents` symbols of a higher-level or
  * independent-sibling entry. `examples/stories/core/**` is skipped.
@@ -952,8 +945,6 @@ export function scanStory(file, source, index) {
   }
   return hits;
 }
-
-// --- ratchet -----------------------------------------------------------------------
 
 /**
  * Hits no row covers, rows that do not match their hits exactly, and rows
@@ -996,8 +987,8 @@ export function exemptionProblems(hits, rows) {
   return out;
 }
 
-// --- repo walk -----------------------------------------------------------------------
-
+// git ls-files in a checkout; a plain walk for an extracted tree (git archive)
+// so another branch can be scanned without touching its worktree.
 function listFiles(root) {
   if (existsSync(resolve(root, '.git'))) {
     return execFileSync('git', ['ls-files', 'projects', 'examples/stories'], {
@@ -1057,8 +1048,8 @@ export function scanRepo(root = REPO_ROOT) {
   return { css, stories, index };
 }
 
-// --- unit cases ----------------------------------------------------------------------
-
+// A tiny repo: common/interactive imports common/a11y but not common/popover,
+// so the popover classes stand in for an independent sibling.
 const SHERIFF = [
   "'projects/core': ['lib:core', 'level:1', 'entry:primary', 'scope:lib'],",
   "'projects/common': ['lib:common', 'level:2', 'entry:primary', 'scope:lib'],",
@@ -1282,8 +1273,6 @@ describe('skin-ownership guard - S6 ratchet', () => {
     ).toEqual([]);
   });
 });
-
-// --- the repo ------------------------------------------------------------------------
 
 describe('skin-ownership guard - projects/** and examples/stories/**', () => {
   let result;
