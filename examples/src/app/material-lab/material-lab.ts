@@ -363,7 +363,7 @@ interface FieldModel {
         </div>
       </section>
 
-      <!-- M3 navigation drawer item (mat-nav-list) and M3 navigation rail
+      <!-- M3 list item (mat-nav-list) and M3 navigation rail
            (Angular Material ships no rail) at Material density 0 and -2. -->
       <section class="lab-wide" id="nav">
         <h3>nav (Material left, cngx right)</h3>
