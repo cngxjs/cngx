@@ -9,6 +9,15 @@ import { CngxSidenav, CngxSidenavLayout, CngxSidenavContent } from '@cngx/ui';
 import { CngxNavHeader, CngxNavFooter, CngxNavLink } from '@cngx/common/interactive';
 ```
 
+## Sidebar, drawer, sidenav or nav rail
+
+| Artifact | Role | Owns | Does not do | Pick when |
+|-|-|-|-|-|
+| `[cngxSidebar]` (`@cngx/common/layout`) | A side region that stays in the layout | Expanded, rail and hidden state, the reserved inline size, the hover peek, `inert` and `aria-hidden` while hidden | No overlay, scrim or focus trap; no navigation rows | You build your own app shell around a persistent panel |
+| `[cngxDrawer]` (`@cngx/common/layout`) | A panel that opens for a moment, over (`over`) or beside (`push`) the content | Open state, modality (`page`, `contained`, `none`): focus trap, `inert`, scroll lock, Escape and outside-press dismissal; the scrim with `class="cngx-drawer"` | No resting rail, no reserved space while closed | Navigation or filters that appear on demand, a mobile menu |
+| `cngx-sidenav` (`@cngx/ui/sidenav`) | The finished navigation organism on a composed sidebar | Header and footer slots, width classes (drawer below 48rem, rail with the full nav as an overlay from 48rem, docked from 64rem), rail tooltip and group flyout, resize, shortcut, router sync | No rail that stays a rail on every layout | The app navigation that expands, collapses to a rail and turns into a drawer on narrow layouts |
+| `cngx-nav-rail` (`@cngx/ui/nav-rail`) | A navigation column that is only ever a rail | Icon rows with the label as a tooltip or below the icon, groups as flyouts, the side | No open state, backdrop, focus trap, expand or peek | Primary navigation with a few top-level sections that never needs full-width labels |
+
 ## Quick Start
 
 ```typescript
@@ -82,10 +91,6 @@ The flyout and the tooltip are the rail pieces of the nav atoms in `@cngx/common
 - The hover peek is on by default (`expandOnHover`) and settles after about 120ms, before the 300ms tooltip delay. A pointer on the rail therefore gets the peek, not the tooltip: the tooltip shows on keyboard focus, and for the pointer when `expandOnHover` is off.
 - A flyout opened by keyboard turns into the inline group when a pointer peek starts, and that group closes when the peek ends.
 - `[tooltip]` switches the tooltip per sidenav; unbound, `withNavRailTooltip` of `CNGX_NAV_RAIL_CONFIG` applies, else it is on. The delay comes from the same config (`withNavRailTooltipDelay`). An override of `CNGX_NAV_RAIL_TOOLTIP_FACTORY` / `CNGX_NAV_RAIL_FLYOUT_FACTORY` applies to the sidenav and to `cngx-nav-rail` alike.
-
-### Sidenav or nav rail
-
-Reach for `cngx-sidenav` when the navigation expands, peeks or turns into a drawer on narrow layouts; for a rail that never expands, use `cngx-nav-rail` (see the [nav rail README](../nav-rail/README.md)). Both use the same nav atoms and the same row geometry.
 
 ## Container, not viewport
 
