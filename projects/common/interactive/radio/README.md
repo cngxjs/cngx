@@ -97,19 +97,11 @@ export interface CngxRadioGroupContract<T = unknown> {
   readonly disabled: Signal<boolean>;
   readonly name: Signal<string>;
   readonly skin: Signal<CngxRadioSkin | undefined>;
-  register(radio: CngxRadioRegistration<T>): void;
-  unregister(id: string): void;
   consumePendingArrowSelect(value: T, leafDisabled?: boolean): boolean;
-}
-
-export interface CngxRadioRegistration<T = unknown> {
-  readonly id: string;
-  readonly value: () => T | undefined;
-  readonly disabled: () => boolean;
 }
 ```
 
-`value` is a `ModelSignal` because the leaf has to write to it on selection. `register` / `unregister` are called from the leaf's constructor and `DestroyRef` cleanup; the registry is a `Map` in declaration order so arrow navigation has DOM-stable resolution without a `ContentChildren` re-query. `consumePendingArrowSelect` implements the W3C auto-select-on-arrow variant: the host `CngxRovingTabindex` raises its navigation-key intent before it moves focus, the newly-focused leaf reads `roving.consumeNavigationKey()` from its `(focus)` handler, and the one-shot hook is cleared so Tab-into-group does not auto-select. Reading an already-set fact (instead of a group-owned `keydown` flag) is what makes the first arrow press select rather than drop.
+`value` is a `ModelSignal` because the leaf has to write to it on selection. `consumePendingArrowSelect` implements the W3C auto-select-on-arrow variant: the host `CngxRovingTabindex` raises its navigation-key intent before it moves focus, the newly-focused leaf reads `roving.consumeNavigationKey()` from its `(focus)` handler, and the one-shot hook is cleared so Tab-into-group does not auto-select. Reading an already-set fact (instead of a group-owned `keydown` flag) is what makes the first arrow press select rather than drop.
 
 ## Accessibility
 

@@ -14,11 +14,7 @@ import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '../control-value/control-value.token';
 import { injectInteractiveGroupHost } from '../group-host/group-host';
-import {
-  CNGX_RADIO_GROUP,
-  type CngxRadioGroupContract,
-  type CngxRadioRegistration,
-} from './radio-group.token';
+import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.token';
 
 /**
  * Radio-group molecule that owns the canonical `value` for a set of
@@ -26,11 +22,7 @@ import {
  * `CNGX_RADIO_GROUP`. The group composes `CngxRovingTabindex` as a
  * host directive and fixes its arrow-key axis to `'both'`, so all four
  * arrow keys move across radios whatever the layout; `orientation`
- * drives `aria-orientation` and the layout only. Leaf
- * registration is imperative - `register()` / `unregister()` keep a
- * Map in declaration order so the group can resolve the active
- * radio by id without re-querying content children on every change
- * detection cycle.
+ * drives `aria-orientation` and the layout only.
  *
  * Per W3C ARIA radio-group authoring practice, `Tab` enters the
  * group; arrow keys move focus AND select (auto-select variant);
@@ -188,7 +180,6 @@ export class CngxRadioGroup<T = unknown>
 
   readonly name = computed(() => this.nameInput() ?? this.fallbackName);
 
-  private readonly registry = new Map<string, CngxRadioRegistration<T>>();
   private readonly roving = inject(CngxRovingTabindex, { host: true });
 
   protected readonly groupHost = injectInteractiveGroupHost({
@@ -221,23 +212,6 @@ export class CngxRadioGroup<T = unknown>
        roving directive to `'both'` so a vertical group still
        responds to ArrowLeft / ArrowRight and vice versa. */
     this.roving.orientation.set('both');
-  }
-
-  /**
-   * Implements `CngxRadioGroupContract.register`: stores the registration in the
-   * group's registry under `radio.id`, replacing an earlier entry with the same id.
-   * Called by each `CngxRadio` from its constructor.
-   */
-  register(radio: CngxRadioRegistration<T>): void {
-    this.registry.set(radio.id, radio);
-  }
-
-  /**
-   * Implements `CngxRadioGroupContract.unregister`: removes the registration stored
-   * under `id`. Called by each `CngxRadio` when it is destroyed.
-   */
-  unregister(id: string): void {
-    this.registry.delete(id);
   }
 
   /**

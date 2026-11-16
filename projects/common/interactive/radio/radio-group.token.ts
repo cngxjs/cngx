@@ -2,24 +2,6 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
 import type { CngxRadioSkin } from '@cngx/common/display';
 
 /**
- * Structural surface a `CngxRadio` leaf exposes when it registers
- * itself with a parent `CngxRadioGroup`. The group keeps the
- * registry in DOM order so arrow-key navigation (driven by
- * `CngxRovingTabindex` host directive) and the
- * value-equality check (`group.value() === radio.value()`) both
- * have access to the leaf without injecting the concrete radio
- * class.
- *
- * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
- * @since 0.1.0
- */
-export interface CngxRadioRegistration<T = unknown> {
-  readonly id: string;
-  readonly value: () => T | undefined;
-  readonly disabled: () => boolean;
-}
-
-/**
  * Parent-child contract every `CngxRadioGroup` provides via
  * `useExisting`. `CngxRadio` injects this token (never the
  * concrete `CngxRadioGroup` class) so the leaf stays decompose-
@@ -46,8 +28,6 @@ export interface CngxRadioGroupContract<T = unknown> {
   readonly disabled: Signal<boolean>;
   readonly name: Signal<string>;
   readonly skin: Signal<CngxRadioSkin | undefined>;
-  register(radio: CngxRadioRegistration<T>): void;
-  unregister(id: string): void;
   /**
    * Consume the group's "last interaction was a roving-arrow keydown"
    * flag. Called by a leaf's `(focus)` handler - when the flag is
