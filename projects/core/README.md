@@ -21,9 +21,10 @@ the CSS foundation reacts to.
 ### provideA11yPreferences
 
 The writable-preference feature set: `provideA11yPreferences(withDensity(),
-withTextScale(), withMotion(), withContrast(), withPersistence())` wires the
-axes as user-settable signals, `injectA11yPreferences()` reads them, and
-`CNGX_A11Y_STORAGE` swaps the persistence backend.
+withTextScale(), withMotion(), withContrast(), withTouchTarget(),
+withPersistence())` wires the axes as user-settable signals,
+`injectA11yPreferences()` reads them, and `CNGX_A11Y_STORAGE` swaps the
+persistence backend.
 
 ### Bidi and inline navigation
 
