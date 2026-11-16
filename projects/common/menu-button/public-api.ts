@@ -12,13 +12,6 @@ export {
   injectButtonCaretIcon,
 } from './caret-icon.token';
 export {
-  provideCngxMenuButton,
-  provideCngxMenuButtonAt,
-  withButtonCaretIcon,
-  type CngxMenuButtonFeature,
-  type CngxMenuButtonCaretIconFeature,
-} from './provide-cngx-menu-button';
-export {
   CNGX_MENU_BUTTON_I18N,
   type CngxMenuButtonI18n,
   type CngxMenuButtonI18nFeature,

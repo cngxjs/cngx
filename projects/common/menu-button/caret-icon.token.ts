@@ -7,7 +7,7 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
  * @since 0.1.0
- * @relatedTo provideButtonCaretIcon, injectButtonCaretIcon, CngxMenuButton, CngxIconMenuButton, withButtonCaretIcon
+ * @relatedTo provideButtonCaretIcon, injectButtonCaretIcon, CngxMenuButton, CngxIconMenuButton
  * <example-url>/#/common/menu-button/menu-button/custom-caret</example-url>
  */
 export const CNGX_BUTTON_CARET_ICON = new InjectionToken<Type<unknown>>('CngxButtonCaretIcon');
@@ -24,7 +24,7 @@ export const CNGX_BUTTON_CARET_ICON = new InjectionToken<Type<unknown>>('CngxBut
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
  * @since 0.1.0
- * @relatedTo CNGX_BUTTON_CARET_ICON, injectButtonCaretIcon, withButtonCaretIcon
+ * @relatedTo CNGX_BUTTON_CARET_ICON, injectButtonCaretIcon
  * <example-url>/#/common/menu-button/menu-button/custom-caret</example-url>
  */
 export function provideButtonCaretIcon(component: Type<unknown>): Provider {

@@ -941,19 +941,10 @@
       "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1041.html",
       "status": "active",
       "files": [
-        "projects/common/menu-button/provide-cngx-menu-button.ts",
         "projects/common/stepper/provide-cngx-stepper.ts",
         "projects/common/tabs/provide-cngx-tabs.ts"
       ],
       "messages": [
-        {
-          "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
-          "text": "provideCngxMenuButton(): dropped feature without a `_target` discriminator. Pass the caret through `withButtonCaretIcon(...)` and labels through `withMenuButtonI18nLabels(...)`."
-        },
-        {
-          "file": "projects/common/menu-button/provide-cngx-menu-button.ts",
-          "text": "provideCngxMenuButtonAt(): dropped feature without a `_target` discriminator. Pass the caret through `withButtonCaretIcon(...)` and labels through `withMenuButtonI18nLabels(...)`."
-        },
         {
           "file": "projects/common/stepper/provide-cngx-stepper.ts",
           "text": "provideCngxStepper(): dropped feature without a `_target` discriminator. Pass config through the `with*` helpers of @cngx/common/stepper and labels through `withStepperI18nLabels(...)`."

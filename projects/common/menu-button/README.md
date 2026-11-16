@@ -190,17 +190,21 @@ folds `caret.refusing()` into its own state.
 
 ## Configuration
 
-`provideCngxMenuButton(...)` sets the caret glyph and the labels in one call at the root.
-`provideCngxMenuButtonAt(...)` is its twin for `providers` and `viewProviders`. A feature without
-a `_target` is dropped with [`CNGX1041`](../../../core-concepts/error-codes/cngx1041.md) in
-development. Button-wide defaults, the close glyph and the busy glyph go through
-`provideCngxButton(...)` in `@cngx/common/button`.
+Each concern has one provider, and each works in `providers` and `viewProviders`:
+
+| Concern | Provider |
+|-|-|
+| Caret glyph | `provideButtonCaretIcon(MyCaret)` |
+| Copy | `provideMenuButtonI18n(withMenuButtonI18nLabels({ ... }))` |
+
+Button-wide defaults, the close glyph and the busy glyph have their own providers in
+`@cngx/common/button`.
 
 ```typescript
-provideCngxMenuButton(
-  withButtonCaretIcon(MyCaret),
-  withMenuButtonI18nLabels({ splitToggle: 'More actions' }),
-);
+providers: [
+  provideButtonCaretIcon(MyCaret),
+  provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle: 'More actions' })),
+];
 ```
 
 The labels are the `menuButton` section of the [language pack](../../../core-concepts/i18n.md):
