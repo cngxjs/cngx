@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 
+import { type workspaces } from '@angular-devkit/core';
 import { chain, type Rule, type SchematicContext, type Tree } from '@angular-devkit/schematics';
 import { readWorkspace } from '@schematics/angular/utility';
 
@@ -97,12 +98,13 @@ function carriesReadme(record: ProjectRecord, defaultsFor: PresetDefaults, versi
  * every record. A recorded project gone from angular.json is named and its
  * record left as it is.
  */
-async function planReruns(
+function planReruns(
   tree: Tree,
+  workspace: workspaces.WorkspaceDefinition,
   stored: InstallManifestState,
   versions: ReleaseVersions,
   now: string,
-): Promise<{ readonly reruns: StepResult; readonly records: StepResult }> {
+): { readonly reruns: StepResult; readonly records: StepResult } {
   if (stored.state !== 'read') {
     const reason =
       stored.state === 'absent'
@@ -113,7 +115,6 @@ async function planReruns(
     return { reruns: note(id, 'Re-run the recorded install steps', reason, versions.cngx), records: NOTHING };
   }
   const { manifest } = stored;
-  const workspace = await readWorkspace(tree);
   let readme: WorkspaceReadme | undefined = { libs: recordedLibs(manifest), installed: recordedStepIds(manifest) };
   const reruns: StepResult[] = [];
   const records: StepResult[] = [];
@@ -169,7 +170,7 @@ export function createMigration(migration: Migration): Rule {
     const roots = [...workspace.projects.values()].map(sourceRootOf);
     const renames = planRenames(migration.renames, tree, roots, provenance);
     const renamed = previewRenames(tree, renames);
-    const { reruns, records } = await planReruns(renamed, stored, versions, new Date().toISOString());
+    const { reruns, records } = planReruns(renamed, workspace, stored, versions, new Date().toISOString());
     const plan = createChangePlan(
       [renames, planCodemods(migration.codemods, renamed, manifestOf(stored)), reruns, records],
       warning === undefined ? [] : [warning],

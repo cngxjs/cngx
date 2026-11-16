@@ -93,10 +93,8 @@ export interface IndexHtmlFacts {
 /** The first `<html` start tag, up to its closing `>`. */
 export const HTML_START_TAG = /<html\b[^>]*>/i;
 
-const DIR_ATTRIBUTE = /\sdir\s*=/i;
-
-// The attribute with its value, in any quoting, and the space before it.
-const DIR_ATTRIBUTE_WITH_VALUE = /\s+dir\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i;
+// A `dir` attribute, bare or with a value in any quoting, and the space before it.
+const DIR_ATTRIBUTE = /\s+dir(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)|(?=[\s/>]))/i;
 
 /** The first `<html>` start tag of `content` carries a `dir` attribute; `false` without such a tag. */
 export function htmlCarriesDir(content: string): boolean {
@@ -110,7 +108,7 @@ function withoutHtmlDir(content: string): string {
   if (match === null) {
     return content;
   }
-  const tag = match[0].replace(DIR_ATTRIBUTE_WITH_VALUE, '');
+  const tag = match[0].replace(DIR_ATTRIBUTE, '');
   return `${content.slice(0, match.index)}${tag}${content.slice(match.index + match[0].length)}`;
 }
 

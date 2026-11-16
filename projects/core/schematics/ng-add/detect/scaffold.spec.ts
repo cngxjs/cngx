@@ -168,7 +168,7 @@ describe('indexHtmlStateOf', () => {
     ['the stock file', index, 'untouched'],
     ['the starter link', withStarterFavicon(index), 'starter'],
   ] as const)('reads %s with dir on <html> as it reads it without', async (_name, content, state) => {
-    for (const html of [content.replace('<html lang="en">', '<html lang="en" dir="rtl">'), content.replace('<html lang="en">', "<html dir='ltr' lang=\"en\">")]) {
+    for (const html of [content.replace('<html lang="en">', '<html lang="en" dir="rtl">'), content.replace('<html lang="en">', "<html dir='ltr' lang=\"en\">"), content.replace('<html lang="en">', '<html dir lang="en">')]) {
       expect((await factsOf('scaffold-21', { 'src/index.html': html })).indexHtml).toEqual({ path: 'src/index.html', state, dir: true });
     }
   });

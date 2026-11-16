@@ -68,7 +68,7 @@ export function switchesLanguageAtRuntime(facts: ProjectFacts, answers: Onboardi
 }
 
 /** Whether the locale's language is written right to left. */
-export function isRtl(locale: string | undefined): boolean {
+export function isRtl(locale: string | undefined): locale is string {
   const language = locale?.split(/[-_]/)[0]?.toLowerCase();
   return language !== undefined && RTL_LANGUAGES.has(language);
 }

@@ -42,7 +42,8 @@ describe('planDocumentDirection', () => {
 
     expect(edit(stock)).toBe('<!doctype html>\n<html lang="en" dir="rtl">\n<head></head>\n</html>\n');
     expect(edit('<html>')).toBe('<html dir="rtl">');
-    for (const kept of ['<html dir="ltr">\n</html>', '<html lang="ar" dir="rtl">\n</html>', '<body></body>']) {
+    expect(edit('<html data-dir="x">')).toBe('<html data-dir="x" dir="rtl">');
+    for (const kept of ['<html dir>\n</html>', '<html dir="ltr">\n</html>', '<html lang="ar" dir="rtl">\n</html>', '<body></body>']) {
       expect(edit(kept)).toBe(kept);
     }
   });
