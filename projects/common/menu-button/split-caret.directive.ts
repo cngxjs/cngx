@@ -54,7 +54,7 @@ export class CngxSplitCaret implements CngxButtonHostState {
   readonly refusing = computed(() => this.isCaret() && (this.split?.mainBlocked() ?? false));
 
   /** Id the host template puts on its hidden busy note. */
-  readonly busyNoteId = nextUid('cngx-split-caret-busy-');
+  readonly busyNoteId = nextUid('cngx-split-caret-busy');
 
   /** The caret's name, `menuButton.splitToggle`. */
   readonly label = computed(() => this.i18n().splitToggle);

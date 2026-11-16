@@ -290,6 +290,7 @@ describe('CngxButtonBrain', () => {
     expect(chip.hasAttribute('disabled')).toBe(false);
     expect(chip.getAttribute('aria-describedby')).toBe(`static-id extra-id ${reason.id}`);
     expect(reason.textContent).toBe('Saving');
+    expect(reason.id).toMatch(/^cngx-button-reason-\d+$/);
     // One source: the published id is the one aria-describedby references.
     const brain = fixture.debugElement.query(By.css('#chip')).injector.get(CngxButtonBrain);
     expect(brain.activeReasonId()).toBe(reason.id);

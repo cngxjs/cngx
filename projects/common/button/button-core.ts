@@ -114,8 +114,8 @@ export function injectButtonCore(
   // the CNGX_HOST_INTERACTION_STATE this button provides, so an eager inject
   // in either direction is a cycle.
   const runState = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
-  const reasonId = nextUid('cngx-button-reason-');
-  const describedByKey = nextUid('cngx-button-describedby-');
+  const reasonId = nextUid('cngx-button-reason');
+  const describedByKey = nextUid('cngx-button-describedby');
   const isButtonHost = host.tagName === 'BUTTON';
 
   const fixed = defaults.fixed;
