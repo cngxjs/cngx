@@ -34,6 +34,14 @@ export const STORY: DemoSpec = {
       }
     }
   </cngx-skeleton>`,
+  css: `.demo-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}`,
   templateChrome: `<div class="button-row">
     <button type="button" class="chip" [attr.aria-pressed]="loading()" (click)="toggleLoading()">
       {{ loading() ? 'Loading...' : 'Loaded' }}

@@ -38,4 +38,17 @@ export const STORY: DemoSpec = {
       </ng-template>
     </cngx-expandable-text>
   </div>`,
+  css: `.demo-expandable-toggle {
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-sm, 4px);
+  background: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}
+
+.demo-expandable-toggle__glyph {
+  font-size: 1rem;
+}`,
 };
