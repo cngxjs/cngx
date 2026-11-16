@@ -77,11 +77,21 @@ describe('withCloseIcon', () => {
 });
 
 describe('loading timing', () => {
-  it('stays with CNGX_LOADING_CONFIG: provideFeedback contributes no loading config', () => {
+  it('provideFeedback leaves the loading config at its defaults', () => {
+    TestBed.configureTestingModule({
+      providers: [provideFeedback(withToasts(), withAlerts(), withCloseIcon(CloseGlyph))],
+    });
+    expect(TestBed.runInInjectionContext(() => injectLoadingConfig())).toEqual(
+      CNGX_LOADING_DEFAULTS,
+    );
+  });
+
+  it('provideFeedback registered after provideLoadingConfig keeps the app timing', () => {
+    // provideFeedback goes last so a loading provider of its own would win under DI last-wins.
     TestBed.configureTestingModule({
       providers: [
-        provideFeedback(withToasts(), withAlerts(), withCloseIcon(CloseGlyph)),
         provideLoadingConfig(withSpinnerVsSkeletonCutoff(1200)),
+        provideFeedback(withToasts(), withAlerts(), withCloseIcon(CloseGlyph)),
       ],
     });
     expect(TestBed.runInInjectionContext(() => injectLoadingConfig())).toEqual({
