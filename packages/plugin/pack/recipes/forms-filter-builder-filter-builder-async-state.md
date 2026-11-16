@@ -1,17 +1,17 @@
 ---
-title: "CngxFilterBuilder: loading error content branches via cngx async container"
-whenToUse: "Wraps in for state-driven UI. Demonstrates the consumer-side loading / error / refreshing pattern."
-symbols: [CngxFilterBuilder, CngxAsyncContainer]
+title: "CngxFilterBuilder: loading error content branches via cngxAsync"
+whenToUse: "Renders &lt;cngx-filter-builder&gt; through *cngxAsync once its field schema has loaded. The skeleton and error templates cover the first load; a refresh or a failed reload keeps the builder and its tree, because a structural directive renders one template at a time."
+symbols: [CngxFilterBuilder, CngxAsync]
 ---
 
-# CngxFilterBuilder: loading error content branches via cngx async container
+# CngxFilterBuilder: loading error content branches via cngxAsync
 
-Wraps in for state-driven UI. Demonstrates the consumer-side loading / error / refreshing pattern.
+Renders &lt;cngx-filter-builder&gt; through *cngxAsync once its field schema has loaded. The skeleton and error templates cover the first load; a refresh or a failed reload keeps the builder and its tree, because a structural directive renders one template at a time.
 
 ## Symbols
 
 - `CngxFilterBuilder`
-- `CngxAsyncContainer`
+- `CngxAsync`
 
 ## Setup
 
@@ -41,29 +41,31 @@ protected resetState(): void {
 ```html
 <div class="demo-form">
 
-  <cngx-async-container [state]="state" ariaLabel="Filter schema">
-    <ng-template cngxAsyncSkeleton>
-      <div class="demo-skeleton">
-        <div class="demo-skeleton-row"></div>
-        <div class="demo-skeleton-row"></div>
-        <div class="demo-skeleton-row"></div>
-      </div>
-    </ng-template>
+  @if (state.status() === 'idle') {
+    <p class="demo-empty">Press <strong>Load</strong> to fetch the filter schema.</p>
+  }
 
-    <ng-template cngxAsyncEmpty>
-      <p class="demo-empty">Press <strong>Load</strong> to fetch the filter schema.</p>
-    </ng-template>
+  <div [attr.aria-busy]="state.isBusy()">
+    <cngx-filter-builder
+      *cngxAsync="state; let data; skeleton: skeletonTpl; error: errorTpl"
+      [fields]="data"
+      [(value)]="tree"
+    />
+  </div>
 
-    <ng-template cngxAsyncContent let-data>
-      <cngx-filter-builder [fields]="data" [(value)]="tree" />
-    </ng-template>
+  <ng-template #skeletonTpl>
+    <div class="demo-skeleton">
+      <div class="demo-skeleton-row"></div>
+      <div class="demo-skeleton-row"></div>
+      <div class="demo-skeleton-row"></div>
+    </div>
+  </ng-template>
 
-    <ng-template cngxAsyncError let-err>
-      <div role="alert" class="demo-error">
-        <strong>Schema load failed:</strong> {{ (err)?.message ?? 'unknown error' }}
-      </div>
-    </ng-template>
-  </cngx-async-container>
+  <ng-template #errorTpl let-err>
+    <div role="alert" class="demo-error">
+      <strong>Schema load failed:</strong> {{ (err)?.message ?? 'unknown error' }}
+    </div>
+  </ng-template>
 
   <pre class="code-block"><code>{{ tree() | json }}</code></pre>
 </div>

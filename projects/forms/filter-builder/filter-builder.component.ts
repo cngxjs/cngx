@@ -57,7 +57,7 @@ const DETACHED_FIELD_PROVIDERS = [
  * @slot cngxFilterBuilderRemoveButton Replaces the remove control on a row or group.
  * @slot cngxFilterBuilderEmpty Rendered when no condition has been added yet.
  * <example-url>/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
- * <example-url>/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
+ * <example-url>/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngxasync</example-url>
  * <example-url>/#/forms/filter-builder/filter-builder-json/builder-json</example-url>
  * <example-url>/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  * @axis level organism

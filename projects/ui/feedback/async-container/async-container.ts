@@ -115,7 +115,6 @@ export class CngxAsyncErrorTpl {
  * @slot cngxAsyncEmpty Rendered when the value resolves to nothing.
  * @slot cngxAsyncError Rendered on failure; gets the error as `$implicit` (use `let-err`).
  *
- * <example-url>/#/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
  * <example-url>/#/ui/feedback/async-container/cngxasync-one-line</example-url>
  * <example-url>/#/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>
