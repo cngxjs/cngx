@@ -235,6 +235,8 @@ A row without an icon draws its first letter in the same box, as a round filled 
 </nav>
 ```
 
+A `cngx-avatar` as mark takes the icon box size whatever its `size` input, with its initials at `--cngx-nav-mark-font-size` (`0.625rem`). For a larger mark raise `--cngx-nav-icon-size` on the nav container: the row icons grow with it, so marks and rows stay on one x.
+
 `CngxSidenav` projects these slots above and below its scrolling body; any other container lays them out where it renders them.
 
 ## Rail tooltip and group flyout

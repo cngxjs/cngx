@@ -23,7 +23,11 @@
  *   (`CngxNavFooter`) - top and bottom regions of a nav container
  * - `.cngx-nav-mark` (`CngxNavMark`) - logo or avatar in the icon box of a
  *   header or footer, at the row icon x; `.cngx-nav-name` (`CngxNavName`) -
- *   the name next to it, at the row label x, truncated with an ellipsis
+ *   the name next to it, at the row label x, truncated with an ellipsis. A
+ *   `cngx-avatar` as mark takes the icon box size whatever its `size`, with
+ *   initials at `--cngx-nav-mark-font-size`. For larger marks raise
+ *   `--cngx-nav-icon-size` on the container: rows and marks grow together
+ *   and stay aligned
  * - `.cngx-nav-rail-tooltip` - the label tooltip `injectNavRailTooltip`
  *   adds to a rail; with `data-cngx-rail-side="end"` it opens at the row's
  *   inline start, as the group flyout does
@@ -396,6 +400,18 @@
    * @group Surface
    */
   @property --cngx-nav-link-ink {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Font size of the initials of a `cngx-avatar` used as header or footer
+   * mark. Unset by default (falls back to `0.625rem`, which fits the
+   * default 1.25rem icon box).
+   * @group Typography
+   * @see [[--cngx-nav-icon-size]]
+   */
+  @property --cngx-nav-mark-font-size {
     syntax: '*';
     inherits: true;
   }
@@ -985,6 +1001,14 @@
     block-size: var(--cngx-nav-icon-size, 1.25rem);
     overflow: hidden;
     color: var(--cngx-nav-link-ink, currentColor);
+  }
+
+  /* A cngx-avatar as mark fills the icon box whatever its size rung, so it
+     sits at the row icon x. Three classes, so it beats the size rung of the
+     avatar's @scope. */
+  :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-mark.cngx-avatar {
+    --cngx-avatar-size: var(--cngx-nav-icon-size, 1.25rem);
+    --cngx-avatar-font-size: var(--cngx-nav-mark-font-size, 0.625rem);
   }
 
   .cngx-nav-name {

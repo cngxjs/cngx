@@ -12,6 +12,7 @@ import {
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
+import { CngxAvatar } from '../../display/avatar/avatar.component';
 import { CngxNavBadge } from '../../interactive/nav/nav-badge.directive';
 import { CngxNavFooter } from '../../interactive/nav/nav-footer.directive';
 import { CngxNavGroup } from '../../interactive/nav/nav-group.directive';
@@ -764,5 +765,57 @@ describe('railed rows', () => {
     const row = one(host, '.railed-icon-row');
     expect(computedValue(row, 'overflow-x')).not.toBe('clip');
     expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth);
+  });
+});
+
+// A cngx-avatar as mark, with a size rung of its own: the nav pins it to the
+// icon box. The avatar sheet loads after the nav sheet, as in an app.
+@Component({
+  selector: 'cngx-nav-avatar-mark-host',
+  standalone: true,
+  imports: [CngxAvatar, CngxNavLink, CngxNavIcon, CngxNavHeader, CngxNavFooter, CngxNavMark],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    './cngx-nav.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <nav aria-label="Avatars" style="display: flex; flex-direction: column; inline-size: 240px">
+      <cngx-nav-header>
+        <cngx-avatar cngxNavMark class="avatar-header" initials="A" shape="square" size="sm" />
+      </cngx-nav-header>
+      <a cngxNavLink href="#a"><span cngxNavIcon class="avatar-row-icon">*</span>Starred</a>
+      <cngx-nav-footer>
+        <cngx-avatar cngxNavMark class="avatar-footer" initials="JD" size="sm" />
+      </cngx-nav-footer>
+    </nav>
+  `,
+})
+class NavAvatarMarkHost {}
+
+describe('avatar as mark', () => {
+  let root: HTMLElement | null = null;
+
+  afterEach(() => {
+    root?.remove();
+    root = null;
+  });
+
+  it('pins a size="sm" avatar to the icon box at the row icon x', () => {
+    const fixture = TestBed.createComponent(NavAvatarMarkHost);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    const icon = one(root, '.avatar-row-icon').getBoundingClientRect();
+    for (const selector of ['.avatar-header', '.avatar-footer']) {
+      const avatar = one(root, selector);
+      expect(avatar.classList).toContain('cngx-avatar--sm');
+      const mark = avatar.getBoundingClientRect();
+      expect(mark.width).toBeCloseTo(icon.width, 1);
+      expect(mark.height).toBeCloseTo(icon.height, 1);
+      expect(Math.abs(mark.left - icon.left)).toBeLessThanOrEqual(0.5);
+      expect(computedValue(avatar, 'font-size')).toBe('10px');
+    }
   });
 });
