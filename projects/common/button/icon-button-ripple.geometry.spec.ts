@@ -22,6 +22,7 @@ import { CngxIconButton } from './icon-button.component';
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
     '../theming/components/cngx-ripple.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

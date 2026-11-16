@@ -203,7 +203,7 @@ const OBSERVED_ATTRIBUTES = [
 ];
 
 /** @internal */
-const CANDIDATE_SELECTOR = '[aria-live],[role]';
+const CANDIDATE_SELECTOR = '[aria-live],[role],output';
 
 /**
  * Records every text a live region exposes, by observing the DOM instead of
@@ -212,7 +212,8 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  * change at the writing site.
  *
  * A region is an element with `aria-live="polite|assertive"`, or with role
- * `status` / `alert` / `log` and no `aria-live="off"`. Regions are discovered
+ * `status` / `alert` / `log` and no `aria-live="off"`; an `<output>` without
+ * a `role` counts as role `status`. Regions are discovered
  * at start and whenever they are inserted or gain the attributes; one that
  * stops being live is dropped. Text present at start is not recorded.
  *
@@ -259,6 +260,12 @@ const CANDIDATE_SELECTOR = '[aria-live],[role]';
  *   `suppressedBy: null`: only a region outside every open `aria-modal`
  *   element counts as suppressed, so the error leans toward over-reporting;
  * - regions inside shadow roots are not observed;
+ * - `aria-atomic` is read on the region only; an inner ancestor's
+ *   `aria-atomic` does not widen what a write records;
+ * - `aria-relevant` is not read: additions and text changes record, removals
+ *   never do;
+ * - a clear and an identical rewrite inside one task land in one observer
+ *   batch and record one entry, since the clear is never seen on its own;
  * - writes are seen when the `MutationObserver` callback runs (a microtask),
  *   and `CngxLiveAnnouncer` writes 16 ms after `announce()`, so a test
  *   advances timers and awaits a microtask before reading `entries`.
@@ -568,7 +575,11 @@ function isLive(el: Element): boolean {
 
 /** @internal */
 function primaryRole(el: Element): string | null {
-  return firstRoleToken(el.getAttribute('role'));
+  const role = firstRoleToken(el.getAttribute('role'));
+  if (role === null && el.tagName === 'OUTPUT') {
+    return 'status';
+  }
+  return role;
 }
 
 /**

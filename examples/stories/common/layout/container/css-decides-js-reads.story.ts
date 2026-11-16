@@ -47,6 +47,38 @@ export const STORY: DemoSpec = {
       }
     }
   </div>`,
+  css: `/* CngxContainer demo: the breakpoints live here and nowhere else. The rules
+   set --demo-columns on the grid (a descendant) rather than on the container
+   itself - a container query resolves against an ancestor query container, so
+   a rule whose subject is the container would never match. The demo component
+   reads the resolved value back through container.property(). */
+.demo-cq {
+  container-type: inline-size;
+  container-name: demo-cq;
+  border: 1px solid var(--cngx-color-border, #e4e4e7);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 200px;
+}
+
+.demo-cq__grid {
+  --demo-columns: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.demo-cq__cell {
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--cngx-color-surface-variant, #f4f4f5);
+  text-align: center;
+}
+
+.demo-cq__summary {
+  margin-block: 12px 0;
+  color: var(--cngx-color-text-muted, #71717a);
+}`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">inlineSize</span>

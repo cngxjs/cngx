@@ -15,11 +15,11 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 4.1.3 Status Messages', href: 'https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html' },
   ],
   moduleImports: [
-    'import { form, schema, required, email, validate } from \'@angular/forms/signals\';',
+    'import { form, schema, required, email, validate, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput', 'FormField'],
   setup: `protected readonly model = signal<{ email: string }>({ email: '' });
   protected readonly takenEmails = signal<ReadonlySet<string>>(new Set());
   protected readonly emailForm = form(this.model, schema<{ email: string }>((root) => {
@@ -60,8 +60,7 @@ export const STORY: DemoSpec = {
     }, 350);
   }
   protected handleReset(): void {
-    this.model.set({ email: '' });
-    this.emailForm().reset();
+    this.emailForm().reset({ email: '' });
     this.takenEmails.set(new Set());
     this.checkCount.set(0);
     this.checking.set(false);
@@ -69,14 +68,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="emailForm.email">
       <label cngxLabel>Email address</label>
-      <input
-        cngxInput
-        type="email"
-        autocomplete="email"
-        [value]="emailForm.email().value()"
-        (input)="emailForm.email().value.set($any($event.target).value)"
-        (blur)="emailForm.email().markAsTouched()"
-      />
+      <input cngxInput [formField]="emailForm.email" type="email" autocomplete="email" />
       <div cngxError style="display:grid;gap:4px;margin-top:6px">
         @if (emailForm.email().touched()) {
           @for (e of emailForm.email().errors(); track e.kind) {

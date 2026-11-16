@@ -24,6 +24,7 @@ const VARIANTS = ['solid', 'secondary', 'outline', 'ghost'] as const;
     '../../core/theming/system-tokens.css',
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

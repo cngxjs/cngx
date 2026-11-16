@@ -15,11 +15,11 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 4.1.3 Status Messages', href: 'https://www.w3.org/WAI/WCAG21/Understanding/status-messages.html' },
   ],
   moduleImports: [
-    'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
+    'import { form, schema, required, minLength, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput', 'FormField'],
   setup: `protected readonly model = signal<{ username: string }>({ username: '' });
   protected readonly userForm = form(this.model, schema((root) => {
     required(root.username, { message: 'Username is required' });
@@ -28,14 +28,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:420px">
     <cngx-form-field [field]="userForm.username">
       <label cngxLabel>Username</label>
-      <input
-        cngxInput
-        type="text"
-        [value]="userForm.username().value()"
-        (input)="userForm.username().value.set($any($event.target).value)"
-        (blur)="userForm.username().markAsTouched()"
-        autocomplete="username"
-      />
+      <input cngxInput [formField]="userForm.username" type="text" autocomplete="username" />
       <div cngxError>
         @if (userForm.username().touched()) {
           @for (e of userForm.username().errors(); track e.kind) {

@@ -6,15 +6,17 @@ const FOLDED_AWAY = /[\p{M}\p{Cf}]/gu;
 
 /**
  * Folds text for case- and accent-tolerant matching: lowercases with
- * `locale` (plain `toLowerCase()` without one), then NFD-normalises and drops
- * combining marks and invisible format characters (bidi isolates, zero-width
- * joiners). The order matters - the other way round decomposes Turkish
+ * `locale` (plain `toLowerCase()` without one), then NFKD-normalises, folds
+ * `ß` to `ss` and drops combining marks and invisible format characters (bidi
+ * isolates, zero-width joiners). NFKD also folds compatibility forms such as
+ * ligatures (`ﬁ`), superscripts and full-width letters. The order matters - the other way round decomposes Turkish
  * `İ` to `I` + dot and lowercases that `I` to dotless `ı`. Fold both sides of
  * a comparison with the same locale.
  *
  * ```typescript
  * foldForMatching('Über');            // 'uber'
  * foldForMatching('İzmir', 'tr');     // 'izmir'
+ * foldForMatching('Straße');          // 'strasse'
  * ```
  *
  * @since 0.1.0
@@ -22,7 +24,7 @@ const FOLDED_AWAY = /[\p{M}\p{Cf}]/gu;
  */
 export function foldForMatching(value: string, locale?: string): string {
   const lower = locale ? value.toLocaleLowerCase(locale) : value.toLowerCase();
-  return lower.normalize('NFD').replace(FOLDED_AWAY, '');
+  return lower.normalize('NFKD').replace(/ß/g, 'ss').replace(FOLDED_AWAY, '');
 }
 
 /**
@@ -39,7 +41,7 @@ export function foldForMatching(value: string, locale?: string): string {
  * this function returns the same answer for the same label, term and locale.
  *
  * Both sides are lowercased with `locale` (plain `toLowerCase()` without
- * one), NFD-normalised and stripped of combining marks, so `u` finds
+ * one), NFKD-normalised and stripped of combining marks, so `u` finds
  * `Über`, `e` finds `Éclair` and, under `'tr'`, `i` finds `İzmir`. Marks
  * are stripped on both sides, so a term never misses a label it would
  * find without them. An empty term matches every label

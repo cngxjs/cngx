@@ -63,7 +63,10 @@ export interface SelectionController<T> {
    * `Signal<false>`.
    */
   isIndeterminate(value: T): Signal<boolean>;
-  /** Idempotent add. No-op if already selected. */
+  /**
+   * Idempotent add. No-op if already selected. Each call copies the array,
+   * so bulk changes go through `set` or `toggleAll`.
+   */
   select(value: T): void;
   /** Remove from selection. No-op if not selected. */
   deselect(value: T): void;
@@ -76,7 +79,7 @@ export interface SelectionController<T> {
   toggleAll(values: readonly T[]): void;
   /** Clear selection. */
   clear(): void;
-  /** Replace selection with the given values (copied). */
+  /** Replace selection with the given values (copied, first value per key kept). */
   set(values: readonly T[]): void;
   /**
    * Release retained per-value signal caches. Post-destroy
@@ -274,7 +277,14 @@ export function createSelectionController<T>(
       values.update((arr) => arr.filter((x) => !keys.has(keyFn(x))));
     } else {
       const present = new Set(m.keys());
-      const add = vs.filter((v) => !present.has(keyFn(v)));
+      const add = vs.filter((v) => {
+        const key = keyFn(v);
+        if (present.has(key)) {
+          return false;
+        }
+        present.add(key);
+        return true;
+      });
       if (add.length === 0) {
         return;
       }
@@ -288,7 +298,17 @@ export function createSelectionController<T>(
     values.set([]);
   };
   const setFn = (vs: readonly T[]): void => {
-    values.set([...vs]);
+    const seen = new Set<unknown>();
+    values.set(
+      vs.filter((v) => {
+        const key = keyFn(v);
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      }),
+    );
   };
   const destroy = (): void => {
     if (destroyed) {

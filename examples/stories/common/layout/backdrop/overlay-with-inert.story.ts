@@ -31,11 +31,22 @@ export const STORY: DemoSpec = {
 
     <div class="demo-backdrop-frame__content">
       <p>This content becomes <code>inert</code> when the backdrop is visible.</p>
-      <button type="button" class="sort-btn" (click)="clickCount.update(n => n + 1)">
+      <button type="button" (click)="clickCount.update(n => n + 1)">
         Try clicking me (won't work when inert)
       </button>
     </div>
   </div>`,
+  css: `.demo-backdrop-frame {
+  position: relative;
+  min-height: 200px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+  overflow: hidden;
+}
+
+.demo-backdrop-frame__content {
+  padding: 1rem;
+}`,
   templateChrome: `<div class="button-row">
     <button type="button" class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
   </div>

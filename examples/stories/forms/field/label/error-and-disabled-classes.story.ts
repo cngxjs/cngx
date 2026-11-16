@@ -14,11 +14,11 @@ export const STORY: DemoSpec = {
     'CngxFormField',
   ],
   moduleImports: [
-    "import { form, schema, required, disabled } from '@angular/forms/signals';",
+    "import { form, schema, required, disabled, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'FormField'],
   references: [
     { label: 'WCAG 1.3.1 Info and Relationships', href: 'https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html' },
     { label: 'WCAG 3.3.2 Labels or Instructions', href: 'https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html' },
@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
     this.stateForm.locked().markAsTouched();
   }
   protected handleReset(): void {
-    this.model.set({ valid: 'ada@example.com', invalid: '', locked: 'read-only value' });
+    this.stateForm().reset({ valid: 'ada@example.com', invalid: '', locked: 'read-only value' });
   }
   protected handleLockToggle(next: boolean): void {
     this.lockEnabled.set(next);
@@ -48,17 +48,17 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="stateForm.valid">
       <label cngxLabel>Valid field</label>
-      <input cngxInput type="email" />
+      <input cngxInput [formField]="stateForm.valid" type="email" />
     </cngx-form-field>
 
     <cngx-form-field [field]="stateForm.invalid">
       <label cngxLabel>Invalid (touched)</label>
-      <input cngxInput type="email" />
+      <input cngxInput [formField]="stateForm.invalid" type="email" />
     </cngx-form-field>
 
     <cngx-form-field [field]="stateForm.locked">
       <label cngxLabel>Disabled field</label>
-      <input cngxInput type="text" />
+      <input cngxInput [formField]="stateForm.locked" type="text" />
     </cngx-form-field>
   </div>`,
   templateChrome: `<div class="button-row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">

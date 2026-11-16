@@ -219,6 +219,36 @@ describe('createAnnouncementRecorder', () => {
     expect(texts()).toEqual(['Copied']);
   });
 
+  it('records a clear and an identical rewrite inside one task as one entry', async () => {
+    const el = region({ 'aria-live': 'polite' });
+    host.append(el);
+    start();
+
+    el.textContent = 'Copied';
+    await observed();
+    el.textContent = '';
+    el.textContent = 'Copied';
+    await observed();
+
+    expect(texts()).toEqual(['Copied']);
+  });
+
+  it('treats an output element without a role as an atomic status region', async () => {
+    const out = document.createElement('output');
+    out.innerHTML = '<span>3 results</span>';
+    host.append(out);
+    start();
+
+    const extra = document.createElement('span');
+    extra.textContent = ' for "cat"';
+    out.append(extra);
+    await observed();
+
+    expect(recorder.entries()).toEqual([
+      expect.objectContaining({ text: '3 results for "cat"', politeness: 'polite', region: out }),
+    ]);
+  });
+
   it('records only the added text of a non-atomic region', async () => {
     const log = region({ role: 'log' });
     log.innerHTML = '<p>First line</p>';

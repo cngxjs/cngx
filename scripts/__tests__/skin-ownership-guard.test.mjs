@@ -68,20 +68,6 @@ const SKIN_OWNERSHIP_EXEMPT = [
       'inverse S1: the async paint excludes button hosts by class instead of offering tokens the button sets on its own host',
   },
   {
-    file: 'projects/common/theming/components/cngx-popover.css',
-    selector: '.cngx-select__panel',
-    count: 1,
-    reason:
-      'inverse S1: the bare popover reset excludes the select panel by class instead of winning by specificity',
-  },
-  {
-    file: 'projects/common/theming/components/cngx-popover.css',
-    selector: '.cngx-tab-overflow__panel',
-    count: 1,
-    reason:
-      'inverse S1: the bare popover reset excludes the tab overflow panel by class instead of winning by specificity',
-  },
-  {
     file: 'projects/ui/skeleton/skeleton-container.css',
     selector: '.cngx-skeleton-bone',
     count: 2,
@@ -486,24 +472,6 @@ const STORY_OWNERSHIP_EXEMPT = [
     symbol: 'CngxProgress',
     reason:
       'ui/feedback is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/nav-rail/rail-with-secondary-sidebar.story.ts',
-    symbol: 'CngxSidenav',
-    reason:
-      'ui/sidenav is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/nav-rail/rail-with-secondary-sidebar.story.ts',
-    symbol: 'CngxSidenavLayout',
-    reason:
-      'ui/sidenav is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/nav-rail/rail-with-secondary-sidebar.story.ts',
-    symbol: 'CngxSidenavContent',
-    reason:
-      'ui/sidenav is an independent sibling; the story moves to that artifact or renders without it',
   },
   {
     file: 'examples/stories/ui/stepper/stepper-footer/mat-stepper-footer.story.ts',

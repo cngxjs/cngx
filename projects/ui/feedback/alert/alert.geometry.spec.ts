@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -18,6 +18,8 @@ import { CngxAlert } from './alert';
   selector: 'cngx-alert-geometry-host',
   standalone: true,
   imports: [CngxAlert],
+  styleUrls: ['../../../common/theming/components/cngx-button.css'],
+  encapsulation: ViewEncapsulation.None,
   template: `<cngx-alert [severity]="'info'" [dismissible]="true">Something happened</cngx-alert>`,
 })
 class AlertHost {}

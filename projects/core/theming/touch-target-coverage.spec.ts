@@ -41,8 +41,7 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   { file: 'projects/common/interactive/toggle/toggle.component.css', note: 'toggle row' },
   { file: 'projects/common/interactive/copy/copy-block.css', note: 'copy button' },
   // @cngx/common/button
-  { file: 'projects/common/button/button.component.css', note: 'button row (link variant exempt: inline text); also floors cngxActionButton' },
-  { file: 'projects/common/button/icon-button.component.css', note: 'icon button box floor + adjacent gap; also floors cngxCloseButton and cngxIconMenuButton' },
+  { file: 'projects/common/theming/components/cngx-button.css', note: 'button row (link variant exempt: inline text) + icon button box floor and adjacent gap; also floors cngxActionButton, cngxCloseButton and cngxIconMenuButton' },
   // @cngx/common - display + directive-base skins (theming/components)
   { file: 'projects/common/display/chip/chip.component.css', note: 'interactive chip + remove button' },
   { file: 'projects/common/theming/components/cngx-button-toggle.css', note: 'segmented toggle button' },
@@ -231,7 +230,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(56);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(55);
   });
 });
 

@@ -14,42 +14,40 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxPanelToggle, CngxSidebar } from '@cngx/common/layout';",
     "import { CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
-  imports: ['CngxPanelToggle', 'CngxSidebar', 'CngxIcon', 'MatIconModule'],
+  imports: ['CngxPanelToggle', 'CngxSidebar', 'CngxIcon', 'CngxStack', 'MatIconModule'],
   setup: `
   protected readonly collapsed = signal(true);`,
   template: `
-  <div class="demo-drawer-container demo-drawer-container--bordered demo-app-frame demo-app-frame--row">
-    <div class="demo-app-column">
-      <div class="demo-app-header">
-        <span class="demo-app-brand">Order 1042</span>
-        <span class="demo-app-spacer"></span>
+  <cngx-stack direction="row" gap="none">
+    <div style="flex: 1 1 auto; min-inline-size: 0; padding: var(--cngx-space-md, 1rem)">
+      <cngx-stack direction="row" gap="sm" align="center">
+        <strong style="flex: 1 1 auto">Order 1042</strong>
         <button type="button" [cngxPanelToggle]="details" #toggle="cngxPanelToggle">
           <cngx-icon [style.transform]="toggle.mirrored() ? 'scaleX(-1)' : null">
             <mat-icon>{{ toggle.expanded() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
           </cngx-icon>
         </button>
-      </div>
-      <main class="demo-drawer-main demo-app-main">
-        <p>Shipped to Vienna, three items. Open the inspector for the details.</p>
-      </main>
+      </cngx-stack>
+      <p>Shipped to Vienna, three items. Open the inspector for the details.</p>
     </div>
 
     <aside cngxSidebar #details="cngxSidebar" side="end" collapsedAs="hidden"
            [expandOnHover]="false" label="Order details" [(collapsed)]="collapsed"
-           class="demo-app-sidebar">
-      <div class="demo-app-sidebar__head">
+           class="cngx-sidebar">
+      <div style="padding: var(--cngx-space-md, 1rem)">
         <strong>Details</strong>
+        <dl>
+          <dt>Status</dt>
+          <dd>Shipped</dd>
+          <dt>Items</dt>
+          <dd>3</dd>
+        </dl>
       </div>
-      <dl class="demo-drawer-panel-content">
-        <dt>Status</dt>
-        <dd>Shipped</dd>
-        <dt>Items</dt>
-        <dd>3</dd>
-      </dl>
     </aside>
-  </div>`,
+  </cngx-stack>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row">

@@ -3,9 +3,11 @@
  * Single-import entry point for the cngx default theme. One
  * `@import '@cngx/themes/cngx.css';` pulls in the cascade-layer
  * order, the full foundation token set, the reset, the bare-element
- * base layer, the `.cngx-sr-only` utility, and the externalised CSS
- * of every `@Directive` that paints DOM. Components carry their own
- * CSS via `styleUrl` and are bundled by Angular.
+ * base layer, the `.cngx-sr-only` utility, the externalised CSS
+ * of every `@Directive` that paints DOM, and the button family paint
+ * (`cngx-button.css`), the one component sheet the bundle carries.
+ * Other components carry their own CSS via `styleUrl` and are bundled
+ * by Angular.
  *
  * **Variants**
  *
@@ -24,7 +26,10 @@
  *   `CngxMenu`, the nav atoms (`CngxNavLink`, `CngxNavGroup`,
  *   `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
  *   `CngxNavFooter`, `CngxNavMark`, `CngxNavName`), `CngxRipple`, `CngxSlider`, `CngxTooltip`,
- *   `CngxFileDrop`, the field-affix atoms)
+ *   `CngxFileDrop`, the field-affix atoms, and last the button family
+ *   paint for `CngxButton`, `CngxIconButton`, `CngxCloseButton`,
+ *   `CngxMenuButton`, `CngxIconMenuButton`, `CngxPopoverAction`,
+ *   `CngxPopoverDismiss`, `CngxPanelToggle` and `CngxActionButton`)
  * - `cngx.theme` - reserved for consumer overrides
  * - `app` - reserved for consumer selectors
  *
@@ -124,3 +129,6 @@
 @import '../forms/theming/components/cngx-field-affix.css';
 @import '../forms/theming/components/cngx-field-skin.css';
 @import '../forms/theming/components/cngx-field-text.css';
+/* Last: the button family paint keeps the order it had as a runtime-injected
+ * component sheet, after every other cngx.components rule. */
+@import '../common/theming/components/cngx-button.css';

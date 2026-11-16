@@ -207,3 +207,49 @@ for (const dir of ['ltr', 'rtl'] as const) {
     });
   });
 }
+
+test.describe('common/menu-button artifacts', () => {
+  test('kebab: the icon menu button opens its menu and an item closes it', async ({ page }) => {
+    await gotoDemo(page, 'common/menu-button/icon-menu-button/kebab');
+    const kebab = page.getByRole('button', { name: 'Actions for Q3 report' });
+    const menu = page.getByRole('menu', { name: 'Actions for Q3 report' });
+
+    await kebab.click();
+    await expect(menu).toBeVisible();
+    await menu.getByRole('menuitem', { name: 'Archive' }).click();
+    await expect(menu).toBeHidden();
+    await expect(kebab).toHaveAttribute('aria-expanded', 'false');
+
+    const lastAction = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('Last action', { exact: true }) })
+      .locator('.event-value');
+    await expect(lastAction).toHaveText('archive');
+  });
+
+  test('custom-caret: the provided caret renders, an end slot replaces it', async ({ page }) => {
+    await gotoDemo(page, 'common/menu-button/menu-button/custom-caret');
+    const artifact = page.locator('.cngx-ex-artifact');
+    const sort = artifact.getByRole('button', { name: 'Sort' });
+    const view = artifact.getByRole('button', { name: 'View' });
+
+    await expect(sort.locator('.cngx-menu-button__caret demo-triangle-caret svg')).toHaveCount(1);
+    await expect(view.locator('cngx-icon[cngxButtonEnd]')).toHaveCount(1);
+    await expect(view.locator('.cngx-menu-button__caret')).toHaveCount(0);
+  });
+
+  test('scoped-defaults: the scoped copy names the split caret, the scoped glyph draws it', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/menu-button/menu-button/scoped-defaults');
+    const artifact = page.locator('.cngx-ex-artifact');
+    const group = artifact.getByRole('group', { name: 'Publish' });
+
+    await expect(group.getByRole('button', { name: 'More publish options' })).toHaveCount(1);
+    await expect(
+      artifact
+        .getByRole('button', { name: 'Sort' })
+        .locator('.cngx-menu-button__caret demo-triangle-caret'),
+    ).toHaveCount(1);
+  });
+});

@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxFormField: drop a cngx atom into Signal Forms',
-  subtitle: 'You write <code>&lt;cngx-form-field [field]="f.payment"&gt;&lt;cngx-radio-group ...&gt;</code> and that is it. The form-field finds the atom on its own, projects ARIA onto the host, and shows validator messages through <code>&lt;cngx-field-errors&gt;</code>. Three fields are required (terms, payment, channels). Either tab into and out of a field to surface its error, or click <strong>Validate</strong> below to mark every required field touched at once. Pick a value (or check the box / select a chip) to see the error clear instantly.',
+  subtitle: 'You write <code>&lt;cngx-form-field [field]="f.payment"&gt;&lt;cngx-radio-group ...&gt;</code> and that is it. The form-field finds the atom on its own, projects ARIA onto the host, and shows validator messages through <code>&lt;cngx-field-errors&gt;</code>. Three fields need a value: terms and payment are required, channels needs at least one entry. Either tab into and out of a field to surface its error, or click <strong>Validate</strong> below to mark every required field touched at once. Pick a value (or check the box / select a chip) to see the error clear instantly.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'building-block',
@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     'CngxCheckboxGroup',
   ],
   moduleImports: [
-    'import { form, schema, required } from \'@angular/forms/signals\';',
+    'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxFieldErrors } from \'@cngx/forms/field\';',
     'import { CngxToggle, CngxCheckbox, CngxRadioGroup, CngxRadio, CngxCheckboxGroup } from \'@cngx/common/interactive\';',
   ],
@@ -36,7 +36,10 @@ export const STORY: DemoSpec = {
   protected readonly sfForm = form(this.sfModel, schema((root) => {
     required(root.terms, { message: 'Please agree' });
     required(root.payment, { message: 'Choose a payment method' });
-    required(root.notificationChannels, { message: 'Choose at least one channel' });
+    // required() marks the field (marker, aria-required) but treats [] as filled;
+    // minLength(1) is what rejects an empty selection.
+    required(root.notificationChannels);
+    minLength(root.notificationChannels, 1, { message: 'Choose at least one channel' });
   }));
   protected readonly channelOptions = ['email', 'sms', 'push'];`,
   setupChrome: `  protected handleSfValidate(): void {
@@ -46,7 +49,7 @@ export const STORY: DemoSpec = {
     this.sfForm.notificationChannels().markAsTouched();
   }
   protected handleSfReset(): void {
-    this.sfModel.set({ notifications: false, terms: false, payment: '', notificationChannels: [] });
+    this.sfForm().reset({ notifications: false, terms: false, payment: '', notificationChannels: [] });
   }`,
   template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="sfForm.notifications">

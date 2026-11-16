@@ -24,21 +24,21 @@ export const STORY: DemoSpec = {
   moduleImports: [`import { CngxNavLink, CngxNavBadge } from '@cngx/common';`],
   imports: ['CngxNavLink', 'CngxNavBadge'],
   template: `
-  <nav class="demo-nav__frame">
-    <a cngxNavLink href="#inbox" class="demo-nav__link demo-nav__link--row">
+  <nav>
+    <a cngxNavLink href="#inbox">
       Inbox
-      <span cngxNavBadge [value]="12" ariaLabel="12 unread" class="demo-nav__badge--count">12</span>
+      <span cngxNavBadge [value]="12" ariaLabel="12 unread">12</span>
     </a>
-    <a cngxNavLink href="#updates" class="demo-nav__link demo-nav__link--row">
+    <a cngxNavLink href="#updates">
       Updates
-      <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New updates" class="demo-nav__badge--dot"></span>
+      <span cngxNavBadge variant="dot" [value]="1" ariaLabel="New updates"></span>
     </a>
-    <a cngxNavLink href="#archive" class="demo-nav__link demo-nav__link--row">
+    <a cngxNavLink href="#archive">
       Archive
-      <span cngxNavBadge [value]="0" class="demo-nav__badge--muted">0</span>
+      <span cngxNavBadge [value]="0">0</span>
     </a>
   </nav>
-  <p class="demo-nav__note">
+  <p>
     "Archive" has value 0, so the badge gets the <code>hidden</code> attribute (and the <code>cngx-nav-badge--hidden</code> hook class).
   </p>`,
 };

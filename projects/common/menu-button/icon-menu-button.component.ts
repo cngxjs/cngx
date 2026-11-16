@@ -1,6 +1,6 @@
 import { NgComponentOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
-import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
+import { CngxButtonAdornment, CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
 import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
 import { CngxMenuTrigger } from '@cngx/common/interactive';
 import { CngxPopoverTrigger } from '@cngx/common/popover';
@@ -40,7 +40,7 @@ import { CngxSplitCaret } from './split-caret.directive';
   selector: 'button[cngxIconMenuButton]',
   standalone: true,
   exportAs: 'cngxIconMenuButton',
-  imports: [NgComponentOutlet, CngxIcon, CngxIconSvg],
+  imports: [NgComponentOutlet, CngxIcon, CngxIconSvg, CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -84,24 +84,9 @@ import { CngxSplitCaret } from './split-caret.directive';
       <span class="cngx-sr-only">{{ caret.label() }}</span>
       <span [id]="caret.busyNoteId" hidden>{{ caret.busyNote() }}</span>
     }
-    @if (brain.busyVisible()) {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
-  styleUrls: [
-    '../button/button.component.css',
-    '../button/icon-button.component.css',
-    './menu-button.component.css',
-  ],
+  styleUrls: ['./menu-button.component.css'],
 })
 export class CngxIconMenuButton {
   /** @internal */

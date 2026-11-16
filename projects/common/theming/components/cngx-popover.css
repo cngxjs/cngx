@@ -4,29 +4,32 @@
  *
  * A `CngxPopover` host is a native popover element (`[attr.popover]`), so the
  * browser paints its UA chrome - a `3px solid` border, a `Canvas` background
- * and `0.25em` padding. `CngxPopoverPanel`, the select panels and the tabs
- * overflow menu paint their own surface, but a *bare* popover (a menu placed
- * directly in `[cngxPopover]`, e.g. a headless context menu) inherits that UA
- * chrome and reads as an unstyled black-bordered box.
+ * and `0.25em` padding. A *bare* popover (a menu placed directly in
+ * `[cngxPopover]`, e.g. a headless context menu) would inherit that UA chrome
+ * and read as an unstyled black-bordered box.
  *
- * Neutralise the chrome on hosts that carry no surface of their own; the
- * styled surfaces are excluded by class so they keep their own paint. Only the
- * chrome is reset - positioning (`inset`, `position-anchor`) is owned by
- * `CngxPopover`. The anchor offset margin is written by `CngxPopover` as the
+ * The reset runs at `:where()` zero specificity, so any surface that paints
+ * itself on the popover element (`CngxPopoverPanel`, the select panels, the
+ * tabs overflow menu, the sheet presentation, a consumer class) wins by
+ * specificity in the same layer; this sheet names none of them. A surface
+ * that leaves a reset property unset (its text colour, say) gets the reset
+ * value, so it sets what it owns. Only the chrome is reset - positioning
+ * (`inset`, `position-anchor`) is owned by `CngxPopover`. The UA
+ * `overflow: auto` goes too: the host is exactly as large as its content, so
+ * it would clip the shadow of the surface inside it (a `cngxMenu`'s
+ * elevation).
+ *
+ * The anchor offset margin is written by `CngxPopover` as the
  * `--cngx-popover-anchor-margin` custom property and applied here in the
  * components layer, so a Material bridge can zero it by setting the variable
  * (no `!important` needed - an inline `margin` could only be beaten by one).
- * The UA `overflow: auto` goes too: the host is exactly as large as its
- * content, so it would clip the shadow of the surface inside it (a `cngxMenu`'s
- * elevation). A `cngxPopoverSheet` in its sheet or fullscreen presentation
- * paints its own surface (`cngx-popover-sheet.css`), so it is excluded too.
+ * The sheet and fullscreen presentations own their box, so the margin rule
+ * skips them.
  *
  * @themes CngxPopover
  */
 @layer cngx.components {
-  [cngxPopover]:not(.cngx-popover-panel):not(.cngx-select__panel):not(
-      .cngx-tab-overflow__panel
-    ):not([data-cngx-presentation='sheet']):not([data-cngx-presentation='fullscreen']) {
+  :where([cngxPopover]) {
     border: 0;
     padding: 0;
     background: transparent;

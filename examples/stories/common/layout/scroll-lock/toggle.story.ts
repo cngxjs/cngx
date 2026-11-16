@@ -41,4 +41,21 @@ export const STORY: DemoSpec = {
       }
     </div>
   </div>`,
+  css: `.demo-scroll-lock-chip[aria-pressed='true'] {
+  background: var(--cngx-color-danger, #b00020);
+  color: var(--cngx-color-on-danger, #ffffff);
+  border-color: var(--cngx-color-danger, #b00020);
+}
+
+.demo-scroll-lock-hint {
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+.demo-scroll-lock-row {
+  padding: 12px 16px;
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8fafc));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e5e7eb));
+  border-radius: var(--cngx-radius-md, 6px);
+}`,
 };

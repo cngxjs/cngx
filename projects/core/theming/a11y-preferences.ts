@@ -24,6 +24,12 @@ import {
   injectTextScale,
   provideTextScale,
 } from './text-scale';
+import {
+  CNGX_TOUCH_TARGET,
+  type CngxTouchTargetValue,
+  injectTouchTargets,
+  provideTouchTargets,
+} from './touch-target';
 
 /**
  * A feature for {@link provideA11yPreferences}. Each `with*`
@@ -42,6 +48,7 @@ export type CngxA11yPrefFeature =
   | { readonly _target: 'textScale'; readonly value: CngxTextScaleValue }
   | { readonly _target: 'motion'; readonly value: CngxMotionPreference }
   | { readonly _target: 'contrast'; readonly value: CngxContrastPreference }
+  | { readonly _target: 'touchTargets'; readonly value: CngxTouchTargetValue }
   | { readonly _target: 'persistence'; readonly storageKey: string };
 
 /**
@@ -88,6 +95,18 @@ export function withMotion(value: CngxMotionPreference): CngxA11yPrefFeature {
  */
 export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature {
   return { _target: 'contrast', value };
+}
+
+/**
+ * Set the initial touch-target mode the aggregator installs. Omitting
+ * this feature leaves the mode at its `auto` default, which follows the
+ * `(any-pointer: coarse)` media query.
+ *
+ * @relatedTo provideA11yPreferences
+ * @since 0.1.0
+ */
+export function withTouchTargets(value: CngxTouchTargetValue): CngxA11yPrefFeature {
+  return { _target: 'touchTargets', value };
 }
 
 /**
@@ -149,16 +168,16 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
 }
 
 /**
- * Install all four accessibility axes (density, text-scale, motion,
- * contrast) behind one call. Each axis is set from its matching `with*`
+ * Install all five accessibility axes (density, text-scale, motion,
+ * contrast, touch targets) behind one call. Each axis is set from its matching `with*`
  * feature, or left at its own library default when the feature is
  * omitted. Duplicate axis features are last-wins.
  *
  * This is composition over configuration (Pillar 3): the aggregator only
  * forwards the resolved initials to the existing `provideDensity` /
- * `provideTextScale` / `provideMotion` / `provideContrast`, so no
- * reflector logic is duplicated. The accessibility panel then binds to
- * the four writable signals via {@link injectA11yPreferences}.
+ * `provideTextScale` / `provideMotion` / `provideContrast` /
+ * `provideTouchTargets`, so no reflector logic is duplicated. The
+ * accessibility panel then binds to the writable signals via {@link injectA11yPreferences}.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -173,6 +192,7 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
  * @relatedTo withTextScale
  * @relatedTo withMotion
  * @relatedTo withContrast
+ * @relatedTo withTouchTargets
  * @since 0.1.0
  */
 export function provideA11yPreferences(
@@ -182,6 +202,7 @@ export function provideA11yPreferences(
   let textScale: CngxTextScaleValue | undefined;
   let motion: CngxMotionPreference | undefined;
   let contrast: CngxContrastPreference | undefined;
+  let touchTargets: CngxTouchTargetValue | undefined;
   let storageKey: string | undefined;
 
   for (const feature of features) {
@@ -198,6 +219,9 @@ export function provideA11yPreferences(
       case 'contrast':
         contrast = feature.value;
         break;
+      case 'touchTargets':
+        touchTargets = feature.value;
+        break;
       case 'persistence':
         storageKey = feature.storageKey;
         break;
@@ -211,6 +235,7 @@ export function provideA11yPreferences(
     provideTextScale(textScale),
     provideMotion(motion),
     provideContrast(contrast),
+    provideTouchTargets(touchTargets),
   ];
   // Persistence is installed after the axis reflectors so its rehydrate
   // set() lands before any reflector's first flush (no default flash).
@@ -221,7 +246,7 @@ export function provideA11yPreferences(
 }
 
 /**
- * Read the four accessibility-axis signals as one bundle in an injection
+ * Read the five accessibility-axis signals as one bundle in an injection
  * context. Each is the same `WritableSignal` the axis token holds, so the
  * accessibility panel both reads current state and writes user choices
  * through it (`injectA11yPreferences().motion.set('reduced')`).
@@ -234,12 +259,14 @@ export function injectA11yPreferences(): {
   readonly textScale: WritableSignal<CngxTextScaleValue>;
   readonly motion: WritableSignal<CngxMotionPreference>;
   readonly contrast: WritableSignal<CngxContrastPreference>;
+  readonly touchTargets: WritableSignal<CngxTouchTargetValue>;
 } {
   return {
     density: injectDensity(),
     textScale: injectTextScale(),
     motion: injectMotion(),
     contrast: injectContrast(),
+    touchTargets: injectTouchTargets(),
   };
 }
 
@@ -248,6 +275,7 @@ const DENSITY_VALUES: readonly CngxDensityValue[] = ['comfortable', 'compact', '
 const TEXT_SCALE_VALUES: readonly CngxTextScaleValue[] = ['sm', 'md', 'lg'];
 const MOTION_VALUES: readonly CngxMotionPreference[] = ['full', 'reduced', 'auto'];
 const CONTRAST_VALUES: readonly CngxContrastPreference[] = ['normal', 'more', 'auto'];
+const TOUCH_TARGET_VALUES: readonly CngxTouchTargetValue[] = ['auto', 'on', 'off'];
 
 function readStored(storage: Storage, storageKey: string): Record<string, unknown> {
   try {
@@ -331,6 +359,13 @@ function providePersistence(storageKey: string): EnvironmentProviders {
         'contrast',
         inject(CNGX_CONTRAST),
         CONTRAST_VALUES,
+      );
+      installAxisPersistence(
+        storage,
+        storageKey,
+        'touchTargets',
+        inject(CNGX_TOUCH_TARGET),
+        TOUCH_TARGET_VALUES,
       );
     }),
   ]);

@@ -72,8 +72,8 @@ import {
  * `CNGX_ACTION_STATUS_CONFIG`, the config `labels`, the actionStatus section
  * of the language pack. The English pack is empty, so without any of them a state
  * has no cell; a bound `''` switches a cell off. Set the app-wide defaults
- * with `provideActionStatusConfig(withActionStatusLabels(...))` or, for a
- * button app, `provideCngxButton(withActionStatusLabels(...))`.
+ * with `provideActionStatusConfig(withActionStatusLabels(...))`, or with
+ * `provideActionStatusConfigAt(...)` for one subtree.
  *
  * Needs a co-hosted `CNGX_ASYNC_RUN_STATE` (a `cngxAsyncClick`), read lazily
  * because the runner reads the host interaction state that reads this brain;
@@ -126,12 +126,12 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   readonly failedAnnouncement = input<string | undefined>(undefined);
 
   /**
-   * What the runner's live region speaks. Unbound, every outcome except one
-   * a co-hosted `CNGX_ANNOUNCEMENT_COVER` voices itself. `true` lets a cover
-   * decide that it stands down (the toast does). `false` keeps the region
-   * empty: it stays in the DOM but receives no text.
+   * What the runner's live region speaks. `'auto'` speaks every outcome a
+   * co-hosted `CNGX_ANNOUNCEMENT_COVER` does not voice itself. `'always'`
+   * speaks next to a cover (the toast stands down). `'never'` keeps the
+   * region empty: it stays in the DOM but receives no text.
    */
-  readonly autoAnnounce = input<boolean | undefined>(undefined);
+  readonly announce = input<'auto' | 'always' | 'never'>('auto');
 
   /**
    * Text while pending (no `cngxPending` template). Shows once the busy
@@ -304,16 +304,16 @@ export class CngxActionStatusBrain implements CngxActionStatus {
 
   /**
    * What the runner's region speaks for one own settle: `''` without a settle,
-   * while an external state is bound, under `autoAnnounce` `false` and for a
+   * while an external state is bound, under `announce` `'never'` and for a
    * covered outcome. The host's `CNGX_HOST_INTERACTION_STATE` provider passes it on.
    */
   readonly announcement = (settle?: CngxAsyncSettle): string =>
     settle && !untracked(this.externalState) ? this.resolveAnnouncement(settle.status) : '';
 
-  /** The text an outcome speaks before any cover; `''` under `autoAnnounce` `false`. */
+  /** The text an outcome speaks before any cover; `''` under `announce` `'never'`. */
   outcomeText(status: 'success' | 'error'): string {
     return untracked(() => {
-      if (this.autoAnnounce() === false) {
+      if (this.announce() === 'never') {
         return '';
       }
       const success = status === 'success';

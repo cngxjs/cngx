@@ -28,6 +28,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -79,6 +80,7 @@ class CustomCaret {}
   standalone: true,
   imports: [CngxMenuButton, CngxMenu, CngxMenuItem, CngxPopover],
   viewProviders: [{ provide: CNGX_BUTTON_CARET_ICON, useValue: CustomCaret }],
+  styleUrls: ['../theming/components/cngx-button.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
     <button cngxMenuButton class="m-custom" [menu]="menu" [popover]="pop">Sort</button>
@@ -102,6 +104,7 @@ class CustomCaretHost {}
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
     '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -135,6 +138,7 @@ class SplitTouchHost {
     '../../core/theming/base.css',
     '../theming/components/cngx-button-group.css',
     '../theming/components/cngx-popover.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -173,6 +177,7 @@ class SplitAnchorHost {
     '../../core/theming/base.css',
     '../theming/components/cngx-button-group.css',
     '../theming/components/cngx-popover.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

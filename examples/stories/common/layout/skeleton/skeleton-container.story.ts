@@ -20,9 +20,9 @@ export const STORY: DemoSpec = {
   template: `  <cngx-skeleton [loading]="loading()" [count]="3" style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
     <ng-template cngxSkeletonPlaceholder>
       <div class="demo-skeleton-card">
-        <div class="demo-skeleton-line demo-skeleton-line--md" style="width:40%"></div>
-        <div class="demo-skeleton-line demo-skeleton-line--sm"></div>
-        <div class="demo-skeleton-line demo-skeleton-line--sm" style="width:80%"></div>
+        <div class="cngx-skeleton-bone" style="height:16px;width:40%"></div>
+        <div class="cngx-skeleton-bone" style="height:12px"></div>
+        <div class="cngx-skeleton-bone" style="height:12px;width:80%"></div>
       </div>
     </ng-template>
     @if (!loading()) {
@@ -34,6 +34,14 @@ export const STORY: DemoSpec = {
       }
     }
   </cngx-skeleton>`,
+  css: `.demo-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #e0e0e0));
+  border-radius: var(--cngx-radius-md, 8px);
+}`,
   templateChrome: `<div class="button-row">
     <button type="button" class="chip" [attr.aria-pressed]="loading()" (click)="toggleLoading()">
       {{ loading() ? 'Loading...' : 'Loaded' }}

@@ -31,6 +31,27 @@ export const STORY: DemoSpec = {
     tracked and updated. This eliminates entire categories of bugs related to
     subscription leaks, stale closures, and timing issues.
   </div>`,
+  css: `.demo-highlight-input {
+  padding: 8px 12px;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-sm, 6px);
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  color: inherit;
+  font: inherit;
+}
+
+.demo-highlight-passage {
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.demo-highlight-passage p {
+  margin: 0 0 8px;
+}
+
+.demo-highlight-passage p:last-child {
+  margin-bottom: 0;
+}`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Match count</span>

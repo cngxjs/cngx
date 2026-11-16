@@ -16,6 +16,7 @@ export const STORY: DemoSpec = {
     "import { CngxSidenav, CngxSidenavContent, CngxSidenavLayout } from '@cngx/ui/sidenav';",
     "import { CngxNavIcon, CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
@@ -26,6 +27,7 @@ export const STORY: DemoSpec = {
     'CngxNavIcon',
     'CngxNavLink',
     'CngxIcon',
+    'CngxStack',
     'MatIconModule',
   ],
   setup: `protected readonly sections = [
@@ -43,7 +45,7 @@ export const STORY: DemoSpec = {
     this.page.set(this.sections.find((s) => s.id === id)?.pages[0] ?? '');
   }`,
   template: `
-  <div class="demo-nav-rail__frame">
+  <cngx-stack direction="row" gap="none">
     <cngx-nav-rail ariaLabel="Sections">
       @for (s of sections; track s.id) {
         <a cngxNavLink href="#" [active]="section() === s.id"
@@ -54,16 +56,16 @@ export const STORY: DemoSpec = {
       }
     </cngx-nav-rail>
 
-    <cngx-sidenav-layout class="demo-nav-rail__layout">
+    <cngx-sidenav-layout style="flex: 1 1 auto; min-inline-size: 0">
       <cngx-sidenav mode="side" [opened]="true" width="200px" [ariaLabel]="current().label">
         @for (p of current().pages; track p) {
           <a cngxNavLink href="#" [active]="page() === p"
              (click)="page.set(p); $event.preventDefault()">{{ p }}</a>
         }
       </cngx-sidenav>
-      <cngx-sidenav-content class="demo-nav-rail__content">
+      <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
         <p>{{ current().label }} / <code>{{ page() }}</code></p>
       </cngx-sidenav-content>
     </cngx-sidenav-layout>
-  </div>`,
+  </cngx-stack>`,
 };

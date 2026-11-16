@@ -10,7 +10,7 @@ import { cdp } from 'vitest/browser';
 // paginator buttons and dots, and disabled popover footer actions fade by
 // colour, never opacity: 38% text (the disabled field recipe), a dashed card
 // border, a solid popover action on the button family's disabled wash (the
-// footer actions are button hosts, painted by button.component.css). Quiet copy (paginator caret,
+// footer actions are button hosts, painted by cngx-button.css). Quiet copy (paginator caret,
 // popover empty state) takes the hint colour instead of opacity. Under forced
 // colors the disabled ones read GrayText.
 
@@ -24,7 +24,7 @@ const SCHEMES = ['light', 'dark'] as const;
     './tabs/styles/tabs-base.css',
     './card/card.component.css',
     './data/paginate/styles/paginator-base.css',
-    './button/button.component.css',
+    './theming/components/cngx-button.css',
     './popover/popover-panel.component.css',
   ],
   encapsulation: ViewEncapsulation.None,
