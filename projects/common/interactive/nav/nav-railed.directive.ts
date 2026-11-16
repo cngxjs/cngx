@@ -13,6 +13,10 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
  * `cngxSidebar`, and bind the rail state you already have; the directive
  * derives nothing and syncs nothing.
  *
+ * The host renders `data-nav-railed` while railed; `cngx-nav.css` reads it
+ * and crops the rows to their icon box, so the container's own skin needs no
+ * nav selectors.
+ *
  * It runs the same two pieces as the organisms
  * (`CNGX_NAV_RAIL_TOOLTIP_FACTORY`, `CNGX_NAV_RAIL_FLYOUT_FACTORY`), so an
  * override of either token reaches it too. The tooltip and flyout open away
@@ -36,6 +40,9 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
   selector: '[cngxNavRailed]',
   exportAs: 'cngxNavRailed',
   standalone: true,
+  host: {
+    '[attr.data-nav-railed]': "railed() ? '' : null",
+  },
 })
 export class CngxNavRailed {
   /** `true` while the rows are railed: labels clipped, tooltip and flyout wanted. */

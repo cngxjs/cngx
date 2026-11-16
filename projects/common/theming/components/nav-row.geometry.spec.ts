@@ -1,6 +1,6 @@
 /// <reference types="@vitest/browser-playwright" />
 
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   accessibleName,
@@ -21,6 +21,7 @@ import { CngxNavLabel } from '../../interactive/nav/nav-label.directive';
 import { CngxNavLink } from '../../interactive/nav/nav-link.directive';
 import { CngxNavMark } from '../../interactive/nav/nav-mark.directive';
 import { CngxNavName } from '../../interactive/nav/nav-name.directive';
+import { CngxNavRailed } from '../../interactive/nav/nav-railed.directive';
 
 // Runs in a real Chromium (the `test-geometry` target) against the working-tree
 // cngx-nav.css and the system tokens, with the rows in a plain <nav> and no
@@ -660,5 +661,93 @@ describe('forced colors', () => {
     const row = one(root, '.row-idle');
     row.focus();
     expect(computedValue(row, 'box-shadow')).toBe('none');
+  });
+});
+
+// A container of its own on [cngxNavRailed]: only its width changes, the crop
+// comes from cngx-nav.css.
+@Component({
+  selector: 'cngx-nav-railed-host',
+  standalone: true,
+  imports: [CngxNavRailed, CngxNavLink, CngxNavIcon, CngxNavLabel, CngxNavHeader, CngxNavName],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    './cngx-nav.css',
+  ],
+  styles: ['.railed-box { display: flex; flex-direction: column; }'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <nav
+      class="railed-box"
+      aria-label="Rail"
+      [cngxNavRailed]="railed()"
+      [style.inline-size.px]="railed() ? 56 : 240"
+    >
+      <cngx-nav-header><span cngxNavName class="railed-name">Acme</span></cngx-nav-header>
+      <span cngxNavLabel class="railed-label">Main</span>
+      <a cngxNavLink href="#a" class="railed-icon-row">
+        <span cngxNavIcon class="railed-icon">*</span>Starred
+      </a>
+      <a cngxNavLink href="#b" class="railed-letter-row">Drafts</a>
+    </nav>
+  `,
+})
+class NavRailedHost {
+  readonly railed = signal(false);
+}
+
+describe('railed rows', () => {
+  let root: HTMLElement | null = null;
+
+  afterEach(() => {
+    root?.remove();
+    root = null;
+  });
+
+  function mountRailed() {
+    const fixture = TestBed.createComponent(NavRailedHost);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    const rail = (on: boolean) => {
+      fixture.componentInstance.railed.set(on);
+      fixture.detectChanges();
+    };
+    return { host: root, rail };
+  }
+
+  it('keeps the icon box at its expanded x and y and clips the label', () => {
+    const { host, rail } = mountRailed();
+    const expanded = one(host, '.railed-icon').getBoundingClientRect();
+    rail(true);
+    const railed = one(host, '.railed-icon').getBoundingClientRect();
+    expect(Math.abs(railed.x - expanded.x)).toBeLessThan(0.5);
+    expect(Math.abs(railed.y - expanded.y)).toBeLessThan(0.5);
+    const row = one(host, '.railed-icon-row');
+    expect(computedValue(row, 'overflow-x')).toBe('clip');
+    expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
+  });
+
+  it('keeps the letter on a row without an icon', () => {
+    const { host, rail } = mountRailed();
+    rail(true);
+    const row = one(host, '.railed-letter-row');
+    expect(getComputedStyle(row, '::before').content).toContain('D');
+  });
+
+  it('paints no section label and fades the header name, both kept in the tree', () => {
+    const { host, rail } = mountRailed();
+    expect(computedValue(one(host, '.railed-label'), 'clip-path')).toBe('none');
+    rail(true);
+    expect(computedValue(one(host, '.railed-label'), 'clip-path')).toBe('inset(100%)');
+    expect(computedValue(one(host, '.railed-name'), 'opacity')).toBe('0');
+  });
+
+  it('leaves the rows alone while not railed', () => {
+    const { host } = mountRailed();
+    const row = one(host, '.railed-icon-row');
+    expect(computedValue(row, 'overflow-x')).not.toBe('clip');
+    expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth);
   });
 });

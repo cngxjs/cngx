@@ -248,7 +248,7 @@ Two injection functions turn a container of nav rows into a working rail. `cngx-
 
 ### On a rail of your own
 
-`[cngxNavRailed]` runs both pieces on any container of nav rows, typically a `cngxSidebar`. Bind the rail state you already have; the directive derives nothing.
+`[cngxNavRailed]` runs both pieces on any container of nav rows, typically a `cngxSidebar`. Bind the rail state you already have; the directive derives nothing. While railed it writes `data-nav-railed` on the host, and `cngx-nav.css` crops the rows: each row keeps its place and its icon or letter, the label, badge and chevron move past the clipped row end, section labels paint nothing and the header and footer name fades out. The container sets only its own width.
 
 ```html
 <aside
