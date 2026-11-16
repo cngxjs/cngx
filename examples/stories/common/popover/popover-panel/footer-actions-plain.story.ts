@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
     'A plain panel (no <code>variant</code>) with a ghost <code>button[cngxPopoverDismiss]</code>, a confirm disabled with a reason, and a solid primary <code>button[cngxPopoverAction]</code> with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
   description:
     'The footer actions are button-family hosts pinned to <code>sm</code>; their tone comes from the button, not from the panel, so a plain panel paints them the same as a tinted one. Both hosts take the button-family axes and slots: Cancel is <code>cngxPopoverDismiss="ghost"</code>, and Cancel and Publish project a <code>cngxButtonStart</code> icon (<code>svg[cngxIconSvg]</code>, decorative, so the label stays the accessible name). "Schedule" is a confirm with <code>[disabled]</code> and a <code>disabledReason</code>: it stays focusable, renders <code>aria-disabled="true"</code>, refuses the run and names the reason through <code>aria-describedby</code>. "Publish" runs its <code>[action]</code>: past the show delay the pending template replaces the label and stays through the dwell after the settle, then the result template shows once the busy visual releases, or <code>cngxFailed</code> on an error. Cancel and every close return focus to the trigger. <code>status()</code> of both confirms is readable through their <code>exportAs</code>.',
-  level: 'molecule',
+  level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['composition', 'a11y-pattern'],
