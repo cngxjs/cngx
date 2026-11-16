@@ -149,6 +149,22 @@
   }
 
   /**
+   * Inline-end padding of a nav row. Unset by default, so the row end
+   * mirrors the start (`--cngx-nav-link-padding-inline`). A theme whose row
+   * is asymmetric (the M3 drawer item: 16px start, 24px end) SETs it; a
+   * container that SETs the `--cngx-nav-link-padding` shorthand with an inline
+   * part other than `--cngx-nav-link-padding-inline` SETs this one too.
+   * @group Layout
+   * @see [[--cngx-nav-link-padding-inline]]
+   */
+  @property --cngx-nav-link-padding-inline-end {
+    syntax: '*';
+    /* No initial value: the use-site fallback reads the inline-start token,
+       so density and a container SET reach both edges. */
+    inherits: true;
+  }
+
+  /**
    * Font-size of each nav link.
    * @group Typography
    */
@@ -156,6 +172,37 @@
     syntax: '*';
     inherits: false;
     initial-value: 0.875rem;
+  }
+
+  /**
+   * Line-height of each nav link. Unset by default (the row inherits it); a
+   * theme SETs it on the row together with the size, weight and tracking of
+   * its type role.
+   * @group Typography
+   */
+  @property --cngx-nav-link-line-height {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Letter-spacing of each nav link. Unset by default (the row inherits it).
+   * @group Typography
+   */
+  @property --cngx-nav-link-letter-spacing {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Font-weight of a nav link at rest. Unset by default (the row inherits
+   * it); the active row reads `--cngx-nav-link-active-font-weight`.
+   * @group Typography
+   * @see [[--cngx-nav-link-active-font-weight]]
+   */
+  @property --cngx-nav-link-font-weight {
+    syntax: '*';
+    inherits: false;
   }
 
   /**
@@ -762,9 +809,16 @@
       --cngx-nav-link-padding,
       var(--cngx-space-sm, 8px) var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
     );
+    padding-inline-end: var(
+      --cngx-nav-link-padding-inline-end,
+      var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+    );
     border-radius: var(--cngx-nav-link-radius, 4px);
     background: transparent;
     font-size: var(--cngx-nav-link-font-size, 0.875rem);
+    font-weight: var(--cngx-nav-link-font-weight, inherit);
+    line-height: var(--cngx-nav-link-line-height, inherit);
+    letter-spacing: var(--cngx-nav-link-letter-spacing, inherit);
     color: var(--cngx-nav-link-color, currentColor);
     text-decoration: none;
     transition:
@@ -787,7 +841,6 @@
     inline-size: stretch;
     border: 0;
     font-family: inherit;
-    line-height: inherit;
     text-align: start;
     cursor: pointer;
   }
@@ -1137,6 +1190,7 @@
      does not sit three insets deep. */
   .cngx-nav-group-content:popover-open :is(.cngx-nav-link, .cngx-nav-group) {
     --cngx-nav-link-padding-inline: var(--cngx-space-sm, 8px);
+    --cngx-nav-link-padding-inline-end: var(--cngx-space-sm, 8px);
     margin-inline-start: calc(
       var(--cngx-nav-link-inset, 4px) + max(0, var(--cngx-nav-depth, 0) - 1) *
         var(--cngx-nav-indent, 12px)
