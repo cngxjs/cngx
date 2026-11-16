@@ -25,6 +25,7 @@ const SCHEMES = ['light', 'dark'] as const;
   encapsulation: ViewEncapsulation.None,
   template: `
     <span class="probe-surface" style="background: var(--cngx-color-surface)"></span>
+    <span class="probe-text" style="color: var(--cngx-color-text)"></span>
     <div class="cngx-tab-overflow">
       <div cngxPopover popover="manual" role="menu" class="cngx-tab-overflow__panel">
         <ul class="cngx-tab-overflow__list" role="presentation">
@@ -81,6 +82,15 @@ describe.each(SCHEMES)('tab overflow panel surface, %s', (scheme) => {
     expect(parseFloat(computedValue(panel, 'padding-top'))).toBeGreaterThan(0);
     expect(computedValue(panel, 'overflow-y')).toBe('auto');
     expect(computedValue(panel, 'min-width')).not.toBe('0px');
+  });
+
+  it('owns its text colour: the scheme text, not the UA CanvasText or the parent', () => {
+    document.documentElement.setAttribute('data-color-scheme', scheme);
+    const root = mount();
+    const panel = one(root, '.cngx-tab-overflow__panel');
+    const text = computedValue(one(root, '.probe-text'), 'color');
+    expect(computedValue(panel, 'color')).toBe(text);
+    expect(computedValue(panel, 'border-top-color')).toBe(text);
   });
 
   it('lets --cngx-tab-overflow-popover-bg override the surface', () => {

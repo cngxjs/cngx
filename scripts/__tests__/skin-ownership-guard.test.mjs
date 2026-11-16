@@ -75,20 +75,6 @@ const SKIN_OWNERSHIP_EXEMPT = [
       'S1 sibling: the menu skin strips its surface inside a popover panel; common/interactive does not import common/popover',
   },
   {
-    file: 'projects/common/theming/components/cngx-popover.css',
-    selector: '.cngx-select__panel',
-    count: 1,
-    reason:
-      'inverse S1: the bare popover reset excludes the select panel by class instead of winning by specificity',
-  },
-  {
-    file: 'projects/common/theming/components/cngx-popover.css',
-    selector: '.cngx-tab-overflow__panel',
-    count: 1,
-    reason:
-      'inverse S1: the bare popover reset excludes the tab overflow panel by class instead of winning by specificity',
-  },
-  {
     file: 'projects/ui/skeleton/skeleton-container.css',
     selector: '.cngx-skeleton-bone',
     count: 2,
