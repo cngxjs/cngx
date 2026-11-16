@@ -2387,10 +2387,10 @@ button.chip.demo-chip--copied {
 }
 
 // CngxSkeleton demo line atoms. The directive only flips
-// `.cngx-skeleton--loading` / `.cngx-skeleton--shimmer`; these classes
-// give consumers the actual skeleton bar shape (radius + surface + shimmer
-// gradient) so the loading state is visible. Width stays inline because it
-// is layout, not theming.
+// `.cngx-skeleton--loading` / `.cngx-skeleton--shimmer` on its host; the
+// bars inside it are the consumer's, so these classes give them the shape
+// (radius + surface + shimmer gradient). Width stays inline because it is
+// layout, not theming.
 .demo-skeleton-line {
   height: 20px;
   border-radius: 4px;
@@ -2402,7 +2402,6 @@ button.chip.demo-chip--copied {
 .demo-skeleton-line--md {
   height: 16px;
 }
-.demo-skeleton-line.cngx-skeleton--shimmer,
 .cngx-skeleton--shimmer .demo-skeleton-line {
   background: linear-gradient(
     90deg,

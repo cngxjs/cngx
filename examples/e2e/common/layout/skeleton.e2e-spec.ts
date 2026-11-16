@@ -18,8 +18,8 @@ test.describe('common/layout/skeleton', () => {
 
     // Loading state: 3 placeholder card-skeletons rendered (count="3").
     // The placeholders are projected via the cngxSkeletonPlaceholder
-    // ng-template — count their inner skeleton-bar divs as proxy.
-    const placeholderBars = container.locator('.demo-skeleton-line');
+    // ng-template; count their library bones as proxy.
+    const placeholderBars = container.locator('.cngx-skeleton-bone');
     await expect(placeholderBars.nth(2)).toBeVisible();
 
     await page.getByRole('button', { name: /Loading\.\.\./ }).click();

@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Apply <code>[cngxSkeleton]</code> to any element. While the bound value is <code>true</code>, the directive sets <code>cngx-skeleton--loading</code> and (unless reduced motion) <code>cngx-skeleton--shimmer</code>, plus <code>aria-busy</code>.',
   description:
-    'Three skeleton bars driven by a single loading() signal. The directive owns the loading flag and aria-busy attribute; the demo styles attach the bar shape and the shimmer gradient that hooks into the .cngx-skeleton--shimmer host class.',
+    'Three skeleton bars driven by a single loading() signal. The directive owns the loading flag and aria-busy attribute; the bar inside each host belongs to the consumer: its shape and the shimmer gradient hook into the .cngx-skeleton--shimmer host class.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
@@ -18,9 +18,9 @@ export const STORY: DemoSpec = {
     this.loading.update(v => !v);
   }`,
   template: `  <div style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin-top:16px">
-    <div [cngxSkeleton]="loading()" class="demo-skeleton-line"></div>
-    <div [cngxSkeleton]="loading()" class="demo-skeleton-line" style="width:75%"></div>
-    <div [cngxSkeleton]="loading()" class="demo-skeleton-line" style="width:50%"></div>
+    <div [cngxSkeleton]="loading()"><div class="demo-skeleton-line"></div></div>
+    <div [cngxSkeleton]="loading()" style="width:75%"><div class="demo-skeleton-line"></div></div>
+    <div [cngxSkeleton]="loading()" style="width:50%"><div class="demo-skeleton-line"></div></div>
   </div>`,
   templateChrome: `<div class="button-row">
     <button type="button" class="chip" [attr.aria-pressed]="loading()" (click)="toggleLoading()">

@@ -20,9 +20,9 @@ export const STORY: DemoSpec = {
   template: `  <cngx-skeleton [loading]="loading()" [count]="3" style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
     <ng-template cngxSkeletonPlaceholder>
       <div class="demo-skeleton-card">
-        <div class="demo-skeleton-line demo-skeleton-line--md" style="width:40%"></div>
-        <div class="demo-skeleton-line demo-skeleton-line--sm"></div>
-        <div class="demo-skeleton-line demo-skeleton-line--sm" style="width:80%"></div>
+        <div class="cngx-skeleton-bone" style="height:16px;width:40%"></div>
+        <div class="cngx-skeleton-bone" style="height:12px"></div>
+        <div class="cngx-skeleton-bone" style="height:12px;width:80%"></div>
       </div>
     </ng-template>
     @if (!loading()) {
