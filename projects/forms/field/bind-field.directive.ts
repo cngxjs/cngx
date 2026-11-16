@@ -50,7 +50,6 @@ import type { CngxFormFieldControl } from './models';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/bind-field.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxListboxFieldBridge, CngxFormBridge, adaptFormControl
- * @playground Material select via cngxBindField ./examples/material-bind-field/material-bind-field.component.ts
  * <example-url>/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * @axis level molecule
  */
