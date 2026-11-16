@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDrawer: App header, clipped drawer',
   subtitle:
-    'The app header spans the full width and stays live; the drawer opens below it with <code>modality="contained"</code>, so the scrim, <code>inert</code> and the scroll lock stay inside the <code>[cngxDrawer]</code> host.',
+    'A drawer, not a sidebar: the panel opens over the content and blocks it until it closes. The app header spans the full width and stays live; the drawer opens below it with <code>modality="contained"</code>, so the scrim, <code>inert</code> and the scroll lock stay inside the <code>[cngxDrawer]</code> host.',
   description:
     'A clipped navigation drawer, the layout of web apps with a top bar. The header sits outside the [cngxDrawer] host, the panel and the content row inside it. A contained panel makes only the content row inert and scrims it through the cngx-drawer class; the header is neither dimmed nor inert. The hamburger is a [cngxPanelToggle]: a modal over-drawer gets three bars while closed and a cross while open, and the button carries aria-expanded and aria-controls and closes the drawer again. Pressing another header control closes the drawer as an outside press and still runs that control. The panel keeps its navigation landmark instead of claiming aria-modal: focus moves into it on open, Tab can reach the header, and Escape closes the drawer and returns focus to the hamburger while focus is in the panel. With focus on a header control, Escape does nothing: the header lies outside the [cngxDrawer] host, and a non-modal drawer listens for Escape only inside it.',
   level: 'organism',

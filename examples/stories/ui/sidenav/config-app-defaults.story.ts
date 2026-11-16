@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'provideSidenavConfigAt: config app defaults',
+  title: 'CngxSidenav: Defaults for a subtree with provideSidenavConfigAt',
   subtitle:
-    'One <code>provideSidenavConfigAt(...)</code> in <code>viewProviders</code> moves the sidenav defaults for everything below it: <code>withSidenavDimensions</code> sets the width and the resize bounds, <code>withSidenavShortcut</code> the toggle combo, <code>withSidenavLabels</code> the accessible name of the resize handle. The rail binds none of <code>[width]</code>, <code>[minWidth]</code>, <code>[maxWidth]</code>, <code>[shortcut]</code> or <code>[resizeLabel]</code>.',
+    'Sidenav defaults set once instead of on every instance. One <code>provideSidenavConfigAt(...)</code> in <code>viewProviders</code> moves the sidenav defaults for everything below it: <code>withSidenavDimensions</code> sets the width and the resize bounds, <code>withSidenavShortcut</code> the toggle combo, <code>withSidenavLabels</code> the accessible name of the resize handle. The rail binds none of <code>[width]</code>, <code>[minWidth]</code>, <code>[maxWidth]</code>, <code>[shortcut]</code> or <code>[resizeLabel]</code>.',
   description:
     'The rail starts at the configured 220px. Drag the handle on its edge, or focus it and press the arrow keys (Home / End jump to the bounds): the width stops at the configured 160px and 320px instead of the library 120px / 600px. Press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>B</kbd> to hide and show the rail: it is docked (<code>mode="side"</code>) with <code>collapsedAs="hidden"</code>, so collapsing takes it to zero width and the content reflows. A per-instance input still wins over each of these keys; <code>provideSidenavConfig(...)</code> sets the same features app-wide at bootstrap.',
   level: 'organism',

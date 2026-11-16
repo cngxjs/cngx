@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDrawer: Basic scroll lock backdrop',
   subtitle:
-    '<code>[cngxScrollLock]</code> locks the content area while the drawer is open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
+    'A drawer with its overlay parts wired by hand: <code>[cngxScrollLock]</code> locks the content area while the drawer is open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
   description:
     'Drawer wired with CngxScrollLock and CngxBackdrop. Opening locks the scroll of the content area, fades the backdrop in, traps focus inside the panel, and links the trigger via CngxAriaExpanded.',
   level: 'organism',

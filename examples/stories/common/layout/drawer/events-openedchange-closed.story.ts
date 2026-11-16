@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDrawer: Events openedChange and closed',
   subtitle:
-    '<code>(openedChange)</code> emits on every state change. <code>(closed)</code> emits only on close. Both are useful for side effects like analytics or saving state.',
+    'A drawer reports its state through two outputs: <code>(openedChange)</code> emits on every state change. <code>(closed)</code> emits only on close. Both are useful for side effects like analytics or saving state.',
   description:
     'Logs (openedChange) on every open and close, and (closed) on close only, so analytics or persistence hooks can subscribe to whichever signal matches the side effect they need.',
   level: 'organism',

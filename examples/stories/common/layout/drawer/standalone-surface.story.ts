@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxDrawerSurface: Standalone',
+  title: 'CngxDrawerSurface: Dismissible panel without a drawer',
   subtitle:
-    '<code>[cngxDrawerSurface]</code> without a drawer: the consumer owns the open state, the surface reports <code>(dismiss)</code> on Escape, the back gesture and a press outside, and returns focus to the opener when it deactivates.',
+    'The behaviour of a drawer panel without the drawer: the consumer positions <code>[cngxDrawerSurface]</code> and owns its open state, the surface reports <code>(dismiss)</code> on Escape, the back gesture and a press outside, and returns focus to the opener when it deactivates.',
   description:
     'A filter panel driven by a plain signal. The surface does not own the open state: (dismiss) fires on Escape inside the panel, on the Android back gesture and on a press outside it, and the consumer sets open to false. The Filters button names the panel in aria-controls, so a press on it is not an outside press and it toggles the panel itself. modality="none" keeps the page operable: no focus trap, no inert, no scroll lock, and the panel keeps its landmark role. On a nav or aside host, [role]="null" keeps the implicit role; this one is an aside with an aria-label, so the implicit complementary landmark stays. When the panel closes while focus is inside it, focus returns to the Filters button.',
   level: 'molecule',

@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSidenavRouterSync: deep-linkable overlay',
+  title: 'CngxSidenavRouterSync: Deep-linkable overlay',
   subtitle:
-    'Add <code>[cngxSidenavRouterSync]</code> to an <code>over</code>-mode sidenav and its open state deep-links to <code>?nav=open</code>. Opening writes the param, an initial <code>?nav=open</code> hydrates it open, closing removes it, and browser back/forward re-hydrates. The directive reaches the rail through the <code>CNGX_SIDENAV</code> contract token and calls the shared <code>injectQueryParamSync</code> kernel.',
+    'A sidenav overlay whose open state lives in the URL. Add <code>[cngxSidenavRouterSync]</code> to an <code>over</code>-mode sidenav and its open state deep-links to <code>?nav=open</code>. Opening writes the param, an initial <code>?nav=open</code> hydrates it open, closing removes it, and browser back/forward re-hydrates. The directive reaches the rail through the <code>CNGX_SIDENAV</code> contract token and calls the shared <code>injectQueryParamSync</code> kernel.',
   description:
     'Open the menu, then check the URL for ?nav=open - share or reload that URL to reopen the menu. The param default cascades: per-instance [param] wins, then withSidenavRouterSync({ param }), then the "nav" literal.',
   level: 'organism',
