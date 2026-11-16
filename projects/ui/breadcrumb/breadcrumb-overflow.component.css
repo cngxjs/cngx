@@ -48,13 +48,13 @@
   padding: var(--cngx-breadcrumb-overflow-menu-padding, 0.25rem 0);
   list-style: none;
   min-width: var(--cngx-breadcrumb-overflow-menu-min-width, 11.875rem);
-  /* The CngxPopoverPanel around the list paints the one surface; strip the
-     menu skin's own so it does not draw a second box inside it. Unlayered, so
-     it also beats a themed --cngx-menu-* surface (the Material bridge). */
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  /* The CngxPopoverPanel around the list paints the one surface; zero the
+     menu skin's surface tokens so it does not draw a second box inside it.
+     Unlayered, so it also beats a themed menu surface (the Material bridge). */
+  --cngx-menu-bg: transparent;
+  --cngx-menu-border: 0;
+  --cngx-menu-radius: 0;
+  --cngx-menu-shadow: none;
 }
 
 .cngx-breadcrumb__overflow-item {
