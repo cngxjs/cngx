@@ -747,6 +747,20 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
 
     expect(run.tree.readContent('src/index.html')).toContain('<html lang="en" dir="rtl">');
     expect(run.tree.readContent('src/app/app.config.ts')).not.toContain('provideDirection');
+
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.confirms = [];
+    try {
+      const again = await runRule(ngAdd({ quiet: true }), run.tree);
+
+      expect(terminal.confirms).not.toContain('Apply these changes?');
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      expect(again.logs).toContain('  Write the rtl direction into <html> of src/index.html');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   describe('an existing app', () => {
@@ -1164,6 +1178,17 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
           .replace('<html lang="en">', '<html lang="en" dir="rtl">'),
       );
       expect(run.tree.readText('public/favicon.svg')).toContain('<title>cngx</title>');
+
+      const again = await runRule(ngAdd({ preset: 'full', yes: true, quiet: true }), run.tree);
+
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      for (const label of [
+        'Create public/favicon.svg',
+        'Point the icon link in src/index.html at the cngx favicon',
+        'Write the rtl direction into <html> of src/index.html',
+      ]) {
+        expect(again.logs).toContain(`  ${label}`);
+      }
     });
 
     it('leaves the scaffold to recommended and to full with --no-starter', async () => {

@@ -41,6 +41,7 @@ import {
   faviconOf,
   globalStylesOf,
   type GlobalStylesFacts,
+  htmlCarriesDir,
   indexHtmlStateOf,
   type IndexHtmlFacts,
   scaffoldOf,
@@ -303,6 +304,7 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     selector: project.prefix === undefined ? undefined : `${project.prefix}-root`,
   };
   const indexPath = indexPathOf(options, sourceRoot);
+  const indexContent = read(indexPath);
 
   const mcpConfigs = mcpConfigsOf(tree);
   const angularRange = declaredRange(manifest, '@angular/core');
@@ -331,7 +333,11 @@ export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinit
     rootProvidersTypeOnly: typeOnlyValueImports(rootProvidersSource),
     appShell,
     scaffold: scaffoldOf(read, appShell, names),
-    indexHtml: { path: indexPath, state: indexHtmlStateOf(read(indexPath), names) },
+    indexHtml: {
+      path: indexPath,
+      state: indexHtmlStateOf(indexContent, names),
+      dir: indexContent !== undefined && htmlCarriesDir(indexContent),
+    },
     favicon: faviconOf(read, options),
     globalStyles: globalStylesOf(read, stylesPath),
     languageFile: generatedFileState(read(posix.join(posix.dirname(rootProvidersFile), CNGX_LANGUAGE_FILE))),

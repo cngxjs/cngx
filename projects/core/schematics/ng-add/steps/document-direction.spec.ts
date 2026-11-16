@@ -47,8 +47,17 @@ describe('planDocumentDirection', () => {
     }
   });
 
+  it('skips the edit as already set when <html> carries dir', () => {
+    const facts = createFacts({ sourceLocale: 'ar', indexHtml: { path: 'src/index.html', state: 'custom', dir: true } });
+
+    expect(planDocumentDirection(facts, createAnswers(), VERSIONS)).toEqual({
+      changes: [],
+      skipped: [{ id: 'document:dir', label: 'Write the rtl direction into <html> of src/index.html', reason: 'already set' }],
+    });
+  });
+
   it('names the edit when the build has no index.html', () => {
-    const facts = createFacts({ sourceLocale: 'ar', indexHtml: { path: 'src/index.html', state: 'absent' } });
+    const facts = createFacts({ sourceLocale: 'ar', indexHtml: { path: 'src/index.html', state: 'absent', dir: false } });
 
     expect(planDocumentDirection(facts, createAnswers(), VERSIONS).changes).toEqual([
       expect.objectContaining({ kind: 'note', id: 'document:dir', reason: 'set dir="rtl" on <html> in your index.html' }),

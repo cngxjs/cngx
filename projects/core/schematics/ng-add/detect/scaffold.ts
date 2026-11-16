@@ -86,6 +86,32 @@ export type IndexHtmlState = 'absent' | 'untouched' | 'starter' | 'custom';
 export interface IndexHtmlFacts {
   readonly path: string;
   readonly state: IndexHtmlState;
+  /** The `<html>` start tag carries a `dir` attribute. */
+  readonly dir: boolean;
+}
+
+/** The first `<html` start tag, up to its closing `>`. */
+export const HTML_START_TAG = /<html\b[^>]*>/i;
+
+const DIR_ATTRIBUTE = /\sdir\s*=/i;
+
+// The attribute with its value, in any quoting, and the space before it.
+const DIR_ATTRIBUTE_WITH_VALUE = /\s+dir\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/i;
+
+/** The first `<html>` start tag of `content` carries a `dir` attribute; `false` without such a tag. */
+export function htmlCarriesDir(content: string): boolean {
+  const match = HTML_START_TAG.exec(content);
+  return match !== null && DIR_ATTRIBUTE.test(match[0]);
+}
+
+// The direction is the app's (or the rtl edit's), not part of the scaffold.
+function withoutHtmlDir(content: string): string {
+  const match = HTML_START_TAG.exec(content);
+  if (match === null) {
+    return content;
+  }
+  const tag = match[0].replace(DIR_ATTRIBUTE_WITH_VALUE, '');
+  return `${content.slice(0, match.index)}${tag}${content.slice(match.index + match[0].length)}`;
 }
 
 /** The icon link `ng new` writes into `index.html`, as rendered and as Prettier formats it. */
@@ -243,13 +269,14 @@ export function withStarterFavicon(content: string): string {
 /**
  * Compares `index.html` with the catalog entry, the project name, title and
  * selector substituted: `untouched` on an exact match, `starter` when it
- * matches once the starter favicon link is swapped back, else `custom`.
+ * matches once the starter favicon link is swapped back, else `custom`. A
+ * `dir` on the `<html>` tag is left out of the comparison.
  */
 export function indexHtmlStateOf(content: string | undefined, names: ScaffoldNames): IndexHtmlState {
   if (content === undefined) {
     return 'absent';
   }
-  const normalized = normalize(content);
+  const normalized = withoutHtmlDir(normalize(content));
   if (matchingVariants(normalized, 'index.html', names).length > 0) {
     return 'untouched';
   }
