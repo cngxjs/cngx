@@ -5,7 +5,9 @@
  * lone native control - never the `display: contents` field shell.
  * `CngxFieldSkinHost` writes the attribute. On a lone control `outline`
  * writes nothing, because `cngx.base` already paints the outline look; a
- * box writes `outline` too and paints it in `cngx-field-affix.css`.
+ * box writes `outline` too and paints it in `cngx-field-affix.css`. The
+ * invalid edge of a lone outline control is painted here, in the colour the
+ * outline box uses.
  *
  * One box model in every skin: height is the line box plus
  * `2 * --cngx-field-padding-block` plus a 1px border on both sides, with the
@@ -350,6 +352,16 @@
     }
   }
 
+  /* Lone outline control: cngx.base draws its edge and knows no field state,
+     so an invalid one repaints the edge in the outline box error colour. */
+  :is(input, textarea, select):not(
+      [data-skin='fill'],
+      [data-skin='bare'],
+      .cngx-field-box > *
+    )[aria-invalid='true'] {
+    border-color: var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
+  }
+
   /* Nested controls: a direct child of a box is bare and inert, so this reset
      is all that styles it on top of cngx.base. No surface, no border, no
      padding and no ring of its own - the box draws them. The value text
@@ -420,6 +432,23 @@
       [data-invalid]
     ):not(:focus-within),
   .cngx-field-box[data-skin='fill']:is(
+      [aria-invalid='true'],
+      [data-invalid],
+      :has(> :is(input, textarea, select)[aria-invalid='true'])
+    ):not(:focus-within) {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+
+  /* The outline error is a border colour, forced to a system colour, so an
+     invalid outline control or box read like a valid one. Same inset ring as
+     the fill skin; the focus ring takes over while focused. */
+  :is(input, textarea, select):not(
+      [data-skin='fill'],
+      [data-skin='bare'],
+      .cngx-field-box > *
+    )[aria-invalid='true']:not(:focus-within),
+  .cngx-field-box[data-skin='outline']:is(
       [aria-invalid='true'],
       [data-invalid],
       :has(> :is(input, textarea, select)[aria-invalid='true'])

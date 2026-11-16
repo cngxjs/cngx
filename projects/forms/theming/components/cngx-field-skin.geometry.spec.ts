@@ -160,6 +160,13 @@ import { afterEach, describe, expect, it } from 'vitest';
     <span class="cngx-field-box cngx-field-affix-row projected-row" data-skin="outline">
       <input class="projected-fill" type="text" data-skin="fill" aria-invalid="true" />
     </span>
+    <div dir="rtl">
+      <cngx-form-errors class="cngx-form-errors">
+        <ul class="cngx-form-errors__list summary-rtl">
+          <li>Required.</li>
+        </ul>
+      </cngx-form-errors>
+    </div>
     <table>
       <tbody>
         <tr>
@@ -486,6 +493,12 @@ describe('field skin geometry', () => {
       expect(computedValue(query(root, selector), 'font-size')).toBe('13px');
     }
     expect(computedValue(query(root, '.label-light'), 'font-weight')).toBe('500');
+  });
+
+  it('indents the error summary bullets on the inline start side in RTL', () => {
+    const list = query(mount(), '.summary-rtl');
+    expect(computedValue(list, 'padding-left')).toBe('0px');
+    expect(computedValue(list, 'padding-right')).not.toBe('0px');
   });
 
   // The hover surface is a text mix of the resting one; too strong a mix

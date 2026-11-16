@@ -33,7 +33,8 @@
 
     .cngx-form-errors__list {
       margin: 0;
-      padding: 0 0 0 1.25em;
+      padding-block: 0;
+      padding-inline: 1.25em 0;
       font-size: var(--cngx-form-errors-font-size, var(--cngx-field-hint-font-size, 0.8125rem));
       color: var(
         --cngx-form-errors-color,
