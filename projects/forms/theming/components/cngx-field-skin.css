@@ -240,9 +240,19 @@
     }
 
     /* Readonly is editable-looking but inert: keep the resting surface on
-       hover so the control does not invite a click it will not honour. */
-    :scope:is([readonly], [aria-readonly='true'], [data-readonly]):hover,
-    :scope:has(> :is(input, textarea, select):is([readonly], [aria-readonly='true'])):hover {
+       hover so the control does not invite a click it will not honour. An
+       invalid field is left out: this rule outranks the error underline, and
+       resetting only the border would leave the line half muted, half danger. */
+    :scope:is([readonly], [aria-readonly='true'], [data-readonly]):not(
+        [aria-invalid='true'],
+        [data-invalid],
+        :has(> :is(input, textarea, select)[aria-invalid='true'])
+      ):hover,
+    :scope:has(> :is(input, textarea, select):is([readonly], [aria-readonly='true'])):not(
+        [aria-invalid='true'],
+        [data-invalid],
+        :has(> :is(input, textarea, select)[aria-invalid='true'])
+      ):hover {
       border-block-end-color: var(
         --cngx-field-underline-color,
         var(--cngx-color-text-muted, oklch(0.5 0.01 250))

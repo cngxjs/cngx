@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA, Component, ViewEncapsulation } from '@angular/c
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 // Computed tier. Runs in a real Chromium (the `test-geometry` target) against
 // the exact Track-B file loaded through `styleUrls` under
@@ -37,6 +38,12 @@ import { afterEach, describe, expect, it } from 'vitest';
     <input class="solo-fill" type="text" data-skin="fill" />
     <input class="fill-invalid" type="text" data-skin="fill" aria-invalid="true" />
     <input class="fill-disabled" type="text" data-skin="fill" disabled />
+    <input class="fill-readonly" type="text" data-skin="fill" readonly />
+    <input class="fill-readonly-invalid" type="text" data-skin="fill" readonly aria-invalid="true" />
+    <span class="cngx-field-box cngx-field-affix-row fill-readonly-invalid-row" data-skin="fill">
+      <span class="cngx-field-prefix">$</span>
+      <input type="text" readonly aria-invalid="true" />
+    </span>
     <span
       class="probe-underline"
       style="background: var(
@@ -281,6 +288,29 @@ describe('field skin geometry', () => {
     expect(shadow).toContain('-1px');
     expect(shadow).toContain(danger);
     expect(computedValue(invalid, 'border-bottom-color')).toBe(danger);
+  });
+
+  // The readonly hover outranks the error rule, so it has to skip an invalid
+  // field: resetting the border alone would leave half the line muted.
+  it.each(['.fill-readonly-invalid', '.fill-readonly-invalid-row'])(
+    'keeps the danger underline on a hovered readonly invalid fill field (%s)',
+    async (selector) => {
+      const root = mount();
+      const danger = computedValue(query(root, '.fill-invalid'), 'border-bottom-color');
+      const field = query(root, selector);
+      await userEvent.hover(field);
+      expect(computedValue(field, 'border-bottom-color')).toBe(danger);
+      expect(computedValue(field, 'box-shadow')).toContain(danger);
+      await userEvent.unhover(field);
+    },
+  );
+
+  it('keeps the resting underline on a hovered readonly fill field', async () => {
+    const field = query(mount(), '.fill-readonly');
+    const rest = computedValue(field, 'border-bottom-color');
+    await userEvent.hover(field);
+    expect(computedValue(field, 'border-bottom-color')).toBe(rest);
+    await userEvent.unhover(field);
   });
 
   it('fades a disabled fill field by colour, not opacity', () => {
