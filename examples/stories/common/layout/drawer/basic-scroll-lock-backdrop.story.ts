@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDrawer: Basic scroll lock backdrop',
   subtitle:
-    '<code>[cngxScrollLock]</code> prevents body scroll when open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
+    '<code>[cngxScrollLock]</code> locks the content area while the drawer is open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
   description:
-    'Drawer wired with CngxScrollLock and CngxBackdrop. Opening locks the page scroll, fades the backdrop in, traps focus inside the panel, and links the trigger via CngxAriaExpanded.',
+    'Drawer wired with CngxScrollLock and CngxBackdrop. Opening locks the scroll of the content area, fades the backdrop in, traps focus inside the panel, and links the trigger via CngxAriaExpanded.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -35,7 +35,7 @@ export const STORY: DemoSpec = {
     'CngxBackdrop',
     'CngxStack',
   ],
-  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="cngx-drawer"
+  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" [cngxScrollLockTarget]="content" class="cngx-drawer"
        style="--cngx-drawer-scrim-bg: transparent">
     <div [cngxBackdrop]="drawer.opened()" (backdropClick)="drawer.close()" class="cngx-backdrop"></div>
 
@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </nav>
 
-    <main [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem)">
+    <main #content [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem); overflow: auto">
       <button type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
               (click)="drawer.toggle()">
@@ -58,7 +58,10 @@ export const STORY: DemoSpec = {
       </button>
       <p>Main content area. The drawer slides over from the left.</p>
       <p>Press <strong>Escape</strong>, click the backdrop, or click outside to close.</p>
-      <p><code>[cngxScrollLock]</code> prevents background scrolling.</p>
+      <p>Scroll this area, then open the drawer: <code>[cngxScrollLock]</code> keeps it from scrolling until the drawer closes.</p>
+      @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track n) {
+        <p>Content row {{ n }}</p>
+      }
     </main>
   </div>`,
   templateChrome: `<div class="status-row">
