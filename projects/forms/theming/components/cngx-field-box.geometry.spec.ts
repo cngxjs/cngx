@@ -64,6 +64,7 @@ const HARNESS_STYLES = [
   './cngx-field-affix.css',
   './cngx-field-skin.css',
   '../../select/shared/select-base.css',
+  '../../../common/theming/components/cngx-button.css',
 ];
 
 @Component({

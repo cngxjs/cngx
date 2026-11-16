@@ -1,10 +1,13 @@
-import { NgComponentOutlet } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CngxButtonBrain, provideActionStatusHost, provideButtonHost } from '@cngx/common/button';
 import {
-  CNGX_ACTION_STATUS,
+  CngxButtonAdornment,
+  CngxButtonBrain,
+  provideActionStatusHost,
+  provideButtonHost,
+} from '@cngx/common/button';
+import {
   CngxActionStatusBrain,
   CngxActionStatusStack,
   CngxAsyncClick,
@@ -22,13 +25,13 @@ import { CngxActionToast } from './action-toast.directive';
 
 /**
  * The ejected action button: the four host directives, the two
- * provider helpers and a verbatim copy of the template, with no
- * class body beyond `brain` and `status`.
+ * provider helpers and a verbatim copy of the template, with an
+ * empty class body.
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'button[testEjectedAction]',
-  imports: [NgComponentOutlet, CngxActionStatusStack],
+  imports: [CngxActionStatusStack, CngxButtonAdornment],
   hostDirectives: [
     {
       directive: CngxButtonBrain,
@@ -43,7 +46,7 @@ import { CngxActionToast } from './action-toast.directive';
       inputs: [
         'succeededAnnouncement',
         'failedAnnouncement',
-        'autoAnnounce',
+        'announce',
         'pendingLabel',
         'succeededLabel',
         'failedLabel',
@@ -67,24 +70,10 @@ import { CngxActionToast } from './action-toast.directive';
       <ng-content />
     </span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.busyVisible() && status.activeCell() === 'idle') {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
 })
-class TestEjectedAction {
-  protected readonly brain = inject(CngxButtonBrain);
-  protected readonly status = inject(CNGX_ACTION_STATUS);
-}
+class TestEjectedAction {}
 
 @Component({
   imports: [CngxActionButton, TestEjectedAction, CngxFailed],

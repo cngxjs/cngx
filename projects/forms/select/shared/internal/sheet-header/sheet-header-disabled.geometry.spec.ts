@@ -24,6 +24,7 @@ const SCHEMES = ['light', 'dark'] as const;
     '../../../../../core/theming/reset.css',
     '../../../../../core/theming/base.css',
     './sheet-header.component.css',
+    '../../../../../common/theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

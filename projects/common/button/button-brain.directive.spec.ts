@@ -545,3 +545,11 @@ describe('CngxButtonBrain', () => {
     );
   });
 });
+
+describe('button config features', () => {
+  it('carry only the config they set', () => {
+    expect(withButtonVariant('outline')).toEqual({ config: { variant: 'outline' } });
+    expect(withButtonTone('danger')).toEqual({ config: { tone: 'danger' } });
+    expect(withButtonSize('sm')).toEqual({ config: { size: 'sm' } });
+  });
+});

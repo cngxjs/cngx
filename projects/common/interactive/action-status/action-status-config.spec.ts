@@ -184,6 +184,12 @@ function render<T>(type: new () => T, providers: (Provider | EnvironmentProvider
 }
 
 describe('CNGX_ACTION_STATUS_CONFIG', () => {
+  it('builds features that carry only the config they set', () => {
+    expect(withActionStatusLabels({ pending: 'Working' })).toEqual({
+      config: { labels: { pending: 'Working' } },
+    });
+  });
+
   it('renders no extra cell without a label anywhere (the English pack is empty)', () => {
     const { cells } = render(Bare);
     expect(cells().map((c) => c.getAttribute('cngxActionStatusCell'))).toEqual(['idle']);

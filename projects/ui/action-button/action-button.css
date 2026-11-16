@@ -3,7 +3,7 @@
  * Status-label layout for `CngxActionButton`. The host is the native
  * `<button cngxActionButton>` and carries `.cngx-button.cngx-action-button`;
  * box, paint, variant x tone, size, disabled, busy, contrast and forced
- * colors come from the shared `CngxButton` sheet; the
+ * colors come from the family sheet `cngx-button.css`; the
  * `CngxActionStatusStack` sheet stacks the status cells. This sheet adds no
  * rule; the classes below are hooks.
  *

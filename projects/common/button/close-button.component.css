@@ -3,8 +3,9 @@
  * Close-button layer over the icon-button geometry. The host is the native
  * `<button>` and carries `.cngx-button.cngx-icon-button.cngx-close-button`;
  * paint (variant x tone, disabled, busy, contrast, forced colors) comes from
- * the shared `.cngx-button` sheet and the square box with its touch floor
- * from `.cngx-icon-button`. This sheet only adds what a dismiss
+ * the family sheet `cngx-button.css` (in `@cngx/themes/cngx.css`) and the
+ * square box with its touch floor from its `.cngx-icon-button` rules, which
+ * also SET `--cngx-icon-button-size`. This sheet only adds what a dismiss
  * affordance does differently.
  *
  * **State modifiers**

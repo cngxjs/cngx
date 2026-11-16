@@ -81,9 +81,8 @@ const CONSUMED = [
 ];
 
 const READERS = [
-  'projects/common/button/button.component.css',
   'projects/common/button/close-button.component.css',
-  'projects/common/button/icon-button.component.css',
+  'projects/common/theming/components/cngx-button.css',
   'projects/common/display/icon/icon.component.css',
   'projects/common/theming/components/cngx-button-group.css',
 ];

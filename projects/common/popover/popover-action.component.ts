@@ -1,4 +1,3 @@
-import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,6 +7,7 @@ import {
   type Signal,
 } from '@angular/core';
 import {
+  CngxButtonAdornment,
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
@@ -64,7 +64,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
  * text of the rendered result template (`aria-hidden` parts skipped; read
  * from its cell even while the dwell still hides it), else
  * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` / `asyncClickFailed`.
- * `[autoAnnounce]="false"` keeps the region empty. Under
+ * `announce="never"` keeps the region empty. Under
  * `withCloseOnSuccess()` the panel closes once per success; focus returns
  * to the trigger through the panel's restore claim; `[closeOnSuccessDelay]`
  * overrides the config per confirm (`null` turns it off). A success that closes
@@ -109,13 +109,13 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
  * <example-url>/#/common/popover/popover-panel/with-dividers</example-url>
  * <example-url>/#/common/popover/popover-panel/footer-actions-plain</example-url>
  * <example-url>/#/common/popover/popover-panel/close-on-success</example-url>
- * @axis level molecule
+ * @axis level organism
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[cngxPopoverAction]',
   standalone: true,
-  imports: [NgComponentOutlet, CngxActionStatusStack],
+  imports: [CngxActionStatusStack, CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxPopoverAction',
@@ -143,7 +143,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
       inputs: [
         'succeededAnnouncement',
         'failedAnnouncement',
-        'autoAnnounce',
+        'announce',
         'pendingLabel',
         'succeededLabel',
         'failedLabel',
@@ -171,20 +171,9 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
       <ng-content />
     </span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.busyVisible() && actionStatus.activeCell() === 'idle') {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
-  styleUrls: ['../button/button.component.css', './popover-action.component.css'],
+  styleUrls: ['./popover-action.component.css'],
 })
 export class CngxPopoverAction {
   protected readonly brain = inject(CngxButtonBrain);

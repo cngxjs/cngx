@@ -212,7 +212,7 @@ label in every state.
 | `failedLabel` | `string` | -- | Text after failure (when no `cngxFailed` template) |
 | `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to the rendered result cell, then `succeededLabel`) |
 | `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to the rendered result cell, then `failedLabel`) |
-| `autoAnnounce` | `boolean \| undefined` | `undefined` | Speaks the outcome unless a shown toast already covers it; `true` always, `false` never |
+| `announce` | `'auto' \| 'always' \| 'never'` | `'auto'` | Speaks the outcome unless a shown toast already covers it; `'always'` also next to a toast, `'never'` never |
 | `externalState` | `CngxAsyncState<unknown>` | -- | External state override for visual status |
 | `toastSuccess` | `string` | -- | Toast message on success (requires `CngxToaster`) |
 | `toastError` | `string` | -- | Toast message on error (requires `CngxToaster`) |

@@ -24,7 +24,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * `provideToasts()`) it does nothing.
  *
  * A shown toast already announces its outcome, so via `CNGX_ANNOUNCEMENT_COVER` the live region
- * stays empty for that outcome unless the brain's `autoAnnounce` is `true`.
+ * stays empty for that outcome unless the brain's `announce` is `'always'`.
  *
  * Do not combine it with `[cngxToastOn]` on the same element: both toast the same outcome, and
  * development builds warn [`CNGX3008`](/error-codes/cngx3008.md).
@@ -104,10 +104,10 @@ export class CngxActionToast implements CngxAnnouncementCover {
 
   /**
    * `true` when a shown toast already announces this outcome, unless the
-   * brain's `[autoAnnounce]` is `true`.
+   * brain's `[announce]` is `'always'`.
    */
   covers(status: 'success' | 'error'): boolean {
-    return untracked(() => this.status.autoAnnounce() !== true && this.toastCovers(status));
+    return untracked(() => this.status.announce() !== 'always' && this.toastCovers(status));
   }
 
   private toastCovers(status: 'success' | 'error'): boolean {

@@ -86,7 +86,7 @@ const DURATION_DERIVED_FAMILIES: readonly DurationFamily[] = [
     kind: 'real',
   },
   {
-    file: 'projects/common/button/button.component.css',
+    file: 'projects/common/theming/components/cngx-button.css',
     token: '--cngx-button-transition',
     kind: 'real',
   },

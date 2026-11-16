@@ -99,6 +99,25 @@ test.describe('common/interactive/async-click', () => {
     await expect(settled).toHaveText(/#1 success,\s*#2 success/, { timeout: 5_000 });
   });
 
+  test('settle-events cancel path: removing the host mid-retry cancels without a settle', async ({
+    page,
+  }) => {
+    await gotoDemo(page, SETTLE);
+    const eventRow = (label: string) =>
+      page
+        .locator('.event-row')
+        .filter({ has: page.getByText(label, { exact: true }) })
+        .locator('.event-value');
+
+    await page.getByRole('checkbox', { name: 'Fail every attempt' }).check();
+    await page.locator('.cngx-ex-artifact').getByRole('button').first().click();
+    await expect(eventRow('retryState')).toHaveText(/retrying true/, { timeout: 5_000 });
+
+    await page.getByRole('button', { name: 'Remove the button' }).click();
+    await expect(eventRow('last run')).toHaveText('cancelled');
+    await expect(eventRow('(settled)')).toHaveText('-');
+  });
+
   test('on-anchor-element: Space and Enter each run once and keep the route', async ({ page }) => {
     await gotoDemo(page, ANCHOR);
     const link = page.locator('.cngx-ex-artifact').getByRole('button').first();

@@ -19,7 +19,7 @@ import { CngxActionToast } from './action-toast.directive';
   selector: 'button[testToastHost]',
   hostDirectives: [
     { directive: CngxAsyncClick, inputs: ['cngxAsyncClick: action'] },
-    { directive: CngxActionStatusBrain, inputs: ['autoAnnounce', 'externalState'] },
+    { directive: CngxActionStatusBrain, inputs: ['announce', 'externalState'] },
     {
       directive: CngxActionToast,
       inputs: ['toastSuccess', 'toastError', 'toastErrorDetail', 'toastErrorDuration'],
@@ -44,7 +44,7 @@ class TestToastHost {}
     <button
       testToastHost
       [action]="action"
-      [autoAnnounce]="autoAnnounce()"
+      [announce]="announce()"
       [externalState]="ext()"
       toastSuccess="Saved"
       toastError="Save failed"
@@ -58,7 +58,7 @@ class TestToastHost {}
 class Host {
   actionImpl: () => Promise<unknown> = () => Promise.resolve();
   readonly action = () => this.actionImpl();
-  readonly autoAnnounce = signal<boolean | undefined>(undefined);
+  readonly announce = signal<'auto' | 'always' | 'never'>('auto');
   readonly detail = signal(false);
   readonly errorDuration = signal<number | 'persistent' | undefined>(undefined);
   readonly ext = signal<CngxAsyncState<unknown> | undefined>(undefined);
@@ -185,14 +185,14 @@ describe('CngxActionToast', () => {
     expect(region()).toBe('Action succeeded');
   });
 
-  it('covers a toasted outcome unless autoAnnounce is true', async () => {
+  it('covers a toasted outcome unless announce is always', async () => {
     const covered = setup();
     await covered.run('success');
     expect(covered.region()).toBe('');
     covered.fixture.destroy();
 
     TestBed.resetTestingModule();
-    const spoken = setup((h) => h.autoAnnounce.set(true));
+    const spoken = setup((h) => h.announce.set('always'));
     await spoken.run('success');
     expect(spoken.region()).toBe('Action succeeded');
   });

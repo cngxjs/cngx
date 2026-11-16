@@ -23,7 +23,7 @@ const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
     '../../core/theming/system-tokens.css',
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
-    './button.component.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

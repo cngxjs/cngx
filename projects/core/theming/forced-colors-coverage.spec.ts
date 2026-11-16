@@ -91,7 +91,7 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   'projects/common/interactive/radio/radio.component.css',
   'projects/common/interactive/toggle/toggle.component.css',
   'projects/common/theming/components/cngx-button-toggle.css',
-  'projects/common/button/button.component.css',
+  'projects/common/theming/components/cngx-button.css',
   'projects/common/theming/components/cngx-listbox.css',
   'projects/common/theming/components/cngx-menu.css',
   'projects/common/theming/components/cngx-async.css',

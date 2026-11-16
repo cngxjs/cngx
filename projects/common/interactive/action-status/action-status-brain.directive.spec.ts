@@ -42,7 +42,7 @@ const covered = new Set<'success' | 'error'>();
       inputs: [
         'succeededAnnouncement',
         'failedAnnouncement',
-        'autoAnnounce',
+        'announce',
         'pendingLabel',
         'succeededLabel',
         'failedLabel',
@@ -112,7 +112,7 @@ class TestActionHost {
       [action]="action"
       [succeededAnnouncement]="succeededAnnouncement()"
       [failedAnnouncement]="failedAnnouncement()"
-      [autoAnnounce]="autoAnnounce()"
+      [announce]="announce()"
       [pendingLabel]="pendingLabel()"
       [succeededLabel]="succeededLabel()"
       [failedLabel]="failedLabel()"
@@ -133,7 +133,7 @@ class Host {
   readonly templates = signal(false);
   readonly succeededAnnouncement = signal<string | undefined>(undefined);
   readonly failedAnnouncement = signal<string | undefined>(undefined);
-  readonly autoAnnounce = signal<boolean | undefined>(undefined);
+  readonly announce = signal<'auto' | 'always' | 'never'>('auto');
   readonly pendingLabel = signal<string | undefined>(undefined);
   readonly succeededLabel = signal<string | undefined>(undefined);
   readonly failedLabel = signal<string | undefined>(undefined);
@@ -382,14 +382,14 @@ describe('CngxActionStatusBrain', () => {
     });
   });
 
-  describe('autoAnnounce', () => {
+  describe('announce', () => {
     it.each([
-      [false, ''],
-      [true, 'Done'],
-      [undefined, 'Done'],
-    ] as const)('%s speaks %j', async (auto, expected) => {
+      ['never', ''],
+      ['always', 'Done'],
+      ['auto', 'Done'],
+    ] as const)('%s speaks %j', async (mode, expected) => {
       const { region, run, status } = setup((h) => {
-        h.autoAnnounce.set(auto);
+        h.announce.set(mode);
         h.succeededLabel.set('Done');
       });
       await run('success');

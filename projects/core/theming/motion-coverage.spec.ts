@@ -38,7 +38,7 @@ const THEMES_ENTRY_CSS = 'projects/themes/cngx.css';
 // (examples excluded). Adding a component with its own block: add it here.
 const MOTION_AWARE_HOSTS: readonly string[] = [
   // @cngx/common
-  'projects/common/button/button.component.css',
+  'projects/common/theming/components/cngx-button.css',
   'projects/common/card/card-skeleton.component.css',
   'projects/common/card/card.component.css',
   'projects/common/data/paginate/styles/paginator-base.css',

@@ -122,6 +122,17 @@ describe('cngx-doctor CLI', () => {
     expect(findings[0].severity).toBe('warn');
   });
 
+  it('reports a button family host without the stylesheet', () => {
+    const dir = project({
+      sources: {
+        'src/app.ts': "import { CngxActionButton } from '@cngx/ui/action-button';\nexport class App {}\n",
+      },
+      styles: { 'src/styles.css': 'body { margin: 0; }\n' },
+    });
+    const findings = JSON.parse(runCli(dir, ['--json']).stdout);
+    expect(findings.map((f) => f.id)).toEqual(['track-b-css-not-imported']);
+  });
+
   it('does not flag a Track-B directive when the stylesheet is imported', () => {
     const dir = project({
       sources: {

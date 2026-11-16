@@ -27,7 +27,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
-    './button.component.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -117,7 +117,7 @@ class ProvidedSpinner {}
     '../../core/theming/system-tokens.css',
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
-    './button.component.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `<button cngxButton class="b-provided-busy" [cngxAsyncClick]="action">Save changes</button>`,
@@ -128,12 +128,12 @@ class ProvidedSpinnerHost {
 
 // The brain contract alone: a host that renders a status label in place of the
 // spinner sets data-status-label next to data-busy (CngxActionButton,
-// CngxPopoverAction). Static markup, only button.component.css loaded, so the
+// CngxPopoverAction). Static markup, only cngx-button.css loaded, so the
 // rule is proven to live in the button sheet and not in a host's own sheet.
 @Component({
   selector: 'cngx-button-status-label-host',
   standalone: true,
-  styleUrls: ['../../core/theming/layers.css', './button.component.css'],
+  styleUrls: ['../../core/theming/layers.css', '../theming/components/cngx-button.css'],
   encapsulation: ViewEncapsulation.None,
   template: `
     <button type="button" class="cngx-button b-status-label" data-busy="true" data-status-label>
