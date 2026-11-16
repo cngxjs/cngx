@@ -25,13 +25,15 @@ const FLOOR = 44;
 // `coarse` overrides the mobile viewport for a surface whose responsive
 // design collapses at phone width (the stepper swaps its step rail for a
 // mobile summary below a tablet breakpoint, so it is measured on a touch
-// tablet that still reports `(any-pointer: coarse)`).
+// tablet that still reports `(any-pointer: coarse)`). `opener` is clicked
+// before the measurement for a surface that renders inside a closed panel.
 const ATOMS: {
   name: string;
   route: string;
   selector: string;
   axis: 'block' | 'inline';
   coarse?: { width: number; height: number };
+  opener?: string;
 }[] = [
   {
     name: 'checkbox',
@@ -178,6 +180,43 @@ const ATOMS: {
     selector: '.cngx-tab-nav__link',
     axis: 'block',
   },
+  {
+    name: 'button',
+    route: '/#/common/button/button/variants',
+    selector: ".cngx-button:not([data-variant='link'])",
+    axis: 'block',
+  },
+  {
+    name: 'icon-button',
+    route: '/#/common/button/icon-button/basic',
+    selector: '.cngx-icon-button',
+    axis: 'block',
+  },
+  {
+    name: 'icon-button-inline',
+    route: '/#/common/button/icon-button/basic',
+    selector: '.cngx-icon-button',
+    axis: 'inline',
+  },
+  {
+    name: 'menu-button',
+    route: '/#/common/menu-button/menu-button/basic',
+    selector: '.cngx-menu-button',
+    axis: 'block',
+  },
+  {
+    name: 'icon-menu-button',
+    route: '/#/common/menu-button/icon-menu-button/kebab',
+    selector: '.cngx-icon-menu-button',
+    axis: 'inline',
+  },
+  {
+    name: 'popover-action',
+    route: '/#/common/popover/popover-panel/with-footer-actions',
+    selector: '.cngx-popover-action',
+    axis: 'block',
+    opener: '.demo-popover-stage button.chip',
+  },
 ];
 
 const applyCompact = () => document.documentElement.setAttribute('data-density', 'compact');
@@ -187,6 +226,7 @@ async function open(
   route: string,
   pointer: 'coarse' | 'fine',
   coarseViewport: { width: number; height: number } = { width: 390, height: 844 },
+  opener?: string,
 ): Promise<{ close: () => Promise<void>; page: Page }> {
   const context = await browser.newContext(
     pointer === 'coarse'
@@ -196,6 +236,9 @@ async function open(
   const page = await context.newPage();
   await page.goto(route);
   await page.evaluate(applyCompact);
+  if (opener) {
+    await page.locator(opener).first().click();
+  }
   return { page, close: () => context.close() };
 }
 
@@ -215,7 +258,7 @@ for (const atom of ATOMS) {
     // Playwright cannot open an `isMobile` (coarse-pointer) context in Firefox,
     // so the coarse half runs on Chromium + WebKit; the fine half covers Firefox.
     test.skip(browserName === 'firefox', 'isMobile context is unsupported in Firefox');
-    const { page, close } = await open(browser, atom.route, 'coarse', atom.coarse);
+    const { page, close } = await open(browser, atom.route, 'coarse', atom.coarse, atom.opener);
     try {
       const size = await constrainedSize(page, atom.selector, atom.axis);
       expect(size).toBeGreaterThanOrEqual(FLOOR);
@@ -227,7 +270,7 @@ for (const atom of ATOMS) {
   test(`touch-target: ${atom.name} stays below the floor under a fine pointer (composes with density)`, async ({
     browser,
   }) => {
-    const { page, close } = await open(browser, atom.route, 'fine');
+    const { page, close } = await open(browser, atom.route, 'fine', undefined, atom.opener);
     try {
       const size = await constrainedSize(page, atom.selector, atom.axis);
       expect(size).toBeLessThan(FLOOR);
