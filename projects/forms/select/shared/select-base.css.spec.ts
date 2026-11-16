@@ -294,6 +294,56 @@ describe('select-family field-skin rule set', () => {
     );
   });
 
+  // The select paints a grandchild trigger and keys its state on ARIA, so it
+  // cannot reuse the skin rules; these rows hold the copy to the skin.
+  describe('parity with cngx-field-skin.css', () => {
+    const SKIN = readFileSync(fromHere('../../theming/components/cngx-field-skin.css'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ');
+    const flat = (css: string): string =>
+      css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    const FILL = flat(
+      scopeBlock("@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)"),
+    );
+    const BARE = flat(
+      scopeBlock("@scope ([data-skin='bare']:not(.cngx-field-box > *) > * > .cngx-field-trigger)"),
+    );
+
+    function bodyAfter(css: string, selectorStart: string): string {
+      const at = css.indexOf(selectorStart);
+      expect(at).toBeGreaterThan(-1);
+      const open = css.indexOf('{', at);
+      return css.slice(open + 1, css.indexOf('}', open)).trim();
+    }
+
+    it('gives the bare disabled state the not-allowed cursor in both', () => {
+      const skinBare = SKIN.slice(SKIN.indexOf("[data-skin='bare']"));
+      const skinDisabled = bodyAfter(skinBare, ':scope:is(:disabled, [data-disabled])');
+      const selectDisabled = bodyAfter(BARE, ":scope.cngx-field-trigger:is([aria-disabled='true']");
+      expect(skinDisabled).toContain('cursor: not-allowed');
+      expect(selectDisabled).toContain('cursor: not-allowed');
+    });
+
+    it('pushes the resting underline to the same colour under more contrast', () => {
+      const skinFill = SKIN.slice(SKIN.indexOf("[data-skin='fill']"));
+      expect(bodyAfter(FILL, "[data-contrast='more'] :scope.cngx-field-trigger")).toBe(
+        bodyAfter(skinFill, "[data-contrast='more'] :scope"),
+      );
+    });
+
+    // Equal specificity (0,4,0), so source order decides: the invalid rule
+    // has to come later or a hovered readonly invalid trigger loses half its
+    // danger underline, the case the skin excludes with :not().
+    it('places the readonly hover before the invalid rule in the fill scope', () => {
+      const readonlyHover = FILL.indexOf(
+        ":scope.cngx-field-trigger:is([aria-readonly='true'], :has([aria-readonly='true'])):hover",
+      );
+      const invalid = FILL.indexOf(":scope.cngx-field-trigger:is( [aria-invalid='true'],");
+      expect(readonlyHover).toBeGreaterThan(-1);
+      expect(invalid).toBeGreaterThan(readonlyHover);
+    });
+  });
+
   it('offsets the forced-colours focus outline like the field skin', () => {
     const fieldSkin = readFileSync(
       fromHere('../../theming/components/cngx-field-skin.css'),

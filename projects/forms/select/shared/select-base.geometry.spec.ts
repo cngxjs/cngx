@@ -131,6 +131,9 @@ class StateHost {
       <cngx-form-field [field]="readonlyField">
         <cngx-select class="readonly" skin="fill" [label]="'Colour'" [options]="options" />
       </cngx-form-field>
+      <cngx-form-field [field]="readonlyInvalidField">
+        <cngx-select class="readonly-invalid" skin="fill" [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
     </div>
   `,
   styleUrls: ['../../theming/components/cngx-field-skin.css'],
@@ -140,6 +143,12 @@ class ReadonlyHost {
   readonly readonlyField: CngxFieldAccessor = createMockField({
     name: 'colour',
     readonly: true,
+  }).accessor;
+  readonly readonlyInvalidField: CngxFieldAccessor = createMockField({
+    name: 'shade',
+    readonly: true,
+    invalid: true,
+    touched: true,
   }).accessor;
 }
 
@@ -725,6 +734,20 @@ describe('select-family field skins', () => {
     await userEvent.hover(readonly);
     expect(computedValue(readonly, 'background-color')).toBe(readonlyRest);
     expect(computedValue(readonly, 'border-bottom-color')).toBe(readonlyUnderline);
+  });
+
+  // The readonly hover and the invalid rule tie on specificity; the invalid
+  // one comes later, so the whole underline stays danger under the pointer.
+  it('keeps the danger underline when a readonly invalid fill trigger is hovered', async () => {
+    const el = trigger(mount(ReadonlyHost), '.readonly-invalid');
+    expect(el.getAttribute('aria-readonly')).toBe('true');
+    expect(el.getAttribute('aria-invalid')).toBe('true');
+    const danger = computedValue(el, 'border-bottom-color');
+    expect(danger).not.toBe(computedValue(trigger(document.body, '.readonly'), 'border-bottom-color'));
+
+    await userEvent.hover(el);
+    expect(computedValue(el, 'border-bottom-color')).toBe(danger);
+    expect(computedValue(el, 'box-shadow')).toContain(danger);
   });
 
   // The single select stands in for the `display: contents` roots, the tree
