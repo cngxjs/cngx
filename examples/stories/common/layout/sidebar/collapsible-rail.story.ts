@@ -24,9 +24,7 @@ export const STORY: DemoSpec = {
   <cngx-stack direction="row" gap="none">
     <aside cngxSidebar #sidebar="cngxSidebar" class="cngx-sidebar" label="Main"
            [(collapsed)]="collapsed" [collapsedAs]="collapsedAs()" [side]="side()" [expandDelay]="450"
-           [style.order]="side() === 'end' ? 1 : 0">
-      <p style="box-sizing: border-box; inline-size: var(--cngx-sidebar-size, 16rem); padding: var(--cngx-space-md, 1rem); margin: 0">Sidebar content at the expanded width. On the rail it is clipped, not rearranged.</p>
-    </aside>
+           [style.order]="side() === 'end' ? 1 : 0"></aside>
     <div style="flex: 1 1 auto; min-inline-size: 0; padding: var(--cngx-space-md, 1rem)">
       <button type="button" [cngxPanelToggle]="sidebar" label="Main sidebar"></button>
       <p>Content column. Its edge follows the reserved space, not the peek.</p>
