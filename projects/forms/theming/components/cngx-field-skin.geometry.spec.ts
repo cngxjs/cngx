@@ -25,6 +25,9 @@ import { afterEach, describe, expect, it } from 'vitest';
     './cngx-field-affix.css',
     '../../select/shared/select-base.css',
     './cngx-field-text.css',
+    '../../field/form-errors.component.css',
+    '../../field/label.component.css',
+    '../../field/required.component.css',
   ],
   encapsulation: ViewEncapsulation.None,
   // cngx-field-errors is probed as a plain element: the typography keys on the
@@ -75,6 +78,17 @@ import { afterEach, describe, expect, it } from 'vitest';
       <span class="cngx-hint hint-light">Hint</span>
       <cngx-field-errors class="errors-light"><p>Required.</p></cngx-field-errors>
       <div class="cngx-error error-light">Required.</div>
+      <cngx-form-errors class="cngx-form-errors summary-light">
+        <ul class="cngx-form-errors__list">
+          <li><a href="#x">Name: Required.</a></li>
+        </ul>
+      </cngx-form-errors>
+      <label class="cngx-label"
+        >Name<span class="cngx-label__required label-marker-light">*</span></label
+      >
+      <cngx-required class="cngx-required"
+        ><span class="required-marker-light">*</span></cngx-required
+      >
       <span
         class="probe-select-placeholder-light"
         style="background: var(--cngx-select-placeholder-color)"
@@ -108,6 +122,17 @@ import { afterEach, describe, expect, it } from 'vitest';
       <span class="cngx-hint hint-dark">Hint</span>
       <cngx-field-errors class="errors-dark"><p>Required.</p></cngx-field-errors>
       <div class="cngx-error error-dark">Required.</div>
+      <cngx-form-errors class="cngx-form-errors summary-dark">
+        <ul class="cngx-form-errors__list">
+          <li><a href="#x">Name: Required.</a></li>
+        </ul>
+      </cngx-form-errors>
+      <label class="cngx-label"
+        >Name<span class="cngx-label__required label-marker-dark">*</span></label
+      >
+      <cngx-required class="cngx-required"
+        ><span class="required-marker-dark">*</span></cngx-required
+      >
       <span
         class="probe-select-placeholder-dark"
         style="background: var(--cngx-select-placeholder-color)"
@@ -408,6 +433,24 @@ describe('field skin geometry', () => {
       expect(manual).toBe(list);
     });
 
+    // The summary and the required marker sit on the page. Plain danger is
+    // about 4.3:1 on white and 4.2:1 in a dark island, so both read the danger
+    // text rung like the field-level errors.
+    it('holds 4.5:1 for the error summary and both required markers on the page', () => {
+      const root = mount();
+      const { page } = colours(root);
+      for (const selector of [
+        `.summary-${scheme} li`,
+        `.summary-${scheme} a`,
+        `.label-marker-${scheme}`,
+        `.required-marker-${scheme}`,
+      ]) {
+        expect(
+          contrast(page, computedValue(query(root, selector), 'color')),
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
     // 1.4.3 exempts a disabled control, so this ratchet pins distinctness
     // instead of a floor: the disabled value text of a lone outline control
     // and of an outline box reads clearly fainter than the resting value, and
@@ -431,9 +474,15 @@ describe('field skin geometry', () => {
     });
   });
 
-  it('sets the label, hint and both error surfaces at 13px', () => {
+  it('sets the label, hint, both error surfaces and the error summary at 13px', () => {
     const root = mount();
-    for (const selector of ['.label-light', '.hint-light', '.errors-light p', '.error-light']) {
+    for (const selector of [
+      '.label-light',
+      '.hint-light',
+      '.errors-light p',
+      '.error-light',
+      '.summary-light li',
+    ]) {
       expect(computedValue(query(root, selector), 'font-size')).toBe('13px');
     }
     expect(computedValue(query(root, '.label-light'), 'font-weight')).toBe('500');
