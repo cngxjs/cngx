@@ -69,8 +69,8 @@
 // These rules SET row tokens and paint the pill per element, so they carry
 // real specificity inside `@layer cngx.components` (button-theme
 // metrics() precedent): the host class lifts them over the nav-rail.css
-// 'below' rules of the same shape. Forced colours keep the row signal of
-// cngx-nav.css, so the pill stays out of that mode.
+// 'below' rules of the same shape. Forced colours keep the metrics and type
+// but not the pill: the row signal of cngx-nav.css (Highlight) takes over.
 $_below: "cngx-nav-rail.cngx-nav-rail[data-label-placement='below'] :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *)";
 
 @mixin metrics($theme) {
@@ -85,15 +85,22 @@ $_below: "cngx-nav-rail.cngx-nav-rail[data-label-placement='below'] :is(.cngx-na
     }
 
     @layer cngx.components {
+      #{$_below} {
+        --cngx-nav-link-inset: 0px;
+        --cngx-nav-link-padding: var(--cngx-space-xs, 4px) calc(var(--cngx-space-xs, 4px) / 2);
+        --cngx-nav-link-line-height: var(--mat-sys-label-medium-line-height, 1rem);
+        --cngx-nav-link-letter-spacing: var(--mat-sys-label-medium-tracking, 0.031rem);
+        --cngx-nav-link-font-weight: var(--mat-sys-label-medium-weight, 500);
+        --cngx-nav-link-active-font-weight: var(--mat-sys-label-medium-weight-prominent, 700);
+        gap: calc(var(--cngx-space-xs, 4px) * 2);
+      }
+
+      // The pill paint only. It reuses the ::after that cngx-nav.css draws as
+      // the active bar and the group chevron (nav-rail.css hides the chevron
+      // on 'below' heads, the bridge makes the bar transparent), so every
+      // declaration of those two is reset here.
       @media (forced-colors: none) {
         #{$_below} {
-          --cngx-nav-link-inset: 0px;
-          --cngx-nav-link-padding: var(--cngx-space-xs, 4px) calc(var(--cngx-space-xs, 4px) / 2);
-          --cngx-nav-link-line-height: var(--mat-sys-label-medium-line-height, 1rem);
-          --cngx-nav-link-letter-spacing: var(--mat-sys-label-medium-tracking, 0.031rem);
-          --cngx-nav-link-font-weight: var(--mat-sys-label-medium-weight, 500);
-          --cngx-nav-link-active-font-weight: var(--mat-sys-label-medium-weight-prominent, 700);
-          gap: calc(var(--cngx-space-xs, 4px) * 2);
           isolation: isolate;
           background-color: transparent;
         }

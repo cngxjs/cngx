@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { CngxNavGroup, CngxNavIcon, CngxNavLink } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cdp } from 'vitest/browser';
 
 import { CngxNavRail } from './nav-rail';
 
@@ -95,7 +96,8 @@ const box = (root: ParentNode, selector: string): DOMRect =>
 
 const pill = (el: Element): CSSStyleDeclaration => getComputedStyle(el, '::after');
 
-afterEach(() => {
+afterEach(async () => {
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
   mountedRoot?.remove();
   mountedRoot = null;
 });
@@ -163,6 +165,20 @@ describe('nav rail under the M3 bridge', () => {
     expect(computedValue(idle, 'line-height')).toBe('16px');
     expect(computedValue(idle, 'font-weight')).toBe('500');
     expect(computedValue(one(root, '.below-active'), 'font-weight')).toBe('700');
+  });
+
+  it('keeps the destination metrics and type under forced colors and drops only the pill', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'forced-colors', value: 'active' }],
+    });
+    const root = mount();
+    for (const selector of ['.below-active', '.below-idle', '.below-group']) {
+      expect(box(root, selector).height).toBe(56);
+    }
+    const idle = one(root, '.below-idle');
+    expect(computedValue(idle, 'font-size')).toBe('12px');
+    expect(computedValue(idle, 'line-height')).toBe('16px');
+    expect(pill(one(root, '.below-active')).width).not.toBe('56px');
   });
 
   it('shrinks the destination with the spacing scale in a compact island', () => {
