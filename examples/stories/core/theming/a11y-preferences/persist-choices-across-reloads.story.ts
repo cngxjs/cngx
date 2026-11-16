@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
   protected readonly textScale = this.prefs.textScale;
   protected readonly motion = this.prefs.motion;
   protected readonly contrast = this.prefs.contrast;
-  protected readonly touchTarget = this.prefs.touchTarget;`,
+  protected readonly touchTargets = this.prefs.touchTargets;`,
   template: `
   <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-start">
     <cngx-button-toggle-group label="Density" [(value)]="density">
@@ -60,7 +60,7 @@ export const STORY: DemoSpec = {
       <button type="button" cngxButtonToggle value="more">More</button>
       <button type="button" cngxButtonToggle value="auto">Auto</button>
     </cngx-button-toggle-group>
-    <cngx-button-toggle-group label="Touch targets" [(value)]="touchTarget">
+    <cngx-button-toggle-group label="Touch targets" [(value)]="touchTargets">
       <button type="button" cngxButtonToggle value="on">On</button>
       <button type="button" cngxButtonToggle value="off">Off</button>
       <button type="button" cngxButtonToggle value="auto">Auto</button>
@@ -74,7 +74,7 @@ export const STORY: DemoSpec = {
     this.textScale();
     this.motion();
     this.contrast();
-    this.touchTarget();
+    this.touchTargets();
     const html = this.root.document.documentElement;
     this.stampedAttributes.set(
       ['data-density', 'data-text-size', 'data-motion', 'data-contrast', 'data-touch']

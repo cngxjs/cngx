@@ -48,7 +48,7 @@ export type CngxA11yPrefFeature =
   | { readonly _target: 'textScale'; readonly value: CngxTextScaleValue }
   | { readonly _target: 'motion'; readonly value: CngxMotionPreference }
   | { readonly _target: 'contrast'; readonly value: CngxContrastPreference }
-  | { readonly _target: 'touchTarget'; readonly value: CngxTouchTargetValue }
+  | { readonly _target: 'touchTargets'; readonly value: CngxTouchTargetValue }
   | { readonly _target: 'persistence'; readonly storageKey: string };
 
 /**
@@ -105,8 +105,8 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
  * @relatedTo provideA11yPreferences
  * @since 0.1.0
  */
-export function withTouchTarget(value: CngxTouchTargetValue): CngxA11yPrefFeature {
-  return { _target: 'touchTarget', value };
+export function withTouchTargets(value: CngxTouchTargetValue): CngxA11yPrefFeature {
+  return { _target: 'touchTargets', value };
 }
 
 /**
@@ -192,7 +192,7 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
  * @relatedTo withTextScale
  * @relatedTo withMotion
  * @relatedTo withContrast
- * @relatedTo withTouchTarget
+ * @relatedTo withTouchTargets
  * @since 0.1.0
  */
 export function provideA11yPreferences(
@@ -202,7 +202,7 @@ export function provideA11yPreferences(
   let textScale: CngxTextScaleValue | undefined;
   let motion: CngxMotionPreference | undefined;
   let contrast: CngxContrastPreference | undefined;
-  let touchTarget: CngxTouchTargetValue | undefined;
+  let touchTargets: CngxTouchTargetValue | undefined;
   let storageKey: string | undefined;
 
   for (const feature of features) {
@@ -219,8 +219,8 @@ export function provideA11yPreferences(
       case 'contrast':
         contrast = feature.value;
         break;
-      case 'touchTarget':
-        touchTarget = feature.value;
+      case 'touchTargets':
+        touchTargets = feature.value;
         break;
       case 'persistence':
         storageKey = feature.storageKey;
@@ -235,7 +235,7 @@ export function provideA11yPreferences(
     provideTextScale(textScale),
     provideMotion(motion),
     provideContrast(contrast),
-    provideTouchTargets(touchTarget),
+    provideTouchTargets(touchTargets),
   ];
   // Persistence is installed after the axis reflectors so its rehydrate
   // set() lands before any reflector's first flush (no default flash).
@@ -259,14 +259,14 @@ export function injectA11yPreferences(): {
   readonly textScale: WritableSignal<CngxTextScaleValue>;
   readonly motion: WritableSignal<CngxMotionPreference>;
   readonly contrast: WritableSignal<CngxContrastPreference>;
-  readonly touchTarget: WritableSignal<CngxTouchTargetValue>;
+  readonly touchTargets: WritableSignal<CngxTouchTargetValue>;
 } {
   return {
     density: injectDensity(),
     textScale: injectTextScale(),
     motion: injectMotion(),
     contrast: injectContrast(),
-    touchTarget: injectTouchTargets(),
+    touchTargets: injectTouchTargets(),
   };
 }
 
@@ -363,7 +363,7 @@ function providePersistence(storageKey: string): EnvironmentProviders {
       installAxisPersistence(
         storage,
         storageKey,
-        'touchTarget',
+        'touchTargets',
         inject(CNGX_TOUCH_TARGET),
         TOUCH_TARGET_VALUES,
       );

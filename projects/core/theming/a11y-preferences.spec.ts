@@ -17,7 +17,7 @@ import {
   withMotion,
   withPersistence,
   withTextScale,
-  withTouchTarget,
+  withTouchTargets,
 } from './a11y-preferences';
 
 // An empty host forces the root environment injector to initialise,
@@ -55,7 +55,7 @@ describe('provideA11yPreferences', () => {
           withTextScale('lg'),
           withMotion('reduced'),
           withContrast('more'),
-          withTouchTarget('on'),
+          withTouchTargets('on'),
         ),
       ],
     });
@@ -99,7 +99,7 @@ describe('provideA11yPreferences', () => {
     expect(prefs.textScale).toBe(TestBed.inject(CNGX_TEXT_SCALE));
     expect(prefs.motion).toBe(TestBed.inject(CNGX_MOTION));
     expect(prefs.contrast).toBe(TestBed.inject(CNGX_CONTRAST));
-    expect(prefs.touchTarget).toBe(TestBed.inject(CNGX_TOUCH_TARGET));
+    expect(prefs.touchTargets).toBe(TestBed.inject(CNGX_TOUCH_TARGET));
 
     // Writing through the bundle re-reflects onto <html>.
     prefs.contrast.set('more');
@@ -132,9 +132,9 @@ describe('provideA11yPreferences + withPersistence', () => {
   });
 
   it('rehydrates a stored touch-target mode on init and reflects it', () => {
-    localStorage.setItem(KEY, JSON.stringify({ touchTarget: 'off' }));
+    localStorage.setItem(KEY, JSON.stringify({ touchTargets: 'off' }));
     TestBed.configureTestingModule({
-      providers: [provideA11yPreferences(withTouchTarget('on'), withPersistence())],
+      providers: [provideA11yPreferences(withTouchTargets('on'), withPersistence())],
     });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -153,7 +153,7 @@ describe('provideA11yPreferences + withPersistence', () => {
     TestBed.inject(CNGX_TOUCH_TARGET).set('on');
     fixture.detectChanges();
 
-    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual({ touchTarget: 'on' });
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual({ touchTargets: 'on' });
   });
 
   it('writes back a runtime set', () => {
