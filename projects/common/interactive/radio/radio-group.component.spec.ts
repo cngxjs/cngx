@@ -2,9 +2,9 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
-import { CngxRovingItem } from '@cngx/common/a11y';
+import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 import { provideRadioConfig, withRadioSkin, type CngxRadioSkin } from '@cngx/common/display';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 
@@ -170,6 +170,45 @@ describe('CngxRadioGroup + CngxRadio', () => {
     } finally {
       fixture.nativeElement.remove();
     }
+  });
+
+  it('an arrow press inside a disabled group does not select on a later focus', () => {
+    const { fixture, host, groupEl, radios } = setup();
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      host.groupOff.set(true);
+      fixture.detectChanges();
+      radios[0].el.focus();
+      groupEl.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(radios[1].el);
+      expect(host.v()).toBeUndefined();
+
+      host.groupOff.set(false);
+      fixture.detectChanges();
+      radios[1].el.blur();
+      radios[1].el.focus();
+      fixture.detectChanges();
+      expect(host.v()).toBeUndefined();
+    } finally {
+      fixture.nativeElement.remove();
+    }
+  });
+
+  it('consumePendingArrowSelect refuses a disabled leaf but still clears the flag', () => {
+    const { fixture, host, group } = setup();
+    const groupDe = fixture.debugElement.query(By.directive(CngxRadioGroup));
+    const roving = groupDe.injector.get(CngxRovingTabindex);
+    const consume = vi.spyOn(roving, 'consumeNavigationKey').mockReturnValue(true);
+
+    expect(group.consumePendingArrowSelect('a', true)).toBe(false);
+    expect(consume).toHaveBeenCalledTimes(1);
+    expect(host.v()).toBeUndefined();
+
+    expect(group.consumePendingArrowSelect('a', false)).toBe(true);
+    expect(host.v()).toBe('a');
   });
 
   it('the navigation hook is one-shot: a non-navigation focus after an arrow does not re-select', () => {

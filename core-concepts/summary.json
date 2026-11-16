@@ -496,7 +496,7 @@
             },
             {
                 "title": "CNGX1073",
-                "label": "CNGX1073: Split button without a main cngxButton",
+                "label": "CNGX1073: Split button without a main button",
                 "file": "error-codes/cngx1073.md"
             },
             {
@@ -688,6 +688,11 @@
                 "title": "CNGX2028",
                 "label": "CNGX2028: Grouped options under a configured virtualization",
                 "file": "error-codes/cngx2028.md"
+            },
+            {
+                "title": "CNGX2029",
+                "label": "CNGX2029: Two elements carry one field id",
+                "file": "error-codes/cngx2029.md"
             },
             {
                 "title": "CNGX3001",

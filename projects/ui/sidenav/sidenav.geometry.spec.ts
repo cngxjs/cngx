@@ -9,10 +9,10 @@ import { CngxSidenavLayout } from './sidenav-layout';
 
 // Runs in a real Chromium (the `test-geometry` target). Guards the recorded
 // mini-rail trap: `--cngx-sidenav-mini-width` is registered `inherits: true`
-// precisely so the collapsed `.cngx-sidenav__body` (a descendant) reads the
-// host-configured width for its `min-width` reserve instead of freezing at the
+// so descendants read the host-configured width instead of freezing at the
 // 56px registered initial. `inherits: false` reintroduced the overflow bug the
-// memory records; this asserts the configured width reaches the body.
+// memory records; this asserts the configured width reaches the body and that
+// the collapsed body fits inside the rail border.
 
 @Component({
   selector: 'cngx-sidenav-geometry-host',
@@ -62,8 +62,8 @@ describe('CngxSidenav mini-rail geometry', () => {
   it('collapses to the mini rail without expanding', () => {
     const { host } = mount();
     expect(host.getAttribute('data-sidebar-state')).toBe('rail');
-    // 72px rail plus the 1px edge border (content-box sizing).
-    expect(host.getBoundingClientRect().width).toBeCloseTo(73, 0);
+    // The 1px edge border sits inside the 72px rail (border-box sizing).
+    expect(host.getBoundingClientRect().width).toBeCloseTo(72, 0);
   });
 
   it('inherits the configured mini-width down to the collapsed body', () => {
@@ -71,7 +71,16 @@ describe('CngxSidenav mini-rail geometry', () => {
     // The token set on the host must reach the body; inherits: false would leave
     // it at the 56px registered initial.
     expect(computedValue(body, '--cngx-sidenav-mini-width')).toBe('72px');
-    expect(parseFloat(computedValue(body, 'min-width'))).toBeCloseTo(72, 1);
+  });
+
+  it('fits the collapsed body inside the rail border', () => {
+    const { host, body } = mount();
+    // 72px rail minus the 1px edge border: a body as wide as the rail would
+    // run under the border and push every row off centre.
+    expect(body.getBoundingClientRect().width).toBeCloseTo(71, 1);
+    expect(body.getBoundingClientRect().right).toBeLessThanOrEqual(
+      host.getBoundingClientRect().right - 1 + 0.05,
+    );
   });
 
   it('insets the body rows from the panel edge like the nav-rail body', () => {

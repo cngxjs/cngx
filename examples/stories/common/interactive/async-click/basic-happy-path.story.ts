@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncClick: Basic happy path',
   subtitle: 'Apply <code>[cngxAsyncClick]="action"</code> to any clickable element. The directive tracks the action lifecycle, auto-disables the host while pending, and resets after <code>feedbackDuration</code>.',
-  description: 'Wraps a click handler in an async-state machine. The action factory you bind to <code>[cngxAsyncClick]</code> can return a Promise or an Observable; the directive runs it on click, flips its <code>pending()</code> signal while in flight, then settles to <code>succeeded()</code> or <code>failed()</code> for <code>feedbackDuration</code> ms (default 2000) before returning to idle. The host class <code>.cngx-async--pending</code> / <code>--success</code> / <code>--error</code> mirrors the lifecycle; <code>--pending</code> follows the show delay of the loading config (a run faster than 120 ms never gets it) and is held for the min-dwell once shown. <code>pending()</code> and the settle announcement are immediate; <code>aria-busy</code> and <code>aria-disabled</code> are set at the click and held until the busy visual releases, so the host refuses a double-click for the whole dwell, through <code>aria-disabled</code> and a click guard, never the native <code>disabled</code> attribute, so it keeps focus. Pick fast / medium / slow to see the pending phase with no visual, the visual held through its dwell, and a long run; the readout shows <code>busyVisible()</code> next to <code>pending()</code>. Template branches via <code>@switch (btn.status())</code>.',
+  description: 'Wraps a click handler in an async-state machine. The action factory you bind to <code>[cngxAsyncClick]</code> can return a Promise or an Observable; the directive runs it on click, flips its <code>pending()</code> signal while in flight, then settles to <code>succeeded()</code> or <code>failed()</code> for <code>feedbackDuration</code> ms (default 2000) before returning to idle. The host class <code>.cngx-async--pending</code> / <code>--success</code> / <code>--error</code> mirrors the lifecycle; <code>--pending</code> follows the show delay of the loading config (a run faster than 120 ms never gets it) and is held for the min-dwell once shown. <code>pending()</code> and the settle announcement are immediate; <code>aria-busy</code> and <code>aria-disabled</code> are set at the click and held until the busy visual releases, so the host refuses a double-click for the whole dwell, through <code>aria-disabled</code> and a click guard, never the native <code>disabled</code> attribute, so it keeps focus. <code>busyVisible()</code> reports whether the busy visual is on screen, next to <code>pending()</code> for the run itself. Template branches via <code>@switch (btn.status())</code>.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -16,10 +16,11 @@ export const STORY: DemoSpec = {
     'import { CngxAsyncClick } from \'@cngx/common/interactive\';',
     'import { of } from \'rxjs\';',
     'import { delay } from \'rxjs/operators\';',
+    'import { wrapDemoAction } from \'../../../../fixtures\';',
   ],
   imports: ['CngxAsyncClick'],
   setup: `
-  protected readonly saveAction = () => of(undefined).pipe(delay(this.latencyMs()));`,
+  protected readonly saveAction = () => of(undefined).pipe(delay(200));`,
   setupChrome: `
   protected readonly latency = signal<'fast' | 'medium' | 'slow'>('medium');
 
@@ -32,7 +33,14 @@ export const STORY: DemoSpec = {
       default:
         return 1500;
     }
-  }`,
+  }
+
+  // Runs saveAction with the latency picked below instead of its fixed 200 ms.
+  private readonly latencyKnob = wrapDemoAction(
+    this,
+    'saveAction',
+    () => () => of(undefined).pipe(delay(this.latencyMs())),
+  );`,
   template: `
   <button type="button" [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">
     @switch (btn.status()) {

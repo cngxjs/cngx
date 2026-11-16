@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A plain panel (no <code>variant</code>) with a ghost <code>button[cngxPopoverDismiss]</code>, a confirm disabled with a reason, and a solid primary <code>button[cngxPopoverAction]</code> with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
   description:
-    'The footer actions are button-family hosts pinned to <code>sm</code>; their tone comes from the button, not from the panel, so a plain panel paints them the same as a tinted one. Both hosts take the button-family axes and slots: Cancel is <code>cngxPopoverDismiss="ghost"</code>, and Cancel and Publish project a <code>cngxButtonStart</code> icon (<code>svg[cngxIconSvg]</code>, decorative, so the label stays the accessible name). "Schedule" is a confirm with <code>[disabled]</code> and a <code>disabledReason</code>: it stays focusable, renders <code>aria-disabled="true"</code>, refuses the run and names the reason through <code>aria-describedby</code>. Untick "No publish date yet" to enable it. "Publish" runs its <code>[action]</code>: past the show delay the pending template replaces the label and stays through the dwell after the settle, then the result template shows once the busy visual releases; tick "Fail the next publish" to reach <code>cngxFailed</code>. Cancel and every close return focus to the trigger. The readout below shows <code>status()</code> of both confirms through their <code>exportAs</code>.',
+    'The footer actions are button-family hosts pinned to <code>sm</code>; their tone comes from the button, not from the panel, so a plain panel paints them the same as a tinted one. Both hosts take the button-family axes and slots: Cancel is <code>cngxPopoverDismiss="ghost"</code>, and Cancel and Publish project a <code>cngxButtonStart</code> icon (<code>svg[cngxIconSvg]</code>, decorative, so the label stays the accessible name). "Schedule" is a confirm with <code>[disabled]</code> and a <code>disabledReason</code>: it stays focusable, renders <code>aria-disabled="true"</code>, refuses the run and names the reason through <code>aria-describedby</code>. "Publish" runs its <code>[action]</code>: past the show delay the pending template replaces the label and stays through the dwell after the settle, then the result template shows once the busy visual releases, or <code>cngxFailed</code> on an error. Cancel and every close return focus to the trigger. <code>status()</code> of both confirms is readable through their <code>exportAs</code>.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -18,6 +18,7 @@ export const STORY: DemoSpec = {
     "import { CngxButtonStart } from '@cngx/common/button';",
     "import { CngxIconSvg } from '@cngx/common/display';",
     "import { CNGX_ICON_CHECK, CNGX_ICON_X } from '@cngx/utils';",
+    "import { failDemoActionWhen } from '../../../../fixtures';",
   ],
   imports: [
     'CngxPopoverPanel',
@@ -37,12 +38,17 @@ export const STORY: DemoSpec = {
   protected readonly publishIcon = CNGX_ICON_CHECK;
   protected readonly scheduleReason = 'Pick a publish date first';
   protected readonly noDate = signal(true);
-  protected readonly failNext = signal(false);
   protected readonly schedule = () => new Promise<void>((resolve) => setTimeout(resolve, 600));
-  protected readonly publish = () =>
-    new Promise<void>((resolve, reject) =>
-      setTimeout(() => (this.failNext() ? reject('Server unavailable') : resolve()), 1200),
-    );`,
+  protected readonly publish = () => new Promise<void>((resolve) => setTimeout(resolve, 1200));`,
+  setupChrome: `
+  protected readonly failNext = signal(false);
+  // Makes publish fail while the switch below is on.
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'publish',
+    () => this.failNext(),
+    () => 'Server unavailable',
+  );`,
   template: `
   <div class="demo-popover-stage">
     <button type="button" [cngxPopoverTrigger]="draft.popover" (click)="draft.popover.toggle()" class="chip">

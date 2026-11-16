@@ -54,7 +54,10 @@ const IMPORTS = [
 abstract class BaseHost {
   readonly options = OPTIONS;
   readonly nodeId = (value: unknown): string => String(value);
-  readonly field = createMockField({ name: 'c' }).accessor;
+  readonly fields = Array.from(
+    { length: 9 },
+    (_, i) => createMockField({ name: `c${i}` }).accessor,
+  );
   skin: 'outline' | 'bare' | undefined = undefined;
 }
 
@@ -115,27 +118,27 @@ class NarrowCellHost extends BaseHost {}
   imports: IMPORTS,
   template: `<div style="display: grid; grid-template-columns: repeat(9, 8rem)">
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[0]"
         ><cngx-select class="v-select" [skin]="skin" [label]="'C'" [options]="options"
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[1]"
         ><cngx-multi-select class="v-multi" [skin]="skin" [label]="'C'" [options]="options"
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[2]"
         ><cngx-combobox class="v-combobox" [skin]="skin" [label]="'C'" [options]="options"
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[3]"
         ><cngx-tree-select class="v-tree" [skin]="skin" [label]="'C'" [nodeIdFn]="nodeId"
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[4]"
         ><cngx-reorderable-multi-select
           class="v-reorder"
           [skin]="skin"
@@ -144,7 +147,7 @@ class NarrowCellHost extends BaseHost {}
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[5]"
         ><cngx-action-multi-select
           class="v-action-multi"
           [skin]="skin"
@@ -153,19 +156,19 @@ class NarrowCellHost extends BaseHost {}
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[6]"
         ><cngx-select-shell class="v-shell" [skin]="skin" [label]="'C'"
           ><cngx-option [value]="'red'">Red</cngx-option></cngx-select-shell
         ></cngx-form-field
       >
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[7]"
         ><cngx-typeahead class="v-typeahead" [skin]="skin" [label]="'C'" [options]="options"
       /></cngx-form-field>
     </div>
     <div class="cell">
-      <cngx-form-field [field]="field"
+      <cngx-form-field [field]="fields[8]"
         ><cngx-action-select class="v-action" [skin]="skin" [label]="'C'" [options]="options"
       /></cngx-form-field>
     </div>

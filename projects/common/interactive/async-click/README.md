@@ -1,6 +1,6 @@
 # Async Click
 
-Directive for executing async actions on click with loading state, auto-disable, and success/error feedback.
+Directive for executing async actions on click with loading state, success/error feedback, and click refusal while pending (it sets `aria-disabled`, never the `disabled` attribute, so focus stays on the button).
 
 ## Import
 
@@ -11,7 +11,8 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
 ## Quick Start
 
 ```typescript
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject } from '@angular/core';
 import { CngxAsyncClick } from '@cngx/common/interactive';
 
 @Component({
@@ -29,19 +30,18 @@ import { CngxAsyncClick } from '@cngx/common/interactive';
   imports: [CngxAsyncClick],
 })
 export class SaveButtonComponent {
-  saveAction = () => this.http.post('/api/save', {});
-
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
+  protected readonly saveAction = () => this.http.post('/api/save', {});
 }
 ```
 
 ## Accessibility
 
-- **ARIA roles:** Sets `aria-busy="true"` while pending, `aria-disabled="true"` while pending (for non-button elements). Both are immediate; only the busy visual is delayed (see Styling)
+- **ARIA roles:** Sets `aria-busy="true"` while pending and `aria-disabled="true"` on every host while pending, while the busy visual shows or while blocked. Both are immediate; only the busy visual is delayed (see Styling). The directive never sets the native `disabled` attribute
 - **Keyboard interaction:**
-  - `Enter`: Activates the action if focused (native button behavior)
-  - `Space`: Activates the action if focused (native button behavior)
-  - Disabled during action execution (pointer-events: none)
+  - The directive listens to `click` only. On a `<button>` the browser turns `Enter` and `Space` into that click
+  - An anchor gets the click from `Enter` only; a `role="button"` host promises `Space` too, and the page adds it (see the `on-anchor-element` story, or `createActivationKeyHandler`)
+  - A click during a run is swallowed (`preventDefault`, no second run); the host keeps its pointer events and stays focusable
 - **Screen reader:**
   - An auto-rendered polite region (a sibling of the host, outside its accessible name) speaks every success and error settle once
   - The region gets one write per settle: cleared at the settle, the text written after the next render, so a host can read content the settle rendered. Two runs that settle before change detection produce two writes in the same render pass; whether a screen reader voices both depends on the assistive technology. Specs that read the region need a render pass (`fixture.detectChanges()`) after the settle
@@ -57,15 +57,18 @@ export class SaveButtonComponent {
 CngxAsyncClick composes naturally with the feedback system:
 
 - **Host directives:** None
-- **Combines with:** CngxAsyncState state consumers (CngxToastOn, CngxAlertOn, CngxAsyncContainer, CngxActionButton)
+- **Combines with:** CngxAsyncState state consumers (CngxToastOn, CngxAlertOn, CngxAsyncContainer, CngxActionButton through `[externalState]`)
 - **Provides:** `state: CngxAsyncState<unknown>` for downstream feedback components
 - **Emits:** `(settled)` once per success or error settle, with a monotonic `generation` (`CngxAsyncSettle`). Never on cancel, reset or after destroy. Put per-run side effects (a toast, a close, a completion output) here: a status edge read in an effect coalesces two runs that settle before change detection into one
 
 ### Example: Composition Pattern
 
 ```typescript
-// Use with toast notification system
-readonly [saveWithRetry, retryState] = withRetry(() => this.saveAction());
+// Use with toast notification system. A class field cannot destructure,
+// so store the tuple and read its parts into two fields.
+private readonly retry = createRetry(() => this.saveAction());
+protected readonly saveWithRetry = this.retry[0];
+protected readonly retryState = this.retry[1];
 
 // In template:
 <button [cngxAsyncClick]="saveWithRetry" #btn="cngxAsyncClick">
@@ -150,7 +153,7 @@ The colour tokens inherit, so a theme can set them once on `:root`:
 ### With Retry
 
 ```typescript
-const [saveWithRetry, retryState] = withRetry(
+const [saveWithRetry, retryState] = createRetry(
   () => this.http.post('/api/save', data),
   { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
 );
@@ -174,7 +177,7 @@ const [saveWithRetry, retryState] = withRetry(
       <ng-container *ngTemplateOutlet="successTpl" />
     }
     @case ('error') {
-      <ng-container *ngTemplateOutlet="errorTpl; context: { err: btn.error() }" />
+      <ng-container *ngTemplateOutlet="errorTpl; context: { $implicit: btn.error() }" />
     }
     @default {
       Save
@@ -250,5 +253,5 @@ Template shown after an async action fails (for feedbackDuration ms). The implic
 ## See Also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/async-click/)
-- Demo: `examples/stories/common/async-click-demo/`
+- Demo: `examples/stories/common/interactive/async-click/`
 - Tests: `projects/common/interactive/async-click/async-click.directive.spec.ts`

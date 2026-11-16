@@ -1088,13 +1088,14 @@ export function collectWrapperPlacementProblems(wrappers) {
 /**
  * The files a relative module specifier can name from `from`, or null for a
  * bare or path-mapped specifier (`@cngx/...`), which this read cannot follow.
+ * Shared with the slot guard's barrel walk (`slot-jsdoc-coverage.test.mjs`).
  */
-const moduleFilesOf = (from, specifier) => {
+export const moduleFilesOf = (from, specifier) => {
   if (!specifier.startsWith('.')) {
     return null;
   }
   const base = posix.join(posix.dirname(from), specifier);
-  return [`${base}.ts`, `${base}/index.ts`, base];
+  return [`${base}.ts`, `${base}/index.ts`, `${base}/public-api.ts`, base];
 };
 
 /**

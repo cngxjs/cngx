@@ -13,7 +13,6 @@ import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import type { CngxSidebarSide } from '@cngx/common/layout';
 
 import { injectNavRailConfig } from './config/inject-nav-rail-config';
-import { CNGX_NAV_RAIL_DEFAULTS } from './config/nav-rail.config.defaults';
 import { CNGX_NAV_RAIL_I18N } from './nav-rail-i18n';
 import { CNGX_NAV_RAIL_FLYOUT_FACTORY } from './nav-rail-flyout';
 import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
@@ -149,19 +148,14 @@ export class CngxNavRail {
 
   /** The look in effect: `[labelPlacement]`, then the config, then `'end'`. */
   protected readonly resolvedLabelPlacement = computed(
-    () =>
-      this.labelPlacement() ?? this.config.labelPlacement ?? CNGX_NAV_RAIL_DEFAULTS.labelPlacement,
+    () => this.labelPlacement() ?? this.config.labelPlacement,
   );
 
   /** Whether the tooltip is on: `[tooltip]`, then the config, then `true`. */
-  protected readonly resolvedTooltip = computed(
-    () => this.tooltip() ?? this.config.tooltip ?? CNGX_NAV_RAIL_DEFAULTS.tooltip,
-  );
+  protected readonly resolvedTooltip = computed(() => this.tooltip() ?? this.config.tooltip);
 
   /** The side in effect: `[side]`, then the config, then `'start'`. */
-  protected readonly resolvedSide = computed(
-    () => this.side() ?? this.config.side ?? CNGX_NAV_RAIL_DEFAULTS.side,
-  );
+  protected readonly resolvedSide = computed(() => this.side() ?? this.config.side);
 
   protected readonly resolvedAriaLabel = computed(
     () =>

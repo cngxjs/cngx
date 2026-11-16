@@ -99,7 +99,9 @@ class ImmediateBusyCompleteHost {
   standalone: true,
   imports: [CngxStepperComplete],
   hostDirectives: [CngxStepperPresenter],
-  template: `<button [cngxStepperComplete]="action" [showDelay]="0" [minDwell]="50">Finish</button>`,
+  template: `<button [cngxStepperComplete]="action" [showDelay]="0" [minDwell]="50">
+    Finish
+  </button>`,
 })
 class DwellCompleteHost {
   ran = 0;
@@ -108,6 +110,20 @@ class DwellCompleteHost {
     this.ran++;
     return new Promise<void>((resolve) => (this.release = resolve));
   };
+}
+
+@Component({
+  standalone: true,
+  imports: [CngxStepperPrevious, CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
+  template: `
+    <button cngxStepperPrevious>Back</button>
+    <button [cngxStepperComplete]="action" [showDelay]="0">Finish</button>
+  `,
+})
+class BackDuringFinishHost {
+  release: () => void = () => undefined;
+  readonly action = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
 }
 
 function navSetup(): {
@@ -268,6 +284,53 @@ describe('stepper nav controls', () => {
         expect(fixture.componentInstance.ran).toBe(1);
         expect(fixture.componentInstance.completedCount).toBe(1);
       });
+    });
+  });
+
+  describe('Back while Finish runs', () => {
+    async function startFinish() {
+      vi.useFakeTimers();
+      TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+      const fixture = TestBed.createComponent(BackDuringFinishHost);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.select(1);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const [prev, finish] = Array.from(root.querySelectorAll('button'));
+      const backBefore = prev.hasAttribute('aria-disabled');
+
+      finish.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      await vi.advanceTimersByTimeAsync(0);
+      fixture.detectChanges();
+      return { fixture, presenter, prev, finish, backBefore };
+    }
+
+    it('Finish is busy while its run is pending', async () => {
+      const { fixture, finish, backBefore } = await startFinish();
+      try {
+        expect(backBefore).toBe(false);
+        expect(finish.getAttribute('aria-busy')).toBe('true');
+      } finally {
+        fixture.componentInstance.release();
+      }
+    });
+
+    // I30: expected to fail until PR 8 (T10) feeds the Finish run into the stepper busy state.
+    it.fails('refuses Back while the finish run is pending', async () => {
+      const { fixture, presenter, prev } = await startFinish();
+      try {
+        expect(prev.getAttribute('aria-disabled')).toBe('true');
+        prev.click();
+        fixture.detectChanges();
+        expect(presenter.activeStepIndex()).toBe(1);
+      } finally {
+        fixture.componentInstance.release();
+      }
     });
   });
 

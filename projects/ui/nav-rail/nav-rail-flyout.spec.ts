@@ -1,10 +1,18 @@
-import { Component, ElementRef, signal, viewChildren } from '@angular/core';
+import {
+  Component,
+  Directive,
+  ElementRef,
+  inject,
+  input,
+  signal,
+  viewChildren,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxNavRailSide } from './nav-rail';
-import { injectNavRailFlyout } from './nav-rail-flyout';
+import { type CngxNavRailFlyoutGroup, injectNavRailFlyout } from './nav-rail-flyout';
 
 @Component({
   selector: 'test-rail',
@@ -36,6 +44,53 @@ class TestRail {
     injectNavRailFlyout({
       railed: this.railed,
       side: this.side,
+      groups: this.groups,
+      groupElements: this.groupElements,
+      contents: this.contents,
+      contentElements: this.contentElements,
+    });
+  }
+}
+
+// A disclosure head that is not a CngxNavGroup, only the flyout contract.
+@Directive({ selector: '[altGroup]', exportAs: 'altGroup' })
+class AltGroup implements CngxNavRailFlyoutGroup {
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly openedState = signal(false);
+  readonly disclosure = {
+    opened: this.openedState.asReadonly(),
+    close: () => this.openedState.set(false),
+  };
+  open(): void {
+    this.openedState.set(true);
+  }
+  focus(options?: FocusOptions): void {
+    this.element.focus(options);
+  }
+}
+
+@Directive({ selector: '[altContent]' })
+class AltContent {
+  readonly group = input.required<AltGroup>({ alias: 'altContent' });
+}
+
+@Component({
+  imports: [AltGroup, AltContent],
+  template: `
+    <button type="button" altGroup #alt="altGroup" class="alt-head">Reports</button>
+    <div [altContent]="alt" class="alt-content"><a href="#weekly">Weekly</a></div>
+  `,
+})
+class AltRail {
+  readonly groups = viewChildren(AltGroup);
+  readonly groupElements = viewChildren(AltGroup, { read: ElementRef });
+  readonly contents = viewChildren(AltContent);
+  readonly contentElements = viewChildren(AltContent, { read: ElementRef });
+
+  constructor() {
+    injectNavRailFlyout({
+      railed: signal(true),
+      side: signal<CngxNavRailSide>('start'),
       groups: this.groups,
       groupElements: this.groupElements,
       contents: this.contents,
@@ -215,5 +270,26 @@ describe('injectNavRailFlyout', () => {
     fixture.destroy();
     expect(content.hasAttribute('popover')).toBe(false);
     expect(content.hasAttribute('data-cngx-rail-side')).toBe(false);
+  });
+
+  it('drives a head and content that only match the flyout contract', () => {
+    const fixture = TestBed.createComponent(AltRail);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = fixture.nativeElement as HTMLElement;
+    const content = host.querySelector<HTMLElement>('.alt-content')!;
+    const head = host.querySelector<HTMLElement>('.alt-head')!;
+    expect(content.getAttribute('popover')).toBe('manual');
+    fixture.debugElement.children[0].injector.get(AltGroup).open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(content.hasAttribute('data-popover-open')).toBe(true);
+    content.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(content.hasAttribute('data-popover-open')).toBe(false);
+    expect(document.activeElement).toBe(head);
+    fixture.destroy();
   });
 });

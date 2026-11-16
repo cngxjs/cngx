@@ -1,7 +1,7 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CngxFormField } from '@cngx/forms/field';
+import { CngxFormField, CngxHint } from '@cngx/forms/field';
 import { createMockField } from '@cngx/forms/field/testing';
 import { CngxRating } from './rating.component';
 import { CngxRatingItem } from './rating-item.directive';
@@ -317,9 +317,10 @@ describe('CngxRating', () => {
       template: `
         <cngx-form-field [field]="field">
           <cngx-rating [(value)]="value" />
+          <span cngxHint>Five is best</span>
         </cngx-form-field>
       `,
-      imports: [CngxFormField, CngxRating],
+      imports: [CngxFormField, CngxRating, CngxHint],
     })
     class FieldHost {
       readonly field = accessor;
@@ -336,7 +337,7 @@ describe('CngxRating', () => {
       '.cngx-rating__disabled-reason',
     ) as HTMLElement;
     const describedBy = group.getAttribute('aria-describedby') ?? '';
-    expect(describedBy.length).toBeGreaterThan(0); // field hint id unconditional
+    expect(describedBy.length).toBeGreaterThan(0); // the rendered field hint
     expect(describedBy).not.toContain(reasonSpan.id); // reason id gated out
   });
 

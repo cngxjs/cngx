@@ -1,12 +1,13 @@
-import { Directive } from '@angular/core';
+import { DestroyRef, Directive, inject } from '@angular/core';
 import { injectFormFieldPresenter } from './inject-form-field-presenter';
 
 /**
  * Marks the hint element inside a `cngx-form-field`.
  *
- * Automatically sets its `id` for `aria-describedby` linkage.
- * The hint remains in the DOM at all times - screen readers read it alongside errors
- * to provide context. The host carries `cngx-hint`, the hook the field
+ * Automatically sets its `id` for `aria-describedby` linkage. The field's
+ * control references that id only while the hint is rendered, so a field
+ * without a hint carries no dangling reference. Screen readers read the hint
+ * alongside errors to provide context. The host carries `cngx-hint`, the hook the field
  * typography in `@cngx/themes/cngx.css` sizes and tints.
  *
  * ```html
@@ -30,4 +31,8 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
 export class CngxHint {
   /** @internal */
   protected readonly presenter = injectFormFieldPresenter('cngxHint');
+
+  constructor() {
+    inject(DestroyRef).onDestroy(this.presenter.registerHint(this));
+  }
 }

@@ -2,7 +2,8 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { CngxRovingTabindex } from '@cngx/common/a11y';
 import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 
@@ -105,6 +106,44 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     expect(host.v()).toBeUndefined();
   });
 
+  it('an arrow press inside a disabled group does not select on a later focus', () => {
+    const { fixture, host, groupEl, toggles } = setup();
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      host.off.set(true);
+      fixture.detectChanges();
+      toggles[0].el.focus();
+      groupEl.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+      );
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(toggles[1].el);
+      expect(host.v()).toBeUndefined();
+
+      host.off.set(false);
+      fixture.detectChanges();
+      toggles[1].el.blur();
+      toggles[1].el.focus();
+      fixture.detectChanges();
+      expect(host.v()).toBeUndefined();
+    } finally {
+      fixture.nativeElement.remove();
+    }
+  });
+
+  it('consumePendingArrowSelect refuses a disabled leaf but still clears the flag', () => {
+    const { host, group, groupDe } = setup();
+    const roving = groupDe.injector.get(CngxRovingTabindex);
+    const consume = vi.spyOn(roving, 'consumeNavigationKey').mockReturnValue(true);
+
+    expect(group.consumePendingArrowSelect('grid', true)).toBe(false);
+    expect(consume).toHaveBeenCalledTimes(1);
+    expect(host.v()).toBeUndefined();
+
+    expect(group.consumePendingArrowSelect('grid', false)).toBe(true);
+    expect(host.v()).toBe('grid');
+  });
+
   it('first ArrowRight from a freshly-focused group selects leaf N for every press (#135)', () => {
     const { fixture, host, groupEl, toggles } = setup();
     // Real chain (no manual consume): roving moves focus and raises its
@@ -158,6 +197,35 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     fixture.detectChanges();
     expect(host.v()).toBe('grid');
   });
+
+  for (const source of ['group', 'toggle'] as const) {
+    it(`a ${source}-disabled leaf renders aria-disabled only, stays focusable and refuses activation`, () => {
+      const { fixture, host, toggles } = setup();
+      document.body.appendChild(fixture.nativeElement);
+      try {
+        (source === 'group' ? host.off : host.cOff).set(true);
+        fixture.detectChanges();
+        const { el } = toggles[2];
+        expect(el.hasAttribute('disabled')).toBe(false);
+        expect(el.getAttribute('aria-disabled')).toBe('true');
+
+        el.focus();
+        expect(document.activeElement).toBe(el);
+
+        let consumerClicks = 0;
+        el.addEventListener('click', () => consumerClicks++);
+        el.click();
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        fixture.detectChanges();
+        expect(consumerClicks).toBe(0);
+        expect(host.v()).toBeUndefined();
+        expect(el.getAttribute('aria-checked')).toBe('false');
+      } finally {
+        fixture.nativeElement.remove();
+      }
+    });
+  }
 
   it('aria-busy reflects state.status() === "loading" reactively', () => {
     @Component({

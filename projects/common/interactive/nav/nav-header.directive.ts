@@ -8,6 +8,11 @@ import { Directive } from '@angular/core';
  * x. Header padding, background, border and type come from `cngx-nav.css`
  * through the `--cngx-nav-header-*` tokens.
  *
+ * On a collapsed rail (`<cngx-sidenav>`, `<cngx-nav-rail>`) the mark keeps
+ * its x and the name fades out; the name stays in the accessibility tree, the
+ * mark is `aria-hidden`. A control projected into the header (a menu button,
+ * a pin toggle) stays in the tab order in every state.
+ *
  * Two selector forms: the `<cngx-nav-header>` element, or `[cngxNavHeader]`
  * on a native `<header>` so the landmark comes from the element itself.
  *

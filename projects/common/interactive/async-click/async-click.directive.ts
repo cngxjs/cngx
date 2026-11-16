@@ -270,7 +270,10 @@ export class CngxAsyncClick implements CngxAsyncRunState {
    * `true` while the busy visual should show: the run (own or host-reflected)
    * after the show delay, held for at least the min-dwell. Drives
    * `cngx-async--pending` and the button-family busy layer; `pending()` stays
-   * the immediate truth and `aria-busy` never waits on it.
+   * the immediate truth. `aria-busy` and `aria-disabled` never wait on it at
+   * the start (both are set at the click), but they hold while it does, so
+   * after a run that showed the visual they stay on for the rest of the
+   * min-dwell.
    */
   readonly busyVisible: Signal<boolean> = createVisibilityGate(
     computed(() => this.pendingState() || this.hostBusy()),

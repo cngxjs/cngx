@@ -1,6 +1,7 @@
 import { Component, computed, signal, viewChild } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   type CngxActionOutcome,
   CNGX_INTERACTIVE_LANGUAGE_EN,
@@ -1044,6 +1045,40 @@ describe('CngxPopoverAction', () => {
         expect(popoverEl.hidePopover).toHaveBeenCalledTimes(run);
       }
     });
+
+    async function rejectAfterClose(fixture: ComponentFixture<ConfirmHost>): Promise<void> {
+      const host = fixture.componentInstance;
+      host.popover().show();
+      fixture.detectChanges();
+      button(fixture).click();
+      await settleRender(fixture);
+      host.popover().hide();
+      await settleRender(fixture);
+      host.rejectFn('Network error');
+      await settleRender(fixture);
+    }
+
+    it('rejects the run after the popover closed, with the region inside the popover', async () => {
+      const { fixture, popoverEl } = setup(ConfirmHost);
+      await rejectAfterClose(fixture);
+      const host = fixture.componentInstance;
+      expect(host.popover().isVisible()).toBe(false);
+      expect(popoverEl.contains(region(fixture))).toBe(true);
+      expect(host.action().status()).toBe('error');
+    });
+
+    // H4: expected to fail until PR 8 (T9) speaks a settle in a closed popover through CngxLiveAnnouncer.
+    it.fails(
+      'speaks a failure that settles after the popover closed outside the popover',
+      async () => {
+        const announce = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce');
+        const { fixture, popoverEl } = setup(ConfirmHost);
+        await rejectAfterClose(fixture);
+        const call = announce.mock.calls.find(([message]) => message === 'Failed: Network error');
+        expect(call, 'announcer calls').toBeDefined();
+        expect(popoverEl.contains(call?.[2] ?? null)).toBe(false);
+      },
+    );
 
     it('leaves no close timer and no write when destroyed mid-run', async () => {
       TestBed.configureTestingModule({

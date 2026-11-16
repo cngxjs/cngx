@@ -704,6 +704,10 @@
   .cngx-nav-group {
     position: relative;
     box-sizing: border-box;
+    /* The touch-target floor is a length (registered, 0px initial), which
+       drops the flex item's automatic minimum: in a column too short for the
+       rows they would squeeze below their content instead of scrolling. */
+    flex-shrink: 0;
     min-block-size: var(--cngx-target-min, 0px);
     margin-inline: var(--cngx-nav-link-inset, 4px);
     margin-inline-start: calc(

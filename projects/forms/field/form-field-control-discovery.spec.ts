@@ -9,6 +9,7 @@ import { CngxFieldBox } from './field-box.directive';
 import { CngxPrefix } from './prefix.directive';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
+import { CngxHint } from './hint.directive';
 import { CngxLabel } from './label.component';
 import { createMockField, type MockFieldRef } from './testing/mock-field';
 import type { CngxFieldAccessor } from './models';
@@ -18,9 +19,10 @@ import type { CngxFieldAccessor } from './models';
     <cngx-form-field [field]="field()">
       <label cngxLabel>E-Mail</label>
       <input cngxInput />
+      <span cngxHint>Work address</span>
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxLabel, CngxInput],
+  imports: [CngxFormField, CngxLabel, CngxInput, CngxHint],
 })
 class InputHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);

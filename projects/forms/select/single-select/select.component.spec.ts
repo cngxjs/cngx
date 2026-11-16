@@ -12,7 +12,7 @@ import {
   type CngxPopoverPresentationRequest,
 } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
-import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
+import { CNGX_FORM_FIELD_CONTROL, CngxFormField, CngxHint } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
@@ -87,9 +87,10 @@ class StandaloneHost {
   template: `
     <cngx-form-field [field]="field">
       <cngx-select [label]="'Farbe'" [options]="options" />
+      <span cngxHint>Pick one</span>
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxSelect],
+  imports: [CngxFormField, CngxSelect, CngxHint],
 })
 class FormFieldHost {
   readonly options = OPTIONS;

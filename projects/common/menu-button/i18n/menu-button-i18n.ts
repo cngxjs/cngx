@@ -73,6 +73,8 @@ export function withMenuButtonI18nLabels(
 /**
  * Provides the menu-button copy. The features apply on top of the active language pack, so a
  * subtree overrides single keys of the app's language.
+ * A nested provider starts again from the language pack instead of merging onto the outer one,
+ * so it repeats every outer override it still needs.
  *
  * ```ts
  * providers: [provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle: 'More actions' }))]

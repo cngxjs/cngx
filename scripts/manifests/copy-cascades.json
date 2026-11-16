@@ -129,7 +129,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 470,
+      "line": 473,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -145,7 +145,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 473,
+      "line": 476,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -1038,7 +1038,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 291,
+      "line": 316,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [

@@ -20,6 +20,12 @@ import { describe, expect, it } from 'vitest';
  * property is assigned in a rule whose selector targets `:root` or `html`. The
  * fix is `inherits: true` (or a SET at the element that reads it), never an
  * allow-list entry: the root assignment is dead by construction.
+ *
+ * A bare `inherits: false` registration is not flagged on purpose: the
+ * shipped registrations scope a token to the element that sets it, which is
+ * the point of the flag. The defect is the `:root` / `html` assignment of such
+ * a token, which this guard catches; the select rule (OD4) pins
+ * `inherits: true` for the one family where the trap shipped.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));

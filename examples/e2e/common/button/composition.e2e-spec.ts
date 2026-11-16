@@ -1,9 +1,7 @@
-import type { Locator, Page } from '@playwright/test';
-
 import { expect, test } from '../../_test';
-import { gotoDemo } from '../../_helpers';
+import { clicksOf, countClicks, describedText, gotoDemo } from '../../_helpers';
 
-// Story: CngxButtonBrain on a custom host (the demo chip button) brings the
+// Story: CngxButtonBrain on a custom host (the chip button) brings the
 // whole contract along: the data-* axes with the host's own defaults and
 // fixed size, aria-disabled with the reason through aria-describedby, the
 // activation guard, and the run state of a co-hosted cngxAsyncClick. The
@@ -13,39 +11,13 @@ import { gotoDemo } from '../../_helpers';
 const CUSTOM = 'common/button/composition/custom-host';
 const RIPPLE = 'common/button/composition/ripple';
 
-async function describedText(page: Page, host: Locator): Promise<string | null> {
-  const ids = await host.getAttribute('aria-describedby');
-  if (!ids) {
-    return null;
-  }
-  const texts = await Promise.all(
-    ids.split(/\s+/).map((id) => page.locator(`[id="${id}"]`).textContent()),
-  );
-  return texts.map((t) => t?.trim() ?? '').join(' ');
-}
-
-type CountedHost = HTMLElement & { cngxE2eClicks?: number };
-
-async function countClicks(host: Locator): Promise<void> {
-  await host.evaluate((el: CountedHost) => {
-    el.cngxE2eClicks = 0;
-    el.addEventListener('click', () => {
-      el.cngxE2eClicks = (el.cngxE2eClicks ?? 0) + 1;
-    });
-  });
-}
-
-function clicksOf(host: Locator): Promise<number> {
-  return host.evaluate((el: CountedHost) => el.cngxE2eClicks ?? 0);
-}
-
 test.describe('common/button/composition', () => {
   test('custom-host: the chip gets the brain axes with its own defaults', async ({ page }) => {
     await gotoDemo(page, CUSTOM);
     const artifact = page.locator('.cngx-ex-artifact');
 
     const filter = artifact.getByRole('button', { name: 'Filter' });
-    await expect(filter).toHaveClass(/demo-chip-button/);
+    await expect(filter).toHaveClass(/app-chip-button/);
     await expect(filter).toHaveAttribute('data-variant', 'outline');
     await expect(filter).toHaveAttribute('data-tone', 'neutral');
     await expect(filter).toHaveAttribute('data-size', 'sm');
@@ -92,7 +64,7 @@ test.describe('common/button/composition', () => {
     await expect(refresh).toHaveAttribute('data-pending', 'true');
     await expect(refresh).toHaveAttribute('aria-busy', 'true');
     await expect(refresh).toHaveAttribute('data-busy', 'true');
-    await expect(refresh.locator('.demo-chip-button__busy')).toHaveAttribute('aria-hidden', 'true');
+    await expect(refresh.locator('.app-chip-button__busy')).toHaveAttribute('aria-hidden', 'true');
     // Clicks during the run start no second run.
     await refresh.click({ force: true });
     await refresh.click({ force: true });
@@ -101,7 +73,7 @@ test.describe('common/button/composition', () => {
     await expect(refresh).not.toHaveAttribute('data-busy', { timeout: 5_000 });
     await expect(refresh).not.toHaveAttribute('aria-busy', { timeout: 5_000 });
     await expect(refresh).not.toHaveAttribute('data-pending');
-    await expect(refresh.locator('.demo-chip-button__busy')).toHaveCount(0);
+    await expect(refresh.locator('.app-chip-button__busy')).toHaveCount(0);
     await expect(status).toHaveText('Refreshed 1 time(s)');
   });
 

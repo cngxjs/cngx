@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-// Never import index.mjs here: importing it runs main(), which wipes and
-// rewrites examples/src/app/features.
+// The pure helpers only: index.mjs reads the disk (its main() wipes and
+// rewrites examples/src/app/features when run as a script).
 import * as panel from '../examples-gen/code-panel.mjs';
 
 const {
@@ -345,7 +345,8 @@ describe('stripDemoChrome', () => {
 
 describe('selectorsInSource', () => {
   it('returns the selector and exportAs of an exported class', () => {
-    const src = "@Directive({ selector: '[cngxX], cngx-x', exportAs: 'cngxX' })\nexport class CngxX {}";
+    const src =
+      "@Directive({ selector: '[cngxX], cngx-x', exportAs: 'cngxX' })\nexport class CngxX {}";
     expect(panel.selectorsInSource(src)).toEqual([['CngxX', ['[cngxX]', 'cngx-x', 'cngxX']]]);
   });
 });
@@ -462,5 +463,77 @@ describe('mergeImportLines', () => {
   it('keeps a single line without a semicolon unchanged', () => {
     const lines = ["import { A,B } from 'x'", "import { C } from 'y';"];
     expect(panel.mergeImportLines(lines)).toEqual(lines);
+  });
+});
+
+describe('storyLocalImports', () => {
+  const fixtureStory = (extra) => ({
+    imports: ['ChipButton'],
+    template: '<button chipButton>Filter</button>',
+    setup: 'protected readonly label = signal(DEFAULT_LABEL);',
+    moduleImports: [
+      "import { ChipButton } from './_chip-button.component';",
+      "import { DEFAULT_LABEL } from '../_fixtures/chip-labels';",
+      "import { mirrorScreenReader } from '../../../../fixtures';",
+      "import { failNext } from './_fail-flag';",
+    ],
+    ...extra,
+  });
+  const shownFor = (story) =>
+    panel.storyLocalImports(
+      panel.displayedImportLines({ story, importLines: story.moduleImports, selectorMap }),
+    );
+
+  it('gives an artifact-imported sibling and app fixture a tab titled by its panel path', () => {
+    expect(shownFor(fixtureStory())).toEqual([
+      { module: './_chip-button.component', panelPath: '_chip-button.component.ts' },
+      { module: './fixtures/chip-labels', panelPath: 'fixtures/chip-labels.ts' },
+    ]);
+  });
+
+  it('gives a fixture only the chrome imports no tab', () => {
+    const story = fixtureStory({ setupChrome: 'protected readonly fail = failNext;' });
+    expect(shownFor(story).map((f) => f.module)).not.toContain('./_fail-flag');
+  });
+
+  it('gives a story-local component in imports a tab only when the artifact template uses it', () => {
+    const map = new Map([
+      ...selectorMap,
+      ['DefaultCloseReference', ['demo-default-close-reference']],
+    ]);
+    const story = {
+      imports: ['DefaultCloseReference'],
+      template: '<button>Close</button>',
+      templateChrome: '<demo-default-close-reference />',
+      moduleImports: [
+        "import { DefaultCloseReference } from './_default-close-reference.component';",
+      ],
+    };
+    const tabsFor = (s) =>
+      panel
+        .storyLocalImports(
+          panel.displayedImportLines({ story: s, importLines: s.moduleImports, selectorMap: map }),
+        )
+        .map((f) => f.module);
+    expect(tabsFor(story)).toEqual([]);
+    expect(
+      tabsFor({ ...story, template: '<demo-default-close-reference />', templateChrome: '' }),
+    ).toEqual(['./_default-close-reference.component']);
+  });
+
+  it('gives the shared fixtures barrel no tab, even when the artifact uses it', () => {
+    const story = fixtureStory({ setup: 'protected readonly sr = mirrorScreenReader();' });
+    expect(shownFor(story).map((f) => f.module)).toEqual(['./_chip-button.component']);
+  });
+
+  it('resolves a sibling next to the story and an app fixture under the app fixtures', () => {
+    const dirs = { storyDir: 'examples/stories/a/b', appFixturesDir: 'examples/src/app/_fixtures' };
+    const [sibling, appFixture] = shownFor(fixtureStory());
+    expect(panel.storyLocalSourcePath(sibling, dirs)).toBe(
+      'examples/stories/a/b/_chip-button.component.ts',
+    );
+    expect(panel.storyLocalSourcePath(appFixture, dirs)).toBe(
+      'examples/src/app/_fixtures/chip-labels.ts',
+    );
   });
 });

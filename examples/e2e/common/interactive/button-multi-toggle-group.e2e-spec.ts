@@ -54,5 +54,16 @@ test.describe('common/interactive/button-multi-toggle-group', () => {
     await expect(closed).toHaveAttribute('aria-disabled', 'true');
     await expect(archived).toHaveAttribute('aria-disabled', 'true');
 
+    // aria-disabled only: the leaf stays focusable and refuses every activation path.
+    for (const leaf of [closed, archived]) {
+      await expect(leaf).not.toHaveAttribute('disabled');
+      await leaf.focus();
+      await expect(leaf).toBeFocused();
+      await leaf.click({ force: true });
+      await leaf.press('Space');
+      await leaf.press('Enter');
+      await expect(leaf).toHaveAttribute('aria-pressed', 'false');
+    }
+    await expect(open).toHaveAttribute('aria-pressed', 'true');
   });
 });

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -116,9 +116,9 @@ describe('button Material bridge', () => {
   });
 
   it('assigns only button-family tokens a button-family sheet reads', () => {
-    const sheets = READERS.map((path) => readFileSync(resolve(process.cwd(), path), 'utf-8')).join(
-      '\n',
-    );
+    const sheets = READERS.map((path) =>
+      readFileSync(fileURLToPath(new URL('../../../' + path, import.meta.url)), 'utf-8'),
+    ).join('\n');
     const owned = CONSUMED.filter(
       (name) => !name.startsWith('--cngx-color-'),
     );

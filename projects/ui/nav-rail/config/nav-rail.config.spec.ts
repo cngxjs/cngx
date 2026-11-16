@@ -105,6 +105,20 @@ describe('CNGX_NAV_RAIL_CONFIG', () => {
     });
   });
 
+  it('fills the keys a hand-written provider leaves out from the defaults', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_NAV_RAIL_CONFIG, useValue: { side: 'end' } }],
+    });
+    const fixture = TestBed.createComponent(AtHost);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.probe().cfg).toEqual({
+      labelPlacement: 'end',
+      side: 'end',
+      tooltip: true,
+      tooltipDelay: 800,
+    });
+  });
+
   it('resolves the rail look as input, then config, then default', () => {
     const plain = TestBed.createComponent(RailHost);
     plain.detectChanges();

@@ -88,6 +88,7 @@ describe('mockValidationError', () => {
 
     const tree = (() => ({ errorSummary: () => [err] })) as unknown as FieldTree<unknown>;
     expect(() => focusFirstError(tree)).not.toThrow();
-    expect(focusFirstError(tree)).toBe(true);
+    // The inert field takes no focus, so nothing was reached.
+    expect(focusFirstError(tree)).toBe(false);
   });
 });

@@ -46,7 +46,7 @@ jobs:
         run: node scripts/pack-libs.mjs
       - name: Install Playwright chromium
         if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
-        run: npx playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright
       - name: Run ng add and ng update in the fixture app
         if: github.event_name != 'pull_request' || steps.inputs.outputs.changed == 'true'
         run: node scripts/consumer-fixture.mjs --angular 21 --variant schematics

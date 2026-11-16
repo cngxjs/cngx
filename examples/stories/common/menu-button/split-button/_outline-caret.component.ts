@@ -16,26 +16,26 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
-  selector: 'button[demoOutlineCaret]',
+  selector: 'button[appOutlineCaret]',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
     {
       directive: CngxButtonBrain,
-      inputs: ['variant: demoOutlineCaret', 'tone', 'disabled', 'disabledReason'],
+      inputs: ['variant: appOutlineCaret', 'tone', 'disabled', 'disabledReason'],
     },
     { directive: CngxMenuTrigger, inputs: ['cngxMenuTrigger: menu', 'popover'] },
     { directive: CngxPopoverTrigger, inputs: ['cngxPopoverTrigger: popover'] },
     CngxSplitCaret,
   ],
-  providers: [provideButtonHost('demoOutlineCaret', { defaultVariant: 'outline', iconOnly: true })],
+  providers: [provideButtonHost('appOutlineCaret', { defaultVariant: 'outline', iconOnly: true })],
   host: {
-    class: 'demo-outline-caret',
+    class: 'app-outline-caret',
     '(click)': 'handleClick()',
   },
   template: `
-    <svg class="demo-outline-caret__glyph" viewBox="0 0 24 24" aria-hidden="true">
+    <svg class="app-outline-caret__glyph" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M7 10l5 5 5-5z" fill="currentColor" />
     </svg>
     @if (caret.isCaret()) {
@@ -47,7 +47,7 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
     }
   `,
   styles: `
-    .demo-outline-caret {
+    .app-outline-caret {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -61,19 +61,19 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
       color: var(--cngx-color-text, #1f2937);
       cursor: pointer;
     }
-    .demo-outline-caret[aria-disabled='true'] {
+    .app-outline-caret[aria-disabled='true'] {
       color: var(--cngx-color-text-muted, #6b7280);
       cursor: not-allowed;
     }
-    .demo-outline-caret__glyph {
-      inline-size: var(--demo-outline-caret-glyph, 1.25em);
-      block-size: var(--demo-outline-caret-glyph, 1.25em);
+    .app-outline-caret__glyph {
+      inline-size: var(--app-outline-caret-glyph, 1.25em);
+      block-size: var(--app-outline-caret-glyph, 1.25em);
     }
     @media (forced-colors: active) {
-      .demo-outline-caret {
+      .app-outline-caret {
         border-color: ButtonText;
       }
-      .demo-outline-caret[aria-disabled='true'] {
+      .app-outline-caret[aria-disabled='true'] {
         border-color: GrayText;
         color: GrayText;
       }

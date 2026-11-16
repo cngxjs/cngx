@@ -1,5 +1,6 @@
 import { Directive, computed, inject, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
+import { injectActivationGuard } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 
 import {
@@ -26,25 +27,15 @@ interface MultiResolution<T> {
 type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
 
 /**
- * One option in a button toggle group. Applies only to `<button>`, so activation, focus and the
- * native `disabled` attribute come from the element.
+ * One option in a button toggle group, on a `<button>`. The group above it sets the mode: a radio
+ * with `aria-checked` in `CngxButtonToggleGroup`, a native button with `aria-pressed` in
+ * `CngxButtonMultiToggleGroup`. Throws [`CNGX1053`](/error-codes/cngx1053.md) outside both
+ * groups and [`CNGX1052`](/error-codes/cngx1052.md) under both.
  *
- * The leaf reads its mode from the group above it when it is created:
- *
- * - In `CngxButtonToggleGroup` it is a radio: `role="radio"` with `aria-checked`. Click, Space
- *   and Enter set the group `value`, and arrow-key focus selects it.
- * - In `CngxButtonMultiToggleGroup` it stays a native button with `aria-pressed`. Click, Space
- *   and Enter add or remove its value.
- *
- * It throws when neither group is an ancestor ([`CNGX1053`](/error-codes/cngx1053.md)) or both are
- * ([`CNGX1052`](/error-codes/cngx1052.md)).
- *
- * The toggle counts as disabled when its own `disabled` or the group's is set. Its own
- * `disabled` also reaches the host `CngxRovingItem`, so arrow keys skip it. The group's
- * `disabled` does not reach the roving item, since a host directive input cannot be rebound.
- *
- * Bind `[cngxDescribedBy]` to the id of an element that explains the state, for example why the
- * toggle is disabled. The directive has no template, so you render that element.
+ * Disabled by its own `disabled` or the group's, the toggle renders `aria-disabled` only and
+ * stays focusable; `injectActivationGuard` swallows the click, Space and Enter change nothing.
+ * Only its own `disabled` reaches the host `CngxRovingItem`, so arrow keys skip that toggle but
+ * still reach one disabled by the group, whose `[cngxDescribedBy]` reason is then announced.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle.directive.ts
@@ -76,7 +67,6 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
     '[attr.aria-pressed]': 'ariaPressed()',
     '[attr.aria-disabled]': 'toggleDisabled() ? "true" : null',
     '[attr.aria-describedby]': 'describedBy()',
-    '[attr.disabled]': 'toggleDisabled() ? "" : null',
     '[class.cngx-button-toggle--checked]': 'toggleChecked()',
     '[class.cngx-button-toggle--disabled]': 'toggleDisabled()',
     '(focus)': 'handleFocus()',
@@ -88,21 +78,11 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
 export class CngxButtonToggle<T = unknown> {
   private readonly resolved: ParentResolution<T> = resolveParent<T>();
 
-  /**
-   * Value this toggle represents (required). A single group checks it while the group `value`
-   * is `===` to it. A multi group presses it while its `keyFn` key is selected.
-   */
+  /** Matched with `===` in a single group, by `keyFn` key in a multi group. */
   readonly value = input.required<T>();
-  /**
-   * Disables this toggle. Disabled by this input or by the group, the toggle sets the native
-   * `disabled` attribute and `aria-disabled` and ignores click and keys. Arrow keys skip a
-   * toggle disabled by this input. Default `false`.
-   */
+  /** Disables this toggle; arrow keys skip it (see the class description). */
   readonly disabled = input<boolean>(false);
-  /**
-   * Binding `[cngxDescribedBy]`: id of an element that describes the toggle, for example why it
-   * is disabled. Written to the host `aria-describedby`. Default `null` omits the attribute.
-   */
+  /** Id of an element you render that explains the toggle, for example why it is disabled. */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });
@@ -117,6 +97,10 @@ export class CngxButtonToggle<T = unknown> {
   protected readonly toggleDisabled = computed(
     () => this.resolved.group.disabled() || this.disabled(),
   );
+
+  constructor() {
+    injectActivationGuard(() => this.toggleDisabled());
+  }
 
   // Single leaves are radios in a radiogroup (aria-checked is valid there);
   // multi leaves stay native buttons (implicit role="button" carries
@@ -133,19 +117,17 @@ export class CngxButtonToggle<T = unknown> {
     this.resolved.mode === 'multi' ? (this.toggleChecked() ? 'true' : 'false') : null,
   );
 
+  // A disabled toggle is focusable, so it still consumes the roving flag; the group refuses the
+  // selection. Returning early here would leave the flag set for the next, unrelated focus.
   protected handleFocus(): void {
-    if (this.toggleDisabled()) {
-      return;
-    }
     if (this.resolved.mode === 'single') {
-      this.resolved.group.consumePendingArrowSelect(this.value());
+      this.resolved.group.consumePendingArrowSelect(this.value(), this.toggleDisabled());
     }
   }
 
+  // No disabled check: the activation guard stops every click on a disabled toggle before the
+  // host (click) listener runs.
   protected handleSelect(): void {
-    if (this.toggleDisabled()) {
-      return;
-    }
     if (this.resolved.mode === 'single') {
       this.resolved.group.value.set(this.value());
       return;

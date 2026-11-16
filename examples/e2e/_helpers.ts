@@ -102,3 +102,62 @@ export async function expectGridLayout(items: Locator): Promise<void> {
     0,
   );
 }
+
+/** Text of the node the host's aria-describedby points at, or null. */
+export async function describedText(page: Page, host: Locator): Promise<string | null> {
+  const ids = await host.getAttribute('aria-describedby');
+  if (!ids) {
+    return null;
+  }
+  const texts = await Promise.all(
+    ids.split(/\s+/).map((id) => page.locator(`[id="${id}"]`).textContent()),
+  );
+  return texts.map((t) => t?.trim() ?? '').join(' ');
+}
+
+type CountedHost = HTMLElement & { cngxE2eClicks?: number };
+
+/**
+ * Counts the clicks that reach a bubble listener on the host. A brain's
+ * guard is a capture listener on the same element, so a swallowed click
+ * never reaches this one.
+ */
+export async function countClicks(host: Locator): Promise<void> {
+  await host.evaluate((el: CountedHost) => {
+    el.cngxE2eClicks = 0;
+    el.addEventListener('click', () => {
+      el.cngxE2eClicks = (el.cngxE2eClicks ?? 0) + 1;
+    });
+  });
+}
+
+export function clicksOf(host: Locator): Promise<number> {
+  return host.evaluate((el: CountedHost) => el.cngxE2eClicks ?? 0);
+}
+
+type LoggedHost = HTMLElement & { cngxE2eLog?: string[] };
+
+/**
+ * Records every change of the named attributes on the host, in order, as
+ * `name=value` (`name=null` for a removal). Read the log with
+ * `attributeLogOf`; the order pins timing without polling.
+ */
+export async function recordAttributes(host: Locator, names: readonly string[]): Promise<void> {
+  await host.evaluate(
+    (el: LoggedHost, filter) => {
+      const log: string[] = [];
+      el.cngxE2eLog = log;
+      new MutationObserver((records) => {
+        for (const record of records) {
+          const name = record.attributeName ?? '';
+          log.push(`${name}=${el.getAttribute(name) ?? 'null'}`);
+        }
+      }).observe(el, { attributes: true, attributeFilter: filter });
+    },
+    [...names],
+  );
+}
+
+export function attributeLogOf(host: Locator): Promise<string[]> {
+  return host.evaluate((el: LoggedHost) => [...(el.cngxE2eLog ?? [])]);
+}

@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxButton: Custom spinner',
   subtitle: 'Swap the busy glyph of every button in a subtree with <code>provideButtonSpinner</code>.',
-  description: 'The busy layer stays the same for every cngx button: it covers the label so the width never jumps, it is <code>aria-hidden</code>, and it follows the show delay and min-dwell of the run. Only the glyph inside it is replaceable. Provide a component with <code>provideButtonSpinner</code> (here in <code>viewProviders</code>, so only this demo is affected) and <code>cngxButton</code>, <code>cngxIconButton</code>, <code>cngxCloseButton</code>, the menu buttons and <code>cngxActionButton</code> render it in place of the ring. Without a provider the built-in ring renders. Pick the fast run (80 ms) and press Save changes: the run ends inside the show delay (120 ms by default), so the dots never appear and <code>data-busy</code> never flips. Pick the slow run (1.5 s): the dots appear after the show delay and stay at least the min-dwell (400 ms). The readout below the buttons tracks the Save button: the run state, whether its busy layer shows, the live <code>data-busy</code> attribute and the timeline of the last run. <code>aria-busy</code> comes from <code>cngxAsyncClick</code> and is set for the whole run, whether the dots show or not; the dashed box mirrors it. The fixture sits next to this story as <code>_dots-spinner.component.ts</code>.',
+  description: 'The busy layer stays the same for every cngx button: it covers the label so the width never jumps, it is <code>aria-hidden</code>, and it follows the show delay and min-dwell of the run. Only the glyph inside it is replaceable. Provide a component with <code>provideButtonSpinner</code> (here in <code>viewProviders</code>, so only this demo is affected) and <code>cngxButton</code>, <code>cngxIconButton</code>, <code>cngxCloseButton</code>, the menu buttons and <code>cngxActionButton</code> render it in place of the ring. Without a provider the built-in ring renders. A run that ends inside the show delay (120 ms by default) never shows the dots and never flips <code>data-busy</code>; a longer run shows them after the show delay and keeps them at least the min-dwell (400 ms). <code>aria-busy</code> comes from <code>cngxAsyncClick</code> and is set for the whole run, whether the dots show or not. The fixture sits next to this story as <code>_dots-spinner.component.ts</code>.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -14,15 +14,13 @@ export const STORY: DemoSpec = {
     "import { CngxIcon } from '@cngx/common/display';",
     "import { CngxAsyncClick } from '@cngx/common/interactive';",
     "import { DotsSpinner } from './_dots-spinner.component';",
-    "import { mirrorScreenReader } from '../../../../fixtures';",
+    "import { mirrorScreenReader, wrapDemoAction } from '../../../../fixtures';",
   ],
   imports: ['CngxButton', 'CngxIconButton', 'CngxIcon', 'CngxAsyncClick'],
   viewProviders: ['provideButtonSpinner(DotsSpinner)'],
   setup: `
-  protected readonly latency = signal<'fast' | 'slow'>('slow');
-
   protected readonly save = (): Promise<void> =>
-    new Promise((resolve) => setTimeout(resolve, this.latency() === 'fast' ? 80 : 1500));`,
+    new Promise((resolve) => setTimeout(resolve, 1500));`,
   template: `
   <div class="demo-inline-actions">
     <button cngxButton tone="primary" [cngxAsyncClick]="save" #run="cngxAsyncClick">Save changes</button>
@@ -33,6 +31,15 @@ export const STORY: DemoSpec = {
     </button>
   </div>`,
   setupChrome: `
+  protected readonly latency = signal<'fast' | 'slow'>('slow');
+
+  // Runs save with the latency picked below instead of its fixed 1.5 s.
+  private readonly latencyKnob = wrapDemoAction(
+    this,
+    'save',
+    () => () => new Promise<void>((resolve) => setTimeout(resolve, this.latency() === 'fast' ? 80 : 1500)),
+  );
+
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 

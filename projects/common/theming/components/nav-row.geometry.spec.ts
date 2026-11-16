@@ -119,6 +119,16 @@ type Fill = (typeof FILLS)[number];
         Wide
       </a>
     </nav>
+    <nav
+      aria-label="Short"
+      class="nav-short"
+      style="display: flex; flex-direction: column; block-size: 60px; overflow-y: auto"
+    >
+      <a cngxNavLink href="#one" class="short-row">One</a>
+      <a cngxNavLink href="#two">Two</a>
+      <a cngxNavLink href="#three">Three</a>
+      <button type="button" cngxNavGroup class="short-group">Four</button>
+    </nav>
     <div data-density="compact">
       <nav aria-label="Compact">
         <a cngxNavLink href="#compact" class="row-compact" [active]="true">Inbox</a>
@@ -334,6 +344,18 @@ describe('nav row shape', () => {
     expect(bg(root, '.row-group')).toBe('rgba(0, 0, 0, 0)');
     await force('.row-group', ['hover']);
     expect(fillOf(root, '.row-group')).toBe(fillOf(root, '.probe-hover'));
+  });
+
+  it('keeps its height in a flex column too short for the rows, which scrolls instead', () => {
+    const root = mount();
+    const height = one(root, '.row-idle').getBoundingClientRect().height;
+    expect(one(root, '.short-row').getBoundingClientRect().height).toBeCloseTo(height, 1);
+    expect(one(root, '.short-group').getBoundingClientRect().height).toBeCloseTo(
+      one(root, '.row-group').getBoundingClientRect().height,
+      1,
+    );
+    const short = one(root, '.nav-short');
+    expect(short.scrollHeight).toBeGreaterThan(short.clientHeight);
   });
 
   it('indents a nested row by its depth', () => {

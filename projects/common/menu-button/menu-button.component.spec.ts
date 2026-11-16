@@ -22,7 +22,7 @@ import {
 import { CngxPopover, CngxPopoverSheet } from '@cngx/common/popover';
 import { CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { CNGX_ICON_CHEVRON_DOWN } from '@cngx/utils';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CNGX_BUTTON_CARET_ICON,
@@ -30,33 +30,6 @@ import {
   provideButtonCaretIcon,
 } from './caret-icon.token';
 import { CngxMenuButton } from './menu-button.component';
-
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
 
 const MENU = `
   <div cngxPopover #pop="cngxPopover">
@@ -237,10 +210,6 @@ async function settle(): Promise<void> {
 }
 
 describe('CngxMenuButton', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
-
   afterEach(() => {
     document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
   });
