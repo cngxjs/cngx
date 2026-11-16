@@ -147,6 +147,20 @@ describe('createInertSiblings', () => {
       expect(q('.sibling').hasAttribute('inert')).toBe(true);
     });
 
+    // The modal surface can engage before the backdrop's visible class lands
+    // in the same pass, so the marker must not depend on visibility.
+    it('keeps a backdrop live before its visible class is set', () => {
+      root = mount(`
+        <div class="backdrop" data-cngx-backdrop></div>
+        <aside class="host"></aside>
+        <main class="content"></main>
+      `);
+      createInertSiblings(q('.host'), { scope: 'outside' });
+
+      expect(q('.backdrop').hasAttribute('inert')).toBe(false);
+      expect(q('.content').hasAttribute('inert')).toBe(true);
+    });
+
     it('preserves a pre-existing inert on release', () => {
       root = mount(layout);
       const release = createInertSiblings(q('.host'), { scope: 'outside' });

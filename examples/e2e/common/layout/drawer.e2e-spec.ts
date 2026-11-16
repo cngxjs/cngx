@@ -57,6 +57,27 @@ test.describe('common/layout/drawer: clipped drawer below a live header', () => 
   });
 });
 
+test.describe('common/layout/drawer: backdrop under a page-modal drawer', () => {
+  const route = 'common/layout/drawer/basic-scroll-lock-backdrop';
+
+  test('the visible backdrop stays live and a click on it closes the drawer', async ({ page }) => {
+    await gotoDemo(page, route);
+    await page.getByRole('button', { name: 'Open Drawer' }).click();
+    const panel = page.locator('#basic-panel');
+    await expect(panel).toHaveAttribute('aria-modal', 'true');
+    const backdrop = page.locator('[data-cngx-backdrop]');
+    await expect(backdrop).toHaveClass(/cngx-backdrop--visible/);
+    expect(await backdrop.evaluate((el) => el.closest('[inert]') === null)).toBe(true);
+
+    const box = await backdrop.boundingBox();
+    expect(box).not.toBeNull();
+    await backdrop.click({ position: { x: (box?.width ?? 0) - 8, y: (box?.height ?? 0) / 2 } });
+
+    await expect(panel).not.toHaveClass(/cngx-drawer-panel--open/);
+    await expect(backdrop).not.toHaveClass(/cngx-backdrop--visible/);
+  });
+});
+
 test.describe('common/layout/drawer: full-height modal drawer', () => {
   const route = 'common/layout/drawer/full-height-modal';
 
