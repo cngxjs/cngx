@@ -2,12 +2,11 @@ import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { CngxNavFooter } from '../../interactive/nav/nav-footer.directive';
-import { CngxNavHeader } from '../../interactive/nav/nav-header.directive';
-import { CngxNavIcon } from '../../interactive/nav/nav-icon.directive';
-import { CngxNavLink } from '../../interactive/nav/nav-link.directive';
-import { CngxNavName } from '../../interactive/nav/nav-name.directive';
-import { CngxSidebar, type CngxSidebarCollapsedAs, type CngxSidebarSide } from './sidebar.directive';
+import {
+  CngxSidebar,
+  type CngxSidebarCollapsedAs,
+  type CngxSidebarSide,
+} from './sidebar.directive';
 
 // Runs in a real Chromium (the `test-geometry` target): real flex layout, so
 // the reserved space is measured off the content lane beside the sidebar.
@@ -175,17 +174,16 @@ describe('CngxSidebar geometry', () => {
   });
 });
 
-// The base skin: the working-tree cngx-sidebar.css and cngx-nav.css on a
-// `.cngx-sidebar` host, no story CSS.
+// The base skin: the working-tree cngx-sidebar.css on a `.cngx-sidebar` host
+// with plain content, no story CSS.
 @Component({
   selector: 'cngx-sidebar-skin-geometry-host',
   standalone: true,
-  imports: [CngxSidebar, CngxNavLink, CngxNavIcon, CngxNavHeader, CngxNavFooter, CngxNavName],
+  imports: [CngxSidebar],
   encapsulation: ViewEncapsulation.None,
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
-    '../../theming/components/cngx-nav.css',
     '../../theming/components/cngx-sidebar.css',
   ],
   styles: `
@@ -214,13 +212,7 @@ describe('CngxSidebar geometry', () => {
         [collapsed]="collapsed()"
         [expandOnHover]="false"
       >
-        <cngx-nav-header><span cngxNavName>Acme</span></cngx-nav-header>
-        @for (row of rows; track row) {
-          <a cngxNavLink href="#{{ row }}" class="row-{{ row }}">
-            <span cngxNavIcon class="icon-{{ row }}">*</span>{{ row }}
-          </a>
-        }
-        <cngx-nav-footer><span cngxNavName>Jane Doe</span></cngx-nav-footer>
+        <p>Content</p>
       </aside>
       @if (side() === 'start') {
         <main class="skin-main"></main>
@@ -231,7 +223,6 @@ describe('CngxSidebar geometry', () => {
 class SkinHost {
   readonly side = signal<CngxSidebarSide>('start');
   readonly collapsed = signal(false);
-  readonly rows = Array.from({ length: 14 }, (_, i) => `r${i}`);
 }
 
 describe('cngx-sidebar.css', () => {
@@ -271,22 +262,17 @@ describe('cngx-sidebar.css', () => {
     expect(borders(side())).toEqual({ left: '1px', right: '0px' });
   });
 
+  it('sets no padding or gap for its content', () => {
+    const { side } = mount();
+    const cs = getComputedStyle(side());
+    expect(cs.padding).toBe('0px');
+    expect(cs.rowGap).toBe('normal');
+  });
+
   it('mirrors the border under RTL', () => {
     document.documentElement.setAttribute('dir', 'rtl');
     const { side } = mount();
     expect(borders(side())).toEqual({ left: '1px', right: '0px' });
-  });
-
-  it('keeps header and footer in view while the rows scroll', () => {
-    const { q, side } = mount();
-    const host = side();
-    expect(host.scrollHeight).toBeGreaterThan(host.clientHeight);
-    host.scrollTop = host.scrollHeight;
-    const box = host.getBoundingClientRect();
-    expect(Math.abs(q('.cngx-nav-header').getBoundingClientRect().top - box.top)).toBeLessThan(1.5);
-    expect(Math.abs(q('.cngx-nav-footer').getBoundingClientRect().bottom - box.bottom)).toBeLessThan(
-      1.5,
-    );
   });
 
   it('paints a peek above the content with a shadow', () => {
@@ -298,17 +284,5 @@ describe('cngx-sidebar.css', () => {
     expect(side().getAttribute('data-sidebar-state')).toBe('peek');
     expect(cs.boxShadow).not.toBe('none');
     expect(Number(cs.zIndex)).toBeGreaterThan(0);
-  });
-
-  it('keeps a railed row icon box at its expanded x and y, label clipped', () => {
-    const { q, set } = mount();
-    const expanded = q('.icon-r1').getBoundingClientRect();
-    set((h) => h.collapsed.set(true));
-    const railed = q('.icon-r1').getBoundingClientRect();
-    expect(Math.abs(railed.x - expanded.x)).toBeLessThan(0.5);
-    expect(Math.abs(railed.y - expanded.y)).toBeLessThan(0.5);
-    const row = q('.row-r1');
-    expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
-    expect(getComputedStyle(row).overflowX).toBe('clip');
   });
 });

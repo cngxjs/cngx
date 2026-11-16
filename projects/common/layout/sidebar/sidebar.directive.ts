@@ -105,13 +105,13 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
  * `--cngx-sidebar-peek-z-index`. The host renders `data-sidebar-state`
  * (`expanded | rail | hidden | peek`) and `data-sidebar-side` for skins.
  * The base skin is opt-in with the `cngx-sidebar` class (`cngx-sidebar.css`
- * in `@cngx/themes/cngx.css`): surface, border, sticky nav header and
- * footer, peek shadow and the rail crop of nav rows.
+ * in `@cngx/themes/cngx.css`): surface, border and peek shadow of the box,
+ * nothing for its content.
  *
  * The sidebar is a `CngxPanelTarget` and provides `CNGX_PANEL_TARGET`: a
  * `[cngxPanelTrigger]="sidebar"` mirrors `expanded` and toggles `collapsed`;
- * `action="peek"` peeks. It knows no nav model; `[cngxNavRailed]` adds the
- * rail tooltip and group flyout to the nav rows inside it.
+ * `action="peek"` peeks. It knows no nav model; `[cngxNavRailed]` crops the
+ * nav rows inside it on the rail and adds the rail tooltip and group flyout.
  *
  * ```html
  * <button type="button" [cngxPanelTrigger]="sidebar"></button>
