@@ -1,7 +1,8 @@
 /**
  * The source of record for the `track-b-css-not-imported` check: the cngx
  * `@Directive`s whose externalised CSS ships in the `cngx.components` cascade
- * layer of `@cngx/themes/cngx.css`. Importing any of these without importing the
+ * layer of `@cngx/themes/cngx.css`, plus the button family hosts, whose shared
+ * paint ships there too. Importing any of these without importing the
  * Track-B stylesheet leaves them unstyled.
  *
  * There is no machine-readable Track-A/B map in the workspace - the set lives
@@ -39,4 +40,13 @@ export const TRACK_B_SYMBOLS = [
   'CngxSlider',
   'CngxTooltip',
   'CngxFileDrop',
+  'CngxButton',
+  'CngxIconButton',
+  'CngxCloseButton',
+  'CngxMenuButton',
+  'CngxIconMenuButton',
+  'CngxPopoverAction',
+  'CngxPopoverDismiss',
+  'CngxPanelToggle',
+  'CngxActionButton',
 ];

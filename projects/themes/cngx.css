@@ -27,7 +27,9 @@
  *   `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
  *   `CngxNavFooter`, `CngxNavMark`, `CngxNavName`), `CngxRipple`, `CngxSlider`, `CngxTooltip`,
  *   `CngxFileDrop`, the field-affix atoms, and last the button family
- *   paint for `CngxButton`, `CngxIconButton` and every family host)
+ *   paint for `CngxButton`, `CngxIconButton`, `CngxCloseButton`,
+ *   `CngxMenuButton`, `CngxIconMenuButton`, `CngxPopoverAction`,
+ *   `CngxPopoverDismiss`, `CngxPanelToggle` and `CngxActionButton`)
  * - `cngx.theme` - reserved for consumer overrides
  * - `app` - reserved for consumer selectors
  *
