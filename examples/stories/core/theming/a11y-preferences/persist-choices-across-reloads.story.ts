@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>provideA11yPreferences(withDensity(...), withTextScale(...), withPersistence(key))</code> installs all five preference axes in one call and stores explicit picks under <code>key</code>, so a reload rehydrates them instead of the initials.',
   description:
-    'In an app the call sits once in <code>bootstrapApplication</code> providers. This examples app already installs the four axis reflectors at its root, so the demo hands the providers to <code>createIsolatedRoot()</code>, a demo fixture that builds a child environment injector with <code>DOCUMENT</code> pointed at a detached document: the reflectors stamp its <code>&lt;html&gt;</code>, not the live page. <code>CNGX_A11Y_STORAGE</code> points at <code>sessionStorage</code> instead of the default <code>localStorage</code>. <code>injectA11yPreferences()</code> returns the writable axis signals the toggles bind to. The initials are compact density and large text; motion and contrast stay <code>auto</code>, which removes their attributes so the OS queries stay in charge. Persistence writes only on a change, so the untouched initials are never stored. Pick a value, reload the page, and the pick comes back: a stored value overrides an axis only when it is a valid member of that axis. Clear the stored choices and reload to get the initials again.',
+    'In an app the call sits once in <code>bootstrapApplication</code> providers. This examples app already installs the four axis reflectors at its root, so the demo hands the providers to <code>createIsolatedRoot()</code>, a demo fixture that builds a child environment injector with <code>DOCUMENT</code> pointed at a detached document: the reflectors stamp its <code>&lt;html&gt;</code>, not the live page. <code>CNGX_A11Y_STORAGE</code> points at <code>sessionStorage</code> instead of the default <code>localStorage</code>. <code>injectA11yPreferences()</code> returns the writable axis signals the toggles bind to. The initials are compact density and large text; motion, contrast and touch targets stay <code>auto</code>, which removes their attributes so the media queries stay in charge. Persistence writes only on a change, so the untouched initials are never stored. Pick a value, reload the page, and the pick comes back: a stored value overrides an axis only when it is a valid member of that axis. Clear the stored choices and reload to get the initials again.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -36,7 +36,8 @@ export const STORY: DemoSpec = {
   protected readonly density = this.prefs.density;
   protected readonly textScale = this.prefs.textScale;
   protected readonly motion = this.prefs.motion;
-  protected readonly contrast = this.prefs.contrast;`,
+  protected readonly contrast = this.prefs.contrast;
+  protected readonly touchTarget = this.prefs.touchTarget;`,
   template: `
   <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-start">
     <cngx-button-toggle-group label="Density" [(value)]="density">
@@ -59,6 +60,11 @@ export const STORY: DemoSpec = {
       <button type="button" cngxButtonToggle value="more">More</button>
       <button type="button" cngxButtonToggle value="auto">Auto</button>
     </cngx-button-toggle-group>
+    <cngx-button-toggle-group label="Touch targets" [(value)]="touchTarget">
+      <button type="button" cngxButtonToggle value="on">On</button>
+      <button type="button" cngxButtonToggle value="off">Off</button>
+      <button type="button" cngxButtonToggle value="auto">Auto</button>
+    </cngx-button-toggle-group>
   </div>`,
   setupChrome: `
   protected readonly stampedAttributes = signal('-');
@@ -68,9 +74,10 @@ export const STORY: DemoSpec = {
     this.textScale();
     this.motion();
     this.contrast();
+    this.touchTarget();
     const html = this.root.document.documentElement;
     this.stampedAttributes.set(
-      ['data-density', 'data-text-size', 'data-motion', 'data-contrast']
+      ['data-density', 'data-text-size', 'data-motion', 'data-contrast', 'data-touch']
         .map((name) => name + '=' + (html.getAttribute(name) ?? '(absent)'))
         .join(', '),
     );
