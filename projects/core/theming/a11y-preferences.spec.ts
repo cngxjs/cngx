@@ -7,6 +7,7 @@ import { CNGX_CONTRAST } from './contrast';
 import { CNGX_DENSITY } from './density';
 import { CNGX_MOTION } from './motion';
 import { CNGX_TEXT_SCALE } from './text-scale';
+import { CNGX_TOUCH_TARGET } from './touch-target';
 import {
   CNGX_A11Y_STORAGE,
   injectA11yPreferences,
@@ -16,6 +17,7 @@ import {
   withMotion,
   withPersistence,
   withTextScale,
+  withTouchTarget,
 } from './a11y-preferences';
 
 // An empty host forces the root environment injector to initialise,
@@ -27,12 +29,12 @@ const attr = (name: string) => document.documentElement.getAttribute(name);
 
 describe('provideA11yPreferences', () => {
   afterEach(() => {
-    for (const name of ['data-density', 'data-text-size', 'data-motion', 'data-contrast']) {
+    for (const name of ['data-density', 'data-text-size', 'data-motion', 'data-contrast', 'data-touch']) {
       document.documentElement.removeAttribute(name);
     }
   });
 
-  it('installs all four axes at their defaults when no feature is passed', () => {
+  it('installs all five axes at their defaults when no feature is passed', () => {
     TestBed.configureTestingModule({ providers: [provideA11yPreferences()] });
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -41,6 +43,8 @@ describe('provideA11yPreferences', () => {
     expect(TestBed.inject(CNGX_TEXT_SCALE)()).toBe('md');
     expect(TestBed.inject(CNGX_MOTION)()).toBe('auto');
     expect(TestBed.inject(CNGX_CONTRAST)()).toBe('auto');
+    expect(TestBed.inject(CNGX_TOUCH_TARGET)()).toBe('auto');
+    expect(attr('data-touch')).toBeNull();
   });
 
   it('applies the supplied initial per axis and reflects each onto <html>', () => {
@@ -51,6 +55,7 @@ describe('provideA11yPreferences', () => {
           withTextScale('lg'),
           withMotion('reduced'),
           withContrast('more'),
+          withTouchTarget('on'),
         ),
       ],
     });
@@ -61,11 +66,13 @@ describe('provideA11yPreferences', () => {
     expect(TestBed.inject(CNGX_TEXT_SCALE)()).toBe('lg');
     expect(TestBed.inject(CNGX_MOTION)()).toBe('reduced');
     expect(TestBed.inject(CNGX_CONTRAST)()).toBe('more');
+    expect(TestBed.inject(CNGX_TOUCH_TARGET)()).toBe('on');
 
     expect(attr('data-density')).toBe('compact');
     expect(attr('data-text-size')).toBe('lg');
     expect(attr('data-motion')).toBe('reduced');
     expect(attr('data-contrast')).toBe('more');
+    expect(attr('data-touch')).toBe('on');
   });
 
   it('is last-wins on a duplicate axis feature', () => {
@@ -92,6 +99,7 @@ describe('provideA11yPreferences', () => {
     expect(prefs.textScale).toBe(TestBed.inject(CNGX_TEXT_SCALE));
     expect(prefs.motion).toBe(TestBed.inject(CNGX_MOTION));
     expect(prefs.contrast).toBe(TestBed.inject(CNGX_CONTRAST));
+    expect(prefs.touchTarget).toBe(TestBed.inject(CNGX_TOUCH_TARGET));
 
     // Writing through the bundle re-reflects onto <html>.
     prefs.contrast.set('more');
@@ -106,7 +114,7 @@ describe('provideA11yPreferences + withPersistence', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
-    for (const name of ['data-density', 'data-text-size', 'data-motion', 'data-contrast']) {
+    for (const name of ['data-density', 'data-text-size', 'data-motion', 'data-contrast', 'data-touch']) {
       document.documentElement.removeAttribute(name);
     }
   });
@@ -121,6 +129,31 @@ describe('provideA11yPreferences + withPersistence', () => {
 
     expect(TestBed.inject(CNGX_MOTION)()).toBe('reduced');
     expect(attr('data-motion')).toBe('reduced');
+  });
+
+  it('rehydrates a stored touch-target mode on init and reflects it', () => {
+    localStorage.setItem(KEY, JSON.stringify({ touchTarget: 'off' }));
+    TestBed.configureTestingModule({
+      providers: [provideA11yPreferences(withTouchTarget('on'), withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    expect(TestBed.inject(CNGX_TOUCH_TARGET)()).toBe('off');
+    expect(attr('data-touch')).toBe('off');
+  });
+
+  it('persists a runtime touch-target change', () => {
+    TestBed.configureTestingModule({
+      providers: [provideA11yPreferences(withPersistence())],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+
+    TestBed.inject(CNGX_TOUCH_TARGET).set('on');
+    fixture.detectChanges();
+
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual({ touchTarget: 'on' });
   });
 
   it('writes back a runtime set', () => {
