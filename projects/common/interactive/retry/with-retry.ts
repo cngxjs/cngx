@@ -1,6 +1,6 @@
 import { computed, signal, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import { firstValueFrom, isObservable } from 'rxjs';
+import { firstValueFrom, fromEvent, isObservable, takeUntil } from 'rxjs';
 
 import { CNGX_ASYNC_CANCELLED, type AsyncAction } from '../async-click/async-click.directive';
 
@@ -70,9 +70,10 @@ export interface RetryState {
  * abort the run stops at once: the awaited attempt and the backoff timer are
  * dropped, no further attempt starts, and the run settles the retry state
  * idle (`attempt` 0, `retrying` false, `lastError` kept), unless a newer run
- * already owns the state. The dropped attempt keeps running unless the
- * action passes the signal to `fetch` / `HttpClient`; its late outcome is
- * ignored. A run that ends without an outcome (superseded, `reset()`, or
+ * already owns the state. A dropped Observable attempt is unsubscribed, so
+ * an `HttpClient` request is cancelled. A dropped Promise attempt keeps
+ * running unless the action passes the signal on (`fetch`); its late
+ * outcome is ignored. A run that ends without an outcome (superseded, `reset()`, or
  * aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct
  * call without a signal (`saveWithRetry()`) has no destroy binding, but
  * `reset()` and a newer call still end it.
@@ -167,8 +168,12 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
 
       try {
         const result$ = action(run);
+        // An abort unsubscribes an Observable attempt: that is its
+        // cancellation, so an HttpClient request ends with the run.
         const work = isObservable(result$)
-          ? firstValueFrom(result$, { defaultValue: undefined })
+          ? firstValueFrom(result$.pipe(takeUntil(fromEvent(run, 'abort'))), {
+              defaultValue: undefined,
+            })
           : Promise.resolve(result$);
         await untilSettledOrAborted(work, run);
         if (cancelled()) {

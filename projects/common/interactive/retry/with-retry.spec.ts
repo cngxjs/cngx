@@ -1,3 +1,4 @@
+import { EMPTY, Observable, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_ASYNC_CANCELLED } from '../async-click/async-click.directive';
 import { createRetry, withRetry } from './with-retry';
@@ -268,6 +269,41 @@ describe('withRetry', () => {
       expect(signals[0]?.aborted).toBe(true);
       expect(signals[1]?.aborted).toBe(false);
       await expect(first).resolves.toBe(CNGX_ASYNC_CANCELLED);
+    });
+
+    it('reset() unsubscribes an unresolved Observable attempt', async () => {
+      let subscribed = 0;
+      let tornDown = 0;
+      const [retryable, state] = createRetry(
+        () =>
+          new Observable<void>(() => {
+            subscribed++;
+            return () => tornDown++;
+          }),
+      );
+      const result = retryable();
+      expect(subscribed).toBe(1);
+      expect(tornDown).toBe(0);
+
+      state.reset();
+      expect(tornDown).toBe(1);
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+    });
+
+    it('unsubscribes an Observable attempt once it emits', async () => {
+      let tornDown = 0;
+      const [retryable, state] = createRetry(
+        () =>
+          new Observable<string>((subscriber) => {
+            subscriber.next('ok');
+            return () => tornDown++;
+          }),
+      );
+      await expect(retryable()).resolves.toBeUndefined();
+      expect(tornDown).toBe(1);
+      expect(state.state.status()).toBe('success');
+      await expect(createRetry(() => of('x'))[0]()).resolves.toBeUndefined();
+      await expect(createRetry(() => EMPTY)[0]()).resolves.toBeUndefined();
     });
 
     it('a superseded run resolves CNGX_ASYNC_CANCELLED', async () => {
