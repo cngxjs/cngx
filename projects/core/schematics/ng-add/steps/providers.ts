@@ -67,7 +67,8 @@ export function switchesLanguageAtRuntime(facts: ProjectFacts, answers: Onboardi
   );
 }
 
-function isRtl(locale: string | undefined): boolean {
+/** Whether the locale's language is written right to left. */
+export function isRtl(locale: string | undefined): locale is string {
   const language = locale?.split(/[-_]/)[0]?.toLowerCase();
   return language !== undefined && RTL_LANGUAGES.has(language);
 }
@@ -133,13 +134,6 @@ function wantedProviders(facts: ProjectFacts, answers: OnboardingAnswers): reado
         module: '@cngx/core',
         args: [{ symbol: 'withPersistence', module: '@cngx/core' }],
       },
-    },
-    isRtl(facts.sourceLocale) && {
-      id: 'provider:direction',
-      subject: 'the rtl direction',
-      reason: `the source locale ${facts.sourceLocale ?? ''} is written right to left`,
-      lib: 'core',
-      call: { symbol: 'provideDirection', module: '@cngx/core', args: [{ literal: "'rtl'" }] },
     },
     answers.feedback && {
       id: 'provider:feedback',
@@ -239,8 +233,7 @@ function typeOnlyRepair(facts: ProjectFacts, provenance: Change['provenance']): 
 /**
  * Plans the root providers onboarding wires into the app config (or the
  * root NgModule; `addRootProvider` finds either): the a11y preferences, the
- * rtl direction for an RTL source locale, the feedback services, the
- * floating fallback and the language pack. A provider already present is
+ * feedback services, the floating fallback and the language pack. A provider already present is
  * skipped, so a second run plans nothing; an answer the selected packages
  * cannot serve gets a note. An existing language provider is never
  * rewritten: with the runtime switch it gets a note naming the one edit

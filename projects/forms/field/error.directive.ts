@@ -1,4 +1,4 @@
-import { computed, Directive } from '@angular/core';
+import { Directive, type Signal } from '@angular/core';
 import { injectFormFieldPresenter } from './inject-form-field-presenter';
 
 /**
@@ -7,24 +7,23 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * Use this when you want full control over error rendering.
  * For automatic error rendering from a message registry, use `CngxFieldErrors` instead.
  *
- * The container is always in the DOM. `aria-hidden` toggles based on the `showError` gate
- * (touched AND invalid), and the presenter references the container in the input's
- * `aria-describedby` only while the error is shown - a directly referenced node lands in
- * the accessible description even when `aria-hidden` (accname 1.2 §2A), so the reference
- * itself is the gate. `role="alert"` ensures screen readers announce errors. The host
- * carries `cngx-error`, which the field typography in `@cngx/themes/cngx.css` sizes and
- * tints like the `cngx-field-errors` list.
+ * The container is always in the DOM and keeps one shape: a polite status region
+ * (`role="status"`, `aria-live="polite"`), never `aria-hidden`. Only its content changes,
+ * so every screen reader announces the content when it appears. The presenter references
+ * the container in the input's `aria-describedby` and `aria-errormessage` only while
+ * {@link visible} is true. The host carries `cngx-error`, which the field typography in
+ * `@cngx/themes/cngx.css` sizes and tints like the `cngx-field-errors` list.
  *
- * Gate the content on the same condition as the container (touched AND invalid). Content
- * rendered while the container is `aria-hidden` is on screen but hidden from screen readers.
+ * Gate the content on {@link visible}, the field's own reveal gate (error strategy,
+ * reveal scope, touched). Content rendered outside it is on screen and spoken.
  *
  * ```html
  * <cngx-form-field [field]="form.email">
  *   <label cngxLabel>Email</label>
- *   <input cngxInput />
- *   <div cngxError>
- *     @if (form.email().touched() && form.email().invalid()) {
- *       @for (e of form.email().errors(); track e.kind) {
+ *   <input cngxInput [formField]="form.email" />
+ *   <div cngxError #err="cngxError">
+ *     @if (err.visible()) {
+ *       @for (e of form.email().errors(); track $index) {
  *         <span>{{ e.message }}</span>
  *       }
  *     }
@@ -49,18 +48,17 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
   host: {
     class: 'cngx-error',
     '[id]': 'presenter.errorId()',
-    '[attr.aria-hidden]': 'ariaHidden()',
-    '[attr.role]': 'role()',
-    '[attr.aria-live]': '"polite"',
+    role: 'status',
+    'aria-live': 'polite',
   },
 })
 export class CngxError {
   /** @internal */
   protected readonly presenter = injectFormFieldPresenter('cngxError');
 
-  /** @internal */
-  protected readonly ariaHidden = computed(() => !this.presenter.showError() || null);
-
-  /** @internal - role="alert" only when errors are visible */
-  protected readonly role = computed(() => (this.presenter.showError() ? 'alert' : null));
+  /**
+   * Whether the field's errors should show now: the field's `showError`
+   * gate (error strategy, reveal scope, touched). Gate the content on it.
+   */
+  readonly visible: Signal<boolean> = this.presenter.showError;
 }

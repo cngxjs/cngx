@@ -13,7 +13,7 @@ test.describe('field error basic story', () => {
     await input.focus();
     await input.blur();
     await expect(slot).toContainText('Username is required');
-    await expect(slot).toHaveAttribute('role', 'alert');
+    await expect(slot).toHaveAttribute('role', 'status');
   });
 });
 

@@ -2,7 +2,10 @@ import { Component, computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
+import { CngxInput } from '@cngx/forms/input';
 import { CngxFormErrors } from './form-errors.component';
+import { CngxFormField } from './form-field.component';
+import { CngxLabel } from './label.component';
 import { provideErrorMessages } from './form-field.token';
 import { provideFormFieldI18n, withFormFieldI18nLabels } from './i18n/form-field-i18n';
 import { createMockField, mockValidationError } from './testing/mock-field';
@@ -15,11 +18,19 @@ const MESSAGES: ErrorMessageMap = {
 
 @Component({
   template: `
-    <label id="cngx-email-label">E-mail address <span aria-hidden="true">*</span></label>
-    <label id="cngx-password-label">Password</label>
+    @if (fields().length === 2) {
+      <cngx-form-field [field]="fields()[0]">
+        <label cngxLabel>E-mail address <span aria-hidden="true">*</span></label>
+        <input cngxInput />
+      </cngx-form-field>
+      <cngx-form-field [field]="fields()[1]">
+        <label cngxLabel>Password</label>
+        <input cngxInput />
+      </cngx-form-field>
+    }
     <cngx-form-errors [fields]="fields()" [show]="show()" />
   `,
-  imports: [CngxFormErrors],
+  imports: [CngxFormErrors, CngxFormField, CngxLabel, CngxInput],
 })
 class TestHost {
   fields = signal<CngxFieldAccessor[]>([]);
@@ -183,7 +194,7 @@ describe('CngxFormErrors', () => {
     expect(text).not.toContain('serverRejected');
   });
 
-  it('sets role=alert when visible', () => {
+  it('stays a polite status region while visible', () => {
     const { fixture, emailMock } = setup();
     emailMock.ref.invalid.set(true);
     emailMock.ref.errors.set([mockValidationError('required')]);
@@ -193,7 +204,8 @@ describe('CngxFormErrors', () => {
 
     const el = fixture.debugElement.query(By.directive(CngxFormErrors))
       .nativeElement as HTMLElement;
-    expect(el.getAttribute('role')).toBe('alert');
+    expect(el.getAttribute('role')).toBe('status');
+    expect(el.getAttribute('aria-live')).toBe('polite');
   });
 
   it('error links are focusable', () => {

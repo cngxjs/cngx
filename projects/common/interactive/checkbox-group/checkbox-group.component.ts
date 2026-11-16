@@ -108,9 +108,11 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     '[attr.aria-label]': 'label()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-required]': 'required() || groupHost.fieldRequired() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
-    '[attr.aria-errormessage]': 'ariaInvalid() ? errorMessageId() : null',
+    '[attr.aria-errormessage]':
+      'ariaInvalid() ? (errorMessageId() ?? groupHost.fieldErrorMessage()) : null',
+    '[attr.aria-describedby]': 'groupHost.fieldDescribedBy()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-checkbox-group--horizontal]': 'orientation() === "horizontal"',
     '(focusin)': 'handleFocusIn()',
@@ -244,8 +246,9 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
 
   readonly someSelected = computed(() => this.selectedCount() > 0 && !this.allSelected());
 
-  private readonly groupHost = injectInteractiveGroupHost({
+  protected readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-checkbox-group-',
+    control: this,
     invalid: this.invalid,
     state: this.state,
     label: this.label,

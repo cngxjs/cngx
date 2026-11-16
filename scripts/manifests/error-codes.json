@@ -2261,6 +2261,23 @@
       ]
     },
     {
+      "code": "CNGX2030",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "A field label without a control",
+      "page": "core-concepts/error-codes/cngx2030.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2030.html",
+      "status": "active",
+      "files": ["projects/forms/field/label.component.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/label.component.ts",
+          "text": "[cngxLabel] the field \"${...}\" has no control, so the label names nothing. Put a field control (cngxInput, a select, a common form atom, a field bridge) inside the cngx-form-field."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

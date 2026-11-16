@@ -389,6 +389,7 @@ The descendant case still takes the directive plus the token; the self-reading c
 | `inlineSize` | `Signal<number>` | Border-box inline size, `0` before the first observation. |
 | `blockSize` | `Signal<number>` | Border-box block size, `0` before the first observation. |
 | `isReady` | `Signal<boolean>` | `true` once the first observation arrived. |
+| `observes` | `boolean` | `false` on a host without `ResizeObserver` (SSR, jsdom), where `isReady` never turns `true`. |
 | `property(name, on?, pseudo?)` | `Signal<string>` | Resolved custom property, re-read on every resize. Memoized per `(target, pseudo, name)`. |
 
 The directive sets **no** host style. Both container properties belong in the stylesheet next to the rules that query them: the name is API - an unnamed `@container` matches the nearest container of any name, so a consumer wrapping the component in their own container would silently re-target the query - and the type is a layout decision a skin must be able to drop with a plain rule instead of an `!important`.

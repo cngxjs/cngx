@@ -49,48 +49,27 @@ describe('CngxError', () => {
     expect(errorEl.getAttribute('aria-live')).toBe('polite');
   });
 
-  it('is aria-hidden when no error (untouched)', () => {
-    expect(errorEl.getAttribute('aria-hidden')).toBe('true');
-  });
-
-  it('is aria-hidden when invalid but untouched', () => {
+  it('is a status region and never aria-hidden while the errors are hidden', () => {
     ref.invalid.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(errorEl.getAttribute('aria-hidden')).toBe('true');
-  });
-
-  it('removes aria-hidden when touched and invalid', () => {
-    ref.touched.set(true);
-    ref.invalid.set(true);
-    fixture.detectChanges();
-    TestBed.flushEffects();
+    expect(errorEl.getAttribute('role')).toBe('status');
     expect(errorEl.getAttribute('aria-hidden')).toBeNull();
   });
 
-  it('has no role when errors are hidden', () => {
-    expect(errorEl.getAttribute('role')).toBeNull();
-  });
-
-  it('sets role=alert when errors are visible', () => {
+  it('keeps the same shape while the errors show and after they clear', () => {
     ref.touched.set(true);
     ref.invalid.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(errorEl.getAttribute('role')).toBe('alert');
-  });
-
-  it('removes role=alert when error clears', () => {
-    ref.touched.set(true);
-    ref.invalid.set(true);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(errorEl.getAttribute('role')).toBe('alert');
+    expect(errorEl.getAttribute('role')).toBe('status');
+    expect(errorEl.getAttribute('aria-hidden')).toBeNull();
 
     ref.invalid.set(false);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(errorEl.getAttribute('role')).toBeNull();
+    expect(errorEl.getAttribute('role')).toBe('status');
+    expect(errorEl.getAttribute('aria-hidden')).toBeNull();
   });
 
   it('renders projected content', () => {

@@ -17,9 +17,10 @@ import { nextUid } from '@cngx/core/utils';
  */
 export interface CngxSliderDisabledReason {
   /**
-   * `aria-describedby` value for the track host: the internal reason id
-   * while `disabled && reason` applies, else the consumer passthrough id,
-   * else `null`.
+   * `aria-describedby` value for the track host: the field's ids, the
+   * internal reason id while `disabled && reason` applies, and the consumer
+   * passthrough id, in that order; `null` when none applies. The track is
+   * the only writer of the attribute.
    */
   readonly resolvedDescribedBy: Signal<string | null>;
 }
@@ -45,8 +46,10 @@ export function createSliderDisabledReason(opts: {
   readonly idPrefix: string;
   readonly disabled: () => boolean;
   readonly reason: () => string;
-  /** Consumer `cngxDescribedBy` passthrough consulted while the reason does not apply. */
+  /** Consumer `cngxDescribedBy` passthrough, listed after the reason. */
   readonly describedBy: () => string | null;
+  /** Ids of a surrounding field that bridges the track, listed first. */
+  readonly fieldDescribedBy: () => string | null;
 }): CngxSliderDisabledReason {
   const hostEl = (inject(ElementRef) as ElementRef<HTMLElement>).nativeElement;
   const renderer = inject(Renderer2);
@@ -91,10 +94,10 @@ export function createSliderDisabledReason(opts: {
 
   return {
     resolvedDescribedBy: computed<string | null>(() => {
-      if (opts.disabled() && opts.reason()) {
-        return describedId;
-      }
-      return opts.describedBy();
+      const reasonId = opts.disabled() && opts.reason() ? describedId : null;
+      return (
+        [opts.fieldDescribedBy(), reasonId, opts.describedBy()].filter(Boolean).join(' ') || null
+      );
     }),
   };
 }

@@ -3,7 +3,7 @@
 
 export type { Tree } from './fs/tree';
 export { createMemoryTree } from './fs/memory-tree';
-export { BUILD_OUTPUT_DIRS, isAppSource, NON_SOURCE_DIRS } from './fs/source-files';
+export { BUILD_OUTPUT_DIRS, isAppSource, NON_SOURCE_DIRS, sourceRootOf } from './fs/source-files';
 export { listFiles } from './fs/walk';
 
 export { companionRange } from './manifest/companion';

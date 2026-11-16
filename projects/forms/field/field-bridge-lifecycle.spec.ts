@@ -135,16 +135,16 @@ describe('field bridge lifecycle - slider', () => {
   it('disables the slider with the field and enables it again', () => {
     const { fixture, host, el } = mount(SliderHost);
     const slider = track(fixture);
-    expect(slider.disabled()).toBe(false);
+    expect(slider.isDisabled()).toBe(false);
 
     host.locked.set(true);
     flush(fixture);
-    expect(slider.disabled()).toBe(true);
+    expect(slider.isDisabled()).toBe(true);
     expect(fieldHost(el).classList).toContain('cngx-field--disabled');
 
     host.locked.set(false);
     flush(fixture);
-    expect(slider.disabled()).toBe(false);
+    expect(slider.isDisabled()).toBe(false);
     expect(fieldHost(el).classList).not.toContain('cngx-field--disabled');
   });
 
@@ -198,16 +198,16 @@ describe('field bridge lifecycle - range slider', () => {
   it('disables the range slider with the field and enables it again', () => {
     const { fixture, host, el } = mount(RangeHost);
     const range = track(fixture);
-    expect(range.disabled()).toBe(false);
+    expect(range.isDisabled()).toBe(false);
 
     host.locked.set(true);
     flush(fixture);
-    expect(range.disabled()).toBe(true);
+    expect(range.isDisabled()).toBe(true);
     expect(fieldHost(el).classList).toContain('cngx-field--disabled');
 
     host.locked.set(false);
     flush(fixture);
-    expect(range.disabled()).toBe(false);
+    expect(range.isDisabled()).toBe(false);
     expect(fieldHost(el).classList).not.toContain('cngx-field--disabled');
   });
 

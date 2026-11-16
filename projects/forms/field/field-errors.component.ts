@@ -20,6 +20,11 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
  * the registered message functions; an unregistered kind shows the error's own
  * `message`, then the library message from `CNGX_FORM_FIELD_I18N`, never the raw kind.
  *
+ * The host is a polite status region from the first render (`role="status"`,
+ * `aria-live="polite"`, never `aria-hidden`); only the list inside it changes.
+ * A language flip does not re-voice it: shown messages keep the old language
+ * until the errors change, then the new copy is spoken.
+ *
  * Supports an optional custom template for per-error rendering while keeping
  * auto-resolution from the registry.
  *
@@ -55,7 +60,7 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
   standalone: true,
   imports: [NgTemplateOutlet],
   template: `
-    @for (err of resolvedErrors(); track err.kind) {
+    @for (err of resolvedErrors(); track $index) {
       @if (customTpl()) {
         <ng-container *ngTemplateOutlet="customTpl()!; context: err" />
       } @else {
@@ -71,9 +76,8 @@ import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[id]': 'presenter.errorId()',
-    '[attr.aria-hidden]': 'ariaHidden()',
-    '[attr.role]': 'role()',
-    '[attr.aria-live]': '"polite"',
+    role: 'status',
+    'aria-live': 'polite',
   },
 })
 export class CngxFieldErrors {
@@ -84,12 +88,6 @@ export class CngxFieldErrors {
 
   /** Optional custom template for each error item. */
   protected readonly customTpl = contentChild<TemplateRef<CngxFieldErrorContext>>(TemplateRef);
-
-  /** @internal */
-  protected readonly ariaHidden = computed(() => !this.presenter.showError() || null);
-
-  /** @internal */
-  protected readonly role = computed(() => (this.presenter.showError() ? 'alert' : null));
 
   /** @internal - resolved errors with messages, used by both default and custom templates. */
   protected readonly resolvedErrors = computed<CngxFieldErrorContext[]>(() => {
