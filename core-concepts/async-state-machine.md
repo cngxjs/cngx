@@ -263,7 +263,6 @@ Resolution priority for any one surface:
 
 Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, the recycler skeleton (`injectRecycler`), and the busy visual of `cngxAsyncClick` (`cngx-async--pending` and the button-family spinner). See **Gated surfaces** below for exactly what the gate holds and what stays immediate.
 
-
 ### Gated surfaces
 
 The gate keys two things off a run: a **pending** phase (the operation is in flight) and a **busy visual** (the pending phase has lasted past `showDelay` and is now painted). They are separate on purpose, and different surfaces read different ones.
