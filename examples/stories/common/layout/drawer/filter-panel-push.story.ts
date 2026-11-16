@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A <code>push</code> panel lays out next to the content, which stays in use: no scrim, no <code>inert</code>, no focus trap. The chips switch <code>[mode]</code> and <code>modality</code>, and the line under them says what the current combination blocks.',
   description:
-    'A filter panel next to an order list, the inspector use of a drawer. The Filters button is a [cngxPanelToggle]; it shows the panel glyph (chevron away from the panel while closed, toward it while open) while the panel pushes or overlays without blocking, and the menu bars and cross once a modal over panel blocks the page. The panel pushes the list aside, and the list keeps reacting to the filters while the panel is open. The modality input says how much of the page the open panel blocks. Whole page blocked (page) is a modal dialog: a scrim over the list, everything else inert, focus trapped. Only this area blocked (contained) puts the scrim and inert on the [cngxDrawer] host below the header only, so the header stays clickable and focus is not trapped. Nothing blocked (none) keeps everything operable. Mode default means page for over and none for push. push never blocks: page or contained with push resolve to none and warn CNGX1076 in the console, so the modality chips are disabled while push is selected. Escape and the close button close the panel in every combination; a press outside closes only the over panel, so working in the list keeps the push panel open.',
+    'A filter panel next to an order list, the inspector use of a drawer. The Filters button is a [cngxPanelToggle]; it shows the panel glyph (chevron away from the panel while closed, toward it while open) while the panel pushes or overlays without blocking, and the menu bars and cross once a modal over panel blocks the page. The panel pushes the list aside, and the list keeps reacting to the filters while the panel is open. The modality input says how much of the page the open panel blocks. Whole page blocked (page) is a modal dialog: a scrim over the list, everything else inert, focus trapped. Only this area blocked (contained) puts the scrim and inert on the [cngxDrawer] host below the header only, so the header stays clickable and focus is not trapped. Nothing blocked (none) keeps everything operable. Mode default means page for over and none for push. push never blocks: page or contained with push resolve to none and warn CNGX1076 in the console, so the modality chips are disabled while push is selected. The close button closes the panel in every combination, and so does Escape while focus is inside the [cngxDrawer] host (the panel or the list); on the Filters button in the Orders header, outside the host, Escape does nothing unless a page modal traps focus in the panel. A press outside closes only the over panel, so working in the list keeps the push panel open.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -106,7 +106,7 @@ export const STORY: DemoSpec = {
     if (this.mode() === 'push') {
       const ignored = this.modality() === 'page' || this.modality() === 'contained';
       return (
-        'push is never blocking: the panel sits beside the list, which stays clickable. No scrim, no inert, no focus trap.' +
+        'push is never blocking: the panel sits beside the list, which stays clickable. No scrim, no inert, no focus trap. Escape closes it while focus is in the panel or the list, not on the Filters button.' +
         (ignored ? ' The chosen ' + this.modality() + ' resolves to none and CNGX1076 warns in the console.' : '')
       );
     }
@@ -114,9 +114,9 @@ export const STORY: DemoSpec = {
       case 'page':
         return 'Whole page blocked: a scrim covers the list, the Orders header and the rest of the page are inert, and focus is trapped in the panel. Escape, the close button or a press on the scrim closes it.';
       case 'contained':
-        return 'Only this area blocked: the scrim and inert cover the list below the header; the Orders header and the rest of the page stay clickable. Focus moves into the panel, and Tab can leave it.';
+        return 'Only this area blocked: the scrim and inert cover the list below the header; the Orders header and the rest of the page stay clickable. Focus moves into the panel, and Tab can leave it; Escape closes it only while focus is in the panel.';
       default:
-        return 'Nothing blocked: no scrim, no inert, no focus trap. The list stays clickable, and a press on it closes the overlay panel.';
+        return 'Nothing blocked: no scrim, no inert, no focus trap. The list stays clickable, and a press on it closes the overlay panel. Escape closes it while focus is in the panel or the list, not on the Filters button.';
     }
   });
 
