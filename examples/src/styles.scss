@@ -239,6 +239,26 @@ body {
   padding: 8px 0 24px;
   border-block-end: 1px solid var(--cngx-ex-border);
 }
+// Layout stage: sidenav, nav rail, sidebar and drawer stories render an app
+// shell, so the artifact frames it at a fixed block size and the shell fills
+// it. Library selectors only, so no story owns it and no code panel shows it.
+// A sidenav layout docks from 64rem (auto mode) and needs the full width.
+.cngx-ex-artifact:has(:is(cngx-sidenav-layout, cngx-nav-rail, .cngx-sidebar, .cngx-drawer)) {
+  display: flex;
+  flex-direction: column;
+  block-size: var(--demo-stage-block-size, 420px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border));
+  border-radius: var(--cngx-radius-md, 6px);
+}
+.cngx-ex-artifact:has(:is(cngx-sidenav-layout, cngx-nav-rail, .cngx-sidebar, .cngx-drawer)) > * {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+.cngx-ex-artifact:has(cngx-sidenav-layout) {
+  --demo-artifact-max-width: none;
+}
 .cngx-ex-chrome {
   display: block;
   max-width: var(--demo-artifact-max-width, 640px);
@@ -1702,20 +1722,6 @@ cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sid
 .demo-sidenav__detail-actions {
   display: flex;
   gap: 0.5rem;
-}
-// Demo-only resizable frame for the sidenav auto-mode story. Auto mode docks
-// at a 64rem layout width, past the 640px artifact cap, so the artifact that
-// holds this frame drops the cap and the frame resizes freely across the
-// threshold. The layout inside fills the frame, so frame width = layout width.
-.cngx-ex-artifact:has(> .demo-sidenav-resizable) {
-  --demo-artifact-max-width: none;
-}
-// The full navigation story binds no mode, so its rail follows the layout
-// width class. Capped at 640px the layout stays compact and the rail becomes a
-// modal overlay that makes the rest of the page inert; uncapped it docks from
-// 64rem like an app shell.
-.cngx-ex-artifact:has(> .demo-sidenav-uncapped) {
-  --demo-artifact-max-width: none;
 }
 .demo-sidenav-resizable {
   resize: horizontal;
