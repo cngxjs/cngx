@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxNavRail: Icon-only rail',
+  title: 'CngxNavRail: Labels beside the icons, shown as a tooltip',
   subtitle:
     'A nav rail, not a collapsed sidenav: it never expands. Each row keeps its full label, clipped at the row edge, so it stays the accessible name; a tooltip repeats it on hover after a short delay and at once on keyboard focus.',
   description:
