@@ -24,6 +24,12 @@ import { describe, expect, it } from 'vitest';
  *   - `text-align: left|right`
  *   - `float: left|right`
  *   - a bare `left:` / `right:` inset declaration
+ *   - under `projects/forms/` only: a four-value `margin` / `padding`
+ *     shorthand whose right and left values differ (the side order is
+ *     top right bottom left, so the inline sides swap meaning in RTL; use
+ *     `margin-block` / `margin-inline` and their padding twins). Owner
+ *     decision 2026-11-11 keeps this rule to forms; ui and common are a
+ *     separate backlog row.
  *
  * Intentional physical STAYS (the allowlist) are matched by SELECTOR or VALUE
  * signature, never by line number - line anchors rot on the next edit. Each
@@ -185,6 +191,48 @@ const MARGIN_PADDING_BORDER_INSET =
   /(?<!safe-area-)\b(?:margin|padding|border|inset)-(?:left|right)(?:-[a-z]+)?\b/g;
 const PHYSICAL_CORNER_RADIUS = /\bborder-(?:top|bottom)-(?:left|right)-radius\b/g;
 const TEXT_ALIGN_FLOAT = /\b(?:text-align|float)\s*:\s*(?:left|right)\b/g;
+const BOX_SHORTHAND = /(?<![-\w])(margin|padding)\s*:\s*([^;{}]+)[;}]/g;
+
+/** Top-level whitespace split, so `var(--a, 0 4px)` stays one value. */
+function shorthandValues(value) {
+  const out = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of value.replace(/!important/i, '').trim()) {
+    if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    }
+    if (/\s/.test(ch) && depth === 0) {
+      if (current) {
+        out.push(current);
+      }
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current) {
+    out.push(current);
+  }
+  return out;
+}
+
+/** Four-value `margin` / `padding` shorthands with different inline sides. */
+function findAsymmetricShorthands(rawCss, rel = 'fixture') {
+  const css = stripComments(rawCss);
+  const offenders = [];
+  BOX_SHORTHAND.lastIndex = 0;
+  let m;
+  while ((m = BOX_SHORTHAND.exec(css)) !== null) {
+    const values = shorthandValues(m[2]);
+    if (values.length === 4 && values[1] !== values[3]) {
+      offenders.push(`${rel}: ${m[1]}: ${m[2].trim().slice(0, 60)}`);
+    }
+  }
+  return offenders;
+}
 
 /** Directional physical properties in `rawCss`, minus the allowlisted stays. */
 function findOffenders(rawCss, rel = 'fixture') {
@@ -267,6 +315,33 @@ describe('css logical-property (RTL) regression guard', () => {
         `(.cngx-popover-panel__arrow / *spinner* border-color / .cngx-ripple__wave left: 0 / ` +
         `.cngx-drawer-panel--left|right border):\n${offenders.join('\n')}`,
     ).toEqual([]);
+  });
+
+  it('forms CSS carries no four-value margin or padding shorthand with different inline sides', () => {
+    const offenders = [];
+    for (const { full, rel } of STYLE_FILES) {
+      if (rel.startsWith('/projects/forms/')) {
+        offenders.push(...findAsymmetricShorthands(readFileSync(full, 'utf8'), rel));
+      }
+    }
+    expect(
+      offenders,
+      `these shorthands pin the inline sides physically - split them into ` +
+        `margin-block / margin-inline (or the padding twins):\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('detects an asymmetric four-value shorthand and passes the symmetric forms', () => {
+    expect(findAsymmetricShorthands('.x { padding: 0 0 0 1.25em; }')).toHaveLength(1);
+    expect(findAsymmetricShorthands('.x { margin: 4px 8px 4px 2px; }')).toHaveLength(1);
+    expect(findAsymmetricShorthands('.x { margin: 0 var(--a, 8px) 0 0; }')).toHaveLength(1);
+    expect(findAsymmetricShorthands('.x { padding: 4px 8px; }')).toEqual([]);
+    expect(findAsymmetricShorthands('.x { padding: 4px 8px 2px; }')).toEqual([]);
+    expect(
+      findAsymmetricShorthands('.x { padding: 1px var(--a, 0 4px) 2px var(--a, 0 4px); }'),
+    ).toEqual([]);
+    expect(findAsymmetricShorthands('.x { padding-inline: 1.25em 0; }')).toEqual([]);
+    expect(findAsymmetricShorthands('/* padding: 0 0 0 1em; */ .x { color: red; }')).toEqual([]);
   });
 
   it('detects a reintroduced directional property and honours the allowlist', () => {

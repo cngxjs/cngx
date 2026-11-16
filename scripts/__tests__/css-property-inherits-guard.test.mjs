@@ -21,11 +21,15 @@ import { describe, expect, it } from 'vitest';
  * fix is `inherits: true` (or a SET at the element that reads it), never an
  * allow-list entry: the root assignment is dead by construction.
  *
- * A bare `inherits: false` registration is not flagged on purpose: the
+ * Repo-wide, a bare `inherits: false` registration is not flagged: the
  * shipped registrations scope a token to the element that sets it, which is
  * the point of the flag. The defect is the `:root` / `html` assignment of such
  * a token, which this guard catches; the select rule (OD4) pins
- * `inherits: true` for the one family where the trap shipped.
+ * `inherits: true` for the one family where the trap shipped. Under
+ * `projects/forms/` every `inherits: false` registration is additionally an
+ * exact-set allowlist row (field review T5): a new one fails until it is
+ * listed, and a listed one that is gone or inherits again fails as stale.
+ * Owner decision 2026-11-11 keeps this to forms.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -101,6 +105,40 @@ function rootAssignments(source) {
   }
   return found;
 }
+
+// Every forms token registered with `inherits: false`. Each one scopes a
+// value to the element that SETs it (the filter-builder and file-drop hosts,
+// the field box gap), so a descendant reads the registered initial instead of
+// an ancestor's value.
+const FORMS_NON_INHERITING = [
+  '/projects/forms/filter-builder/filter-builder-row.component.css --cngx-filter-builder-empty-row-opacity',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-padding',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-bg',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-group-padding',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-radius',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-indent',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-negated-border-style',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-empty-padding',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-gap',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-padding',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-bg',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-border-width',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-radius',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-focus-outline',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-focus-outline-offset',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-disabled-opacity',
+  '/projects/forms/filter-builder/filter-builder.component.css --cngx-filter-builder-action-glyph-size',
+  '/projects/forms/theming/components/cngx-field-affix.css --cngx-field-affix-gap',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-border-width',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-border-color',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-radius',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-padding',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-transition',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-active-border',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-active-bg',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-success-border',
+  '/projects/forms/theming/components/cngx-file-drop.css --cngx-file-drop-uploading-opacity',
+];
 
 // --- the suite -------------------------------------------------------------
 
@@ -180,6 +218,36 @@ describe('select @property inherits (OD4)', () => {
     const nonInheriting = selectNonInheriting();
     const stale = [...SELECT_INHERITS_FALSE_EXEMPT.keys()].filter((name) => !nonInheriting.has(name));
     expect(stale, 'an exempt token is no longer inherits: false - drop its row').toEqual([]);
+  });
+});
+
+describe('forms @property inherits: false allowlist (field review T5)', () => {
+  function formsNonInheriting() {
+    const rows = [];
+    for (const { rel, source } of STYLE_FILES) {
+      if (!rel.startsWith('/projects/forms/') || /\.spec\./.test(rel)) {
+        continue;
+      }
+      for (const name of nonInheritingProperties(source)) {
+        rows.push(`${rel} ${name}`);
+      }
+    }
+    return rows;
+  }
+
+  it('registers a forms token inherits: false only when it is listed', () => {
+    const listed = new Set(FORMS_NON_INHERITING);
+    const offenders = formsNonInheriting().filter((row) => !listed.has(row));
+    expect(
+      offenders,
+      `these forms @property tokens are inherits: false, so an ancestor value never reaches a descendant (register inherits: true, or list the row with the element that SETs it):\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('keeps the allowlist exact', () => {
+    const found = new Set(formsNonInheriting());
+    const stale = FORMS_NON_INHERITING.filter((row) => !found.has(row));
+    expect(stale, 'a listed token is gone or inherits again - drop its row').toEqual([]);
   });
 });
 

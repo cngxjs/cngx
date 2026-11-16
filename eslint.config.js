@@ -332,7 +332,8 @@ module.exports = tseslint.config(
     },
 
     // Dead-config guard. Every field of an exported Cngx*Config /
-    // Cngx*I18n / Cngx*Labels / Cngx*Templates interface needs at least
+    // Cngx*I18n / Cngx*Labels / Cngx*Templates interface, and of
+    // FormFieldConfig (named before the prefix rule), needs at least
     // one reader outside its declaration file - a field nobody reads is
     // dead API surface (declared, documented, defaulted, never wired).
     // Cross-file by design: the rule scans projects/**/*.ts (cached per
@@ -342,6 +343,7 @@ module.exports = tseslint.config(
         plugins: { local: localRules },
         rules: {
             'local/config-field-reader-guard': ['error', {
+                interfacePattern: '^(Cngx.*(Config|I18n|Labels|Templates)|FormFieldConfig)$',
                 ignore: [
                     // Read dynamically via `this.config.i18n[logic]`
                     // (filter-builder-body.component.ts) - invisible to the
