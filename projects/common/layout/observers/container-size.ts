@@ -9,7 +9,7 @@ import {
   type Signal,
 } from '@angular/core';
 
-import { createResizeSignal, type ResizeObserverHost } from './resize-signal';
+import { canObserveResize, createResizeSignal, type ResizeObserverHost } from './resize-signal';
 
 /**
  * Reactive read of a query container: its size, and the custom properties its
@@ -24,6 +24,11 @@ export interface CngxContainerSize {
   readonly blockSize: Signal<number>;
   /** `true` once the first observation has arrived. */
   readonly isReady: Signal<boolean>;
+  /**
+   * `false` on a host without `ResizeObserver` (SSR, jsdom): no observation
+   * ever arrives there, so `isReady` stays `false` for good.
+   */
+  readonly observes: boolean;
   /**
    * The resolved value of a custom property, re-read on every resize of the
    * container.
@@ -131,7 +136,7 @@ export function createContainerSize(
     return value;
   };
 
-  return { inlineSize, blockSize, isReady, property };
+  return { inlineSize, blockSize, isReady, observes: canObserveResize(win), property };
 }
 
 /**

@@ -11,6 +11,13 @@ export interface ResizeObserverHost {
   ResizeObserver?: typeof ResizeObserver;
 }
 
+/** @internal Whether `host` can observe at all: false on SSR and jsdom hosts. */
+export function canObserveResize(
+  host: ResizeObserverHost | null | undefined,
+): host is Required<ResizeObserverHost> {
+  return typeof host?.ResizeObserver === 'function';
+}
+
 /**
  * Subscribes `apply` to size changes of `element` on `host`.
  *
@@ -39,7 +46,7 @@ export function observeResize(
   box: ResizeObserverBoxOptions,
   apply: (entry: ResizeObserverEntry) => void,
 ): () => void {
-  if (!host || typeof host.ResizeObserver !== 'function') {
+  if (!canObserveResize(host)) {
     return () => undefined;
   }
   const observer = new host.ResizeObserver((entries) => apply(entries[0]));

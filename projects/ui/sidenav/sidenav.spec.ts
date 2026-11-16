@@ -1950,3 +1950,57 @@ describe('CngxSidenav rail pieces', () => {
     named();
   });
 });
+
+@Component({
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav ariaLabel="Nav">Nav</cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+})
+class ReadyGateHost {}
+
+describe('CngxSidenavLayout ready gate', () => {
+  const READY = 'cngx-sidenav-layout--ready';
+
+  function mount(): {
+    fixture: ReturnType<typeof TestBed.createComponent<ReadyGateHost>>;
+    layout: HTMLElement;
+  } {
+    const fixture = TestBed.createComponent(ReadyGateHost);
+    fixture.detectChanges();
+    const layout = (fixture.nativeElement as HTMLElement).querySelector('cngx-sidenav-layout');
+    if (!layout) {
+      throw new Error('layout did not render');
+    }
+    return { fixture, layout: layout as HTMLElement };
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('holds the gate until the container reports a size', () => {
+    const roMock = createResizeObserverMock();
+    roMock.install(window);
+    const { fixture, layout } = mount();
+    fixture.detectChanges();
+    expect(layout.classList.contains(READY)).toBe(false);
+
+    roMock.triggerResize({
+      borderBoxSize: [{ inlineSize: 900, blockSize: 600 }],
+    } as unknown as ResizeObserverEntry);
+    fixture.detectChanges();
+    expect(layout.classList.contains(READY)).toBe(true);
+  });
+
+  it('opens the gate after the first render on a host without ResizeObserver', () => {
+    vi.stubGlobal('ResizeObserver', undefined);
+    const { fixture, layout } = mount();
+    fixture.detectChanges();
+    expect(layout.classList.contains(READY)).toBe(true);
+  });
+});
