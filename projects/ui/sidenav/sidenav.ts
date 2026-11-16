@@ -197,6 +197,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[style.--cngx-sidenav-mini-width]': 'miniWidth() ?? null',
     '[style.--cngx-sidebar-size]': 'width()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth() ?? null',
+    '[attr.data-nav-railed]': "railed() ? '' : null",
   },
   imports: [CngxResizable],
   template: `
@@ -529,7 +530,7 @@ export class CngxSidenav
    * Whether the sidenav rests as a collapsed rail. Peek, expanded and hidden
    * are not railed, so tooltip and flyout attach only to the narrow rest.
    */
-  private readonly railed = computed(() => this.sidebar.state() === 'rail');
+  protected readonly railed = computed(() => this.sidebar.state() === 'rail');
 
   private readonly navRailConfig = injectNavRailConfig();
 

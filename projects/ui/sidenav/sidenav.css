@@ -50,9 +50,10 @@
  *   rail's edge; tinted on hover / drag via
  *   `--cngx-sidenav-resize-handle-color`
  *
- * The collapsed rail hides the row label text, `[cngxNavLabel]`,
- * `[cngxNavGroup]` and `[cngxNavBadge]`; the row icon or its letter
- * fallback stays.
+ * On the collapsed rail the host renders `data-nav-railed`, and
+ * `cngx-nav.css` crops the rows to their icon or letter, paints no section
+ * label and clips the header and footer. This sheet adds only the reveal
+ * timing of label, badge, chevron and name.
  *
  * **Nav-class contract**
  *
@@ -612,14 +613,6 @@
     scrollbar-width: none;
   }
 
-  /* Collapsed rail: clip header/footer; the mark keeps its x at the row icon x. */
-  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-header,
-  cngx-sidenav[data-sidebar-state='rail'] .cngx-nav-footer {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: clip;
-  }
-
   /* The name next to the mark fades like a row label: in after the reveal
      delay, out at once. Opacity, so it stays in the accessibility tree. */
   cngx-sidenav :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
@@ -627,32 +620,10 @@
       var(--cngx-sidenav-transition-easing, ease) var(--_cngx-sidenav-reveal-delay, 150ms);
   }
 
+  /* On the rail the name is gone at once (cngx-nav.css hides it under
+     data-nav-railed). */
   cngx-sidenav[data-sidebar-state='rail'] :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
-    opacity: 0;
     transition: opacity 0s;
-  }
-
-  /* Section labels keep their box and their text for assistive technology
-     but paint none, so the rows keep their y when the rail collapses. */
-  cngx-sidenav[data-sidebar-state='rail'] [cngxNavLabel] {
-    overflow: clip;
-    white-space: nowrap;
-    clip-path: inset(100%);
-  }
-
-  /*
-   * Collapsed-rail rows and group heads: the label keeps its font size, so the
-   * row keeps its expanded height, and a gap of the whole rail width pushes the
-   * label, a badge and the group chevron past the clipped row end (a
-   * percentage gap would resolve against the narrow content box); the letter
-   * fallback or the icon (cngx-nav.css) stays in the icon box. Rows inside a
-   * group content are left alone: the flyout shows them at full width.
-   */
-  cngx-sidenav[data-sidebar-state='rail']
-    :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
-    overflow: clip;
-    white-space: nowrap;
-    gap: var(--cngx-sidenav-mini-width, 56px);
   }
 
   /* On the rail a group content is a popover: closed it leaves the flow, open
