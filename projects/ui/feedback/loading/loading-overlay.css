@@ -152,11 +152,13 @@
       outline-offset: 2px;
       border-radius: 50%;
     }
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-loading-overlay__backdrop {
-        transition: none;
-      }
+  /* Outside @scope and keyed on the root, so data-motion='full' on <html>
+     keeps the backdrop fade under an OS reduce. */
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .cngx-loading-overlay .cngx-loading-overlay__backdrop {
+      transition: none;
     }
   }
 }
