@@ -113,7 +113,7 @@ readonly isOpen = signal(false);
 Add the class `cngx-drawer` next to `cngxDrawer` and the drawer takes its base skin from `@cngx/themes/cngx.css`:
 
 - The host becomes a clipping flex container. A panel sits absolute on its side (`position`), on a surface with a border toward the content, and slides in from off the host.
-- In `push` mode the panel stays in the flow and grows from zero size, so the `[cngxDrawerContent]` element beside it, which fills the rest, narrows. A top or bottom push panel stacks with the content in a column.
+- In `push` mode the panel slides in at full size like `over`, and the `[cngxDrawerContent]` element, which fills the rest, moves aside by the panel size (`--cngx-drawer-panel-inline-size` or `--cngx-drawer-panel-block-size`) on the panel's side. The panel never narrows, so its content does not rewrap while it moves. `[cngxDrawerContent]` writes `data-drawer-push` with that side while a push panel is open.
 - While a modal panel is open (`modality` `page` or `contained`), the host paints a scrim over itself; a press on it closes the drawer. The panel sits above the scrim.
 
 ```html
@@ -134,7 +134,7 @@ The host needs a size: the panel and the scrim cover exactly the host box. `[cng
 | `--cngx-drawer-panel-bg` | `--cngx-color-surface` | Panel surface. |
 | `--cngx-drawer-panel-border-color` | `--cngx-color-border` | Border toward the content. |
 | `--cngx-drawer-panel-border-width` | `1px` | Width of that border. |
-| `--cngx-drawer-panel-duration` | `--cngx-duration-base` | Slide and push size transition. |
+| `--cngx-drawer-panel-duration` | `--cngx-duration-base` | Slide and push margin transition. |
 | `--cngx-drawer-panel-z-index` | `2` | Stacking of the panel, above the scrim. |
 | `--cngx-drawer-scrim-bg` | `--cngx-backdrop-bg` | Scrim colour. |
 | `--cngx-drawer-scrim-duration` | `--cngx-duration-base` | Scrim fade. |

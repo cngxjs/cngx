@@ -6,10 +6,12 @@
  * The panel (`CngxDrawerPanel`) sits absolute on its side of the host (the
  * physical `.cngx-drawer-panel--left` / `--right` / `--top` / `--bottom`
  * classes), on a surface with a border toward the content, and slides in
- * from off the host. In `push` mode it stays in the flow and grows from zero
- * size, so the content beside it (`.cngx-drawer-content`, which fills the
- * rest of the host's flex row, or column for a top or bottom push panel)
- * narrows. The host clips what lies outside it, so a closed panel paints
+ * from off the host. In `push` mode the panel slides the same way at its
+ * full size, and the content (`.cngx-drawer-content`, which fills the rest
+ * of the host's flex row) moves aside by the panel size on that side
+ * (`data-drawer-push`, written by `CngxDrawerContent` while a push panel is
+ * open). The panel never narrows, so nothing inside it rewraps while it
+ * moves. The host clips what lies outside it, so a closed panel paints
  * nothing.
  *
  * The host paints a scrim over itself while a modal `CngxDrawerPanel` inside it is open
@@ -35,7 +37,8 @@
  * - `--cngx-drawer-panel-bg` -> `--cngx-color-surface`
  * - `--cngx-drawer-panel-border-color` -> `--cngx-color-border`
  * - `--cngx-drawer-panel-border-width` -> `1px`
- * - `--cngx-drawer-panel-duration` -> `--cngx-duration-base`
+ * - `--cngx-drawer-panel-duration` -> `--cngx-duration-base` (the slide
+ *   and the push margin of the content)
  * - `--cngx-drawer-panel-z-index` -> `2`
  * - `--cngx-drawer-scrim-bg` -> `--cngx-backdrop-bg` (the same scrim
  *   colour as `CngxBackdrop`, including its Material bridge)
@@ -52,11 +55,6 @@
       position: relative;
       display: flex;
       overflow: clip;
-    }
-
-    /* A top or bottom push panel stacks with the content. */
-    :scope:has(> .cngx-drawer-panel--push:is(.cngx-drawer-panel--top, .cngx-drawer-panel--bottom)) {
-      flex-direction: column;
     }
 
     .cngx-drawer-panel {
@@ -107,39 +105,29 @@
       transform: none;
     }
 
-    /* Push: in the flow beside the content, growing from zero size. */
-    .cngx-drawer-panel--push {
-      position: relative;
-      inset: auto;
-      flex: 0 0 auto;
-      overflow: hidden;
-      transform: none;
-      transition:
-        width var(--cngx-drawer-panel-duration, var(--cngx-duration-base, 200ms)) ease,
-        height var(--cngx-drawer-panel-duration, var(--cngx-duration-base, 200ms)) ease,
-        border-width var(--cngx-drawer-panel-duration, var(--cngx-duration-base, 200ms)) ease;
-    }
-
-    .cngx-drawer-panel--push:not(.cngx-drawer-panel--open):is(
-        .cngx-drawer-panel--left,
-        .cngx-drawer-panel--right
-      ) {
-      width: 0;
-      border-width: 0;
-    }
-
-    .cngx-drawer-panel--push:not(.cngx-drawer-panel--open):is(
-        .cngx-drawer-panel--top,
-        .cngx-drawer-panel--bottom
-      ) {
-      height: 0;
-      border-width: 0;
-    }
-
     .cngx-drawer-content {
       flex: 1 1 auto;
       min-width: 0;
       min-height: 0;
+      transition: margin var(--cngx-drawer-panel-duration, var(--cngx-duration-base, 200ms)) ease;
+    }
+
+    /* Push: the panel slides at full size like over, the content gives way
+       by the panel size. Physical sides, as the panel classes. */
+    .cngx-drawer-content[data-drawer-push='left'] {
+      margin-left: var(--cngx-drawer-panel-inline-size, 220px);
+    }
+
+    .cngx-drawer-content[data-drawer-push='right'] {
+      margin-right: var(--cngx-drawer-panel-inline-size, 220px);
+    }
+
+    .cngx-drawer-content[data-drawer-push='top'] {
+      margin-top: var(--cngx-drawer-panel-block-size, 120px);
+    }
+
+    .cngx-drawer-content[data-drawer-push='bottom'] {
+      margin-bottom: var(--cngx-drawer-panel-block-size, 120px);
     }
 
     :scope::after {

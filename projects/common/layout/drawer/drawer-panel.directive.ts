@@ -75,8 +75,8 @@ export type DrawerMode = 'over' | 'push';
  * `cngx-drawer-panel--contained` for the latter). The opt-in stylesheet
  * `cngx-drawer.css` skins the panel from its classes: add the `cngx-drawer`
  * class to the `[cngxDrawer]` host and the panel sits on its `position`
- * side with a surface and a border toward the content, slides in (or, in
- * `push` mode, grows in the flow), and the host shows a scrim over itself
+ * side with a surface and a border toward the content, slides in (in
+ * `push` mode the content moves aside by its size), and the host shows a scrim over itself
  * while a modal panel inside it is open (`--cngx-drawer-scrim-bg`, default
  * `--cngx-backdrop-bg`). A press on the scrim is a press outside the panel
  * and closes the drawer. The panel sits above the scrim

@@ -19,12 +19,12 @@ type Side = 'left' | 'right' | 'top' | 'bottom';
       inline-size: 600px;
       block-size: 300px;
     }
-    .still .cngx-drawer-panel {
+    .still :is(.cngx-drawer-panel, .cngx-drawer-content) {
       transition: none;
     }
   `,
   template: `
-    <div class="cngx-drawer skin-host still">
+    <div class="cngx-drawer skin-host" [class.still]="still()">
       <nav
         class="cngx-drawer-panel"
         [class.cngx-drawer-panel--left]="side() === 'left'"
@@ -36,7 +36,10 @@ type Side = 'left' | 'right' | 'top' | 'bottom';
         [class.cngx-drawer-panel--modal]="modal()"
         [class.cngx-drawer-panel--open]="open()"
       ></nav>
-      <main class="cngx-drawer-content"></main>
+      <main
+        class="cngx-drawer-content"
+        [attr.data-drawer-push]="push() && open() ? side() : null"
+      ></main>
     </div>
   `,
 })
@@ -45,6 +48,7 @@ class SkinHost {
   readonly push = signal(false);
   readonly modal = signal(false);
   readonly open = signal(false);
+  readonly still = signal(true);
 }
 
 describe('cngx-drawer.css panel skin', () => {
@@ -107,17 +111,55 @@ describe('cngx-drawer.css panel skin', () => {
     expect(panel().borderRightWidth).toBe('0px');
   });
 
-  it('lays a push panel out beside the content and takes no space while closed', () => {
-    const { q, set } = mount((h) => h.push.set(true));
-    const host = () => q('.skin-host').getBoundingClientRect();
-    const content = () => q('.cngx-drawer-content').getBoundingClientRect();
-    expect(q('.cngx-drawer-panel').getBoundingClientRect().width).toBe(0);
-    expect(content().left).toBe(host().left);
-    set((h) => h.open.set(true));
-    const panel = q('.cngx-drawer-panel').getBoundingClientRect();
-    expect(panel.width).toBe(220);
-    expect(content().left).toBe(panel.right);
-    expect(content().right).toBe(host().right);
+  for (const side of ['left', 'right', 'top', 'bottom'] as const) {
+    it(`slides a ${side} push panel at full size and moves the content aside by it`, () => {
+      const { q, set } = mount((h) => {
+        h.side.set(side);
+        h.push.set(true);
+      });
+      const host = () => q('.skin-host').getBoundingClientRect();
+      const panel = () => q('.cngx-drawer-panel').getBoundingClientRect();
+      const content = () => q('.cngx-drawer-content').getBoundingClientRect();
+      const horizontal = side === 'left' || side === 'right';
+      const size = horizontal ? 220 : 120;
+      expect(outside(panel(), host())).toBe(true);
+      expect(horizontal ? panel().width : panel().height).toBe(size);
+      expect(content()[side]).toBe(host()[side]);
+      set((h) => h.open.set(true));
+      const p = panel();
+      expect(horizontal ? p.width : p.height).toBe(size);
+      const opposite = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' } as const;
+      expect(content()[side]).toBe(p[opposite[side]]);
+      expect(content()[opposite[side]]).toBe(host()[opposite[side]]);
+    });
+  }
+
+  it('keeps the push panel width while it closes', () => {
+    const { q, set } = mount((h) => {
+      h.push.set(true);
+      h.open.set(true);
+    });
+    const panel = q('.cngx-drawer-panel');
+    // Settle the open style first, or there is no before-change style to
+    // transition from.
+    panel.getBoundingClientRect();
+    set((h) => {
+      h.still.set(false);
+      h.open.set(false);
+    });
+    const hostLeft = q('.skin-host').getBoundingClientRect().left;
+    const slide = panel.getAnimations().find((a) => (a as CSSTransition).transitionProperty === 'transform');
+    expect(slide).toBeDefined();
+    slide!.pause();
+    const duration = Number(slide!.effect!.getComputedTiming().duration);
+    for (const t of [0.25, 0.5, 0.75]) {
+      slide!.currentTime = duration * t;
+      const r = panel.getBoundingClientRect();
+      expect(r.width).toBe(220);
+      // Mid-slide: neither fully in nor fully out.
+      expect(r.left).toBeLessThan(hostLeft - 0.5);
+      expect(r.right).toBeGreaterThan(hostLeft + 0.5);
+    }
   });
 
   it('paints an open modal panel above the scrim', () => {

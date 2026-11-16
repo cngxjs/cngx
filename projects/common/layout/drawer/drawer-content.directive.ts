@@ -5,7 +5,10 @@ import type { CngxDrawer } from './drawer.directive';
  * Marks the main content area adjacent to a drawer panel.
  *
  * Adds a CSS class when the drawer is open so the consumer can offset
- * the content via CSS transitions or transforms.
+ * the content via CSS transitions or transforms. While a `push` panel is
+ * open it also writes `data-drawer-push` with the panel's side (`left`,
+ * `right`, `top`, `bottom`); `cngx-drawer.css` moves the content aside by
+ * the panel size from it, so the panel itself slides at full size.
  *
  * ```html
  * <main [cngxDrawerContent]="drawer">
@@ -32,6 +35,7 @@ import type { CngxDrawer } from './drawer.directive';
   host: {
     '[class.cngx-drawer-content]': 'true',
     '[class.cngx-drawer-content--shifted]': 'isOpen()',
+    '[attr.data-drawer-push]': 'pushSide()',
   },
 })
 export class CngxDrawerContent {
@@ -40,4 +44,11 @@ export class CngxDrawerContent {
 
   /** Whether the drawer is currently open (derived from the drawer ref). */
   readonly isOpen = computed(() => this.drawerRef().opened());
+
+  /** Side of the open `push` panel the content gives way to; `null` otherwise. */
+  protected readonly pushSide = computed(() => {
+    const drawer = this.drawerRef();
+    const pushing = drawer.opened() && drawer.mode() === 'push';
+    return pushing ? drawer.side() : null;
+  });
 }

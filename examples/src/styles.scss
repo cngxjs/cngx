@@ -2514,20 +2514,6 @@ button.chip.demo-chip--copied {
 .demo-drawer-panel.cngx-drawer-panel--bottom.cngx-drawer-panel--open {
   transform: translateY(0);
 }
-.demo-drawer-panel--static {
-  position: relative;
-  inset: auto;
-  transform: none;
-  flex: 0 0 auto;
-  overflow: hidden;
-  transition:
-    width 0.25s ease,
-    border-right-width 0.25s ease;
-}
-.demo-drawer-panel--static:not(.cngx-drawer-panel--open) {
-  width: 0;
-  border-right-width: 0;
-}
 .demo-drawer-panel-content {
   display: flex;
   flex-direction: column;
