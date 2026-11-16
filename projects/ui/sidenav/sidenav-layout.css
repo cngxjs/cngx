@@ -18,9 +18,10 @@
  *
  * On `cngx-sidenav-layout`:
  *
- * - `--ready` - added once the first render has settled, including the
- *   rails' width class, to enable transitions and
- *   prevent the open-state flash on mount
+ * - `--ready` - added once the settled width class has been painted:
+ *   reveals the layout and enables transitions. Until then the layout is
+ *   `opacity: 0`, so the unbound and the unsettled first frames are never
+ *   seen and nothing animates on mount
  * - `--has-overlay` - an open overlay with `modality` `page` or
  *   `contained`: the backdrop fades in with the panel slide
  *
@@ -102,8 +103,13 @@
     }
   }
 
-  /* Suppress transitions on initial render to prevent flash/jank.
-     The layout adds .cngx-sidenav-layout--ready once the rails have settled. */
+  /* Hidden and still until the settled width class has been painted once.
+     opacity, not visibility: the surface of an initially open overlay moves
+     focus into the rail on the settle frame, before the reveal. */
+  cngx-sidenav-layout:not(.cngx-sidenav-layout--ready) {
+    opacity: 0;
+  }
+
   cngx-sidenav-layout:not(.cngx-sidenav-layout--ready) cngx-sidenav,
   cngx-sidenav-layout:not(.cngx-sidenav-layout--ready) cngx-sidenav-content {
     transition: none !important;

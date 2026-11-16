@@ -1,10 +1,10 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
-  ElementRef,
   inject,
   signal,
   ViewEncapsulation,
@@ -78,8 +78,14 @@ import {
   `,
 })
 export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
-  private readonly readyState = signal(false);
-  /** @internal First settled render done - gates transitions against a load-time flash or slide. */
+  private readonly container = inject(CNGX_CONTAINER_SIZE, { self: true });
+  // No ResizeObserver (SSR, jsdom): no observation ever arrives, so the layout
+  // starts ready instead of staying hidden.
+  private readonly readyState = signal(!this.container.observes);
+  /**
+   * @internal The settled layout has been painted once - gates transitions and
+   * the reveal.
+   */
   protected readonly ready = this.readyState.asReadonly();
 
   private readonly sidenavs = contentChildren(CNGX_SIDENAV);
@@ -101,21 +107,28 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   );
 
   constructor() {
-    // The rails resolve their width class from the container's observed
-    // size, so the gate opens only once it has one. A hidden layout reports
-    // 0 and still reads as compact. The forced layout read commits the
-    // resolved state as the before-change style: in the same style pass as
-    // the class change, `--ready` would still animate it.
-    const container = inject(CNGX_CONTAINER_SIZE, { self: true });
-    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    if (!this.container.observes) {
+      return;
+    }
+    // The rails resolve their width class from the container's observed size;
+    // a hidden layout reports 0 and still reads as compact. Once sized, the
+    // settled state must be painted once, hidden, before --ready reveals the
+    // layout and turns transitions on: in the same frame the reveal would show
+    // the move, and in the same style pass the transitions would animate it.
+    // Two frames, because the first callback may still run before that paint.
+    const win = inject(DOCUMENT).defaultView;
     const gate = afterRenderEffect({
-      read: () => {
-        if (container.observes && container.inlineSize() === 0) {
+      read: (onCleanup) => {
+        if (!win || this.container.inlineSize() === 0) {
           return;
         }
-        host.getBoundingClientRect();
-        this.readyState.set(true);
-        gate.destroy();
+        let id = win.requestAnimationFrame(() => {
+          id = win.requestAnimationFrame(() => {
+            this.readyState.set(true);
+            gate.destroy();
+          });
+        });
+        onCleanup(() => win.cancelAnimationFrame(id));
       },
     });
   }
