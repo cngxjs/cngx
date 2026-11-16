@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxFieldErrors: with registry messages',
   subtitle: 'Move per-validator <code>message</code> strings out of the schema and into a central <code>CNGX_ERROR_MESSAGES</code> registry. CngxFieldErrors looks up each error\'s <code>kind</code> in the map and renders the resolved string; validators no longer carry presentation text. Wire the registry once in <code>bootstrapApplication</code>, then every field across the app inherits the same vocabulary.',
-  description: 'The fields below intentionally validate without inline messages. With no registry entry CngxFieldErrors falls back to the raw error <code>kind</code> (e.g. <code>required</code>, <code>minLength</code>) so the lookup gap is visible. Registering messages in the bootstrap layer (see code below) replaces those raw kinds with the localized text. The registry is a plain map keyed by error kind, so app-wide i18n is one provider call.',
+  description: 'The fields below intentionally validate without inline messages. With no registry entry CngxFieldErrors falls back to the library message from <code>CNGX_FORM_FIELD_I18N</code>, never the raw <code>kind</code>. Registering messages in the bootstrap layer (see code below) replaces that default copy with your own text. The registry is a plain map keyed by error kind, so app-wide i18n is one provider call.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

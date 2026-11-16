@@ -34,20 +34,41 @@ field from the next.
 | `CngxFieldSkinHost` | `[cngxFieldSkin]` | Resolves the field skin and writes it to its host as `data-skin`. Composed by `CngxInput`, `CngxFieldBox` and the select-family triggers |
 | `CngxFieldBox` | `[cngxFieldBox]` | The painted box around a control and its `CngxPrefix` / `CngxSuffix` affixes, in every skin. Resets its direct-child controls, paints the main control's state, forwards a click on its padding to the main control. |
 
+### Bridges
+
+| Export | Selector | Description |
+|-|-|-|
+| `CngxBindField` | `[cngxBindField]` | Projects the field ARIA and state onto any control (Material, native, custom); the value runs through the control's own `[formField]` or `[formControl]` |
+| `CngxListboxFieldBridge` | `[cngxListboxFieldBridge]` | Syncs a `CngxListbox` with the field, single or multi, with `compareWith` |
+| `CngxSliderFieldBridge` | `[cngxSliderFieldBridge]` | Syncs a `CngxSlider` with the field; the slider track stays the only `aria-describedby` writer |
+| `CngxRangeSliderFieldBridge` | `[cngxRangeSliderFieldBridge]` | Same for `CngxRangeSlider`; marks touched only when focus leaves both thumbs |
+| `CngxErrorScopeFieldBridge` | host directive of `cngx-form-field` | Provides `CNGX_FORM_FIELD_REVEAL` from the nearest `CngxErrorScope`, else from an ancestor provider |
+
 ### Utilities
 
 | Export | Description |
 |-|-|
-| `focusFirstError(tree)` | Focuses first invalid leaf field after failed submit |
-| `adaptFormControl(control, name, destroyRef)` | Adapts Reactive Forms `AbstractControl` to `CngxFieldAccessor` |
+| `focusFirstError(tree)` | Focuses the first invalid leaf field after a failed submit; skips a control that cannot take focus |
+| `adaptFormControl(control, name, destroyRef)` | Adapts a Reactive Forms `AbstractControl` to `CngxFieldAccessor`; `name` must be unique in the form |
+| `createFieldControlAria(presenter, options?)` | The id, state and ARIA projection (`describedBy`, `labelledBy`, `ariaInvalid`, `ariaRequired`, `ariaErrorMessage`, `ariaBusy`, ...) plus focus handlers a custom control binds from the surrounding field |
+| `isFocusLeavingHost(event, host)` | `true` when a `focusout` leaves the host and everything inside it; for composites that mark touched once |
+| `createFieldSync(options)` | Syncs a `value = model<T>()` with the field in an injection context; user writes mark the field dirty, the mount seed does not |
 
 ### Tokens
 
 | Export | Description |
 |-|-|
-| `CNGX_FORM_FIELD_CONTROL` | Provided by input directives for parent discovery |
-| `CNGX_ERROR_MESSAGES` | Error message registry (`Record<string, ErrorMessageFn>`) |
+| `CNGX_FORM_FIELD_CONTROL` | Provided by a control for discovery by the surrounding field |
+| `CNGX_FORM_FIELD_HOST` | The field as the atoms see it (re-exported from `@cngx/core/tokens`): ids, label text, required and disabled state for the control the field discovered |
+| `CNGX_ERROR_MESSAGES` | Error message registry, `Signal<ErrorMessageMap>` |
 | `CNGX_FORM_FIELD_CONFIG` | Application-wide form field configuration |
+| `CNGX_FORM_FIELD_REVEAL` | "Reveal errors now" signal; provide it on an ancestor for router-, interceptor- or test-driven reveals |
+| `CNGX_FORM_FIELD_I18N` | Form-field copy: the form-field section of the active language pack over the English defaults |
+| `CNGX_FORM_FIELD_LANGUAGE_EN` | The English form-field language section |
+| `CNGX_FIELD_BOX` | The surrounding `CngxFieldBox`, read by `CngxFieldSkinHost` to resolve a direct child to `bare` |
+| `CNGX_VALUE_TRANSFORMER` | `parse` / `format` pair provided on a control's host by `cngxNumericInput`, `cngxInputMask` and `cngxInputFormat` |
+| `DEFAULT_AUTOCOMPLETE_MAPPINGS` | Field-name-to-`autocomplete` defaults that `withAutocompleteMappings` extends |
+| `DEFAULT_NO_SPELLCHECK_FIELDS` | Field names with spellcheck off by default, extended by `withNoSpellcheck` |
 
 ### Feature Functions
 
@@ -55,19 +76,29 @@ field from the next.
 |-|-|
 | `provideFormField(...features)` | Registers app-wide config |
 | `provideFormFieldAt(...features)` | Same config, scoped to a component subtree (`providers` / `viewProviders`) |
+| `injectFormFieldConfig()` | Reads the resolved config in an injection context |
 | `provideErrorMessages(map)` | Shorthand for error messages only |
-| `withErrorMessages(map)` | Error-kind-to-message formatters |
+| `withErrorMessages(map)` | Error-kind-to-message functions |
 | `withConstraintHints(formatters?)` | Auto-generate hints from validators; copy from the `formField` language section, single `ConstraintHintFormatters` replaceable |
 | `withRequiredMarker(text?)` | Auto-show required marker on labels |
+| `withErrorStrategy(strategy)` | When errors show: `'onTouched'`, `'onDirty'`, `'onSubmit'`, `'onTouchedOrSubmit'`, `'always'` or an `ErrorStrategyFn` |
 | `withAutocompleteMappings(map)` | Extend/override autocomplete inference |
 | `withNoSpellcheck(fields)` | Extend spellcheck-disabled field list |
 | `withFieldSkin(skin)` | Default skin (`'outline'` / `'fill'` / `'bare'`) for every control that composes `CngxFieldSkinHost` |
+| `provideFormFieldI18n(...features)` | Form-field copy for a subtree |
+| `withFormFieldI18nLabels(overrides)` | Partial copy override; unset keys keep the language pack or the English default |
+| `injectFormFieldI18n()` | The resolved form-field copy as a `Signal`; read it in a `computed()` |
 
 ### Types
 
-`CngxFieldRef`, `CngxFieldAccessor`, `CngxFormFieldControl`, `ErrorMessageFn`, `ErrorMessageMap`,
-`FormFieldConfig`, `FormFieldFeature`, `CngxFieldSkin`, `ConstraintHintFormatters`, `ConstraintMetadata`,
-`CngxFieldErrorContext`, `CngxRequiredContext`, `FormErrorItem`, `CngxFormErrorsSummaryContext`
+`CngxFieldRef`, `CngxFieldAccessor`, `CngxFormFieldControl`, `CngxErrorFieldState`,
+`CngxFieldValidationError`, `ErrorMessageFn`, `ErrorMessageMap`, `FormFieldConfig`,
+`FormFieldFeature`, `CngxFieldSkin`, `ConstraintHintFormatters`, `ConstraintMetadata`,
+`ErrorStrategyName`, `ErrorStrategyContext`, `ErrorStrategyFn`, `CngxFormFieldRevealContract`,
+`CngxFormFieldHostContract`, `CngxFieldBoxContract`, `FieldControlAria`, `FieldControlAriaOptions`,
+`FieldSyncOptions`, `CngxValueTransformer`, `CngxFormFieldI18n`, `CngxFormFieldI18nFeature`,
+`CngxFormFieldI18nOverrides`, `CngxFormFieldLanguageSection`, `CngxFieldErrorContext`,
+`CngxRequiredContext`, `FormErrorItem`, `CngxFormErrorsSummaryContext`
 
 ## CSS State Classes
 
@@ -327,12 +358,15 @@ mirrors the field's error state and writes its value into the field.
 
 ## Presenter Signals
 
-All derived from Signal Forms `FieldState` via `computed()`:
+All derived via `computed()` from the Signal Forms `FieldState` and the discovered control:
 
-`name`, `inputId`, `labelId`, `hintId`, `errorId`, `describedBy`,
-`required`, `disabled`, `invalid`, `valid`, `touched`, `dirty`, `pending`,
-`hidden`, `readonly`, `submitting`, `errors`, `errorSummary`, `disabledReasons`,
-`showError`, `minLength`, `maxLength`, `min`, `max`, `pattern`, `constraintHints`
+`fieldState`, `name`, `inputId`, `labelId`, `labelText`, `hintId`, `errorId`,
+`disabledReasonId`, `disabledReasonText`, `describedBy`, `control`, `controlId`,
+`controlFocused`, `controlEmpty`, `controlDisabled`, `controlErrorState`,
+`fieldOrControlError`, `fieldOrControlDisabled`, `required`, `disabled`, `invalid`,
+`valid`, `touched`, `dirty`, `pending`, `hidden`, `readonly`, `submitting`, `errors`,
+`errorSummary`, `disabledReasons`, `showError`, `minLength`, `maxLength`, `min`, `max`,
+`pattern`, `constraintHints`
 
 ## Bridging Controls to a Field
 
@@ -341,6 +375,8 @@ All derived from Signal Forms `FieldState` via `computed()`:
   through the control's own bindings (`[formField]` or `[formControl]`).
 - `CngxListboxFieldBridge` - specialised bridge for `CngxListbox` that handles
   multi-select and `compareWith` value-sync.
+- `CngxSliderFieldBridge` / `CngxRangeSliderFieldBridge` - the same for
+  `CngxSlider` and `CngxRangeSlider`.
 
 A control with a `value = model<T>()` and no `ControlValueAccessor` can sync
 that model with the field yourself: `createFieldSync` from `@cngx/forms/field`,

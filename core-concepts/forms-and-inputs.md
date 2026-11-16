@@ -146,10 +146,13 @@ Every CNGX control with a value exposes a two-way binding - `value` on the singl
 |OTP|`cngxOtpInput` / `cngxOtpSlot`|a one-time-code entry with per-digit boxes|
 |File drop|`cngxFileDrop`|a drag-and-drop file zone|
 
-These compose. A masked, clearable phone field is just three directives on one input - no special "phone field" component is needed for the simple case:
+These compose. A masked, clearable phone field is two directives on the input and a clear button next to it - no special "phone field" component is needed for the simple case:
 
 ```html
-<input cngxInput cngxInputMask="phone" cngxInputClear [formField]="form.phone" />
+<span cngxFieldBox>
+  <input #phone cngxInput cngxInputMask="phone" [formField]="form.phone" />
+  <button type="button" cngxSuffix cngxSuffixInteractive [cngxInputClear]="phone">Clear</button>
+</span>
 ```
 
 Mask patterns, numeric defaults, and similar knobs are set app-wide through `provideInputConfig(withPhonePatterns(...), withNumericDefaults(...), ...)` rather than repeated on every field.

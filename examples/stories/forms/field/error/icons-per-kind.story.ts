@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxError: icons per kind',
   subtitle: 'Each validation error gets its own glyph. <code>required</code> renders an asterisk-style icon, <code>minLength</code> renders a ruler, <code>email</code> renders an envelope. The <code>kind</code> string from Signal Forms keys the lookup. This is the case <code>CngxFieldErrors</code> cannot serve from a flat message registry without a custom <code>TemplateRef</code> per kind.',
-  description: 'Manual rendering pays off when the visual treatment varies with the error. Inline SVGs ship with <code>aria-hidden="true"</code> so AT only hears the message text, never the icon name. The <code>role="alert"</code> + <code>aria-live="polite"</code> on the container come from <code>CngxError</code> itself, so screen readers announce the message after the next quiet moment.',
+  description: 'Manual rendering pays off when the visual treatment varies with the error. Inline SVGs ship with <code>aria-hidden="true"</code> so AT only hears the message text, never the icon name. The <code>role="status"</code> + <code>aria-live="polite"</code> on the container come from <code>CngxError</code> itself, so screen readers announce the message after the next quiet moment.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

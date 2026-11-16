@@ -11,6 +11,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
+import { coerceSignal } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 import { injectFormFieldPresenter } from './inject-form-field-presenter';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
@@ -128,10 +129,14 @@ export class CngxLabel {
    */
   readonly showRequired = input<boolean | undefined>(undefined);
 
+  /** @internal - the configured marker; a Signal marker follows a language switch. */
+  private readonly marker = coerceSignal<string | false | undefined>(this.config.requiredMarker);
+
   /** @internal - resolved marker text from global config. */
-  protected readonly markerText = computed(() =>
-    typeof this.config.requiredMarker === 'string' ? this.config.requiredMarker : '*',
-  );
+  protected readonly markerText = computed(() => {
+    const marker = this.marker();
+    return typeof marker === 'string' ? marker : '*';
+  });
 
   private readonly doc = inject(DOCUMENT);
   private readonly targetLabelable = signal(false);
@@ -185,7 +190,7 @@ export class CngxLabel {
 
   /** @internal - whether to show the auto-marker. */
   protected readonly markerVisible = computed(() => {
-    if (!this.config.requiredMarker) {
+    if (!this.marker()) {
       return false;
     }
     const override = this.showRequired();
