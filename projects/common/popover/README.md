@@ -243,6 +243,8 @@ The `variant` input is a free-form string mapped to CSS class `cngx-popover-pane
 
 ### Native Support (zero polyfills needed)
 
+<!-- compodocx: inline -->
+
 - Chrome 125+
 - Firefox 131+
 - Safari 18.4+

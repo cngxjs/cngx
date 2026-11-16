@@ -39,6 +39,13 @@ export interface CngxInteractiveGroupHostOptions {
    * which element names the group.
    */
   readonly labelledBy?: Signal<string | undefined>;
+  /**
+   * The host instance, the object it provides as `CNGX_FORM_FIELD_CONTROL`.
+   * The field ARIA below applies only while the surrounding field
+   * discovered this instance as its control, never to an affix or to the
+   * members of a group.
+   */
+  readonly control?: object;
 }
 
 /**
@@ -76,6 +83,18 @@ export interface CngxInteractiveGroupHost {
   readonly resolvedState: Signal<CngxAsyncState<unknown> | undefined>;
   /** `true` while the resolved state reports `status() === 'loading'`. */
   readonly ariaBusy: Signal<boolean>;
+  /**
+   * The field's label id while the host is the field's discovered control,
+   * else `null`. Hosts that take their name from their own content
+   * (checkbox, toggle) put it before their own label id.
+   */
+  readonly fieldLabelledBy: Signal<string | null>;
+  /** The field's `aria-describedby` ids while the host is its control, else `null`. */
+  readonly fieldDescribedBy: Signal<string | null>;
+  /** The field's error id while the host is its control and errors show, else `null`. */
+  readonly fieldErrorMessage: Signal<string | null>;
+  /** Whether the host is the control of a required field. */
+  readonly fieldRequired: Signal<boolean>;
   /** Bind to the host's `(focusin)` listener. */
   handleFocusIn(): void;
   /** Bind to the host's `(focusout)` listener; marks the surrounding field as touched. */
@@ -143,6 +162,9 @@ export function injectInteractiveGroupHost(
     return options.label?.() ? null : (fieldHost?.labelId?.() ?? null);
   });
   const resolvedState = computed(() => options.state?.() ?? statefulFallback?.state);
+  const isFieldControl = computed(
+    () => options.control !== undefined && fieldHost?.control?.() === options.control,
+  );
 
   return {
     id: signal(nextUid(options.uidPrefix)).asReadonly(),
@@ -152,6 +174,15 @@ export function injectInteractiveGroupHost(
     ariaLabelledBy,
     resolvedState,
     ariaBusy: computed(() => resolvedState()?.status() === 'loading'),
+    fieldLabelledBy: computed(() => (isFieldControl() ? (fieldHost?.labelId?.() ?? null) : null)),
+    fieldDescribedBy: computed(() => {
+      const ids = isFieldControl() ? (fieldHost?.describedBy?.() ?? '') : '';
+      return ids === '' ? null : ids;
+    }),
+    fieldErrorMessage: computed(() =>
+      isFieldControl() && errorState() ? (fieldHost?.errorId?.() ?? null) : null,
+    ),
+    fieldRequired: computed(() => isFieldControl() && fieldHost?.required?.() === true),
     handleFocusIn(): void {
       focusedState.set(true);
     },

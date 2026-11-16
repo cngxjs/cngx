@@ -1,13 +1,15 @@
 import {
-  afterNextRender,
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
+  ElementRef,
+  inject,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxContainer } from '@cngx/common/layout';
+import { CNGX_CONTAINER_SIZE, CngxContainer } from '@cngx/common/layout';
 
 import {
   CNGX_SIDENAV,
@@ -77,7 +79,7 @@ import {
 })
 export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   private readonly readyState = signal(false);
-  /** @internal First render done - gates transitions against an open-on-load flash. */
+  /** @internal First settled render done - gates transitions against a load-time flash or slide. */
   protected readonly ready = this.readyState.asReadonly();
 
   private readonly sidenavs = contentChildren(CNGX_SIDENAV);
@@ -99,8 +101,23 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   );
 
   constructor() {
-    // Gate transitions until after first render - prevents open-on-load flash.
-    afterNextRender(() => this.readyState.set(true));
+    // The rails resolve their width class from the container's observed
+    // size, so the gate opens only once it has one. A hidden layout reports
+    // 0 and still reads as compact. The forced layout read commits the
+    // resolved state as the before-change style: in the same style pass as
+    // the class change, `--ready` would still animate it.
+    const container = inject(CNGX_CONTAINER_SIZE, { self: true });
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const gate = afterRenderEffect({
+      read: () => {
+        if (container.observes && container.inlineSize() === 0) {
+          return;
+        }
+        host.getBoundingClientRect();
+        this.readyState.set(true);
+        gate.destroy();
+      },
+    });
   }
 
   /** Closes all sidenavs that are currently in overlay mode. */

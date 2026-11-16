@@ -88,7 +88,7 @@ describe('detectProject', () => {
         outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
       },
       scaffold: { kind: 'custom' },
-      indexHtml: { path: 'src/index.html', state: 'untouched' },
+      indexHtml: { path: 'src/index.html', state: 'untouched', dir: false },
       favicon: { path: 'public/favicon.svg', fingerprint: undefined },
       globalStyles: { path: 'src/styles.css', state: 'untouched', fingerprint: undefined },
       languageFile: 'absent',
@@ -122,7 +122,7 @@ describe('detectProject', () => {
       names: { project: 'fixture-app', selector: 'app-root' },
     });
     expect(facts.favicon).toEqual({ path: 'public/favicon.svg', fingerprint: undefined });
-    expect(facts.indexHtml).toEqual({ path: 'src/index.html', state: 'untouched' });
+    expect(facts.indexHtml).toEqual({ path: 'src/index.html', state: 'untouched', dir: false });
   });
 
   it('reads the index.html the build names', async () => {
@@ -132,7 +132,7 @@ describe('detectProject', () => {
     tree.overwrite('angular.json', JSON.stringify(workspace));
     tree.create('src/main.html', tree.readText('src/index.html'));
 
-    expect(detectProject(tree, await readWorkspace(tree)).indexHtml).toEqual({ path: 'src/main.html', state: 'untouched' });
+    expect(detectProject(tree, await readWorkspace(tree)).indexHtml).toEqual({ path: 'src/main.html', state: 'untouched', dir: false });
   });
 
   it('reads the Angular version from the installed package and the range from either dependency map', async () => {

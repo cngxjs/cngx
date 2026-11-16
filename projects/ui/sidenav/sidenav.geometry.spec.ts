@@ -170,6 +170,34 @@ describe('CngxSidenav RTL geometry (:dir scoping)', () => {
 })
 class SidenavAutoHost {}
 
+@Component({
+  selector: 'cngx-sidenav-auto-medium-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <div class="auto-medium-wrapper">
+      <cngx-sidenav-layout>
+        <cngx-sidenav position="start" ariaLabel="Nav">Nav</cngx-sidenav>
+        <cngx-sidenav-content>Main</cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
+  `,
+  styles: ['.auto-medium-wrapper { inline-size: 56rem; }'],
+})
+class SidenavAutoMediumHost {}
+
+function railTransitions(rail: HTMLElement, content: HTMLElement): string[] {
+  const found: string[] = [];
+  for (const el of [rail, content]) {
+    for (const animation of el.getAnimations()) {
+      if (animation instanceof CSSTransition) {
+        found.push(`${el.localName}: ${animation.transitionProperty}`);
+      }
+    }
+  }
+  return found;
+}
+
 function mountAuto(): {
   wrapper: HTMLElement;
   layout: HTMLElement;
@@ -240,6 +268,58 @@ describe('CngxSidenav auto mode geometry', () => {
     await nextFrame();
     expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
     expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
+  });
+
+  // The width class arrives with the container's first ResizeObserver entry,
+  // after the first render. A --ready gate opened before it let the rail slide
+  // from the compact drawer to its rail width and drag the content margin along.
+  it('settles a medium rail on load without a transition', async () => {
+    const fixture = TestBed.createComponent(SidenavAutoMediumHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const layout = mountedRoot.querySelector('cngx-sidenav-layout') as HTMLElement;
+    const rail = mountedRoot.querySelector('cngx-sidenav') as HTMLElement;
+    const content = mountedRoot.querySelector('cngx-sidenav-content') as HTMLElement;
+
+    const transitions: string[] = [];
+    for (let frame = 0; frame < 8; frame++) {
+      transitions.push(...railTransitions(rail, content));
+      await nextFrame();
+    }
+
+    expect(layout.classList.contains('cngx-sidenav-layout--ready')).toBe(true);
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(transitions).toEqual([]);
+  });
+
+  // A display:none container reports a 0 inline size and reads as compact,
+  // so the gate stays shut until the layout is shown, then opens without
+  // animating.
+  it('keeps the gate shut while mounted hidden and settles without a transition once shown', async () => {
+    const fixture = TestBed.createComponent(SidenavAutoMediumHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    mountedRoot.style.display = 'none';
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const layout = mountedRoot.querySelector('cngx-sidenav-layout') as HTMLElement;
+    const rail = mountedRoot.querySelector('cngx-sidenav') as HTMLElement;
+    const content = mountedRoot.querySelector('cngx-sidenav-content') as HTMLElement;
+
+    await nextFrame();
+    await nextFrame();
+    expect(layout.classList.contains('cngx-sidenav-layout--ready')).toBe(false);
+
+    mountedRoot.style.display = '';
+    const transitions: string[] = [];
+    for (let frame = 0; frame < 8; frame++) {
+      transitions.push(...railTransitions(rail, content));
+      await nextFrame();
+    }
+
+    expect(layout.classList.contains('cngx-sidenav-layout--ready')).toBe(true);
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(transitions).toEqual([]);
   });
 });
 

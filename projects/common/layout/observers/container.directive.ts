@@ -65,6 +65,8 @@ export class CngxContainer implements CngxContainerSize {
   readonly blockSize = this.size.blockSize;
   /** `true` once the first observation has arrived. */
   readonly isReady = this.size.isReady;
+  /** `false` on a host without `ResizeObserver` (SSR, jsdom). */
+  readonly observes = this.size.observes;
 
   /**
    * The resolved value of a custom property on `on` (default: this host),

@@ -127,6 +127,25 @@ describe('createMigration', () => {
     expect(seen).toEqual([after['src/app/app.html']]);
   });
 
+  it('leaves files outside the source roots of the workspace projects alone', async () => {
+    const { before } = readMigrationFixture('rename');
+    const outside = { 'docs/page.html': before['src/app/app.html'] ?? '', 'tools/x.ts': before['src/app/app.ts'] ?? '' };
+
+    const { tree } = await runRule(migration(), createMemoryTree({ ...before, ...outside }), ENTRY);
+
+    expect(tree.readText('docs/page.html')).toBe(outside['docs/page.html']);
+    expect(tree.readText('tools/x.ts')).toBe(outside['tools/x.ts']);
+  });
+
+  it('rejects a workspace without angular.json and writes nothing', async () => {
+    const { before } = readMigrationFixture('rename');
+    const files = Object.fromEntries(Object.entries(before).filter(([path]) => path !== 'angular.json'));
+    const tree = createMemoryTree(files);
+
+    await expect(runRule(migration(), tree, ENTRY)).rejects.toThrow('Path "/angular.json" does not exist.');
+    expect(tree.actions).toEqual([]);
+  });
+
   it('is idempotent', async () => {
     const { after } = readMigrationFixture('rename');
 

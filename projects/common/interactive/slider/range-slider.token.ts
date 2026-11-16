@@ -33,8 +33,10 @@ export interface CngxSliderRangeHost {
   readonly step: Signal<number>;
   /** Page-key jump size shared by both thumbs (absolute). Undefined = derive from range. */
   readonly largeStep: Signal<number | undefined>;
-  /** Whether the whole range slider is disabled. */
+  /** The `disabled` input of the range slider. */
   readonly disabled: Signal<boolean>;
+  /** Effective disabled state: the input OR a disabled bridging field. Thumbs read this. */
+  readonly isDisabled: Signal<boolean>;
   /** Track axis shared by both thumbs. */
   readonly orientation: Signal<'horizontal' | 'vertical'>;
   /** Current `[start, end]` tuple - the single source of truth. */

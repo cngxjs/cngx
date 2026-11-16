@@ -6,6 +6,8 @@ import {
   PristineChangeEvent,
   TouchedChangeEvent,
   type ValidationErrors,
+  type ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import type { CngxErrorFieldState, CngxFieldAccessor, CngxFieldRef, CngxFieldValidationError } from './models';
 
@@ -46,7 +48,8 @@ export function adaptFormControl(
   const dirtySignal = signal(control.dirty);
   const invalidSignal = signal(control.invalid);
   const validSignal = signal(control.valid);
-  const requiredSignal = signal(hasRequiredValidator(control));
+  const probeRequired = createRequiredProbe(control);
+  const requiredSignal = signal(probeRequired());
   const disabledSignal = signal(control.disabled);
   const pendingSignal = signal(control.pending);
   const errorsSignal = signal<CngxFieldValidationError[]>(adaptErrors(control.errors));
@@ -63,7 +66,7 @@ export function adaptFormControl(
     validSignal.set(control.valid);
     disabledSignal.set(control.disabled);
     pendingSignal.set(control.pending);
-    requiredSignal.set(hasRequiredValidator(control));
+    requiredSignal.set(probeRequired());
     errorsSignal.set(adaptErrors(control.errors));
   };
 
@@ -163,14 +166,43 @@ function adaptErrors(errors: ValidationErrors | null): CngxFieldValidationError[
   });
 }
 
+// Static validators that never read `this`; compared by reference only.
+// eslint-disable-next-line @typescript-eslint/unbound-method
+const BUILT_IN_REQUIRED: readonly ValidatorFn[] = [Validators.required, Validators.requiredTrue];
+
 /**
- * Check if a control has the built-in required validator.
+ * Whether `control` is required: the built-in `Validators.required` /
+ * `requiredTrue` by reference, else one probe of a custom validator against
+ * an empty value. The probe runs once per validator function (again only
+ * after `setValidators` swaps it), never for a group or array, and a
+ * validator that throws on the stand-in (it expects its own value type or
+ * reads `parent`) counts as not required.
  * @internal
  */
-function hasRequiredValidator(control: AbstractControl): boolean {
-  if (!control.validator) {
+function createRequiredProbe(control: AbstractControl): () => boolean {
+  let probed: ValidatorFn | null = null;
+  let required = false;
+  return () => {
+    if (BUILT_IN_REQUIRED.some((builtIn) => control.hasValidator(builtIn))) {
+      return true;
+    }
+    const validator = control.validator;
+    if (!validator || 'controls' in control) {
+      return false;
+    }
+    if (validator !== probed) {
+      probed = validator;
+      required = probeRequired(validator);
+    }
+    return required;
+  };
+}
+
+function probeRequired(validator: ValidatorFn): boolean {
+  try {
+    const result = validator({ value: '' } as AbstractControl);
+    return result != null && 'required' in result;
+  } catch {
     return false;
   }
-  const result = control.validator({ value: '' } as AbstractControl);
-  return result != null && 'required' in result;
 }

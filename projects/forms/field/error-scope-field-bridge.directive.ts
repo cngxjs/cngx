@@ -12,8 +12,10 @@ import { CNGX_FORM_FIELD_REVEAL, type CngxFormFieldRevealContract } from './form
  * single integration point between `@cngx/forms/field` and the
  * `@cngx/common/interactive` scope token.
  *
- * No-op when no ancestor scope is provided - the form-field falls back to
- * the default error gate (`touched OR errorStrategy(...)`).
+ * Without an ancestor scope it passes on a `CNGX_FORM_FIELD_REVEAL` provided
+ * above the field (a router- or test-driven trigger); with neither, the
+ * form-field falls back to the default error gate
+ * (`touched OR errorStrategy(...)`).
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error-scope-field-bridge.directive.ts
@@ -28,7 +30,10 @@ import { CNGX_FORM_FIELD_REVEAL, type CngxFormFieldRevealContract } from './form
       provide: CNGX_FORM_FIELD_REVEAL,
       useFactory: (): CngxFormFieldRevealContract | null => {
         const scope = inject(CNGX_ERROR_SCOPE, { optional: true });
-        return scope ? { showErrors: scope.showErrors } : null;
+        if (scope) {
+          return { showErrors: scope.showErrors };
+        }
+        return inject(CNGX_FORM_FIELD_REVEAL, { optional: true, skipSelf: true });
       },
     },
   ],

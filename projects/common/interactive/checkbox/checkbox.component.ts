@@ -91,8 +91,10 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
-    '[attr.aria-errormessage]': 'ariaInvalid() ? errorMessageId() : null',
-    '[attr.aria-describedby]': 'describedById()',
+    '[attr.aria-errormessage]': 'ariaInvalid() ? (errorMessageId() ?? fieldErrorMessage()) : null',
+    '[attr.aria-describedby]': 'ariaDescribedBy()',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.aria-required]': 'groupHost.fieldRequired() ? "true" : null',
     '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
     '[class.cngx-checkbox--indeterminate]': 'indeterminate()',
@@ -116,7 +118,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
       [checkGlyph]="checkGlyph()"
       [dashGlyph]="dashGlyph()"
     />
-    <span class="cngx-checkbox__label">
+    <span class="cngx-checkbox__label" [id]="labelId">
       <ng-content />
     </span>
     <span
@@ -214,10 +216,32 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
     this.indeterminate() ? 'mixed' : this.value() ? 'true' : 'false',
   );
 
-  private readonly groupHost = injectInteractiveGroupHost({
+  protected readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-checkbox-',
     invalid: this.invalid,
+    control: this,
   });
+
+  protected readonly labelId = nextUid('cngx-checkbox-label');
+
+  /** @internal */
+  protected readonly fieldErrorMessage = this.groupHost.fieldErrorMessage;
+
+  /**
+   * Inside a field whose control this checkbox is: the field label, then the
+   * checkbox's own text. The field label alone would drop "I agree" from the
+   * name. `null` otherwise, the name comes from the content.
+   */
+  protected readonly ariaLabelledBy = computed(() => {
+    const field = this.groupHost.fieldLabelledBy();
+    return field ? `${field} ${this.labelId}` : null;
+  });
+
+  /** Field description ids, then the gated disabled reason. */
+  protected readonly ariaDescribedBy = computed(
+    () =>
+      [this.groupHost.fieldDescribedBy(), this.describedById()].filter(Boolean).join(' ') || null,
+  );
 
   readonly id = this.groupHost.id;
 

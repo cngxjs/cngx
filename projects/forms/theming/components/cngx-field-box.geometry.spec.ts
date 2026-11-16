@@ -146,17 +146,17 @@ class MatrixHost {
   encapsulation: ViewEncapsulation.None,
   template: `
     @for (skin of skins; track skin) {
-      <cngx-form-field [field]="field({ invalid: true, touched: true })">
+      <cngx-form-field [field]="field(skin + 'InvalidInput', { invalid: true, touched: true })">
         <span cngxFieldBox class="invalid-input" [attr.data-case]="skin" [skin]="skin">
           <input cngxInput />
         </span>
       </cngx-form-field>
-      <cngx-form-field [field]="field({ disabled: true })">
+      <cngx-form-field [field]="field(skin + 'DisabledInput', { disabled: true })">
         <span cngxFieldBox class="disabled-input" [attr.data-case]="skin" [skin]="skin">
           <input cngxInput />
         </span>
       </cngx-form-field>
-      <cngx-form-field [field]="field({ invalid: true, touched: true })">
+      <cngx-form-field [field]="field(skin + 'InvalidSelect', { invalid: true, touched: true })">
         <span cngxFieldBox class="invalid-select" [attr.data-case]="skin" [skin]="skin">
           <cngx-select [label]="'Currency'" [options]="options" />
         </span>
@@ -172,14 +172,14 @@ class InertHost {
   readonly skins: readonly Skin[] = ['outline', 'fill', 'bare'];
   private readonly fields = new Map<string, ReturnType<typeof createMockField>['accessor']>();
 
-  field(options: { invalid?: boolean; touched?: boolean; disabled?: boolean }) {
-    const key = JSON.stringify(options);
-    const cached = this.fields.get(key);
+  // One mock field per form field: a shared name gives every input the same id.
+  field(name: string, options: { invalid?: boolean; touched?: boolean; disabled?: boolean }) {
+    const cached = this.fields.get(name);
     if (cached) {
       return cached;
     }
-    const accessor = createMockField({ name: key, ...options }).accessor;
-    this.fields.set(key, accessor);
+    const accessor = createMockField({ name, ...options }).accessor;
+    this.fields.set(name, accessor);
     return accessor;
   }
 }

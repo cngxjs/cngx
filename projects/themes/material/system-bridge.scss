@@ -30,19 +30,37 @@
 // instead (see select-theme.scss for the broadcast pattern); a host-only
 // assignment of a non-inheriting token is a silent no-op.
 
-@mixin _m3() {
+// Highlight, success and warning have no Material role, so they keep the cngx
+// hue. Their core values follow the scheme cngx detects (OS or
+// data-color-scheme), which a theme typed light or dark does not; these are the
+// core literals of that scheme (system-tokens.css Block 1 light, Block 3 dark).
+// A color-scheme theme gets none: it follows the OS like the core values do,
+// and core avoids light-dark() for iOS 16 reach (system-tokens.css).
+@mixin _scheme-rungs($type) {
+  @if $type == dark {
+    --cngx-color-highlight: oklch(0.45 0.08 95);
+    --cngx-color-success: oklch(0.68 0.14 145);
+    --cngx-color-warning: oklch(0.78 0.14 75);
+  } @else if $type == light {
+    --cngx-color-highlight: oklch(0.92 0.115 96);
+    --cngx-color-success: oklch(0.6 0.15 145);
+    --cngx-color-warning: oklch(0.72 0.15 75);
+  }
+}
+
+@mixin _m3($theme) {
   // Surfaces and text
   --cngx-color-surface: var(--mat-sys-surface);
   --cngx-color-text: var(--mat-sys-on-surface);
+  --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
   --cngx-color-border: var(--mat-sys-outline-variant);
   // The control edge (bare input, outline field frame, select trigger) takes
   // the outline role mat-form-field uses for its resting outlined frame.
   --cngx-color-border-strong: var(--mat-sys-outline);
 
   // Brand and semantic colours. Material 3 has no first-class
-  // success/warning/info - leave those at their cngx defaults so the
-  // bridge stays a strict mapping rather than an opinionated
-  // re-interpretation of Material's palette.
+  // success/warning/highlight: they keep the cngx hue in the theme's scheme.
+  @include _scheme-rungs(mat.get-theme-type($theme));
   --cngx-color-primary: var(--mat-sys-primary);
   --cngx-color-primary-strong: var(--mat-sys-primary);
   --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
@@ -97,6 +115,7 @@
 
   --cngx-color-surface: #{$surface};
   --cngx-color-text: #{rgba($on-surface, 0.87)};
+  --cngx-color-text-muted: #{mat.get-theme-color($theme, foreground, secondary-text)};
   --cngx-color-border: #{rgba($divider, 0.12)};
   // Mirrors the M2 resting outlined form-field frame: the M2 system
   // outline-variant, black or white at 0.38 per theme type.
@@ -105,6 +124,8 @@
   } @else {
     --cngx-color-border-strong: #{rgba(black, 0.38)};
   }
+  // M2 is always light or dark, so the three rungs always follow the theme.
+  @include _scheme-rungs(mat.get-theme-type($theme));
   --cngx-color-primary: #{$primary};
   // A strong fill and its ink travel as a pair, so every reader of the
   // pair (not only the button host) paints Material ink on a Material fill.
@@ -150,7 +171,7 @@
 @mixin theme($theme) {
   @layer cngx.components {
     @if mat.get-theme-version($theme) == 1 {
-      @include _m3();
+      @include _m3($theme);
     } @else {
       @include _m2($theme);
     }

@@ -1,5 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
+import type { CngxFormFieldControl } from './form-field-control.token';
+
 /**
  * Visual appearance of a form control and of the field that surrounds it.
  *
@@ -47,6 +49,10 @@ export type CngxFieldSkin = 'outline' | 'fill' | 'bare';
  *   kept current while it changes (a language flip), so a surface that
  *   repeats the label (a mobile sheet heading) follows it without reading
  *   the DOM itself.
+ * - `control?`, `describedBy?`, `errorId?`, `required?`, `disabled?` - the
+ *   discovered control and the field's description, error, required and
+ *   disabled state, so a common atom that is that control carries the same
+ *   ARIA a bridge would.
  *
  * Deliberately scoped to these members. The full presenter exposes
  * many more signals (constraints, ARIA IDs, dirty / pending /
@@ -91,12 +97,40 @@ export interface CngxFormFieldHostContract {
    */
   readonly readonly?: Signal<boolean>;
   /**
-   * Rendered text of the field's label element, trimmed; `''` while no
-   * label is rendered. Updates when the label text changes, for example on
+   * Visible text of the field's label element without its `aria-hidden`
+   * parts (the required marker), whitespace collapsed; `''` while no label
+   * is rendered. Updates when the label text changes, for example on
    * a language flip. Optional so hosts without a label surface keep
    * satisfying the contract; consumers read it as `host.labelText?.() ?? ''`.
    */
   readonly labelText?: Signal<string>;
+  /**
+   * The control the field discovered, `undefined` without one. An atom
+   * compares it with the `CNGX_FORM_FIELD_CONTROL` it provides itself and
+   * takes {@link describedBy}, {@link errorId} and {@link required} only
+   * when they match, so an affix or the children of a group never repeat
+   * the field's references. Optional; read as `host.control?.()`.
+   */
+  readonly control?: Signal<CngxFormFieldControl | undefined>;
+  /**
+   * Space-separated `aria-describedby` ids of the field (hint, shown
+   * error, disabled reason), `''` while none applies. Optional; read as
+   * `host.describedBy?.() ?? ''`.
+   */
+  readonly describedBy?: Signal<string>;
+  /**
+   * Id of the field's error container. Referenced through
+   * `aria-errormessage` only while {@link showError} is true. Optional.
+   */
+  readonly errorId?: Signal<string>;
+  /** Whether the field is required. Optional; read as `host.required?.() ?? false`. */
+  readonly required?: Signal<boolean>;
+  /**
+   * Whether the field is disabled. An atom that keeps its own `disabled`
+   * input ORs this in instead of having a bridge overwrite its input.
+   * Optional; read as `host.disabled?.() ?? false`.
+   */
+  readonly disabled?: Signal<boolean>;
 }
 
 /**

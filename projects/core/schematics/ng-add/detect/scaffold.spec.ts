@@ -161,7 +161,22 @@ describe('indexHtmlStateOf', () => {
     ['the starter link next to the stock one', withStarterFavicon(index).replace('</head>', '  <link rel="icon" type="image/x-icon" href="favicon.ico">\n</head>'), 'custom'],
   ] as const)('reads %s', async (_name, content, state) => {
     const html = content ?? (await formatted(index, 'src/index.html'));
-    expect((await factsOf('scaffold-21', { 'src/index.html': html })).indexHtml).toEqual({ path: 'src/index.html', state });
+    expect((await factsOf('scaffold-21', { 'src/index.html': html })).indexHtml).toEqual({ path: 'src/index.html', state, dir: false });
+  });
+
+  it.each([
+    ['the stock file', index, 'untouched'],
+    ['the starter link', withStarterFavicon(index), 'starter'],
+  ] as const)('reads %s with dir on <html> as it reads it without', async (_name, content, state) => {
+    for (const html of [content.replace('<html lang="en">', '<html lang="en" dir="rtl">'), content.replace('<html lang="en">', "<html dir='ltr' lang=\"en\">"), content.replace('<html lang="en">', '<html dir lang="en">')]) {
+      expect((await factsOf('scaffold-21', { 'src/index.html': html })).indexHtml).toEqual({ path: 'src/index.html', state, dir: true });
+    }
+  });
+
+  it('reads a dir outside the <html> tag as no document direction', async () => {
+    const html = index.replace('<body>', '<body dir="rtl">');
+
+    expect((await factsOf('scaffold-21', { 'src/index.html': html })).indexHtml).toEqual({ path: 'src/index.html', state: 'custom', dir: false });
   });
 
   it('reads the starter link after Prettier', async () => {
@@ -173,7 +188,7 @@ describe('indexHtmlStateOf', () => {
   });
 
   it('reads a missing index.html as absent', async () => {
-    expect((await factsOf('scaffold-21', {}, ['src/index.html'])).indexHtml).toEqual({ path: 'src/index.html', state: 'absent' });
+    expect((await factsOf('scaffold-21', {}, ['src/index.html'])).indexHtml).toEqual({ path: 'src/index.html', state: 'absent', dir: false });
   });
 });
 

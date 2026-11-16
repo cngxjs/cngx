@@ -51,19 +51,10 @@ html {
     )
   );
 
-  // Real Material widgets need their component themes; the cngx bridges theme
-  // the cngx widget alongside. Include only the components the harness actually
-  // renders (select / form-field / chips / autocomplete / input) instead of
-  // mat.all-component-themes, which emits ~71kB, past the 64kB warning of the
-  // material-lab-theme bundle budget (angular.json).
-  @include mat.select-theme($theme);
-  @include mat.form-field-theme($theme);
-  @include mat.chips-theme($theme);
-  @include mat.autocomplete-theme($theme);
-  @include mat.input-theme($theme);
-  @include mat.slider-theme($theme);
-  @include mat.expansion-theme($theme);
-
+  // No per-component mat.*-theme($theme) includes: the Material widgets read
+  // the system tokens mat.theme() emits. On a color-scheme theme those mixins
+  // write the light values as literals, so the Material widgets stayed light
+  // in a dark OS while the cngx widgets followed it.
   @include cngx-system.theme($theme);
   @include select.theme($theme);
   @include option.theme($theme);

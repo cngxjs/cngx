@@ -65,6 +65,21 @@ describe('createContainerSize', () => {
     expect(size.blockSize()).toBe(0);
   });
 
+  it('observes on a host with ResizeObserver', () => {
+    expect(makeContainerSize().observes).toBe(true);
+  });
+
+  it('reports that it never observes on a host without ResizeObserver', () => {
+    const injector = TestBed.inject(Injector);
+    const size = runInInjectionContext(injector, () =>
+      createContainerSize(document.createElement('div'), TestBed.inject(DestroyRef), {
+        getComputedStyle: window.getComputedStyle.bind(window),
+      }),
+    );
+    expect(size.observes).toBe(false);
+    expect(size.isReady()).toBe(false);
+  });
+
   it('follows the border-box size of every observation', () => {
     const size = makeContainerSize();
     roMock.triggerResize(makeEntry(480, 120));

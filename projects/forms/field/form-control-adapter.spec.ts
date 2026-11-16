@@ -63,6 +63,35 @@ describe('adaptFormControl', () => {
     expect(ref.required()).toBe(true);
   });
 
+  it('survives a validator that expects its own value type', () => {
+    const tags = new FormControl<string[]>([], (c) =>
+      (c.value as string[]).filter(Boolean).length > 0 ? null : { required: true },
+    );
+    expect(() => adapt(tags, 'tags')).not.toThrow();
+    expect(adapt(tags, 'tags2')().required()).toBe(false);
+  });
+
+  it('runs the validators once per change, not again for the required probe', () => {
+    let calls = 0;
+    const counting = (): null => {
+      calls++;
+      return null;
+    };
+    const control = new FormControl('', [Validators.required, counting]);
+    calls = 0;
+    const ref = adapt(control, 'test')();
+    expect(ref.required()).toBe(true);
+    expect(calls).toBe(0);
+
+    control.setValue('x');
+    expect(calls).toBe(1);
+  });
+
+  it('still reports a custom validator that flags the empty value as required', () => {
+    const control = new FormControl('', (c) => (c.value === '' ? { required: true } : null));
+    expect(adapt(control, 'test')().required()).toBe(true);
+  });
+
   it('reads invalid state', () => {
     const control = new FormControl('', Validators.required);
     const ref = adapt(control, 'test')();

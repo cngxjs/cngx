@@ -6,6 +6,7 @@ import { EMPTY_RENAME_TABLE, type RenameTable } from './rename-table';
 import { planRenames } from './plan-renames';
 
 const PROVENANCE = { source: 'ng-update', version: '0.2.0' } as const;
+const ROOTS = ['src'];
 
 const TABLE: RenameTable = {
   ...EMPTY_RENAME_TABLE,
@@ -28,7 +29,7 @@ describe('planRenames', () => {
       'src/app/other.ts': 'export const x = 1;\n',
     });
 
-    const result = planRenames(TABLE, tree, PROVENANCE);
+    const result = planRenames(TABLE, tree, ROOTS, PROVENANCE);
     const planned = edits(result.changes);
 
     expect(planned.map((change) => [change.id, change.label])).toEqual([
@@ -48,15 +49,29 @@ describe('planRenames', () => {
       'src/typings.d.ts': COMPONENT,
     });
 
-    expect(planRenames(TABLE, tree, PROVENANCE).changes).toEqual([]);
+    expect(planRenames(TABLE, tree, ROOTS, PROVENANCE).changes).toEqual([]);
   });
 
   it('renames a source folder that shares a build output name below the root', () => {
     const tree = createMemoryTree({ 'src/app/coverage/report.ts': COMPONENT, 'src/app/dist/page.ts': COMPONENT });
 
-    expect(planRenames(TABLE, tree, PROVENANCE).changes.map((change) => change.id)).toEqual([
+    expect(planRenames(TABLE, tree, ROOTS, PROVENANCE).changes.map((change) => change.id)).toEqual([
       'rename:src/app/coverage/report.ts',
       'rename:src/app/dist/page.ts',
+    ]);
+  });
+
+  it('reads only the source roots, each file once', () => {
+    const tree = createMemoryTree({
+      'src/app/app.html': '<cngx-old-card></cngx-old-card>\n',
+      'docs/page.html': '<cngx-old-card></cngx-old-card>\n',
+      'tools/x.ts': COMPONENT,
+      'projects/lib/src/lib.ts': COMPONENT,
+    });
+
+    expect(planRenames(TABLE, tree, ['src', 'projects/lib/src', 'src'], PROVENANCE).changes.map((change) => change.id)).toEqual([
+      'rename:projects/lib/src/lib.ts',
+      'rename:src/app/app.html',
     ]);
   });
 
@@ -65,7 +80,7 @@ describe('planRenames', () => {
       'src/app/broken.html': '<cngx-old-card>@if (</cngx-old-card>',
     });
 
-    const [note] = planRenames(TABLE, tree, PROVENANCE).changes;
+    const [note] = planRenames(TABLE, tree, ROOTS, PROVENANCE).changes;
 
     expect(note).toMatchObject({
       kind: 'note',
@@ -81,7 +96,7 @@ describe('planRenames', () => {
         "export const card = () => import('@cngx/common/card').then((m) => m.CngxOldCard);\n",
     });
 
-    expect(planRenames(TABLE, tree, PROVENANCE).changes).toEqual([
+    expect(planRenames(TABLE, tree, ROOTS, PROVENANCE).changes).toEqual([
       {
         kind: 'note',
         id: 'rename-manual:src/app/lazy.ts:0',
@@ -95,8 +110,8 @@ describe('planRenames', () => {
   it('plans nothing for the empty table and never writes the tree', () => {
     const tree = createMemoryTree({ 'src/app/app.ts': COMPONENT });
 
-    expect(planRenames(EMPTY_RENAME_TABLE, tree, PROVENANCE)).toEqual({ changes: [], skipped: [] });
-    planRenames(TABLE, tree, PROVENANCE);
+    expect(planRenames(EMPTY_RENAME_TABLE, tree, ROOTS, PROVENANCE)).toEqual({ changes: [], skipped: [] });
+    planRenames(TABLE, tree, ROOTS, PROVENANCE);
     expect(tree.actions).toEqual([]);
   });
 });
