@@ -46,6 +46,12 @@ test.describe('forms/field/form-primitives', () => {
       const payment = fieldLabelled(page, 'Payment method');
       await expect(payment).toHaveClass(/cngx-field--error/);
       await expect(payment.locator('cngx-field-errors')).not.toBeEmpty();
+
+      // An empty selection is an error too, not only an unset scalar.
+      const channels = fieldLabelled(page, 'Channels');
+      await expect(channels).toHaveClass(/cngx-field--required/);
+      await expect(channels).toHaveClass(/cngx-field--error/);
+      await expect(channels.locator('cngx-field-errors')).not.toBeEmpty();
     });
 
     test(`${name}: picking a value makes the field valid and clears its error`, async ({

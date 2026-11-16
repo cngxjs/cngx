@@ -13,11 +13,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['withConstraintHints', 'CngxFormFieldPresenter', 'CngxFormField', 'CngxHint'],
   moduleImports: [
-    "import { form, schema, required, minLength, maxLength } from '@angular/forms/signals';",
+    "import { form, schema, required, minLength, maxLength, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxFormFieldPresenter, CngxLabel, CngxHint, CngxFieldErrors, CNGX_FORM_FIELD_CONFIG } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'FormField'],
   viewProviders: ['{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: {} } }'],
   setup: `protected readonly hintModel = signal({ username: '' });
   protected readonly hintForm = form(this.hintModel, schema<{ username: string }>((root) => {
@@ -29,7 +29,7 @@ export const STORY: DemoSpec = {
   template: `  <div class="demo-field" style="max-width:480px">
     <cngx-form-field [field]="hintForm.username">
       <label cngxLabel>Username</label>
-      <input cngxInput placeholder="pick a handle" />
+      <input cngxInput [formField]="hintForm.username" placeholder="pick a handle" />
       @if (presenter(); as p) {
         @if (p.constraintHints().length) {
           <span cngxHint>{{ p.constraintHints().join(', ') }}</span>

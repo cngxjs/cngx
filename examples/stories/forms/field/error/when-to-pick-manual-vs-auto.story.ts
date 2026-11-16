@@ -11,11 +11,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxError', 'CngxFieldErrors', 'CngxFormField', 'CngxLabel'],
   moduleImports: [
-    'import { form, schema, required, minLength } from \'@angular/forms/signals\';',
+    'import { form, schema, required, minLength, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError, CngxFieldErrors } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxFieldErrors', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxFieldErrors', 'CngxInput', 'FormField'],
   setup: `protected readonly model = signal<{ autoName: string; manualName: string }>({ autoName: '', manualName: '' });
   protected readonly userForm = form(this.model, schema<{ autoName: string; manualName: string }>((root) => {
     required(root.autoName, { message: 'This field is required' });
@@ -29,13 +29,7 @@ export const STORY: DemoSpec = {
       <h3 style="margin:0">Auto: cngx-field-errors</h3>
       <cngx-form-field [field]="userForm.autoName">
         <label cngxLabel>Display name</label>
-        <input
-          cngxInput
-          type="text"
-          [value]="userForm.autoName().value()"
-          (input)="userForm.autoName().value.set($any($event.target).value)"
-          (blur)="userForm.autoName().markAsTouched()"
-        />
+        <input cngxInput [formField]="userForm.autoName" type="text" />
         <cngx-field-errors />
       </cngx-form-field>
       <p style="margin:0">
@@ -47,13 +41,7 @@ export const STORY: DemoSpec = {
       <h3 style="margin:0">Manual: div cngxError</h3>
       <cngx-form-field [field]="userForm.manualName">
         <label cngxLabel>Display name</label>
-        <input
-          cngxInput
-          type="text"
-          [value]="userForm.manualName().value()"
-          (input)="userForm.manualName().value.set($any($event.target).value)"
-          (blur)="userForm.manualName().markAsTouched()"
-        />
+        <input cngxInput [formField]="userForm.manualName" type="text" />
         <div cngxError style="display:grid;gap:4px;margin-top:6px">
           @if (userForm.manualName().touched()) {
             @for (e of userForm.manualName().errors(); track e.kind) {

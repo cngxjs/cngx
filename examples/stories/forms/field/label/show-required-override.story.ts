@@ -16,11 +16,11 @@ export const STORY: DemoSpec = {
     'withRequiredMarker',
   ],
   moduleImports: [
-    "import { form, schema, required } from '@angular/forms/signals';",
+    "import { form, schema, required, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'FormField'],
   setup: `// Bootstrap-layer registration (not runnable inline in this demo,
   // since the example component has no providers slot). In your app:
   //
@@ -44,12 +44,12 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="overrideForm.name">
       <label cngxLabel>Name</label>
-      <input cngxInput type="text" />
+      <input cngxInput [formField]="overrideForm.name" type="text" />
     </cngx-form-field>
 
     <cngx-form-field [field]="overrideForm.nickname">
       <label cngxLabel [showRequired]="false">Nickname (still required, marker suppressed)</label>
-      <input cngxInput type="text" />
+      <input cngxInput [formField]="overrideForm.nickname" type="text" />
     </cngx-form-field>
   </div>`,
 };

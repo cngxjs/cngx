@@ -13,11 +13,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxRequired', 'CngxLabel', 'CngxFormField'],
   moduleImports: [
-    "import { form, schema, required } from '@angular/forms/signals';",
+    "import { form, schema, required, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxRequired } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'CngxInput', 'FormField'],
   references: [
     {
       label: 'WCAG 3.3.2 Labels or Instructions',
@@ -37,11 +37,7 @@ export const STORY: DemoSpec = {
     <!-- Recommended: marker sits inside the label, next to the visible text. -->
     <cngx-form-field [field]="placementForm.inside">
       <label cngxLabel>Inside label <cngx-required /></label>
-      <input cngxInput
-        type="text"
-        [ngModel]="placementForm.inside().value()"
-        (ngModelChange)="placementForm.inside().value.set($event)"
-      />
+      <input cngxInput [formField]="placementForm.inside" type="text" />
     </cngx-form-field>
 
     <!-- Legal but discouraged: marker sits outside the label tag.
@@ -49,11 +45,7 @@ export const STORY: DemoSpec = {
     <cngx-form-field [field]="placementForm.outside">
       <label cngxLabel>Outside label</label>
       <cngx-required />
-      <input cngxInput
-        type="text"
-        [ngModel]="placementForm.outside().value()"
-        (ngModelChange)="placementForm.outside().value.set($event)"
-      />
+      <input cngxInput [formField]="placementForm.outside" type="text" />
     </cngx-form-field>
   </div>`,
 };

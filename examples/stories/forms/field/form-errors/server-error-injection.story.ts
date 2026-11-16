@@ -14,11 +14,11 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
   moduleImports: [
-    "import { form, schema, required, submit, type FieldTree, type ValidationError } from '@angular/forms/signals';",
+    "import { form, schema, required, submit, type FieldTree, type ValidationError, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFormErrors } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors', 'FormField'],
   setup: `protected readonly model = signal({ username: '', email: '' });
   protected readonly signupForm = form(this.model, schema<{ username: string; email: string }>((root) => {
     required(root.username, { message: 'Username is required' });
@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
     this.lastResult.set(ok ? 'ok' : 'failed');
   }
   protected handleReset(): void {
-    this.model.set({ username: '', email: '' });
+    this.signupForm().reset({ username: '', email: '' });
     this.showErrors.set(false);
     this.lastResult.set('idle');
     this.failNext.set(false);
@@ -64,7 +64,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="signupForm.username">
         <label cngxLabel>Username</label>
-        <input cngxInput />
+        <input cngxInput [formField]="signupForm.username" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -72,7 +72,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="signupForm.email">
         <label cngxLabel>Email</label>
-        <input cngxInput />
+        <input cngxInput [formField]="signupForm.email" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
