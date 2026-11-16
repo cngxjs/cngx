@@ -4,9 +4,10 @@
  * chrome that a bare `<ul cngxMenu>…</ul>` renders as a usable
  * popover menu: bullets stripped, items laid out in a flex row with
  * icon / label / suffix / kbd slots, keyboard-cursor and checked-state
- * signals painted in. Container surface (background, border, radius)
- * is owned by the popover panel that hosts the menu -
- * `cngx-popover-panel.css` paints the chrome.
+ * signals painted in. The container paints a default floating surface
+ * (background, border, radius, elevation) from the `--cngx-menu-bg`,
+ * `-border`, `-radius` and `-shadow` tokens; a host that paints its own
+ * surface around the menu sets those tokens on its menu.
  *
  * **Selectors**
  *
@@ -42,6 +43,10 @@
  * - `--cngx-menu-item-highlight-bg` -> `color-mix(primary, transparent)`
  * - `--cngx-menu-item-checked-color` -> `--cngx-color-primary`
  * - `--cngx-menu-separator-color` -> `--cngx-color-border`
+ * - `--cngx-menu-bg` -> `--cngx-color-surface`
+ * - `--cngx-menu-border` -> 1px `--cngx-color-border`
+ * - `--cngx-menu-radius` -> `--cngx-radius-md`
+ * - `--cngx-menu-shadow` -> `--cngx-shadow-md`
  *
  * The highlight tint is a `color-mix()` so Material's `--mat-sys-primary`
  * (or any other primary override) flows through without forking.
@@ -110,6 +115,48 @@
     syntax: '<color>';
     inherits: true;
     initial-value: oklch(0.66 0.19 50 / 0.1);
+  }
+
+  /**
+   * Background of the menu container. Unset by default, so the container
+   * paints `--cngx-color-surface`. A host that paints its own surface around
+   * the menu sets it to `transparent` on its menu.
+   * @group Surface
+   * @see [[--cngx-color-surface]]
+   */
+  @property --cngx-menu-bg {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Border shorthand of the menu container. Unset by default, so the
+   * container draws a 1px `--cngx-color-border` line.
+   * @group Surface
+   */
+  @property --cngx-menu-border {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Corner radius of the menu container. Unset by default, so it follows
+   * `--cngx-radius-md`.
+   * @group Surface
+   */
+  @property --cngx-menu-radius {
+    syntax: '*';
+    inherits: false;
+  }
+
+  /**
+   * Elevation of the menu container. Unset by default, so it follows
+   * `--cngx-shadow-md`.
+   * @group Surface
+   */
+  @property --cngx-menu-shadow {
+    syntax: '*';
+    inherits: false;
   }
 
   /**
