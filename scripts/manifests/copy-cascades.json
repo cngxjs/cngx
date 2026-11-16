@@ -285,7 +285,7 @@
     {
       "class": "CngxSidebar",
       "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 270,
+      "line": 274,
       "member": "label",
       "enclosing": "computed",
       "tiers": [
@@ -1038,7 +1038,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 316,
+      "line": 315,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [

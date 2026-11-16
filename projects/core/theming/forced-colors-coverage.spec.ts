@@ -209,6 +209,10 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
     note: 'the peek and overlay box-shadows are decorative over the rail edge border, which self-heals; the active nav row forced-colors block moved to cngx-nav.css with the row skin',
   },
   {
+    file: 'projects/common/theming/components/cngx-sidebar.css',
+    note: 'the peek box-shadow is decorative over the border on the content side, which self-heals, so the peek keeps a visible edge',
+  },
+  {
     file: 'projects/common/popover/popover-panel.component.css',
     note: 'the box-shadow is decorative elevation only; the panel keeps a real 1px border that self-heals, so the shadow loss leaves a visible edge',
   },

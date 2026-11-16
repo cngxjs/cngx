@@ -1,22 +1,23 @@
 import { Component, effect, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
+  CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
   CngxNavFooter,
   CngxNavGroup,
   CngxNavGroupContent,
   CngxNavHeader,
   CngxNavLink,
+  type CngxNavRailTooltipSources,
+  injectNavRailFlyout,
+  injectNavRailTooltip,
 } from '@cngx/common/interactive';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CNGX_NAV_RAIL_I18N, provideNavRailI18n, withNavRailI18nLabels } from './nav-rail-i18n';
 import { CngxNavRail, type CngxNavRailLabelPlacement, type CngxNavRailSide } from './nav-rail';
-import { CNGX_NAV_RAIL_FLYOUT_FACTORY, injectNavRailFlyout } from './nav-rail-flyout';
-import {
-  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-  type CngxNavRailTooltipSources,
-  injectNavRailTooltip,
-} from './nav-rail-tooltip';
+import { withNavRailTooltipDelay } from './config/features';
+import { provideNavRailConfig } from './config/provide-nav-rail-config';
 
 @Component({
   imports: [
@@ -234,6 +235,23 @@ describe('CngxNavRail', () => {
     fixture.componentInstance.side.set('end');
     settle();
     expect(sides).toEqual(['start', 'end']);
+  });
+
+  it('passes withNavRailTooltipDelay to the tooltip as hoverDelay', () => {
+    let delay: number | undefined;
+    TestBed.configureTestingModule({
+      providers: [
+        provideNavRailConfig(withNavRailTooltipDelay(500)),
+        {
+          provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+          useValue: ({ hoverDelay }: CngxNavRailTooltipSources) => {
+            delay = hoverDelay();
+          },
+        },
+      ],
+    });
+    setup();
+    expect(delay).toBe(500);
   });
 
   it('opens a projected nav group as a flyout', () => {

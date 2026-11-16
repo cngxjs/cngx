@@ -1,8 +1,20 @@
 /**
  * @overview
- * Theming bridge for the `CngxDrawer` scrim. Opt-in: add the
- * `.cngx-drawer` class alongside `[cngxDrawer]` and the host paints a
- * scrim over itself while a modal `CngxDrawerPanel` inside it is open
+ * Base skin for `CngxDrawer`: panel position, surface and motion, plus the
+ * scrim. Opt-in: add the `.cngx-drawer` class alongside `[cngxDrawer]`.
+ *
+ * The panel (`CngxDrawerPanel`) sits absolute on its side of the host (the
+ * physical `.cngx-drawer-panel--left` / `--right` / `--top` / `--bottom`
+ * classes), on a surface with a border toward the content, and slides in
+ * from off the host. In `push` mode the panel slides the same way at its
+ * full size, and the content (`.cngx-drawer-content`, which fills the rest
+ * of the host's flex row) moves aside by the panel size on that side
+ * (`data-drawer-push`, written by `CngxDrawerContent` while a push panel is
+ * open). The panel never narrows, so nothing inside it rewraps while it
+ * moves. The host clips what lies outside it, so a closed panel paints
+ * nothing.
+ *
+ * The host paints a scrim over itself while a modal `CngxDrawerPanel` inside it is open
  * (`modality` `page` or `contained`; the panel renders
  * `.cngx-drawer-panel--modal` + `.cngx-drawer-panel--open`). The scrim is
  * a pseudo-element of the host: a press on it lands on the host, outside
@@ -12,12 +24,22 @@
  * For a clipped drawer below a live app header, keep the header outside
  * the `[cngxDrawer]` host: the scrim covers the host only.
  *
- * The host becomes the containing block (`position: relative`) so the
- * scrim covers exactly the host. The panel sits above the scrim when it is
- * positioned with a `z-index` above `--cngx-drawer-scrim-z-index`.
+ * The host becomes the containing block (`position: relative`) so panel
+ * and scrim cover exactly the host. The panel sits above the scrim
+ * (`--cngx-drawer-panel-z-index` above `--cngx-drawer-scrim-z-index`).
+ * `[cngxDrawerSurface]` on its own gets no skin: it is the behaviour-only
+ * surface you position yourself.
  *
  * **Inheritance**
  *
+ * - `--cngx-drawer-panel-inline-size` -> `220px` (left and right panels)
+ * - `--cngx-drawer-panel-block-size` -> `120px` (top and bottom panels)
+ * - `--cngx-drawer-panel-bg` -> `--cngx-color-surface`
+ * - `--cngx-drawer-panel-border-color` -> `--cngx-color-border`
+ * - `--cngx-drawer-panel-border-width` -> `1px`
+ * - `--cngx-drawer-panel-duration` -> `--cngx-duration-base` (the slide
+ *   and the push margin of the content)
+ * - `--cngx-drawer-panel-z-index` -> `2`
  * - `--cngx-drawer-scrim-bg` -> `--cngx-backdrop-bg` (the same scrim
  *   colour as `CngxBackdrop`, including its Material bridge)
  * - `--cngx-drawer-scrim-duration` -> `--cngx-duration-base`
@@ -28,8 +50,84 @@
 @layer cngx.components {
   @scope (.cngx-drawer) {
     :scope {
-      /* Functional - the scrim covers the host box */
+      /* Functional - panel and scrim cover the host box; a closed panel
+         lies outside it */
       position: relative;
+      display: flex;
+      overflow: clip;
+    }
+
+    .cngx-drawer-panel {
+      /* Functional - over the content on its side */
+      position: absolute;
+      box-sizing: border-box;
+
+      /* Themable - token-driven */
+      z-index: var(--cngx-drawer-panel-z-index, 2);
+      background: var(--cngx-drawer-panel-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      transition: transform var(--cngx-drawer-panel-duration, var(--cngx-duration-base, 200ms))
+        ease;
+    }
+
+    .cngx-drawer-panel--left {
+      inset: 0 auto 0 0;
+      width: var(--cngx-drawer-panel-inline-size, 220px);
+      border-right: var(--cngx-drawer-panel-border-width, 1px) solid
+        var(--cngx-drawer-panel-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+      transform: translateX(-100%);
+    }
+
+    .cngx-drawer-panel--right {
+      inset: 0 0 0 auto;
+      width: var(--cngx-drawer-panel-inline-size, 220px);
+      border-left: var(--cngx-drawer-panel-border-width, 1px) solid
+        var(--cngx-drawer-panel-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+      transform: translateX(100%);
+    }
+
+    .cngx-drawer-panel--top {
+      inset: 0 0 auto 0;
+      height: var(--cngx-drawer-panel-block-size, 120px);
+      border-bottom: var(--cngx-drawer-panel-border-width, 1px) solid
+        var(--cngx-drawer-panel-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+      transform: translateY(-100%);
+    }
+
+    .cngx-drawer-panel--bottom {
+      inset: auto 0 0 0;
+      height: var(--cngx-drawer-panel-block-size, 120px);
+      border-top: var(--cngx-drawer-panel-border-width, 1px) solid
+        var(--cngx-drawer-panel-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+      transform: translateY(100%);
+    }
+
+    .cngx-drawer-panel--open {
+      transform: none;
+    }
+
+    .cngx-drawer-content {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      transition: margin var(--cngx-drawer-panel-duration, var(--cngx-duration-base, 200ms)) ease;
+    }
+
+    /* Push: the panel slides at full size like over, the content gives way
+       by the panel size. Physical sides, as the panel classes. */
+    .cngx-drawer-content[data-drawer-push='left'] {
+      margin-left: var(--cngx-drawer-panel-inline-size, 220px);
+    }
+
+    .cngx-drawer-content[data-drawer-push='right'] {
+      margin-right: var(--cngx-drawer-panel-inline-size, 220px);
+    }
+
+    .cngx-drawer-content[data-drawer-push='top'] {
+      margin-top: var(--cngx-drawer-panel-block-size, 120px);
+    }
+
+    .cngx-drawer-content[data-drawer-push='bottom'] {
+      margin-bottom: var(--cngx-drawer-panel-block-size, 120px);
     }
 
     :scope::after {

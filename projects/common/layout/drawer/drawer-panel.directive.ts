@@ -73,12 +73,15 @@ export type DrawerMode = 'over' | 'push';
  * **Scrim.** The panel renders `cngx-drawer-panel--modal` while its
  * resolved modality is `'page'` or `'contained'` (plus
  * `cngx-drawer-panel--contained` for the latter). The opt-in stylesheet
- * `cngx-drawer.css` paints the scrim from it: add the `cngx-drawer` class
- * to the `[cngxDrawer]` host and the host shows a scrim over itself while
- * a modal panel inside it is open (`--cngx-drawer-scrim-bg`, default
+ * `cngx-drawer.css` skins the panel from its classes: add the `cngx-drawer`
+ * class to the `[cngxDrawer]` host and the panel sits on its `position`
+ * side with a surface and a border toward the content, slides in (in
+ * `push` mode the content moves aside by its size), and the host shows a scrim over itself
+ * while a modal panel inside it is open (`--cngx-drawer-scrim-bg`, default
  * `--cngx-backdrop-bg`). A press on the scrim is a press outside the panel
- * and closes the drawer. The panel sits above the scrim when it is
- * positioned with a `z-index` above `--cngx-drawer-scrim-z-index` (`1`).
+ * and closes the drawer. The panel sits above the scrim
+ * (`--cngx-drawer-panel-z-index`, `2`, over `--cngx-drawer-scrim-z-index`,
+ * `1`).
  *
  * The `role` input (landmark while not an open page modal) defaults to
  * `complementary`. On a `<nav>` host pass `[role]="null"` so the implicit

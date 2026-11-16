@@ -41,8 +41,9 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * The drawer host is also the boundary of a `'contained'` panel and the
  * area its scrim covers: with the opt-in `cngx-drawer` class (stylesheet
  * `@cngx/common/theming/components/cngx-drawer.css`, part of the cngx
- * bundle) the host paints a scrim over itself while a modal panel inside it
- * is open. Keep an app header that must stay live outside the host.
+ * bundle) the host places the panel on its side, lets the content fill the
+ * rest and paints a scrim over itself while a modal panel inside it is
+ * open. Keep an app header that must stay live outside the host.
  *
  * ### With a panel trigger
  * ```html

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxDrawer } from './drawer.directive';
 import { CngxDrawerContent } from './drawer-content.directive';
+import { CngxDrawerPanel, type DrawerMode } from './drawer-panel.directive';
 
 @Component({
   template: `
@@ -15,6 +16,20 @@ import { CngxDrawerContent } from './drawer-content.directive';
   imports: [CngxDrawer, CngxDrawerContent],
 })
 class TestHost {}
+
+@Component({
+  template: `
+    <div cngxDrawer #drawer="cngxDrawer">
+      <nav [cngxDrawerPanel]="drawer" [mode]="mode()" [position]="position()">Panel</nav>
+      <main [cngxDrawerContent]="drawer">Content</main>
+    </div>
+  `,
+  imports: [CngxDrawer, CngxDrawerContent, CngxDrawerPanel],
+})
+class PanelHost {
+  readonly mode = signal<DrawerMode>('push');
+  readonly position = signal<'left' | 'right' | 'top' | 'bottom'>('left');
+}
 
 describe('CngxDrawerContent', () => {
   function setup() {
@@ -72,5 +87,39 @@ describe('CngxDrawerContent', () => {
     drawer.close();
     fixture.detectChanges();
     expect(contentEl.classList.contains('cngx-drawer-content--shifted')).toBe(false);
+  });
+
+  describe('data-drawer-push', () => {
+    function setupPanel() {
+      TestBed.configureTestingModule({ imports: [PanelHost] });
+      const fixture = TestBed.createComponent(PanelHost);
+      fixture.detectChanges();
+      const drawer = fixture.debugElement.query(By.directive(CngxDrawer)).injector.get(CngxDrawer);
+      const contentEl = fixture.debugElement.query(By.directive(CngxDrawerContent))
+        .nativeElement as HTMLElement;
+      return { fixture, drawer, contentEl };
+    }
+
+    it('writes the side of an open push panel and nothing while closed', () => {
+      const { fixture, drawer, contentEl } = setupPanel();
+      expect(contentEl.hasAttribute('data-drawer-push')).toBe(false);
+      drawer.open();
+      fixture.detectChanges();
+      expect(contentEl.getAttribute('data-drawer-push')).toBe('left');
+      fixture.componentInstance.position.set('bottom');
+      fixture.detectChanges();
+      expect(contentEl.getAttribute('data-drawer-push')).toBe('bottom');
+      drawer.close();
+      fixture.detectChanges();
+      expect(contentEl.hasAttribute('data-drawer-push')).toBe(false);
+    });
+
+    it('writes nothing for an open over panel', () => {
+      const { fixture, drawer, contentEl } = setupPanel();
+      fixture.componentInstance.mode.set('over');
+      drawer.open();
+      fixture.detectChanges();
+      expect(contentEl.hasAttribute('data-drawer-push')).toBe(false);
+    });
   });
 });

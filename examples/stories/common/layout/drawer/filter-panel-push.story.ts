@@ -59,8 +59,7 @@ export const STORY: DemoSpec = {
     <div cngxDrawer #filters="cngxDrawer" panelId="order-filters" class="cngx-drawer demo-app-body">
       <aside [cngxDrawerPanel]="filters" [mode]="mode()" [modality]="modality()"
              [closeOnClickOutside]="mode() === 'over'"
-             aria-label="Filters" class="demo-drawer-panel"
-             [class.demo-drawer-panel--static]="mode() === 'push'">
+             aria-label="Filters" class="demo-drawer-panel">
         <div class="demo-app-header">
           <strong>Filters</strong>
           <span class="demo-app-spacer"></span>

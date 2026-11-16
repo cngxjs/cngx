@@ -1,6 +1,6 @@
 /// <reference types="@vitest/browser-playwright" />
 
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   accessibleName,
@@ -12,6 +12,7 @@ import {
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
+import { CngxAvatar } from '../../display/avatar/avatar.component';
 import { CngxNavBadge } from '../../interactive/nav/nav-badge.directive';
 import { CngxNavFooter } from '../../interactive/nav/nav-footer.directive';
 import { CngxNavGroup } from '../../interactive/nav/nav-group.directive';
@@ -21,6 +22,7 @@ import { CngxNavLabel } from '../../interactive/nav/nav-label.directive';
 import { CngxNavLink } from '../../interactive/nav/nav-link.directive';
 import { CngxNavMark } from '../../interactive/nav/nav-mark.directive';
 import { CngxNavName } from '../../interactive/nav/nav-name.directive';
+import { CngxNavRailed } from '../../interactive/nav/nav-railed.directive';
 
 // Runs in a real Chromium (the `test-geometry` target) against the working-tree
 // cngx-nav.css and the system tokens, with the rows in a plain <nav> and no
@@ -660,5 +662,160 @@ describe('forced colors', () => {
     const row = one(root, '.row-idle');
     row.focus();
     expect(computedValue(row, 'box-shadow')).toBe('none');
+  });
+});
+
+// A container of its own on [cngxNavRailed]: only its width changes, the crop
+// comes from cngx-nav.css.
+@Component({
+  selector: 'cngx-nav-railed-host',
+  standalone: true,
+  imports: [CngxNavRailed, CngxNavLink, CngxNavIcon, CngxNavLabel, CngxNavHeader, CngxNavName],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    './cngx-nav.css',
+  ],
+  styles: [
+    '.railed-box { display: flex; flex-direction: column; box-sizing: border-box; border-inline-end: 1px solid; }',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <nav
+      class="railed-box"
+      aria-label="Rail"
+      [cngxNavRailed]="railed()"
+      [style.inline-size]="railed() ? 'calc(var(--cngx-nav-railed-size) + 1px)' : '240px'"
+    >
+      <cngx-nav-header><span cngxNavName class="railed-name">Acme</span></cngx-nav-header>
+      <span cngxNavLabel class="railed-label">Main</span>
+      <a cngxNavLink href="#a" class="railed-icon-row">
+        <span cngxNavIcon class="railed-icon">*</span>Starred
+      </a>
+      <a cngxNavLink href="#b" class="railed-letter-row">Drafts</a>
+    </nav>
+  `,
+})
+class NavRailedHost {
+  readonly railed = signal(false);
+}
+
+describe('railed rows', () => {
+  let root: HTMLElement | null = null;
+
+  afterEach(() => {
+    root?.remove();
+    root = null;
+  });
+
+  function mountRailed() {
+    const fixture = TestBed.createComponent(NavRailedHost);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    const rail = (on: boolean) => {
+      fixture.componentInstance.railed.set(on);
+      fixture.detectChanges();
+    };
+    return { host: root, rail };
+  }
+
+  it('keeps the icon box at its expanded x and y and clips the label', () => {
+    const { host, rail } = mountRailed();
+    const expanded = one(host, '.railed-icon').getBoundingClientRect();
+    rail(true);
+    const railed = one(host, '.railed-icon').getBoundingClientRect();
+    expect(Math.abs(railed.x - expanded.x)).toBeLessThan(0.5);
+    expect(Math.abs(railed.y - expanded.y)).toBeLessThan(0.5);
+    const row = one(host, '.railed-icon-row');
+    expect(computedValue(row, 'overflow-x')).toBe('clip');
+    expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
+  });
+
+  it('centres the icon box in a rail sized from --cngx-nav-railed-size plus the border', () => {
+    const { host, rail } = mountRailed();
+    rail(true);
+    const box = one(host, '.railed-box');
+    expect(box.getAttribute('data-nav-railed')).toBe('true');
+    // 2 * (4px inset + 16px padding) + 20px icon, border not included.
+    expect(box.clientWidth).toBe(60);
+    const content = box.getBoundingClientRect();
+    const icon = one(host, '.railed-icon').getBoundingClientRect();
+    const contentCentre = content.x + box.clientWidth / 2;
+    expect(Math.abs(icon.x + icon.width / 2 - contentCentre)).toBeLessThan(0.5);
+  });
+
+  it('keeps the letter on a row without an icon', () => {
+    const { host, rail } = mountRailed();
+    rail(true);
+    const row = one(host, '.railed-letter-row');
+    expect(getComputedStyle(row, '::before').content).toContain('D');
+  });
+
+  it('paints no section label and fades the header name, both kept in the tree', () => {
+    const { host, rail } = mountRailed();
+    expect(computedValue(one(host, '.railed-label'), 'clip-path')).toBe('none');
+    rail(true);
+    expect(computedValue(one(host, '.railed-label'), 'clip-path')).toBe('inset(100%)');
+    expect(computedValue(one(host, '.railed-name'), 'opacity')).toBe('0');
+  });
+
+  it('leaves the rows alone while not railed', () => {
+    const { host } = mountRailed();
+    const row = one(host, '.railed-icon-row');
+    expect(computedValue(row, 'overflow-x')).not.toBe('clip');
+    expect(row.scrollWidth).toBeLessThanOrEqual(row.clientWidth);
+  });
+});
+
+// A cngx-avatar as mark, with a size rung of its own: the nav pins it to the
+// icon box. The avatar sheet loads after the nav sheet, as in an app.
+@Component({
+  selector: 'cngx-nav-avatar-mark-host',
+  standalone: true,
+  imports: [CngxAvatar, CngxNavLink, CngxNavIcon, CngxNavHeader, CngxNavFooter, CngxNavMark],
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    './cngx-nav.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <nav aria-label="Avatars" style="display: flex; flex-direction: column; inline-size: 240px">
+      <cngx-nav-header>
+        <cngx-avatar cngxNavMark class="avatar-header" initials="A" shape="square" size="sm" />
+      </cngx-nav-header>
+      <a cngxNavLink href="#a"><span cngxNavIcon class="avatar-row-icon">*</span>Starred</a>
+      <cngx-nav-footer>
+        <cngx-avatar cngxNavMark class="avatar-footer" initials="JD" size="sm" />
+      </cngx-nav-footer>
+    </nav>
+  `,
+})
+class NavAvatarMarkHost {}
+
+describe('avatar as mark', () => {
+  let root: HTMLElement | null = null;
+
+  afterEach(() => {
+    root?.remove();
+    root = null;
+  });
+
+  it('pins a size="sm" avatar to the icon box at the row icon x', () => {
+    const fixture = TestBed.createComponent(NavAvatarMarkHost);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    const icon = one(root, '.avatar-row-icon').getBoundingClientRect();
+    for (const selector of ['.avatar-header', '.avatar-footer']) {
+      const avatar = one(root, selector);
+      expect(avatar.classList).toContain('cngx-avatar--sm');
+      const mark = avatar.getBoundingClientRect();
+      expect(mark.width).toBeCloseTo(icon.width, 1);
+      expect(mark.height).toBeCloseTo(icon.height, 1);
+      expect(Math.abs(mark.left - icon.left)).toBeLessThanOrEqual(0.5);
+      expect(computedValue(avatar, 'font-size')).toBe('10px');
+    }
   });
 });

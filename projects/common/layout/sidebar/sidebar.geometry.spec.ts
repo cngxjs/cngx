@@ -2,7 +2,11 @@ import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { CngxSidebar, type CngxSidebarCollapsedAs } from './sidebar.directive';
+import {
+  CngxSidebar,
+  type CngxSidebarCollapsedAs,
+  type CngxSidebarSide,
+} from './sidebar.directive';
 
 // Runs in a real Chromium (the `test-geometry` target): real flex layout, so
 // the reserved space is measured off the content lane beside the sidebar.
@@ -167,5 +171,138 @@ describe('CngxSidebar geometry', () => {
     expect(peeked.width).toBe(240);
     expect(peeked.right).toBe(row.right);
     expect(main.getBoundingClientRect().width).toBe(mainWidth);
+  });
+});
+
+// The base skin: the working-tree cngx-sidebar.css on a `.cngx-sidebar` host
+// with plain content, no story CSS.
+@Component({
+  selector: 'cngx-sidebar-skin-geometry-host',
+  standalone: true,
+  imports: [CngxSidebar],
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    '../../theming/components/cngx-sidebar.css',
+  ],
+  styles: `
+    .skin-row {
+      display: flex;
+      inline-size: 900px;
+      block-size: 240px;
+      --cngx-sidebar-size: 240px;
+      --cngx-sidebar-rail-size: 56px;
+    }
+    .skin-main {
+      flex: 1;
+      min-inline-size: 0;
+      background: white;
+    }
+  `,
+  template: `
+    <div class="skin-row">
+      @if (side() === 'end') {
+        <main class="skin-main"></main>
+      }
+      <aside
+        class="cngx-sidebar"
+        cngxSidebar
+        [side]="side()"
+        [collapsed]="collapsed()"
+        [collapsedAs]="collapsedAs()"
+        [expandOnHover]="false"
+      >
+        <p>Content</p>
+      </aside>
+      @if (side() === 'start') {
+        <main class="skin-main"></main>
+      }
+    </div>
+  `,
+})
+class SkinHost {
+  readonly side = signal<CngxSidebarSide>('start');
+  readonly collapsed = signal(false);
+  readonly collapsedAs = signal<'rail' | 'hidden'>('rail');
+}
+
+describe('cngx-sidebar.css', () => {
+  let root: HTMLElement | null = null;
+
+  afterEach(() => {
+    root?.remove();
+    root = null;
+    document.documentElement.removeAttribute('dir');
+  });
+
+  function mount() {
+    const fixture = TestBed.createComponent(SkinHost);
+    root = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(root);
+    fixture.detectChanges();
+    const q = (sel: string) => root?.querySelector(sel) as HTMLElement;
+    const side = () => q('.cngx-sidebar');
+    const sidebar = () =>
+      fixture.debugElement.query((d) => d.nativeElement === side()).injector.get(CngxSidebar);
+    const set = (fn: (h: SkinHost) => void) => {
+      fn(fixture.componentInstance);
+      fixture.detectChanges();
+    };
+    return { fixture, q, side, sidebar, set };
+  }
+
+  function borders(el: HTMLElement) {
+    const cs = getComputedStyle(el);
+    return { left: cs.borderLeftWidth, right: cs.borderRightWidth };
+  }
+
+  it('draws the border on the side facing the content, start and end', () => {
+    const { side, set } = mount();
+    expect(borders(side())).toEqual({ left: '0px', right: '1px' });
+    set((h) => h.side.set('end'));
+    expect(borders(side())).toEqual({ left: '1px', right: '0px' });
+  });
+
+  it('paints no border while hidden, and its border again on a hidden peek', () => {
+    const { fixture, side, sidebar, set } = mount();
+    for (const s of ['start', 'end'] as const) {
+      set((h) => {
+        h.side.set(s);
+        h.collapsedAs.set('hidden');
+        h.collapsed.set(true);
+      });
+      expect(side().getAttribute('data-sidebar-state')).toBe('hidden');
+      expect(borders(side())).toEqual({ left: '0px', right: '0px' });
+      expect(side().getBoundingClientRect().width).toBe(0);
+    }
+    sidebar().peek();
+    fixture.detectChanges();
+    expect(side().getAttribute('data-sidebar-state')).toBe('peek');
+    expect(borders(side())).toEqual({ left: '1px', right: '0px' });
+  });
+
+  it('sets no padding or gap for its content', () => {
+    const { side } = mount();
+    const cs = getComputedStyle(side());
+    expect(cs.padding).toBe('0px');
+    expect(cs.rowGap).toBe('normal');
+  });
+
+  it('mirrors the border under RTL', () => {
+    document.documentElement.setAttribute('dir', 'rtl');
+    const { side } = mount();
+    expect(borders(side())).toEqual({ left: '1px', right: '0px' });
+  });
+
+  it('paints a peek above the content with a shadow', () => {
+    const { fixture, side, sidebar, set } = mount();
+    set((h) => h.collapsed.set(true));
+    sidebar().peek();
+    fixture.detectChanges();
+    const cs = getComputedStyle(side());
+    expect(side().getAttribute('data-sidebar-state')).toBe('peek');
+    expect(cs.boxShadow).not.toBe('none');
+    expect(Number(cs.zIndex)).toBeGreaterThan(0);
   });
 });

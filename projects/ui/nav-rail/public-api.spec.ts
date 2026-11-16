@@ -1,14 +1,9 @@
-import type { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
 import type { CngxSidebarSide } from '@cngx/common/layout';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import * as api from './public-api';
 
 describe('@cngx/ui/nav-rail public API shape', () => {
-  it('exports the rail tooltip injection function', () => {
-    expect(typeof api.injectNavRailTooltip).toBe('function');
-  });
-
   it('exports the rail organism, its copy token and its English section', () => {
     expect(api.CngxNavRail).toBeDefined();
     expect(api.CNGX_NAV_RAIL_I18N).toBeDefined();
@@ -34,19 +29,5 @@ describe('@cngx/ui/nav-rail public API shape', () => {
 
   it('shares the side union with the sidebar', () => {
     expectTypeOf<api.CngxNavRailSide>().toEqualTypeOf<CngxSidebarSide>();
-  });
-
-  it('exports the rail group flyout injection function', () => {
-    expect(typeof api.injectNavRailFlyout).toBe('function');
-  });
-
-  it('types the flyout on a group contract the nav atoms match', () => {
-    expectTypeOf<CngxNavGroup>().toMatchTypeOf<api.CngxNavRailFlyoutGroup>();
-    expectTypeOf<CngxNavGroupContent>().toMatchTypeOf<api.CngxNavRailFlyoutContent>();
-  });
-
-  it('exports the tooltip and flyout swap tokens', () => {
-    expect(api.CNGX_NAV_RAIL_TOOLTIP_FACTORY).toBeDefined();
-    expect(api.CNGX_NAV_RAIL_FLYOUT_FACTORY).toBeDefined();
   });
 });
