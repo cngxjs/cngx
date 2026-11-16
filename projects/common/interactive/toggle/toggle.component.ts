@@ -72,7 +72,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * <example-url>/#/common/interactive/toggle/custom-thumb-glyph</example-url>
  * <example-url>/#/common/interactive/toggle/disabled-with-reason</example-url>
  * <example-url>/#/common/interactive/toggle/label-position</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level atom
@@ -87,15 +86,16 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     role: 'switch',
     '[attr.id]': 'id()',
     '[attr.aria-checked]': 'value() ? "true" : "false"',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'effectiveDisabled() ? "true" : null',
+    '[attr.aria-readonly]': 'groupHost.fieldReadonly() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId() ?? groupHost.fieldErrorMessage()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
     '[attr.aria-required]': 'groupHost.fieldRequired() ? "true" : null',
-    '[attr.tabindex]': 'disabled() ? -1 : 0',
+    '[attr.tabindex]': 'effectiveDisabled() ? -1 : 0',
     '[class.cngx-toggle--checked]': 'value()',
-    '[class.cngx-toggle--disabled]': 'disabled()',
+    '[class.cngx-toggle--disabled]': 'effectiveDisabled()',
     '[class.cngx-toggle--label-before]': 'labelPosition() === "before"',
     '(click)': 'handleClick()',
     '(keydown.space)': 'handleKeydown($event)',
@@ -122,7 +122,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     <span
       [id]="describedId"
       class="cngx-toggle__sr-only"
-      [attr.aria-hidden]="disabled() && disabledReason() ? null : 'true'"
+      [attr.aria-hidden]="effectiveDisabled() && disabledReason() ? null : 'true'"
       >{{ disabledReason() }}</span
     >
   `,
@@ -182,7 +182,7 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
   protected readonly labelId = nextUid('cngx-toggle-label');
 
   protected readonly describedById = computed(() =>
-    this.disabled() && this.disabledReason() ? this.describedId : null,
+    this.effectiveDisabled() && this.disabledReason() ? this.describedId : null,
   );
 
   private readonly labelRef = viewChild<ElementRef<HTMLElement>>('label');
@@ -217,6 +217,16 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
     invalid: this.invalid,
     control: this,
   });
+
+  /** The consumer `disabled` OR the disabled state of the field this toggle is the control of. */
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.groupHost.fieldDisabled(),
+  );
+
+  /** Disabled, or the control of a readonly field: the value stays, focus stays reachable. */
+  protected readonly interactionLocked = computed(
+    () => this.effectiveDisabled() || this.groupHost.fieldReadonly(),
+  );
 
   /**
    * The field label first while this toggle is the field's control, then
@@ -254,17 +264,20 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
   readonly errorState = this.groupHost.errorState;
 
   protected handleClick(): void {
-    if (this.disabled()) {
+    if (this.interactionLocked()) {
       return;
     }
     this.value.update((v) => !v);
   }
 
   protected handleKeydown(event: Event): void {
-    if (this.disabled()) {
+    if (this.effectiveDisabled()) {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.value.update((v) => !v);
   }
 

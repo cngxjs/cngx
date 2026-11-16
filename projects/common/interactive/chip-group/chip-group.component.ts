@@ -64,7 +64,6 @@ import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group-host.
  * @since 0.1.0
  * @relatedTo CngxMultiChipGroup, CngxChipInGroup, CngxChipInteraction, CngxRadioGroup
  * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
@@ -86,7 +85,8 @@ import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group-host.
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'isDisabled() ? "true" : null',
+    '[attr.aria-readonly]': 'isReadonly() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
@@ -176,11 +176,18 @@ export class CngxChipGroup<T = unknown>
     CngxAsyncState<unknown> | '' | undefined
   >(undefined, { transform: (v) => (typeof v === 'string' ? undefined : v) });
 
-  /** CngxChipGroupHost - leaf-side cascade source. */
-  readonly isDisabled = this.disabled;
+  /**
+   * CngxChipGroupHost - leaf-side cascade source: the group's own `disabled` OR the disabled
+   * state of the field this group is the control of.
+   */
+  readonly isDisabled = computed(() => this.disabled() || this.groupHost.fieldDisabled());
+
+  /** CngxChipGroupHost - the group is the control of a readonly field. */
+  readonly isReadonly = computed(() => this.groupHost.fieldReadonly());
 
   private readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-chip-group-',
+    control: this,
     invalid: this.invalid,
     state: this.state,
     label: this.label,
@@ -203,12 +210,12 @@ export class CngxChipGroup<T = unknown>
 
   /**
    * Selects `value`, or clears the selection when `value` is already
-   * the selected one. Does nothing while the group is disabled. Called
+   * the selected one. Does nothing while the group is disabled or readonly. Called
    * by `CngxChipInGroup` leaves on click, Space and Enter through
    * `CNGX_CHIP_GROUP_HOST`.
    */
   toggle(value: T): void {
-    if (this.disabled()) {
+    if (this.isDisabled() || this.isReadonly()) {
       return;
     }
     if (this.isSelected(value)) {
@@ -220,12 +227,12 @@ export class CngxChipGroup<T = unknown>
 
   /**
    * Clears the selection when `value` is the selected one; any other
-   * value is left untouched. Does nothing while the group is disabled.
+   * value is left untouched. Does nothing while the group is disabled or readonly.
    * Called by `CngxChipInGroup` leaves on Delete and Backspace through
    * `CNGX_CHIP_GROUP_HOST`.
    */
   remove(value: T): void {
-    if (this.disabled()) {
+    if (this.isDisabled() || this.isReadonly()) {
       return;
     }
     if (this.isSelected(value)) {

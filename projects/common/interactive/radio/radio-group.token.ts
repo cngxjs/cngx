@@ -28,10 +28,12 @@ export interface CngxRadioRegistration<T = unknown> {
  * `value` is a `ModelSignal<T | undefined>` because the group's
  * canonical value is two-way-bindable from the consumer
  * (`[(value)]`) and writable by the leaf when the user picks a
- * radio (`group.value.set(radio.value())`). `disabled` is a
- * read-only `Signal<boolean>` projected from the group's own
- * `model<boolean>`; leaves combine it with their own per-radio
- * `disabled()` to compute `radioDisabled`. `name` is the HTML
+ * radio (`group.value.set(radio.value())`). `isDisabled` is a
+ * read-only `Signal<boolean>`: the group's own `disabled` OR the
+ * disabled state of the field the group is the control of; leaves
+ * combine it with their own per-radio `disabled()` to compute
+ * `radioDisabled`. `isReadonly` is true while the group is the control
+ * of a readonly field; leaves keep focus but skip their value write. `name` is the HTML
  * `name` attribute applied to all radio inputs in this group -
  * defaults to a `nextUid('cngx-radio-group')` value when the
  * consumer does not supply one. `skin` is the group-level indicator
@@ -43,7 +45,8 @@ export interface CngxRadioRegistration<T = unknown> {
  */
 export interface CngxRadioGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
-  readonly disabled: Signal<boolean>;
+  readonly isDisabled: Signal<boolean>;
+  readonly isReadonly: Signal<boolean>;
   readonly name: Signal<string>;
   readonly skin: Signal<CngxRadioSkin | undefined>;
   register(radio: CngxRadioRegistration<T>): void;

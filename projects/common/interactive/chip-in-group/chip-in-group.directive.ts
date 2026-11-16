@@ -73,7 +73,6 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
  * @relatedTo CngxChipGroup, CngxMultiChipGroup, CngxChipInteraction
  * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level atom
@@ -133,8 +132,13 @@ export class CngxChipInGroup<T = unknown> {
 
   protected readonly chipDisabled = computed(() => this.parent.isDisabled() || this.disabled());
 
+  /** Disabled, or the group is the control of a readonly field: no value write, focus stays. */
+  private readonly interactionLocked = computed(
+    () => this.chipDisabled() || this.parent.isReadonly(),
+  );
+
   protected handleClick(event: MouseEvent): void {
-    if (this.chipDisabled() || isCloseButtonClick(event)) {
+    if (this.interactionLocked() || isCloseButtonClick(event)) {
       return;
     }
     this.parent.toggle(this.value());
@@ -145,6 +149,9 @@ export class CngxChipInGroup<T = unknown> {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.parent.toggle(this.value());
   }
 
@@ -153,6 +160,9 @@ export class CngxChipInGroup<T = unknown> {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.parent.remove(this.value());
   }
 }

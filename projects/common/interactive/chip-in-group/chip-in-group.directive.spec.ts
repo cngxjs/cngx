@@ -24,6 +24,8 @@ class FakeChipGroupHost<T = string> implements CngxChipGroupHost<T> {
   readonly disabled = signal(false);
 
   readonly isDisabled = this.disabled.asReadonly();
+  readonly readonlyState = signal(false);
+  readonly isReadonly = this.readonlyState.asReadonly();
 
   toggleCalls: T[] = [];
   removeCalls: T[] = [];
@@ -134,6 +136,18 @@ describe('CngxChipInGroup', () => {
     expect(chipEl.getAttribute('aria-disabled')).toBe('true');
     chipEl.click();
     expect(fake.toggleCalls).toEqual([]);
+  });
+
+  it('blocks toggle and remove but stays enabled when the group is readonly', () => {
+    const { fixture, fake, chipEl } = setup();
+    fake.readonlyState.set(true);
+    fixture.detectChanges();
+    expect(chipEl.hasAttribute('aria-disabled')).toBe(false);
+    chipEl.click();
+    chipEl.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', cancelable: true }));
+    chipEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', cancelable: true }));
+    expect(fake.toggleCalls).toEqual([]);
+    expect(fake.removeCalls).toEqual([]);
   });
 
   it('throws CNGX1068 when no chip group is above it', () => {

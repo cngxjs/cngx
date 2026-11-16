@@ -36,10 +36,10 @@ export class MyRating implements CngxControlValue<number> {
 }
 ```
 
-That is the full integration. Drop `<my-rating [cngxBindField]="form.rating" />` next to a `<cngx-form-field>` and the bridge reads the value, writes back on change, and forwards `disabled` from the field state.
+Provide `CNGX_FORM_FIELD_CONTROL` on the same instance as well and `<cngx-form-field [field]="form.rating">` syncs the value: it seeds the model value, writes back on change and dirties the field (see [Binding an atom](../../../forms/field/README.md#binding-an-atom)). `CngxBindField` never touches the value.
 
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/control-value/) for the full token surface.
 - `CNGX_FORM_FIELD_CONTROL` (`@cngx/forms`) for the full form-field control contract on top of this value shape.
-- `CngxBindField` (`@cngx/forms`) for the bridge that consumes both tokens.
+- `CngxFormField` (`@cngx/forms/field`) for the field that syncs a control providing both tokens.

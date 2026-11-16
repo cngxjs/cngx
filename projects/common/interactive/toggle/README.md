@@ -39,7 +39,7 @@ Inside a Signal-Forms field, drop the atom into `<cngx-form-field>` and bind the
 </cngx-form-field>
 ```
 
-`CngxToggle` provides `CNGX_FORM_FIELD_CONTROL` directly, so no `[cngxBindField]` and no CVA on the consumer side.
+No value binding needed; see [Binding an atom](../../../forms/field/README.md#binding-an-atom).
 
 ## Selector duality
 

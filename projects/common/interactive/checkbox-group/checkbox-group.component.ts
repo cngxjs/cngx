@@ -85,7 +85,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @relatedTo CngxCheckbox, CngxRovingTabindex, CngxRadioGroup
  * <example-url>/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
  * <example-url>/#/common/interactive/checkbox/group/disabled-cascade</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
@@ -107,7 +106,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'effectiveDisabled() ? "true" : null',
     '[attr.aria-required]': 'required() || groupHost.fieldRequired() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
     '[attr.aria-errormessage]':
@@ -255,6 +254,16 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
     labelledBy: this.labelledBy,
   });
 
+  /** The group's own `disabled` OR the disabled state of the field this group is the control of. */
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.groupHost.fieldDisabled(),
+  );
+
+  /** Disabled, or the control of a readonly field: `select`, `deselect` and `toggleAll` do nothing. */
+  protected readonly interactionLocked = computed(
+    () => this.effectiveDisabled() || this.groupHost.fieldReadonly(),
+  );
+
   protected readonly ariaLabelledBy = this.groupHost.ariaLabelledBy;
 
   protected readonly ariaBusy = this.groupHost.ariaBusy;
@@ -262,10 +271,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
   /**
    * Selects or clears the whole group. With `allValues` set it selects every missing
    * pool value, or removes the pool values when all are already selected; without
-   * `allValues` it clears a non-empty selection. No-op while `disabled`.
+   * `allValues` it clears a non-empty selection. No-op while disabled or readonly.
    */
   toggleAll(): void {
-    if (this.disabled()) {
+    if (this.interactionLocked()) {
       return;
     }
     const pool = this.allValues();
@@ -280,10 +289,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
 
   /**
    * Adds `value` to `selectedValues` unless a value with the same `keyFn` key is
-   * already selected. No-op while `disabled`.
+   * already selected. No-op while disabled or readonly.
    */
   select(value: T): void {
-    if (this.disabled()) {
+    if (this.interactionLocked()) {
       return;
     }
     this.controller.select(value);
@@ -291,10 +300,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]>, Cn
 
   /**
    * Removes the value with the same `keyFn` key as `value` from `selectedValues`. No-op
-   * while `disabled` or when the value is not selected.
+   * while disabled or readonly or when the value is not selected.
    */
   deselect(value: T): void {
-    if (this.disabled()) {
+    if (this.interactionLocked()) {
       return;
     }
     this.controller.deselect(value);

@@ -22,7 +22,6 @@ import {
   CngxFormFieldPresenter,
   CNGX_FORM_FIELD_CONTROL,
   createFieldControlAria,
-  createFieldSync,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 import { CngxSelect, type CngxSelectOptionDef } from '@cngx/forms/select';
@@ -363,12 +362,6 @@ export class CngxPhoneInput implements CngxFormFieldControl, OnInit {
   });
 
   constructor() {
-    createFieldSync<string>({
-      componentValue: this.value,
-      valueEquals: Object.is,
-      coerceFromField: (v) => (typeof v === 'string' ? v : ''),
-    });
-
     // Re-shows the dial code after a country switch on an empty field. The new dial
     // code reaches the mask through `maskValue`, but CngxInputMask clears its value
     // on region change right after that push, and a binding cannot push the same

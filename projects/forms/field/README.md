@@ -382,6 +382,30 @@ A control with a `value = model<T>()` and no `ControlValueAccessor` can sync
 that model with the field yourself: `createFieldSync` from `@cngx/forms/field`,
 called in an injection context. Outside a `cngx-form-field` it does nothing.
 
+### Binding an atom
+
+The value atoms of `@cngx/common/interactive` (checkbox, toggle, interactive chip and
+the radio, checkbox, button-toggle and chip groups) need no value binding inside a field:
+
+```html
+<cngx-form-field [field]="f.terms">
+  <cngx-checkbox>I accept the terms</cngx-checkbox>
+</cngx-form-field>
+```
+
+The field syncs the control it discovered when a `CNGX_CONTROL_VALUE` carries that
+control's own `value`: the model value shows on mount without dirtying the field, a
+click writes the model and marks it dirty, `reset()` clears both. Two owners keep the
+value instead: Reactive Forms through `formControlName` / `[formControl]`
+(`CngxFormBridge`), and any `[formField]` bound to the field. A hand
+`[(value)]="f.terms().value"` is unnecessary; it writes through `value.set`, so the field
+stays pristine.
+
+A disabled field disables the atom; the atom's own `[disabled]` still applies on top. A
+readonly field locks the value but keeps the atom focusable and announces
+`aria-readonly` where the role allows it. In a group only the group is the field's
+control; its leaves follow the group.
+
 ## Optional Material Theme
 
 `@cngx/themes/material/field-theme.scss` maps Material M3/M2 design tokens to

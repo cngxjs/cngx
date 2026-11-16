@@ -11,7 +11,10 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  */
 export interface CngxButtonMultiToggleGroupContract<T = unknown> {
   readonly selectedValues: ModelSignal<T[]>;
-  readonly disabled: Signal<boolean>;
+  /** The group's own `disabled` OR the disabled state of the field the group is the control of. */
+  readonly isDisabled: Signal<boolean>;
+  /** The group is the control of a readonly field: leaves keep focus and skip their value write. */
+  readonly isReadonly: Signal<boolean>;
   isSelected(value: T): Signal<boolean>;
   toggle(value: T): void;
 }

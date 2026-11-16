@@ -89,8 +89,8 @@ toggle.
 
 ## Forms
 
-Both groups provide `CNGX_FORM_FIELD_CONTROL`, so `<cngx-form-field [field]="f.view">` takes them
-without a wrapper. With Reactive Forms, put `formControlName` on the group and import
+`<cngx-form-field [field]="f.view">` takes both groups without a value binding; see
+[Binding an atom](../../../forms/field/README.md#binding-an-atom). With Reactive Forms, put `formControlName` on the group and import
 `CngxFormBridge` from `@cngx/forms/controls` ([README](../../../forms/controls/README.md)).
 
 ## See also

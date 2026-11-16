@@ -95,7 +95,12 @@ export class CngxButtonToggle<T = unknown> {
   });
 
   protected readonly toggleDisabled = computed(
-    () => this.resolved.group.disabled() || this.disabled(),
+    () => this.resolved.group.isDisabled() || this.disabled(),
+  );
+
+  /** Disabled, or the group is the control of a readonly field: no value write, focus stays. */
+  private readonly interactionLocked = computed(
+    () => this.toggleDisabled() || this.resolved.group.isReadonly(),
   );
 
   constructor() {
@@ -125,9 +130,12 @@ export class CngxButtonToggle<T = unknown> {
     }
   }
 
-  // No disabled check: the activation guard stops every click on a disabled toggle before the
-  // host (click) listener runs.
+  // The activation guard stops every click on a disabled toggle before the host (click)
+  // listener runs; the readonly lock still has to be checked here.
   protected handleSelect(): void {
+    if (this.interactionLocked()) {
+      return;
+    }
     if (this.resolved.mode === 'single') {
       this.resolved.group.value.set(this.value());
       return;
@@ -140,6 +148,9 @@ export class CngxButtonToggle<T = unknown> {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     if (this.resolved.mode === 'single') {
       this.resolved.group.value.set(this.value());
       return;

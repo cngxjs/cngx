@@ -67,7 +67,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * <example-url>/#/common/interactive/checkbox/base/custom-check-dash-glyphs</example-url>
  * <example-url>/#/common/interactive/checkbox/base/disabled</example-url>
  * <example-url>/#/common/interactive/checkbox/base/tri-state-select-all-pattern</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
@@ -89,7 +88,8 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     role: 'checkbox',
     '[attr.id]': 'id()',
     '[attr.aria-checked]': 'ariaChecked()',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'effectiveDisabled() ? "true" : null',
+    '[attr.aria-readonly]': 'groupHost.fieldReadonly() ? "true" : null',
     '[attr.aria-invalid]': 'ariaInvalid() ? "true" : null',
     '[attr.aria-errormessage]': 'ariaInvalid() ? (errorMessageId() ?? fieldErrorMessage()) : null',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
@@ -98,7 +98,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     '[attr.tabindex]': 'hostTabindex()',
     '[class.cngx-checkbox--checked]': 'value()',
     '[class.cngx-checkbox--indeterminate]': 'indeterminate()',
-    '[class.cngx-checkbox--disabled]': 'disabled()',
+    '[class.cngx-checkbox--disabled]': 'effectiveDisabled()',
     '(click)': 'handleClick()',
     '(keydown.space)': 'handleKeydown($event)',
     '(keydown.enter)': 'handleKeydown($event)',
@@ -114,7 +114,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
       variant="checkbox"
       [checked]="value()"
       [indeterminate]="indeterminate()"
-      [disabled]="disabled()"
+      [disabled]="effectiveDisabled()"
       [checkGlyph]="checkGlyph()"
       [dashGlyph]="dashGlyph()"
     />
@@ -124,7 +124,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     <span
       [id]="describedId"
       class="cngx-checkbox__sr-only"
-      [attr.aria-hidden]="disabled() && disabledReason() ? null : 'true'"
+      [attr.aria-hidden]="effectiveDisabled() && disabledReason() ? null : 'true'"
       >{{ disabledReason() }}</span
     >
   `,
@@ -194,7 +194,7 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
    * description applies.
    */
   protected readonly describedById = computed<string | null>(() =>
-    this.disabled() && this.disabledReason() ? this.describedId : null,
+    this.effectiveDisabled() && this.disabledReason() ? this.describedId : null,
   );
 
   private readonly rovingParent = inject(CngxRovingTabindex, {
@@ -209,7 +209,7 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
    * `0` (or `-1` when disabled). Mirrors `CngxCard.hostTabindex`.
    */
   protected readonly hostTabindex = computed<number | null>(() =>
-    this.rovingParent ? null : this.disabled() ? -1 : 0,
+    this.rovingParent ? null : this.effectiveDisabled() ? -1 : 0,
   );
 
   protected readonly ariaChecked = computed<'true' | 'false' | 'mixed'>(() =>
@@ -223,6 +223,16 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   });
 
   protected readonly labelId = nextUid('cngx-checkbox-label');
+
+  /** The consumer `disabled` OR the disabled state of the field this checkbox is the control of. */
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.groupHost.fieldDisabled(),
+  );
+
+  /** Disabled, or the control of a readonly field: the value stays, focus stays reachable. */
+  protected readonly interactionLocked = computed(
+    () => this.effectiveDisabled() || this.groupHost.fieldReadonly(),
+  );
 
   /** @internal */
   protected readonly fieldErrorMessage = this.groupHost.fieldErrorMessage;
@@ -263,7 +273,7 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   }
 
   protected handleKeydown(event: Event): void {
-    if (this.disabled()) {
+    if (this.effectiveDisabled()) {
       return;
     }
     event.preventDefault();
@@ -279,7 +289,7 @@ export class CngxCheckbox implements CngxControlValue<boolean>, CngxFormFieldCon
   }
 
   private advance(): void {
-    if (this.disabled()) {
+    if (this.interactionLocked()) {
       return;
     }
     if (this.indeterminate()) {

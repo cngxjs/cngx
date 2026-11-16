@@ -183,7 +183,8 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
     let ref: MockFieldRef;
 
     beforeEach(() => {
-      const mock = createMockField({ name: 'terms' });
+      // The field now syncs its atom, so the mock holds a checkbox value.
+      const mock = createMockField<boolean>({ name: 'terms', value: false });
       ref = mock.ref;
       TestBed.configureTestingModule({ imports: [CheckboxHost] });
       fixture = TestBed.createComponent(CheckboxHost);
@@ -260,7 +261,7 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
     let groupEl: HTMLElement;
 
     beforeEach(() => {
-      const mock = createMockField({ name: 'channels' });
+      const mock = createMockField<string[]>({ name: 'channels', value: [] });
       TestBed.configureTestingModule({ imports: [CheckboxGroupHost] });
       fixture = TestBed.createComponent(CheckboxGroupHost);
       fixture.componentInstance.field.set(mock.accessor);

@@ -10,10 +10,13 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  */
 export interface CngxButtonToggleGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
-  readonly disabled: Signal<boolean>;
+  /** The group's own `disabled` OR the disabled state of the field the group is the control of. */
+  readonly isDisabled: Signal<boolean>;
+  /** The group is the control of a readonly field: leaves keep focus and skip their value write. */
+  readonly isReadonly: Signal<boolean>;
   /**
    * Called on every leaf focus, disabled or not. Selects `value` and returns `true` after an
-   * arrow, Home or End focus unless the group or `leafDisabled` is disabled.
+   * arrow, Home or End focus unless the group is disabled or readonly or `leafDisabled` is set.
    *
    * Read the flag with `CngxRovingTabindex.consumeNavigationKey()`, which clears it. Consume it on
    * every call, a disabled leaf included, or it outlives the arrow press and a later Tab selects.
