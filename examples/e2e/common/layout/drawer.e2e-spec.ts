@@ -22,7 +22,7 @@ test.describe('common/layout/drawer: clipped drawer below a live header', () => 
     const panel = page.locator('#clipped-nav');
     await expect(panel).toHaveClass(/cngx-drawer-panel--open/);
     await expect(panel).not.toHaveAttribute('aria-modal', 'true');
-    await expect(page.locator('main.cngx-drawer-content')).toHaveAttribute('inert', '');
+    await expect(page.locator('.cngx-drawer-content')).toHaveAttribute('inert', '');
 
     const notifications = page.getByRole('button', { name: 'Notifications' });
     const notificationsInert = await notifications.evaluate((el) => el.closest('[inert]') !== null);
@@ -31,7 +31,7 @@ test.describe('common/layout/drawer: clipped drawer below a live header', () => 
 
     await hamburger.click();
     await expect(panel).not.toHaveClass(/cngx-drawer-panel--open/);
-    await expect(page.locator('main.cngx-drawer-content')).not.toHaveAttribute('inert', '');
+    await expect(page.locator('.cngx-drawer-content')).not.toHaveAttribute('inert', '');
   });
 
   test('a header control closes the drawer as an outside press', async ({ page }) => {
@@ -119,7 +119,7 @@ test.describe('common/layout/drawer: filter panel', () => {
     const panel = page.locator('#order-filters');
     await expect(panel).toHaveClass(/cngx-drawer-panel--open/);
     await expect(panel).not.toHaveAttribute('aria-modal', 'true');
-    await expect(page.locator('main.cngx-drawer-content')).not.toHaveAttribute('inert', '');
+    await expect(page.locator('.cngx-drawer-content')).not.toHaveAttribute('inert', '');
 
     await panel.getByRole('checkbox', { name: 'Cancelled' }).check();
     await expect(page.getByText('12 of 12 orders')).toBeVisible();

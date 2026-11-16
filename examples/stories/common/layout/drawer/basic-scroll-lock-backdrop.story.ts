@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </nav>
 
-    <main #content [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem); overflow: auto">
+    <div #content [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem); overflow: auto">
       <button type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
               (click)="drawer.toggle()">
@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
       @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track n) {
         <p>Content row {{ n }}</p>
       }
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="status-row">
     <span class="status-badge" [class.active]="drawer.opened()">

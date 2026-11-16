@@ -29,9 +29,9 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </nav>
 
-    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+    <div style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
       <p>Controlled mode - the drawer opens and closes via the external signal.</p>
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="button-row">
     <button type="button" class="sort-btn" aria-controls="ctrl-panel"

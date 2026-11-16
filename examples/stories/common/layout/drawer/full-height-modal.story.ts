@@ -78,12 +78,12 @@ export const STORY: DemoSpec = {
         <cngx-avatar initials="JD" size="sm" />
       </cngx-stack>
 
-      <main [cngxDrawerContent]="fullNav" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
+      <div [cngxDrawerContent]="fullNav" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
         <h2>{{ current() }}</h2>
         @for (row of rows; track row) {
           <p>Content row {{ row }}. The open drawer covers this row and the header.</p>
         }
-      </main>
+      </div>
     </cngx-stack>
   </div>`,
   templateChrome: `

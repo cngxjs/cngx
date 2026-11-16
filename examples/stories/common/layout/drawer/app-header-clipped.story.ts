@@ -78,12 +78,12 @@ export const STORY: DemoSpec = {
         }
       </nav>
 
-      <main [cngxDrawerContent]="appNav" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
+      <div [cngxDrawerContent]="appNav" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
         <h2>{{ current() }}</h2>
         @for (row of rows; track row) {
           <p>Content row {{ row }}. The row scrolls on its own; the header above it stays put.</p>
         }
-      </main>
+      </div>
     </div>
   </cngx-stack>`,
   templateChrome: `

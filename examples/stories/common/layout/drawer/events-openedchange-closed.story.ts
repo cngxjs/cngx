@@ -31,11 +31,11 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </aside>
 
-    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+    <div style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
       <button type="button" aria-controls="ev-panel"
               [attr.aria-expanded]="evDrawer.opened()" (click)="evDrawer.toggle()">Toggle</button>
       <p>Open or close the drawer to see the event log below.</p>
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="event-grid">
     @for (ev of events(); track $index) {

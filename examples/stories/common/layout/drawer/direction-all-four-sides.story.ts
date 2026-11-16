@@ -34,12 +34,12 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </aside>
 
-    <main [cngxDrawerContent]="dirDrawer" style="padding: var(--cngx-space-md, 1rem)">
+    <div [cngxDrawerContent]="dirDrawer" style="padding: var(--cngx-space-md, 1rem)">
       <button type="button" aria-controls="dir-panel"
               [attr.aria-expanded]="dirDrawer.opened()" (click)="dirDrawer.toggle()">
         Toggle {{ direction() }} drawer
       </button>
       <p>The panel slides over this content from the chosen edge. Direction: <strong>{{ direction() }}</strong></p>
-    </main>
+    </div>
   </div>`,
 };

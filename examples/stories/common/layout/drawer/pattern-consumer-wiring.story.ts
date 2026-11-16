@@ -54,14 +54,14 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </nav>
 
-    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+    <div style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
       <button id="pcw-trigger" type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'pcw-panel'"
               (click)="drawer.toggle()">
         {{ drawer.opened() ? 'Close' : 'Open' }} navigation
       </button>
       <p>Open the navigation, then Tab through the panel. Focus stays trapped inside until the drawer closes; on close, the trigger re-receives focus.</p>
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">

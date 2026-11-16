@@ -28,9 +28,9 @@ export const STORY: DemoSpec = {
       <label><input type="checkbox" checked /> Open</label>
       <label><input type="checkbox" /> Shipped</label>
     </aside>
-    <main class="demo-drawer-surface__main">
+    <div class="demo-drawer-surface__main">
       <p>The order list stays operable while the filters are open.</p>
-    </main>
+    </div>
   </div>`,
   css: `.demo-drawer-surface {
   display: flex;

@@ -30,9 +30,9 @@ export const STORY: DemoSpec = {
     </aside>
     <div cngxResizable [(size)]="width" [min]="160" [max]="420" aria-controls="filters"
          style="flex: none; inline-size: 0.5rem; cursor: col-resize; touch-action: none; background: var(--cngx-border, currentColor); opacity: 0.4;"></div>
-    <main style="flex: 1; padding: 0.75rem;">
+    <div style="flex: 1; padding: 0.75rem;">
       <p>Results lane.</p>
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">

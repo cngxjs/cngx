@@ -80,14 +80,14 @@ export const STORY: DemoSpec = {
         </fieldset>
       </aside>
 
-      <main [cngxDrawerContent]="filters" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
+      <div [cngxDrawerContent]="filters" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
         <p>{{ visibleOrders().length }} of {{ orders.length }} orders</p>
         <ul>
           @for (order of visibleOrders(); track order.id) {
             <li>Order {{ order.id }}: {{ order.status }}</li>
           }
         </ul>
-      </main>
+      </div>
     </div>
   </cngx-stack>`,
   setupChrome: `
