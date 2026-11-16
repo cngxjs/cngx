@@ -625,13 +625,6 @@ const ALLOWLIST = [
     reason: 'mask-image gradients: only the alpha channel is read, the colour never paints',
   },
   {
-    rule: 'D',
-    token: 'black',
-    file: 'projects/common/theming/components/cngx-button-toggle.css',
-    reason:
-      'the pressed fill mixes 12% toward black, the darkening the button solid hover used before T6; PR 9 (T14) moves the family paint into one sheet, re-evaluate there',
-  },
-  {
     rule: 'E',
     token: '--cngx-field-bare-inline-size',
     file: 'projects/forms/select/shared/select-base.css',
