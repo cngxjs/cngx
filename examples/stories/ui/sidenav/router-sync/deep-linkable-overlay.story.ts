@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
     Open the menu, then check the URL for <code>?nav=open</code>. Reload or share it to restore the open menu.
   </p>`,
   template: `
-  <cngx-sidenav-layout style="height:320px; border:1px solid var(--cngx-border, #e4e4e7); border-radius:var(--cngx-radius, 0.5rem); overflow:hidden">
+  <cngx-sidenav-layout>
     <cngx-sidenav id="cngx-demo-sidenav"
                   cngxSidenavRouterSync
                   position="start"
@@ -45,9 +45,8 @@ export const STORY: DemoSpec = {
         <a cngxNavLink [active]="item === 'Dashboard'">{{ item }}</a>
       }
     </cngx-sidenav>
-    <cngx-sidenav-content style="padding:1rem; display:flex; gap:0.75rem; align-items:center; justify-content:flex-end">
+    <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
       <button type="button"
-              class="chip"
               [attr.aria-expanded]="navOpen()"
               aria-controls="cngx-demo-sidenav"
               (click)="navOpen.set(!navOpen())">

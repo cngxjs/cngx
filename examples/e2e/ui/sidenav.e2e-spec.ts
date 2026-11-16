@@ -91,16 +91,14 @@ test.describe('ui/sidenav', () => {
     const nav = page.locator('cngx-sidenav', { hasText: 'Config' }).first();
     await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
     const header = nav.locator('cngx-nav-header');
-    const mark = header.locator('.demo-sidenav__brand-mark');
-    const name = header.locator('.demo-sidenav__brand-name');
+    const mark = header.locator('.cngx-nav-mark');
+    const name = header.locator('.cngx-nav-name');
 
     await expect(mark).toBeVisible();
     await expect(mark).toHaveText('C');
-    // The name leaves the flow with the sr-only clip, so it paints nothing.
-    const box = await name.boundingBox();
-    expect(box?.width ?? 0).toBeLessThanOrEqual(1);
-    expect(box?.height ?? 0).toBeLessThanOrEqual(1);
-    // The mark is aria-hidden; the clipped name still reaches the AX tree.
+    // The name fades to opacity 0 on the rail, so it paints nothing.
+    await expect(name).toHaveCSS('opacity', '0');
+    // The mark is aria-hidden; the faded name still reaches the AX tree.
     await expect(header).toMatchAriaSnapshot('- text: Config');
   });
 
@@ -118,8 +116,7 @@ test.describe('ui/sidenav', () => {
     // The visible text fits the rail, so the footer does not clip it.
     const fits = await footer.evaluate((el) => el.scrollWidth <= el.clientWidth);
     expect(fits).toBe(true);
-    const nameBox = await footer.locator('.demo-sidenav__footer-name').boundingBox();
-    expect(nameBox?.width ?? 0).toBeLessThanOrEqual(1);
+    await expect(footer.locator('.cngx-nav-name')).toHaveCSS('opacity', '0');
     await expect(footer).toMatchAriaSnapshot('- text: Workspace v2.1');
   });
 

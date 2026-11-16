@@ -1563,180 +1563,6 @@ button.chip:disabled {
 //   outline-offset: 2px;
 // }
 
-// Demo-specific styles: sidenav-demo. The library paints the nav row states
-// (fills, active indicator, focus ring); these rules only lay the rows out.
-.demo-sidenav__container {
-  height: 420px;
-  margin-top: var(--cngx-space-md, 1rem);
-  border: 1px solid var(--cngx-color-border);
-  border-radius: 6px;
-}
-.demo-sidenav__container--short {
-  height: 320px;
-}
-.demo-sidenav__header {
-  display: flex;
-  align-items: center;
-  gap: var(--cngx-space-sm, 0.5rem);
-  padding: 1rem;
-  font-size: 1rem;
-  font-weight: 700;
-}
-// The rail clips the header to its width (sidenav-header.ts), so the header
-// leads with a mark that fits the rail; the name leaves the flow on the rail
-// but stays in the accessible name.
-.demo-sidenav__brand-mark {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--demo-sidenav-brand-mark-size, 1.5rem);
-  block-size: var(--demo-sidenav-brand-mark-size, 1.5rem);
-  border-radius: var(--cngx-radius-sm, 4px);
-  background: var(--cngx-color-primary, #4a8cff);
-  color: var(--cngx-color-on-primary, #ffffff);
-  font-size: 0.875rem;
-  line-height: 1;
-}
-cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__header {
-  justify-content: center;
-  padding-inline: 0;
-}
-cngx-sidenav[data-sidebar-state='rail'] .demo-sidenav__footer {
-  padding-inline: 0;
-  justify-content: center;
-  text-align: center;
-}
-cngx-sidenav[data-sidebar-state='rail'] :is(.demo-sidenav__brand-name, .demo-sidenav__footer-name) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-  padding: 0;
-  margin: -1px;
-}
-.demo-sidenav__label {
-  display: block;
-  padding: 0.75rem 1rem 0.25rem;
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--cngx-color-text-muted);
-}
-.demo-sidenav__link {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  color: inherit;
-}
-.demo-sidenav__link--plain {
-  border-left: 0;
-  justify-content: initial;
-}
-.demo-sidenav__link--sub {
-  padding: 0.4rem 1rem 0.4rem calc(1rem + 14px);
-  text-decoration: none;
-  font-size: 0.8rem;
-  color: inherit;
-}
-.demo-sidenav__badge {
-  background: var(--cngx-color-danger);
-  color: var(--cngx-color-surface);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.1em 0.45em;
-  border-radius: 10px;
-  min-width: 1.1em;
-  text-align: center;
-}
-.demo-sidenav__badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--cngx-color-success);
-  flex-shrink: 0;
-}
-.demo-sidenav__group {
-  // The library insets nav rows by --cngx-nav-link-inset on each side.
-  width: calc(100% - 2 * var(--cngx-nav-link-inset, 0px));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-size: 0.85rem;
-  color: inherit;
-}
-.demo-sidenav__footer {
-  padding: 0.75rem 1rem;
-  font-size: 0.7rem;
-  color: var(--cngx-color-text-muted);
-}
-.demo-sidenav__content {
-  padding: 1.25rem;
-}
-.demo-sidenav__content--compact {
-  padding: 1rem;
-}
-.demo-sidenav__content-title {
-  margin: 0 0 0.5rem;
-  font-size: 1.1rem;
-}
-.demo-sidenav__content-title--small {
-  font-size: 1rem;
-}
-.demo-sidenav__content-hint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--cngx-color-text-muted);
-}
-.demo-sidenav__order-item {
-  display: block;
-  width: 100%;
-  text-align: start;
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  padding: 0.5rem 0.75rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid var(--cngx-color-border);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.15s;
-}
-.demo-sidenav__order-item.is-selected {
-  background: color-mix(in oklch, var(--cngx-color-primary) 8%, transparent);
-  border-color: var(--cngx-color-primary);
-}
-.demo-sidenav__detail-pad {
-  padding: 1.25rem;
-}
-.demo-sidenav__detail-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-.demo-sidenav-resizable {
-  resize: horizontal;
-  overflow: auto;
-  width: 40rem;
-  margin-top: var(--cngx-space-md, 1rem);
-  min-width: 20rem;
-  max-width: none;
-  border: 1px dashed var(--cngx-color-border, var(--cngx-ex-border, #cbd5e1));
-  border-radius: var(--cngx-radius-sm, 4px);
-}
-.demo-sidenav-resizable > .demo-sidenav__container {
-  margin-top: 0;
-}
-
 // Tag-family demo helpers. Stories under common/display/tag share these
 // so individual templates don't scatter thematic CSS inline.
 .demo-tag-row {
@@ -2259,8 +2085,6 @@ button.chip.demo-chip--copied {
   .demo-nav__link--active {
     border-inline-start-color: Highlight;
   }
-  .demo-sidenav__badge,
-  .demo-sidenav__badge-dot,
   .demo-nav__badge--count,
   .demo-nav__badge--muted,
   .demo-nav__badge--dot {
@@ -4223,16 +4047,6 @@ cngx-radio-group .cngx-radio + .cngx-radio {
   color: var(--cngx-alert-error-icon, #ef4444);
   margin: 0;
   text-align: center;
-}
-
-.demo-loading-pad {
-  padding: var(--cngx-sidenav-padding, 16px);
-}
-
-.demo-loading-pad p {
-  font-size: 0.8rem;
-  margin: 0;
-  opacity: 0.6;
 }
 
 // Material theme: the azure-blue palette (same as the prebuilt azure-blue.css

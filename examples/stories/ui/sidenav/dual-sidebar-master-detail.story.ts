@@ -29,21 +29,20 @@ export const STORY: DemoSpec = {
     this.selectedItem.set(item);
     this.rightOpen.set(true);
   }`,
-  template: `  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
+  template: `  <cngx-sidenav-layout>
     <cngx-sidenav position="start" [(collapsed)]="leftCollapsed" mode="side" collapsedAs="hidden" width="160px">
       @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
-        <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">
+        <a cngxNavLink>
           {{ item }}
         </a>
       }
     </cngx-sidenav>
 
-    <cngx-sidenav-content class="demo-sidenav__content--compact">
-      <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">Orders</h3>
+    <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
+      <h3>Orders</h3>
       @for (item of items; track item) {
-        <button type="button" class="demo-sidenav__order-item"
-                [class.is-selected]="selectedItem() === item"
-                [attr.aria-current]="selectedItem() === item ? 'true' : null"
+        <button type="button"
+                [attr.aria-pressed]="selectedItem() === item"
                 [attr.aria-controls]="detailNav.id()"
                 (click)="selectItem(item)">
           {{ item }}
@@ -53,17 +52,15 @@ export const STORY: DemoSpec = {
 
     <cngx-sidenav #detailNav position="end" [(opened)]="rightOpen" mode="over" modality="none"
                   ariaLabel="Order details" width="280px">
-      <div class="demo-sidenav__detail-pad">
+      <div style="padding: var(--cngx-space-md, 1rem)">
         @if (selectedItem()) {
-          <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">{{ selectedItem() }}</h3>
-          <p class="demo-sidenav__content-hint">
+          <h3>{{ selectedItem() }}</h3>
+          <p>
             Detail view for the selected order. Status, items, shipping info would go here.
           </p>
-          <div class="demo-sidenav__detail-actions">
-            <button class="sort-btn" type="button" (click)="rightOpen.set(false)">Close</button>
-          </div>
+          <button type="button" (click)="rightOpen.set(false)">Close</button>
         } @else {
-          <p class="demo-sidenav__content-hint">Select an order to view details.</p>
+          <p>Select an order to view details.</p>
         }
       </div>
     </cngx-sidenav>

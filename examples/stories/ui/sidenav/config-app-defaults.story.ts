@@ -32,7 +32,7 @@ export const STORY: DemoSpec = {
   setup: `protected readonly navCollapsed = signal(false);
   protected readonly projects = ['Website relaunch', 'Mobile app', 'Data platform'];
   protected readonly current = signal('Website relaunch');`,
-  template: `  <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
+  template: `  <cngx-sidenav-layout>
     <cngx-sidenav
       #nav="cngxSidenav"
       position="start"
@@ -42,11 +42,10 @@ export const STORY: DemoSpec = {
       [(collapsed)]="navCollapsed"
       ariaLabel="Projects"
     >
-      <cngx-nav-header class="demo-sidenav__header">Projects</cngx-nav-header>
+      <cngx-nav-header>Projects</cngx-nav-header>
       @for (project of projects; track project) {
         <a
           cngxNavLink
-          class="demo-sidenav__link"
           [active]="current() === project"
           (click)="current.set(project); $event.preventDefault()"
         >
@@ -54,9 +53,9 @@ export const STORY: DemoSpec = {
         </a>
       }
     </cngx-sidenav>
-    <cngx-sidenav-content class="demo-sidenav__content">
-      <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">{{ current() }}</h3>
-      <p class="demo-sidenav__content-hint">
+    <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
+      <h3>{{ current() }}</h3>
+      <p>
         Width, resize bounds, shortcut and handle label all come from the scope's config.
       </p>
     </cngx-sidenav-content>
