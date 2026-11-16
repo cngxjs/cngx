@@ -263,11 +263,6 @@ Resolution priority for any one surface:
 
 Surfaces that gate through it: `cngx-skeleton`, `cngx-loading-indicator`, `cngx-loading-overlay`, the `cngx-async-container` skeleton view and refresh bar, the recycler skeleton (`injectRecycler`), and the busy visual of `cngxAsyncClick` (`cngx-async--pending` and the button-family spinner). See **Gated surfaces** below for exactly what the gate holds and what stays immediate.
 
-<aside class="cc-note">
-
-**Note.** `provideFeedback(withLoadingDefaults({ delay, minDuration }))` from `@cngx/ui/feedback` writes the same `CNGX_LOADING_CONFIG` token as a back-compat wrapper (`delay` maps to `showDelay`, `minDuration` to `minDwell`). It provides a whole config value, so it also resets `spinnerVsSkeletonCutoff` to its default. Prefer `provideLoadingConfig(...)` from `@cngx/core/utils` for new apps, and set the cutoff there rather than combining the two.
-
-</aside>
 
 ### Gated surfaces
 
@@ -566,7 +561,6 @@ bootstrapApplication(AppComponent, {
       withBanners(),
       withSpinnerTemplate(MySpinner),
       withAlertIcons({ success: SuccessIcon, error: ErrorIcon }),
-      withLoadingDefaults({ delay: 300, minDuration: 600 }),
       withCloseIcon(MyCloseIcon),
     ),
   ],

@@ -172,7 +172,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
-Set app-wide timing there once and every loading surface (indicator, overlay, async-container, skeleton, recycler) picks it up; reach for the inputs only when one instance needs to differ. `provideFeedback(withLoadingDefaults({ delay, minDuration }))` writes the same token as a back-compat wrapper - prefer `provideLoadingConfig(...)` for new apps.
+Set app-wide timing there once and every loading surface (indicator, overlay, async-container, skeleton, recycler) picks it up; reach for the inputs only when one instance needs to differ.
 
 
 

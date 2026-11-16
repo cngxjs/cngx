@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 
 import { provideButtonCloseIcon } from '@cngx/common/button';
-import { CNGX_LOADING_CONFIG, CNGX_LOADING_DEFAULTS } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
 import type { AlertSeverity } from '../alert/alert';
@@ -27,22 +26,6 @@ export interface FeedbackConfig {
 
   /** Custom icon components per alert severity. Replaces built-in SVG icons. */
   alertIcons?: Partial<Record<AlertSeverity, Type<unknown>>>;
-
-  /**
-   * Default delay in ms before showing loading indicators.
-   *
-   * @deprecated Use `provideLoadingConfig(withShowDelay(...))` from `@cngx/core/utils`.
-   * Kept one release as a forwarder; `withLoadingDefaults` still writes it.
-   */
-  loadingDelay?: number;
-
-  /**
-   * Default minimum display time in ms for loading indicators.
-   *
-   * @deprecated Use `provideLoadingConfig(withMinDwell(...))` from `@cngx/core/utils`.
-   * Kept one release as a forwarder; `withLoadingDefaults` still writes it.
-   */
-  loadingMinDuration?: number;
 
   /** Custom close/dismiss icon component - replaces default X SVG globally. */
   closeIconComponent?: Type<unknown>;
@@ -110,7 +93,6 @@ export interface FeedbackFeature {
  *     provideFeedback(
  *       withSpinnerTemplate(MyLucideSpinner),
  *       withAlertIcons({ error: MyErrorIcon, warning: MyWarningIcon }),
- *       withLoadingDefaults({ delay: 300, minDuration: 600 }),
  *     ),
  *   ],
  * });
@@ -170,52 +152,6 @@ export function withAlertIcons(
       ...c,
       alertIcons: { ...c.alertIcons, ...icons },
     }),
-  };
-}
-
-/**
- * Set default timing for all loading indicators and overlays.
- *
- * Forwards into the Level-1 `CNGX_LOADING_CONFIG` cascade so every gated
- * surface reads the same defaults: the loading indicator and overlay, the
- * async container and the recycler skeleton, and every async button (the
- * button family, action-button, popover confirm and stepper complete) whose
- * busy visual and post-run dwell are timed by the same `showDelay` / `minDwell`.
- * Prefer `provideLoadingConfig(withShowDelay(...), withMinDwell(...))`
- * from `@cngx/core/utils` directly; this feature is kept for back-compat.
- *
- * Note: this forwarder provides a full `CNGX_LOADING_CONFIG` value, so under
- * DI last-wins it replaces the whole config - including `spinnerVsSkeletonCutoff`,
- * which resets to its default. Set the cutoff through
- * `provideLoadingConfig(withSpinnerVsSkeletonCutoff(...))` rather than combining
- * it with this back-compat forwarder.
- *
- * Individual components can still override via their `[delay]` and `[minDwell]` inputs.
- *
- * ```ts
- * provideFeedback(withLoadingDefaults({ delay: 300, minDuration: 600 }))
- * ```
- */
-export function withLoadingDefaults(opts: {
-  delay?: number;
-  minDuration?: number;
-}): FeedbackFeature {
-  return {
-    _apply: (c) => ({
-      ...c,
-      loadingDelay: opts.delay ?? c.loadingDelay,
-      loadingMinDuration: opts.minDuration ?? c.loadingMinDuration,
-    }),
-    _providers: [
-      {
-        provide: CNGX_LOADING_CONFIG,
-        useValue: {
-          showDelay: opts.delay ?? CNGX_LOADING_DEFAULTS.showDelay,
-          minDwell: opts.minDuration ?? CNGX_LOADING_DEFAULTS.minDwell,
-          spinnerVsSkeletonCutoff: CNGX_LOADING_DEFAULTS.spinnerVsSkeletonCutoff,
-        },
-      },
-    ],
   };
 }
 

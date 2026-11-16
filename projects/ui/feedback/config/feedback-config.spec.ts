@@ -1,6 +1,12 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CNGX_BUTTON_CLOSE_ICON, injectButtonCloseIcon } from '@cngx/common/button';
+import {
+  CNGX_LOADING_DEFAULTS,
+  injectLoadingConfig,
+  provideLoadingConfig,
+  withSpinnerVsSkeletonCutoff,
+} from '@cngx/core/utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -67,6 +73,21 @@ describe('withCloseIcon', () => {
     expect(config.closeIconComponent).toBe(CloseGlyph);
     expect(TestBed.inject(CNGX_BUTTON_CLOSE_ICON)).toBe(CloseGlyph);
     expect(TestBed.runInInjectionContext(() => injectButtonCloseIcon())).toBe(CloseGlyph);
+  });
+});
+
+describe('loading timing', () => {
+  it('stays with CNGX_LOADING_CONFIG: provideFeedback contributes no loading config', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideFeedback(withToasts(), withAlerts(), withCloseIcon(CloseGlyph)),
+        provideLoadingConfig(withSpinnerVsSkeletonCutoff(1200)),
+      ],
+    });
+    expect(TestBed.runInInjectionContext(() => injectLoadingConfig())).toEqual({
+      ...CNGX_LOADING_DEFAULTS,
+      spinnerVsSkeletonCutoff: 1200,
+    });
   });
 });
 
