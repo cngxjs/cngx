@@ -6,7 +6,8 @@
 
 // Material bridge for CngxSidenavLayout (+ nav-link via the sibling
 // bridge). Default visuals ship with the component (sidenav-layout.css);
-// this file aligns colour, typography, and density tokens with Material.
+// this file aligns colour, typography, and metrics with Material: under M3 a
+// sidenav row is the M3 list item of mat-nav-list (48px pill, body-large).
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/sidenav-theme' as sidenav;
@@ -44,6 +45,27 @@
   // initial-value there.
   @include bridge.on(bridge.broadcast(cngx-sidenav-layout)) {
     @include color($theme);
+  }
+
+  // M3 list item metrics on the sidenav host, which reads the railed size
+  // from them and passes them on to rows, header and footer; the body takes
+  // the mat-nav-list block padding and no gap between rows. sidenav.css SETs
+  // the row inset and padding on `cngx-sidenav` (0,0,1) and the body gap on
+  // `.cngx-sidenav__body` (0,1,0) in the same layer, so these rules carry
+  // real specificity instead of the bridge's zero-specificity :where() -
+  // select-theme's option-row precedent. A consumer's unlayered rule still
+  // wins.
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      cngx-sidenav[data-nav-railed] {
+        @include nav-link.metrics($theme);
+      }
+
+      cngx-sidenav[data-nav-railed] .cngx-sidenav__body {
+        gap: 0;
+        padding-block: var(--cngx-space-sm, 8px);
+      }
+    }
   }
 
   // Set + consumed on the nav header and footer slots (cngx-nav.css): their

@@ -22,6 +22,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatBottomSheet, type MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatSnackBar, MatSnackBarModule, type MatSnackBarRef } from '@angular/material/snack-bar';
@@ -35,7 +36,14 @@ import {
   CngxIconButton,
 } from '@cngx/common/button';
 import { CngxAvatar, CngxIcon } from '@cngx/common/display';
-import { CngxMenu, CngxMenuItem, CngxSlider, CngxRangeSlider } from '@cngx/common/interactive';
+import {
+  CngxMenu,
+  CngxMenuItem,
+  CngxNavIcon,
+  CngxNavLink,
+  CngxSlider,
+  CngxRangeSlider,
+} from '@cngx/common/interactive';
 import {
   CngxIconMenuButton,
   CngxMenuButton,
@@ -51,6 +59,8 @@ import {
   CngxPopoverTrigger,
 } from '@cngx/common/popover';
 import { CngxAlert, CngxBanner, CngxBannerOutlet, CngxToaster } from '@cngx/ui/feedback';
+import { CngxNavRail } from '@cngx/ui/nav-rail';
+import { CngxSidenav } from '@cngx/ui/sidenav';
 import {
   CngxAccordionGroup,
   CngxAccordionItem,
@@ -153,6 +163,7 @@ interface FieldModel {
     MatIconModule,
     MatMenuModule,
     MatCardModule,
+    MatListModule,
     MatDialogModule,
     MatSnackBarModule,
     CngxAlert,
@@ -172,6 +183,10 @@ interface FieldModel {
     CngxIconButton,
     CngxMenu,
     CngxMenuItem,
+    CngxNavIcon,
+    CngxNavLink,
+    CngxNavRail,
+    CngxSidenav,
     CngxMenuButton,
     CngxIconMenuButton,
     CngxSplitButton,
@@ -346,6 +361,45 @@ interface FieldModel {
             <li cngxMenuItem value="archive">Archive</li>
           </ul>
         </div>
+      </section>
+
+      <!-- M3 list item (mat-nav-list) and M3 navigation rail
+           (Angular Material ships no rail) at Material density 0 and -2. -->
+      <section class="lab-wide" id="nav">
+        <h3>nav (Material left, cngx right)</h3>
+        @for (density of navDensities; track density.label) {
+          <div class="lab-row lab-nav" [class]="density.cls">
+            <span class="lab-pair-label">{{ density.label }}</span>
+            <mat-nav-list class="lab-nav-host" [attr.aria-label]="'Material nav ' + density.label">
+              @for (dest of navDestinations; track dest.id) {
+                <a mat-list-item href="#nav" [activated]="dest.id === 'inbox'" (click)="$event.preventDefault()">
+                  <mat-icon matListItemIcon>{{ dest.icon }}</mat-icon>
+                  <span matListItemTitle>{{ dest.label }}</span>
+                </a>
+              }
+            </mat-nav-list>
+            <cngx-sidenav class="lab-nav-host" mode="side" [opened]="true" [ariaLabel]="'cngx sidenav ' + density.label">
+              @for (dest of navDestinations; track dest.id) {
+                <a cngxNavLink href="#nav" [active]="dest.id === 'inbox'" (click)="$event.preventDefault()">
+                  <cngx-icon cngxNavIcon><mat-icon>{{ dest.icon }}</mat-icon></cngx-icon>{{ dest.label }}
+                </a>
+              }
+            </cngx-sidenav>
+            @for (placement of navRailPlacements; track placement) {
+              <cngx-nav-rail
+                class="lab-nav-rail"
+                [labelPlacement]="placement"
+                [ariaLabel]="'cngx nav rail ' + placement + ' ' + density.label"
+              >
+                @for (dest of navDestinations; track dest.id) {
+                  <a cngxNavLink href="#nav" [active]="dest.id === 'inbox'" (click)="$event.preventDefault()">
+                    <cngx-icon cngxNavIcon><mat-icon>{{ dest.icon }}</mat-icon></cngx-icon>{{ dest.label }}
+                  </a>
+                }
+              </cngx-nav-rail>
+            }
+          </div>
+        }
       </section>
 
       <section class="lab-wide" id="close-hosts">
@@ -923,6 +977,17 @@ export class MaterialLab {
     { variant: 'outline', tone: 'neutral' },
   ] as const;
   protected readonly densities = ['compact', 'comfortable', 'spacious'] as const;
+  protected readonly navDensities = [
+    { label: 'density 0', cls: '' },
+    { label: 'density -2', cls: 'lab-density-minus-2' },
+  ] as const;
+  protected readonly navDestinations = [
+    { id: 'inbox', icon: 'inbox', label: 'Inbox' },
+    { id: 'outbox', icon: 'send', label: 'Outbox' },
+    { id: 'favorites', icon: 'favorite', label: 'Favorites' },
+    { id: 'trash', icon: 'delete', label: 'Trash' },
+  ] as const;
+  protected readonly navRailPlacements = ['end', 'below'] as const;
 
   protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Red' },

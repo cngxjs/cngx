@@ -26,6 +26,29 @@ class BareSurfaceHost {
   readonly popover = viewChild.required(CngxPopover);
 }
 
+// A surface that paints itself on the popover element with one class in the
+// same layer must beat the reset by specificity alone, with no exclusion list.
+@Component({
+  selector: 'cngx-popover-styled-surface-host',
+  standalone: true,
+  imports: [CngxPopover],
+  styles: `
+    @layer cngx.components {
+      .styled-surface {
+        border: 2px solid rgb(1, 2, 3);
+        padding: 5px;
+        background: rgb(4, 5, 6);
+      }
+    }
+  `,
+  styleUrls: HARNESS_STYLES,
+  encapsulation: ViewEncapsulation.None,
+  template: `<div cngxPopover #pop="cngxPopover" class="styled-surface">Content</div>`,
+})
+class StyledSurfaceHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
 let fixture: ComponentFixture<BareSurfaceHost> | null = null;
 
 function nextFrame(): Promise<void> {
@@ -56,5 +79,31 @@ describe('bare CngxPopover host', () => {
     expect(style.overflowY).toBe('visible');
     expect(style.borderTopWidth).toBe('0px');
     expect(style.paddingTop).toBe('0px');
+  });
+
+  it('lets a one-class surface on the popover element keep its own paint', async () => {
+    const styled = TestBed.createComponent(StyledSurfaceHost);
+    document.body.appendChild(styled.nativeElement as HTMLElement);
+    styled.detectChanges();
+    TestBed.flushEffects();
+    styled.componentInstance.popover().show();
+    styled.detectChanges();
+    await nextFrame();
+
+    const host = (styled.nativeElement as HTMLElement).querySelector(
+      '.styled-surface',
+    ) as HTMLElement;
+    const style = getComputedStyle(host);
+    try {
+      expect(host.matches(':popover-open')).toBe(true);
+      expect(style.borderTopWidth).toBe('2px');
+      expect(style.borderTopColor).toBe('rgb(1, 2, 3)');
+      expect(style.paddingTop).toBe('5px');
+      expect(style.backgroundColor).toBe('rgb(4, 5, 6)');
+    } finally {
+      const root = styled.nativeElement as HTMLElement;
+      styled.destroy();
+      root.remove();
+    }
   });
 });
