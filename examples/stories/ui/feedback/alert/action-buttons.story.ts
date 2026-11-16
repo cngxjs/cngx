@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
     setTimeout(() => this.saveState.setError('Connection timeout - retry again'), 1500);
   }`,
   template: `
-  <cngx-alert [state]="saveState" severity="error" title="Save failed" [closable]="true">
+  <cngx-alert [state]="saveState" severity="error" title="Save failed" [dismissible]="true">
     @if (saveState.status() === 'loading') {
       Retrying...
     } @else {

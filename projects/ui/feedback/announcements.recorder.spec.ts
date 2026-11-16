@@ -39,7 +39,7 @@ const summary = (entry: CngxRecordedAnnouncement) => ({
   template: `
     <cngx-toast-outlet />
     <cngx-banner-outlet />
-    <cngx-alert severity="error" [when]="alertShown()" [closable]="true">Upload failed</cngx-alert>
+    <cngx-alert severity="error" [when]="alertShown()" [dismissible]="true">Upload failed</cngx-alert>
   `,
   imports: [CngxToastOutlet, CngxBannerOutlet, CngxAlert],
 })
@@ -57,7 +57,7 @@ class ModalHost {
 
 @Component({
   template: `
-    <cngx-alert severity="error" [state]="state" [closable]="true">Upload failed</cngx-alert>
+    <cngx-alert severity="error" [state]="state" [dismissible]="true">Upload failed</cngx-alert>
   `,
   imports: [CngxAlert],
 })
@@ -68,7 +68,7 @@ class StateAlertHost {
 @Component({
   template: `
     <dialog cngxDialog #dlg="cngxDialog">
-      <cngx-alert severity="error" [closable]="true">Upload failed</cngx-alert>
+      <cngx-alert severity="error" [dismissible]="true">Upload failed</cngx-alert>
     </dialog>
   `,
   imports: [CngxDialog, CngxAlert],
@@ -80,7 +80,7 @@ class ModalAlertHost {
 @Component({
   template: `
     @if (!dismissed()) {
-      <cngx-alert severity="error" [closable]="true" (dismissed)="dismissed.set(true)">
+      <cngx-alert severity="error" [dismissible]="true" (dismissed)="dismissed.set(true)">
         Upload failed
       </cngx-alert>
     }

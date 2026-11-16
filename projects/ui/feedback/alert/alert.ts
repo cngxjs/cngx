@@ -48,7 +48,7 @@ export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting'
  * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>/#/ui/feedback/alert/auto-collapse</example-url>
  * <example-url>/#/ui/feedback/alert/boolean-trigger-when</example-url>
- * <example-url>/#/ui/feedback/alert/closable</example-url>
+ * <example-url>/#/ui/feedback/alert/dismissible</example-url>
  * <example-url>/#/ui/feedback/alert/severities</example-url>
  * <example-url>/#/ui/feedback/alert/state-driven-visibility</example-url>
  */
@@ -78,7 +78,7 @@ export class CngxAlertIcon {
  * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>/#/ui/feedback/alert/auto-collapse</example-url>
  * <example-url>/#/ui/feedback/alert/boolean-trigger-when</example-url>
- * <example-url>/#/ui/feedback/alert/closable</example-url>
+ * <example-url>/#/ui/feedback/alert/dismissible</example-url>
  * <example-url>/#/ui/feedback/alert/severities</example-url>
  * <example-url>/#/ui/feedback/alert/state-driven-visibility</example-url>
  */
@@ -108,7 +108,7 @@ export class CngxAlertAction {}
  * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
  * <example-url>/#/ui/feedback/alert/auto-collapse</example-url>
  * <example-url>/#/ui/feedback/alert/boolean-trigger-when</example-url>
- * <example-url>/#/ui/feedback/alert/closable</example-url>
+ * <example-url>/#/ui/feedback/alert/dismissible</example-url>
  * <example-url>/#/ui/feedback/alert/severities</example-url>
  * <example-url>/#/ui/feedback/alert/state-driven-visibility</example-url>
  * @axis level molecule
@@ -168,7 +168,7 @@ export class CngxAlertAction {}
         </div>
       </div>
     </div>
-    @if (effectiveClosable()) {
+    @if (dismissible()) {
       <button
         cngxCloseButton
         [attr.aria-label]="dismissLabel()"
@@ -192,14 +192,8 @@ export class CngxAlert {
   /** Optional title displayed above the content. */
   readonly title = input<string | undefined>(undefined);
 
-  /**
-   * Shows a dismiss button.
-   * @deprecated Use `closable` instead.
-   */
+  /** Shows a dismiss button. */
   readonly dismissible = input<boolean>(false);
-
-  /** Shows a dismiss button. Preferred over deprecated `dismissible`. */
-  readonly closable = input<boolean>(false);
 
   /** Bind an async state - auto-shows on error/success/loading, auto-hides on idle. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
@@ -259,9 +253,6 @@ export class CngxAlert {
   protected readonly globalIcon = computed(
     () => this.config?.alertIcons?.[this.severity()] ?? null,
   );
-
-  /** @internal - merged closable from new and deprecated input. */
-  protected readonly effectiveClosable = computed(() => this.closable() || this.dismissible());
 
   /** @internal - ARIA role: 'alert' for error/warning, 'status' for info/success. */
   protected readonly ariaRole = computed(() => {

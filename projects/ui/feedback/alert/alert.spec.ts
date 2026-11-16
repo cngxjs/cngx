@@ -39,7 +39,6 @@ function announcerRegion(): HTMLElement | null {
     <cngx-alert
       [severity]="severity()"
       [state]="state()"
-      [closable]="closable()"
       [dismissible]="dismissible()"
       [title]="title()"
       [when]="when()"
@@ -58,7 +57,6 @@ function announcerRegion(): HTMLElement | null {
 class TestHost {
   readonly severity = signal<AlertSeverity>('info');
   readonly state = signal<ManualAsyncState<unknown> | undefined>(undefined);
-  readonly closable = signal(false);
   readonly dismissible = signal(false);
   readonly title = signal<string | undefined>(undefined);
   readonly when = signal<boolean | undefined>(undefined);
@@ -133,14 +131,7 @@ describe('CngxAlert', () => {
     expect(alert.querySelector('button.cngx-close-button')).toBeNull();
   });
 
-  it('renders close button when closable', () => {
-    const { fixture, alert, host } = setup();
-    host.closable.set(true);
-    fixture.detectChanges();
-    expect(alert.querySelector('button.cngx-close-button')).toBeTruthy();
-  });
-
-  it('renders close button when deprecated dismissible is set', () => {
+  it('renders close button when dismissible', () => {
     const { fixture, alert, host } = setup();
     host.dismissible.set(true);
     fixture.detectChanges();
@@ -296,7 +287,7 @@ describe('CngxAlert', () => {
     state.setError('fail');
     const { fixture, alert, host } = setup();
     host.state.set(state);
-    host.closable.set(true);
+    host.dismissible.set(true);
     flushAll(fixture);
 
     const closeBtn = alert.querySelector('button.cngx-close-button') as HTMLElement;
@@ -314,7 +305,7 @@ describe('CngxAlert', () => {
     state.setError('fail');
     const { fixture, alert, host } = setup();
     host.state.set(state);
-    host.closable.set(true);
+    host.dismissible.set(true);
     flushAll(fixture);
 
     // Dismiss manually
@@ -544,7 +535,7 @@ describe('CngxAlert', () => {
     state.setError('fail');
     const { fixture, alert, host } = setup();
     host.state.set(state);
-    host.closable.set(true);
+    host.dismissible.set(true);
     flushAll(fixture);
 
     (alert.querySelector('button.cngx-close-button') as HTMLElement).click();
@@ -557,7 +548,7 @@ describe('CngxAlert', () => {
 
   it('pins the dismiss close-button with flex-shrink: 0 to survive narrow widths', () => {
     const { host } = setup();
-    host.closable.set(true);
+    host.dismissible.set(true);
     TestBed.flushEffects();
 
     const styleText = Array.from(document.querySelectorAll('style'))
@@ -570,7 +561,7 @@ describe('CngxAlert', () => {
     const copy = signal<CngxFeedbackI18nOverrides>({});
     TestBed.configureTestingModule({ providers: [provideFeedbackI18n(copy)] });
     const { fixture, alert, host } = setup();
-    host.closable.set(true);
+    host.dismissible.set(true);
     host.autoDismissDelay.set(undefined);
     host.when.set(true);
     flushAll(fixture);

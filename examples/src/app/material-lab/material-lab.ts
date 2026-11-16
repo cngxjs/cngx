@@ -361,7 +361,7 @@ interface FieldModel {
             </mat-card-header>
             <mat-card-content>Your changes will be lost if you leave this page.</mat-card-content>
           </mat-card>
-          <cngx-alert class="lab-host" severity="warning" title="Unsaved changes" [closable]="true">
+          <cngx-alert class="lab-host" severity="warning" title="Unsaved changes" [dismissible]="true">
             Your changes will be lost if you leave this page.
           </cngx-alert>
         </div>

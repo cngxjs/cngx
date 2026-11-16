@@ -26,8 +26,8 @@ import {
 @Component({
   imports: [CngxAlert],
   template: `
-    <cngx-alert [closable]="true">One</cngx-alert>
-    <cngx-alert [closable]="true">Two</cngx-alert>
+    <cngx-alert [dismissible]="true">One</cngx-alert>
+    <cngx-alert [dismissible]="true">Two</cngx-alert>
   `,
 })
 class AlertPairHost {}
