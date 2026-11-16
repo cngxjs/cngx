@@ -45,9 +45,10 @@ export interface TransitionDoneHandle {
 export function onTransitionDone(el: HTMLElement, onDone: () => void): TransitionDoneHandle {
   const style = getComputedStyle(el);
   const properties = style.transitionProperty.split(',').map((p) => p.trim());
-  const durations = style.transitionDuration.split(',').map((d) => Number.parseFloat(d.trim()) * 1000);
-  // Older mocks and edge cases may omit transition-delay; treat as zero.
-  const delays = (style.transitionDelay || '0s').split(',').map((d) => Number.parseFloat(d.trim()) * 1000);
+  // An empty or unparseable value reads as zero, so maxTotal is never NaN.
+  const toMs = (value: string): number => (Number.parseFloat(value.trim()) || 0) * 1000;
+  const durations = (style.transitionDuration || '0s').split(',').map(toMs);
+  const delays = (style.transitionDelay || '0s').split(',').map(toMs);
 
   // CSS repeats shorter duration/delay lists cyclically against the property
   // list; mirror that so each property gets its own duration + delay total.

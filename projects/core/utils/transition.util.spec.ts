@@ -164,6 +164,22 @@ describe('onTransitionDone', () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
+  it('reads empty duration and delay values as zero and still settles through the fallback timer', () => {
+    vi.useFakeTimers();
+    stubComputedStyle('', 'opacity', '');
+    const el = document.createElement('div');
+    const onDone = vi.fn();
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+
+    onTransitionDone(el, onDone);
+
+    const delay = setTimeoutSpy.mock.calls[0]?.[1];
+    expect(Number.isNaN(delay)).toBe(false);
+    expect(delay).toBe(50);
+    vi.advanceTimersByTime(50);
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
   it('cycles shorter duration/delay lists against the property list like CSS', () => {
     vi.useFakeTimers();
     // Single duration/delay value applies to both properties per CSS
