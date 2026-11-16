@@ -60,6 +60,7 @@ export {
   withTextScale,
   withMotion,
   withContrast,
+  withTouchTargets,
   withPersistence,
   CNGX_A11Y_STORAGE,
   injectA11yPreferences,

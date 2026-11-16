@@ -82,6 +82,8 @@
 [data-motion='reduced'] ::after {
   animation-duration: 0.01ms !important;
   transition-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  transition-delay: 0s !important;
   animation-iteration-count: 1 !important;
   scroll-behavior: auto !important;
 }
@@ -102,11 +104,14 @@
  * keeps the reduce behaviour for `auto` and `reduced` while letting an
  * explicit `data-motion='full'` opt the whole document back into motion. */
 @media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']),
   :root:not([data-motion='full']) *,
   :root:not([data-motion='full']) ::before,
   :root:not([data-motion='full']) ::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
