@@ -164,19 +164,21 @@
       animation: cngx-bar-indeterminate var(--cngx-bar-duration, 1.5s)
         var(--cngx-bar-easing, ease-in-out) infinite;
     }
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-loading-indicator__spinner {
-        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
-          infinite;
-      }
+  /* Outside @scope and keyed on the root, so data-motion='full' on <html>
+     opts the indicator back into its spin under an OS reduce. */
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .cngx-loading-indicator .cngx-loading-indicator__spinner {
+      animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+        infinite;
+    }
 
-      .cngx-loading-indicator__bar-fill {
-        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
-          infinite;
-        width: 100%;
-        transform: none;
-      }
+    :root:not([data-motion='full']) .cngx-loading-indicator .cngx-loading-indicator__bar-fill {
+      animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+        infinite;
+      width: 100%;
+      transform: none;
     }
   }
 }

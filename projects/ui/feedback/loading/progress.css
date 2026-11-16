@@ -276,18 +276,20 @@
       position: absolute;
       font-size: var(--cngx-progress-circle-label-size, 0.625rem);
     }
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      :scope.cngx-progress--indeterminate .cngx-progress__fill,
-      :scope.cngx-progress--indeterminate .cngx-progress__circle {
-        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
-          infinite;
-      }
+  /* Outside @scope and keyed on the root, so data-motion='full' on <html>
+     opts the indeterminate animation back in under an OS reduce. */
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .cngx-progress--indeterminate .cngx-progress__fill,
+    :root:not([data-motion='full']) .cngx-progress--indeterminate .cngx-progress__circle {
+      animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+        infinite;
+    }
 
-      :scope.cngx-progress--indeterminate .cngx-progress__fill {
-        width: 100%;
-        transform: none;
-      }
+    :root:not([data-motion='full']) .cngx-progress--indeterminate .cngx-progress__fill {
+      width: 100%;
+      transform: none;
     }
   }
 }
