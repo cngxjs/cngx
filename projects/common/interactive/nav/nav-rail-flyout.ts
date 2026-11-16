@@ -38,6 +38,8 @@ export interface CngxNavRailFlyoutContent {
  * Each directive query comes with its `read: ElementRef` twin over the same
  * selector and options, so the two lists hold the same nodes in the same
  * order.
+ *
+ * @since 0.3.0
  */
 export interface CngxNavRailFlyoutSources {
   /** `true` while the rows are railed. */
@@ -313,11 +315,12 @@ export type CngxNavRailFlyoutFactory = (sources: CngxNavRailFlyoutSources) => vo
 
 /**
  * Swap token for the rail's group flyout. The default resolves to
- * {@link injectNavRailFlyout}; `cngx-nav-rail` and `cngx-sidenav` call
- * `inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)(sources)` in their constructors, so
- * one override reaches both, runs in the organism's injection context and
- * gets the same group and content queries. Provide `() => {}` to keep groups as plain inline
- * disclosures (a group's content is then clipped by the narrow rail).
+ * {@link injectNavRailFlyout}; `cngx-nav-rail`, `cngx-sidenav` and
+ * `[cngxNavRailed]` call `inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)(sources)` in
+ * their constructors, so one override reaches all three, runs in the host's
+ * injection context and gets the same group and content queries. Provide
+ * `() => {}` to keep groups as plain inline disclosures (a group's content is
+ * then clipped by the narrow rail).
  *
  * ```ts
  * providers: [{ provide: CNGX_NAV_RAIL_FLYOUT_FACTORY, useValue: myMenuFlyout }];
@@ -325,7 +328,7 @@ export type CngxNavRailFlyoutFactory = (sources: CngxNavRailFlyoutSources) => vo
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-rail-flyout.ts
  * @since 0.3.0
- * @relatedTo injectNavRailFlyout, CngxNavRail, CNGX_NAV_RAIL_TOOLTIP_FACTORY
+ * @relatedTo injectNavRailFlyout, CngxNavRailFlyoutSources, CngxNavRail, CngxNavRailed, CNGX_NAV_RAIL_TOOLTIP_FACTORY
  */
 export const CNGX_NAV_RAIL_FLYOUT_FACTORY = new InjectionToken<CngxNavRailFlyoutFactory>(
   'CngxNavRailFlyoutFactory',

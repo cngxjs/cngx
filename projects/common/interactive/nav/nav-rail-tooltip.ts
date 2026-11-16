@@ -280,16 +280,17 @@ export type CngxNavRailTooltipFactory = (sources: CngxNavRailTooltipSources) => 
 
 /**
  * Swap token for the rail's label tooltip. The default resolves to
- * {@link injectNavRailTooltip}; `cngx-nav-rail` and `cngx-sidenav` call
- * `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(sources)` in their constructors, so
- * one override reaches both, runs in the organism's injection context and may
- * inject what it needs (`ElementRef`, `Renderer2`, `CngxTooltip`
+ * {@link injectNavRailTooltip}; `cngx-nav-rail`, `cngx-sidenav` and
+ * `[cngxNavRailed]` call `inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)(sources)` in
+ * their constructors, so one override reaches all three, runs in the host's
+ * injection context and may inject what it needs (`ElementRef`, `Renderer2`, `CngxTooltip`
  * infrastructure). Provide `() => {}` to drop the tooltip machinery entirely.
  *
  * `sources.railed` already folds in the organism's `[tooltip]` /
  * `withNavRailTooltip` switch: on `cngx-nav-rail` it is `true` only in the
  * `'end'` look with the tooltip on, on `cngx-sidenav` only while it rests as a
- * rail with the tooltip on. An override honours the switch by reading it.
+ * rail with the tooltip on, on `[cngxNavRailed]` while its input is `true`.
+ * An override honours the switch by reading it.
  *
  * ```ts
  * providers: [{ provide: CNGX_NAV_RAIL_TOOLTIP_FACTORY, useValue: () => {} }];
@@ -297,7 +298,7 @@ export type CngxNavRailTooltipFactory = (sources: CngxNavRailTooltipSources) => 
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-rail-tooltip.ts
  * @since 0.3.0
- * @relatedTo injectNavRailTooltip, CngxNavRailTooltipSources, CngxNavRail, CNGX_NAV_RAIL_FLYOUT_FACTORY
+ * @relatedTo injectNavRailTooltip, CngxNavRailTooltipSources, CngxNavRail, CngxNavRailed, CNGX_NAV_RAIL_FLYOUT_FACTORY
  */
 export const CNGX_NAV_RAIL_TOOLTIP_FACTORY = new InjectionToken<CngxNavRailTooltipFactory>(
   'CngxNavRailTooltipFactory',

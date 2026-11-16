@@ -241,7 +241,7 @@ A `cngx-avatar` as mark takes the icon box size whatever its `size` input, with 
 
 ## Rail tooltip and group flyout
 
-Two injection functions turn a container of nav rows into a working rail. `cngx-nav-rail` and the rail of `cngx-sidenav` (both in `@cngx/ui`) call them; they live here because they need nothing but the nav atoms and the native `popover` attribute.
+Two injection functions turn a container of nav rows into a working rail. `cngx-nav-rail` and the rail of `cngx-sidenav` (both in `@cngx/ui`) and `[cngxNavRailed]` call them; they live here because they need nothing but the nav atoms and the native `popover` attribute.
 
 - `injectNavRailTooltip({ railed, side, hoverDelay })` - while `railed()` is `true`, shows the clipped label of the row under the pointer (after `hoverDelay()` ms) or keyboard focus (at once) in one `aria-hidden` tooltip per host, opening away from `side()`.
 - `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` - while `railed()` is `true`, shows an open `cngxNavGroupContent` as a flyout beside its head. `groups` / `contents` are content queries for `CngxNavGroup` / `CngxNavGroupContent`, the `*Elements` twins the same queries with `read: ElementRef`.
@@ -257,17 +257,9 @@ Two injection functions turn a container of nav rows into a working rail. `cngx-
 ```html
 <aside
   cngxSidebar
-  class="cngx-sidebar"
-  style="--cngx-sidebar-rail-size: calc(var(--cngx-nav-railed-size) + var(--cngx-sidebar-border-width, 1px))"
-  ...
->
-```
-
-```html
-<aside
-  cngxSidebar
   #sidebar="cngxSidebar"
   class="cngx-sidebar"
+  style="--cngx-sidebar-rail-size: calc(var(--cngx-nav-railed-size) + var(--cngx-sidebar-border-width, 1px))"
   [cngxNavRailed]="sidebar.state() === 'rail'"
   [cngxNavRailedSide]="sidebar.side()"
 >
