@@ -39,15 +39,6 @@ export { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 export { CngxButtonBrain } from './button-brain.directive';
 export { CngxButtonAdornment } from './button-adornment.component';
 export {
-  provideCngxButton,
-  provideCngxButtonAt,
-  withButtonCloseIcon,
-  withButtonSpinner,
-  type CngxButtonFeature,
-  type CngxButtonCloseIconFeature,
-  type CngxButtonSpinnerFeature,
-} from './provide-cngx-button';
-export {
   CNGX_BUTTON_HOST,
   CNGX_BUTTON_HOST_STATE,
   provideButtonHost,

@@ -44,11 +44,7 @@ describe('@cngx/common/button public API shape', () => {
       'provideButtonConfigAt',
       'provideButtonHost',
       'provideButtonSpinner',
-      'provideCngxButton',
-      'provideCngxButtonAt',
-      'withButtonCloseIcon',
       'withButtonSize',
-      'withButtonSpinner',
       'withButtonTone',
       'withButtonVariant',
     ]);

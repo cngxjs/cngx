@@ -55,13 +55,17 @@ Each axis resolves `input ?? fixed ?? group ?? config ?? default`:
 5. `provideButtonConfig(...)` at the root.
 6. The host default.
 
-`provideButtonConfig` takes `withButtonVariant`, `withButtonTone` and `withButtonSize`.
-`provideCngxButton(...)` sets up the whole family in one call: the same config features,
-`withButtonCloseIcon(MyIcon)`, `withButtonSpinner(MySpinner)` and the action status defaults
-`withActionStatusLabels` / `withActionStatusTemplates` from `@cngx/common/interactive`.
-`provideCngxButtonAt(...)` is its `viewProviders` twin. A feature without a `_target` is dropped
-with [`CNGX1041`](../../../core-concepts/error-codes/cngx1041.md) in development. The menu-button
-caret and labels go through `provideCngxMenuButton(...)` in `@cngx/common/menu-button`.
+`provideButtonConfig` takes `withButtonVariant`, `withButtonTone` and `withButtonSize`. Each
+concern has one provider, and each works in `providers` and `viewProviders`:
+
+| Concern | Provider |
+|-|-|
+| Variant, tone, size | `provideButtonConfig(...)` / `provideButtonConfigAt(...)` |
+| Close glyph | `provideButtonCloseIcon(MyIcon)` |
+| Busy glyph | `provideButtonSpinner(MySpinner)` |
+| Status labels and templates | `provideActionStatusConfig(...)` / `provideActionStatusConfigAt(...)` in `@cngx/common/interactive` |
+
+The menu-button caret and labels live in `@cngx/common/menu-button`.
 
 Density, text scale, touch floor, motion and contrast are not inputs. They come from the
 preference axes in `@cngx/core`. `md` is the form-control row, so an `md` button lines up with

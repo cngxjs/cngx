@@ -72,8 +72,8 @@ import {
  * `CNGX_ACTION_STATUS_CONFIG`, the config `labels`, the actionStatus section
  * of the language pack. The English pack is empty, so without any of them a state
  * has no cell; a bound `''` switches a cell off. Set the app-wide defaults
- * with `provideActionStatusConfig(withActionStatusLabels(...))` or, for a
- * button app, `provideCngxButton(withActionStatusLabels(...))`.
+ * with `provideActionStatusConfig(withActionStatusLabels(...))`, or with
+ * `provideActionStatusConfigAt(...)` for one subtree.
  *
  * Needs a co-hosted `CNGX_ASYNC_RUN_STATE` (a `cngxAsyncClick`), read lazily
  * because the runner reads the host interaction state that reads this brain;

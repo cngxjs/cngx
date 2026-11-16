@@ -96,8 +96,7 @@ export const CNGX_ACTION_STATUS_CONFIG = new InjectionToken<CngxActionStatusConf
 /**
  * Feature returned by `withActionStatusLabels` / `withActionStatusTemplates`;
  * merged by {@link provideActionStatusConfig} and
- * {@link provideActionStatusConfigAt}. The hidden `_target: 'actionStatus'`
- * routes it through `provideCngxButton` in `@cngx/common/button`.
+ * {@link provideActionStatusConfigAt}. It carries `_target: 'actionStatus'`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
  * @since 0.1.0

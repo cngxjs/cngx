@@ -67,7 +67,7 @@ empty status labels, so a button without labels, templates or app-wide defaults 
 its visible label: only the live region reports the outcome.
 
 A projected template beats a bound label, and a bound `''` switches a cell off. App-wide
-defaults go through `provideCngxButton(withActionStatusLabels({ ... }))`; the full order and
+defaults go through `provideActionStatusConfig(withActionStatusLabels({ ... }))`; the full order and
 app-wide templates are documented on `CngxActionStatusBrain`.
 
 ```html
