@@ -231,6 +231,17 @@ function mountAuto(): {
 const nextFrame = (): Promise<void> =>
   new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 
+// Transitions exist only once the layout has painted its settled state.
+async function settled(root: HTMLElement): Promise<void> {
+  for (let frame = 0; frame < 10; frame++) {
+    if (root.querySelector('cngx-sidenav-layout.cngx-sidenav-layout--ready')) {
+      return;
+    }
+    await nextFrame();
+  }
+  throw new Error('cngx-sidenav-layout never turned --ready');
+}
+
 describe('CngxSidenav auto mode geometry', () => {
   it('names the layout as an inline-size query container', () => {
     const { layout } = mountAuto();
@@ -402,7 +413,7 @@ describe('CngxSidenav overlay visuals (F11)', () => {
 
   it('fades the backdrop on the panel duration token instead of snapping', async () => {
     const { fixture, backdrop, start } = mountF11();
-    await nextFrame();
+    await settled(fixture.nativeElement as HTMLElement);
     expect(getComputedStyle(backdrop).opacity).toBe('0');
     const railDuration = getComputedStyle(start)
       .getPropertyValue('--cngx-sidenav-transition-duration')

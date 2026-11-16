@@ -1983,10 +1983,24 @@ describe('CngxSidenavLayout ready gate', () => {
     vi.unstubAllGlobals();
   });
 
-  it('holds the gate until the container reports a size', () => {
+  it('holds the gate until the sized container has been painted twice', () => {
     const roMock = createResizeObserverMock();
     roMock.install(window);
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+    const runFrame = (): void => {
+      frames.splice(0).forEach((cb) => cb(0));
+    };
     const { fixture, layout } = mount();
+    fixture.detectChanges();
+    expect(layout.classList.contains(READY)).toBe(false);
+
+    roMock.triggerResize({
+      borderBoxSize: [{ inlineSize: 0, blockSize: 0 }],
+    } as unknown as ResizeObserverEntry);
+    fixture.detectChanges();
+    runFrame();
+    runFrame();
     fixture.detectChanges();
     expect(layout.classList.contains(READY)).toBe(false);
 
@@ -1994,10 +2008,18 @@ describe('CngxSidenavLayout ready gate', () => {
       borderBoxSize: [{ inlineSize: 900, blockSize: 600 }],
     } as unknown as ResizeObserverEntry);
     fixture.detectChanges();
+    expect(layout.classList.contains(READY)).toBe(false);
+
+    runFrame();
+    fixture.detectChanges();
+    expect(layout.classList.contains(READY)).toBe(false);
+
+    runFrame();
+    fixture.detectChanges();
     expect(layout.classList.contains(READY)).toBe(true);
   });
 
-  it('opens the gate after the first render on a host without ResizeObserver', () => {
+  it('starts ready on a host without ResizeObserver', () => {
     vi.stubGlobal('ResizeObserver', undefined);
     const { fixture, layout } = mount();
     fixture.detectChanges();
