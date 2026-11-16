@@ -439,6 +439,10 @@
       --cngx-button-tone: var(--cngx-color-text, oklch(0.2 0.01 250));
       --cngx-button-tone-text: var(--cngx-color-text, oklch(0.2 0.01 250));
       --cngx-button-on-tone: var(--cngx-color-surface, oklch(1 0 0));
+      /* The button shows its own busy and settle treatment, not the async paint. */
+      --cngx-async-pending-opacity: 1;
+      --cngx-async-success-outline: none;
+      --cngx-async-error-outline: none;
 
       position: relative;
       display: inline-flex;
