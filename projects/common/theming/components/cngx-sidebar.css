@@ -7,7 +7,9 @@
  *
  * The skin styles the sidebar box only: a scrolling flex column on a
  * surface with a border on the side facing the content (`data-sidebar-side`,
- * written by the directive), and a shadow over the content while it peeks.
+ * written by the directive; none while `data-sidebar-state` is `hidden`, so
+ * a hidden sidebar paints nothing), and a shadow over the content while it
+ * peeks.
  * It sets no padding or gap for the content and selects nothing inside it.
  *
  * What the content does on the rail is the content's business: nav rows
@@ -49,12 +51,12 @@
       );
     }
 
-    :scope[data-sidebar-side='start'] {
+    :scope[data-sidebar-side='start']:not([data-sidebar-state='hidden']) {
       border-inline-end: var(--cngx-sidebar-border-width, 1px) solid
         var(--cngx-sidebar-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
     }
 
-    :scope[data-sidebar-side='end'] {
+    :scope[data-sidebar-side='end']:not([data-sidebar-state='hidden']) {
       border-inline-start: var(--cngx-sidebar-border-width, 1px) solid
         var(--cngx-sidebar-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
     }

@@ -210,6 +210,7 @@ describe('CngxSidebar geometry', () => {
         cngxSidebar
         [side]="side()"
         [collapsed]="collapsed()"
+        [collapsedAs]="collapsedAs()"
         [expandOnHover]="false"
       >
         <p>Content</p>
@@ -223,6 +224,7 @@ describe('CngxSidebar geometry', () => {
 class SkinHost {
   readonly side = signal<CngxSidebarSide>('start');
   readonly collapsed = signal(false);
+  readonly collapsedAs = signal<'rail' | 'hidden'>('rail');
 }
 
 describe('cngx-sidebar.css', () => {
@@ -259,6 +261,24 @@ describe('cngx-sidebar.css', () => {
     const { side, set } = mount();
     expect(borders(side())).toEqual({ left: '0px', right: '1px' });
     set((h) => h.side.set('end'));
+    expect(borders(side())).toEqual({ left: '1px', right: '0px' });
+  });
+
+  it('paints no border while hidden, and its border again on a hidden peek', () => {
+    const { fixture, side, sidebar, set } = mount();
+    for (const s of ['start', 'end'] as const) {
+      set((h) => {
+        h.side.set(s);
+        h.collapsedAs.set('hidden');
+        h.collapsed.set(true);
+      });
+      expect(side().getAttribute('data-sidebar-state')).toBe('hidden');
+      expect(borders(side())).toEqual({ left: '0px', right: '0px' });
+      expect(side().getBoundingClientRect().width).toBe(0);
+    }
+    sidebar().peek();
+    fixture.detectChanges();
+    expect(side().getAttribute('data-sidebar-state')).toBe('peek');
     expect(borders(side())).toEqual({ left: '1px', right: '0px' });
   });
 

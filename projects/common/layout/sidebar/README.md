@@ -44,7 +44,7 @@ Base skin tokens (`cngx-sidebar.css`, opt-in with `class="cngx-sidebar"`):
 | Custom property | Default | Purpose |
 |-|-|-|
 | `--cngx-sidebar-bg` | `--cngx-color-surface` with a 3% text tint | Surface. |
-| `--cngx-sidebar-border-color` | `--cngx-color-border` | Border on the side facing the content. |
+| `--cngx-sidebar-border-color` | `--cngx-color-border` | Border on the side facing the content; none while hidden. |
 | `--cngx-sidebar-border-width` | `1px` | Width of that border. |
 | `--cngx-sidebar-peek-shadow` | `--cngx-shadow-md` | Shadow of a peek over the content. |
 
