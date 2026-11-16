@@ -66,8 +66,23 @@ test.describe('CngxSidenav layout regressions', () => {
         const win = window as unknown as { __cngxShift: number };
         win.__cngxShift = 0;
         new PerformanceObserver((list) => {
-          for (const entry of list.getEntries() as (PerformanceEntry & { value: number })[]) {
-            win.__cngxShift += entry.value;
+          // Only shifts of the layout's own boxes count. The examples app
+          // grows its page around the story on load; with classic scrollbars
+          // (Linux CI) the scrollbar it brings narrows the demo chrome above
+          // the layout, which is not the layout's first paint.
+          type Shift = PerformanceEntry & {
+            value: number;
+            sources: { node: Node | null }[];
+          };
+          for (const entry of list.getEntries() as Shift[]) {
+            const ownShift = entry.sources.some((source) => {
+              const node = source.node;
+              const element = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+              return element instanceof Element && element.closest('cngx-sidenav-layout') !== null;
+            });
+            if (ownShift) {
+              win.__cngxShift += entry.value;
+            }
           }
         }).observe({ type: 'layout-shift', buffered: true });
       });
@@ -155,8 +170,7 @@ test.describe('CngxSidenav layout regressions', () => {
       const disclosure = ngApi
         .getDirectives(el)
         .find((d) => typeof (d as { close?: unknown }).close === 'function') as
-        | { close: () => void }
-        | undefined;
+        { close: () => void } | undefined;
       disclosure!.close();
     });
     await expect(team).toHaveAttribute('aria-expanded', 'false');
