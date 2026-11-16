@@ -186,8 +186,6 @@
   --color-cdx-line-highlight: oklch(0.82 0.16 50 / 0.25);
   --color-cdx-line-highlight-flash: oklch(0.82 0.16 50 / 0.4);
   --color-cdx-copy-success: var(--cngx-color-success);
-  --color-cdx-lang-chip: oklch(0.5 0.01 250);
-  --color-cdx-lang-chip-bg: oklch(0.5 0.01 250 / 0.1);
 
   /* ── Graphs (dependency, DOM tree) ───────────────────────── */
   --color-cdx-graph-bg: oklch(0.97 0.005 250);
@@ -608,8 +606,6 @@ code.cdx-shiki-inline {
   --color-cdx-line-highlight: oklch(0.82 0.16 50 / 0.18);
   --color-cdx-line-highlight-flash: oklch(0.82 0.16 50 / 0.3);
   --color-cdx-copy-success: var(--cngx-color-success);
-  --color-cdx-lang-chip: oklch(0.7 0.01 250);
-  --color-cdx-lang-chip-bg: oklch(0.7 0.01 250 / 0.1);
 
   /* ── Graphs ──────────────────────────────────────────────── */
   --color-cdx-graph-bg: oklch(0.24 0.01 250);
