@@ -1,5 +1,6 @@
-import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
+
+import { CngxButtonAdornment } from './button-adornment.component';
 
 import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonHost } from './button-host.token';
@@ -25,7 +26,7 @@ import { provideButtonHost } from './button-host.token';
   selector: 'button[cngxIconButton], a[cngxIconButton]',
   standalone: true,
   exportAs: 'cngxIconButton',
-  imports: [NgComponentOutlet],
+  imports: [CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -48,21 +49,7 @@ import { provideButtonHost } from './button-host.token';
     <span class="cngx-button__label cngx-icon-button__glyph" aria-hidden="true"
       ><ng-content
     /></span>
-    @if (brain.busyVisible()) {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
 })
-export class CngxIconButton {
-  /** @internal */
-  protected readonly brain = inject(CngxButtonBrain);
-}
+export class CngxIconButton {}

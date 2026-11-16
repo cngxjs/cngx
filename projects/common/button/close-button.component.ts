@@ -11,6 +11,7 @@ import {
 import { CngxIconSvg } from '@cngx/common/display';
 import { CNGX_ICON_X } from '@cngx/utils';
 
+import { CngxButtonAdornment } from './button-adornment.component';
 import { CngxButtonBrain } from './button-brain.directive';
 import { provideButtonHost } from './button-host.token';
 
@@ -83,7 +84,7 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
   selector: 'button[cngxCloseButton]',
   standalone: true,
   exportAs: 'cngxCloseButton',
-  imports: [NgComponentOutlet, CngxIconSvg],
+  imports: [NgComponentOutlet, CngxIconSvg, CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -118,25 +119,11 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
         }
       </ng-content>
     </span>
-    @if (brain.busyVisible()) {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
   styleUrls: ['./close-button.component.css'],
 })
 export class CngxCloseButton {
-  /** @internal */
-  protected readonly brain = inject(CngxButtonBrain);
-
   /** @internal - app-wide glyph from `CNGX_BUTTON_CLOSE_ICON`. */
   protected readonly customIcon = injectButtonCloseIcon();
 

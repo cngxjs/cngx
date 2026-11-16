@@ -701,11 +701,12 @@
 
     /* Busy: the label keeps its box (width stable) and its place in the
        accessible name under the ring; opacity, not visibility, which would
-       drop it from the name. */
+       drop it from the name. The ring sits inside cngx-button-adornment
+       (display: contents), so the adornment is the one child left lit. */
     :scope[data-busy] {
       cursor: progress;
     }
-    :scope[data-busy] > :not(.cngx-button__busy) {
+    :scope[data-busy] > :not(cngx-button-adornment) {
       opacity: 0;
     }
     /* Host hook: a host that renders a status label instead of the spinner

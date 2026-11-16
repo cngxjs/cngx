@@ -26,6 +26,7 @@ describe('@cngx/common/button public API shape', () => {
       'CNGX_BUTTON_SPINNER',
       'CNGX_BUTTON_STATE',
       'CngxButton',
+      'CngxButtonAdornment',
       'CngxButtonBrain',
       'CngxButtonEnd',
       'CngxButtonGroup',

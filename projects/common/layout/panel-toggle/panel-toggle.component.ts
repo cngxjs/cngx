@@ -1,4 +1,3 @@
-import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,7 +5,7 @@ import {
   inject,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
+import { CngxButtonAdornment, CngxButtonBrain, provideButtonHost } from '@cngx/common/button';
 import { CngxIconSvg } from '@cngx/common/display';
 import { injectDirection } from '@cngx/core';
 import {
@@ -86,7 +85,7 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
   selector: 'button[cngxPanelToggle]',
   standalone: true,
   exportAs: 'cngxPanelToggle',
-  imports: [NgComponentOutlet, CngxIconSvg],
+  imports: [CngxIconSvg, CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -111,25 +110,11 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
         ></svg>
       </ng-content>
     </span>
-    @if (brain.busyVisible()) {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
   styleUrls: ['./panel-toggle.component.css'],
 })
 export class CngxPanelToggle {
-  /** @internal */
-  protected readonly brain = inject(CngxButtonBrain);
-
   private readonly trigger = inject(CngxPanelTrigger, { host: true });
   private readonly direction = injectDirection();
 

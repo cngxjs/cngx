@@ -221,7 +221,27 @@ fills `CNGX_BUTTON_HOST`. `name` is what development diagnostics print, `fixed` 
 the group and the config, `iconOnly: true` turns on the
 [`CNGX1071`](../../../core-concepts/error-codes/cngx1071.md) name check.
 
-The host keeps its template, slots and CSS. It renders the busy layer while
+To take the cngx paint instead of your own CSS, put `cngx-button` (plus `cngx-icon-button` for a
+square box) in the host `class` and load `@cngx/themes/cngx.css`, or import
+`@cngx/common/theming/components/cngx-button.css` after the foundation. Every axis, the states,
+the busy fade and forced colors then follow the brain's attributes. Render the busy layer and the
+reason span with `<cngx-button-adornment />` (`CngxButtonAdornment`): it shows the
+`provideButtonSpinner` glyph while `brain.busyVisible()` and carries the span the brain's
+`aria-describedby` points at.
+
+```typescript
+@Component({
+  selector: 'button[appSaveButton]',
+  imports: [CngxButtonAdornment],
+  hostDirectives: [{ directive: CngxButtonBrain, inputs: ['variant: appSaveButton', 'disabled', 'disabledReason'] }],
+  providers: [provideButtonHost('appSaveButton', { defaultVariant: 'solid' })],
+  host: { class: 'cngx-button' },
+  template: `<span class="cngx-button__label"><ng-content /></span><cngx-button-adornment />`,
+})
+export class AppSaveButton {}
+```
+
+A host with its own skin keeps its template, slots and CSS. It renders the busy layer while
 `brain.busyVisible()`, with `brain.spinner` inside (the `provideButtonSpinner` glyph or `null`,
 the same value `injectButtonSpinner()` returns), and the hidden reason span shown above. A
 dismiss host reads its glyph through `injectButtonCloseIcon()`, a segment that sizes itself like

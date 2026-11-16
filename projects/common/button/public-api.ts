@@ -37,6 +37,7 @@ export {
 export { CNGX_BUTTON_GROUP, type CngxButtonGroupContext } from './button-group.token';
 export { CNGX_BUTTON_STATE, type CngxButtonState } from './button-state.token';
 export { CngxButtonBrain } from './button-brain.directive';
+export { CngxButtonAdornment } from './button-adornment.component';
 export {
   provideCngxButton,
   provideCngxButtonAt,

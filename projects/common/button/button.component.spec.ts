@@ -189,6 +189,16 @@ class AsyncHost {
 
 @Component({
   template: `
+    <button id="adorned" cngxButton [cngxAsyncClick]="action" disabledReason="Locked">A</button>
+  `,
+  imports: [CngxButton, CngxAsyncClick],
+})
+class AdornedHost {
+  readonly action: AsyncAction = () => new Promise<void>(() => undefined);
+}
+
+@Component({
+  template: `
     <button
       id="refusing"
       cngxButton
@@ -543,6 +553,25 @@ describe('CngxButton', () => {
       expect(btn.hasAttribute('data-busy')).toBe(false);
       expect(btn.hasAttribute('aria-busy')).toBe(false);
       expect(btn.querySelector('.cngx-button__busy')).toBeNull();
+    });
+
+    it('renders the busy layer and the reason span inside one display: contents adornment', async () => {
+      vi.useFakeTimers();
+      const { fixture, q } = render(AdornedHost);
+      const btn = q('#adorned');
+      btn.click();
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      const adornments = btn.querySelectorAll('cngx-button-adornment');
+      expect(adornments).toHaveLength(1);
+      const adornment = adornments[0] as HTMLElement;
+      expect(getComputedStyle(adornment).display).toBe('contents');
+      expect(btn.querySelector(':scope > .cngx-button__busy')).toBeNull();
+      expect(adornment.querySelector(':scope > .cngx-button__busy')).not.toBeNull();
+      expect(adornment.querySelector(':scope > .cngx-button__reason')?.textContent).toBe('Locked');
+      vi.useRealTimers();
     });
 
     it('never paints the busy layer for a run that settles before showDelay', async () => {

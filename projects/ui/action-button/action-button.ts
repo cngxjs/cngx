@@ -1,4 +1,3 @@
-import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,6 +7,7 @@ import {
   type Signal,
 } from '@angular/core';
 import {
+  CngxButtonAdornment,
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
@@ -77,7 +77,7 @@ import { CngxActionToast } from './action-toast.directive';
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[cngxActionButton]',
   standalone: true,
-  imports: [NgComponentOutlet, CngxActionStatusStack],
+  imports: [CngxActionStatusStack, CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxActionButton',
@@ -142,18 +142,7 @@ import { CngxActionToast } from './action-toast.directive';
       <ng-content />
     </span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.busyVisible() && actionStatus.activeCell() === 'idle') {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
   styleUrls: ['./action-button.css'],
 })
