@@ -52,7 +52,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `
   <cngx-stack gap="none">
-    <cngx-stack direction="row" gap="sm" style="align-items: center; padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+    <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
       <strong style="flex: 1 1 auto">Orders</strong>
       <button type="button" [cngxPanelToggle]="filters" label="Filters"></button>
     </cngx-stack>
@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
       <aside [cngxDrawerPanel]="filters" [mode]="mode()" [modality]="modality()"
              [closeOnClickOutside]="mode() === 'over'"
              aria-label="Filters">
-        <cngx-stack direction="row" gap="sm" style="align-items: center; padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+        <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
           <strong style="flex: 1 1 auto">Filters</strong>
           <button type="button" cngxIconButton aria-label="Close filters" (click)="filters.close()">
             <cngx-icon><mat-icon>close</mat-icon></cngx-icon>

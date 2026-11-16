@@ -55,7 +55,7 @@ export const STORY: DemoSpec = {
   template: `
   <div cngxDrawer #fullNav="cngxDrawer" panelId="full-height-nav" class="cngx-drawer">
     <nav [cngxDrawerPanel]="fullNav" [role]="null" aria-label="Main">
-      <cngx-stack direction="row" gap="sm" style="align-items: center; padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+      <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
         <cngx-avatar initials="A" shape="square" size="sm" />
         <strong style="flex: 1 1 auto">Acme</strong>
         <button type="button" cngxIconButton aria-label="Close navigation" (click)="fullNav.close()">
@@ -71,7 +71,7 @@ export const STORY: DemoSpec = {
     </nav>
 
     <cngx-stack gap="none" style="flex: 1 1 auto; min-inline-size: 0">
-      <cngx-stack direction="row" gap="sm" style="align-items: center; padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+      <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
         <button type="button" [cngxPanelToggle]="fullNav" label="Main navigation"></button>
         <cngx-avatar initials="A" shape="square" size="sm" />
         <strong style="flex: 1 1 auto">Acme</strong>

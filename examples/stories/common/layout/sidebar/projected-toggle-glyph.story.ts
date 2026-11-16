@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
   template: `
   <cngx-stack direction="row" gap="none">
     <div style="flex: 1 1 auto; min-inline-size: 0; padding: var(--cngx-space-md, 1rem)">
-      <cngx-stack direction="row" gap="sm" style="align-items: center">
+      <cngx-stack direction="row" gap="sm" align="center">
         <strong style="flex: 1 1 auto">Order 1042</strong>
         <button type="button" [cngxPanelToggle]="details" #toggle="cngxPanelToggle">
           <cngx-icon [style.transform]="toggle.mirrored() ? 'scaleX(-1)' : null">
