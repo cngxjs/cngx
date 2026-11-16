@@ -508,6 +508,17 @@ describe('CngxActionStatusBrain', () => {
         { status: 'error', error: 'boom' },
       ]);
     });
+
+    it('emits for a run that settles before the first render', async () => {
+      const fixture = TestBed.createComponent(TestActionHost);
+      fixture.componentRef.setInput('action', () => Promise.resolve());
+      const status = fixture.debugElement.injector.get(CNGX_ACTION_STATUS);
+      const outcomes: CngxActionOutcome[] = [];
+      status.outcome.subscribe((o) => outcomes.push(o));
+
+      (fixture.nativeElement as HTMLButtonElement).click();
+      await vi.waitFor(() => expect(outcomes).toEqual([{ status: 'success', error: undefined }]));
+    });
   });
 });
 

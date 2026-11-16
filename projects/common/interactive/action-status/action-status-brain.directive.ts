@@ -2,6 +2,7 @@ import {
   afterNextRender,
   computed,
   contentChild,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -262,11 +263,19 @@ export class CngxActionStatusBrain implements CngxActionStatus {
   });
 
   constructor() {
-    // The runner cannot be read during construction (it injects the host
-    // interaction state that reads this brain), and a settle needs a click
-    // on the rendered host.
-    afterNextRender(() => {
-      this.runState().settled.subscribe((settle) => this.handleOwnSettle(settle));
+    // The runner cannot be read during construction: it injects the host
+    // interaction state that reads this brain. A microtask runs after every
+    // directive on the element exists and before any settle, which waits at
+    // least one microtask after the click, so a run that settles before the
+    // first render still reaches (outcome). The flag skips a host destroyed
+    // in between: subscribing to a destroyed output throws. A host without a
+    // runner is left to the first render, which throws CNGX1082 where the
+    // caller sees it.
+    let destroyed = false;
+    inject(DestroyRef).onDestroy(() => (destroyed = true));
+    queueMicrotask(() => {
+      const run = destroyed ? undefined : this.runStateLookup();
+      run?.settled.subscribe((settle) => this.handleOwnSettle(settle));
     });
 
     // One tracked pair, so a swap of the status source (bind, unbind, a new
