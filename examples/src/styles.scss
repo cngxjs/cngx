@@ -3728,12 +3728,18 @@ app-menu-button-material-bridge {
   @include cngx-menu-bridge.theme($demo-material-bridge-theme);
 }
 
-// The nav-rail stories wrap mat-icon in cngx-icon; only the icon bridge sizes
-// the glyph to the icon box, without it a 24px glyph clips in a 20px box.
+// These stories wrap mat-icon in cngx-icon; only the icon bridge sizes the
+// glyph to the icon box, without it a 24px glyph clips in a 20px box.
 app-nav-rail-labels-beside,
 app-nav-rail-labels-below,
 app-nav-rail-end-side,
-app-nav-rail-rail-with-secondary-sidebar {
+app-sidenav-rail-with-secondary-sidebar,
+app-sidebar-inset-app-sidebar,
+app-sidebar-clipped-below-header,
+app-drawer-full-height-modal,
+app-drawer-app-header-clipped,
+app-drawer-filter-panel-push,
+app-nav-nav-railed-rail-of-your-own {
   @include cngx-icon-bridge.theme($demo-material-bridge-theme);
 }
 
