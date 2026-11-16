@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
@@ -10,7 +9,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxContainer } from '@cngx/common/layout';
+import { CNGX_CONTAINER_SIZE, CngxContainer } from '@cngx/common/layout';
 
 import {
   CNGX_SIDENAV,
@@ -102,24 +101,21 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   );
 
   constructor() {
-    // Gate transitions until the first settled render - prevents an
-    // open-on-load flash and the load-time slide of an `auto` rail. The rails
-    // read their width class off the container's first ResizeObserver entry,
-    // which lands after the first render, so the gate waits for it (unless
-    // there is no ResizeObserver, where the class never changes). The forced
-    // layout read commits the resolved state as the before-change style; set
-    // in the same style pass as the class change, `--ready` would still
-    // animate it.
-    const container = inject(CngxContainer, { self: true });
+    // The rails resolve their width class from the container's observed
+    // size, so the gate opens only once it has one. A hidden layout reports
+    // 0 and still reads as compact. The forced layout read commits the
+    // resolved state as the before-change style: in the same style pass as
+    // the class change, `--ready` would still animate it.
+    const container = inject(CNGX_CONTAINER_SIZE, { self: true });
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-    const observes = typeof inject(DOCUMENT).defaultView?.ResizeObserver === 'function';
-    afterRenderEffect({
+    const gate = afterRenderEffect({
       read: () => {
-        if (this.readyState() || (observes && !container.isReady())) {
+        if (container.observes && container.inlineSize() === 0) {
           return;
         }
         host.getBoundingClientRect();
         this.readyState.set(true);
+        gate.destroy();
       },
     });
   }

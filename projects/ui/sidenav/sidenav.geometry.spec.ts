@@ -186,6 +186,18 @@ class SidenavAutoHost {}
 })
 class SidenavAutoMediumHost {}
 
+function railTransitions(rail: HTMLElement, content: HTMLElement): string[] {
+  const found: string[] = [];
+  for (const el of [rail, content]) {
+    for (const animation of el.getAnimations()) {
+      if (animation instanceof CSSTransition) {
+        found.push(`${el.localName}: ${animation.transitionProperty}`);
+      }
+    }
+  }
+  return found;
+}
+
 function mountAuto(): {
   wrapper: HTMLElement;
   layout: HTMLElement;
@@ -272,13 +284,36 @@ describe('CngxSidenav auto mode geometry', () => {
 
     const transitions: string[] = [];
     for (let frame = 0; frame < 8; frame++) {
-      for (const el of [rail, content]) {
-        for (const animation of el.getAnimations()) {
-          if (animation instanceof CSSTransition) {
-            transitions.push(`${el.localName}: ${animation.transitionProperty}`);
-          }
-        }
-      }
+      transitions.push(...railTransitions(rail, content));
+      await nextFrame();
+    }
+
+    expect(layout.classList.contains('cngx-sidenav-layout--ready')).toBe(true);
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(transitions).toEqual([]);
+  });
+
+  // A display:none container reports a 0 inline size and reads as compact,
+  // so the gate stays shut until the layout is shown, then opens without
+  // animating.
+  it('keeps the gate shut while mounted hidden and settles without a transition once shown', async () => {
+    const fixture = TestBed.createComponent(SidenavAutoMediumHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    mountedRoot.style.display = 'none';
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const layout = mountedRoot.querySelector('cngx-sidenav-layout') as HTMLElement;
+    const rail = mountedRoot.querySelector('cngx-sidenav') as HTMLElement;
+    const content = mountedRoot.querySelector('cngx-sidenav-content') as HTMLElement;
+
+    await nextFrame();
+    await nextFrame();
+    expect(layout.classList.contains('cngx-sidenav-layout--ready')).toBe(false);
+
+    mountedRoot.style.display = '';
+    const transitions: string[] = [];
+    for (let frame = 0; frame < 8; frame++) {
+      transitions.push(...railTransitions(rail, content));
       await nextFrame();
     }
 
