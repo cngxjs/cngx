@@ -29,6 +29,11 @@ const LONG = 'Department of Infrastructure and Urban Development, Transport Plan
         <li cngxMenuItem role="menuitem" class="cngx-breadcrumb__overflow-item long">{{ long }}</li>
       </ul>
     </div>
+    <div class="cngx-popover-panel cngx-popover-panel--default" role="group" style="display: inline-block">
+      <ul cngxMenu role="menu" class="panel-menu" style="inline-size: max-content">
+        <li cngxMenuItem role="menuitem" class="panel-item">PDF</li>
+      </ul>
+    </div>
     <ul cngxMenu role="menu" class="bare" style="inline-size: max-content">
       <li cngxMenuItem role="menuitem" class="bare-item">PDF</li>
     </ul>
@@ -94,5 +99,12 @@ describe('breadcrumb overflow under the Material menu bridge', () => {
     const bare = getComputedStyle(query(root, '.bare'));
     expect(parseFloat(bare.maxInlineSize)).toBe(280);
     expect(query(root, '.bare-item').getBoundingClientRect().height).toBe(48);
+  });
+
+  it('bridges any other menu in a popover panel in full, metrics included', () => {
+    const root = mount();
+    const menu = getComputedStyle(query(root, '.panel-menu'));
+    expect(parseFloat(menu.maxInlineSize)).toBe(280);
+    expect(query(root, '.panel-item').getBoundingClientRect().height).toBe(48);
   });
 });
