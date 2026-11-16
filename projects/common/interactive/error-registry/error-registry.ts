@@ -26,11 +26,11 @@ import { shallowReadonlyArrayEqual } from './equal-fns';
 @Injectable()
 export class CngxErrorRegistry {
   private readonly scopes = createKeyedRegistry<CngxErrorScopeContract>({
-    name: 'CngxErrorRegistry scopes',
+    name: 'CngxErrorRegistry',
   });
 
   private readonly aggregators = createKeyedRegistry<CngxErrorAggregatorContract>({
-    name: 'CngxErrorRegistry aggregators',
+    name: 'CngxErrorRegistry',
   });
 
   /** True when at least one registered aggregator reports `hasError`. */
@@ -55,7 +55,8 @@ export class CngxErrorRegistry {
    *
    * **Swap-is-noop:** a *different* scope under a taken name does not
    * replace the holder; `getScope(name)` keeps returning the first
-   * instance and dev mode warns (CNGX0004). The new scope waits: when the
+   * instance and dev mode warns
+   * ([`CNGX0004`](/error-codes/cngx0004.md)). The new scope waits: when the
    * holder unregisters, the first waiting scope takes the name over. For
    * an immediate swap, unregister the holder first.
    */
@@ -124,4 +125,3 @@ export class CngxErrorRegistry {
     }
   }
 }
-
