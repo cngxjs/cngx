@@ -287,7 +287,7 @@ The nav atoms ship their skin in `cngx-nav.css` (`@cngx/common/theming/component
 
 | Group | Tokens |
 |-|-|
-| Row | `--cngx-nav-link-padding`, `-padding-inline`, `-padding-inline-end`, `-font-size`, `-line-height`, `-letter-spacing`, `-font-weight`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
+| Row | `--cngx-nav-link-padding`, `-padding-inline`, `-font-size`, `-line-height`, `-letter-spacing`, `-font-weight`, `-color`, `-inset`, `-radius`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap`, `--cngx-nav-link-ink`, `--cngx-nav-link-initial-size`, `--cngx-nav-chevron-size` |
 | States | `--cngx-nav-link-hover-color`, `-hover-bg`, `-pressed-bg`, `-active-color`, `-active-bg`, `-active-hover-bg`, `-active-font-weight` |
 | Indicator | `--cngx-nav-link-active-indicator-color`, `-size`, `-inset` |
 | Focus | `--cngx-nav-link-focus-outline-color`, `-inner-color`, `-outline-width`, `-outline-offset` |
@@ -311,9 +311,9 @@ A container that wants its own look SETs the tokens on its host; the rows inside
 }
 ```
 
-`--cngx-nav-link-padding-inline` moves the rows, the header and footer marks and the section labels together. The `--cngx-nav-link-padding` shorthand moves only the rows; a container that SETs it builds the inline part from `--cngx-nav-link-padding-inline`, as `cngx-sidenav` does. The row end reads `--cngx-nav-link-padding-inline-end`, which falls back to `--cngx-nav-link-padding-inline`: a container whose shorthand carries any other inline value SETs `-padding-inline-end` too, or the row end keeps the inline-start value.
+`--cngx-nav-link-padding-inline` moves the rows, the header and footer marks and the section labels together. The `--cngx-nav-link-padding` shorthand moves only the rows; a container that SETs it builds the inline part from `--cngx-nav-link-padding-inline`, as `cngx-sidenav` does.
 
-Line-height, letter-spacing and the rest weight are unset by default, so the row inherits them. A theme SETs `--cngx-nav-link-line-height`, `-letter-spacing` and `-font-weight` on the row together with `-font-size`; the active row reads `-active-font-weight`.
+Line-height, letter-spacing and the rest weight are unset by default, so the row inherits them; a group head `<button>` inherits them too instead of the UA `normal`. A theme SETs `--cngx-nav-link-line-height`, `-letter-spacing` and `-font-weight` on the row together with `-font-size`; the active row reads `-active-font-weight`.
 
 To restyle a single row, SET the token on that row instead (`[cngxNavLink].danger { --cngx-nav-link-color: var(--cngx-color-danger-text); }`). Do not write `background` or `padding` on `.cngx-nav-link` directly: the state ladder and the indicator read the tokens, and a raw property only wins for the rest state.
 

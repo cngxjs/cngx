@@ -248,9 +248,7 @@ Under an M3 theme the rail is the M3 navigation rail:
 
 The metrics are rungs and `calc()`s of `--cngx-space-*`, so density re-scales
 the rail like the sidenav rows. The `'below'` pill is drawn by the bridge, not
-by `nav-rail.css`: without Material the row fill stays the indicator. A
-container that SETs `--cngx-nav-link-padding` with an inline part other than
-`--cngx-nav-link-padding-inline` SETs `--cngx-nav-link-padding-inline-end` too.
+by `nav-rail.css`: without Material the row fill stays the indicator.
 
 ## A rail beside a secondary sidebar
 

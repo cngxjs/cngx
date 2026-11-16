@@ -121,16 +121,6 @@ type Fill = (typeof FILLS)[number];
         Wide
       </a>
     </nav>
-    <nav aria-label="Asymmetric" style="--cngx-nav-link-padding-inline-end: 24px">
-      <a cngxNavLink href="#asym" class="row-asym">Asymmetric</a>
-    </nav>
-    <nav
-      dir="rtl"
-      aria-label="Asymmetric right to left"
-      style="--cngx-nav-link-padding-inline-end: 24px"
-    >
-      <a cngxNavLink href="#asym-rtl" class="row-asym-rtl">Asymmetric</a>
-    </nav>
     <nav aria-label="Typed" style="line-height: 30px; letter-spacing: 1px; font-weight: 300">
       <a cngxNavLink href="#inherited" class="row-type-inherited">Inherited</a>
       <button type="button" cngxNavGroup class="group-type-inherited">Inherited</button>
@@ -442,16 +432,6 @@ describe('nav row defaults follow the foundation', () => {
       expect(computedValue(row, 'padding-right')).toBe(computedValue(row, 'padding-left'));
     }
     expect(computedValue(one(root, '.wide-row'), 'padding-right')).toBe('28px');
-  });
-
-  it('puts a SET inline-end padding on the inline end, mirrored under dir="rtl"', () => {
-    const root = mount();
-    const ltr = one(root, '.row-asym');
-    expect(computedValue(ltr, 'padding-left')).toBe('16px');
-    expect(computedValue(ltr, 'padding-right')).toBe('24px');
-    const rtl = one(root, '.row-asym-rtl');
-    expect(computedValue(rtl, 'padding-right')).toBe('16px');
-    expect(computedValue(rtl, 'padding-left')).toBe('24px');
   });
 
   it('inherits line-height, letter-spacing and weight on links and group heads with no SET', () => {
