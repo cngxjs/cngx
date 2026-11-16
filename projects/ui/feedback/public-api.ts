@@ -20,7 +20,6 @@ export {
   provideFeedback,
   withSpinnerTemplate,
   withAlertIcons,
-  withLoadingDefaults,
   withCloseIcon,
   withToasts,
   withAlerts,

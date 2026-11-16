@@ -114,14 +114,6 @@ export class CngxLoadingOverlay {
   readonly minDwell = input<number>(this.loadingConfig.minDwell);
 
   /**
-   * Former name of `minDwell`: minimum display time in ms once visible. When set,
-   * it takes precedence over `minDwell`.
-   *
-   * @deprecated Use `minDwell`. Kept one release for migration.
-   */
-  readonly minDuration = input<number | undefined>(undefined);
-
-  /**
    * When `true`, the overlay only activates during the first load (`isFirstLoad()`),
    * not during refreshes. Use the async container's built-in refresh bar for
    * subsequent loads to avoid content jumps under the backdrop.
@@ -137,11 +129,8 @@ export class CngxLoadingOverlay {
     return this.loading();
   });
 
-  /** @internal - deprecated `minDuration` alias forwards to `minDwell`. */
-  protected readonly effectiveMinDwell = computed(() => this.minDuration() ?? this.minDwell());
-
   /** @internal - debounced visibility via shared gate factory. */
-  protected readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
+  protected readonly visible = createVisibilityGate(this.isActive, this.delay, this.minDwell);
 
   /**
    * @internal - accessible name of the spinner status region. A bound `label`

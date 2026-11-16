@@ -21,7 +21,7 @@ import { CngxLoadingIndicator } from '@cngx/ui/feedback';
   [loading]="isLoading()"
   label="Saving…"
   [delay]="100"
-  [minDuration]="300" />
+  [minDwell]="300" />
 ```
 
 #### Accessibility
@@ -158,8 +158,6 @@ Both `CngxLoadingIndicator` and `CngxLoadingOverlay` support smart timing, and b
 [minDwell]="500"  // Keep spinner visible for at least 500ms even if data arrives early
 ```
 
-`[minDuration]` is the deprecated alias for `[minDwell]`; it still takes precedence when set, but prefer `[minDwell]` in new code.
-
 These prevent the "flash" effect when operations are very fast or very slow.
 
 ### Where the defaults come from
@@ -172,7 +170,7 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
-Set app-wide timing there once and every loading surface (indicator, overlay, async-container, skeleton, recycler) picks it up; reach for the inputs only when one instance needs to differ. `provideFeedback(withLoadingDefaults({ delay, minDuration }))` writes the same token as a back-compat wrapper - prefer `provideLoadingConfig(...)` for new apps.
+Set app-wide timing there once and every loading surface (indicator, overlay, async-container, skeleton, recycler) picks it up; reach for the inputs only when one instance needs to differ.
 
 
 
