@@ -104,6 +104,16 @@ describe('createSelectionController', () => {
       expect(values()).toEqual([1, 2, 3]);
     });
 
+    it('duplicate keys in the input are added once', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.toggleAll([4, 4]);
+
+      expect(c.selectedCount()).toBe(1);
+      expect(values()).toEqual([4]);
+    });
+
     it('empty input is a no-op', () => {
       const initial = [1, 2];
       const values = signal<number[]>(initial);
@@ -144,6 +154,20 @@ describe('createSelectionController', () => {
 
       expect(values()).toEqual([2, 3, 4]);
       expect(values()).not.toBe(next);
+    });
+
+    it('set keeps the first value per key', () => {
+      const first: Item = { id: 1, label: 'first' };
+      const second: Item = { id: 1, label: 'second' };
+      const values = signal<Item[]>([]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, { keyFn: (v) => v.id }),
+      );
+
+      c.set([first, second]);
+
+      expect(c.selectedCount()).toBe(1);
+      expect(values()[0]).toBe(first);
     });
   });
 
