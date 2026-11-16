@@ -64,7 +64,10 @@ import { describe, expect, it } from 'vitest';
  *       `translateX`), so the border toward the content sits on the opposite
  *       physical edge in every writing direction. A logical twin would land on
  *       the wrong edge under RTL. Any other directional property in such a
- *       rule stays flagged.
+ *       rule stays flagged. For the same reason a push panel's content gives
+ *       way on the panel's physical side: ONLY `margin-(left|right)` inside a
+ *       rule whose selector contains
+ *       `.cngx-drawer-content[data-drawer-push='left'|'right']` stays.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -173,6 +176,8 @@ const SPINNER_BORDER_LONGHAND = /^border-(?:left|right)-(?:color|width|style)$/;
 const RIPPLE_WAVE_SELECTOR = /\.cngx-ripple__wave/;
 const DRAWER_SIDE_SELECTOR = /\.cngx-drawer-panel--(?:left|right)\b/;
 const DRAWER_SIDE_BORDER = /^border-(?:left|right)(?:-(?:color|width|style))?$/;
+const DRAWER_PUSH_SELECTOR = /\.cngx-drawer-content\[data-drawer-push='(?:left|right)'\]/;
+const DRAWER_PUSH_MARGIN = /^margin-(?:left|right)$/;
 
 const BARE_INSET = /(?<![-\w])(left|right)\s*:\s*([^;{}]+)[;}]/g;
 // `env(safe-area-inset-left)` is an environment variable name, not a property.
@@ -192,6 +197,8 @@ function findOffenders(rawCss, rel = 'fixture') {
   const inRippleWave = (idx) => rippleWave.some(([s, e]) => idx >= s && idx < e);
   const drawerSide = gatedRanges(css, DRAWER_SIDE_SELECTOR);
   const inDrawerSide = (idx) => drawerSide.some(([s, e]) => idx >= s && idx < e);
+  const drawerPush = gatedRanges(css, DRAWER_PUSH_SELECTOR);
+  const inDrawerPush = (idx) => drawerPush.some(([s, e]) => idx >= s && idx < e);
   const offenders = [];
 
   let m;
@@ -220,6 +227,9 @@ function findOffenders(rawCss, rel = 'fixture') {
     }
     if (DRAWER_SIDE_BORDER.test(m[0]) && inDrawerSide(m.index)) {
       continue; // (f) border toward the content of a physical drawer side
+    }
+    if (DRAWER_PUSH_MARGIN.test(m[0]) && inDrawerPush(m.index)) {
+      continue; // (f) content giving way to a physical push panel
     }
     offenders.push(`${rel}: ${m[0]}`);
   }
@@ -302,6 +312,13 @@ describe('css logical-property (RTL) regression guard', () => {
     expect(findOffenders('.cngx-drawer-panel--left { margin-right: 4px; }')).toHaveLength(1);
     expect(findOffenders('.cngx-drawer-panel--top { border-left: 1px solid red; }')).toHaveLength(1);
     expect(findOffenders('.cngx-drawer-panel { border-right: 1px solid red; }')).toHaveLength(1);
+    expect(
+      findOffenders(".cngx-drawer-content[data-drawer-push='left'] { margin-left: 220px; }"),
+    ).toEqual([]);
+    expect(
+      findOffenders(".cngx-drawer-content[data-drawer-push='right'] { padding-right: 4px; }"),
+    ).toHaveLength(1);
+    expect(findOffenders('.cngx-drawer-content { margin-left: 220px; }')).toHaveLength(1);
 
     // env(safe-area-inset-*) names a device inset, not a directional property
     expect(
