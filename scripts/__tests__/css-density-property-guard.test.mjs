@@ -183,9 +183,36 @@ function stripComments(css) {
   return css.replace(/\/\*[\s\S]*?\*\//g, ' ');
 }
 
+/** The selectors of a prelude, split on commas outside parentheses. */
+function topLevelSelectors(prelude) {
+  const parts = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < prelude.length; i++) {
+    const ch = prelude[i];
+    if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    } else if (ch === ',' && depth === 0) {
+      parts.push(prelude.slice(start, i));
+      start = i + 1;
+    }
+  }
+  parts.push(prelude.slice(start));
+  return parts;
+}
+
+/** `true` when every selector of the prelude carries `[data-skin`. */
+function preludeGated(prelude) {
+  const selectors = topLevelSelectors(prelude.slice(prelude.lastIndexOf(';') + 1));
+  return selectors.every((selector) => /\[data-skin/.test(selector));
+}
+
 /** char-index ranges inside a `[data-skin...]`-gated block (nested blocks
- * inherit the gate). Brace-matched. `:not([data-skin])` is the explicitly
- * UNSKINNED default host and does NOT gate. */
+ * inherit the gate). Brace-matched. A selector list gates only when every
+ * selector in it does. `:not([data-skin])` is the explicitly UNSKINNED
+ * default host and does NOT gate. */
 function skinGatedRanges(css) {
   const ranges = [];
   const stack = [];
@@ -195,7 +222,7 @@ function skinGatedRanges(css) {
     if (ch === '{') {
       const prelude = css.slice(lastBoundary, i).replace(/:not\(\s*\[data-skin[^)]*\)/g, '');
       const parentGated = stack.length ? stack[stack.length - 1].gated : false;
-      const gated = parentGated || /\[data-skin/.test(prelude);
+      const gated = parentGated || preludeGated(prelude);
       stack.push({ gated, start: i + 1 });
       lastBoundary = i + 1;
     } else if (ch === '}') {
@@ -407,6 +434,22 @@ describe('literal spacing detection (rule c)', () => {
 
   it('passes a literal inside a skin-gated block', () => {
     expect(literalSpacingDeclarations("[data-skin='x'] .a { padding: 12px 16px; }")).toEqual([]);
+  });
+
+  it('gates a selector list only when every selector is skin-gated', () => {
+    expect(literalSpacingDeclarations('.d8, [data-skin] .zz { padding: 12px; }')).toEqual([
+      'padding: 12px',
+    ]);
+    expect(
+      literalSpacingDeclarations("[data-skin='a'] .x, [data-skin='b'] .y { padding: 12px; }"),
+    ).toEqual([]);
+  });
+
+  it('reads :is() with a comma inside as one selector', () => {
+    expect(literalSpacingDeclarations(':is(.a, [data-skin] .b) { padding: 12px; }')).toEqual([]);
+    expect(
+      literalSpacingDeclarations(':not([data-skin]):is(.a, .b), [data-skin] .c { padding: 12px; }'),
+    ).toEqual(['padding: 12px']);
   });
 });
 

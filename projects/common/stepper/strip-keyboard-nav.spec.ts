@@ -9,6 +9,8 @@ interface FakeHostOptions {
   readonly activeId?: string;
   readonly orientation?: 'horizontal' | 'vertical';
   readonly busy?: boolean;
+  /** Commit pending; defaults to `busy`. `busy` without it is a finish run. */
+  readonly commitPending?: boolean;
   readonly stepIds?: readonly string[];
   readonly disabledIds?: readonly string[];
 }
@@ -23,6 +25,9 @@ function makeHost(opts: FakeHostOptions = {}) {
     activeStepId: signal<string | null>(opts.activeId ?? 's0'),
     orientation: signal(opts.orientation ?? 'horizontal'),
     busy: signal(opts.busy ?? false),
+    commitState: {
+      status: signal((opts.commitPending ?? opts.busy) ? 'pending' : 'idle'),
+    },
     intendedStepIndex: signal<number | undefined>(undefined),
     stepsOnly: signal(
       stepIds.map((id) => ({ id, disabled: () => disabled.has(id) })),
@@ -197,5 +202,18 @@ describe('createStepperStripKeyboardNav - stale intended target', () => {
     press(el, button, handler, 'ArrowRight');
     await flushMicrotasks();
     expect(document.activeElement?.id).toBe('s2-header');
+  });
+
+  it('focuses the active step while only the finish run keeps the stepper busy', async () => {
+    const { host } = makeHost({ activeId: 's0', busy: true, commitPending: false });
+    (host as unknown as { intendedStepIndex: ReturnType<typeof signal<number | undefined>> })
+      .intendedStepIndex.set(1);
+    const { el, button } = makeStrip();
+    addStepButton(el, 's1');
+    const handler = nav(host, el, 'ltr');
+
+    press(el, button, handler, 'Home');
+    await flushMicrotasks();
+    expect(document.activeElement?.id).toBe('s0-header');
   });
 });

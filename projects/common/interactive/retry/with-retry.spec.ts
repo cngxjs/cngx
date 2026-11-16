@@ -1,3 +1,4 @@
+import { EMPTY, Observable, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_ASYNC_CANCELLED } from '../async-click/async-click.directive';
 import { createRetry, withRetry } from './with-retry';
@@ -113,12 +114,21 @@ describe('withRetry', () => {
     vi.useRealTimers();
   });
   describe('abort signal and cancellation', () => {
-    it('forwards the signal to the wrapped action', async () => {
-      const action = vi.fn().mockResolvedValue('ok');
-      const [retryable] = createRetry(action);
+    it('passes the action a run signal linked to the runner signal', async () => {
+      let received: AbortSignal | undefined;
+      let finish!: () => void;
+      const [retryable] = createRetry((signal?: AbortSignal) => {
+        received = signal;
+        return new Promise<void>((resolve) => (finish = resolve));
+      });
       const controller = new AbortController();
-      await retryable(controller.signal);
-      expect(action).toHaveBeenCalledWith(controller.signal);
+      const result = retryable(controller.signal);
+      expect(received).toBeInstanceOf(AbortSignal);
+      expect(received?.aborted).toBe(false);
+      controller.abort();
+      expect(received?.aborted).toBe(true);
+      finish();
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
     });
 
     it('resolves CNGX_ASYNC_CANCELLED without calling the action on an aborted signal', async () => {
@@ -155,15 +165,13 @@ describe('withRetry', () => {
       expect(state.lastError()).toEqual(new Error('fail'));
     });
 
-    it('abort during the in-flight attempt lets it finish and settles idle', async () => {
-      let finish!: () => void;
-      const action = vi.fn(() => new Promise<void>((resolve) => (finish = resolve)));
+    it('abort during the in-flight attempt settles idle without waiting for it', async () => {
+      const action = vi.fn(() => new Promise<void>(() => undefined));
       const [retryable, state] = createRetry(action);
       const controller = new AbortController();
 
       const result = retryable(controller.signal);
       controller.abort();
-      finish();
 
       await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
       expect(state.state.status()).toBe('idle');
@@ -207,6 +215,95 @@ describe('withRetry', () => {
       finish();
       await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
       expect(state.state.status()).toBe('idle');
+    });
+
+    it('reset() during an unresolved attempt resolves CNGX_ASYNC_CANCELLED without waiting', async () => {
+      let fail!: (err: unknown) => void;
+      let received: AbortSignal | undefined;
+      const [retryable, state] = createRetry((signal?: AbortSignal) => {
+        received = signal;
+        return new Promise<void>((_, reject) => (fail = reject));
+      });
+      const result = retryable();
+      expect(state.state.status()).toBe('pending');
+
+      state.reset();
+      expect(received?.aborted).toBe(true);
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(state.state.status()).toBe('idle');
+
+      // The abandoned attempt rejects late: handled, and it writes nothing.
+      fail(new Error('late'));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(state.lastError()).toBeUndefined();
+      expect(state.state.status()).toBe('idle');
+    });
+
+    it('reset() during the backoff resolves CNGX_ASYNC_CANCELLED without waiting', async () => {
+      vi.useFakeTimers();
+      const action = vi.fn().mockRejectedValue(new Error('fail'));
+      const [retryable, state] = createRetry(action, { maxAttempts: 3, delay: 1000 });
+
+      const result = retryable();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(state.retrying()).toBe(true);
+      expect(vi.getTimerCount()).toBe(1);
+
+      state.reset();
+      expect(vi.getTimerCount()).toBe(0);
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(state.lastError()).toBeUndefined();
+      expect(state.state.status()).toBe('idle');
+    });
+
+    it('a newer run aborts the signal of the run it supersedes', async () => {
+      const signals: (AbortSignal | undefined)[] = [];
+      const [retryable] = createRetry((signal?: AbortSignal) => {
+        signals.push(signal);
+        return new Promise<void>(() => undefined);
+      });
+      const first = retryable();
+      void retryable();
+      expect(signals[0]?.aborted).toBe(true);
+      expect(signals[1]?.aborted).toBe(false);
+      await expect(first).resolves.toBe(CNGX_ASYNC_CANCELLED);
+    });
+
+    it('reset() unsubscribes an unresolved Observable attempt', async () => {
+      let subscribed = 0;
+      let tornDown = 0;
+      const [retryable, state] = createRetry(
+        () =>
+          new Observable<void>(() => {
+            subscribed++;
+            return () => tornDown++;
+          }),
+      );
+      const result = retryable();
+      expect(subscribed).toBe(1);
+      expect(tornDown).toBe(0);
+
+      state.reset();
+      expect(tornDown).toBe(1);
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+    });
+
+    it('unsubscribes an Observable attempt once it emits', async () => {
+      let tornDown = 0;
+      const [retryable, state] = createRetry(
+        () =>
+          new Observable<string>((subscriber) => {
+            subscriber.next('ok');
+            return () => tornDown++;
+          }),
+      );
+      await expect(retryable()).resolves.toBeUndefined();
+      expect(tornDown).toBe(1);
+      expect(state.state.status()).toBe('success');
+      await expect(createRetry(() => of('x'))[0]()).resolves.toBeUndefined();
+      await expect(createRetry(() => EMPTY)[0]()).resolves.toBeUndefined();
     });
 
     it('a superseded run resolves CNGX_ASYNC_CANCELLED', async () => {

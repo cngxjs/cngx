@@ -1,6 +1,16 @@
-import { computed, Directive, inject, input, output, type Signal } from '@angular/core';
+import {
+  computed,
+  Directive,
+  effect,
+  inject,
+  input,
+  output,
+  untracked,
+  type Signal,
+} from '@angular/core';
 
 import { CNGX_ASYNC_RUN_STATE, CngxAsyncClick } from '@cngx/common/interactive';
+import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_STEPPER_HOST, type CngxStepperHost } from '../stepper-host.token';
 import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
@@ -71,6 +81,9 @@ export class CngxStepperComplete {
   );
   private readonly runner = inject(CNGX_ASYNC_RUN_STATE, { host: true });
 
+  private readonly pending = computed(() => this.runner.state.status() === 'pending');
+  private readonly busyKey = nextUid('cngx-stepper-complete');
+
   /** `true` when the active step is the last one - the finish step. */
   readonly isActive: Signal<boolean> = computed(() => this.resolvedHost()?.isLastStep() ?? false);
 
@@ -78,6 +91,17 @@ export class CngxStepperComplete {
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
       warnStepperControlUnhosted('cngxStepperComplete', this.resolvedHost);
     }
+
+    // The run holds the host busy, so Back, Next and header navigation
+    // refuse while Finish runs. register() reads and writes the registry's
+    // own signal, so the call stays untracked; only the host is a dependency.
+    effect((onCleanup) => {
+      const host = this.resolvedHost();
+      const release = untracked(() => host?.registerBusy?.(this.busyKey, this.pending));
+      if (release) {
+        onCleanup(release);
+      }
+    });
 
     // The subscription ends with the runner, which shares this element.
     this.runner.settled.subscribe((settle) => {

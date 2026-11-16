@@ -12,9 +12,9 @@ export interface CngxMenuToggle {
   /** `true` while the menu is open. */
   readonly expanded: Signal<boolean>;
   /**
-   * Toggles the popover. Refuses to open while `blocked`, but an open menu
-   * still closes, so a run started by the opening click never leaves a menu
-   * that cannot be clicked shut.
+   * Toggles the popover. A blocked trigger neither opens nor closes on click;
+   * an open menu closes by Escape, Tab, an outside press or an item
+   * activation.
    */
   readonly handleClick: () => void;
 }
@@ -32,7 +32,9 @@ export function injectMenuToggle(blocked: Signal<boolean>): CngxMenuToggle {
   return {
     expanded,
     handleClick: () => {
-      if (blocked() && !expanded()) {
+      // Unreachable behind the brain's capture guard; kept as the host
+      // contract, so a custom host never relies on listener order.
+      if (blocked()) {
         return;
       }
       popoverTrigger().popoverRef().toggle();

@@ -543,9 +543,9 @@ export class CngxStepper implements CngxStepPanelHost {
       return;
     }
     // No-op when the header is not reachable - disabled, linear-blocked,
-    // or a commit is in flight. The reachability gate (which now includes
-    // `busy()`) is the single source, so a mid-commit click cannot
-    // supersede the pending transition.
+    // or a commit or the finish run is in flight. The reachability gate
+    // (`busy()` included) is the single source, so a mid-commit click
+    // cannot supersede the pending transition.
     if (node.kind !== 'step' || !this.isHeaderReachable(node)) {
       return;
     }
@@ -555,7 +555,8 @@ export class CngxStepper implements CngxStepPanelHost {
   /**
    * `true` when the step header at `node` may be navigated to right now:
    * structurally reachable (`canNavigateTo` - not disabled, not
-   * linear-blocked) AND not while a commit is in flight (`busy()`). The
+   * linear-blocked) AND not while a commit or the finish run is in flight
+   * (`busy()`). The
    * busy gate mirrors the footer nav atoms, which disable on
    * `!canGo* || busy()` - so the strip and the footer lock together
    * during an async transition instead of letting a header click

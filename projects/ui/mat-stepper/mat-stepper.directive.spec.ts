@@ -169,6 +169,18 @@ async function setupPlumbing(): Promise<Plumbing> {
 }
 
 describe('CngxMatStepper instrumentation directive', () => {
+  test('the host reads aria-busy while a registered finish run is pending', async () => {
+    const { fixture, presenter } = await setupPlumbing();
+    const host = fixture.nativeElement.querySelector('mat-stepper') as HTMLElement;
+    expect(host.getAttribute('aria-busy')).toBeNull();
+    const release = presenter.registerBusy('finish', signal(true));
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-busy')).toBe('true');
+    release();
+    fixture.detectChanges();
+    expect(host.getAttribute('aria-busy')).toBeNull();
+  });
+
   test('axis 1: presenter→Material write - presenter.select(2) updates matStepper.selectedIndex', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

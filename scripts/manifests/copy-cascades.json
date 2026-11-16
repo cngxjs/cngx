@@ -81,7 +81,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 189,
+      "line": 190,
       "member": "pendingText",
       "enclosing": "computed",
       "tiers": [
@@ -97,7 +97,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 193,
+      "line": 194,
       "member": "succeededText",
       "enclosing": "computed",
       "tiers": [
@@ -113,7 +113,7 @@
     {
       "class": "CngxActionStatusBrain",
       "file": "projects/common/interactive/action-status/action-status-brain.directive.ts",
-      "line": 196,
+      "line": 197,
       "member": "failedText",
       "enclosing": "computed",
       "tiers": [
@@ -129,7 +129,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 473,
+      "line": 503,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -145,7 +145,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 476,
+      "line": 506,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [

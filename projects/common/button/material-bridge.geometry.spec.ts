@@ -1,6 +1,8 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { computedValue, oklabOf, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 import { CngxAvatar, CngxIcon } from '@cngx/common/display';
 
@@ -408,6 +410,17 @@ describe('Material bridge: M3 metrics and label type', () => {
     btn.classList.remove('cngx-pressed');
     // 12% of on-primary (--mat-sys-pressed-state-layer-opacity: 0.12).
     expect(pressed).toBe(getComputedStyle(root.querySelector('.probe-pressed')!).color);
+  });
+
+  it('lightens a solid primary on hover towards on-primary, not the default dark shade', async () => {
+    const root = mountMetrics();
+    const btn = root.querySelector<HTMLElement>('.layer-solid')!;
+    const rest = oklabOf(computedValue(btn, 'background-color'))[0];
+    await userEvent.hover(btn);
+    const hover = oklabOf(computedValue(btn, 'background-color'))[0];
+    await parkPointer();
+    // M3 light: on-primary is white, so the bridged shade lightens the fill.
+    expect(hover).toBeGreaterThan(rest);
   });
 
   it('re-scales the bridged button under a Material density -2 theme (density-bridge)', () => {

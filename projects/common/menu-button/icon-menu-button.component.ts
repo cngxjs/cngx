@@ -110,7 +110,7 @@ export class CngxIconMenuButton {
   /** @internal - the caret role inside a `cngxSplitButton`. */
   protected readonly caret = inject(CngxSplitCaret);
 
-  /** @internal - refuses to open while blocked; an open menu still closes. */
+  /** @internal - neither opens nor closes on click while blocked. */
   protected readonly toggle = injectMenuToggle(this.brain.blocked);
 
   /** `true` while the menu is open. */

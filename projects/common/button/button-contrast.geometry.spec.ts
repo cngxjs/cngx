@@ -197,10 +197,6 @@ describe('solid button label contrast on hover and press (default palette)', () 
     ['primary', 'dark', 'hover'],
     ['danger', 'light', 'hover'],
     ['danger', 'light', 'pressed'],
-  ] as const)(title, expectClears);
-
-  // E10: expected to fail until PR 8 (T6) shades the dark-scheme fill away from the dark ink (3.92, 4.22, 3.40 today).
-  it.fails.each([
     ['primary', 'dark', 'pressed'],
     ['danger', 'dark', 'hover'],
     ['danger', 'dark', 'pressed'],
@@ -218,10 +214,8 @@ describe('toned outline boundary contrast (default palette)', () => {
     expect(ratio, `${tone} / ${scheme}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(3);
   }
 
-  it.each([['primary', 'dark']] as const)(title, expectClears);
-
-  // E7: expected to fail until PR 8 (T7) raises the 60% tone mix of the outline border (2.06, 2.37, 2.79 today).
-  it.fails.each([
+  it.each([
+    ['primary', 'dark'],
     ['primary', 'light'],
     ['danger', 'light'],
     ['danger', 'dark'],

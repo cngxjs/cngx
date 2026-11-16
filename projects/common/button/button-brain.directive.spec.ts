@@ -290,6 +290,7 @@ describe('CngxButtonBrain', () => {
     expect(chip.hasAttribute('disabled')).toBe(false);
     expect(chip.getAttribute('aria-describedby')).toBe(`static-id extra-id ${reason.id}`);
     expect(reason.textContent).toBe('Saving');
+    expect(reason.id).toMatch(/^cngx-button-reason-\d+$/);
     // One source: the published id is the one aria-describedby references.
     const brain = fixture.debugElement.query(By.css('#chip')).injector.get(CngxButtonBrain);
     expect(brain.activeReasonId()).toBe(reason.id);
@@ -468,8 +469,7 @@ describe('CngxButtonBrain', () => {
   });
 
   describe('activation while aria-disabled and expanded', () => {
-    // A11: expected to fail until PR 8 (T8) removes the aria-expanded exemption in the click guard.
-    it.fails('a disabled host with aria-expanded="true" does not run its click handler', () => {
+    it('a disabled host with aria-expanded="true" does not run its click handler', () => {
       const { q, host } = render(ExpandedDisabledHost);
       const btn = q('#expanded');
       expect(btn.getAttribute('aria-disabled')).toBe('true');

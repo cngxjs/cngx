@@ -16,6 +16,7 @@ import {
   untracked,
   type Signal,
 } from '@angular/core';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import {
   buildAsyncStateView,
   createVisibilityGate,
@@ -176,6 +177,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     self: true,
     optional: true,
   });
+  private readonly announcer = inject(CngxLiveAnnouncer);
 
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>({ alias: 'cngxAsyncClick' });
@@ -387,7 +389,11 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   /**
    * Clears the region at once, then writes `read()` after the next render,
    * so a host can read content the settle rendered. Two settles before a
-   * render produce two writes in that one render pass.
+   * render produce two writes in that one render pass. A host that is not
+   * rendered at that point (a closed popover, a hidden branch, a
+   * `visibility: hidden` ancestor) leaves the
+   * region empty and hands a non-empty text to `CngxLiveAnnouncer`, scoped
+   * to the host, because a reader never speaks a region in a hidden subtree.
    */
   private speak(read: () => string): void {
     if (!untracked(this.autoAnnounce)) {
@@ -400,14 +406,38 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     }
     afterNextRender(
       {
-        write: () => {
-          const current = this.regionSpan;
-          if (!this.destroyed && current) {
-            current.textContent = read();
+        // The visibility probe reads style, so it runs before the write.
+        earlyRead: () => this.hostRendered(),
+        write: (rendered) => {
+          if (this.destroyed) {
+            return;
+          }
+          const text = read();
+          if (rendered) {
+            if (this.regionSpan) {
+              this.regionSpan.textContent = text;
+            }
+            return;
+          }
+          if (text !== '') {
+            this.announcer.announce(text, 'polite', this.el.nativeElement);
           }
         },
       },
       { injector: this.injector },
+    );
+  }
+
+  /**
+   * `false` for a host a reader skips: not rendered, or under
+   * `visibility: hidden` (a hidden sidenav rail). An engine without
+   * `checkVisibility()` counts the host as rendered.
+   */
+  private hostRendered(): boolean {
+    const host = this.el.nativeElement;
+    return (
+      typeof host.checkVisibility !== 'function' ||
+      host.checkVisibility({ visibilityProperty: true })
     );
   }
 
@@ -499,6 +529,12 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     }
 
     this.clearFeedback();
+    // Cleared here, not by the idle effect: the status goes straight from
+    // the last outcome to pending, so a repeated identical outcome would
+    // otherwise rewrite an unchanged region and stay silent.
+    if (this.regionSpan) {
+      this.regionSpan.textContent = '';
+    }
     this.pendingState.set(true);
 
     // Only the action is guarded: a throw inside settle() (a (settled)

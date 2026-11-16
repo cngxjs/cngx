@@ -375,10 +375,10 @@ export class CngxSidenav
    * container - a rule whose subject is the container itself would never match.
    *
    * Empty until the layout's first `ResizeObserver` entry arrives, so `auto`
-   * resolves to `compact` for that first frame. The observer's initial callback
-   * runs after layout and before paint, so nothing flashes; do NOT seed this
-   * with a constructor-time `getComputedStyle`, which would read before the
-   * first layout.
+   * resolves to `compact` for the first frames. `CngxSidenavLayout` stays
+   * hidden and transition-free until the settled class has been painted. Do
+   * NOT seed this with a constructor-time `getComputedStyle`, which would read
+   * before the first layout.
    */
   private readonly rawWidthClass =
     this.container?.property(

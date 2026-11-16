@@ -35,6 +35,26 @@ test.describe('common/popover/popover-panel', () => {
     await expect(panel.locator('[cngxpopoverfooter] button')).not.toHaveCount(0);
   });
 
+  // checkVisibility() reads false in a closed popover, so a run that settles
+  // after Escape is spoken through CngxLiveAnnouncer outside every popover.
+  test('with-footer-actions: a failure that settles after Escape reaches the body live region', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/with-footer-actions');
+    await page.getByRole('radio', { name: 'slow (1.5 s)' }).check();
+    const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Delete Confirm' });
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Delete Item?' });
+
+    await trigger.click();
+    await expect(panel).toBeVisible();
+    await panel.locator('button.cngx-popover-action').click();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+
+    await expect(page.locator('body > span[aria-live="polite"]')).toHaveText('Permission denied');
+    await expect(panel.locator('[role="status"][aria-live="polite"]')).toHaveText('');
+  });
+
   // The footer hosts own no focus restore: the panel's restore claim returns
   // focus to the trigger after a dismiss and after a confirm run.
   test('with-footer-actions: dismiss and confirm return focus to the trigger', async ({ page }) => {

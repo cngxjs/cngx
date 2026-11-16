@@ -17,6 +17,7 @@ import {
 import { resolveStepFrom } from '@cngx/core';
 import {
   CNGX_STATEFUL,
+  createKeyedRegistry,
   createTransitionTracker,
   type CngxAsyncState,
   type StatusTransition,
@@ -358,8 +359,17 @@ export class CngxStepperPresenter implements CngxStepperHost {
   /** {@inheritDoc CngxStepperHost.canGoPrevious} */
   readonly canGoPrevious: Signal<boolean> = computed(() => this.previousEnabledIndex() >= 0);
 
+  // Runs outside the commit (the finish run) that hold the stepper busy.
+  private readonly busySources = createKeyedRegistry<Signal<boolean>>({
+    name: 'CngxStepperPresenter',
+  });
+
   /** {@inheritDoc CngxStepperHost.busy} */
-  readonly busy: Signal<boolean> = computed(() => this.commitState.status() === 'pending');
+  readonly busy: Signal<boolean> = computed(
+    () =>
+      this.commitState.status() === 'pending' ||
+      this.busySources.values().some((pending) => pending()),
+  );
 
   /** {@inheritDoc CngxStepperHost.nextStepLabel} */
   readonly nextStepLabel: Signal<string | undefined> = computed(() =>
@@ -416,6 +426,12 @@ export class CngxStepperPresenter implements CngxStepperHost {
       }
     }
     this.rebuildTree();
+  }
+
+  /** {@inheritDoc CngxStepperHost.registerBusy} */
+  registerBusy(key: string, pending: Signal<boolean>): () => void {
+    this.busySources.register(key, pending);
+    return () => this.busySources.unregister(key, pending);
   }
 
   /**

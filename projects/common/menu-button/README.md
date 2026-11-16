@@ -173,11 +173,10 @@ import { CngxPopoverTrigger } from '@cngx/common/popover';
 export class AppCaret {
   protected readonly caret = inject(CngxSplitCaret);
   private readonly brain = inject(CngxButtonBrain);
-  private readonly menu = inject(CngxMenuTrigger);
   private readonly popover = inject(CngxPopoverTrigger);
 
   protected handleClick(): void {
-    if (this.brain.blocked() && !this.menu.isOpen()) {
+    if (this.brain.blocked()) {
       return;
     }
     this.popover.popoverRef().toggle();
