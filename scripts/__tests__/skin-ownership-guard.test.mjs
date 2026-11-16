@@ -22,8 +22,10 @@
 // class literal (`host` class, `[class.x]`, `classList.*(...)` args, template
 // `class=`). Fallback 1: the class without its `--modifier`. Fallback 2: the
 // BEM block equals the stylesheet's own block (`cngx-accordion__region` in
-// `cngx-accordion.css`, a consumer opt-in class). A class no entry writes and
-// outside the own block fails as unowned.
+// `cngx-accordion.css`, a consumer opt-in class) or a block an own entry
+// writes (`cngx-skeleton__bone` in `skeleton-container.css`, whose host writes
+// `cngx-skeleton`). A class no entry writes and outside the own blocks fails
+// as unowned.
 //
 // Own entry: a skin's `@themes` symbols plus the entries that write its block
 // class; a ui stylesheet's folder entry. The own level is the level of the lib
@@ -76,13 +78,6 @@ const SKIN_OWNERSHIP_EXEMPT = [
     count: 5,
     reason:
       'inverse S1: the async paint excludes button hosts by class instead of offering tokens the button sets on its own host',
-  },
-  {
-    file: 'projects/ui/skeleton/skeleton-container.css',
-    selector: '.cngx-skeleton-bone',
-    count: 2,
-    reason:
-      'unowned: the shimmer paints .cngx-skeleton-bone children, a class no library source writes and outside the file block',
   },
 ];
 
@@ -581,10 +576,12 @@ function ownersOf(cls, index) {
 const blockOf = (cls) => cls.replace(/--.*$/, '').replace(/__.*$/, '');
 
 function isOwnClass(cls, own, index) {
-  if (blockOf(cls) === own.block) {
+  const block = blockOf(cls);
+  if (block === own.block) {
     return true;
   }
-  return [...ownersOf(cls, index)].some((o) => own.entries.has(o));
+  const ownedBy = (c) => [...ownersOf(c, index)].some((o) => own.entries.has(o));
+  return ownedBy(cls) || ownedBy(block);
 }
 
 // Selectors are read with a small scanner, not a CSS parser: postcss is only a
@@ -958,7 +955,10 @@ const FIXTURE_SOURCES = [
     text: 'export class CngxFormBridge {}\nexport class CngxTypedControl {}',
   },
   { path: 'projects/ui/layout/stack.ts', text: 'export class CngxStack {}' },
-  { path: 'projects/ui/speak/speak.ts', text: 'export class CngxSpeakButton {}' },
+  {
+    path: 'projects/ui/speak/speak.ts',
+    text: "export class CngxSpeakButton { host = { class: 'cngx-speak' }; }",
+  },
   {
     path: 'projects/common/interactive/listbox.spec.ts',
     text: "el.classList.add('cngx-spec-only');",
@@ -1051,6 +1051,13 @@ describe('skin-ownership guard - S1 stylesheets', () => {
     expect(
       keys(skin('.cngx-nobody { color: red; }\n.cngx-listbox__region { color: red; }')),
     ).toEqual(['2 .cngx-nobody']);
+  });
+
+  it('passes an element of a block the own entry writes, not of an unwritten one', () => {
+    const css = '.cngx-speak__bone {}\n.cngx-nobody__bone {}';
+    expect(keys(scanSkinCss('projects/ui/speak/speak-button.css', css, fixtureIndex()))).toEqual([
+      '2 .cngx-nobody__bone',
+    ]);
   });
 
   it('judges a skin at the level of its lib, not of a higher @themes symbol', () => {
