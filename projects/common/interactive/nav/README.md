@@ -321,16 +321,16 @@ In forced-colors mode the active row paints `Highlight` with a `HighlightText` b
 
 ### Material
 
-`@cngx/themes/material/sidenav-theme` (which includes `nav-link-theme`) bridges the rows app-wide. Under an M3 theme a row takes the navigation drawer item:
+`@cngx/themes/material/sidenav-theme` (which includes `nav-link-theme`) bridges the rows app-wide. Under an M3 theme a row reads like the list item of `mat-nav-list`, the list a Material app puts in its sidenav:
 
 | Axis | M3 value | Tokens |
 |-|-|-|
 | Shape | full pill | `--cngx-nav-link-radius` |
-| Type | label-large, 500 at rest, 700 active | `--cngx-nav-link-font-size`, `-line-height`, `-letter-spacing`, `-font-weight`, `-active-font-weight` |
-| Colour | secondary-container active fill, no bar | the State and Indicator tokens |
-| Metrics (on `cngx-sidenav`) | 56px row, 16px start and 24px end padding, 24px icon, 12px gap and inset | `--cngx-nav-link-padding`, `-padding-inline-end`, `-inset`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap` |
+| Type | body-large, one weight at rest and active | `--cngx-nav-link-font-size`, `-line-height`, `-letter-spacing`, `-font-weight`, `-active-font-weight` |
+| Colour | on-surface label, on-surface-variant icon, secondary-container active fill, no bar | `--cngx-nav-link-color`, `-active-color`, `--cngx-nav-link-ink` and the State and Indicator tokens |
+| Metrics (on `cngx-sidenav`) | 48px row edge to edge, 16px start and end padding, 24px icon, 16px gap, no gap between rows | `--cngx-nav-link-padding`, `-inset`, `--cngx-nav-icon-size`, `--cngx-nav-icon-gap` |
 
-The metrics are rungs and `calc()`s of `--cngx-space-*`, chosen so comfortable equals M3: a Material `density: -N` theme (through `density-bridge`) and a `[data-density]` island both re-scale the row (52 / 48 / 44 / 40px at density -1 to -4; 40px compact, 64px spacious). A row outside `cngx-sidenav` keeps the cngx metrics and takes shape, type and colour.
+The metrics are rungs and `calc()`s of `--cngx-space-*`, chosen so comfortable equals Material: the row height follows a Material `density: -N` theme (through `density-bridge`) step for step (44 / 40 / 36 / 32px at -1 to -4) and a `[data-density]` island re-scales it too (32px compact, 56px spacious). The inline spacing rides `--cngx-space-md`, where Material snaps its leading space to 8px from density -2. A row outside `cngx-sidenav` keeps the cngx metrics and takes shape, type and colour.
 
 ## Examples
 
