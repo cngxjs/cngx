@@ -354,19 +354,22 @@ export function barrelReach(files) {
     /** local name -> { path, name } of the import it binds */
     const imports = new Map();
     for (const statement of sf.statements) {
-      const bindings = ts.isImportDeclaration(statement)
-        ? statement.importClause?.namedBindings
-        : undefined;
-      if (!bindings || !ts.isNamedImports(bindings)) {
+      const clause = ts.isImportDeclaration(statement) ? statement.importClause : undefined;
+      const bindings = clause?.namedBindings;
+      // A type-only import binds no runtime value, so it cannot carry a slot directive.
+      if (!bindings || !ts.isNamedImports(bindings) || clause.isTypeOnly) {
         continue;
       }
       const target = resolveSpecifier(path, statement.moduleSpecifier);
-      bindings.elements.forEach((el) =>
-        imports.set(el.name.text, { path: target, name: (el.propertyName ?? el.name).text }),
-      );
+      bindings.elements
+        .filter((el) => !el.isTypeOnly)
+        .forEach((el) =>
+          imports.set(el.name.text, { path: target, name: (el.propertyName ?? el.name).text }),
+        );
     }
     for (const statement of sf.statements) {
-      if (!ts.isExportDeclaration(statement)) {
+      // A type-only export re-exports no runtime value.
+      if (!ts.isExportDeclaration(statement) || statement.isTypeOnly) {
         continue;
       }
       const clause = statement.exportClause;
@@ -381,7 +384,7 @@ export function barrelReach(files) {
         continue;
       }
       for (const el of clause.elements) {
-        if (name !== null && el.name.text !== name) {
+        if (el.isTypeOnly || (name !== null && el.name.text !== name)) {
           continue;
         }
         const local = (el.propertyName ?? el.name).text;
@@ -664,6 +667,46 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
     ];
     const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
     expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([]);
+  });
+
+  describe('type-only exports reach no slot directive', () => {
+    const hidden = {
+      path: 'projects/x/hidden.ts',
+      text: "@Directive({ selector: 'ng-template[cngxHidden]' }) export class CngxHidden {}",
+    };
+    const unreachable = (barrel) => {
+      const files = [hidden, { path: 'projects/x/public-api.ts', text: barrel }];
+      const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
+      return unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files));
+    };
+
+    it('reports a slot directive re-exported with export type (S2)', () => {
+      expect(unreachable("export type { CngxHidden } from './hidden';")).toEqual([
+        'projects/x/hidden.ts CngxHidden',
+      ]);
+    });
+
+    it('reports a slot directive bound by import type and exported with export type (S5)', () => {
+      expect(
+        unreachable("import type { CngxHidden } from './hidden';\nexport type { CngxHidden };"),
+      ).toEqual(['projects/x/hidden.ts CngxHidden']);
+      expect(
+        unreachable("import { type CngxHidden } from './hidden';\nexport { CngxHidden };"),
+      ).toEqual(['projects/x/hidden.ts CngxHidden']);
+    });
+
+    it('reports a slot directive behind a type-only specifier (S5b)', () => {
+      expect(unreachable("export { type CngxHidden } from './hidden';")).toEqual([
+        'projects/x/hidden.ts CngxHidden',
+      ]);
+      expect(unreachable("export type * from './hidden';")).toEqual([
+        'projects/x/hidden.ts CngxHidden',
+      ]);
+    });
+
+    it('passes a renamed value re-export (S8)', () => {
+      expect(unreachable("export { CngxHidden as CngxShown } from './hidden';")).toEqual([]);
+    });
   });
 
   it('resolves contentChild.required and contentChildren', () => {
