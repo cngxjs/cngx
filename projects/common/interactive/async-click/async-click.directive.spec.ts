@@ -381,6 +381,26 @@ describe('CngxAsyncClick', () => {
     expect(region.textContent).toBe('');
   });
 
+  it('counts a host under visibility: hidden as not rendered', async () => {
+    const announce = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    // A hidden sidenav rail: rendered boxes, but visibility: hidden, which a
+    // reader skips. Only the visibilityProperty probe sees it.
+    Object.assign(btn, {
+      checkVisibility: (options?: CheckVisibilityOptions) => options?.visibilityProperty !== true,
+    });
+    host.actionImpl = () => Promise.reject(new Error('nope'));
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(announce).toHaveBeenCalledWith('Action failed', 'polite', btn);
+    });
+    expect(region.textContent).toBe('');
+  });
+
   it('empties the region when a run starts, so a repeated identical outcome is a second write', async () => {
     const { btn, fixture, host } = setupButton();
     const region = btn.nextElementSibling as HTMLElement;
