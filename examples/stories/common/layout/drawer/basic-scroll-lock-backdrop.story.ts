@@ -24,6 +24,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxScrollLock, CngxBackdrop } from '@cngx/common/layout';",
     "import { CngxAriaExpanded } from '@cngx/common/a11y';",
+    "import { CngxStack } from '@cngx/ui/layout';",
   ],
   imports: [
     'CngxDrawer',
@@ -32,38 +33,33 @@ export const STORY: DemoSpec = {
     'CngxAriaExpanded',
     'CngxScrollLock',
     'CngxBackdrop',
+    'CngxStack',
   ],
-  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="demo-drawer-container demo-drawer-container--bordered">
-    <div class="demo-inline-actions" style="padding: 0.5rem;">
-      <button type="button" class="sort-btn"
+  template: `  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="cngx-drawer"
+       style="--cngx-drawer-scrim-bg: transparent">
+    <div [cngxBackdrop]="drawer.opened()" (backdropClick)="drawer.close()" class="cngx-backdrop"></div>
+
+    <nav [cngxDrawerPanel]="drawer" position="left"
+         id="basic-panel" role="navigation" label="Navigation">
+      <cngx-stack gap="sm" align="start" style="padding: var(--cngx-space-md, 1rem)">
+        <strong>Navigation</strong>
+        <button type="button">Home</button>
+        <button type="button">Settings</button>
+        <button type="button">Profile</button>
+        <button type="button" (click)="drawer.close()">Close</button>
+      </cngx-stack>
+    </nav>
+
+    <main [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem)">
+      <button type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
               (click)="drawer.toggle()">
         {{ drawer.opened() ? 'Close' : 'Open' }} Drawer
       </button>
-    </div>
-
-    <div class="demo-drawer-layout">
-      <div [cngxBackdrop]="drawer.opened()" (backdropClick)="drawer.close()"
-           class="demo-drawer-backdrop"></div>
-
-      <nav [cngxDrawerPanel]="drawer" position="left"
-           id="basic-panel" role="navigation" label="Navigation"
-           class="demo-drawer-panel">
-        <div class="demo-drawer-panel-content">
-          <strong>Navigation</strong>
-          <button type="button" class="sort-btn">Home</button>
-          <button type="button" class="sort-btn">Settings</button>
-          <button type="button" class="sort-btn">Profile</button>
-          <button type="button" class="sort-btn" (click)="drawer.close()">Close</button>
-        </div>
-      </nav>
-
-      <main [cngxDrawerContent]="drawer" class="demo-drawer-main">
-        <p>Main content area. The drawer slides over from the left.</p>
-        <p>Press <strong>Escape</strong>, click the backdrop, or click outside to close.</p>
-        <p><code>[cngxScrollLock]</code> prevents background scrolling.</p>
-      </main>
-    </div>
+      <p>Main content area. The drawer slides over from the left.</p>
+      <p>Press <strong>Escape</strong>, click the backdrop, or click outside to close.</p>
+      <p><code>[cngxScrollLock]</code> prevents background scrolling.</p>
+    </main>
   </div>`,
   templateChrome: `<div class="status-row">
     <span class="status-badge" [class.active]="drawer.opened()">

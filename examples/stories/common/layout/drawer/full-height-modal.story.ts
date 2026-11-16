@@ -19,9 +19,10 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelToggle'],
   moduleImports: [
     "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelToggle } from '@cngx/common/layout';",
-    "import { CngxNavLink } from '@cngx/common/interactive';",
+    "import { CngxNavIcon, CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
@@ -30,9 +31,11 @@ export const STORY: DemoSpec = {
     'CngxDrawerContent',
     'CngxPanelToggle',
     'CngxNavLink',
+    'CngxNavIcon',
     'CngxIconButton',
     'CngxAvatar',
     'CngxIcon',
+    'CngxStack',
     'MatIconModule',
   ],
   setup: `
@@ -50,42 +53,38 @@ export const STORY: DemoSpec = {
     this.current.set(label);
   }`,
   template: `
-  <div cngxDrawer #fullNav="cngxDrawer" panelId="full-height-nav"
-       class="cngx-drawer demo-drawer-container demo-drawer-container--bordered demo-app-frame">
-    <nav [cngxDrawerPanel]="fullNav" [role]="null" aria-label="Main" class="demo-drawer-panel">
-      <div class="demo-app-header">
+  <div cngxDrawer #fullNav="cngxDrawer" panelId="full-height-nav" class="cngx-drawer">
+    <nav [cngxDrawerPanel]="fullNav" [role]="null" aria-label="Main">
+      <cngx-stack direction="row" gap="sm" style="align-items: center; padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
         <cngx-avatar initials="A" shape="square" size="sm" />
-        <span class="demo-app-brand">Acme</span>
-        <span class="demo-app-spacer"></span>
+        <strong style="flex: 1 1 auto">Acme</strong>
         <button type="button" cngxIconButton aria-label="Close navigation" (click)="fullNav.close()">
           <cngx-icon><mat-icon>close</mat-icon></cngx-icon>
         </button>
-      </div>
+      </cngx-stack>
       @for (link of links; track link.label) {
-        <a cngxNavLink href="#" class="demo-nav__link demo-nav__link--icon"
-           [active]="current() === link.label"
-           [class.demo-nav__link--active]="current() === link.label"
-           (click)="go($event, link.label)">
-          <cngx-icon size="sm"><mat-icon>{{ link.icon }}</mat-icon></cngx-icon>
-          {{ link.label }}
-        </a>
-      }
+          <a cngxNavLink href="#" [active]="current() === link.label" (click)="go($event, link.label)">
+            <cngx-icon cngxNavIcon size="sm"><mat-icon>{{ link.icon }}</mat-icon></cngx-icon>
+            {{ link.label }}
+          </a>
+        }
     </nav>
 
-    <header class="demo-app-header">
-      <button type="button" [cngxPanelToggle]="fullNav" label="Main navigation"></button>
-      <cngx-avatar initials="A" shape="square" size="sm" />
-      <span class="demo-app-brand">Acme</span>
-      <span class="demo-app-spacer"></span>
-      <cngx-avatar initials="JD" size="sm" />
-    </header>
+    <cngx-stack gap="none" style="flex: 1 1 auto; min-inline-size: 0">
+      <cngx-stack direction="row" gap="sm" style="align-items: center; padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
+        <button type="button" [cngxPanelToggle]="fullNav" label="Main navigation"></button>
+        <cngx-avatar initials="A" shape="square" size="sm" />
+        <strong style="flex: 1 1 auto">Acme</strong>
+        <cngx-avatar initials="JD" size="sm" />
+      </cngx-stack>
 
-    <main [cngxDrawerContent]="fullNav" class="demo-drawer-main demo-app-main">
-      <h2 class="demo-app-title">{{ current() }}</h2>
-      @for (row of rows; track row) {
-        <p>Content row {{ row }}. The open drawer covers this row and the header.</p>
-      }
-    </main>
+      <main [cngxDrawerContent]="fullNav" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
+        <h2>{{ current() }}</h2>
+        @for (row of rows; track row) {
+          <p>Content row {{ row }}. The open drawer covers this row and the header.</p>
+        }
+      </main>
+    </cngx-stack>
   </div>`,
   templateChrome: `
   <div class="event-grid">

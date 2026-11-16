@@ -31,6 +31,8 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
  * </aside>
  * ```
  *
+ * <example-url>/#/common/interactive/nav/nav-railed-rail-of-your-own</example-url>
+ *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-railed.directive.ts
  * @selector [cngxNavRailed]

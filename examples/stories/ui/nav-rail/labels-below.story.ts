@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
     "import { CngxNavRail } from '@cngx/ui/nav-rail';",
     "import { CngxNavBadge, CngxNavGroup, CngxNavGroupContent, CngxNavIcon, CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
@@ -25,6 +26,7 @@ export const STORY: DemoSpec = {
     'CngxNavIcon',
     'CngxNavLink',
     'CngxIcon',
+    'CngxStack',
     'MatIconModule',
   ],
   setup: `protected readonly active = signal('/home');
@@ -34,7 +36,7 @@ export const STORY: DemoSpec = {
     { path: '/library', icon: 'video_library', label: 'Library' },
   ];`,
   template: `
-  <div class="demo-nav-rail__frame">
+  <cngx-stack direction="row" gap="none">
     <cngx-nav-rail labelPlacement="below">
       @for (row of rows; track row.path) {
         <a cngxNavLink href="#" [active]="active() === row.path"
@@ -61,8 +63,8 @@ export const STORY: DemoSpec = {
       </div>
     </cngx-nav-rail>
 
-    <div class="demo-nav-rail__content">
+    <div style="flex: 1 1 auto; min-inline-size: 0; padding: var(--cngx-space-md, 1rem)">
       <p>Active: <code>{{ active() }}</code></p>
     </div>
-  </div>`,
+  </cngx-stack>`,
 };
