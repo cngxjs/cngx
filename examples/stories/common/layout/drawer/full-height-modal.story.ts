@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A drawer as a modal dialog over the whole app: it covers the app header and the content. The default <code>over</code> modality is <code>page</code>: a modal dialog with a focus trap and a scrim over the whole <code>[cngxDrawer]</code> host.',
   description:
-    'A full-height navigation drawer, the modal drawer of mobile web apps. The header lives inside the [cngxDrawer] host, so the open panel and the scrim of the cngx-drawer class cover it. The panel becomes role="dialog" with aria-modal="true", traps focus and makes everything outside it inert. Because the hamburger is covered, the panel head repeats the brand and carries its own close button. Escape, the close button and a press on the scrim close the drawer; focus returns to the hamburger.',
+    'A full-height navigation drawer, the modal drawer of mobile web apps. The header lives inside the [cngxDrawer] host, so the open panel and the scrim of the cngx-drawer class cover it. The panel becomes role="dialog" with aria-modal="true", traps focus and makes everything outside it inert. Because the hamburger is covered, the panel head repeats the brand and carries its own close button. Escape, the close button and a press on the scrim close the drawer; focus returns to the hamburger. Its twin, <em>CngxDrawer: Scroll lock and backdrop by hand</em>, wires <code>[cngxScrollLock]</code> and <code>[cngxBackdrop]</code> itself; this one needs neither, because a page-modal panel locks the scroll container above it and the skin paints the scrim.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
