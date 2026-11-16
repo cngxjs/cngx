@@ -116,6 +116,15 @@ describe('provideCngxI18n', () => {
     expect(Object.is(section(), filtered)).toBe(true);
   });
 
+  it('leaves keys set to null out, so they read English', () => {
+    const active = signal<CngxActiveLanguagePack | undefined>({
+      locale: 'de',
+      __spec: { title: 'Titel', close: null as unknown as string },
+    });
+    const { section } = setup([provideCngxI18n(withPartialPack(active))]);
+    expect(section()).toEqual({ title: 'Titel' });
+  });
+
   it('keeps the section reference when a new pack carries a key-by-key equal section', () => {
     const active = signal<CngxCompleteLanguagePack | undefined>(DE);
     const { section } = setup([provideCngxI18n(withPack(active))]);
