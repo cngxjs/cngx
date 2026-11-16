@@ -49,6 +49,52 @@ test.describe('CngxSidenav layout regressions', () => {
     expect(Math.abs(contentLeftAfter - contentLeftBefore)).toBeLessThanOrEqual(1);
   });
 
+  // The rails resolve their width class one observation after the first
+  // render. Neither the unbound nor the unsettled frame may be painted, and
+  // the settle must not animate: the first visible frame is already final.
+  for (const [width, widthClass] of [
+    [1000, 'medium'],
+    [1400, 'expanded'],
+  ] as const) {
+    test(`an auto layout paints its first frame without a layout shift (${widthClass})`, async ({
+      page,
+      browserName,
+    }) => {
+      test.skip(browserName !== 'chromium', 'the Layout Instability API is Chromium-only');
+      await page.setViewportSize({ width, height: 800 });
+      await page.addInitScript(() => {
+        const win = window as unknown as { __cngxShift: number };
+        win.__cngxShift = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries() as (PerformanceEntry & { value: number })[]) {
+            win.__cngxShift += entry.value;
+          }
+        }).observe({ type: 'layout-shift', buffered: true });
+      });
+      await page.goto('/#/ui/sidenav/full-navigation-sidebar');
+      await expect(page.locator('cngx-sidenav-layout').first()).toHaveClass(
+        /cngx-sidenav-layout--ready/,
+      );
+      // An animated settle would still be running here: wait it out so every
+      // frame of it reports its shift.
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              document
+                .querySelector('cngx-sidenav-layout')!
+                .getAnimations({ subtree: true })
+                .filter((a) => a instanceof CSSTransition).length,
+          ),
+        )
+        .toBe(0);
+      const shift = await page.evaluate(
+        () => (window as unknown as { __cngxShift: number }).__cngxShift,
+      );
+      expect(shift).toBe(0);
+    });
+  }
+
   test('Tab skips the links of a collapsed animated nav group', async ({ page }) => {
     // The story binds no mode: only the expanded width class docks the full
     // rail with its group heads, so pin a wide viewport and check for it.
