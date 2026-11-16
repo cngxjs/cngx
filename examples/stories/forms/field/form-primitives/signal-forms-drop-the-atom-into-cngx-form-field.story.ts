@@ -54,7 +54,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="sfForm.notifications">
       <label cngxLabel>Notifications</label>
-      <cngx-toggle [(value)]="sfForm.notifications().value">
+      <cngx-toggle>
         Receive emails
       </cngx-toggle>
       <cngx-field-errors />
@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
 
     <cngx-form-field [field]="sfForm.terms">
       <label cngxLabel>Terms</label>
-      <cngx-checkbox [(value)]="sfForm.terms().value">
+      <cngx-checkbox>
         I accept the terms
       </cngx-checkbox>
       <cngx-field-errors />
@@ -70,7 +70,7 @@ export const STORY: DemoSpec = {
 
     <cngx-form-field [field]="sfForm.payment">
       <label cngxLabel>Payment method</label>
-      <cngx-radio-group [(value)]="sfForm.payment().value" name="sf-payment">
+      <cngx-radio-group name="sf-payment">
         <cngx-radio value="card">Card</cngx-radio>
         <cngx-radio value="cash">Cash</cngx-radio>
         <cngx-radio value="invoice">Invoice</cngx-radio>
@@ -80,16 +80,11 @@ export const STORY: DemoSpec = {
 
     <cngx-form-field [field]="sfForm.notificationChannels">
       <label cngxLabel>Channels</label>
-      <cngx-checkbox-group
-        [(selectedValues)]="sfForm.notificationChannels().value"
-        [allValues]="channelOptions"
-      >
+      <cngx-checkbox-group [allValues]="channelOptions" #channels="cngxCheckboxGroup">
         @for (opt of channelOptions; track opt) {
           <cngx-checkbox
-            [value]="sfForm.notificationChannels().value().includes(opt)"
-            (valueChange)="$event
-              ? sfForm.notificationChannels().value.update((v) => [...v, opt])
-              : sfForm.notificationChannels().value.update((v) => v.filter((x) => x !== opt))"
+            [value]="channels.selectedValues().includes(opt)"
+            (valueChange)="$event ? channels.select(opt) : channels.deselect(opt)"
           >{{ opt }}</cngx-checkbox>
         }
       </cngx-checkbox-group>

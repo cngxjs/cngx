@@ -28,7 +28,7 @@ Inside a `CngxCheckboxGroup` (projected leaves; the group owns membership):
 </cngx-checkbox-group>
 ```
 
-With a Signal Forms field (the atom provides `CNGX_FORM_FIELD_CONTROL`, so `<cngx-form-field>` wires it without a CVA):
+With a Signal Forms field, no value binding (see [Binding an atom](../../../forms/field/README.md#binding-an-atom)):
 
 ```html
 <cngx-form-field [field]="form.acceptTerms">

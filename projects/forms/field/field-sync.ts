@@ -1,6 +1,6 @@
-import { effect, inject, untracked, type WritableSignal } from '@angular/core';
+import { inject, type WritableSignal } from '@angular/core';
+import { bindFieldValue } from './field-value-sync';
 import { CngxFormFieldPresenter } from './form-field-presenter';
-import type { CngxFieldRef } from './models';
 
 /**
  * Options for {@link createFieldSync}. Generic in `V` so the same factory
@@ -34,7 +34,9 @@ export interface FieldSyncOptions<V> {
  * cngx control reuses instead of re-implementing field write-back. Both the
  * field and the control's `model()` are writable sources of truth, so this is
  * coordination, not a single `computed()`. Requires an injection context;
- * no-op without a surrounding `cngx-form-field`.
+ * no-op without a surrounding `cngx-form-field`. A user change is compared
+ * with the field's pending `controlValue`, so two changes inside a schema
+ * `debounce()` window both land.
  *
  * Keeps the `create*` prefix despite calling `inject()` in its body: it is a
  * blessed exception (see architecture-summary, mirrors `adaptFormControl`),
@@ -57,94 +59,8 @@ export function createFieldSync<V>(options: FieldSyncOptions<V>): void {
   if (!presenter) {
     return;
   }
-  const toField = options.toFieldValue ?? ((v: V) => v as unknown);
-  const skip = options.shouldSkipFieldValue;
-
-  effect(() => {
-    const fieldRef: CngxFieldRef = presenter.fieldState();
-    const raw = fieldRef.value();
-    if (skip?.(raw)) {
-      return;
-    }
-    const fieldValue = options.coerceFromField(raw);
-    untracked(() => {
-      const current = options.componentValue();
-      if (!options.valueEquals(current, fieldValue)) {
-        options.componentValue.set(fieldValue);
-      }
-    });
-  });
-
-  // The first run is the mount seed; every later run is a user change. The
-  // flag is consumed even when that first run writes nothing.
-  let seeded = false;
-  effect(() => {
-    const next = options.componentValue();
-    const mode: FieldWriteMode = seeded ? 'user' : 'seed';
-    seeded = true;
-    untracked(() => {
-      const fieldRef = presenter.fieldState();
-      const raw = fieldRef.value();
-      // A skipped (absent) field has no value to guard against - force the seed
-      // write. Otherwise skip the write when the field already equals `next`.
-      if (!skip?.(raw) && options.valueEquals(options.coerceFromField(raw), next)) {
-        return;
-      }
-      writeFieldValue(fieldRef, toField(next), mode);
-    });
-  });
+  const control = options.componentValue;
+  bindFieldValue(presenter.fieldState, () => control, options);
 }
 
-/**
- * How {@link writeFieldValue} writes: `'seed'` mirrors the control's mount
- * value into the field and leaves it pristine, `'user'` is an interaction
- * and dirties the field.
- *
- * @internal
- */
-export type FieldWriteMode = 'seed' | 'user';
-
-/**
- * Writes a control value into the field. A `'user'` write goes through Signal
- * Forms' writable `FieldState.controlValue` when the ref has one (Signal Forms
- * marks the field dirty there and honours a schema `debounce()`); a ref
- * without it gets `value.set` plus `markAsDirty()`. A `'seed'` write uses
- * `value.set` only. `CngxFieldRef` hides writability for API stability;
- * narrow it here. Skips readonly refs silently. Shared with the
- * `model()`-based field bridges via a relative import; not part of the
- * public API.
- *
- * @internal
- */
-export function writeFieldValue(
-  fieldRef: CngxFieldRef,
-  value: unknown,
-  mode: FieldWriteMode,
-): void {
-  if (mode === 'user') {
-    const controlValue = asWritable((fieldRef as { readonly controlValue?: unknown }).controlValue);
-    if (controlValue) {
-      controlValue.set(value);
-      return;
-    }
-  }
-  const target = asWritable(fieldRef.value);
-  if (!target) {
-    return;
-  }
-  target.set(value);
-  if (mode === 'user') {
-    fieldRef.markAsDirty();
-  }
-}
-
-function asWritable(candidate: unknown): { set: (v: unknown) => void } | null {
-  if (
-    typeof candidate === 'function' &&
-    'set' in candidate &&
-    typeof (candidate as { set: unknown }).set === 'function'
-  ) {
-    return candidate as unknown as { set: (v: unknown) => void };
-  }
-  return null;
-}
+export { writeFieldValue, type FieldWriteMode } from './field-value-sync';

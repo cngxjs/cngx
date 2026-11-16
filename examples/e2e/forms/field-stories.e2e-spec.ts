@@ -86,4 +86,29 @@ test.describe('forms/field stories', () => {
       await expect(page.locator('cngx-form-errors li')).toHaveCount(0);
     });
   }
+
+  test('signal forms primitives: clicking an atom dirties its field', async ({ page }) => {
+    await gotoDemo(
+      page,
+      'forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field',
+    );
+    await page.getByRole('button', { name: /^validate/i }).click();
+    const fields = page.locator('cngx-form-field');
+    const atoms = [
+      fields.nth(0).locator('cngx-toggle'),
+      fields.nth(1).locator('cngx-checkbox'),
+      fields.nth(2).locator('cngx-radio').first(),
+      fields.nth(3).locator('cngx-checkbox').first(),
+    ];
+    for (const [i, atom] of atoms.entries()) {
+      await atom.click();
+      await expect(fields.nth(i), `field ${i} did not turn dirty`).toHaveClass(/cngx-field--dirty/);
+      await expect(fields.nth(i), `field ${i} still shows its error`).not.toHaveClass(
+        /cngx-field--error/,
+      );
+    }
+
+    await page.getByRole('button', { name: /^reset$/i }).click();
+    await expect(page.locator('cngx-form-field.cngx-field--dirty')).toHaveCount(0);
+  });
 });

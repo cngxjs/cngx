@@ -1,13 +1,13 @@
-import { Component, type Type, signal } from '@angular/core';
+import { Component, DestroyRef, inject, type Type, signal } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { form } from '@angular/forms/signals';
 import { CngxFormBridge } from '@cngx/forms/controls';
-import { CngxFormField } from '@cngx/forms/field';
+import { adaptFormControl, CngxFormField } from '@cngx/forms/field';
 import { CngxSelect } from '@cngx/forms/select';
 import { mousePick } from '@cngx/testing';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { loadAllMaskPresets } from '../mask-presets/registry';
 import { CngxPhoneInput } from './phone-input.component';
 
@@ -37,6 +37,18 @@ class RfHost {
 })
 class NullableHost {
   readonly control = new FormControl<string | null>('12025550123');
+}
+
+@Component({
+  selector: 'phone-rf-field-host-1',
+  template: `
+    <cngx-form-field [field]="field"><cngx-phone-input [formControl]="control" /></cngx-form-field>
+  `,
+  imports: [CngxPhoneInput, CngxFormField, ReactiveFormsModule, CngxFormBridge],
+})
+class RfFieldHost {
+  readonly control = new FormControl('', { nonNullable: true });
+  readonly field = adaptFormControl(this.control, 'phone', inject(DestroyRef));
 }
 
 function flush(fixture: ComponentFixture<unknown>): void {
@@ -163,6 +175,19 @@ describe('CngxPhoneInput under Reactive Forms', () => {
 
     expect(host.control.value).toBe('12025550123');
     expect(host.control.dirty).toBe(true);
+  });
+
+  it('P3b: inside an adaptFormControl field CngxFormBridge is the only writer', async () => {
+    const { fixture, input, host } = await mount(RfFieldHost);
+    const setValue = vi.spyOn(host.control, 'setValue');
+
+    type(input, '2025550123', fixture);
+
+    expect(host.control.value).toBe('12025550123');
+    const written = setValue.mock.calls.map(([value]) => value);
+    expect(written.length).toBeGreaterThan(0);
+    // One setValue per change: a second writer repeats every value.
+    expect(written.some((value, i) => i > 0 && value === written[i - 1])).toBe(false);
   });
 
   it('P4: setValue renders into the mask', async () => {

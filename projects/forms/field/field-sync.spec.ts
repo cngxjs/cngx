@@ -12,6 +12,7 @@ import {
 import { FormControl } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { debounce, form } from '@angular/forms/signals';
+import { vi } from 'vitest';
 import { createMockField } from './testing/public-api';
 import { CngxFormField } from './form-field.component';
 import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from './form-field.token';
@@ -221,6 +222,42 @@ describe('createFieldSync', () => {
 
       expect(fixture.componentInstance.model().volume).toBe(7);
       expect(fixture.componentInstance.f.volume().dirty()).toBe(false);
+    });
+
+    it('lands the second of two changes inside a debounce window', () => {
+      vi.useFakeTimers();
+      @Component({
+        template: `
+          <cngx-form-field [field]="f.rating">
+            <test-numeric-control />
+          </cngx-form-field>
+        `,
+        imports: [CngxFormField, NumericControl],
+      })
+      class Host {
+        readonly control = viewChild.required(NumericControl);
+        readonly model = signal({ rating: 1 });
+        readonly f = form(this.model, (p) => debounce(p.rating, 200));
+      }
+
+      const fixture = TestBed.createComponent(Host);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+
+      // The field value still reads 1 while the first change waits in the
+      // debounce window; the guard must compare against the pending value.
+      host.control().value.set(5);
+      TestBed.flushEffects();
+      host.control().value.set(1);
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(200);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(host.f.rating().controlValue()).toBe(1);
+      expect(host.model().rating).toBe(1);
+      expect(host.control().value()).toBe(1);
     });
 
     it.runIf(SIGNAL_FORMS_HAS_BLUR_DEBOUNCE)('keeps the user value on the control while a debounced field value lags', () => {

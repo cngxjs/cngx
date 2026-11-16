@@ -111,9 +111,13 @@ export const STORY: DemoSpec = {
       <cngx-checkbox-group
         [formControlName]="'notificationChannels'"
         [allValues]="channelOptions"
+        #rfChannels="cngxCheckboxGroup"
       >
         @for (opt of channelOptions; track opt) {
-          <cngx-checkbox [value]="rfForm.controls.notificationChannels.value.includes(opt)">{{ opt }}</cngx-checkbox>
+          <cngx-checkbox
+            [value]="rfChannels.selectedValues().includes(opt)"
+            (valueChange)="$event ? rfChannels.select(opt) : rfChannels.deselect(opt)"
+          >{{ opt }}</cngx-checkbox>
         }
       </cngx-checkbox-group>
       <cngx-field-errors />

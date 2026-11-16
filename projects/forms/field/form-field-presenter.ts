@@ -11,6 +11,7 @@ import {
   type Signal,
   untracked,
 } from '@angular/core';
+import { NgControl } from '@angular/forms';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_FORM_FIELD_HOST,
@@ -20,7 +21,9 @@ import {
 } from '@cngx/core/tokens';
 import { coerceSignal, createKeyedRegistry, nextUid } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
-import type { CngxFieldAccessor, CngxFieldRef } from './models';
+import { CNGX_CONTROL_VALUE } from '@cngx/common/interactive';
+import type { CngxErrorFieldState, CngxFieldAccessor, CngxFieldRef } from './models';
+import { bindFieldValue } from './field-value-sync';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import { CNGX_FIELD_AFFIX } from './field-box.token';
 import { registerFieldControl, registerFieldLabel } from './field-control-registry';
@@ -81,6 +84,12 @@ export function fieldIdName(name: string): string {
  * and constraint metadata as pure `computed()` signals. Applied as a `hostDirective`
  * on `CngxFormField` - not used directly in templates.
  *
+ * It also syncs the value of the control it discovered when a `CNGX_CONTROL_VALUE` carries
+ * that control's own `value` signal (the `@cngx/common/interactive` atoms and groups, the
+ * phone input), so an atom needs no value binding. A Reactive Forms directive on the control
+ * or any `[formField]` binding of the field owns the value instead, and the presenter
+ * stays out.
+ *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field-presenter.ts
  * @since 0.1.0
@@ -125,6 +134,10 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     const label = { text: this.labelText, present: computed(() => this.labelText() !== '') };
     effect((onCleanup) => {
       onCleanup(registerFieldLabel(this.fieldState(), label));
+    });
+    bindFieldValue(this.fieldState, this.valueTarget, {
+      valueEquals: Object.is,
+      coerceFromField: (value) => value,
     });
 
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
@@ -266,6 +279,33 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     const affixes = new Set<CngxFormFieldControl>(this.affixControls());
     const all = this.controls();
     return all.find((control) => !affixes.has(control)) ?? all[0];
+  });
+
+  private readonly controlValues = contentChildren(CNGX_CONTROL_VALUE, { descendants: true });
+  private readonly reactiveFormsValues = contentChildren(NgControl, {
+    descendants: true,
+    read: CNGX_CONTROL_VALUE,
+  });
+
+  /**
+   * The value the presenter syncs: the `CNGX_CONTROL_VALUE` whose `value` is the
+   * discovered control's own `value` signal (the atom itself, or a value handle such as
+   * the phone input's). `undefined` when the control has none (a native input, a bridge,
+   * the select family, `cngxInput` next to a numeric or mask directive), when a Reactive
+   * Forms directive sits on it, or while any `[formField]` binds the field - those own
+   * the value.
+   */
+  private readonly valueTarget = computed(() => {
+    const own = (this.control() as { readonly value?: unknown } | undefined)?.value;
+    const entry =
+      own === undefined
+        ? undefined
+        : this.controlValues().find((candidate) => (candidate.value as unknown) === own);
+    if (!entry || this.reactiveFormsValues().includes(entry)) {
+      return undefined;
+    }
+    const bindings = (this.fieldState() as Partial<CngxErrorFieldState>).formFieldBindings?.();
+    return bindings && bindings.length > 0 ? undefined : entry.value;
   });
 
   /**

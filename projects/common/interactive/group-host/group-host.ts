@@ -95,6 +95,17 @@ export interface CngxInteractiveGroupHost {
   readonly fieldErrorMessage: Signal<string | null>;
   /** Whether the host is the control of a required field. */
   readonly fieldRequired: Signal<boolean>;
+  /**
+   * Whether the host is the control of a disabled field. The host ORs it
+   * into its own `disabled`, so a field rule disables the atom without a
+   * bridge overwriting the consumer input.
+   */
+  readonly fieldDisabled: Signal<boolean>;
+  /**
+   * Whether the host is the control of a readonly field. The host locks
+   * value changes but keeps focus and its tab stop.
+   */
+  readonly fieldReadonly: Signal<boolean>;
   /** Bind to the host's `(focusin)` listener. */
   handleFocusIn(): void;
   /** Bind to the host's `(focusout)` listener; marks the surrounding field as touched. */
@@ -183,6 +194,8 @@ export function injectInteractiveGroupHost(
       isFieldControl() && errorState() ? (fieldHost?.errorId?.() ?? null) : null,
     ),
     fieldRequired: computed(() => isFieldControl() && fieldHost?.required?.() === true),
+    fieldDisabled: computed(() => isFieldControl() && fieldHost?.disabled?.() === true),
+    fieldReadonly: computed(() => isFieldControl() && fieldHost?.readonly?.() === true),
     handleFocusIn(): void {
       focusedState.set(true);
     },

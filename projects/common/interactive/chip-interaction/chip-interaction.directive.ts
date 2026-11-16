@@ -96,7 +96,6 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * <example-url>/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
  * <example-url>/#/common/interactive/chip/interaction/disabled-state</example-url>
  * <example-url>/#/common/interactive/chip/interaction/removable-with-removerequest-on-backspace-delete</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level molecule
@@ -110,13 +109,13 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     role: 'option',
     '[attr.id]': 'id()',
     '[attr.aria-selected]': 'value() ? "true" : "false"',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'effectiveDisabled() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-describedby]': 'resolvedDescribedBy()',
-    '[attr.tabindex]': 'disabled() ? -1 : 0',
+    '[attr.tabindex]': 'effectiveDisabled() ? -1 : 0',
     '[class.cngx-chip-interaction--selected]': 'value()',
-    '[class.cngx-chip-interaction--disabled]': 'disabled()',
+    '[class.cngx-chip-interaction--disabled]': 'effectiveDisabled()',
     '(click)': 'handleClick($event)',
     '(keydown.space)': 'handleKeydown($event)',
     '(keydown.enter)': 'handleKeydown($event)',
@@ -208,7 +207,7 @@ export class CngxChipInteraction<T = unknown>
     // (Toggle/Radio convergence): accname 1.2 §2A traverses a directly
     // referenced hidden node, so the id must only be emitted while the
     // description applies.
-    if (this.disabled() && this.disabledReason()) {
+    if (this.effectiveDisabled() && this.disabledReason()) {
       return this.describedId;
     }
     return this.describedBy();
@@ -217,7 +216,18 @@ export class CngxChipInteraction<T = unknown>
   private readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-chip-',
     invalid: this.invalid,
+    control: this,
   });
+
+  /** The consumer `disabled` OR the disabled state of the field this chip is the control of. */
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.groupHost.fieldDisabled(),
+  );
+
+  /** Disabled, or the control of a readonly field: the value stays, focus stays reachable. */
+  private readonly interactionLocked = computed(
+    () => this.effectiveDisabled() || this.groupHost.fieldReadonly(),
+  );
 
   readonly id = this.groupHost.id;
 
@@ -257,7 +267,7 @@ export class CngxChipInteraction<T = unknown>
     });
 
     effect(() => {
-      const reason = this.disabled() && this.disabledReason() ? this.disabledReason() : '';
+      const reason = this.effectiveDisabled() && this.disabledReason() ? this.disabledReason() : '';
       untracked(() => {
         if (reason) {
           renderer.removeAttribute(span, 'aria-hidden');
@@ -287,25 +297,31 @@ export class CngxChipInteraction<T = unknown>
   }
 
   protected handleClick(event: MouseEvent): void {
-    if (this.disabled() || isCloseButtonClick(event)) {
+    if (this.interactionLocked() || isCloseButtonClick(event)) {
       return;
     }
     this.value.update((v) => !v);
   }
 
   protected handleKeydown(event: Event): void {
-    if (this.disabled()) {
+    if (this.effectiveDisabled()) {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.value.update((v) => !v);
   }
 
   protected handleRemoveKeydown(event: Event): void {
-    if (this.disabled()) {
+    if (this.effectiveDisabled()) {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.removeRequest.emit();
   }
 
