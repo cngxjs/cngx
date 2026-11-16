@@ -591,14 +591,21 @@ function classList(literal) {
   return tokens.filter((t) => !t.includes('\u0000') && /^cngx-/.test(t));
 }
 
+// A literal in one of these positions names a class or tag without writing
+// it: a component selector, a class test, a DOM query, a uid prefix. Read as a
+// writer, a lower entry's `nextUid('cngx-button')` would clear `.cngx-button`
+// in every skin.
+const NON_WRITING_LITERAL =
+  /(\bselector\s*:\s*|\b(?:contains|querySelector|querySelectorAll|closest|matches|nextUid|uid)\s*\(\s*)(['"`])[^'"`\n]*\2/g;
+
 /**
  * Every class literal a TS/HTML source writes: a string literal that holds
- * class names only (host `class`, `classList.*(...)` and `addClass` args,
- * class-name constants), `[class.x]`, and template `class=` / `*Class=`
- * attributes.
+ * class names only (host `class`, `classList.add/remove/toggle(...)` and
+ * `addClass` args, class-name constants), `[class.x]`, and template `class=` /
+ * `*Class=` attributes.
  */
 export function writtenClasses(source) {
-  const text = stripSourceComments(source);
+  const text = stripSourceComments(source).replace(NON_WRITING_LITERAL, "$1''");
   const out = new Set();
   const add = (classes) => {
     for (const cls of classes ?? []) {
@@ -636,7 +643,9 @@ function isLibrarySource(path) {
 }
 
 /**
- * `{ owners: class -> Set<entry>, symbols: exported class name -> entry }`
+ * `{ owners: class -> Set<entry>, symbols: exported name -> entry }`. Symbols
+ * cover classes, interfaces, types, constants and functions: `apiComponents`
+ * lists tokens and `inject*` / `with*` functions next to directives.
  * over the library TS/HTML sources.
  *
  * @param {{ path: string; text: string }[]} files
@@ -657,7 +666,7 @@ export function indexClassOwners(files) {
     }
     if (path.endsWith('.ts')) {
       for (const m of stripSourceComments(text).matchAll(
-        /export\s+(?:abstract\s+)?class\s+(\w+)/g,
+        /export\s+(?:declare\s+)?(?:abstract\s+)?(?:class|interface|type|const|let|function)\s+(\w+)/g,
       )) {
         symbols.set(m[1], entry);
       }
@@ -1060,7 +1069,14 @@ const SHERIFF = [
 const FIXTURE_SOURCES = [
   {
     path: 'projects/core/theming/axis.ts',
-    text: "export class CngxCoreThing { host = { class: 'cngx-core-thing' }; }",
+    text: [
+      "export class CngxCoreThing { host = { class: 'cngx-core-thing' }; }",
+      "@Component({ selector: 'cngx-popover-panel' })",
+      'export class CngxCoreReader {',
+      "  id = nextUid('cngx-select__panel');",
+      "  open = el.classList.contains('cngx-icon') || el.closest('cngx-listbox');",
+      '}',
+    ].join('\n'),
   },
   {
     path: 'projects/common/interactive/listbox.ts',
@@ -1086,7 +1102,12 @@ const FIXTURE_SOURCES = [
   },
   {
     path: 'projects/forms/select/select.ts',
-    text: "export class CngxSelect { panelClass = 'cngx-select__panel'; }",
+    text: [
+      "export class CngxSelect { panelClass = 'cngx-select__panel'; }",
+      "export const CNGX_SELECT_THING = new InjectionToken<string>('thing');",
+      'export function injectSelectThing() {}',
+      'export interface CngxSelectRef {}',
+    ].join('\n'),
   },
   { path: 'projects/ui/layout/stack.ts', text: 'export class CngxStack {}' },
   { path: 'projects/ui/speak/speak.ts', text: 'export class CngxSpeakButton {}' },
@@ -1106,7 +1127,7 @@ const skin = (body) => scanSkinCss(SKIN, `/** @themes CngxListbox */\n${body}`, 
 const keys = (hits) => hits.map((h) => `${h.line} ${h.key}`);
 
 describe('skin-ownership guard - class owners', () => {
-  it('reads host classes, [class.x], classList args and literal classes, never comments or specs', () => {
+  it('reads host classes, [class.x], classList args and literal classes, never comments, specs, selectors, class tests, queries or uid prefixes', () => {
     const { owners } = fixtureIndex();
     expect(owners.get('cngx-listbox')).toEqual(new Set(['common/interactive']));
     expect(owners.get('cngx-listbox--open')).toEqual(new Set(['common/interactive']));
@@ -1114,6 +1135,7 @@ describe('skin-ownership guard - class owners', () => {
     expect(owners.get('cngx-popover-panel')).toEqual(new Set(['common/popover']));
     expect(owners.get('cngx-icon')).toEqual(new Set(['common/popover']));
     expect(owners.has('cngx-from-a-comment')).toBe(false);
+    expect(owners.get('cngx-select__panel')).toEqual(new Set(['forms/select']));
     expect(owners.has('cngx-spec-only')).toBe(false);
   });
 
@@ -1228,6 +1250,17 @@ describe('skin-ownership guard - S5 stories', () => {
         "'CngxListbox', 'CngxA11yThing', 'CngxCoreThing', 'CngxStack'",
       ),
     ).toEqual([]);
+  });
+
+  it('resolves tokens, functions and interfaces, not only classes', () => {
+    expect(
+      keys(
+        story(
+          'examples/stories/common/interactive/listbox/basic.story.ts',
+          "'CNGX_SELECT_THING', 'injectSelectThing', 'CngxSelectRef'",
+        ),
+      ),
+    ).toEqual(['1 CNGX_SELECT_THING', '1 injectSelectThing', '1 CngxSelectRef']);
   });
 
   it('skips examples/stories/core/**', () => {
