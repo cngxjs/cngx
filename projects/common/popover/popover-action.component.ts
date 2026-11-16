@@ -184,7 +184,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: ['../button/button.component.css', './popover-action.component.css'],
+  styleUrls: ['./popover-action.component.css'],
 })
 export class CngxPopoverAction {
   protected readonly brain = inject(CngxButtonBrain);

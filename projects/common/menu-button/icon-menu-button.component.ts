@@ -97,11 +97,7 @@ import { CngxSplitCaret } from './split-caret.directive';
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: [
-    '../button/button.component.css',
-    '../button/icon-button.component.css',
-    './menu-button.component.css',
-  ],
+  styleUrls: ['./menu-button.component.css'],
 })
 export class CngxIconMenuButton {
   /** @internal */

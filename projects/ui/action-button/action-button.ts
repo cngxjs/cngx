@@ -155,7 +155,7 @@ import { CngxActionToast } from './action-toast.directive';
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: ['../../common/button/button.component.css', './action-button.css'],
+  styleUrls: ['./action-button.css'],
 })
 export class CngxActionButton {
   protected readonly brain = inject(CngxButtonBrain);

@@ -643,7 +643,7 @@ const ALLOWLIST = [
     token: '--cngx-icon-button-size',
     file: 'projects/common/button/close-button.component.css',
     reason:
-      'SET by icon-button.component.css, which CngxCloseButton loads through styleUrls before this sheet',
+      'SET by cngx-button.css in the global cngx.css bundle, which paints every .cngx-icon-button before this sheet applies',
   },
   {
     rule: 'E',

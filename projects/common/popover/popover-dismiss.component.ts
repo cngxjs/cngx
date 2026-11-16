@@ -85,7 +85,6 @@ import { CngxPopover } from './popover.directive';
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: ['../button/button.component.css'],
 })
 export class CngxPopoverDismiss {
   private readonly popover = inject(CngxPopover, { optional: true });

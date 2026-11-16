@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
@@ -11,7 +11,7 @@ import { CngxPopoverBody, CngxPopoverFooter, CngxPopoverHeader } from './popover
 // Runs in a real Chromium (the `test-geometry` target). One geometry spec in
 // the popover folder guards the footer action and the panel:
 //
-//   1. `button[cngxPopoverAction]` - painted by button.component.css at the
+//   1. `button[cngxPopoverAction]` - painted by cngx-button.css at the
 //      pinned `data-size="sm"`: a centred inline-flex row whose inline padding
 //      is SET from `--cngx-space-sm`, floored to `--cngx-target-min`.
 //   2. `.cngx-popover-panel` (popover-panel.component.css:344) - the panel is
@@ -28,6 +28,8 @@ let mountedFixture: ComponentFixture<unknown> | null = null;
 @Component({
   standalone: true,
   imports: [CngxPopoverAction],
+  styleUrls: ['../theming/components/cngx-button.css'],
+  encapsulation: ViewEncapsulation.None,
   template: `<button cngxPopoverAction="solid" tone="primary" [action]="save">OK</button>`,
 })
 class ActionHost {
@@ -105,6 +107,8 @@ class WidthHost {
 @Component({
   standalone: true,
   imports: [CngxPopoverAction],
+  styleUrls: ['../theming/components/cngx-button.css'],
+  encapsulation: ViewEncapsulation.None,
   template: `<button cngxPopoverAction [action]="save" [showDelay]="0">Save</button>`,
 })
 class SpinnerHost {

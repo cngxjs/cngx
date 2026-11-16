@@ -30,6 +30,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
     '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -346,6 +347,7 @@ describe('CngxButtonGroup geometry: ends, seams and lift', () => {
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
     '../theming/components/cngx-button-group.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

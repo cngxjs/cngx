@@ -61,7 +61,6 @@ import { provideButtonHost } from './button-host.token';
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: ['./button.component.css', './icon-button.component.css'],
 })
 export class CngxIconButton {
   /** @internal */

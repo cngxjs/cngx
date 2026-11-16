@@ -4,7 +4,7 @@
  * (close) carry no paint of their own; the status-label stack is the
  * shared sheet's `.cngx-action-status-cell` rule.
  * Both are `CngxButtonBrain` hosts with the `.cngx-button` class, so
- * `button.component.css` paints them: variants
+ * `cngx-button.css` (in `@cngx/themes/cngx.css`) paints them: variants
  * (`data-variant`, default `outline`), tones (`data-tone`), disabled by
  * colour (`[aria-disabled='true']:not([data-busy], [data-pending])`), the
  * gated busy layer (`data-pending` at click, `data-busy` after the show delay

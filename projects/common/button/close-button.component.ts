@@ -131,11 +131,7 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: [
-    './button.component.css',
-    './icon-button.component.css',
-    './close-button.component.css',
-  ],
+  styleUrls: ['./close-button.component.css'],
 })
 export class CngxCloseButton {
   /** @internal */

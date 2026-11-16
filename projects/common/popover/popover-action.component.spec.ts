@@ -654,7 +654,7 @@ describe('CngxPopoverAction', () => {
 
     // The confirm button never paints as the disabled field during a run: the
     // gated busy flags keep the host out of the disabled rules of
-    // button.component.css, keyed on this selector.
+    // cngx-button.css, keyed on this selector.
     const DISABLED_PAINT = "[aria-disabled='true']:not([data-busy], [data-pending])";
     function paintsDisabled(btn: HTMLElement): boolean {
       return (

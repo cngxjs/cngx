@@ -124,11 +124,7 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrls: [
-    '../../button/button.component.css',
-    '../../button/icon-button.component.css',
-    './panel-toggle.component.css',
-  ],
+  styleUrls: ['./panel-toggle.component.css'],
 })
 export class CngxPanelToggle {
   /** @internal */

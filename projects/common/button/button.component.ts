@@ -85,7 +85,6 @@ import { CngxButtonEnd, CngxButtonStart } from './slots';
       <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
     }
   `,
-  styleUrl: './button.component.css',
 })
 export class CngxButton {
   /** @internal */

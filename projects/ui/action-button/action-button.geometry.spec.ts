@@ -21,6 +21,7 @@ const STATUSES: readonly AsyncStatus[] = ['idle', 'pending', 'success', 'error']
     '../../core/theming/system-tokens.css',
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
+    '../../common/theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -68,6 +69,7 @@ class GeometryHost {
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../../common/theming/components/cngx-async.css',
+    '../../common/theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
