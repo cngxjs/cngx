@@ -14,11 +14,11 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
   moduleImports: [
-    "import { form, schema, required } from '@angular/forms/signals';",
+    "import { form, schema, required, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFormErrors } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors', 'FormField'],
   setup: `protected readonly model = signal({ firstName: '', lastName: '', city: '' });
   protected readonly addressForm = form(this.model, schema<{ firstName: string; lastName: string; city: string }>((root) => {
     required(root.firstName, { message: 'First name is required' });
@@ -48,7 +48,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="addressForm.firstName">
         <label cngxLabel>First name</label>
-        <input cngxInput />
+        <input cngxInput [formField]="addressForm.firstName" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -56,7 +56,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="addressForm.lastName">
         <label cngxLabel>Last name</label>
-        <input cngxInput />
+        <input cngxInput [formField]="addressForm.lastName" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -64,7 +64,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="addressForm.city">
         <label cngxLabel>City</label>
-        <input cngxInput />
+        <input cngxInput [formField]="addressForm.city" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
