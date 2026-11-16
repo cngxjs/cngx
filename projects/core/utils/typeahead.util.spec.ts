@@ -59,6 +59,13 @@ describe('foldForMatching', () => {
     expect(foldForMatching('Crème Brûlée')).toBe('creme brulee');
   });
 
+  it('folds sharp s and compatibility forms', () => {
+    expect(foldForMatching('Straße')).toBe('strasse');
+    expect(foldForMatching('STRAẞE')).toBe('strasse');
+    expect(matchesTypeahead('\ufb01le', 'fi')).toBe(true);
+    expect(matchesTypeahead('\uff21nna', 'an')).toBe(true);
+  });
+
   it('folds away bidi isolates and other format characters', () => {
     expect(matchesTypeahead('\u2068Anna\u2069 joined', 'an')).toBe(true);
     expect(matchesTypeahead('a\u200db', 'ab')).toBe(true);
