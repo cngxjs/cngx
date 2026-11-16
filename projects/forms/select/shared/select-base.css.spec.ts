@@ -206,7 +206,7 @@ describe('select-family field-skin rule set', () => {
     ).replace(/\s+/g, ' ');
     expect(bare).toContain('--cngx-field-bare-error-text-color, var( --cngx-color-danger-text,');
     expect(bare).toContain('outline-offset: -1px');
-    expect(bare).toContain('outline-offset: var(--cngx-field-ring-offset, -2px)');
+    expect(bare).toContain('outline-offset: var(--cngx-field-ring-offset, 3px)');
     const disabled = bare.slice(
       bare.indexOf(":scope.cngx-field-trigger:is([aria-disabled='true']"),
     );
@@ -286,11 +286,11 @@ describe('select-family field-skin rule set', () => {
     expect(bare).toContain('--cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px));');
     const focus = bare.slice(bare.indexOf(':scope.cngx-field-trigger:is(:focus-visible, :focus-within) {'));
     expect(focus.slice(0, focus.indexOf('}'))).toContain(
-      'outline-offset: var(--cngx-field-ring-offset, -2px)',
+      'outline-offset: var(--cngx-field-ring-offset, 3px)',
     );
     const invalidFocus = bare.slice(bare.indexOf('):is(:focus-visible, :focus-within) {'));
     expect(invalidFocus.slice(0, invalidFocus.indexOf('}'))).toContain(
-      'outline-offset: var(--cngx-field-ring-offset, -2px)',
+      'outline-offset: var(--cngx-field-ring-offset, 3px)',
     );
   });
 

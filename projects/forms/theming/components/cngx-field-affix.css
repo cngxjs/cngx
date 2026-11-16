@@ -112,7 +112,7 @@
       --cngx-field-affix-icon-size: 1.25em;
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-field-affix-gap, 0.5rem);
+      gap: var(--cngx-field-affix-gap, 8px);
       inline-size: 100%;
       padding-block: var(--cngx-field-padding-block, 0.5rem);
       padding-inline: var(--cngx-field-padding-inline, 1rem);

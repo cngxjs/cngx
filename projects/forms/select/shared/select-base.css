@@ -2179,7 +2179,7 @@
     }
 
     :scope.cngx-field-trigger:is(:focus-visible, :focus-within) {
-      outline-offset: var(--cngx-field-ring-offset, -2px);
+      outline-offset: var(--cngx-field-ring-offset, 3px);
     }
 
     /* Bare draws no line in any state; an error tints the trigger text with
@@ -2217,7 +2217,7 @@
       ):is(:focus-visible, :focus-within) {
       outline: var(--cngx-field-ring-width, 2px) solid
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
-      outline-offset: var(--cngx-field-ring-offset, -2px);
+      outline-offset: var(--cngx-field-ring-offset, 3px);
     }
 
     /* Disabled reads as muted text plus a dotted baseline, never opacity. */
