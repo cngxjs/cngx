@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxFieldErrors: basic',
   subtitle: 'Drop <code>&lt;cngx-field-errors /&gt;</code> inside <code>&lt;cngx-form-field&gt;</code> and validation errors render under the input automatically. The touched gate keeps the message hidden until the user has interacted, so a pristine form does not shout. Tab into the field and back out (or click <strong>Validate</strong>) to surface the error; type a character to clear it.',
-  description: 'CngxFieldErrors reads from the surrounding CngxFormField presenter. It auto-renders one paragraph per validation error and sets <code>role="alert"</code> + <code>aria-live="polite"</code> only while errors are visible, so screen readers announce them on appearance and stay quiet otherwise.',
+  description: 'CngxFieldErrors reads from the surrounding CngxFormField presenter. It auto-renders one paragraph per validation error. The host is a <code>role="status"</code> + <code>aria-live="polite"</code> region from the first render; only its content changes, so screen readers announce an error when it appears.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
     this.profile.email().markAsTouched();
   }
   protected handleReset(): void {
-    this.model.set({ email: '' });
+    this.profile().reset({ email: '' });
   }`,
   template: `  <div style="display:grid;gap:16px;max-width:360px">
     <cngx-form-field [field]="profile.email">

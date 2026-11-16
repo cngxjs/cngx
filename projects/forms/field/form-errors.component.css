@@ -1,7 +1,7 @@
 /**
  * @overview
- * Default visuals for `CngxFieldErrors` - bulleted error list rendered
- * under a form field. The host carries `.cngx-form-errors` and stays
+ * Default visuals for `CngxFormErrors` - the bulleted error summary of a
+ * whole form, one link per error. The host carries `.cngx-form-errors` and stays
  * `display: contents`; the inner `.cngx-form-errors__list` holds the
  * list typography and color.
  *

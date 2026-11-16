@@ -211,8 +211,8 @@ readonly [updateName, nameState] = createOptimistic(
 Finished slider components - the 90% API. Drop in `<cngx-slider>`, bind `[(value)]`, done:
 the component renders the track, fill, and thumb and wires full APG keyboard (Arrow / Page /
 Home / End) and pointer-drag. The value is a `model<number>()`, so it binds two-way and
-works with Signal Forms via `[control]`; the `cngx-form-field` integration is `CngxSliderField`
-in `@cngx/forms`. `showValue` floats the formatted value above the thumb.
+works with Signal Forms via `[formField]`; the `cngx-form-field` integration is
+`CngxSliderFieldBridge` in `@cngx/forms/field`. `showValue` floats the formatted value above the thumb.
 
 ```html
 <label id="vol">Volume</label>

@@ -69,13 +69,14 @@ const NO_ERROR_MESSAGES: ErrorMessageMap = {};
  * An unmapped `kind` falls back, in order:
  *
  * - the error's own `message`
- * - the raw `kind` string
+ * - the message the form-field language section ships for that `kind`
+ * - the section's generic `invalid` copy
  *
  * Populated by `withErrorMessages(...)` through `provideFormField`, or by the
  * `provideErrorMessages(...)` shortcut. The token holds a `Signal`, so the
  * messages follow a runtime language switch; read it inside a `computed()`,
  * a template or a handler. The default factory returns an empty map, so
- * without a provider every error renders by its fallback string.
+ * without a provider every error renders through that fallback.
  *
  * ```ts
  * providers: [provideFormField(withErrorMessages({

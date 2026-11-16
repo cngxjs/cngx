@@ -18,7 +18,7 @@ import type { CngxFormFieldControl } from './models';
  * uniformly across control types.
  *
  * Value flow is out of scope here: it runs through the host element's own
- * bindings (`[control]` for Signal Forms, `[formControl]` for Reactive
+ * bindings (`[formField]` for Signal Forms, `[formControl]` for Reactive
  * Forms). This directive only projects form-field ARIA/state onto the host.
  *
  * For cngx-native atoms with exotic value semantics (multi-select,

@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
     required(root.password, { message: 'Password is required.' });
     minLength(root.password, 8, { message: 'At least 8 characters.' });
   }));`,
-  template: `  <div style="display:grid;gap:16px;max-width:360px">
+  template: `  <form novalidate style="display:grid;gap:16px;max-width:360px" (submit)="$event.preventDefault()">
     <cngx-form-field [field]="profile.password">
       <label cngxLabel>Password</label>
       <input cngxInput type="password" [formField]="profile.password" />
@@ -33,5 +33,5 @@ export const STORY: DemoSpec = {
         </ng-template>
       </cngx-field-errors>
     </cngx-form-field>
-  </div>`,
+  </form>`,
 };

@@ -80,12 +80,12 @@ export const STORY: DemoSpec = {
   private readonly observer = new MutationObserver(() => this.readErrorShown());
   private readonly startObserving = afterNextRender(() => {
     this.readErrorShown();
-    this.observer.observe(this.hostEl.nativeElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['role'] });
+    this.observer.observe(this.hostEl.nativeElement, { subtree: true, childList: true });
   });
   private readonly stopObserving = inject(DestroyRef).onDestroy(() => this.observer.disconnect());
 
   private readErrorShown(): void {
-    this.errorShown.set(this.hostEl.nativeElement.querySelector('cngx-field-errors')?.getAttribute('role') === 'alert');
+    this.errorShown.set(this.hostEl.nativeElement.querySelector('cngx-field-errors p') !== null);
   }
 
   protected handleReset(): void {
@@ -109,6 +109,6 @@ export const STORY: DemoSpec = {
     <div class="event-row"><span class="event-label">dirty</span><span class="event-value">{{ signup.email().dirty() }}</span></div>
     <div class="event-row"><span class="event-label">submitted (scope revealed)</span><span class="event-value">{{ submitted() }}</span></div>
     <div class="event-row"><span class="event-label">invalid</span><span class="event-value">{{ signup.email().invalid() }}</span></div>
-    <div class="event-row"><span class="event-label">Error shown (role="alert")</span><span class="event-value">{{ errorShown() ? 'yes' : 'no' }}</span></div>
+    <div class="event-row"><span class="event-label">Error shown</span><span class="event-value">{{ errorShown() ? 'yes' : 'no' }}</span></div>
   </div>`,
 };

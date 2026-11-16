@@ -11,6 +11,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { injectFormFieldPresenter } from './inject-form-field-presenter';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n';
+import type { CngxFieldValidationError } from './models';
 
 /**
  * Auto-renders validation errors from the {@link CNGX_ERROR_MESSAGES} registry.
@@ -137,8 +138,8 @@ export interface CngxFieldErrorContext {
   message: string;
   /** The error kind (e.g. `'required'`, `'email'`, `'minLength'`). */
   kind: string;
-  /** The raw ValidationError object from Signal Forms. */
-  error: unknown;
+  /** The validation error from Signal Forms, bound to its field. */
+  error: CngxFieldValidationError;
   /** Zero-based index of this error in the list. */
   index: number;
   /** Whether this is the first error. */
