@@ -254,7 +254,7 @@ describe('the scope on this repo', () => {
 
   it('runs a story whose fixture import only resolves through the generator rewrite', () => {
     expect(scopeFor(['examples/fixtures/filter-builder-fixtures.ts'], real).routes).toContain(
-      'forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container',
+      'forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngxasync',
     );
   });
 

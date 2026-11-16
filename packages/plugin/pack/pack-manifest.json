@@ -78,8 +78,8 @@
     },
     {
       "artifact": "pack/recipes/forms-filter-builder-filter-builder-async-state.md",
-      "source": "examples/stories/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container.story.ts",
-      "contentHash": "sha256:8ea35a51099f66609980d47779c783285b986e473b2c16e9c3dc5690aeec0cc6"
+      "source": "examples/stories/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngxasync.story.ts",
+      "contentHash": "sha256:33693362abd07f8e0319aceec3207f3b94da66b850d92adfad905c669bee8b83"
     },
     {
       "artifact": "pack/recipes/forms-select-combobox.md",

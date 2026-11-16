@@ -1,30 +1,25 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxFilterBuilder: loading error content branches via cngx async container',
+  title: 'CngxFilterBuilder: loading error content branches via cngxAsync',
   subtitle:
-    'Press <code>Load</code> to seed fields, <code>Fail</code> to surface the error template, or <code>Refresh</code> to drive the refresh-indicator overlay above the rendered builder.',
+    'Press <code>Load</code> to seed fields, <code>Fail</code> to surface the error template, or <code>Refresh</code> to reload the schema while the rendered builder stays on screen.',
   description:
-    'Wraps <cngx-filter-builder> in <cngx-async-container> for state-driven UI. Demonstrates the consumer-side loading / error / refreshing pattern.',
+    'Renders <code>&lt;cngx-filter-builder&gt;</code> through <code>*cngxAsync</code> once its field schema has loaded. The skeleton and error templates cover the first load; a refresh or a failed reload keeps the builder and its tree, because a structural directive renders one template at a time.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['async-state', 'composition', 'error-handling'],
   framework: 'signal-forms',
-  apiComponents: ['CngxFilterBuilder', 'CngxAsyncContainer'],
+  apiComponents: ['CngxFilterBuilder', 'CngxAsync'],
   moduleImports: [
-    "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';",
-    "import { createManualState } from '@cngx/common/data';",
+    "import { CngxAsync, createManualState } from '@cngx/common/data';",
     "import { CngxFilterBuilder, createEmptyFilterRoot, type FilterFieldDef, type FilterGroup } from '@cngx/forms/filter-builder';",
     "import { FILTER_BUILDER_FIELDS } from '../../../fixtures';",
   ],
   imports: [
     'CngxFilterBuilder',
-    'CngxAsyncContainer',
-    'CngxAsyncSkeletonTpl',
-    'CngxAsyncContentTpl',
-    'CngxAsyncEmptyTpl',
-    'CngxAsyncErrorTpl',
+    'CngxAsync',
     'JsonPipe',
   ],
   setup: `protected readonly state = createManualState<readonly FilterFieldDef[]>();
@@ -54,29 +49,31 @@ export const STORY: DemoSpec = {
       <button type="button" class="chip" (click)="resetState()">Reset</button>
     </div>
 
-    <cngx-async-container [state]="state" ariaLabel="Filter schema">
-      <ng-template cngxAsyncSkeleton>
-        <div class="demo-skeleton">
-          <div class="demo-skeleton-row"></div>
-          <div class="demo-skeleton-row"></div>
-          <div class="demo-skeleton-row"></div>
-        </div>
-      </ng-template>
+    @if (state.status() === 'idle') {
+      <p class="demo-empty">Press <strong>Load</strong> to fetch the filter schema.</p>
+    }
 
-      <ng-template cngxAsyncEmpty>
-        <p class="demo-empty">Press <strong>Load</strong> to fetch the filter schema.</p>
-      </ng-template>
+    <div [attr.aria-busy]="state.isBusy()">
+      <cngx-filter-builder
+        *cngxAsync="state; let data; skeleton: skeletonTpl; error: errorTpl"
+        [fields]="data"
+        [(value)]="tree"
+      />
+    </div>
 
-      <ng-template cngxAsyncContent let-data>
-        <cngx-filter-builder [fields]="data" [(value)]="tree" />
-      </ng-template>
+    <ng-template #skeletonTpl>
+      <div class="demo-skeleton">
+        <div class="demo-skeleton-row"></div>
+        <div class="demo-skeleton-row"></div>
+        <div class="demo-skeleton-row"></div>
+      </div>
+    </ng-template>
 
-      <ng-template cngxAsyncError let-err>
-        <div role="alert" class="demo-error">
-          <strong>Schema load failed:</strong> {{ (err)?.message ?? 'unknown error' }}
-        </div>
-      </ng-template>
-    </cngx-async-container>
+    <ng-template #errorTpl let-err>
+      <div role="alert" class="demo-error">
+        <strong>Schema load failed:</strong> {{ (err)?.message ?? 'unknown error' }}
+      </div>
+    </ng-template>
 
     <pre class="code-block"><code>{{ tree() | json }}</code></pre>
   </div>

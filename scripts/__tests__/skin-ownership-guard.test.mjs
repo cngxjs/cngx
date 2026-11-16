@@ -9,8 +9,11 @@
 //     consumer by class names that consumer.
 // S5  a story under `examples/stories/<lib>/<entry>/` lists in `apiComponents`
 //     no artifact of a higher-level or independent-sibling entry, except the
-//     neutral layout primitives. `examples/stories/core/**` is exempt: core
-//     renders nothing, its stories need a carrier.
+//     neutral story symbols. `examples/stories/core/**` is exempt: core
+//     renders nothing, its stories need a carrier. A carrier home
+//     (`forms/field`) renders no value control either, so its stories may
+//     list a same-level entry that imports it (the input or select the field
+//     contract runs on).
 // S6  an exception lives only as a row of SKIN_OWNERSHIP_EXEMPT or
 //     STORY_OWNERSHIP_EXEMPT, with exact counts and a reason. A row whose
 //     hits are gone fails as stale, so the ratchet only shrinks.
@@ -48,8 +51,15 @@ import { beforeAll, describe, expect, it } from 'vitest';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..', '..');
 
-/** Layout primitives a story of any entry may carry its demo in. */
-export const NEUTRAL_LAYOUT_PRIMITIVES = ['CngxStack', 'CngxGrid'];
+/**
+ * Symbols a story of any entry may list: the layout primitives a demo sits in,
+ * and the one Reactive Forms CVA, which attaches by the `[formControl]`
+ * selector to whatever control the story teaches.
+ */
+export const NEUTRAL_STORY_SYMBOLS = ['CngxStack', 'CngxGrid', 'CngxFormBridge'];
+
+/** Story homes whose contract needs a control carrier from a dependent entry. */
+export const CARRIER_HOMES = ['forms/field'];
 
 const CONTEXT_AXIS = /^cngx-(density|text-scale|motion|contrast|touch)(-|$)/;
 
@@ -337,144 +347,6 @@ const STORY_OWNERSHIP_EXEMPT = [
     symbol: 'CngxSkeletonPlaceholder',
     reason:
       'ui/skeleton is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/affix/currency-and-unit.story.ts',
-    symbol: 'CngxNumericInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/affix/icon-and-icon-button.story.ts',
-    symbol: 'CngxInputClear',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/affix/select-in-field.story.ts',
-    symbol: 'CngxSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/form-errors/basic.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/form-errors/custom-summary-template.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/form-errors/server-error-injection.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/form-errors/show-on-submit.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol.story.ts',
-    symbol: 'CngxFormBridge',
-    reason:
-      'forms/controls is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/bare-anatomy.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/bare-anatomy.story.ts',
-    symbol: 'CngxSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/bare-anatomy.story.ts',
-    symbol: 'CngxMultiSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/fill-anatomy.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/fill-anatomy.story.ts',
-    symbol: 'CngxSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/fill-anatomy.story.ts',
-    symbol: 'CngxMultiSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/fill.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/outline-anatomy.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/outline-anatomy.story.ts',
-    symbol: 'CngxSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/field/skin/outline-anatomy.story.ts',
-    symbol: 'CngxMultiSelect',
-    reason:
-      'forms/select is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container.story.ts',
-    symbol: 'CngxAsyncContainer',
-    reason:
-      'ui/feedback is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/input/mask/reactive-forms.story.ts',
-    symbol: 'CngxFormBridge',
-    reason:
-      'forms/controls is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/input/numeric/reactive-forms.story.ts',
-    symbol: 'CngxFormBridge',
-    reason:
-      'forms/controls is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/input/phone/reactive-forms.story.ts',
-    symbol: 'CngxFormBridge',
-    reason:
-      'forms/controls is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/forms/input/utilities/input-format-reactive-forms.story.ts',
-    symbol: 'CngxFormBridge',
-    reason:
-      'forms/controls is an independent sibling; the story moves to that artifact or renders without it',
   },
   {
     file: 'examples/stories/interop/query/from-query/tanstack-query-bridge.story.ts',
@@ -900,7 +772,8 @@ function ownEntryOfStylesheet(file, css, index) {
 
 /**
  * S5 hits of one story: `apiComponents` symbols of a higher-level or
- * independent-sibling entry. `examples/stories/core/**` is skipped.
+ * independent-sibling entry. `examples/stories/core/**` is skipped; a carrier
+ * home accepts a sibling that imports it.
  */
 export function scanStory(file, source, index) {
   const parts = file.split('/');
@@ -918,11 +791,11 @@ export function scanStory(file, source, index) {
   for (const m of list[1].matchAll(/['"](\w+)['"]/g)) {
     const symbol = m[1];
     const owner = index.symbols.get(symbol);
-    if (!owner || NEUTRAL_LAYOUT_PRIMITIVES.includes(symbol)) {
+    if (!owner || NEUTRAL_STORY_SYMBOLS.includes(symbol)) {
       continue;
     }
     const foreign = foreignOwners(new Set([owner]), own, index);
-    if (foreign.length === 0) {
+    if (foreign.length === 0 || isCarrier(home, foreign[0], index)) {
       continue;
     }
     hits.push({
@@ -935,6 +808,14 @@ export function scanStory(file, source, index) {
     });
   }
   return hits;
+}
+
+function isCarrier(home, verdict, index) {
+  return (
+    CARRIER_HOMES.includes(home) &&
+    verdict.kind === 'sibling' &&
+    index.closure.reach(verdict.owner).has(home)
+  );
 }
 
 /**
@@ -1085,11 +966,17 @@ const FIXTURE_SOURCES = [
   {
     path: 'projects/forms/select/select.ts',
     text: [
+      "import { CngxFormField } from '@cngx/forms/field';",
       "export class CngxSelect { panelClass = 'cngx-select__panel'; }",
       "export const CNGX_SELECT_THING = new InjectionToken<string>('thing');",
       'export function injectSelectThing() {}',
       'export interface CngxSelectRef {}',
     ].join('\n'),
+  },
+  { path: 'projects/forms/field/form-field.ts', text: 'export class CngxFormField {}' },
+  {
+    path: 'projects/forms/controls/form-bridge.ts',
+    text: 'export class CngxFormBridge {}\nexport class CngxTypedControl {}',
   },
   { path: 'projects/ui/layout/stack.ts', text: 'export class CngxStack {}' },
   { path: 'projects/ui/speak/speak.ts', text: 'export class CngxSpeakButton {}' },
@@ -1243,6 +1130,24 @@ describe('skin-ownership guard - S5 stories', () => {
         ),
       ),
     ).toEqual(['1 CNGX_SELECT_THING', '1 injectSelectThing', '1 CngxSelectRef']);
+  });
+
+  it('passes a carrier that imports forms/field in a field story, nowhere else', () => {
+    const field = 'examples/stories/forms/field/skin/fill.story.ts';
+    expect(story(field, "'CngxFormField', 'CngxSelect'")).toEqual([]);
+    expect(keys(story(field, "'CngxTypedControl', 'CngxSpeakButton'"))).toEqual([
+      '1 CngxTypedControl',
+      '1 CngxSpeakButton',
+    ]);
+    expect(keys(story('examples/stories/forms/controls/typed/basic.story.ts', "'CngxSelect'"))).toEqual([
+      '1 CngxSelect',
+    ]);
+  });
+
+  it('passes CngxFormBridge as a neutral symbol', () => {
+    expect(story('examples/stories/forms/select/rf/basic.story.ts', "'CngxSelect', 'CngxFormBridge'")).toEqual(
+      [],
+    );
   });
 
   it('skips examples/stories/core/**', () => {
