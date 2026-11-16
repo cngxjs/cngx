@@ -1,3 +1,4 @@
+import type { Locator } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 import { routesIn } from '../../_routes';
@@ -154,6 +155,41 @@ test.describe('common/layout/drawer: filter panel', () => {
     await contained.click();
     await expect(page.getByText(/Only this area blocked: the scrim/)).toBeVisible();
   });
+});
+
+test.describe('common/layout/drawer: scrim of the modal drawer stories', () => {
+  // basic-scroll-lock-backdrop clears the host scrim on purpose: its
+  // [cngxBackdrop] paints the overlay instead (covered above).
+  const stories = [
+    { route: 'common/layout/drawer/full-height-modal', panelId: 'full-height-nav' },
+    { route: 'common/layout/drawer/app-header-clipped', panelId: 'clipped-nav' },
+    { route: 'common/layout/drawer/controlled-mode', panelId: 'ctrl-panel' },
+    { route: 'common/layout/drawer/events-openedchange-closed', panelId: 'ev-panel' },
+    { route: 'common/layout/drawer/direction-all-four-sides', panelId: 'dir-panel' },
+    { route: 'common/layout/drawer/pattern-consumer-wiring', panelId: 'pcw-panel' },
+  ];
+
+  const scrim = (host: Locator) =>
+    host.evaluate((el) => {
+      const style = getComputedStyle(el, '::after');
+      return { opacity: style.opacity, background: style.backgroundColor };
+    });
+
+  for (const { route, panelId } of stories) {
+    test(`${route.split('/').pop()}: the host paints a scrim while the modal panel is open`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, route);
+      const panel = page.locator(`#${panelId}`);
+      const host = page.locator('.cngx-drawer').filter({ has: panel });
+      await expect.poll(async () => (await scrim(host)).opacity).toBe('0');
+
+      await page.locator(`button[aria-controls="${panelId}"]`).first().click();
+      await expect(panel).toHaveClass(/cngx-drawer-panel--modal/);
+      await expect.poll(async () => (await scrim(host)).opacity).toBe('1');
+      expect((await scrim(host)).background).not.toBe('rgba(0, 0, 0, 0)');
+    });
+  }
 });
 
 test.describe('common/layout/drawer: modal panel name', () => {
