@@ -14,11 +14,11 @@ export const STORY: DemoSpec = {
     { label: 'WCAG 3.3.1 Error Identification', href: 'https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html' },
   ],
   moduleImports: [
-    "import { form, schema, required, email } from '@angular/forms/signals';",
+    "import { form, schema, required, email, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFormErrors } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors', 'FormField'],
   setup: `protected readonly model = signal({ email: '', password: '', displayName: '' });
   protected readonly userForm = form(this.model, schema<{ email: string; password: string; displayName: string }>((root) => {
     required(root.email, { message: 'Email is required' });
@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     this.showErrors.set(true);
   }
   protected handleReset(): void {
-    this.model.set({ email: '', password: '', displayName: '' });
+    this.userForm().reset({ email: '', password: '', displayName: '' });
     this.showErrors.set(false);
   }`,
   template: `  <form class="demo-form" novalidate style="max-width:480px" (submit)="$event.preventDefault()">
@@ -46,7 +46,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="userForm.email">
         <label cngxLabel>Email</label>
-        <input cngxInput placeholder="max@example.com" />
+        <input cngxInput [formField]="userForm.email" placeholder="max@example.com" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -54,7 +54,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="userForm.password">
         <label cngxLabel>Password</label>
-        <input cngxInput type="password" />
+        <input cngxInput [formField]="userForm.password" type="password" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="userForm.displayName">
         <label cngxLabel>Display name</label>
-        <input cngxInput />
+        <input cngxInput [formField]="userForm.displayName" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>

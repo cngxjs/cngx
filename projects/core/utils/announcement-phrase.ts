@@ -45,6 +45,11 @@ export interface AnnouncementPhraseOptions<TSource> {
  * phrase eagerly before branching, otherwise the phrase never observes
  * the busy-start snapshot and the `spend` transition is skipped.
  *
+ * **Repeat.** The same phrase armed twice in a row is the same string, so
+ * the Signal does not change and a live region bound to it is not rewritten.
+ * AT hears it once. To voice a repeat, vary the text (a count, a name) or
+ * `spend` the first phrase before the second arms.
+ *
  * ```ts
  * private readonly selectionPhrase = createAnnouncementPhrase({
  *   source: () => ({ selected: this.selected(), loading: this.loading() }),

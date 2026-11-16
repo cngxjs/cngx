@@ -11,11 +11,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxError', 'CngxFormField', 'CngxLabel'],
   moduleImports: [
-    'import { form, schema, required, minLength, email } from \'@angular/forms/signals\';',
+    'import { form, schema, required, minLength, email, FormField } from \'@angular/forms/signals\';',
     'import { CngxFormField, CngxLabel, CngxError } from \'@cngx/forms/field\';',
     'import { CngxInput } from \'@cngx/forms/input\';',
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxError', 'CngxInput', 'FormField'],
   setup: `protected readonly model = signal<{ email: string }>({ email: '' });
   protected readonly emailForm = form(this.model, schema((root) => {
     required(root.email, { message: 'Email is required' });
@@ -37,14 +37,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;max-width:480px">
     <cngx-form-field [field]="emailForm.email">
       <label cngxLabel>Email address</label>
-      <input
-        cngxInput
-        type="email"
-        autocomplete="email"
-        [value]="emailForm.email().value()"
-        (input)="emailForm.email().value.set($any($event.target).value)"
-        (blur)="emailForm.email().markAsTouched()"
-      />
+      <input cngxInput [formField]="emailForm.email" type="email" autocomplete="email" />
       <div cngxError style="display:grid;gap:6px;margin-top:6px">
         @if (emailForm.email().touched()) {
           @for (e of emailForm.email().errors(); track e.kind) {

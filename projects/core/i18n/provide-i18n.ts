@@ -248,24 +248,23 @@ export function provideCngxI18n(...features: readonly CngxI18nFeature[]): Enviro
 }
 
 /**
- * @internal A section without its `undefined` keys, so a TS pack's
- * `{ key: maybe }` reads English like a missing key instead of overriding it.
- * Returns the section itself when every key is defined.
+ * @internal A section without its `null` and `undefined` keys, so a pack's
+ * `{ key: maybe }` (a TS optional or a JSON `null`) reads English like a
+ * missing key instead of overriding it. Returns the section itself when every
+ * key holds a value.
  */
-function withoutUndefinedKeys<T extends object>(section: T | undefined): T | undefined {
-  if (!section || !Object.values(section).includes(undefined)) {
+function withoutNullishKeys<T extends object>(section: T | undefined): T | undefined {
+  if (!section || !Object.values(section).some((value) => value == null)) {
     return section;
   }
-  return Object.fromEntries(
-    Object.entries(section).filter(([, value]) => value !== undefined),
-  ) as T;
+  return Object.fromEntries(Object.entries(section).filter(([, value]) => value != null)) as T;
 }
 
 /**
  * Reads one section of the active language pack, in an injection context.
  * `undefined` while the pack has no such section - the lib then reads its
- * English defaults. A key whose value is `undefined` is left out, so it reads
- * English too.
+ * English defaults. A key whose value is `null` or `undefined` is left out, so
+ * it reads English too.
  *
  * @since 0.1.0
  * @relatedTo CNGX_LANGUAGE_PACK
@@ -275,7 +274,7 @@ export function injectLanguageSection<K extends keyof CngxLanguagePack>(
 ): Signal<CngxPartialLanguagePack[K] | undefined> {
   const pack = inject(CNGX_LANGUAGE_PACK);
   const section = computed(() => pack()[key]);
-  return computed(() => withoutUndefinedKeys(section()), { equal: sectionEqual });
+  return computed(() => withoutNullishKeys(section()), { equal: sectionEqual });
 }
 
 /** A new pack whose section reads key by key the same keeps the section reference. */

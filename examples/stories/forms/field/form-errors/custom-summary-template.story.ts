@@ -11,11 +11,11 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxFormErrors', 'CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxInput'],
   moduleImports: [
-    "import { form, schema, required } from '@angular/forms/signals';",
+    "import { form, schema, required, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, CngxFormErrors, type FormErrorItem } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxFieldErrors', 'CngxFormErrors', 'FormField'],
   setup: `protected readonly model = signal({ username: '', email: '', age: '' });
   protected readonly profileForm = form(this.model, schema<{ username: string; email: string; age: string }>((root) => {
     required(root.username, { message: 'Pick a username' });
@@ -53,7 +53,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="profileForm.username">
         <label cngxLabel>Username</label>
-        <input cngxInput />
+        <input cngxInput [formField]="profileForm.username" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -61,7 +61,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="profileForm.email">
         <label cngxLabel>Email</label>
-        <input cngxInput />
+        <input cngxInput [formField]="profileForm.email" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -69,7 +69,7 @@ export const STORY: DemoSpec = {
     <div class="demo-field">
       <cngx-form-field [field]="profileForm.age">
         <label cngxLabel>Age</label>
-        <input cngxInput />
+        <input cngxInput [formField]="profileForm.age" />
         <cngx-field-errors />
       </cngx-form-field>
     </div>
