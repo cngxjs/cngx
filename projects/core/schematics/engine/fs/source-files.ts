@@ -1,3 +1,5 @@
+import { posix } from 'node:path';
+
 // What counts as app source, shared by the component count of `ng add` and
 // the rename walk of `ng update`, so both read the same files.
 
@@ -18,4 +20,9 @@ export function isAppSource(path: string): boolean {
 /** A file a rename can touch: a template, or TypeScript other than a declaration file. */
 export function isRenameTarget(path: string): boolean {
   return path.endsWith('.html') || (path.endsWith('.ts') && !path.endsWith('.d.ts'));
+}
+
+/** The folder a project's sources live in: its `sourceRoot`, else `src` below its root, as the CLI defaults it. */
+export function sourceRootOf(project: { readonly root: string; readonly sourceRoot?: string }): string {
+  return project.sourceRoot ?? posix.join(project.root, 'src');
 }

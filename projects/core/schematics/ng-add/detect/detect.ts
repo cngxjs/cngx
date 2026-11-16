@@ -15,6 +15,7 @@ import {
   parseManifest,
   readBootstrapCall,
   readProviderCalls,
+  sourceRootOf,
   type Tree,
   type TypeOnlyValueImport,
   typeOnlyValueImports,
@@ -256,7 +257,7 @@ function readUtf8(tree: Tree, path: string): string | undefined {
  */
 export function detectProject(tree: Tree, workspace: workspaces.WorkspaceDefinition, name?: string): ProjectFacts {
   const [projectName, project] = resolveProject(workspace, name);
-  const sourceRoot = project.sourceRoot ?? posix.join(project.root, 'src');
+  const sourceRoot = sourceRootOf(project);
   const options = buildOptions(project);
   if (!tree.exists('package.json')) {
     throw new SchematicsException('package.json is missing at the workspace root.');

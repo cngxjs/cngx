@@ -16,6 +16,7 @@ import {
   errorMessage,
   planCodemods,
   planRenames,
+  sourceRootOf,
   type NgAddPreset,
   type ReleaseVersions,
   type RenameTable,
@@ -164,7 +165,9 @@ export function createMigration(migration: Migration): Rule {
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
     const provenance = createProvenance('ng-update', versions.cngx);
     const stored = readInstallManifest(tree);
-    const renames = planRenames(migration.renames, tree, provenance);
+    const workspace = await readWorkspace(tree);
+    const roots = [...workspace.projects.values()].map(sourceRootOf);
+    const renames = planRenames(migration.renames, tree, roots, provenance);
     const renamed = previewRenames(tree, renames);
     const { reruns, records } = await planReruns(renamed, stored, versions, new Date().toISOString());
     const plan = createChangePlan(
