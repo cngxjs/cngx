@@ -79,6 +79,16 @@ describe('breadcrumb overflow under the Material menu bridge', () => {
     expect(row.fontWeight).not.toBe(bare.fontWeight);
   });
 
+  it('paints one surface: the panel, not the menu inside it', () => {
+    const root = mount();
+    const menu = getComputedStyle(query(root, '.organism'));
+    const bare = getComputedStyle(query(root, '.bare'));
+    expect(menu.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(menu.borderTopWidth).toBe('0px');
+    expect(menu.boxShadow).toBe('none');
+    expect(bare.boxShadow).not.toBe('none');
+  });
+
   it('still bridges a menu outside a popover panel', () => {
     const root = mount();
     const bare = getComputedStyle(query(root, '.bare'));
