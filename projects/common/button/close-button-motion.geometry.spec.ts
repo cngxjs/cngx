@@ -16,7 +16,11 @@ import { CngxCloseButton } from './close-button.component';
   selector: 'cngx-close-button-motion-host',
   standalone: true,
   imports: [CngxCloseButton],
-  styleUrls: ['../../core/theming/layers.css', '../../core/theming/system-tokens.css'],
+  styleUrls: [
+    '../../core/theming/layers.css',
+    '../../core/theming/system-tokens.css',
+    '../theming/components/cngx-button.css',
+  ],
   encapsulation: ViewEncapsulation.None,
   template: `
     <div class="scale-default">

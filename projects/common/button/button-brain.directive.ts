@@ -151,7 +151,10 @@ export class CngxButtonBrain implements CngxButtonState {
   readonly sizeValue = this.core.size;
   /** A co-hosted run is pending or the host reflects one. Ungated. */
   readonly busy = this.core.busy;
-  /** The busy layer shows, gated on the `CNGX_LOADING_CONFIG` show delay and min-dwell. */
+  /**
+   * The busy layer shows, gated on the `CNGX_LOADING_CONFIG` show delay and min-dwell.
+   * `CngxButtonAdornment` renders it.
+   */
   readonly busyVisible = this.core.busyVisible;
   /**
    * Refusing, busy or refused by the co-hosted runner. Every click is swallowed, an expanded popup
@@ -161,7 +164,7 @@ export class CngxButtonBrain implements CngxButtonState {
   /** Busy glyph from `provideButtonSpinner`, or `null` for the built-in spinner. */
   readonly spinner = injectButtonSpinner();
 
-  /** Id the host template puts on its reason span. */
+  /** Id of the reason span `CngxButtonAdornment` renders. */
   readonly reasonId = this.core.reasonId;
   /** `reasonId` while `disabled` has a reason, else `null`. */
   readonly activeReasonId = this.core.activeReasonId;

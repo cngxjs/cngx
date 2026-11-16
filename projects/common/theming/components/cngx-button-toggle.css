@@ -115,12 +115,22 @@
     }
 
     /* Hover on a CHECKED segment: keep the primary fill (so the on-primary text
-     * stays legible) and darken it a touch for feedback. Darkening toward black
-     * only deepens the fill, so the on-primary text contrast is preserved in
-     * light and dark. */
+     * stays legible) and shade it 12% away from its ink. The shade is the ink's
+     * opposite lightness (round(1 - l)): dark under the default near-white ink,
+     * light under a dark ink, so the fill always moves away from the label and
+     * the on-primary contrast holds in light and dark. The same derivation as
+     * `--cngx-button-hover-shade` in cngx-button.css. */
     :scope.cngx-button-toggle--checked:hover:not(.cngx-button-toggle--disabled) {
-      background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%, black);
-      border-color: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%, black);
+      background: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%,
+        oklch(from var(--cngx-color-on-primary, oklch(0.99 0.01 250)) round(1 - l, 1) 0 0)
+      );
+      border-color: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%,
+        oklch(from var(--cngx-color-on-primary, oklch(0.99 0.01 250)) round(1 - l, 1) 0 0)
+      );
     }
 
     /* Disabled by colour, never opacity (the field recipe): 38% text on a

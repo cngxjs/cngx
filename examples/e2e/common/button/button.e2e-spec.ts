@@ -285,7 +285,7 @@ test.describe('common/button/button', () => {
     await expect(artifact.locator('demo-dots-spinner')).toHaveCount(0);
   });
 
-  test('scoped-defaults: provideCngxButtonAt sets variant, size, spinner, close icon', async ({
+  test('scoped-defaults: scoped providers set variant, size, spinner, close icon', async ({
     page,
   }) => {
     await gotoDemo(page, SCOPED);

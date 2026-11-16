@@ -22,7 +22,7 @@ import { cdp } from 'vitest/browser';
     '../../../core/theming/system-tokens.css',
     '../../../core/theming/reset.css',
     '../../../core/theming/base.css',
-    '../../button/button.component.css',
+    './cngx-button.css',
     './cngx-async.css',
     './async-click-bridge.spec-host.scss',
   ],

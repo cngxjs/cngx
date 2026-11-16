@@ -32,7 +32,8 @@
  * - **Motion** - `--cngx-duration-{fast|base|slow}` (150 / 200 / 320 ms)
  *   plus `--cngx-easing-{standard|decelerate|accelerate}` cubic-
  *   beziers. `syntax: '*'` on easings because cubic-bezier isn't an
- *   animatable type.
+ *   animatable type. `--cngx-pulse-{duration|easing}` (2s, ease-in-out)
+ *   drive the loading pulse.
  * - **Surface** - `--cngx-color-{surface|text|text-muted|border|
  *   primary|danger|success|warning|info}`. Primary is Ember
  *   `oklch(0.66 0.19 50)`; semantic colours stay in the same hue
@@ -303,6 +304,28 @@
     syntax: '*';
     inherits: true;
     initial-value: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  /**
+   * Opacity-pulse duration - the loading pulse and the reduced-motion
+   * carve-out in motion-tokens.css. Inherits, so a value set on `:root`
+   * reaches every loading host.
+   * @group Motion
+   */
+  @property --cngx-pulse-duration {
+    syntax: '<time>';
+    inherits: true;
+    initial-value: 2s;
+  }
+
+  /**
+   * Opacity-pulse easing curve.
+   * @group Motion
+   */
+  @property --cngx-pulse-easing {
+    syntax: '*';
+    inherits: true;
+    initial-value: ease-in-out;
   }
 
   /**

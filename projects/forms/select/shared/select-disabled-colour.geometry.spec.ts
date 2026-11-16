@@ -48,6 +48,7 @@ const SCHEMES = ['light', 'dark'] as const;
     './select-base.css',
     '../tree-select/tree-select-panel.component.css',
     './internal/sheet-header/sheet-header.component.css',
+    '../../../common/theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

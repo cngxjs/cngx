@@ -64,8 +64,8 @@ export interface CngxActionStatus {
   readonly state: CngxAsyncState<unknown>;
   /** `true` while a bound external state is pending; the runner does not know about it. */
   readonly externalBusy: Signal<boolean>;
-  /** The bound `autoAnnounce` value, `undefined` while unbound. */
-  readonly autoAnnounce: Signal<boolean | undefined>;
+  /** The bound `announce` value, `'auto'` while unbound. */
+  readonly announce: Signal<'auto' | 'always' | 'never'>;
   /** Which status cells render. */
   readonly hasCell: Signal<CngxActionStatusCells>;
   /** The visible, named cell, gated on the busy visual. */
@@ -87,7 +87,7 @@ export interface CngxActionStatus {
   /**
    * What the co-hosted runner's live region speaks for one own settle (the
    * `CngxHostInteractionState.announcement` signature). `''` without a
-   * settle, while an external state is bound, under `autoAnnounce` `false`
+   * settle, while an external state is bound, under `announce` `'never'`
    * and for an outcome a {@link CNGX_ANNOUNCEMENT_COVER} covers. A function
    * property, so a provider passes it on detached.
    */
@@ -95,7 +95,7 @@ export interface CngxActionStatus {
   /**
    * The text an outcome speaks before any cover: the explicit announcement,
    * the rendered result cell, the label, the i18n copy. `''` under
-   * `autoAnnounce` `false`. Read it once after render, for a region the
+   * `announce` `'never'`. Read it once after render, for a region the
    * caller owns.
    */
   outcomeText(status: 'success' | 'error'): string;

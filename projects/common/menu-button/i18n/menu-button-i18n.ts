@@ -37,7 +37,7 @@ export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18
 );
 
 /**
- * A label override feature of `provideMenuButtonI18n` and `provideCngxMenuButton(At)`.
+ * A label override feature of `provideMenuButtonI18n`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
  * @since 0.1.0
@@ -62,7 +62,7 @@ function defineMenuButtonI18nFeature(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
  * @since 0.1.0
- * @relatedTo CNGX_MENU_BUTTON_I18N, provideMenuButtonI18n, provideCngxMenuButton
+ * @relatedTo CNGX_MENU_BUTTON_I18N, provideMenuButtonI18n
  */
 export function withMenuButtonI18nLabels(
   overrides: Partial<CngxMenuButtonI18n> | Signal<Partial<CngxMenuButtonI18n>>,

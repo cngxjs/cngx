@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxMenuButton: Scoped defaults',
-  subtitle: 'Set the caret glyph and the split caret name of a subtree with one <code>provideCngxMenuButtonAt</code> call.',
-  description: '<code>provideCngxMenuButton</code> is the entry point for the menu-button family: the caret glyph (<code>withButtonCaretIcon</code>) and the labels (<code>withMenuButtonI18nLabels</code>) in one call at the app root. <code>provideCngxMenuButtonAt</code> is the twin for <code>viewProviders</code>. Here the menu button and the split caret both draw the triangle, and the caret is named "More publish options" instead of the language pack default. The button-wide config, close glyph and busy glyph stay with <code>provideCngxButtonAt</code> in <code>@cngx/common/button</code>.',
+  subtitle: 'Set the caret glyph and the split caret name of a subtree, one provider per concern.',
+  description: 'Each concern has one provider, and each works in <code>viewProviders</code>: <code>provideButtonCaretIcon</code> sets the caret glyph and <code>provideMenuButtonI18n(withMenuButtonI18nLabels(...))</code> overrides single keys of the copy. Here the menu button and the split caret both draw the triangle, and the caret is named "More publish options" instead of the language pack default. The button-wide config, close glyph and busy glyph have their own providers in <code>@cngx/common/button</code>.',
   level: 'molecule',
   audience: ['dev', 'design'],
   artifact: 'building-block',
@@ -12,13 +12,14 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxButton } from '@cngx/common/button';",
     "import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';",
-    "import { CngxIconMenuButton, CngxMenuButton, CngxSplitButton, provideCngxMenuButtonAt, withButtonCaretIcon, withMenuButtonI18nLabels } from '@cngx/common/menu-button';",
+    "import { CngxIconMenuButton, CngxMenuButton, CngxSplitButton, provideButtonCaretIcon, provideMenuButtonI18n, withMenuButtonI18nLabels } from '@cngx/common/menu-button';",
     "import { CngxPopover } from '@cngx/common/popover';",
     "import { TriangleCaret } from './_triangle-caret.component';",
   ],
   imports: ['CngxButton', 'CngxMenu', 'CngxMenuItem', 'CngxIconMenuButton', 'CngxMenuButton', 'CngxSplitButton', 'CngxPopover'],
   viewProviders: [
-    "...provideCngxMenuButtonAt(withButtonCaretIcon(TriangleCaret), withMenuButtonI18nLabels({ splitToggle: 'More publish options' }))",
+    'provideButtonCaretIcon(TriangleCaret)',
+    "provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle: 'More publish options' }))",
   ],
   template: `
   <div class="demo-inline-actions">

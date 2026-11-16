@@ -38,7 +38,7 @@ const THEMES_ENTRY_CSS = 'projects/themes/cngx.css';
 // (examples excluded). Adding a component with its own block: add it here.
 const MOTION_AWARE_HOSTS: readonly string[] = [
   // @cngx/common
-  'projects/common/button/button.component.css',
+  'projects/common/theming/components/cngx-button.css',
   'projects/common/card/card-skeleton.component.css',
   'projects/common/card/card.component.css',
   'projects/common/data/paginate/styles/paginator-base.css',
@@ -102,6 +102,17 @@ describe('reduced-motion safety-net integrity', () => {
     expect(net).toContain(":root:not([data-motion='full'])");
   });
 
+  it('lets the OS-media rule match the root element itself', () => {
+    // Without the bare root selector, `html { scroll-behavior: smooth }`
+    // keeps smooth-scrolling the document under OS reduce.
+    expect(net).toContain(":root:not([data-motion='full']),\n");
+  });
+
+  it('zeroes animation and transition delays in both reset blocks', () => {
+    expect(net.match(/animation-delay: 0s !important/g)).toHaveLength(2);
+    expect(net.match(/transition-delay: 0s !important/g)).toHaveLength(2);
+  });
+
   it('carves out essential loading motion on loading hosts only', () => {
     // Freezing a loader into a dead ring loses the "still working" signal, so
     // the net swaps the freeze for a pulse on loading hosts - never on a bare
@@ -114,6 +125,25 @@ describe('reduced-motion safety-net integrity', () => {
     expect(net).not.toContain("[role='status']");
     expect(net).toContain('cngx-motion-loading-pulse');
     expect(net).toContain('@keyframes cngx-motion-loading-pulse');
+  });
+});
+
+describe('pulse token registration', () => {
+  // The net reads --cngx-pulse-* on every loading host, so the registration
+  // must live in core and inherit; an inherits:false registration in a ui
+  // stylesheet would cut off a value set on :root.
+  const PULSE_TOKENS = ['--cngx-pulse-duration', '--cngx-pulse-easing'];
+
+  it.each(PULSE_TOKENS)('registers %s in core system-tokens with inherits: true', (token) => {
+    const system = readRepoCss('projects/core/theming/system-tokens.css');
+    const block = system.match(new RegExp(`@property ${token} \\{[^}]*\\}`))?.[0];
+    expect(block).toBeDefined();
+    expect(block).toContain('inherits: true');
+  });
+
+  it.each(PULSE_TOKENS)('keeps %s out of the ui loading stylesheet', (token) => {
+    const loading = readRepoCss('projects/ui/feedback/loading/loading-indicator.css');
+    expect(loading).not.toContain(`@property ${token}`);
   });
 });
 

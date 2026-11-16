@@ -25,6 +25,7 @@ type Density = 'comfortable' | 'compact' | 'spacious';
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -170,6 +171,7 @@ const WIDE_IMG =
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -237,6 +239,7 @@ describe('CngxIconButton geometry: accessible name', () => {
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../../core/theming/density-tokens.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `

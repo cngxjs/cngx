@@ -11,6 +11,11 @@ library releases; this file tracks the doctor package.
   `CngxNavGroup`, `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
   `CngxNavFooter`, `CngxNavMark`, `CngxNavName`): their row skin now ships in the
   `cngx.components` layer of `@cngx/themes/cngx.css`.
+- `track-b-css-not-imported` also fires for the button family hosts (`CngxButton`,
+  `CngxIconButton`, `CngxCloseButton`, `CngxMenuButton`, `CngxIconMenuButton`,
+  `CngxPopoverAction`, `CngxPopoverDismiss`, `CngxPanelToggle`, `CngxActionButton`):
+  their shared paint now ships in the `cngx.components` layer of
+  `@cngx/themes/cngx.css` instead of the component styles.
 
 ## 0.3.0 - 2026-11-03
 

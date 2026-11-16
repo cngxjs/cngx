@@ -67,7 +67,7 @@ empty status labels, so a button without labels, templates or app-wide defaults 
 its visible label: only the live region reports the outcome.
 
 A projected template beats a bound label, and a bound `''` switches a cell off. App-wide
-defaults go through `provideCngxButton(withActionStatusLabels({ ... }))`; the full order and
+defaults go through `provideActionStatusConfig(withActionStatusLabels({ ... }))`; the full order and
 app-wide templates are documented on `CngxActionStatusBrain`.
 
 ```html
@@ -90,11 +90,11 @@ right after the settle and not held by the dwell. The text matches what the butt
 2. the text of the rendered result cell (template or label)
 3. the language pack: "Action succeeded" / "Action failed" in English
 
-`autoAnnounce` decides whether the region speaks:
+`announce` decides whether the region speaks:
 
-- unbound: every outcome, except one a shown toast already announces
-- `true`: every outcome, also next to a toast
-- `false`: nothing. The region stays in the DOM but gets no text; drive your own from
+- `'auto'` (default): every outcome, except one a shown toast already announces
+- `'always'`: every outcome, also next to a toast
+- `'never'`: nothing. The region stays in the DOM but gets no text; drive your own from
   `(settled)` or `(outcome)`.
 
 ## Toasts
@@ -158,7 +158,7 @@ The button declares no input of its own. Each one is forwarded to a host directi
 |`showDelay`, `minDwell`|`CngxAsyncClick`|`CNGX_LOADING_CONFIG` (120 / 400 ms)|
 |`pendingLabel`, `succeededLabel`, `failedLabel`|`CngxActionStatusBrain`|app-wide label, else the language pack (empty in English)|
 |`succeededAnnouncement`, `failedAnnouncement`|`CngxActionStatusBrain`|the rendered result cell|
-|`autoAnnounce`|`CngxActionStatusBrain`|unbound|
+|`announce`|`CngxActionStatusBrain`|`'auto'`|
 |`externalState`|`CngxActionStatusBrain`|unbound (own runs)|
 |`toastSuccess`, `toastError`|`CngxActionToast`|no toast|
 |`toastErrorDetail`|`CngxActionToast`|`false`|

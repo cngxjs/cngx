@@ -6,6 +6,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  CngxButtonAdornment,
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
@@ -51,6 +52,7 @@ import { CngxPopover } from './popover.directive';
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (sits on the native button)
   selector: 'button[cngxPopoverDismiss]',
   standalone: true,
+  imports: [CngxButtonAdornment],
   exportAs: 'cngxPopoverDismiss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -81,11 +83,8 @@ import { CngxPopover } from './popover.directive';
     <ng-content select="[cngxButtonStart]" />
     <span class="cngx-button__label"><ng-content /></span>
     <ng-content select="[cngxButtonEnd]" />
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
-  styleUrls: ['../button/button.component.css'],
 })
 export class CngxPopoverDismiss {
   private readonly popover = inject(CngxPopover, { optional: true });

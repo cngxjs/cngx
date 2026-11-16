@@ -1289,7 +1289,7 @@ class SettleHost implements SettleModel {
       [action]="action"
       [toastSuccess]="toastSuccess()"
       [toastError]="toastError()"
-      [autoAnnounce]="true"
+      announce="always"
       (settled)="events.push($event)"
     >
       Save
@@ -1312,7 +1312,7 @@ class SettleSpeakHost implements SettleModel {
       [action]="action"
       [toastSuccess]="toastSuccess()"
       [toastError]="toastError()"
-      [autoAnnounce]="announce()"
+      [announce]="announce()"
       (settled)="events.push($event)"
     >
       Save
@@ -1321,7 +1321,7 @@ class SettleSpeakHost implements SettleModel {
   imports: [CngxActionButton],
 })
 class SettleSilentHost implements SettleModel {
-  readonly announce = signal<boolean | undefined>(false);
+  readonly announce = signal<'auto' | 'always' | 'never'>('never');
   readonly toastSuccess = signal<string | undefined>(undefined);
   readonly toastError = signal<string | undefined>(undefined);
   readonly events: CngxAsyncSettle[] = [];
@@ -1474,7 +1474,7 @@ describe('CngxActionButton settle lifecycle', () => {
     return { fixture, host: fixture.componentInstance, btn, region, run, show };
   }
 
-  it('keeps the region silent under a bound [autoAnnounce] false', async () => {
+  it('keeps the region silent under a bound [announce] never', async () => {
     const { region, run } = setup(undefined, true, SettleSilentHost);
     expect(region()).not.toBeNull();
     await run('success');
@@ -1483,13 +1483,13 @@ describe('CngxActionButton settle lifecycle', () => {
     expect(region()!.textContent).toBe('');
   });
 
-  it('applies the toast rule when a bound [autoAnnounce] signal turns undefined', async () => {
+  it('applies the toast rule when a bound [announce] signal goes back to auto', async () => {
     const { fixture, region, run } = setup(
       (h) => h.toastError.set('Save failed'),
       true,
       SettleSilentHost,
     );
-    (fixture.componentInstance as SettleSilentHost).announce.set(undefined);
+    (fixture.componentInstance as SettleSilentHost).announce.set('auto');
     flush(fixture);
     await run('success');
     expect(region()!.textContent).toBe('Action succeeded');
@@ -1517,7 +1517,7 @@ describe('CngxActionButton settle lifecycle', () => {
     expect(region()!.textContent).toBe('');
   });
 
-  it('speaks next to the toast with [autoAnnounce]="true"', async () => {
+  it('speaks next to the toast with announce="always"', async () => {
     const { region, run, show } = setup(
       (h) => h.toastError.set('Save failed'),
       true,

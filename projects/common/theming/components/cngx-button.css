@@ -1,9 +1,12 @@
 /**
  * @overview
- * Default visuals for `CngxButton`. The host is the native `<button>` or
+ * Default visuals for the button family. The host is the native `<button>` or
  * `<a>` and carries `.cngx-button` plus `data-variant`, `data-tone` and
  * `data-size`; the component renders the start slot, the label, the end
  * slot and, while a co-hosted `cngxAsyncClick` runs, a busy layer.
+ *
+ * Loaded by `@cngx/themes/cngx.css`. A custom host gets it by carrying
+ * `.cngx-button` (and `.cngx-icon-button` for a square box).
  *
  * **Axes**
  *
@@ -52,6 +55,21 @@
  * - radius -> `--cngx-radius-md`
  * - touch floor -> `--cngx-target-min`
  * - transition -> `--cngx-duration-fast`
+ *
+ * **Icon button**
+ *
+ * `.cngx-icon-button` makes the box square and floors it to the touch
+ * target; paint comes from the `.cngx-button` rules above.
+ *
+ * - The box is `line box + 2 * --cngx-button-padding-block + 2 * border` on
+ *   both axes, so an `md` icon button is as tall as an `md` button and a
+ *   form control, and stays square at every size and density.
+ * - The box floors to `--cngx-target-min` on both axes (44px on a coarse
+ *   pointer, 0px and inert on a fine one), so the box is the hit area on
+ *   touch and in either writing direction; the glyph keeps its design size.
+ * - Adjacent icon buttons keep `--cngx-target-gap` between them (WCAG 2.5.8).
+ *
+ * @themes CngxButton, CngxIconButton, CngxCloseButton, CngxMenuButton, CngxIconMenuButton, CngxPopoverAction, CngxPopoverDismiss, CngxPanelToggle, CngxActionButton
  */
 
 @layer cngx.tokens {
@@ -683,11 +701,12 @@
 
     /* Busy: the label keeps its box (width stable) and its place in the
        accessible name under the ring; opacity, not visibility, which would
-       drop it from the name. */
+       drop it from the name. The ring sits inside cngx-button-adornment
+       (display: contents), so the adornment is the one child left lit. */
     :scope[data-busy] {
       cursor: progress;
     }
-    :scope[data-busy] > :not(.cngx-button__busy) {
+    :scope[data-busy] > :not(cngx-button-adornment) {
       opacity: 0;
     }
     /* Host hook: a host that renders a status label instead of the spinner
@@ -833,5 +852,42 @@
   }
   .cngx-button:focus-visible {
     outline-color: Highlight !important;
+  }
+}
+
+/* Icon button: square box and touch floor (CngxIconButton, CngxCloseButton,
+ * CngxIconMenuButton, CngxPanelToggle). */
+
+@layer cngx.components {
+  @scope (.cngx-icon-button) {
+    :scope.cngx-button {
+      --cngx-icon-button-size: calc(
+        var(--cngx-line-height-base, 1.5) * 1em + 2 *
+          var(--cngx-button-padding-block, var(--cngx-space-sm, 8px)) + 2 *
+          var(--cngx-button-border-width, 1px)
+      );
+      inline-size: max(var(--cngx-icon-button-size), var(--cngx-target-min, 0px));
+      block-size: max(var(--cngx-icon-button-size), var(--cngx-target-min, 0px));
+      min-block-size: 0;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .cngx-icon-button__glyph {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .cngx-icon-button__glyph > :is(svg, img) {
+      inline-size: round(nearest, 1.25em, 1px);
+      block-size: round(nearest, 1.25em, 1px);
+    }
+  }
+
+  /* Outside @scope: a sibling is not inside the scoping root. */
+  .cngx-icon-button + .cngx-icon-button {
+    margin-inline-start: var(--cngx-target-gap, 0px);
   }
 }

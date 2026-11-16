@@ -96,14 +96,12 @@ export const CNGX_ACTION_STATUS_CONFIG = new InjectionToken<CngxActionStatusConf
 /**
  * Feature returned by `withActionStatusLabels` / `withActionStatusTemplates`;
  * merged by {@link provideActionStatusConfig} and
- * {@link provideActionStatusConfigAt}. The hidden `_target: 'actionStatus'`
- * routes it through `provideCngxButton` in `@cngx/common/button`.
+ * {@link provideActionStatusConfigAt}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
  * @since 0.1.0
  */
 export interface CngxActionStatusConfigFeature {
-  readonly _target: 'actionStatus';
   readonly config: CngxActionStatusConfig;
 }
 
@@ -123,7 +121,7 @@ export interface CngxActionStatusConfigFeature {
 export function withActionStatusLabels(
   labels: Partial<CngxActionStatusLabels> | Signal<Partial<CngxActionStatusLabels>>,
 ): CngxActionStatusConfigFeature {
-  return { _target: 'actionStatus', config: { labels } };
+  return { config: { labels } };
 }
 
 /**
@@ -160,7 +158,7 @@ export function withActionStatusLabels(
 export function withActionStatusTemplates(
   templates: CngxActionStatusTemplates,
 ): CngxActionStatusConfigFeature {
-  return { _target: 'actionStatus', config: { templates } };
+  return { config: { templates } };
 }
 
 /** @internal Labels and templates merge per key, the later feature wins. */

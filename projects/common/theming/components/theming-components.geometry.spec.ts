@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). These five files are
 // Track-B: they ship in the aggregated `cngx.css`, not on any component
@@ -147,6 +148,22 @@ describe('CngxBadge geometry (Track-B)', () => {
 })
 class ButtonToggleHost {}
 
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./cngx-button-toggle.css'],
+  template: `<button class="cngx-button-toggle cngx-button-toggle--checked">Grid</button>`,
+})
+class CheckedButtonToggleHost {}
+
+function lightness(el: HTMLElement): number {
+  const match = /okl(?:ch|ab)\(([\d.]+)/.exec(getComputedStyle(el).backgroundColor);
+  if (!match) {
+    throw new Error(`no oklch/oklab background: ${getComputedStyle(el).backgroundColor}`);
+  }
+  return Number(match[1]);
+}
+
 describe('CngxButtonToggle geometry (Track-B)', () => {
   it('is a centred inline-flex segment with a floored tap height', () => {
     const host = mount(ButtonToggleHost, '.cngx-button-toggle');
@@ -157,6 +174,19 @@ describe('CngxButtonToggle geometry (Track-B)', () => {
     expect(computedValue(host, 'padding-left')).toBe('20px');
     host.style.setProperty('--cngx-target-min', '44px');
     expect(computedValue(host, 'min-block-size')).toBe('44px');
+  });
+
+  // The checked hover shades the fill away from the on-primary ink: darker
+  // under the default near-white ink, lighter under a dark ink.
+  it('shades the checked hover away from its ink', async () => {
+    const host = mount(CheckedButtonToggleHost, '.cngx-button-toggle');
+    host.style.transition = 'none';
+    const rest = lightness(host);
+    await userEvent.hover(host);
+    expect(lightness(host)).toBeLessThan(rest);
+    host.style.setProperty('--cngx-color-on-primary', 'oklch(0.2 0 0)');
+    expect(lightness(host)).toBeGreaterThan(rest);
+    await userEvent.unhover(host);
   });
 });
 

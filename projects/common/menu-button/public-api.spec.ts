@@ -19,10 +19,7 @@ describe('@cngx/common/menu-button public API shape', () => {
       'injectButtonCaretIcon',
       'injectMenuButtonI18n',
       'provideButtonCaretIcon',
-      'provideCngxMenuButton',
-      'provideCngxMenuButtonAt',
       'provideMenuButtonI18n',
-      'withButtonCaretIcon',
       'withMenuButtonI18nLabels',
     ]);
   });

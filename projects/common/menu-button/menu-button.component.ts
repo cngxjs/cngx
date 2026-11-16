@@ -7,6 +7,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {
+  CngxButtonAdornment,
   CngxButtonBrain,
   CngxButtonEnd,
   CngxButtonStart,
@@ -59,7 +60,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
   selector: 'button[cngxMenuButton]',
   standalone: true,
   exportAs: 'cngxMenuButton',
-  imports: [NgComponentOutlet, CngxIcon, CngxIconSvg],
+  imports: [NgComponentOutlet, CngxIcon, CngxIconSvg, CngxButtonAdornment],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   hostDirectives: [
@@ -100,20 +101,9 @@ import { injectMenuToggle } from './internal/menu-toggle';
         }
       </cngx-icon>
     }
-    @if (brain.busyVisible()) {
-      <span class="cngx-button__busy" aria-hidden="true">
-        @if (brain.spinner; as spinner) {
-          <ng-container *ngComponentOutlet="spinner" />
-        } @else {
-          <span class="cngx-button__spinner"></span>
-        }
-      </span>
-    }
-    @if (brain.disabledReason(); as reason) {
-      <span class="cngx-button__reason" [id]="brain.reasonId" hidden>{{ reason }}</span>
-    }
+    <cngx-button-adornment />
   `,
-  styleUrls: ['../button/button.component.css', './menu-button.component.css'],
+  styleUrls: ['./menu-button.component.css'],
 })
 export class CngxMenuButton {
   /** @internal */
