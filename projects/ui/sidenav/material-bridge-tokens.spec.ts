@@ -80,6 +80,19 @@ $theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette
     expect(css).not.toContain('--cngx-nav-link-radius: 8px');
   });
 
+  it('maps shape and type per axis under M2: 8px corners, 14px, 500 when active', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/nav-link-theme' as bridge;
+$theme: mat.m2-define-light-theme((color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette))));
+.shape { @include bridge.shape($theme); }
+.type { @include bridge.typography($theme); }
+`);
+    expect(css).toMatch(/\.shape\s*\{\s*--cngx-nav-link-radius: 8px;\s*\}/);
+    expect(css).toContain('--cngx-nav-link-font-size: 0.875rem');
+    expect(css).toContain('--cngx-nav-link-active-font-weight: 500');
+  });
+
   it('emits a consumed-name subset (M2)', () => {
     const names = bridgeTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);

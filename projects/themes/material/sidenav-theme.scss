@@ -58,7 +58,7 @@
   @if mat.get-theme-version($theme) == 1 {
     @layer cngx.components {
       cngx-sidenav[data-nav-railed] {
-        @include nav-link.list-metrics($theme);
+        @include nav-link.metrics($theme);
       }
 
       cngx-sidenav[data-nav-railed] .cngx-sidenav__body {
