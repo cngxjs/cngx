@@ -72,5 +72,27 @@ for (const via of MECHANISMS) {
       await expect(indicator).toBeVisible();
       expect(await indicator.evaluate((el) => getComputedStyle(el).animationDuration)).toBe('4s');
     });
+
+    test('a delayed transition starts at 0s', async ({ page }) => {
+      await openReduced(page, '/#/ui/empty-state/inside-a-list', via);
+      const delay = await page.evaluate(() => {
+        const el = document.createElement('div');
+        el.style.transition = 'opacity 200ms ease 1s';
+        el.style.animationDelay = '1s';
+        document.body.append(el);
+        const style = getComputedStyle(el);
+        return [style.transitionDelay, style.animationDelay];
+      });
+      expect(delay).toEqual(['0s', '0s']);
+    });
   });
 }
+
+test('under OS reduce, a smooth root scroll-behavior computes auto', async ({ page }) => {
+  await openReduced(page, '/#/ui/empty-state/inside-a-list', 'os');
+  const behavior = await page.evaluate(() => {
+    document.documentElement.style.scrollBehavior = 'smooth';
+    return getComputedStyle(document.documentElement).scrollBehavior;
+  });
+  expect(behavior).toBe('auto');
+});

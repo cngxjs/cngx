@@ -102,6 +102,17 @@ describe('reduced-motion safety-net integrity', () => {
     expect(net).toContain(":root:not([data-motion='full'])");
   });
 
+  it('lets the OS-media rule match the root element itself', () => {
+    // Without the bare root selector, `html { scroll-behavior: smooth }`
+    // keeps smooth-scrolling the document under OS reduce.
+    expect(net).toContain(":root:not([data-motion='full']),\n");
+  });
+
+  it('zeroes animation and transition delays in both reset blocks', () => {
+    expect(net.match(/animation-delay: 0s !important/g)).toHaveLength(2);
+    expect(net.match(/transition-delay: 0s !important/g)).toHaveLength(2);
+  });
+
   it('carves out essential loading motion on loading hosts only', () => {
     // Freezing a loader into a dead ring loses the "still working" signal, so
     // the net swaps the freeze for a pulse on loading hosts - never on a bare
