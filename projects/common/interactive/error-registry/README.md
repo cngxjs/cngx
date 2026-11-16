@@ -83,7 +83,7 @@ inject(CngxErrorRegistry).reveal('checkout');
 | `totalErrorCount` | `Signal<number>` | Sum of `errorCount()` across every aggregator. |
 | `errorAggregators` | `Signal<readonly CngxErrorAggregatorContract[]>` | All registered aggregators in insertion order. |
 
-Registration is keyed by name. Re-registering a different instance under an existing name is a silent no-op (the key set is unchanged); call `unregisterScope(name)` / `unregisterAggregator(name)` first for a true swap.
+Registration is keyed by name and runs on `createKeyedRegistry` from `@cngx/core/utils`. A different instance under a taken name does not replace the holder (dev mode warns CNGX0004); it waits and takes the name over when the holder unregisters. Call `unregisterScope(name, holder)` / `unregisterAggregator(name, holder)` first for an immediate swap.
 
 ## See also
 

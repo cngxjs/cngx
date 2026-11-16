@@ -1,46 +1,6 @@
 import type { CngxErrorAggregatorSourceEntry } from '../error-aggregator/error-aggregator.token';
 
 /**
- * Length-then-key-set equality for `ReadonlyMap` signals.
- *
- * Returns `true` when both maps have the same size AND same key set,
- * **regardless of value identity**. Used by the error registry to
- * short-circuit emissions when an aggregator is replaced under the same
- * name (the downstream computeds re-evaluate per registered aggregator's
- * own signals, not per Map identity).
- *
- * **Swap-is-noop semantics.** Combined with the registry's
- * `register*(name, ref)` helpers, this equal fn means re-registering a
- * *different* contract instance under an *existing* name is absorbed
- * silently - `getScope(name)`/`getAggregator(name)` continue returning
- * the originally registered instance until either an `unregister*(name)`
- * + `register*(name, newRef)` cycle runs (the unregister changes the key
- * set, breaking the equal short-circuit) or a different name is added.
- * This is intentional cascade-suppression: registering a freshly-
- * constructed contract during component re-init must not cascade
- * downstream readers.
- *
- * @internal
- */
-export function mapKeySetEqual<K, V>(
-  a: ReadonlyMap<K, V>,
-  b: ReadonlyMap<K, V>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const key of a.keys()) {
-    if (!b.has(key)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
  * Element-wise equality for readonly arrays. Reference-equal on `===`,
  * length+per-index `===` otherwise.
  *

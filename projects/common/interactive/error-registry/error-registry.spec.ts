@@ -79,12 +79,6 @@ describe('CngxErrorRegistry', () => {
       expect(registry.getScope('a')).toBe(scope);
     });
 
-    // The internal scopesState signal carries `equal: mapKeySetEqual` (length +
-    // key set), so re-registering under an existing name with a fresh
-    // reference is absorbed silently - same key set, no emission. This is the
-    // cascade-suppression contract; the cascade-witness test below documents
-    // the same behaviour for the aggregator surface.
-
     it('unregisterScope is idempotent on missing name', () => {
       const registry = createRegistry();
       expect(() => registry.unregisterScope('missing', makeScope('x'))).not.toThrow();
@@ -105,13 +99,31 @@ describe('CngxErrorRegistry', () => {
       expect(registry.getScope('a')).toBeUndefined();
     });
 
-    it('warns in dev mode when a duplicate scope name registers', () => {
+    it('hands the name to the waiting scope when the holder unregisters', () => {
+      const registry = createRegistry();
+      const holder = makeScope('a');
+      const successor = makeScope('a');
+      registry.registerScope('a', holder);
+      registry.registerScope('a', successor);
+      expect(registry.getScope('a')).toBe(holder);
+
+      registry.unregisterScope('a', holder);
+      expect(registry.getScope('a')).toBe(successor);
+
+      registry.reveal('a');
+      expect(successor.revealCount()).toBe(1);
+      expect(holder.revealCount()).toBe(0);
+    });
+
+    it('warns CNGX0004 in dev mode when a duplicate scope name registers', () => {
       const registry = createRegistry();
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       registry.registerScope('a', makeScope('a'));
       registry.registerScope('a', makeScope('a'));
       expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn.mock.calls[0][0]).toMatch(/^CNGX1021: registerScope\(\): a scope named "a"/);
+      expect(warn.mock.calls[0][0]).toMatch(
+        /^CNGX0004: createKeyedRegistry\(\): CngxErrorRegistry scopes already holds "a"/,
+      );
       warn.mockRestore();
     });
   });
@@ -130,6 +142,30 @@ describe('CngxErrorRegistry', () => {
       expect(registry.getAggregator('field-a')).toBeUndefined();
     });
 
+    it('a waiting aggregator joins hasAnyError once the holder unregisters', () => {
+      const registry = createRegistry();
+      const holder = makeAggregator(signal(false));
+      const successor = makeAggregator(signal(true));
+      registry.registerAggregator('a', holder);
+      registry.registerAggregator('a', successor);
+      expect(registry.hasAnyError()).toBe(false);
+
+      registry.unregisterAggregator('a', holder);
+      expect(registry.getAggregator('a')).toBe(successor);
+      expect(registry.hasAnyError()).toBe(true);
+    });
+
+    it('warns CNGX0004 in dev mode when a duplicate aggregator name registers', () => {
+      const registry = createRegistry();
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      registry.registerAggregator('a', makeAggregator(signal(false)));
+      registry.registerAggregator('a', makeAggregator(signal(false)));
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toMatch(
+        /^CNGX0004: createKeyedRegistry\(\): CngxErrorRegistry aggregators already holds "a"/,
+      );
+      warn.mockRestore();
+    });
   });
 
   describe('reveal / reset helpers', () => {
@@ -240,13 +276,10 @@ describe('CngxErrorRegistry', () => {
     });
   });
 
-  // Cascade-witness regression. The registry's two Map signals carry a
-  // length-then-key-set `equal` fn (mapKeySetEqual). Re-registering an
-  // aggregator under an existing name preserves the key set; the Map
-  // `equal` short-circuits the emission so downstream computeds (and any
-  // effect reading hasAnyError / totalErrorCount / errorAggregators) do
-  // NOT re-fire. Mirrors Phase 6a's commit-5 witness mechanic at
-  // error-aggregator.directive.spec.ts:122-186 one layer up.
+  // Cascade-witness regression. Re-registering an aggregator under a taken
+  // name leaves the kernel's entries untouched (swap-is-noop), so downstream
+  // computeds (and any effect reading hasAnyError / totalErrorCount /
+  // errorAggregators) do NOT re-fire.
   it('cascade-witness: redundant adds do NOT re-fire downstream effects', () => {
     const registry = createRegistry();
     const a = signal(false);
