@@ -121,6 +121,18 @@ type Fill = (typeof FILLS)[number];
         Wide
       </a>
     </nav>
+    <nav aria-label="Typed" style="line-height: 30px; letter-spacing: 1px; font-weight: 300">
+      <a cngxNavLink href="#inherited" class="row-type-inherited">Inherited</a>
+      <button type="button" cngxNavGroup class="group-type-inherited">Inherited</button>
+      <a
+        cngxNavLink
+        href="#typed"
+        class="row-typed"
+        style="--cngx-nav-link-line-height: 20px; --cngx-nav-link-letter-spacing: 0.1px; --cngx-nav-link-font-weight: 500"
+      >
+        Typed
+      </a>
+    </nav>
     <nav
       aria-label="Short"
       class="nav-short"
@@ -413,6 +425,33 @@ describe('nav row defaults follow the foundation', () => {
     expect(compact).toBeLessThan(regular);
   });
 
+  it('mirrors the inline-start padding at the row end with no SET', () => {
+    const root = mount();
+    for (const selector of ['.row-idle', '.wide-row', '.row-rtl']) {
+      const row = one(root, selector);
+      expect(computedValue(row, 'padding-right')).toBe(computedValue(row, 'padding-left'));
+    }
+    expect(computedValue(one(root, '.wide-row'), 'padding-right')).toBe('28px');
+  });
+
+  it('inherits line-height, letter-spacing and weight on links and group heads with no SET', () => {
+    const root = mount();
+    for (const selector of ['.row-type-inherited', '.group-type-inherited']) {
+      const row = one(root, selector);
+      expect(computedValue(row, 'line-height')).toBe('30px');
+      expect(computedValue(row, 'letter-spacing')).toBe('1px');
+      expect(computedValue(row, 'font-weight')).toBe('300');
+    }
+  });
+
+  it('reads line-height, letter-spacing and weight from the row type tokens', () => {
+    const root = mount();
+    const row = one(root, '.row-typed');
+    expect(computedValue(row, 'line-height')).toBe('20px');
+    expect(computedValue(row, 'letter-spacing')).toBe('0.1px');
+    expect(computedValue(row, 'font-weight')).toBe('500');
+  });
+
   it('aligns the section label text with the row text', () => {
     const root = mount();
     const label = one(root, '.label-main');
@@ -693,6 +732,9 @@ describe('forced colors', () => {
         <span cngxNavIcon class="railed-icon">*</span>Starred
       </a>
       <a cngxNavLink href="#b" class="railed-letter-row">Drafts</a>
+      <a cngxNavLink href="#c" class="railed-tall-row" style="--cngx-nav-link-line-height: 40px">
+        <span cngxNavIcon>*</span>Tall
+      </a>
     </nav>
   `,
 })
@@ -758,6 +800,16 @@ describe('railed rows', () => {
     rail(true);
     expect(computedValue(one(host, '.railed-label'), 'clip-path')).toBe('inset(100%)');
     expect(computedValue(one(host, '.railed-name'), 'opacity')).toBe('0');
+  });
+
+  it('keeps a row with the line-height token SET at its expanded height', () => {
+    const { host, rail } = mountRailed();
+    const row = one(host, '.railed-tall-row');
+    const expanded = row.getBoundingClientRect().height;
+    // 2 * 8px block padding + the 40px line box, taller than the 20px icon.
+    expect(expanded).toBe(56);
+    rail(true);
+    expect(row.getBoundingClientRect().height).toBe(expanded);
   });
 
   it('leaves the rows alone while not railed', () => {

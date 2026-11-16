@@ -47,14 +47,50 @@ describe('nav-link Material bridge', () => {
     '--cngx-nav-link-active-indicator-color',
     '--cngx-nav-link-color',
     '--cngx-nav-link-font-size',
+    '--cngx-nav-link-font-weight',
     '--cngx-nav-link-hover-bg',
     '--cngx-nav-link-hover-color',
+    '--cngx-nav-link-ink',
+    '--cngx-nav-link-letter-spacing',
+    '--cngx-nav-link-line-height',
     '--cngx-nav-link-pressed-bg',
     '--cngx-nav-link-radius',
   ];
 
   it('emits only consumed token names (M3)', () => {
     expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
+  });
+
+  it('maps the M3 list item: body-large at one weight, on-surface label, on-surface-variant icon, full pill', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/nav-link-theme' as bridge;
+$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
+.probe { @include bridge.theme($theme); }
+`);
+    expect(css).toContain('--cngx-nav-link-font-size: var(--mat-sys-body-large-size');
+    expect(css).toContain('--cngx-nav-link-line-height: var(--mat-sys-body-large-line-height');
+    expect(css).toContain('--cngx-nav-link-letter-spacing: var(--mat-sys-body-large-tracking');
+    expect(css).toContain('--cngx-nav-link-font-weight: var(--mat-sys-body-large-weight,');
+    expect(css).toContain('--cngx-nav-link-active-font-weight: var(--mat-sys-body-large-weight,');
+    expect(css).toContain('--cngx-nav-link-color: var(--mat-sys-on-surface,');
+    expect(css).toContain('--cngx-nav-link-active-color: var(--mat-sys-on-surface,');
+    expect(css).toContain('--cngx-nav-link-ink: var(--mat-sys-on-surface-variant,');
+    expect(css).toContain('--cngx-nav-link-radius: var(--mat-sys-corner-full');
+    expect(css).not.toContain('--cngx-nav-link-radius: 8px');
+  });
+
+  it('maps shape and type per axis under M2: 8px corners, 14px, 500 when active', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/nav-link-theme' as bridge;
+$theme: mat.m2-define-light-theme((color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette))));
+.shape { @include bridge.shape($theme); }
+.type { @include bridge.typography($theme); }
+`);
+    expect(css).toMatch(/\.shape\s*\{\s*--cngx-nav-link-radius: 8px;\s*\}/);
+    expect(css).toContain('--cngx-nav-link-font-size: 0.875rem');
+    expect(css).toContain('--cngx-nav-link-active-font-weight: 500');
   });
 
   it('emits a consumed-name subset (M2)', () => {
@@ -107,6 +143,37 @@ $theme: mat.define-theme((
       expect(slots![0]).toContain(token);
     }
     expect(css).not.toMatch(/--cngx-sidenav-(header|footer)-/);
+  });
+
+  it('emits the M3 list item metrics on the sidenav host with real specificity, not under :where()', () => {
+    const css = compiledTheme();
+    const metrics = css.match(/cngx-sidenav\[data-nav-railed\]\s*\{[^}]*\}/);
+    expect(metrics).not.toBeNull();
+    for (const token of [
+      '--cngx-nav-link-inset:',
+      '--cngx-nav-link-padding:',
+      '--cngx-nav-icon-size:',
+      '--cngx-nav-icon-gap:',
+    ]) {
+      expect(metrics![0]).toContain(token);
+    }
+    expect(metrics![0]).toContain('var(--cngx-space-');
+    expect(css).not.toMatch(/:where\([^)]*cngx-sidenav\[data-nav-railed\]/);
+    const body = css.match(/cngx-sidenav\[data-nav-railed\] \.cngx-sidenav__body\s*\{[^}]*\}/);
+    expect(body).not.toBeNull();
+    expect(body![0]).toContain('gap: 0');
+  });
+
+  it('emits no list item metrics for an M2 theme', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/sidenav-theme' as sidenav;
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $primary)));
+@include sidenav.theme($theme);
+`);
+    expect(css).not.toContain('--cngx-nav-icon-size');
+    expect(css).not.toContain('.cngx-sidenav__body');
   });
 
   it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {

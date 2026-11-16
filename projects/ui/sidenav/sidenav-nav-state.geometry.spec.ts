@@ -186,7 +186,7 @@ class NavStateHost {}
         </button>
         <div [cngxNavGroupContent]="settings" class="crop-flyout">
           <div>
-            <a cngxNavLink href="#general" [depth]="1">General</a>
+            <a cngxNavLink href="#general" [depth]="1" class="crop-flyout-row">General</a>
           </div>
         </div>
         <a cngxNavLink href="#help" class="crop-after">Help</a>
@@ -794,4 +794,15 @@ describe('rail as a crop of the expanded sidenav', () => {
       }
     });
   }
+
+  it('pads a flyout row by the same amount at both inline edges', async () => {
+    const { fixture, el, settle } = mountCrop();
+    fixture.componentInstance.collapsed.set(true);
+    settle();
+    el('.crop-group').click();
+    settle();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    const row = el('.crop-flyout-row');
+    expect(computedValue(row, 'padding-right')).toBe(computedValue(row, 'padding-left'));
+  });
 });

@@ -16,6 +16,9 @@
 @use '../../../../projects/themes/material/feedback-theme.scss' as feedback;
 @use '../../../../projects/themes/material/dialog-theme.scss' as dialog;
 @use '../../../../projects/themes/material/bottom-sheet-theme.scss' as bottom-sheet;
+@use '../../../../projects/themes/material/sidenav-theme.scss' as sidenav;
+@use '../../../../projects/themes/material/nav-rail-theme.scss' as nav-rail;
+@use '../../../../projects/themes/material/density-bridge.scss' as cngx-density;
 
 $palette: (
   theme-type: color-scheme,
@@ -70,6 +73,43 @@ html {
   @include feedback.theme($theme);
   @include dialog.theme($theme);
   @include bottom-sheet.theme($theme);
+  // Rows, header and footer come from sidenav.theme (nav-link included); the
+  // rail adds its surface, flyout and metrics, as in the aggregate theme.
+  @include sidenav.theme($theme);
+  @include nav-rail.surface($theme);
+}
+
+// Material density -2 for one wrapper: Material's own component density
+// tokens next to density-bridge, which rescales --cngx-space-* the same way.
+.lab-density-minus-2 {
+  @include mat.theme(
+    (
+      density: -2,
+    )
+  );
+  @include cngx-density.density(
+    mat.define-theme(
+      (
+        density: (
+          scale: -2,
+        ),
+      )
+    )
+  );
+}
+
+.lab-nav {
+  align-items: stretch;
+}
+
+.lab-nav-host {
+  inline-size: 360px;
+  block-size: 280px;
+  box-sizing: border-box;
+}
+
+.lab-nav-rail {
+  block-size: 280px;
 }
 
 .lab {

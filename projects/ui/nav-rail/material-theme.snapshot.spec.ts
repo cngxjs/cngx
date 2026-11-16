@@ -92,13 +92,33 @@ describe('Material nav-rail-theme bridge baseline', () => {
     ).toMatchSnapshot();
   });
 
-  it('surface() bridges the rail and the flyout only, the rows stay with sidenav.theme', () => {
+  it('surface() bridges the rail, the flyout and the rail metrics, the row colours stay with sidenav.theme', () => {
     const tokens = Object.keys(
       compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'surface' }),
     );
     expect(tokens.length).toBeGreaterThan(0);
     for (const token of tokens) {
-      expect(token).toMatch(/^--cngx-nav-(rail|flyout)-/);
+      expect(token).toMatch(
+        /^--cngx-nav-(rail|flyout)-|^--cngx-nav-icon-(size|gap)$|^--cngx-nav-link-(inset|padding|line-height|letter-spacing|font-weight|active-font-weight)$/,
+      );
     }
+  });
+
+  it('paints the labelled look indicator as a pill behind the icon, outside forced colours', () => {
+    const css = compileThemeEntry(
+      buildEntry({ themeVersion: 'v1', variant: 'light', mixin: 'surface' }),
+    );
+    expect(css).toMatch(/@media \(forced-colors: none\)/);
+    expect(css).toContain(
+      'cngx-nav-rail.cngx-nav-rail[data-label-placement=below] :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *).cngx-nav-link--active::after',
+    );
+  });
+
+  it('emits no rail metrics for an M2 theme', () => {
+    const tokens = Object.keys(
+      compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'surface' }),
+    );
+    expect(tokens).not.toContain('--cngx-nav-icon-size');
+    expect(tokens).not.toContain('--cngx-nav-rail-border-width');
   });
 });

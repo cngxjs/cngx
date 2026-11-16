@@ -12,7 +12,10 @@
     $_secondary-container: mat.get-theme-color($theme, secondary-container);
     $_on-secondary-container: mat.get-theme-color($theme, on-secondary-container);
 
-    --cngx-nav-link-color: var(--mat-sys-on-surface-variant, #{$_on-surface-variant});
+    // The M3 list item (mat-nav-list): label on-surface, leading icon
+    // on-surface-variant, in every state.
+    --cngx-nav-link-color: var(--mat-sys-on-surface, #{$_on-surface});
+    --cngx-nav-link-ink: var(--mat-sys-on-surface-variant, #{$_on-surface-variant});
     --cngx-nav-link-hover-color: var(--mat-sys-on-surface, #{$_on-surface});
     // M3 state layers: on-surface at 8 % (hover) and 12 % (pressed).
     --cngx-nav-link-hover-bg: color-mix(
@@ -25,18 +28,15 @@
       var(--mat-sys-on-surface, #{$_on-surface}) 12%,
       transparent
     );
-    --cngx-nav-link-active-color: var(
-      --mat-sys-on-secondary-container,
-      #{$_on-secondary-container}
-    );
+    --cngx-nav-link-active-color: var(--mat-sys-on-surface, #{$_on-surface});
     --cngx-nav-link-active-bg: var(--mat-sys-secondary-container, #{$_secondary-container});
     --cngx-nav-link-active-hover-bg: color-mix(
       in srgb,
       var(--mat-sys-on-secondary-container, #{$_on-secondary-container}) 8%,
       var(--mat-sys-secondary-container, #{$_secondary-container})
     );
-    // M3 has no bar: the active row is the secondary-container pill with
-    // on-secondary-container text and the active weight as non-colour cue.
+    // M3 has no bar: the activated list item is the secondary-container
+    // pill; aria-current carries the state to assistive technology.
     --cngx-nav-link-active-indicator-color: transparent;
   } @else {
     $_primary: mat.get-theme-color($theme, primary);
@@ -52,10 +52,48 @@
   }
 }
 
-@mixin base() {
-  --cngx-nav-link-radius: 8px;
-  --cngx-nav-link-font-size: 0.875rem;
-  --cngx-nav-link-active-font-weight: 500;
+// Row type. M3: the list item of mat-nav-list, body-large at the same
+// weight when activated. M2: 14px, 500 when active. SET on the row: the type
+// tokens are inherits:false.
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-link-font-size: var(--mat-sys-body-large-size, 1rem);
+    --cngx-nav-link-line-height: var(--mat-sys-body-large-line-height, 1.5rem);
+    --cngx-nav-link-letter-spacing: var(--mat-sys-body-large-tracking, 0.031rem);
+    --cngx-nav-link-font-weight: var(--mat-sys-body-large-weight, 400);
+    --cngx-nav-link-active-font-weight: var(--mat-sys-body-large-weight, 400);
+  } @else {
+    --cngx-nav-link-font-size: 0.875rem;
+    --cngx-nav-link-active-font-weight: 500;
+  }
+}
+
+// Row shape. M3: the active indicator is a full pill. M2: 8px corners.
+@mixin shape($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-link-radius: var(--mat-sys-corner-full, 9999px);
+  } @else {
+    --cngx-nav-link-radius: 8px;
+  }
+}
+
+// M3 list item metrics (mat-nav-list, the list a Material app puts in its
+// sidenav): 48px row (the 24px icon box plus --cngx-space-md - 4px above and
+// below), edge to edge, 16px start and end padding and a 16px icon gap. SET on
+// the nav container, not the row: the header and footer marks and the railed
+// size read the same tokens, and a container SET of --cngx-nav-icon-size
+// still reaches every row. The row height follows Material density exactly
+// (44 / 40 / 36 / 32px at -1 to -4: --cngx-space-md loses 2px per step); the
+// inline spacing rides --cngx-space-md, where Material snaps its leading
+// space to 8px from density -2. The icon box stays 24px at every density.
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-nav-link-inset: 0px;
+    --cngx-nav-link-padding: calc(var(--cngx-space-md, 16px) - 4px)
+      var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px));
+    --cngx-nav-icon-size: 1.5rem;
+    --cngx-nav-icon-gap: var(--cngx-space-md, 16px);
+  }
 }
 
 // Nav header and footer slots (`CngxNavHeader` / `CngxNavFooter`). Emitted
@@ -90,10 +128,12 @@
   @include slot-typography($theme);
 }
 
-// No density mixin: the row padding is SET from the --cngx-space-* scale on
-// the cngx-sidenav host, and density-bridge.scss maps Material density onto
-// that scale like every scale-derived component.
+// Row tokens. No density mixin: the row padding is SET from the
+// --cngx-space-* scale (by the container, or metrics() under M3), and
+// density-bridge.scss maps Material density onto that scale like every
+// scale-derived component.
 @mixin theme($theme) {
-  @include base();
+  @include shape($theme);
+  @include typography($theme);
   @include color($theme);
 }
