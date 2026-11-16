@@ -21,7 +21,7 @@ import { CngxLoadingIndicator } from '@cngx/ui/feedback';
   [loading]="isLoading()"
   label="Saving…"
   [delay]="100"
-  [minDuration]="300" />
+  [minDwell]="300" />
 ```
 
 #### Accessibility
@@ -157,8 +157,6 @@ Both `CngxLoadingIndicator` and `CngxLoadingOverlay` support smart timing, and b
 ```typescript
 [minDwell]="500"  // Keep spinner visible for at least 500ms even if data arrives early
 ```
-
-`[minDuration]` is the deprecated alias for `[minDwell]`; it still takes precedence when set, but prefer `[minDwell]` in new code.
 
 These prevent the "flash" effect when operations are very fast or very slow.
 
