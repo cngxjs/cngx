@@ -17,6 +17,9 @@ import {
   CngxNavMark,
   CngxNavName,
   CngxDisclosure,
+  CngxNavRailed,
+  injectNavRailTooltip,
+  injectNavRailFlyout,
   provideNavConfig,
   withSingleAccordion,
   withNavIndent,
@@ -232,7 +235,49 @@ A row without an icon draws its first letter in the same box, as a round filled 
 </nav>
 ```
 
+A `cngx-avatar` as mark takes the icon box size whatever its `size` input, with its initials at `--cngx-nav-mark-font-size` (`0.625rem`). For a larger mark raise `--cngx-nav-icon-size` on the nav container: the row icons grow with it, so marks and rows stay on one x.
+
 `CngxSidenav` projects these slots above and below its scrolling body; any other container lays them out where it renders them.
+
+## Rail tooltip and group flyout
+
+Two injection functions turn a container of nav rows into a working rail. `cngx-nav-rail` and the rail of `cngx-sidenav` (both in `@cngx/ui`) and `[cngxNavRailed]` call them; they live here because they need nothing but the nav atoms and the native `popover` attribute.
+
+- `injectNavRailTooltip({ railed, side, hoverDelay })` - while `railed()` is `true`, shows the clipped label of the row under the pointer (after `hoverDelay()` ms) or keyboard focus (at once) in one `aria-hidden` tooltip per host, opening away from `side()`.
+- `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` - while `railed()` is `true`, shows an open `cngxNavGroupContent` as a flyout beside its head. `groups` / `contents` are content queries for `CngxNavGroup` / `CngxNavGroupContent`, the `*Elements` twins the same queries with `read: ElementRef`.
+
+`CNGX_NAV_RAIL_TOOLTIP_FACTORY` and `CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; an override reaches every caller. `cngx-nav.css` draws the flyout surface and places the tooltip.
+
+### On a rail of your own
+
+`[cngxNavRailed]` runs both pieces on any container of nav rows, typically a `cngxSidebar`. Bind the rail state you already have; the directive derives nothing. It writes `data-nav-railed` on the host (`'true'` while railed, `'false'` otherwise). While railed `cngx-nav.css` crops the rows: each row keeps its place and its icon or letter, the label, badge and chevron move past the clipped row end, section labels paint nothing and the header and footer name fades out. The container sets only its own width.
+
+`cngx-nav.css` also SETs `--cngx-nav-railed-size` on the host: `2 * (--cngx-nav-link-inset + --cngx-nav-link-padding-inline) + --cngx-nav-icon-size`, the rail width at which the icon box sits centred, border not included. Size the rail from it plus your border, on the same host, so the host's own row tokens count:
+
+```html
+<aside
+  cngxSidebar
+  #sidebar="cngxSidebar"
+  class="cngx-sidebar"
+  style="--cngx-sidebar-rail-size: calc(var(--cngx-nav-railed-size) + var(--cngx-sidebar-border-width, 1px))"
+  [cngxNavRailed]="sidebar.state() === 'rail'"
+  [cngxNavRailedSide]="sidebar.side()"
+>
+  <a cngxNavLink routerLink="/inbox">Inbox</a>
+  <button type="button" cngxNavGroup #reports="cngxNavGroup">Reports</button>
+  <div [cngxNavGroupContent]="reports">
+    <div><a cngxNavLink [depth]="1" routerLink="/reports/weekly">Weekly</a></div>
+  </div>
+</aside>
+```
+
+| Input | Default | |
+|-|-|-|
+| `cngxNavRailed` | `false` | `true` while the rows are railed |
+| `cngxNavRailedSide` | `'start'` | the edge the rows sit on; tooltip and flyout open away from it |
+| `cngxNavRailedHoverDelay` | `300` | pointer dwell in ms before the tooltip shows |
+
+`cngx-nav-rail` and `cngx-sidenav` do not need it: they derive their rail state and call the pieces themselves.
 
 ## Theming
 

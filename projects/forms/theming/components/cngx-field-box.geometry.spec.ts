@@ -429,8 +429,14 @@ describe.each(MATRIX)('field box matrix: %s skin, %s, touch %s', (skin, density,
         expect(computedValue(trigger, 'padding-top')).toBe('0px');
         expect(computedValue(trigger, 'border-top-width')).toBe('0px');
       }
+      // On touch an interactive affix reaches over padding and border to the
+      // box edges; every other child stays inside the content box.
       for (const child of Array.from(box.children)) {
-        expect(child.getBoundingClientRect().height).toBeLessThanOrEqual(content + 0.5);
+        const limit =
+          touch && child.matches('.cngx-field-affix--interactive')
+            ? box.getBoundingClientRect().height
+            : content;
+        expect(child.getBoundingClientRect().height).toBeLessThanOrEqual(limit + 0.5);
       }
     },
   );
@@ -476,12 +482,19 @@ describe.each(MATRIX)('field box literal sizes: %s skin, %s, touch %s', (skin, d
     expect(box.getBoundingClientRect().height).toBeCloseTo(touch ? coarse : fine, 0);
   });
 
-  it('gives an interactive affix at least a 24 x 24 target and 44px wide on touch', () => {
+  // On touch the button reaches over the box padding and border, so its target
+  // is the whole box height while the box stays on its formula.
+  it('gives an interactive affix at least a 24 x 24 target and 44 x 44 on touch', () => {
     const root = mountMatrix(skin, density, touch);
     for (const selector of ['.c-icon-button', '.c-text-button']) {
-      const rect = query(query(root, selector), 'button').getBoundingClientRect();
-      expect(rect.height).toBeGreaterThanOrEqual(24 - 0.5);
+      const box = query(root, selector);
+      const rect = query(box, 'button').getBoundingClientRect();
+      expect(rect.height).toBeGreaterThanOrEqual((touch ? 44 : 24) - 0.5);
       expect(rect.width).toBeGreaterThanOrEqual((touch ? 44 : 32) - 0.5);
+      if (touch) {
+        expect(rect.top).toBeCloseTo(box.getBoundingClientRect().top, 0);
+        expect(rect.bottom).toBeCloseTo(box.getBoundingClientRect().bottom, 0);
+      }
     }
   });
 });

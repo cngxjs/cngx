@@ -29,8 +29,8 @@ import {
 `navigation` landmark with rows in it. `@cngx/ui/nav-rail` imports nothing from
 `@cngx/ui/sidenav`; the other way round, a `cngx-sidenav` resting as a rail
 uses the same tooltip and flyout (`CNGX_NAV_RAIL_TOOLTIP_FACTORY`,
-`CNGX_NAV_RAIL_FLYOUT_FACTORY`) and the same tooltip config, so one override
-or one `withNavRailTooltip` reaches both.
+`CNGX_NAV_RAIL_FLYOUT_FACTORY`, both in `@cngx/common/interactive`) and the
+same tooltip config, so one override or one `withNavRailTooltip` reaches both.
 
 ## Quick start
 
@@ -194,9 +194,8 @@ default. With the tooltip off, no tooltip element exists and no listener is
 attached; flipping it at runtime sets the tooltip up or tears it down.
 `provideNavRailConfigAt(...)` in a component's `viewProviders` merges over the
 parent scope. `injectNavRailConfig()` returns the configuration in scope with
-every key resolved, defaults included;
-`injectNavRailTooltip` reads `tooltipDelay` from it, so the delay reaches every
-organism that calls it.
+every key resolved, defaults included. Both organisms pass `tooltipDelay` to
+`injectNavRailTooltip` as `hoverDelay`, so the delay reaches both.
 
 ## Theming
 
@@ -286,8 +285,10 @@ Give the two landmarks different names, as above.
 
 ## Lower-level pieces
 
-`CngxNavRail` is built on two injection functions you can call in your own
-organism:
+`CngxNavRail` is built on two injection functions of the nav atoms in
+`@cngx/common/interactive` (see the
+[nav README](../../common/interactive/nav/README.md)), which you can call in
+your own organism:
 
 Both are behind swap tokens: `CNGX_NAV_RAIL_TOOLTIP_FACTORY` and
 `CNGX_NAV_RAIL_FLYOUT_FACTORY` default to the two functions; `cngx-nav-rail`
@@ -296,8 +297,9 @@ drop one. The tooltip factory receives `railed` with the `[tooltip]` switch
 already folded in. Both take one sources object, and `side` (`'start'` or
 `'end'`) tells them which way to open.
 
-- `injectNavRailTooltip({ railed, side })` - the label tooltip for clipped rows;
-  while `railed()` is `false` no tooltip element or listener exists.
+- `injectNavRailTooltip({ railed, side, hoverDelay })` - the label tooltip for
+  clipped rows, shown after `hoverDelay()` ms under the pointer; while
+  `railed()` is `false` no tooltip element or listener exists.
 - `injectNavRailFlyout({ railed, side, groups, groupElements, contents, contentElements })` -
   nav groups as anchored flyouts while `railed()` is `true`; `groups` and
   `contents` are your content queries for `CngxNavGroup` and

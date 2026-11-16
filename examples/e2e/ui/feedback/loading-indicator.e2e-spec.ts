@@ -2,7 +2,7 @@ import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxLoadingIndicator renders a spinner or bar while `loading` is
-// true. Delay + minDuration smooth quick flickers.
+// true. Delay + minDwell smooth quick flickers.
 
 test.describe('ui/feedback/loading-indicator', () => {
   test('spinner-variant: spinner shows after clicking Start Loading', async ({ page }) => {

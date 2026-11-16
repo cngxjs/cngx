@@ -24,6 +24,12 @@ import { describe, expect, it } from 'vitest';
  *   - `text-align: left|right`
  *   - `float: left|right`
  *   - a bare `left:` / `right:` inset declaration
+ *   - under `projects/forms/` only: a four-value `margin` / `padding`
+ *     shorthand whose right and left values differ (the side order is
+ *     top right bottom left, so the inline sides swap meaning in RTL; use
+ *     `margin-block` / `margin-inline` and their padding twins). Owner
+ *     decision 2026-11-11 keeps this rule to forms; ui and common are a
+ *     separate backlog row.
  *
  * Intentional physical STAYS (the allowlist) are matched by SELECTOR or VALUE
  * signature, never by line number - line anchors rot on the next edit. Each
@@ -56,6 +62,18 @@ import { describe, expect, it } from 'vitest';
  *       placed with a physical `translate`, so the anchor must be the
  *       physical left edge in every writing direction. Any other value or
  *       property in a ripple rule stays flagged.
+ *   (f) ONLY a `border-(left|right)` declaration (or its colour/width/style
+ *       longhand) inside a rule whose selector contains
+ *       `.cngx-drawer-panel--left` or `.cngx-drawer-panel--right`. The drawer
+ *       panel side is physical by API (`DrawerPosition` is
+ *       `left | right | top | bottom`, placed with a physical inset and
+ *       `translateX`), so the border toward the content sits on the opposite
+ *       physical edge in every writing direction. A logical twin would land on
+ *       the wrong edge under RTL. Any other directional property in such a
+ *       rule stays flagged. For the same reason a push panel's content gives
+ *       way on the panel's physical side: ONLY `margin-(left|right)` inside a
+ *       rule whose selector contains
+ *       `.cngx-drawer-content[data-drawer-push='left'|'right']` stays.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -162,6 +180,10 @@ const ARROW_SELECTOR = /\.cngx-popover-panel__arrow/;
 const SPINNER_SELECTOR = /spinner/;
 const SPINNER_BORDER_LONGHAND = /^border-(?:left|right)-(?:color|width|style)$/;
 const RIPPLE_WAVE_SELECTOR = /\.cngx-ripple__wave/;
+const DRAWER_SIDE_SELECTOR = /\.cngx-drawer-panel--(?:left|right)\b/;
+const DRAWER_SIDE_BORDER = /^border-(?:left|right)(?:-(?:color|width|style))?$/;
+const DRAWER_PUSH_SELECTOR = /\.cngx-drawer-content\[data-drawer-push='(?:left|right)'\]/;
+const DRAWER_PUSH_MARGIN = /^margin-(?:left|right)$/;
 
 const BARE_INSET = /(?<![-\w])(left|right)\s*:\s*([^;{}]+)[;}]/g;
 // `env(safe-area-inset-left)` is an environment variable name, not a property.
@@ -169,6 +191,48 @@ const MARGIN_PADDING_BORDER_INSET =
   /(?<!safe-area-)\b(?:margin|padding|border|inset)-(?:left|right)(?:-[a-z]+)?\b/g;
 const PHYSICAL_CORNER_RADIUS = /\bborder-(?:top|bottom)-(?:left|right)-radius\b/g;
 const TEXT_ALIGN_FLOAT = /\b(?:text-align|float)\s*:\s*(?:left|right)\b/g;
+const BOX_SHORTHAND = /(?<![-\w])(margin|padding)\s*:\s*([^;{}]+)[;}]/g;
+
+/** Top-level whitespace split, so `var(--a, 0 4px)` stays one value. */
+function shorthandValues(value) {
+  const out = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of value.replace(/!important/i, '').trim()) {
+    if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    }
+    if (/\s/.test(ch) && depth === 0) {
+      if (current) {
+        out.push(current);
+      }
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current) {
+    out.push(current);
+  }
+  return out;
+}
+
+/** Four-value `margin` / `padding` shorthands with different inline sides. */
+function findAsymmetricShorthands(rawCss, rel = 'fixture') {
+  const css = stripComments(rawCss);
+  const offenders = [];
+  BOX_SHORTHAND.lastIndex = 0;
+  let m;
+  while ((m = BOX_SHORTHAND.exec(css)) !== null) {
+    const values = shorthandValues(m[2]);
+    if (values.length === 4 && values[1] !== values[3]) {
+      offenders.push(`${rel}: ${m[1]}: ${m[2].trim().slice(0, 60)}`);
+    }
+  }
+  return offenders;
+}
 
 /** Directional physical properties in `rawCss`, minus the allowlisted stays. */
 function findOffenders(rawCss, rel = 'fixture') {
@@ -179,6 +243,10 @@ function findOffenders(rawCss, rel = 'fixture') {
   const inSpinner = (idx) => spinner.some(([s, e]) => idx >= s && idx < e);
   const rippleWave = gatedRanges(css, RIPPLE_WAVE_SELECTOR);
   const inRippleWave = (idx) => rippleWave.some(([s, e]) => idx >= s && idx < e);
+  const drawerSide = gatedRanges(css, DRAWER_SIDE_SELECTOR);
+  const inDrawerSide = (idx) => drawerSide.some(([s, e]) => idx >= s && idx < e);
+  const drawerPush = gatedRanges(css, DRAWER_PUSH_SELECTOR);
+  const inDrawerPush = (idx) => drawerPush.some(([s, e]) => idx >= s && idx < e);
   const offenders = [];
 
   let m;
@@ -204,6 +272,12 @@ function findOffenders(rawCss, rel = 'fixture') {
     }
     if (SPINNER_BORDER_LONGHAND.test(m[0]) && inSpinner(m.index)) {
       continue; // (d) spinner ring colour/width/style only
+    }
+    if (DRAWER_SIDE_BORDER.test(m[0]) && inDrawerSide(m.index)) {
+      continue; // (f) border toward the content of a physical drawer side
+    }
+    if (DRAWER_PUSH_MARGIN.test(m[0]) && inDrawerPush(m.index)) {
+      continue; // (f) content giving way to a physical push panel
     }
     offenders.push(`${rel}: ${m[0]}`);
   }
@@ -238,8 +312,36 @@ describe('css logical-property (RTL) regression guard', () => {
       `these declarations are directional PHYSICAL properties - convert to the logical twin ` +
         `(inset-inline-*, margin-inline-*, border-inline-*, text-align: start/end), or, if the ` +
         `side is placement/animation geometry, move the rule under an allowlisted selector ` +
-        `(.cngx-popover-panel__arrow / *spinner* border-color / .cngx-ripple__wave left: 0):\n${offenders.join('\n')}`,
+        `(.cngx-popover-panel__arrow / *spinner* border-color / .cngx-ripple__wave left: 0 / ` +
+        `.cngx-drawer-panel--left|right border):\n${offenders.join('\n')}`,
     ).toEqual([]);
+  });
+
+  it('forms CSS carries no four-value margin or padding shorthand with different inline sides', () => {
+    const offenders = [];
+    for (const { full, rel } of STYLE_FILES) {
+      if (rel.startsWith('/projects/forms/')) {
+        offenders.push(...findAsymmetricShorthands(readFileSync(full, 'utf8'), rel));
+      }
+    }
+    expect(
+      offenders,
+      `these shorthands pin the inline sides physically - split them into ` +
+        `margin-block / margin-inline (or the padding twins):\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('detects an asymmetric four-value shorthand and passes the symmetric forms', () => {
+    expect(findAsymmetricShorthands('.x { padding: 0 0 0 1.25em; }')).toHaveLength(1);
+    expect(findAsymmetricShorthands('.x { margin: 4px 8px 4px 2px; }')).toHaveLength(1);
+    expect(findAsymmetricShorthands('.x { margin: 0 var(--a, 8px) 0 0; }')).toHaveLength(1);
+    expect(findAsymmetricShorthands('.x { padding: 4px 8px; }')).toEqual([]);
+    expect(findAsymmetricShorthands('.x { padding: 4px 8px 2px; }')).toEqual([]);
+    expect(
+      findAsymmetricShorthands('.x { padding: 1px var(--a, 0 4px) 2px var(--a, 0 4px); }'),
+    ).toEqual([]);
+    expect(findAsymmetricShorthands('.x { padding-inline: 1.25em 0; }')).toEqual([]);
+    expect(findAsymmetricShorthands('/* padding: 0 0 0 1em; */ .x { color: red; }')).toEqual([]);
   });
 
   it('detects a reintroduced directional property and honours the allowlist', () => {
@@ -278,6 +380,20 @@ describe('css logical-property (RTL) regression guard', () => {
     expect(findOffenders('.cngx-ripple__wave { margin-left: 0; }')).toHaveLength(1);
     expect(findOffenders('.cngx-ripple__container { left: 0; }')).toHaveLength(1);
     expect(findOffenders('.cngx-spinner-label { padding-left: 8px; }')).toHaveLength(1);
+
+    // allowlist (f) drawer panel side - the border only
+    expect(findOffenders('.cngx-drawer-panel--left { border-right: 1px solid red; }')).toEqual([]);
+    expect(findOffenders('.cngx-drawer-panel--right { border-left-width: 0; }')).toEqual([]);
+    expect(findOffenders('.cngx-drawer-panel--left { margin-right: 4px; }')).toHaveLength(1);
+    expect(findOffenders('.cngx-drawer-panel--top { border-left: 1px solid red; }')).toHaveLength(1);
+    expect(findOffenders('.cngx-drawer-panel { border-right: 1px solid red; }')).toHaveLength(1);
+    expect(
+      findOffenders(".cngx-drawer-content[data-drawer-push='left'] { margin-left: 220px; }"),
+    ).toEqual([]);
+    expect(
+      findOffenders(".cngx-drawer-content[data-drawer-push='right'] { padding-right: 4px; }"),
+    ).toHaveLength(1);
+    expect(findOffenders('.cngx-drawer-content { margin-left: 220px; }')).toHaveLength(1);
 
     // env(safe-area-inset-*) names a device inset, not a directional property
     expect(

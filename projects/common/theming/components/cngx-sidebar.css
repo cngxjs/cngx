@@ -1,0 +1,71 @@
+/**
+ * @overview
+ * Base skin for `CngxSidebar`. Opt-in: add the `.cngx-sidebar` class
+ * alongside `[cngxSidebar]`. The class, not the attribute, keeps the skin
+ * out of `cngx-sidenav`, which composes `CngxSidebar` as a host directive
+ * and ships its own stylesheet.
+ *
+ * The skin styles the sidebar box only: a scrolling flex column on a
+ * surface with a border on the side facing the content (`data-sidebar-side`,
+ * written by the directive; none while `data-sidebar-state` is `hidden`, so
+ * a hidden sidebar paints nothing), and a shadow over the content while it
+ * peeks.
+ * It sets no padding or gap for the content and selects nothing inside it.
+ *
+ * What the content does on the rail is the content's business: nav rows
+ * crop themselves under `[cngxNavRailed]` (`cngx-nav.css`). The page shell
+ * around the sidebar is the consumer's.
+ *
+ * **Inheritance**
+ *
+ * - `--cngx-sidebar-bg` -> `--cngx-color-surface` with a 3% tint of
+ *   `--cngx-color-text`, so it sets off from the page in light and dark
+ * - `--cngx-sidebar-border-color` -> `--cngx-color-border`
+ * - `--cngx-sidebar-border-width` -> `1px`
+ * - `--cngx-sidebar-peek-shadow` -> `--cngx-shadow-md`
+ *
+ * @themes CngxSidebar
+ */
+
+@layer cngx.components {
+  @scope (.cngx-sidebar) {
+    :scope {
+      /* Functional - a flex column that scrolls */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex: none;
+      box-sizing: border-box;
+      min-block-size: 0;
+      overflow-x: clip;
+      overflow-y: auto;
+
+      /* Themable - token-driven */
+      background: var(
+        --cngx-sidebar-bg,
+        color-mix(
+          in oklab,
+          var(--cngx-color-surface, oklch(1 0 0)) 97%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
+        )
+      );
+    }
+
+    :scope[data-sidebar-side='start']:not([data-sidebar-state='hidden']) {
+      border-inline-end: var(--cngx-sidebar-border-width, 1px) solid
+        var(--cngx-sidebar-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+    }
+
+    :scope[data-sidebar-side='end']:not([data-sidebar-state='hidden']) {
+      border-inline-start: var(--cngx-sidebar-border-width, 1px) solid
+        var(--cngx-sidebar-border-color, var(--cngx-color-border, oklch(0.92 0 0)));
+    }
+
+    :scope[data-sidebar-state='peek'] {
+      box-shadow: var(
+        --cngx-sidebar-peek-shadow,
+        var(--cngx-shadow-md, 0 4px 16px oklch(0 0 0 / 0.12))
+      );
+    }
+  }
+}

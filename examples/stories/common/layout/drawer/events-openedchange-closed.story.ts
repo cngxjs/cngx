@@ -11,8 +11,11 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['behavior', 'integration'],
   apiComponents: ['CngxDrawer', 'CngxDrawerPanel'],
-  moduleImports: ["import { CngxDrawer, CngxDrawerPanel } from '@cngx/common/layout';"],
-  imports: ['CngxDrawer', 'CngxDrawerPanel'],
+  moduleImports: [
+    "import { CngxDrawer, CngxDrawerPanel } from '@cngx/common/layout';",
+    "import { CngxStack } from '@cngx/ui/layout';",
+  ],
+  imports: ['CngxDrawer', 'CngxDrawerPanel', 'CngxStack'],
   setup: `protected readonly events = signal<string[]>([]);
   protected logEvent(name: string): void {
     this.events.update(e => [name + ' @ ' + new Date().toLocaleTimeString(), ...e].slice(0, 5));
@@ -20,25 +23,19 @@ export const STORY: DemoSpec = {
   template: `  <div cngxDrawer #evDrawer="cngxDrawer"
        (openedChange)="logEvent('openedChange: ' + $event)"
        (closed)="logEvent('closed')"
-       class="demo-drawer-container demo-drawer-container--bordered">
-    <div class="button-row" style="padding: 0.5rem;">
-      <button type="button" class="sort-btn" aria-controls="ev-panel"
+       class="cngx-drawer">
+    <aside id="ev-panel" [cngxDrawerPanel]="evDrawer" position="right" label="Right panel">
+      <cngx-stack gap="sm" align="start" style="padding: var(--cngx-space-md, 1rem)">
+        <strong>Right panel</strong>
+        <button type="button" (click)="evDrawer.close()">Close</button>
+      </cngx-stack>
+    </aside>
+
+    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+      <button type="button" aria-controls="ev-panel"
               [attr.aria-expanded]="evDrawer.opened()" (click)="evDrawer.toggle()">Toggle</button>
-    </div>
-
-    <div class="demo-drawer-layout">
-      <aside id="ev-panel" [cngxDrawerPanel]="evDrawer" position="right" label="Right panel"
-             class="demo-drawer-panel">
-        <div class="demo-drawer-panel-content">
-          <strong>Right panel</strong>
-          <button type="button" class="sort-btn" (click)="evDrawer.close()">Close</button>
-        </div>
-      </aside>
-
-      <main class="demo-drawer-main">
-        <p>Open or close the drawer to see the event log below.</p>
-      </main>
-    </div>
+      <p>Open or close the drawer to see the event log below.</p>
+    </main>
   </div>`,
   templateChrome: `<div class="event-grid">
     @for (ev of events(); track $index) {

@@ -17,7 +17,8 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxNavRail } from '@cngx/ui/nav-rail';",
     "import { CngxNavBadge, CngxNavFooter, CngxNavGroup, CngxNavGroupContent, CngxNavHeader, CngxNavIcon, CngxNavLabel, CngxNavLink, CngxNavMark } from '@cngx/common/interactive';",
-    "import { CngxIcon } from '@cngx/common/display';",
+    "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
@@ -31,15 +32,17 @@ export const STORY: DemoSpec = {
     'CngxNavLabel',
     'CngxNavLink',
     'CngxNavMark',
+    'CngxAvatar',
     'CngxIcon',
+    'CngxStack',
     'MatIconModule',
   ],
   setup: `protected readonly active = signal('/inbox');`,
   template: `
-  <div class="demo-nav-rail__frame">
+  <cngx-stack direction="row" gap="none">
     <cngx-nav-rail>
       <cngx-nav-header>
-        <span cngxNavMark class="demo-nav-rail__mark" aria-hidden="true">W</span>
+        <cngx-avatar cngxNavMark initials="W" />
       </cngx-nav-header>
 
       <span cngxNavLabel>Mail</span>
@@ -69,12 +72,12 @@ export const STORY: DemoSpec = {
       </div>
 
       <cngx-nav-footer>
-        <span cngxNavMark class="demo-nav-rail__mark" aria-hidden="true">CW</span>
+        <cngx-avatar cngxNavMark initials="CW" />
       </cngx-nav-footer>
     </cngx-nav-rail>
 
-    <div class="demo-nav-rail__content">
+    <div style="flex: 1 1 auto; min-inline-size: 0; padding: var(--cngx-space-md, 1rem)">
       <p>Active: <code>{{ active() }}</code></p>
     </div>
-  </div>`,
+  </cngx-stack>`,
 };

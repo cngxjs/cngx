@@ -24,10 +24,10 @@ export const STORY: DemoSpec = {
   moduleImports: [`import { CngxNavLink, CngxNavGroup, CngxNavLabel } from '@cngx/common';`],
   imports: ['CngxNavGroup', 'CngxNavLink', 'CngxNavLabel'],
   template: `
-  <nav class="demo-nav__frame">
-    <span cngxNavLabel class="demo-nav__label">Application</span>
+  <nav>
+    <span cngxNavLabel>Application</span>
 
-    <a cngxNavLink [active]="true" href="#dashboard" class="demo-nav__link demo-nav__link--active">
+    <a cngxNavLink [active]="true" href="#dashboard">
       Dashboard
     </a>
 
@@ -37,15 +37,14 @@ export const STORY: DemoSpec = {
       type="button"
       id="settings-trigger"
       [controls]="'settings-content'"
-      class="demo-nav__trigger"
     >
       Settings
     </button>
     @if (settings.disclosure.opened()) {
       <div id="settings-content" role="group" aria-labelledby="settings-trigger">
-        <a cngxNavLink [depth]="1" href="#settings-general" class="demo-nav__link demo-nav__link--indent-1">General</a>
-        <a cngxNavLink [depth]="1" href="#settings-security" class="demo-nav__link demo-nav__link--indent-1">Security</a>
-        <a cngxNavLink [depth]="1" href="#settings-notifications" class="demo-nav__link demo-nav__link--indent-1">Notifications</a>
+        <a cngxNavLink [depth]="1" href="#settings-general">General</a>
+        <a cngxNavLink [depth]="1" href="#settings-security">Security</a>
+        <a cngxNavLink [depth]="1" href="#settings-notifications">Notifications</a>
       </div>
     }
 
@@ -55,14 +54,13 @@ export const STORY: DemoSpec = {
       type="button"
       id="account-trigger"
       [controls]="'account-content'"
-      class="demo-nav__trigger"
     >
       Account
     </button>
     @if (account.disclosure.opened()) {
       <div id="account-content" role="group" aria-labelledby="account-trigger">
-        <a cngxNavLink [depth]="1" href="#account-profile" class="demo-nav__link demo-nav__link--indent-1">Profile</a>
-        <a cngxNavLink [depth]="1" href="#account-billing" class="demo-nav__link demo-nav__link--indent-1">Billing</a>
+        <a cngxNavLink [depth]="1" href="#account-profile">Profile</a>
+        <a cngxNavLink [depth]="1" href="#account-billing">Billing</a>
       </div>
     }
   </nav>`,

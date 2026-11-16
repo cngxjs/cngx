@@ -19,9 +19,10 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent', 'CngxPanelToggle'],
   moduleImports: [
     "import { CngxDrawer, CngxDrawerContent, CngxDrawerPanel, CngxPanelToggle } from '@cngx/common/layout';",
-    "import { CngxNavLink } from '@cngx/common/interactive';",
+    "import { CngxNavIcon, CngxNavLink } from '@cngx/common/interactive';",
     "import { CngxIconButton } from '@cngx/common/button';",
     "import { CngxAvatar, CngxIcon } from '@cngx/common/display';",
+    "import { CngxStack } from '@cngx/ui/layout';",
     "import { MatIconModule } from '@angular/material/icon';",
   ],
   imports: [
@@ -30,9 +31,11 @@ export const STORY: DemoSpec = {
     'CngxDrawerContent',
     'CngxPanelToggle',
     'CngxNavLink',
+    'CngxNavIcon',
     'CngxIconButton',
     'CngxAvatar',
     'CngxIcon',
+    'CngxStack',
     'MatIconModule',
   ],
   setup: `
@@ -50,12 +53,11 @@ export const STORY: DemoSpec = {
     this.current.set(label);
   }`,
   template: `
-  <div class="demo-drawer-container demo-drawer-container--bordered demo-app-frame">
-    <header class="demo-app-header">
+  <cngx-stack gap="none">
+    <cngx-stack direction="row" gap="sm" align="center" style="padding: var(--cngx-space-sm, 0.5rem) var(--cngx-space-md, 1rem); border-block-end: 1px solid var(--cngx-color-border)">
       <button type="button" [cngxPanelToggle]="appNav" label="Main navigation"></button>
       <cngx-avatar initials="A" shape="square" size="sm" />
-      <span class="demo-app-brand">Acme</span>
-      <span class="demo-app-spacer"></span>
+      <strong style="flex: 1 1 auto">Acme</strong>
       <button type="button" cngxIconButton aria-label="Search">
         <cngx-icon><mat-icon>search</mat-icon></cngx-icon>
       </button>
@@ -63,30 +65,27 @@ export const STORY: DemoSpec = {
         <cngx-icon><mat-icon>notifications</mat-icon></cngx-icon>
       </button>
       <cngx-avatar initials="JD" size="sm" />
-    </header>
+    </cngx-stack>
 
-    <div cngxDrawer #appNav="cngxDrawer" panelId="clipped-nav" class="cngx-drawer demo-app-body">
-      <nav [cngxDrawerPanel]="appNav" modality="contained" [role]="null" aria-label="Main"
-           class="demo-drawer-panel">
+    <div cngxDrawer #appNav="cngxDrawer" panelId="clipped-nav" class="cngx-drawer"
+         style="flex: 1 1 auto; min-block-size: 0">
+      <nav [cngxDrawerPanel]="appNav" modality="contained" [role]="null" aria-label="Main">
         @for (link of links; track link.label) {
-          <a cngxNavLink href="#" class="demo-nav__link demo-nav__link--icon"
-             [active]="current() === link.label"
-             [class.demo-nav__link--active]="current() === link.label"
-             (click)="go($event, link.label)">
-            <cngx-icon size="sm"><mat-icon>{{ link.icon }}</mat-icon></cngx-icon>
+          <a cngxNavLink href="#" [active]="current() === link.label" (click)="go($event, link.label)">
+            <cngx-icon cngxNavIcon size="sm"><mat-icon>{{ link.icon }}</mat-icon></cngx-icon>
             {{ link.label }}
           </a>
         }
       </nav>
 
-      <main [cngxDrawerContent]="appNav" class="demo-drawer-main demo-app-main">
-        <h2 class="demo-app-title">{{ current() }}</h2>
+      <main [cngxDrawerContent]="appNav" style="overflow-y: auto; padding: var(--cngx-space-md, 1rem)">
+        <h2>{{ current() }}</h2>
         @for (row of rows; track row) {
           <p>Content row {{ row }}. The row scrolls on its own; the header above it stays put.</p>
         }
       </main>
     </div>
-  </div>`,
+  </cngx-stack>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row">

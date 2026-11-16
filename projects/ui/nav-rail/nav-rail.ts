@@ -9,13 +9,16 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxNavGroup, CngxNavGroupContent } from '@cngx/common/interactive';
+import {
+  CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
+  CngxNavGroup,
+  CngxNavGroupContent,
+} from '@cngx/common/interactive';
 import type { CngxSidebarSide } from '@cngx/common/layout';
 
 import { injectNavRailConfig } from './config/inject-nav-rail-config';
 import { CNGX_NAV_RAIL_I18N } from './nav-rail-i18n';
-import { CNGX_NAV_RAIL_FLYOUT_FACTORY } from './nav-rail-flyout';
-import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
 
 /** How a `cngx-nav-rail` lays out a row's label. */
 export type CngxNavRailLabelPlacement = 'end' | 'below';
@@ -85,7 +88,7 @@ export type CngxNavRailSide = CngxSidebarSide;
  * @relatedTo CngxNavLink, CngxNavGroup, CngxNavHeader, CngxNavFooter, CngxSidenav, injectNavRailTooltip, injectNavRailFlyout, CNGX_NAV_RAIL_TOOLTIP_FACTORY, CNGX_NAV_RAIL_FLYOUT_FACTORY, provideNavRailConfig, withNavRailTooltip, withNavRailSide
  * <example-url>/#/ui/nav-rail/labels-beside</example-url>
  * <example-url>/#/ui/nav-rail/labels-below</example-url>
- * <example-url>/#/ui/nav-rail/rail-with-secondary-sidebar</example-url>
+ * <example-url>/#/ui/sidenav/rail-with-secondary-sidebar</example-url>
  * <example-url>/#/ui/nav-rail/end-side</example-url>
  * @axis level organism
  */
@@ -180,6 +183,7 @@ export class CngxNavRail {
     inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)({
       railed: computed(() => this.resolvedLabelPlacement() === 'end' && this.resolvedTooltip()),
       side: this.resolvedSide,
+      hoverDelay: signal(this.config.tooltipDelay).asReadonly(),
     });
     inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({
       railed: signal(true).asReadonly(),

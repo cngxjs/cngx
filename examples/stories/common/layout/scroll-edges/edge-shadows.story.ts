@@ -33,6 +33,97 @@ export const STORY: DemoSpec = {
       </div>
     </div>
   </div>`,
+  css: `.demo-scroll-edges-frame {
+  max-inline-size: 420px;
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
+.demo-scroll-edges-frame:has(> .demo-scroll-edges-box:focus-visible) {
+  outline: 2px solid var(--cngx-color-focus, var(--cngx-ex-accent, #2563eb));
+  outline-offset: 2px;
+}
+
+.demo-scroll-edges-box {
+  --demo-scroll-edges-shadow-colour: color-mix(
+    in oklab,
+    var(--cngx-color-text, #0f1320) 35%,
+    transparent
+  );
+  --demo-scroll-edges-shadow-start: inset 0 0 0 0 transparent;
+  --demo-scroll-edges-shadow-end: inset 0 0 0 0 transparent;
+  --demo-scroll-edges-fade-start: 0px;
+  --demo-scroll-edges-fade-end: 0px;
+  --demo-scroll-edges-alpha-start: 1;
+  --demo-scroll-edges-alpha-end: 1;
+  block-size: 220px;
+  overflow: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+  box-shadow:
+    var(--demo-scroll-edges-shadow-start),
+    var(--demo-scroll-edges-shadow-end);
+  transition: box-shadow var(--cngx-duration-fast, 150ms) ease;
+}
+
+.demo-scroll-edges-box:focus-visible {
+  outline: none;
+}
+
+.demo-scroll-edges-box[data-scroll-block-start] {
+  --demo-scroll-edges-shadow-start: inset 0 12px 10px -10px var(--demo-scroll-edges-shadow-colour);
+}
+
+.demo-scroll-edges-box[data-scroll-block-end] {
+  --demo-scroll-edges-shadow-end: inset 0 -12px 10px -10px var(--demo-scroll-edges-shadow-colour);
+}
+
+.demo-scroll-edges-box[data-scroll-inline-start] {
+  --demo-scroll-edges-fade-start: 40px;
+  --demo-scroll-edges-alpha-start: 0.25;
+}
+
+.demo-scroll-edges-box[data-scroll-inline-end] {
+  --demo-scroll-edges-fade-end: 40px;
+  --demo-scroll-edges-alpha-end: 0.25;
+}
+
+.demo-scroll-edges-box:is([data-scroll-inline-start], [data-scroll-inline-end]) {
+  mask-image: linear-gradient(
+    to right,
+    rgb(0 0 0 / var(--demo-scroll-edges-alpha-start)),
+    rgb(0 0 0) var(--demo-scroll-edges-fade-start),
+    rgb(0 0 0) calc(100% - var(--demo-scroll-edges-fade-end)),
+    rgb(0 0 0 / var(--demo-scroll-edges-alpha-end))
+  );
+}
+
+.demo-scroll-edges-box:dir(rtl):is([data-scroll-inline-start], [data-scroll-inline-end]) {
+  mask-image: linear-gradient(
+    to left,
+    rgb(0 0 0 / var(--demo-scroll-edges-alpha-start)),
+    rgb(0 0 0) var(--demo-scroll-edges-fade-start),
+    rgb(0 0 0) calc(100% - var(--demo-scroll-edges-fade-end)),
+    rgb(0 0 0 / var(--demo-scroll-edges-alpha-end))
+  );
+}
+
+.demo-scroll-edges-sheet {
+  display: grid;
+  grid-template-columns: repeat(10, 96px);
+}
+
+.demo-scroll-edges-cell {
+  padding: 10px 12px;
+  border-block-end: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #f0f0f0));
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+  .demo-scroll-edges-box {
+    mask-image: none;
+  }
+}`,
   setupChrome: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Direction">
     <label>

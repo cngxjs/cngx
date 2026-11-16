@@ -19,6 +19,8 @@ import {
 import { createTransitionTracker, injectLocale, numberFormatterFor } from '@cngx/core/utils';
 import {
   CNGX_HOVER_INTENT_DEFAULTS,
+  CNGX_NAV_RAIL_FLYOUT_FACTORY,
+  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
   CngxNavGroup,
   CngxNavGroupContent,
   injectHotkeys,
@@ -39,11 +41,7 @@ import {
   type CngxSidebarDriver,
   type CngxSidebarSide,
 } from '@cngx/common/layout';
-import {
-  CNGX_NAV_RAIL_FLYOUT_FACTORY,
-  CNGX_NAV_RAIL_TOOLTIP_FACTORY,
-  injectNavRailConfig,
-} from '@cngx/ui/nav-rail';
+import { injectNavRailConfig } from '@cngx/ui/nav-rail';
 import { clamp, cngxDevWarn } from '@cngx/utils';
 
 import { injectSidenavConfig, injectSidenavLabels } from './config/inject-sidenav-config';
@@ -199,6 +197,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[style.--cngx-sidenav-mini-width]': 'miniWidth() ?? null',
     '[style.--cngx-sidebar-size]': 'width()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth() ?? null',
+    '[attr.data-nav-railed]': "railed() ? 'true' : 'false'",
   },
   imports: [CngxResizable],
   template: `
@@ -531,7 +530,7 @@ export class CngxSidenav
    * Whether the sidenav rests as a collapsed rail. Peek, expanded and hidden
    * are not railed, so tooltip and flyout attach only to the narrow rest.
    */
-  private readonly railed = computed(() => this.sidebar.state() === 'rail');
+  protected readonly railed = computed(() => this.sidebar.state() === 'rail');
 
   private readonly navRailConfig = injectNavRailConfig();
 
@@ -559,6 +558,7 @@ export class CngxSidenav
     inject(CNGX_NAV_RAIL_TOOLTIP_FACTORY)({
       railed: computed(() => this.resolvedTooltip() && this.railed()),
       side: this.position,
+      hoverDelay: signal(this.navRailConfig.tooltipDelay).asReadonly(),
     });
     inject(CNGX_NAV_RAIL_FLYOUT_FACTORY)({
       railed: this.railed,

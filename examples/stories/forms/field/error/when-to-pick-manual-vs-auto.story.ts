@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxError: when to pick manual vs auto',
   subtitle: 'Two adjacent fields, same validators. The left one uses <code>&lt;cngx-field-errors&gt;</code> - the registry (or inline <code>message</code>) resolves each error <code>kind</code> to its string. The right one uses <code>&lt;div cngxError&gt;</code> - the consumer renders each error by hand with custom layout. Pick auto for stock per-field error lists. Pick manual when rendering rules vary with the error.',
-  description: 'Decision rule, short version. If the messages can be expressed as a flat <code>kind -&gt; string</code> map, <code>CngxFieldErrors</code> is the right slot. The moment per-error styling, icons, links to docs, or conditional copy enter the picture, switch the field to <code>CngxError</code> and own the loop. Never combine both in the same form-field: their <code>aria-hidden</code> + <code>role="alert"</code> would collide on the same error container.',
+  description: 'Decision rule, short version. If the messages can be expressed as a flat <code>kind -&gt; string</code> map, <code>CngxFieldErrors</code> is the right slot. The moment per-error styling, icons, links to docs, or conditional copy enter the picture, switch the field to <code>CngxError</code> and own the loop. Never combine both in the same form-field: both take the error id of the field, so the id would be duplicated and the <code>aria-describedby</code> of the input would resolve to only one of them.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',

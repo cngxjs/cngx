@@ -20,7 +20,7 @@ import { CngxAlert } from './alert';
   imports: [CngxAlert],
   styleUrls: ['../../../common/theming/components/cngx-button.css'],
   encapsulation: ViewEncapsulation.None,
-  template: `<cngx-alert [severity]="'info'" [closable]="true">Something happened</cngx-alert>`,
+  template: `<cngx-alert [severity]="'info'" [dismissible]="true">Something happened</cngx-alert>`,
 })
 class AlertHost {}
 

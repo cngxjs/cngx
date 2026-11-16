@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxFormErrors: show on submit',
-  subtitle: 'The summary stays out of the way during typing and only appears when the submit handler decides the form should be reported. <code>[show]</code> is bound to a local signal that the submit handler sets to <code>true</code> if the form is invalid, otherwise it stays <code>false</code>. Reset wipes the data and hides the summary again.',
+  subtitle: 'The summary stays out of the way during typing and only appears when the submit handler decides the form should be reported. <code>[show]</code> is bound to a local signal that the submit handler sets to <code>true</code> if the form is invalid, otherwise it stays <code>false</code>. Reset clears the values and the touched state, so the summary and the field errors hide again.',
   description: 'Defers error reporting to the submit moment - the user is not nagged on every keystroke, but they get an unambiguous summary once they attempt to commit invalid data.',
   level: 'organism',
   audience: ['dev', 'a11y'],
@@ -35,7 +35,7 @@ export const STORY: DemoSpec = {
     this.showErrors.set(this.addressForm().invalid());
   }
   protected handleReset(): void {
-    this.model.set({ firstName: '', lastName: '', city: '' });
+    this.addressForm().reset({ firstName: '', lastName: '', city: '' });
     this.showErrors.set(false);
     this.submitCount.set(0);
   }`,

@@ -33,6 +33,21 @@ export const STORY: DemoSpec = {
       </button>
     }
   </div>`,
+  css: `.demo-truncate-text {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.875rem;
+}
+
+.demo-truncate-toggle {
+  margin-top: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
+}`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">isClamped</span>

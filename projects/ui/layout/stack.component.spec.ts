@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { Component } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { CngxStack } from './stack.component';
 
@@ -51,5 +52,30 @@ describe('CngxStack', () => {
     fixture.componentRef.setInput('gap', 'none');
     fixture.detectChanges();
     expect(['0', '0px']).toContain(host.style.gap);
+  });
+
+  it('maps every align value to a valid align-items keyword', () => {
+    const expected = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' };
+    for (const [align, value] of Object.entries(expected)) {
+      fixture.componentRef.setInput('align', align);
+      fixture.detectChanges();
+      expect(host.style.alignItems).toBe(value);
+    }
+  });
+
+  it('drops a static align attribute so it cannot centre the text', () => {
+    @Component({
+      imports: [CngxStack],
+      template: '<cngx-stack align="center">Text</cngx-stack>',
+    })
+    class StaticAlignHost {}
+
+    const hostFixture = TestBed.createComponent(StaticAlignHost);
+    hostFixture.detectChanges();
+    const stack = (hostFixture.nativeElement as HTMLElement).querySelector(
+      'cngx-stack',
+    ) as HTMLElement;
+    expect(stack.hasAttribute('align')).toBe(false);
+    expect(stack.style.alignItems).toBe('center');
   });
 });

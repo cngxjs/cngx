@@ -231,38 +231,14 @@ bootstrapApplication(AppComponent, {
 
 
 
-### withLoadingDefaults()
+### Loading timing
 
-Set default timing for all loading indicators globally.
-
-```typescript
-withLoadingDefaults({
-  delay?: number;        // Default delay (ms)
-  minDuration?: number;  // Default minimum duration (ms)
-})
-```
-
-Per-instance inputs still override.
-
-#### Example
+`provideFeedback` does not set loading timing. Use `provideLoadingConfig` from `@cngx/core/utils`; per-instance `[delay]` / `[minDwell]` inputs still override.
 
 ```typescript
 bootstrapApplication(AppComponent, {
-  providers: [
-    provideFeedback(
-      withLoadingDefaults({
-        delay: 150,
-        minDuration: 400
-      })
-    )
-  ]
+  providers: [provideLoadingConfig(withShowDelay(150), withMinDwell(400))]
 });
-
-// All indicators use these defaults
-<cngx-loading-indicator [loading]="true"></cngx-loading-indicator>
-
-// Override per instance
-<cngx-loading-indicator [loading]="true" [delay]="0"></cngx-loading-indicator>
 ```
 
 
@@ -317,7 +293,7 @@ import {
   withBanners,
   withSpinnerTemplate,
   withAlertIcons,
-  withLoadingDefaults
+  withCloseIcon
 } from '@cngx/ui/feedback';
 
 bootstrapApplication(AppComponent, {
@@ -337,12 +313,9 @@ bootstrapApplication(AppComponent, {
         success: CheckIconComponent,
         error: ErrorIconComponent
       }),
-      withCloseIcon(CustomCloseIconComponent),
-      withLoadingDefaults({
-        delay: 100,
-        minDuration: 300
-      })
-    )
+      withCloseIcon(CustomCloseIconComponent)
+    ),
+    provideLoadingConfig(withShowDelay(100), withMinDwell(300))
   ]
 });
 ```

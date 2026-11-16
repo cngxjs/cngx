@@ -126,25 +126,14 @@ export class CngxLoadingIndicator {
   /** Minimum display time in ms once visible. Defaults to `CNGX_LOADING_CONFIG.minDwell`. */
   readonly minDwell = input<number>(this.loadingConfig.minDwell);
 
-  /**
-   * Former name of `minDwell`: minimum display time in ms once visible. When set,
-   * it takes precedence over `minDwell`.
-   *
-   * @deprecated Use `minDwell`. Kept one release for migration.
-   */
-  readonly minDuration = input<number | undefined>(undefined);
-
   /** @internal - true when the underlying source says "loading". */
   protected readonly isActive = computed(() => this.state()?.isBusy() ?? this.loading());
 
   /** @internal - custom spinner component from global config. */
   protected readonly customSpinner = computed(() => this.config?.spinnerComponent ?? null);
 
-  /** @internal - deprecated `minDuration` alias forwards to `minDwell`. */
-  protected readonly effectiveMinDwell = computed(() => this.minDuration() ?? this.minDwell());
-
   /** @internal - final visibility after delay + minDwell. */
-  readonly visible = createVisibilityGate(this.isActive, this.delay, this.effectiveMinDwell);
+  readonly visible = createVisibilityGate(this.isActive, this.delay, this.minDwell);
 
   /**
    * @internal - accessible name of the status host. A bound `label` applies at

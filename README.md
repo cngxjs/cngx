@@ -190,7 +190,7 @@ One plugin bundles the three packages above, a session grounding hook (reads you
 Swap the panel host, the announcer, the commit controller, the trigger focus strategy. Same engine drives async commit, optimistic update, refresh state and tree multi-select. Zero CDK.
 - **Popover system.** CSS Anchor Positioning by default, Floating-UI opt-in via `provideFloatingFallback()`. 
 Arrow tracking, position-area fallback chain, accessible dismissal paths. No `cdk/overlay` in the path.
-- **Feedback shell.** `provideFeedback(withToasts, withBanners, withAlerts, withSpinnerTemplate, withAlertIcons, withLoadingDefaults, withCloseIcon)` in `bootstrapApplication`. 
+- **Feedback shell.** `provideFeedback(withToasts, withBanners, withAlerts, withSpinnerTemplate, withAlertIcons, withCloseIcon)` in `bootstrapApplication`. 
 Scoped services, not `providedIn: 'root'`. Transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`) fire announcements off `CngxAsyncState<T>` transitions.
 - **Treetable.** CDK-table-backed organism composed off the orthogonal Level-2 `CngxSort` / `CngxFilter` / `CngxSearch` / `CngxPaginate` behaviours, with `CngxAsyncState`-aware loading / empty / error states out of the box.
 - **Filter builder.** Declarative compound filters with per-row editor contracts, full keyboard navigation, ARIA-driven announcer, typed expression model. Zero CDK.

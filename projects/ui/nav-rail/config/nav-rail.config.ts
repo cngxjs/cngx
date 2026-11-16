@@ -42,8 +42,9 @@ export interface CngxNavRailConfig {
 
   /**
    * Pointer dwell in ms before the label tooltip of a railed row shows.
-   * Keyboard focus shows it at once, whatever the delay. Read by
-   * `injectNavRailTooltip`, so it applies to every organism that calls it.
+   * Keyboard focus shows it at once, whatever the delay. `cngx-nav-rail` and
+   * `cngx-sidenav` pass it to `injectNavRailTooltip` as `hoverDelay`, so it
+   * applies to both organisms.
    */
   readonly tooltipDelay?: number;
 }

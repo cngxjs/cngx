@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
     this.model.set({ email: '', password: '', displayName: '' });
     this.showErrors.set(false);
   }`,
-  template: `  <div class="demo-form" style="max-width:480px">
+  template: `  <form class="demo-form" novalidate style="max-width:480px" (submit)="$event.preventDefault()">
     <cngx-form-errors
       [fields]="[userForm.email, userForm.password, userForm.displayName]"
       [show]="showErrors()"
@@ -66,7 +66,7 @@ export const STORY: DemoSpec = {
         <cngx-field-errors />
       </cngx-form-field>
     </div>
-  </div>`,
+  </form>`,
   templateChrome: `<div class="button-row">
       <button type="button" class="chip" (click)="handleValidate()">Validate</button>
       <button type="button" class="chip" (click)="handleReset()">Reset</button>

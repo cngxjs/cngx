@@ -35,27 +35,27 @@ export const STORY: DemoSpec = {
       el.style.width = width;
     }
   }`,
-  template: `  <button class="sort-btn" type="button" [cngxPanelTrigger]="nav()?.panelTarget">Toggle navigation</button>
-  <div #frame class="demo-sidenav-resizable">
-    <cngx-sidenav-layout class="demo-sidenav__container demo-sidenav__container--short">
+  template: `  <div #frame style="resize: horizontal; overflow: auto; width: 40rem; min-width: 20rem; border: 1px dashed var(--cngx-color-border, #cbd5e1);">
+    <cngx-sidenav-layout style="block-size: 100%">
       <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="pinned() ? 'over' : 'auto'" width="180px">
-        <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">Dashboard</a>
-        <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">Orders</a>
-        <a cngxNavLink class="demo-sidenav__link demo-sidenav__link--plain">Reports</a>
+        <a cngxNavLink>Dashboard</a>
+        <a cngxNavLink>Orders</a>
+        <a cngxNavLink>Reports</a>
       </cngx-sidenav>
 
-      <cngx-sidenav-content class="demo-sidenav__content--compact">
-        <h3 class="demo-sidenav__content-title demo-sidenav__content-title--small">Content</h3>
-        <p class="demo-sidenav__content-hint">
+      <cngx-sidenav-content style="padding: var(--cngx-space-md, 1rem)">
+        <h3>Content</h3>
+        <p>
           Drag the right edge of the frame. From 48rem of layout width the rail docks
           beside this text; below it the rail becomes an overlay with a backdrop.
         </p>
       </cngx-sidenav-content>
     </cngx-sidenav-layout>
   </div>`,
-  templateChromeBefore: `<p class="demo-sidenav__content-hint" style="margin: 0 0 12px">
+  templateChromeBefore: `<p class="demo-hint" style="margin: 0 0 12px">
     The dashed frame is the layout's width. Drag its right edge or pick a preset to cross 48rem and 64rem.
-  </p>`,
+  </p>
+  <button class="sort-btn" type="button" [cngxPanelTrigger]="nav()?.panelTarget">Toggle navigation</button>`,
   templateChrome: `<div class="button-row" style="margin-top: 12px">
     <button class="sort-btn" type="button" (click)="setFrameWidth('40rem')">Width 40rem</button>
     <button class="sort-btn" type="button" (click)="setFrameWidth('56rem')">Width 56rem</button>

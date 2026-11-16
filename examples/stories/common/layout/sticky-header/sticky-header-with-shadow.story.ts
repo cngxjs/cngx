@@ -26,6 +26,38 @@ export const STORY: DemoSpec = {
       </div>
     }
   </div>`,
+  css: `.demo-sticky-frame {
+  height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 8px);
+}
+
+.demo-sticky-intro {
+  padding: 16px;
+}
+
+.demo-sticky-hint {
+  margin: 0 0 8px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+  font-size: 0.875rem;
+}
+
+.demo-sticky-header {
+  padding: 12px 16px;
+  background: var(--cngx-color-surface, var(--cngx-ex-surface, #ffffff));
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #eaeaea));
+  transition: box-shadow 200ms ease;
+}
+
+.demo-sticky-header.cngx-sticky--active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.demo-sticky-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #f0f0f0));
+}`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">isSticky</span>

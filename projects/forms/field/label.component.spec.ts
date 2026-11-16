@@ -11,7 +11,7 @@ import { CngxInput } from '@cngx/forms/input';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CngxLabel } from './label.component';
-import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
+import { CNGX_FORM_FIELD_CONFIG, provideFormField, withRequiredMarker } from './form-field.token';
 import { createMockField, type MockFieldRef } from './testing/mock-field';
 import type { CngxFieldAccessor } from './models';
 
@@ -235,6 +235,31 @@ describe('CngxLabel', () => {
         .query(By.directive(CngxLabel))
         .nativeElement.querySelector('.cngx-label__required');
       expect(marker!.textContent?.trim()).toBe('(Pflichtfeld)');
+    });
+
+    // The marker is visible copy (OD5): a Signal marker follows a language
+    // switch without a reload.
+    it('follows a Signal marker when the language switches', () => {
+      const marker = signal('(required)');
+      const mock = createMockField({ name: 'email', required: true });
+      TestBed.configureTestingModule({
+        imports: [TestHost],
+        providers: [provideFormField(withRequiredMarker(marker))],
+      });
+      const fixture = TestBed.createComponent(TestHost);
+      fixture.componentInstance.field.set(mock.accessor);
+      fixture.detectChanges();
+      const labelEl = fixture.debugElement.query(By.directive(CngxLabel))
+        .nativeElement as HTMLElement;
+      expect(labelEl.querySelector('.cngx-label__required')?.textContent?.trim()).toBe(
+        '(required)',
+      );
+
+      marker.set('(Pflichtfeld)');
+      fixture.detectChanges();
+      expect(labelEl.querySelector('.cngx-label__required')?.textContent?.trim()).toBe(
+        '(Pflichtfeld)',
+      );
     });
 
     it('reacts when required changes dynamically', () => {

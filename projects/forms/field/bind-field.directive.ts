@@ -18,7 +18,7 @@ import type { CngxFormFieldControl } from './models';
  * uniformly across control types.
  *
  * Value flow is out of scope here: it runs through the host element's own
- * bindings (`[control]` for Signal Forms, `[formControl]` for Reactive
+ * bindings (`[formField]` for Signal Forms, `[formControl]` for Reactive
  * Forms). This directive only projects form-field ARIA/state onto the host.
  *
  * For cngx-native atoms with exotic value semantics (multi-select,
@@ -50,7 +50,6 @@ import type { CngxFormFieldControl } from './models';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/bind-field.directive.ts
  * @since 0.1.0
  * @relatedTo CngxFormField, CngxListboxFieldBridge, CngxFormBridge, adaptFormControl
- * @playground Material select via cngxBindField ./examples/material-bind-field/material-bind-field.component.ts
  * <example-url>/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
  * @axis level molecule
  */

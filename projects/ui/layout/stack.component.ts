@@ -26,6 +26,13 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
   xl: 'var(--cngx-gap-xl, var(--cngx-space-xl, 32px))',
 };
 
+const ALIGN_ITEMS: Record<StackAlign, string> = {
+  start: 'flex-start',
+  center: 'center',
+  end: 'flex-end',
+  stretch: 'stretch',
+};
+
 /**
  * Composable flex-based stack layout component.
  *
@@ -59,6 +66,9 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
   host: {
     '[style.flex-direction]': 'direction()',
     '[style.align-items]': 'alignItems()',
+    // A static align attribute would trigger the browser's legacy
+    // presentational hint (text-align) on the host; the input already took it.
+    '[attr.align]': 'null',
     '[style.gap]': 'gapValue()',
   },
 })
@@ -71,10 +81,7 @@ export class CngxStack {
   readonly align = input<StackAlign>('stretch');
 
   /** @internal */
-  protected readonly alignItems = computed(() => {
-    const alignValue = this.align();
-    return alignValue === 'stretch' ? 'stretch' : `flex-${alignValue}`;
-  });
+  protected readonly alignItems = computed(() => ALIGN_ITEMS[this.align()]);
 
   /** @internal */
   protected readonly gapValue = computed(() => GAP_DEFAULTS[this.gap()]);

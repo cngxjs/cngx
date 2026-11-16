@@ -23,7 +23,11 @@
  *   (`CngxNavFooter`) - top and bottom regions of a nav container
  * - `.cngx-nav-mark` (`CngxNavMark`) - logo or avatar in the icon box of a
  *   header or footer, at the row icon x; `.cngx-nav-name` (`CngxNavName`) -
- *   the name next to it, at the row label x, truncated with an ellipsis
+ *   the name next to it, at the row label x, truncated with an ellipsis. A
+ *   `cngx-avatar` as mark takes the icon box size whatever its `size`, with
+ *   initials at `--cngx-nav-mark-font-size`. For larger marks raise
+ *   `--cngx-nav-icon-size` on the container: rows and marks grow together
+ *   and stay aligned
  * - `.cngx-nav-rail-tooltip` - the label tooltip `injectNavRailTooltip`
  *   adds to a rail; with `data-cngx-rail-side="end"` it opens at the row's
  *   inline start, as the group flyout does
@@ -44,6 +48,12 @@
  *   the inline-start edge (`::after`, so it coexists with the letter)
  * - `.cngx-nav-group--open` - the group chevron turns to point down
  * - `.cngx-nav-group-content--open` - grid rows `0fr -> 1fr`
+ * - `[data-nav-railed='true']` on the container (written by `CngxNavRailed`,
+ *   `'false'` while expanded) - the rows are a crop of their expanded selves: each row and group head keeps
+ *   its place and pushes its label, badge and chevron past the clipped row
+ *   end, so the icon or letter stays in the icon box; section labels paint
+ *   nothing; the header and footer name fades out. Rows inside a group
+ *   content are left alone, so a flyout shows them at full width.
  *
  * **Nav row states**
  *
@@ -80,6 +90,14 @@
  *   `--cngx-color-border`
  * - `--cngx-nav-badge-bg` / `-color` -> `--cngx-color-primary-strong` /
  *   `--cngx-color-on-primary-strong`
+ * - `--cngx-nav-railed-gap` -> `100vw`: the gap that pushes a railed row's
+ *   label past the row end; anything wider than the rail works
+ * - `--cngx-nav-railed-size` -> SET on every `[data-nav-railed]` host to
+ *   `2 * (--cngx-nav-link-inset + --cngx-nav-link-padding-inline) +
+ *   --cngx-nav-icon-size`: the rail width, border not included, at which the
+ *   icon box sits centred. Read from the host's own row tokens. A container
+ *   sizes its rail from it (`cngx-sidenav` does; a `cngxSidebar` SETs
+ *   `--cngx-sidebar-rail-size: calc(var(--cngx-nav-railed-size) + border)`)
  *
  * **Dark mode**
  *
@@ -352,6 +370,21 @@
   }
 
   /**
+   * Rail width at which the icon box sits centred, border not included:
+   * `2 * (inset + inline padding) + icon size`. SET on every
+   * `[data-nav-railed]` host from that host's row tokens; read it, do not
+   * SET it. A container sizes its rail from it plus its own border.
+   * @group Layout
+   * @see [[--cngx-nav-link-inset]]
+   * @see [[--cngx-nav-link-padding-inline]]
+   * @see [[--cngx-nav-icon-size]]
+   */
+  @property --cngx-nav-railed-size {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Gap between the icon box and the row label. Unset by default (falls back
    * to `--cngx-space-sm`, so it follows `[data-density]`).
    * @group Layout
@@ -367,6 +400,18 @@
    * @group Surface
    */
   @property --cngx-nav-link-ink {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Font size of the initials of a `cngx-avatar` used as header or footer
+   * mark. Unset by default (falls back to `0.625rem`, which fits the
+   * default 1.25rem icon box).
+   * @group Typography
+   * @see [[--cngx-nav-icon-size]]
+   */
+  @property --cngx-nav-mark-font-size {
     syntax: '*';
     inherits: true;
   }
@@ -958,11 +1003,59 @@
     color: var(--cngx-nav-link-ink, currentColor);
   }
 
+  /* A cngx-avatar as mark fills the icon box whatever its size rung, so it
+     sits at the row icon x. Three classes, so it beats the size rung of the
+     avatar's @scope. */
+  :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-mark.cngx-avatar {
+    --cngx-avatar-size: var(--cngx-nav-icon-size, 1.25rem);
+    --cngx-avatar-font-size: var(--cngx-nav-mark-font-size, 0.625rem);
+  }
+
   .cngx-nav-name {
     min-inline-size: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Railed: a crop of the expanded rows, nothing moves. The gap only has to
+     be wider than the rail; the viewport width always is, so the rows need
+     no knowledge of the container. */
+  /* The rail width that centres the icon box, border not included. SET on
+     the host, so the inset and padding the host SETs count. */
+  [data-nav-railed] {
+    --cngx-nav-railed-size: calc(
+      2 *
+        (
+          var(--cngx-nav-link-inset, 4px) +
+            var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
+        ) +
+        var(--cngx-nav-icon-size, 1.25rem)
+    );
+  }
+
+  [data-nav-railed='true'] :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *) {
+    overflow: clip;
+    white-space: nowrap;
+    gap: var(--cngx-nav-railed-gap, 100vw);
+  }
+
+  /* Section labels keep their box and their text for assistive technology
+     but paint none, in every colour mode. */
+  [data-nav-railed='true'] .cngx-nav-label:not(.cngx-nav-group-content *) {
+    overflow: clip;
+    white-space: nowrap;
+    clip-path: inset(100%);
+  }
+
+  [data-nav-railed='true'] :is(.cngx-nav-header, .cngx-nav-footer) {
+    overflow: clip;
+    white-space: nowrap;
+  }
+
+  /* Opacity, so the name stays in the accessibility tree. */
+  [data-nav-railed='true'] :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
+    opacity: 0;
   }
 
   /* Group content: grid-rows 0fr -> 1fr; one wrapper child required. */

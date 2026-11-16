@@ -30,29 +30,27 @@ export const STORY: DemoSpec = {
     { path: '/reports', label: 'Reports' },
   ];`,
   template: `
-  <nav class="demo-nav__frame">
+  <nav>
     @for (link of links; track link.path) {
       <a
         cngxNavLink
         [active]="activeLink() === link.path"
         [href]="link.path"
         (click)="activeLink.set(link.path); $event.preventDefault()"
-        class="demo-nav__link"
-        [class.demo-nav__link--active]="activeLink() === link.path"
       >
         {{ link.label }}
       </a>
     }
 
-    <div class="demo-nav__divider"></div>
+    <hr />
 
-    <a cngxNavLink [depth]="0" [active]="false" href="#depth-0" class="demo-nav__link">
+    <a cngxNavLink [depth]="0" [active]="false" href="#depth-0">
       Top level (depth 0)
     </a>
-    <a cngxNavLink [depth]="1" [active]="false" href="#depth-1" class="demo-nav__link demo-nav__link--indent-1">
+    <a cngxNavLink [depth]="1" [active]="false" href="#depth-1">
       Nested (depth 1)
     </a>
-    <a cngxNavLink [depth]="2" [active]="false" href="#depth-2" class="demo-nav__link demo-nav__link--indent-2">
+    <a cngxNavLink [depth]="2" [active]="false" href="#depth-2">
       Deep nested (depth 2)
     </a>
   </nav>`,

@@ -728,7 +728,8 @@ describe('select-family field skins', () => {
   });
 
   // The single select stands in for the `display: contents` roots, the tree
-  // for the block roots.
+  // for the block roots. The hosts sit under a 44px touch floor, so the affix
+  // reaches over the row padding and border to the full row height.
   it.each([
     ['.affix-row', '.affix-select'],
     ['.affix-tree-row', '.affix-tree'],
@@ -738,8 +739,7 @@ describe('select-family field skins', () => {
     const row = root.querySelector<HTMLElement>(rowSel)!;
     expect(host.classList).toContain('cngx-field-affix--interactive');
     const hostHeight = host.getBoundingClientRect().height;
-    const rowContent = row.clientHeight - px(row, 'padding-top') - px(row, 'padding-bottom');
-    expect(hostHeight).toBeCloseTo(rowContent, 0);
+    expect(hostHeight).toBeCloseTo(row.getBoundingClientRect().height, 0);
     expect(trigger(root, hostSel).getBoundingClientRect().height).toBeCloseTo(hostHeight, 0);
   });
 

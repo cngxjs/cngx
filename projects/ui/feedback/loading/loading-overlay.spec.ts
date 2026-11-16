@@ -35,7 +35,7 @@ function createMockAsyncState(
 
 @Component({
   template: `
-    <cngx-loading-overlay [loading]="loading()" [delay]="delay()" [minDuration]="minDuration()">
+    <cngx-loading-overlay [loading]="loading()" [delay]="delay()" [minDwell]="minDwell()">
       <div class="content">Hello</div>
     </cngx-loading-overlay>
   `,
@@ -44,7 +44,7 @@ function createMockAsyncState(
 class BoolHost {
   readonly loading = signal(false);
   readonly delay = signal(200);
-  readonly minDuration = signal(500);
+  readonly minDwell = signal(500);
 }
 
 @Component({
@@ -63,7 +63,7 @@ class StateHost {
 @Component({
   template: `
     <button type="button" class="outside">Outside</button>
-    <cngx-loading-overlay [loading]="loading()" [delay]="200" [minDuration]="0">
+    <cngx-loading-overlay [loading]="loading()" [delay]="200" [minDwell]="0">
       <button type="button" class="inside">Inside</button>
     </cngx-loading-overlay>
   `,
@@ -73,10 +73,10 @@ class FocusHost {
   readonly loading = signal(false);
 }
 
-function setupBool(opts: { delay?: number; minDuration?: number } = {}) {
+function setupBool(opts: { delay?: number; minDwell?: number } = {}) {
   const fixture = TestBed.createComponent(BoolHost);
   if (opts.delay != null) fixture.componentInstance.delay.set(opts.delay);
-  if (opts.minDuration != null) fixture.componentInstance.minDuration.set(opts.minDuration);
+  if (opts.minDwell != null) fixture.componentInstance.minDwell.set(opts.minDwell);
   fixture.detectChanges();
   TestBed.flushEffects();
   const host = fixture.componentInstance;
@@ -311,7 +311,7 @@ describe('CngxLoadingOverlay', () => {
   it('does not re-announce on a language flip', () => {
     const copy = signal<CngxFeedbackI18nOverrides>({});
     TestBed.configureTestingModule({ providers: [provideFeedbackI18n(copy)] });
-    const { fixture, host, el } = setupBool({ delay: 0, minDuration: 0 });
+    const { fixture, host, el } = setupBool({ delay: 0, minDwell: 0 });
     const settle = (): void => {
       fixture.detectChanges();
       TestBed.flushEffects();

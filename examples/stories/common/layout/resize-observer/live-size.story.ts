@@ -38,6 +38,18 @@ export const STORY: DemoSpec = {
       Waiting for first measurement...
     }
   </div>`,
+  css: `.demo-resize-hint {
+  margin-bottom: 8px;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}
+
+.demo-resize-box {
+  background: var(--cngx-color-surface-alt, var(--cngx-ex-surface-alt, #f8f9fa));
+  border: 1px solid var(--cngx-color-border, var(--cngx-ex-border, #d0d5dd));
+  border-radius: var(--cngx-radius-md, 6px);
+  font-size: 0.875rem;
+  color: var(--cngx-color-text-muted, var(--cngx-ex-muted, #6b7280));
+}`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">isReady</span>

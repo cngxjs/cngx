@@ -11,27 +11,27 @@ export const STORY: DemoSpec = {
   artifact: 'standalone',
   focus: ['composition', 'behavior'],
   apiComponents: ['CngxDrawer', 'CngxDrawerPanel'],
-  moduleImports: ["import { CngxDrawer, CngxDrawerPanel } from '@cngx/common/layout';"],
-  imports: ['CngxDrawer', 'CngxDrawerPanel'],
+  moduleImports: [
+    "import { CngxDrawer, CngxDrawerPanel } from '@cngx/common/layout';",
+    "import { CngxStack } from '@cngx/ui/layout';",
+  ],
+  imports: ['CngxDrawer', 'CngxDrawerPanel', 'CngxStack'],
   setup: `protected readonly controlledOpen = signal(false);`,
   template: `  <div cngxDrawer #ctrlDrawer="cngxDrawer"
        [cngxDrawerOpened]="controlledOpen()"
        (openedChange)="controlledOpen.set($event)"
-       class="demo-drawer-container demo-drawer-container--bordered">
-    <div class="demo-drawer-layout">
-      <nav id="ctrl-panel" [cngxDrawerPanel]="ctrlDrawer" position="left" label="Controlled panel"
-           class="demo-drawer-panel">
-        <div class="demo-drawer-panel-content">
-          <strong>Controlled</strong>
-          <p>State owned by parent signal.</p>
-          <button type="button" class="sort-btn" (click)="ctrlDrawer.close()">Close</button>
-        </div>
-      </nav>
+       class="cngx-drawer">
+    <nav id="ctrl-panel" [cngxDrawerPanel]="ctrlDrawer" position="left" label="Controlled panel">
+      <cngx-stack gap="sm" align="start" style="padding: var(--cngx-space-md, 1rem)">
+        <strong>Controlled</strong>
+        <p>State owned by parent signal.</p>
+        <button type="button" (click)="ctrlDrawer.close()">Close</button>
+      </cngx-stack>
+    </nav>
 
-      <main class="demo-drawer-main">
-        <p>Controlled mode - the drawer opens and closes via the external signal.</p>
-      </main>
-    </div>
+    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+      <p>Controlled mode - the drawer opens and closes via the external signal.</p>
+    </main>
   </div>`,
   templateChrome: `<div class="button-row">
     <button type="button" class="sort-btn" aria-controls="ctrl-panel"

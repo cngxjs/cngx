@@ -91,6 +91,13 @@ describe('CngxSidebar', () => {
       expect(nav.hasAttribute('role')).toBe(false);
     });
 
+    it('renders the side it sits on for skins', () => {
+      const { el, set } = setup();
+      expect(el.getAttribute('data-sidebar-side')).toBe('start');
+      set((h) => h.side.set('end'));
+      expect(el.getAttribute('data-sidebar-side')).toBe('end');
+    });
+
     it('keeps a collapsed rail operable', () => {
       const { el, set } = setup();
       set((h) => h.collapsed.set(true));
