@@ -32,6 +32,7 @@ import { askOnboarding, askPreset, givenAnswers, libsFloorNote, presetChangeNote
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
 import { planAppShell } from './steps/app-shell';
 import { planDependencies } from './steps/dependencies';
+import { planDocumentDirection } from './steps/document-direction';
 import { planHelperReadme } from './steps/helper-readme';
 import { planLint } from './steps/lint';
 import { readInstallManifest, manifestOf, unreadableCopyPath } from './shell/install-manifest';
@@ -74,6 +75,8 @@ function planSteps({ withdrawn, workspaceLibs, projectSteps, explicitFeedback, s
     planTheme,
     planProviders,
     (facts, answers, versions) => planStarter(facts, answers, versions, projectSteps, starterTemplates),
+    // After the starter: its favicon edit only matches the stock index.html.
+    planDocumentDirection,
     (facts, answers, versions) =>
       planAppShell(facts, answers, versions, projectSteps, explicitFeedback, writesStarter(facts, answers)),
     planLint,

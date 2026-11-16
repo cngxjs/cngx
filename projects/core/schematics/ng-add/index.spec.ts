@@ -737,7 +737,7 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
     });
   });
 
-  it('provides the rtl direction for an RTL source locale', async () => {
+  it('writes the rtl direction into index.html for an RTL source locale, not a provider', async () => {
     const tree = createFixtureTree('standalone-app', {
       'angular.json': withWorkspace((project) => {
         project['i18n'] = { sourceLocale: 'ar' };
@@ -745,7 +745,22 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
     });
     const run = await runRule(ngAdd({}), tree);
 
-    expect(run.tree.readContent('src/app/app.config.ts')).toContain("provideDirection('rtl')");
+    expect(run.tree.readContent('src/index.html')).toContain('<html lang="en" dir="rtl">');
+    expect(run.tree.readContent('src/app/app.config.ts')).not.toContain('provideDirection');
+
+    vi.stubEnv('CI', '');
+    vi.stubEnv('NO_COLOR', '1');
+    process.stdout.isTTY = true;
+    terminal.confirms = [];
+    try {
+      const again = await runRule(ngAdd({ quiet: true }), run.tree);
+
+      expect(terminal.confirms).not.toContain('Apply these changes?');
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      expect(again.logs).toContain('  Write the rtl direction into <html> of src/index.html');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   describe('an existing app', () => {
@@ -1149,6 +1164,31 @@ bootstrapApplication(App, mergeApplicationConfig(baseConfig))
       expect(styles).toContain('\nbody {\n  margin: 0;\n}\n');
       expect(styles).toContain('app-root > .shell > .top {');
       expect(run.tree.readText('src/app/app.css')).not.toContain('.top {');
+    });
+
+    it('swaps the favicon link before it writes the rtl direction into index.html', async () => {
+      const workspace = JSON.parse(SCAFFOLD['angular.json']) as { projects: Record<string, Record<string, unknown>> };
+      workspace.projects['fixture-app']['i18n'] = { sourceLocale: 'ar' };
+      const tree = createFixtureTree('scaffold-21', { 'angular.json': JSON.stringify(workspace, null, 2) });
+      const run = await runRule(ngAdd({ preset: 'full', yes: true }), tree);
+
+      expect(run.tree.readText('src/index.html')).toBe(
+        SCAFFOLD['src/index.html']
+          .replace('<link rel="icon" type="image/x-icon" href="favicon.ico">', '<link rel="icon" type="image/svg+xml" href="favicon.svg">')
+          .replace('<html lang="en">', '<html lang="en" dir="rtl">'),
+      );
+      expect(run.tree.readText('public/favicon.svg')).toContain('<title>cngx</title>');
+
+      const again = await runRule(ngAdd({ preset: 'full', yes: true, quiet: true }), run.tree);
+
+      expect(again.logs).toContain('cngx is already set up; nothing changed.');
+      for (const label of [
+        'Create public/favicon.svg',
+        'Point the icon link in src/index.html at the cngx favicon',
+        'Write the rtl direction into <html> of src/index.html',
+      ]) {
+        expect(again.logs).toContain(`  ${label}`);
+      }
     });
 
     it('leaves the scaffold to recommended and to full with --no-starter', async () => {

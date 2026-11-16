@@ -58,17 +58,19 @@ function filePlan(
 
 /**
  * The rename table as planned changes: one edit per `.ts` or `.html` file
- * of the workspace it changes, and a note for every spot it cannot reach
+ * below `roots` (the source roots of the workspace projects) it changes, and a note for every spot it cannot reach
  * (a template that does not parse, a dynamic import, a microsyntax key).
  * It reads the tree and never writes it; `applyChangePlan` applies the edits.
  */
-export function planRenames(table: RenameTable, tree: Tree, provenance: Provenance): StepResult {
+export function planRenames(table: RenameTable, tree: Tree, roots: readonly string[], provenance: Provenance): StepResult {
   if (isEmptyRenameTable(table)) {
     return { changes: [], skipped: [] };
   }
   const inSource = createSourceRenamer(table);
   const inTemplate = createTemplateRenamer(table);
-  const files = listFiles(tree, '/', { skipDirs: NON_SOURCE_DIRS, skipRootDirs: BUILD_OUTPUT_DIRS, accept: isRenameTarget });
+  const options = { skipDirs: NON_SOURCE_DIRS, skipRootDirs: BUILD_OUTPUT_DIRS, accept: isRenameTarget };
+  // Nested project roots overlap, so a file is planned once.
+  const files = [...new Set(roots.flatMap((root) => listFiles(tree, root, options)))].sort();
   const changes = files.flatMap((path) =>
     filePlan(path, tree.readText(path), path.endsWith('.html') ? inTemplate : inSource, provenance),
   );

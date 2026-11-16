@@ -44,7 +44,7 @@ export function createFacts(overrides: Partial<ProjectFacts> = {}): ProjectFacts
       outlets: { kind: 'editable', elements: [], classes: [], routerOutlet: true },
     },
     scaffold: { kind: 'custom' },
-    indexHtml: { path: 'src/index.html', state: 'untouched' },
+    indexHtml: { path: 'src/index.html', state: 'untouched', dir: false },
     favicon: undefined,
     globalStyles: { path: 'src/styles.css', state: 'untouched', fingerprint: undefined },
     languageFile: 'absent',

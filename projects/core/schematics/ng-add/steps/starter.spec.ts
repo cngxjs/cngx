@@ -347,7 +347,7 @@ describe('planStarter', () => {
   });
 
   it.each([
-    ['an index.html that is not untouched', { indexHtml: { path: 'src/index.html', state: 'custom' } }, starterLeftOutText('index-custom', 'src/index.html')],
+    ['an index.html that is not untouched', { indexHtml: { path: 'src/index.html', state: 'custom', dir: false } }, starterLeftOutText('index-custom', 'src/index.html')],
     ['a favicon.svg that is already there', { favicon: { path: 'public/favicon.svg', fingerprint: '00000000' } }, starterLeftOutText('favicon-taken', 'public/favicon.svg')],
     ['no public folder', { favicon: undefined }, starterLeftOutText('no-public-folder')],
   ] as const)('writes the starter but leaves the icon to %s with a note', (_name, overrides, reason) => {
@@ -372,7 +372,7 @@ describe('planStarter', () => {
   });
 
   it('leaves the icon alone without a word when there is no index.html', () => {
-    const result = planStarter(untouchedFacts({ indexHtml: { path: 'src/index.html', state: 'absent' } }), FULL, VERSIONS, [], STARTER_TEMPLATES);
+    const result = planStarter(untouchedFacts({ indexHtml: { path: 'src/index.html', state: 'absent', dir: false } }), FULL, VERSIONS, [], STARTER_TEMPLATES);
 
     expect(result.changes.filter((change) => change.kind !== 'edit-file' && change.kind !== 'raise-budget')).toEqual([]);
   });
@@ -384,7 +384,7 @@ describe('planStarter', () => {
     );
     const facts = untouchedFacts({
       scaffold: { kind: 'starter', files: FILES, fingerprints: starterFingerprints(bodies), selector: 'app-root' },
-      indexHtml: { path: 'src/index.html', state: 'starter' },
+      indexHtml: { path: 'src/index.html', state: 'starter', dir: false },
       favicon: { path: 'public/favicon.svg', fingerprint: contentFingerprint(STARTER_TEMPLATES.favicon) },
       globalStyles: { path: 'src/styles.css', state: 'starter', fingerprint: '00000000' },
     });
