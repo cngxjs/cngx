@@ -64,7 +64,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
  * text of the rendered result template (`aria-hidden` parts skipped; read
  * from its cell even while the dwell still hides it), else
  * `CNGX_INTERACTIVE_I18N.asyncClickSucceeded` / `asyncClickFailed`.
- * `[autoAnnounce]="false"` keeps the region empty. Under
+ * `announce="never"` keeps the region empty. Under
  * `withCloseOnSuccess()` the panel closes once per success; focus returns
  * to the trigger through the panel's restore claim; `[closeOnSuccessDelay]`
  * overrides the config per confirm (`null` turns it off). A success that closes
@@ -143,7 +143,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
       inputs: [
         'succeededAnnouncement',
         'failedAnnouncement',
-        'autoAnnounce',
+        'announce',
         'pendingLabel',
         'succeededLabel',
         'failedLabel',

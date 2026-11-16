@@ -235,7 +235,7 @@ class PlainConfirmHost {
         [disabledReason]="reason()"
         [succeededAnnouncement]="succeeded()"
         [failedAnnouncement]="failed()"
-        [autoAnnounce]="auto()"
+        [announce]="announce()"
         #act="cngxPopoverAction"
       >
         Save
@@ -256,7 +256,7 @@ class ConfigurableHost {
   readonly reason = signal<string | undefined>(undefined);
   readonly succeeded = signal<string | undefined>(undefined);
   readonly failed = signal<string | undefined>(undefined);
-  readonly auto = signal<boolean | undefined>(undefined);
+  readonly announce = signal<'auto' | 'always' | 'never'>('auto');
   outcome: 'success' | 'error' = 'success';
   runs = 0;
   readonly saveAction = () => {
@@ -1212,9 +1212,9 @@ describe('CngxPopoverAction', () => {
       expect(region(fixture).textContent).toBe('Draft not stored');
     });
 
-    it('keeps the region empty with [autoAnnounce]="false"', async () => {
+    it('keeps the region empty with announce="never"', async () => {
       const { fixture } = setup(ConfigurableHost);
-      fixture.componentInstance.auto.set(false);
+      fixture.componentInstance.announce.set('never');
       fixture.detectChanges();
       const live = region(fixture);
       expect(live).toBeTruthy();

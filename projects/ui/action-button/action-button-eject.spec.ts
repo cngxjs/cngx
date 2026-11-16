@@ -46,7 +46,7 @@ import { CngxActionToast } from './action-toast.directive';
       inputs: [
         'succeededAnnouncement',
         'failedAnnouncement',
-        'autoAnnounce',
+        'announce',
         'pendingLabel',
         'succeededLabel',
         'failedLabel',
