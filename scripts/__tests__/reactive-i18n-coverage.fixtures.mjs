@@ -284,14 +284,8 @@ export const COPY_TOKENS = [
   {
     token: 'CNGX_FORM_FIELD_CONFIG',
     kind: 'config',
-    copyKeys: ['errorMessages', 'constraintHints'],
-    settingsKeys: [
-      'autocompleteMappings',
-      'noSpellcheckFields',
-      'requiredMarker',
-      'errorStrategy',
-      'skin',
-    ],
+    copyKeys: ['errorMessages', 'constraintHints', 'requiredMarker'],
+    settingsKeys: ['autocompleteMappings', 'noSpellcheckFields', 'errorStrategy', 'skin'],
   },
   {
     token: 'CNGX_FILTER_BUILDER_CONFIG',

@@ -31,11 +31,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.component.ts
  * @since 0.1.0
  * @relatedTo CngxFormFieldPresenter, CngxLabel, CngxHint, CngxError, CngxFieldErrors, CngxBindField, CngxErrorScopeFieldBridge, CngxFieldSkinHost, withFieldSkin
- * @playground Basic input ./examples/basic-input/basic-input.component.ts
- * @playground Validation states ./examples/validation-states/validation-states.component.ts
- * @playground Form-error summary ./examples/form-error-summary/form-error-summary.component.ts
- * @playground Input add-ons ./examples/input-addons/input-addons.component.ts
- * @playground Skins ./examples/skins/skins.component.ts
+ * <example-url>/#/forms/field/label/basic</example-url>
+ * <example-url>/#/forms/field/field-errors/multiple-validators</example-url>
+ * <example-url>/#/forms/field/form-errors/basic</example-url>
+ * <example-url>/#/forms/field/affix/icon-and-icon-button</example-url>
+ * <example-url>/#/forms/field/skin/outline-anatomy</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * <example-url>/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>

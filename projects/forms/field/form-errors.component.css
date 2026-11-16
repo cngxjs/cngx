@@ -1,7 +1,7 @@
 /**
  * @overview
- * Default visuals for `CngxFieldErrors` - bulleted error list rendered
- * under a form field. The host carries `.cngx-form-errors` and stays
+ * Default visuals for `CngxFormErrors` - the bulleted error summary of a
+ * whole form, one link per error. The host carries `.cngx-form-errors` and stays
  * `display: contents`; the inner `.cngx-form-errors__list` holds the
  * list typography and color.
  *
@@ -15,48 +15,15 @@
  *
  * **Inheritance**
  *
- * Tokens delegate to the foundation so a brand override propagates
- * without per-component theming:
+ * Both tokens are unregistered on purpose, so an unset token falls through
+ * to the field-level recipe instead of a registered initial:
  *
- * - `--cngx-form-errors-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-form-errors-font-size` -> `--cngx-field-hint-font-size`, the
+ *   size of the field-level error lines
  * - `--cngx-form-errors-color` -> `--cngx-field-error-color` ->
- *   `--cngx-color-danger`
- *
- * A `:root` delegating rule pins `--cngx-form-errors-color` to
- * `--cngx-color-danger` so a dark-mode swap on the foundation token
- * cascades through.
+ *   `--cngx-color-danger-text`, the danger text rung each scheme block
+ *   restates, so the summary holds 4.5:1 in light, dark and a dark island
  */
-
-@layer cngx.tokens {
-  /**
-   * Font-size of the error list. Falls back through
-   * `--cngx-font-size-sm`. `syntax: '*'` allows `rem`.
-   * @group Typography
-   */
-  @property --cngx-form-errors-font-size {
-    syntax: '*';
-    inherits: true;
-    initial-value: 0.875rem;
-  }
-
-  /**
-   * Text color of the error list. Falls back through
-   * `--cngx-field-error-color` and then `--cngx-color-danger`.
-   * @group Surface
-   * @see [[--cngx-color-danger]]
-   */
-  @property --cngx-form-errors-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.6 0.18 25);
-  }
-
-  /* Delegating token - error text tracks the danger chain so a
-   * dark-mode swap on `--cngx-color-danger` cascades through. */
-  :root {
-    --cngx-form-errors-color: var(--cngx-color-danger);
-  }
-}
 
 @layer cngx.components {
   @scope (.cngx-form-errors) {
@@ -66,11 +33,18 @@
 
     .cngx-form-errors__list {
       margin: 0;
-      padding: 0 0 0 1.25em;
-      font-size: var(--cngx-form-errors-font-size, var(--cngx-font-size-sm, 0.875rem));
+      padding-block: 0;
+      padding-inline: 1.25em 0;
+      font-size: var(--cngx-form-errors-font-size, var(--cngx-field-hint-font-size, 0.8125rem));
       color: var(
         --cngx-form-errors-color,
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)))
+        var(
+          --cngx-field-error-color,
+          var(
+            --cngx-color-danger-text,
+            oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+          )
+        )
       );
     }
 

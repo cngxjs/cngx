@@ -10,7 +10,12 @@ import {
   withTreetableLabels,
   type TreetableLabels,
 } from '@cngx/data-display/treetable';
-import type { CngxFormFieldI18nOverrides, ErrorMessageMap } from '@cngx/forms/field';
+import {
+  provideFormFieldI18n,
+  withFormFieldI18nLabels,
+  type CngxFormFieldI18nOverrides,
+  type ErrorMessageMap,
+} from '@cngx/forms/field';
 import {
   provideFilterBuilderConfigAt,
   withFilterBuilderI18n,
@@ -194,8 +199,28 @@ export const ERROR_MESSAGES_DE: ErrorMessageMap = {
   required: () => 'Pflichtfeld.',
   minLength: (e) => `Mindestens ${minLengthOf(e)} Zeichen.`,
 };
+const INVALID_DE = 'Dieser Wert ist ungültig.';
+const bounded =
+  (key: 'min' | 'max' | 'minLength' | 'maxLength', message: (bound: string) => string) =>
+  (error: unknown): string => {
+    const bound = (error as Record<string, unknown>)[key];
+    return typeof bound === 'number' ? message(bound.toLocaleString('de-DE')) : INVALID_DE;
+  };
 export const FORM_FIELD_DE: CngxFormFieldI18nOverrides = {
-  errorMessages: { timeRange: () => 'Ungültige Uhrzeit.' },
+  errorMessages: {
+    required: () => 'Dieses Feld ist ein Pflichtfeld.',
+    requiredTrue: () => 'Dieses Kästchen ankreuzen, um fortzufahren.',
+    email: () => 'Gültige E-Mail-Adresse eingeben.',
+    min: bounded('min', (n) => `Wert von mindestens ${n} eingeben.`),
+    max: bounded('max', (n) => `Wert von höchstens ${n} eingeben.`),
+    minLength: bounded('minLength', (n) => `Mindestens ${n} Zeichen eingeben.`),
+    maxLength: bounded('maxLength', (n) => `Höchstens ${n} Zeichen eingeben.`),
+    pattern: () => 'Wert im erwarteten Format eingeben.',
+    parse: () => 'Gültigen Wert eingeben.',
+    timeRange: () => 'Ungültige Uhrzeit.',
+  },
+  invalid: INVALID_DE,
+  errorSummaryItem: '{label}: {message}',
 };
 export const INPUT_ARIA_DE: Partial<InputAriaLabels> = {
   clear: 'Leeren',
@@ -398,6 +423,7 @@ export const DE_PACK: Provider[] = [
   ...provideTreetableAt(withTreetableLabels(DEMO_TREETABLE_LABELS)),
   ...provideFilterBuilderConfigAt(withFilterBuilderI18n(DEMO_FILTER_BUILDER_LABELS)),
   ...provideInputConfigAt(withInputAriaLabels(DEMO_INPUT_ARIA_LABELS)),
+  provideFormFieldI18n(withFormFieldI18nLabels(DEMO_FORM_FIELD_LABELS)),
   ...provideSelectConfigAt(withFallbackLabels(DEMO_SELECT_FALLBACK_LABELS)),
   provideKpiI18n(withKpiI18nLabels(DEMO_KPI_LABELS)),
   provideInteractiveI18n(withInteractiveI18nLabels(DEMO_INTERACTIVE_LABELS)),

@@ -42,7 +42,6 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/listbox-field-bridge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBindField, CngxFormField, CngxListbox, adaptFormControl
- * @playground Single and multi via cngxListboxFieldBridge ./examples/listbox-bridge/listbox-bridge.component.ts
  * <example-url>/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
  * <example-url>/#/forms/field/listbox-forms/signal-forms-single-select</example-url>

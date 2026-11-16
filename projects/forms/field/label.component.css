@@ -20,31 +20,13 @@
  * atoms render the same semantic marker:
  *
  * - `--cngx-field-required-color` -> `--cngx-field-error-color` ->
- *   `--cngx-color-danger`
+ *   `--cngx-color-danger-text`
  *
- * A `:root` delegating rule pins the token to `--cngx-color-danger`
- * so a dark-mode swap on the foundation token cascades through.
+ * The token is unregistered on purpose: a registered colour always
+ * resolves, so it would skip the field error hook and pin the light value
+ * inside a dark island. The danger text rung holds 4.5:1 in every scheme
+ * block that restates it.
  */
-
-@layer cngx.tokens {
-  /**
-   * Color of the required-marker glyph next to the label. Falls back
-   * through `--cngx-field-error-color` and then `--cngx-color-danger`.
-   * @group State / Required
-   * @see [[--cngx-color-danger]]
-   */
-  @property --cngx-field-required-color {
-    syntax: '<color>';
-    inherits: true;
-    initial-value: oklch(0.6 0.18 25);
-  }
-
-  /* Delegating token - required-marker tracks the danger chain so a
-   * dark-mode swap on `--cngx-color-danger` cascades through. */
-  :root {
-    --cngx-field-required-color: var(--cngx-color-danger);
-  }
-}
 
 @layer cngx.components {
   @scope (.cngx-label) {
@@ -62,7 +44,13 @@
     .cngx-label__required {
       color: var(
         --cngx-field-required-color,
-        var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)))
+        var(
+          --cngx-field-error-color,
+          var(
+            --cngx-color-danger-text,
+            oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+          )
+        )
       );
       margin-inline-start: 0.125em;
     }
