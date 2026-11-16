@@ -133,8 +133,13 @@ export class CngxChipInGroup<T = unknown> {
 
   protected readonly chipDisabled = computed(() => this.parent.isDisabled() || this.disabled());
 
+  /** Disabled, or the group is the control of a readonly field: no value write, focus stays. */
+  private readonly interactionLocked = computed(
+    () => this.chipDisabled() || this.parent.isReadonly(),
+  );
+
   protected handleClick(event: MouseEvent): void {
-    if (this.chipDisabled() || isCloseButtonClick(event)) {
+    if (this.interactionLocked() || isCloseButtonClick(event)) {
       return;
     }
     this.parent.toggle(this.value());
@@ -145,6 +150,9 @@ export class CngxChipInGroup<T = unknown> {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.parent.toggle(this.value());
   }
 
@@ -153,6 +161,9 @@ export class CngxChipInGroup<T = unknown> {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.parent.remove(this.value());
   }
 }

@@ -66,7 +66,7 @@ import {
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'isDisabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
@@ -145,9 +145,9 @@ export class CngxButtonMultiToggleGroup<T = unknown>
     return this.controller.isSelected(value);
   }
 
-  /** Adds or removes `value` by its `keyFn` key; a no-op while `disabled`. */
+  /** Adds or removes `value` by its `keyFn` key; a no-op while disabled or readonly. */
   toggle(value: T): void {
-    if (this.disabled()) {
+    if (this.isDisabled() || this.isReadonly()) {
       return;
     }
     this.controller.toggle(value);
@@ -155,6 +155,7 @@ export class CngxButtonMultiToggleGroup<T = unknown>
 
   private readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-button-multi-toggle-group-',
+    control: this,
     invalid: this.invalid,
     state: this.state,
     label: this.label,
@@ -176,6 +177,12 @@ export class CngxButtonMultiToggleGroup<T = unknown>
 
   /** True while the surrounding `cngx-form-field` or a `CngxErrorAggregator` shows an error. */
   readonly errorState = this.groupHost.errorState;
+
+  /** The group's own `disabled` OR the disabled state of the field this group is the control of. */
+  readonly isDisabled = computed(() => this.disabled() || this.groupHost.fieldDisabled());
+
+  /** The group is the control of a readonly field; leaves keep focus and skip their value write. */
+  readonly isReadonly = computed(() => this.groupHost.fieldReadonly());
 
   protected handleFocusIn(): void {
     this.groupHost.handleFocusIn();

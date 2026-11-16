@@ -30,7 +30,7 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
  * arrow-key navigation in the parent group (driven by
  * `CngxRovingTabindex`) skips per-radio-disabled leaves
  * automatically. Group-level `[disabled]` is a separate cascade
- * via `radioDisabled = computed(() => group.disabled() ||
+ * via `radioDisabled = computed(() => group.isDisabled() ||
  * disabled())`; it blocks click + Space/Enter + auto-select
  * (`consumePendingArrowSelect` returns false when the group is
  * disabled) but is NOT forwarded to roving - a fully-disabled
@@ -149,7 +149,12 @@ export class CngxRadio<T = unknown> {
 
   protected readonly radioChecked = computed(() => this.group.value() === this.value());
 
-  protected readonly radioDisabled = computed(() => this.group.disabled() || this.disabled());
+  protected readonly radioDisabled = computed(() => this.group.isDisabled() || this.disabled());
+
+  /** Disabled, or the group is the control of a readonly field: no value write, focus stays. */
+  private readonly interactionLocked = computed(
+    () => this.radioDisabled() || this.group.isReadonly(),
+  );
 
   protected readonly indicatorSkin = computed(() => this.skin() ?? this.group.skin());
 
@@ -184,7 +189,7 @@ export class CngxRadio<T = unknown> {
   }
 
   protected handleSelect(): void {
-    if (this.radioDisabled()) {
+    if (this.interactionLocked()) {
       return;
     }
     this.group.value.set(this.value());
@@ -195,6 +200,9 @@ export class CngxRadio<T = unknown> {
       return;
     }
     event.preventDefault();
+    if (this.interactionLocked()) {
+      return;
+    }
     this.group.value.set(this.value());
   }
 }

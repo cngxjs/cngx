@@ -94,7 +94,8 @@ The leaf injects `CNGX_RADIO_GROUP` and gets a `CngxRadioGroupContract<T>`. Deco
 ```ts
 export interface CngxRadioGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
-  readonly disabled: Signal<boolean>;
+  readonly isDisabled: Signal<boolean>;
+  readonly isReadonly: Signal<boolean>;
   readonly name: Signal<string>;
   readonly skin: Signal<CngxRadioSkin | undefined>;
   register(radio: CngxRadioRegistration<T>): void;
@@ -121,7 +122,7 @@ export interface CngxRadioRegistration<T = unknown> {
 | Arrow keys | `ArrowDown` / `ArrowRight` advance focus, `ArrowUp` / `ArrowLeft` retreat, `Home` / `End` jump to first / last. Movement also selects (W3C auto-select variant). |
 | Space / Enter | Select the focused leaf. Idempotent on the active one. |
 | Per-leaf disabled | Forwarded to `CngxRovingItem` so disabled leaves are skipped by arrow navigation. |
-| Group disabled | Cascades through `radioDisabled = computed(() => group.disabled() \|\| disabled())`. Blocks click, Space, Enter, and auto-select; focus may still transit visually so consumers can read the options. |
+| Group disabled | Cascades through `radioDisabled = computed(() => group.isDisabled() \|\| disabled())`. Blocks click, Space, Enter, and auto-select; focus may still transit visually so consumers can read the options. |
 | Labelling | `[label]` -> `aria-label` on the group. Each leaf projects its label via `<ng-content>`; click anywhere on the leaf selects it. |
 | `aria-checked` | Emitted as `"true"` / `"false"` on every leaf (never absent). |
 | `aria-required`, `aria-invalid`, `aria-busy` | Derived from `required()`, `invalid() \|\| errorState()`, and `state()?.status() === 'loading'`. |

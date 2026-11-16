@@ -30,6 +30,8 @@ export interface CngxChipGroupHost<T = unknown> {
   toggle(value: T): void;
   remove(value: T): void;
   readonly isDisabled: Signal<boolean>;
+  /** The group is the control of a readonly field: leaves keep focus and skip toggle and remove. */
+  readonly isReadonly: Signal<boolean>;
 }
 
 /**

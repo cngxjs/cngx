@@ -86,7 +86,8 @@ import {
     '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
-    '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-disabled]': 'isDisabled() ? "true" : null',
+    '[attr.aria-readonly]': 'isReadonly() ? "true" : null',
     '[attr.aria-required]': 'required() || groupHost.fieldRequired() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId() ?? groupHost.fieldErrorMessage()',
@@ -213,6 +214,18 @@ export class CngxRadioGroup<T = unknown>
 
   readonly errorState = this.groupHost.errorState;
 
+  /**
+   * Implements `CngxRadioGroupContract.isDisabled`: the group's own `disabled` OR the
+   * disabled state of the field this group is the control of. Leaves read it.
+   */
+  readonly isDisabled = computed(() => this.disabled() || this.groupHost.fieldDisabled());
+
+  /**
+   * Implements `CngxRadioGroupContract.isReadonly`: the group is the control of a
+   * readonly field. Leaves keep focus and skip their value write.
+   */
+  readonly isReadonly = computed(() => this.groupHost.fieldReadonly());
+
   constructor() {
     /* Per WAI-ARIA APG Radio Group, all four arrow keys navigate
        regardless of the cosmetic group layout - the consumer-set
@@ -244,7 +257,7 @@ export class CngxRadioGroup<T = unknown>
    * Implements `CngxRadioGroupContract.consumePendingArrowSelect`: when the host
    * `CngxRovingTabindex` reports that focus just moved by a navigation key, sets the
    * group `value` to `value` and returns `true`. Returns `false` for any other focus
-   * (such as Tab), while the group is disabled and while `leafDisabled` is set. The
+   * (such as Tab), while the group is disabled or readonly and while `leafDisabled` is set. The
    * transient flag is cleared on every call. Called by each `CngxRadio` from its focus
    * handler, disabled or not, so arrow navigation selects.
    */
@@ -252,7 +265,7 @@ export class CngxRadioGroup<T = unknown>
     if (!this.roving.consumeNavigationKey()) {
       return false;
     }
-    if (this.disabled() || leafDisabled) {
+    if (this.isDisabled() || this.isReadonly() || leafDisabled) {
       return false;
     }
     this.value.set(value);
