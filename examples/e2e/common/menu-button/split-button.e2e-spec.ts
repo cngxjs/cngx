@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 
 import { expect, test } from '../../_test';
-import { gotoDemo } from '../../_helpers';
+import { describedText, gotoDemo } from '../../_helpers';
 
 // Story: CngxSplitButton joins a main cngxButton and a cngxIconMenuButton
 // caret. The caret follows the main action: while it runs the caret refuses
@@ -158,3 +158,23 @@ for (const dir of ['ltr', 'rtl'] as const) {
     });
   });
 }
+
+test.describe('common/menu-button/split-button artifacts', () => {
+  test('custom-caret-host: the app caret opens the menu and follows the lock', async ({ page }) => {
+    await gotoDemo(page, 'common/menu-button/split-button/custom-caret-host');
+    const group = page.locator('.cngx-ex-artifact').getByRole('group', { name: 'Publish' });
+    const main = group.getByRole('button', { name: 'Publish' });
+    const caret = group.locator('button[appOutlineCaret]');
+    const menu = page.getByRole('menu', { name: 'Publish options' });
+
+    await caret.click();
+    await expect(menu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+
+    await page.getByRole('button', { name: 'Lock the document' }).click();
+    await expect(main).toHaveAttribute('aria-disabled', 'true');
+    await expect(caret).toHaveAttribute('aria-disabled', 'true');
+    expect(await describedText(page, caret)).toBe('The document is locked for review.');
+  });
+});

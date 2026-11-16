@@ -142,6 +142,91 @@ test.describe('ui/action-button/async-button', () => {
     });
   });
 
+  test.describe('ejected-host artifact', () => {
+    test('save runs to success with a spoken region, delete fails with its own label', async ({
+      page,
+    }) => {
+      await gotoDemo(page, 'ui/action-button/async-button/ejected-host');
+      const buttons = page.locator('.cngx-ex-artifact button[appejectedaction]');
+      const save = buttons.nth(0);
+      const del = buttons.nth(1);
+      const active = (host: typeof save) => host.locator('[cngxActionStatusCell][data-active]');
+
+      await save.click();
+      await expect(active(save)).toHaveText('Saving...');
+      await expect(save).toHaveAttribute('data-status', 'success', { timeout: 10_000 });
+      await expect(save.locator('xpath=following-sibling::*[1]')).not.toHaveText('');
+
+      await del.click();
+      await expect(del).toHaveAttribute('data-status', 'error', { timeout: 10_000 });
+      await expect(active(del)).toHaveText('Not allowed');
+    });
+  });
+
+  test.describe('template-slots artifact', () => {
+    test('the pending template shows, then one of the result templates, matched by the region', async ({
+      page,
+    }) => {
+      await gotoDemo(page, 'ui/action-button/async-button/template-slots');
+      const submit = page.locator('.cngx-ex-artifact button.cngx-action-button');
+      const active = submit.locator('.cngx-action-button__label[data-active]');
+      const region = submit.locator('xpath=following-sibling::*[1]');
+
+      await submit.click();
+      await expect(active).toHaveText('Processing...');
+      await expect(submit).toHaveAttribute('data-status', /^(success|error)$/, {
+        timeout: 10_000,
+      });
+      const outcome = /^\s*(Order placed!|.*Random failure - retry\?)\s*$/;
+      await expect(active).toHaveText(outcome);
+      const shown = (await active.textContent())?.trim() ?? '';
+      await expect(region).toHaveText(shown);
+    });
+  });
+
+  test.describe('app-wide-labels artifact', () => {
+    test('the scoped labels fill unbound cells, a bound label wins, an empty one switches off', async ({
+      page,
+    }) => {
+      await gotoDemo(page, 'ui/action-button/async-button/app-wide-labels');
+      const artifact = page.locator('.cngx-ex-artifact');
+      const host = (name: string) => artifact.locator('button.cngx-action-button', { hasText: name });
+      const active = (name: string) => host(name).locator('.cngx-action-button__label[data-active]');
+      const region = (name: string) => host(name).locator('xpath=following-sibling::*[1]');
+
+      await host('Save').click();
+      await expect(active('Save')).toHaveText('Working...');
+      await expect(active('Save')).toHaveText('Done', { timeout: 10_000 });
+
+      await host('Publish').click();
+      await expect(active('Publish')).toHaveText('Published', { timeout: 10_000 });
+
+      await host('Delete').click();
+      await expect(active('Delete')).toHaveText('Failed', { timeout: 10_000 });
+
+      await host('Archive').click();
+      await expect(host('Archive')).toHaveAttribute('data-status', 'error', { timeout: 10_000 });
+      await expect(active('Archive')).toHaveText('Archive');
+      await expect(region('Archive')).not.toHaveText('');
+    });
+  });
+
+  test.describe('random-outcome artifact', () => {
+    test('the pending label, then Won! or Lost, matched by the region', async ({ page }) => {
+      await gotoDemo(page, 'ui/action-button/async-button/random-outcome');
+      // The slow latency keeps the run well past the busy show delay.
+      await page.getByRole('radio', { name: /slow/ }).check();
+      const roll = page.locator('.cngx-ex-artifact button.cngx-action-button');
+      const active = roll.locator('.cngx-action-button__label[data-active]');
+
+      await roll.click();
+      await expect(active).toHaveText('Rolling...');
+      await expect(roll).toHaveAttribute('data-status', /^(success|error)$/, { timeout: 10_000 });
+      await expect(active).toHaveText(/^\s*(Won!|Lost)\s*$/);
+      await expect(roll.locator('xpath=following-sibling::*[1]')).toHaveText(/^\s*(Won!|Lost)\s*$/);
+    });
+  });
+
   test.describe('busy-timing artifact', () => {
     test('pending is immediate on both, only the default button waits out the show delay', async ({
       page,
