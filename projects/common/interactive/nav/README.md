@@ -283,7 +283,7 @@ Two injection functions turn a container of nav rows into a working rail. `cngx-
 |-|-|-|
 | `cngxNavRailed` | `false` | `true` while the rows are railed |
 | `cngxNavRailedSide` | `'start'` | the edge the rows sit on; tooltip and flyout open away from it |
-| `hoverDelay` | `300` | pointer dwell in ms before the tooltip shows |
+| `cngxNavRailedHoverDelay` | `300` | pointer dwell in ms before the tooltip shows |
 
 `cngx-nav-rail` and `cngx-sidenav` do not need it: they derive their rail state and call the pieces themselves.
 

@@ -14,7 +14,7 @@ import { CngxNavRailed } from './nav-railed.directive';
       class="rail"
       [cngxNavRailed]="railed()"
       [cngxNavRailedSide]="side()"
-      [hoverDelay]="hoverDelay()"
+      [cngxNavRailedHoverDelay]="hoverDelay()"
     >
       <a cngxNavLink href="#inbox" class="inbox">Inbox</a>
       <button type="button" cngxNavGroup #reports="cngxNavGroup" class="head">Reports</button>
@@ -124,7 +124,7 @@ describe('CngxNavRailed', () => {
     expect(el('.content').getAttribute('data-cngx-rail-side')).toBe('end');
   });
 
-  it('takes the pointer dwell from hoverDelay', () => {
+  it('takes the pointer dwell from cngxNavRailedHoverDelay', () => {
     vi.useFakeTimers();
     const { fixture, el, settle, tip } = setup();
     fixture.componentInstance.hoverDelay.set(500);
