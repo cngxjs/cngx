@@ -26,11 +26,11 @@ import { shallowReadonlyArrayEqual } from './equal-fns';
 @Injectable()
 export class CngxErrorRegistry {
   private readonly scopes = createKeyedRegistry<CngxErrorScopeContract>({
-    name: 'CngxErrorRegistry',
+    name: 'CngxErrorRegistryScopes',
   });
 
   private readonly aggregators = createKeyedRegistry<CngxErrorAggregatorContract>({
-    name: 'CngxErrorRegistry',
+    name: 'CngxErrorRegistryAggregators',
   });
 
   /** True when at least one registered aggregator reports `hasError`. */

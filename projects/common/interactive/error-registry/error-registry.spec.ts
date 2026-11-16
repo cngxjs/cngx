@@ -122,7 +122,7 @@ describe('CngxErrorRegistry', () => {
       registry.registerScope('a', makeScope('a'));
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn.mock.calls[0][0]).toMatch(
-        /^CNGX0004: createKeyedRegistry\(\): CngxErrorRegistry already holds "a"/,
+        /^CNGX0004: createKeyedRegistry\(\): CngxErrorRegistryScopes already holds "a"/,
       );
       warn.mockRestore();
     });
@@ -162,7 +162,7 @@ describe('CngxErrorRegistry', () => {
       registry.registerAggregator('a', makeAggregator(signal(false)));
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn.mock.calls[0][0]).toMatch(
-        /^CNGX0004: createKeyedRegistry\(\): CngxErrorRegistry already holds "a"/,
+        /^CNGX0004: createKeyedRegistry\(\): CngxErrorRegistryAggregators already holds "a"/,
       );
       warn.mockRestore();
     });
