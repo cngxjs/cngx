@@ -68,13 +68,6 @@ const SKIN_OWNERSHIP_EXEMPT = [
       'inverse S1: the async paint excludes button hosts by class instead of offering tokens the button sets on its own host',
   },
   {
-    file: 'projects/common/theming/components/cngx-menu.css',
-    selector: '.cngx-popover-panel',
-    count: 1,
-    reason:
-      'S1 sibling: the menu skin strips its surface inside a popover panel; common/interactive does not import common/popover',
-  },
-  {
     file: 'projects/ui/skeleton/skeleton-container.css',
     selector: '.cngx-skeleton-bone',
     count: 2,
