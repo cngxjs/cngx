@@ -118,26 +118,6 @@
     inherits: false;
     initial-value: ease-in-out;
   }
-
-  /**
-   * Opacity-pulse duration used as the reduced-motion fallback.
-   * @group Motion
-   */
-  @property --cngx-pulse-duration {
-    syntax: '<time>';
-    inherits: false;
-    initial-value: 2s;
-  }
-
-  /**
-   * Opacity-pulse easing curve.
-   * @group Motion
-   */
-  @property --cngx-pulse-easing {
-    syntax: '*';
-    inherits: false;
-    initial-value: ease-in-out;
-  }
 }
 
 @layer cngx.components {

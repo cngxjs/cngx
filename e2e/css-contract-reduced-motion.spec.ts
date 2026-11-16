@@ -61,5 +61,16 @@ for (const via of MECHANISMS) {
       await expect(indicator).toBeVisible();
       expect(await indicator.evaluate((el) => getComputedStyle(el).animationName)).toBe(PULSE);
     });
+
+    test('a pulse duration set on :root reaches the loading host', async ({ page }) => {
+      await openReduced(page, '/#/ui/feedback/loading-indicator/spinner-variant', via);
+      await page.evaluate(() =>
+        document.documentElement.style.setProperty('--cngx-pulse-duration', '4s'),
+      );
+      await page.getByRole('button', { name: 'Start Loading (2s)' }).click();
+      const indicator = page.locator('cngx-loading-indicator.cngx-loading-indicator--visible');
+      await expect(indicator).toBeVisible();
+      expect(await indicator.evaluate((el) => getComputedStyle(el).animationDuration)).toBe('4s');
+    });
   });
 }

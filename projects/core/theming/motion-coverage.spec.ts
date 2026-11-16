@@ -117,6 +117,25 @@ describe('reduced-motion safety-net integrity', () => {
   });
 });
 
+describe('pulse token registration', () => {
+  // The net reads --cngx-pulse-* on every loading host, so the registration
+  // must live in core and inherit; an inherits:false registration in a ui
+  // stylesheet would cut off a value set on :root.
+  const PULSE_TOKENS = ['--cngx-pulse-duration', '--cngx-pulse-easing'];
+
+  it.each(PULSE_TOKENS)('registers %s in core system-tokens with inherits: true', (token) => {
+    const system = readRepoCss('projects/core/theming/system-tokens.css');
+    const block = system.match(new RegExp(`@property ${token} \\{[^}]*\\}`))?.[0];
+    expect(block).toBeDefined();
+    expect(block).toContain('inherits: true');
+  });
+
+  it.each(PULSE_TOKENS)('keeps %s out of the ui loading stylesheet', (token) => {
+    const loading = readRepoCss('projects/ui/feedback/loading/loading-indicator.css');
+    expect(loading).not.toContain(`@property ${token}`);
+  });
+});
+
 describe('reduced-motion safety-net cascade wiring', () => {
   it('@imports motion-tokens.css into the themes entry (so the net is not inert)', () => {
     const entry = readRepoCss(THEMES_ENTRY_CSS);
