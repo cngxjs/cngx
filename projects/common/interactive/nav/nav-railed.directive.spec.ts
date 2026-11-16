@@ -109,12 +109,12 @@ describe('CngxNavRailed', () => {
     expect(tip()).toBeNull();
   });
 
-  it('writes data-nav-railed on the host only while railed', () => {
+  it('writes data-nav-railed on the host as true or false', () => {
     const { fixture, el, settle } = setup(false);
-    expect(el('.rail').hasAttribute('data-nav-railed')).toBe(false);
+    expect(el('.rail').getAttribute('data-nav-railed')).toBe('false');
     fixture.componentInstance.railed.set(true);
     settle();
-    expect(el('.rail').getAttribute('data-nav-railed')).toBe('');
+    expect(el('.rail').getAttribute('data-nav-railed')).toBe('true');
   });
 
   it('opens away from cngxNavRailedSide', () => {

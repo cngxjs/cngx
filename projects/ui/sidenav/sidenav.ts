@@ -197,7 +197,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[style.--cngx-sidenav-mini-width]': 'miniWidth() ?? null',
     '[style.--cngx-sidebar-size]': 'width()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth() ?? null',
-    '[attr.data-nav-railed]': "railed() ? '' : null",
+    '[attr.data-nav-railed]': "railed() ? 'true' : 'false'",
   },
   imports: [CngxResizable],
   template: `

@@ -675,14 +675,16 @@ describe('forced colors', () => {
     '../../../core/theming/system-tokens.css',
     './cngx-nav.css',
   ],
-  styles: ['.railed-box { display: flex; flex-direction: column; }'],
+  styles: [
+    '.railed-box { display: flex; flex-direction: column; box-sizing: border-box; border-inline-end: 1px solid; }',
+  ],
   encapsulation: ViewEncapsulation.None,
   template: `
     <nav
       class="railed-box"
       aria-label="Rail"
       [cngxNavRailed]="railed()"
-      [style.inline-size.px]="railed() ? 56 : 240"
+      [style.inline-size]="railed() ? 'calc(var(--cngx-nav-railed-size) + 1px)' : '240px'"
     >
       <cngx-nav-header><span cngxNavName class="railed-name">Acme</span></cngx-nav-header>
       <span cngxNavLabel class="railed-label">Main</span>
@@ -727,6 +729,19 @@ describe('railed rows', () => {
     const row = one(host, '.railed-icon-row');
     expect(computedValue(row, 'overflow-x')).toBe('clip');
     expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
+  });
+
+  it('centres the icon box in a rail sized from --cngx-nav-railed-size plus the border', () => {
+    const { host, rail } = mountRailed();
+    rail(true);
+    const box = one(host, '.railed-box');
+    expect(box.getAttribute('data-nav-railed')).toBe('true');
+    // 2 * (4px inset + 16px padding) + 20px icon, border not included.
+    expect(box.clientWidth).toBe(60);
+    const content = box.getBoundingClientRect();
+    const icon = one(host, '.railed-icon').getBoundingClientRect();
+    const contentCentre = content.x + box.clientWidth / 2;
+    expect(Math.abs(icon.x + icon.width / 2 - contentCentre)).toBeLessThan(0.5);
   });
 
   it('keeps the letter on a row without an icon', () => {

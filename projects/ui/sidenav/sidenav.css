@@ -50,7 +50,7 @@
  *   rail's edge; tinted on hover / drag via
  *   `--cngx-sidenav-resize-handle-color`
  *
- * On the collapsed rail the host renders `data-nav-railed`, and
+ * On the collapsed rail the host renders `data-nav-railed='true'`, and
  * `cngx-nav.css` crops the rows to their icon or letter, paints no section
  * label and clips the header and footer. This sheet adds only the reveal
  * timing of label, badge, chevron and name.
@@ -180,14 +180,12 @@
   }
 
   /**
-   * Width of the collapsed rail (icon rail). Unset, the host derives it from
-   * the row tokens so the icon box sits centred:
-   * `2 * (inset + inline padding) + icon size + border width`, the width of
-   * `cngx-nav-rail`. `[miniWidth]` writes it inline and wins.
+   * Width of the collapsed rail (icon rail). Unset, the host takes
+   * `--cngx-nav-railed-size` (the nav's rail width from the row tokens, so
+   * the icon box sits centred) plus `--cngx-sidenav-border-width`.
+   * `[miniWidth]` writes it inline and wins.
    * @group Variant / Mini
-   * @see [[--cngx-nav-link-inset]]
-   * @see [[--cngx-nav-link-padding-inline]]
-   * @see [[--cngx-nav-icon-size]]
+   * @see [[--cngx-nav-railed-size]]
    * @see [[--cngx-sidenav-border-width]]
    */
   @property --cngx-sidenav-mini-width {
@@ -389,18 +387,13 @@
     --cngx-nav-link-padding: var(--cngx-space-sm)
       var(--cngx-nav-link-padding-inline, var(--cngx-space-md));
     --cngx-nav-link-inset: var(--cngx-space-xs);
-    /* The rail width derives from the row geometry, as on cngx-nav-rail, so
-       the icon box sits centred in the rail. A SET, not a use-site fallback:
-       the registered 56px initial would shadow a fallback. The [miniWidth]
-       inline style wins over it; the sidebar's rail rest reads the same
-       value. */
+    /* The rail width is the nav's railed size (cngx-nav.css SETs it on this
+       host from the row tokens) plus the border, so the icon box sits
+       centred. A SET, not a use-site fallback: the registered 56px initial
+       would shadow a fallback. The [miniWidth] inline style wins over it;
+       the sidebar's rail rest reads the same value. */
     --cngx-sidenav-mini-width: calc(
-      2 *
-        (
-          var(--cngx-nav-link-inset, var(--cngx-space-xs, 4px)) +
-            var(--cngx-nav-link-padding-inline, var(--cngx-space-md, 16px))
-        ) +
-        var(--cngx-nav-icon-size, 1.25rem) + var(--cngx-sidenav-border-width, 1px)
+      var(--cngx-nav-railed-size, 60px) + var(--cngx-sidenav-border-width, 1px)
     );
     --cngx-sidebar-rail-size: var(--cngx-sidenav-mini-width);
     /* The flyout anchors to the group head, which sits the row inset and the
@@ -621,7 +614,7 @@
   }
 
   /* On the rail the name is gone at once (cngx-nav.css hides it under
-     data-nav-railed). */
+     data-nav-railed='true'). */
   cngx-sidenav[data-sidebar-state='rail'] :is(.cngx-nav-header, .cngx-nav-footer) .cngx-nav-name {
     transition: opacity 0s;
   }

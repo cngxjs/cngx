@@ -248,7 +248,18 @@ Two injection functions turn a container of nav rows into a working rail. `cngx-
 
 ### On a rail of your own
 
-`[cngxNavRailed]` runs both pieces on any container of nav rows, typically a `cngxSidebar`. Bind the rail state you already have; the directive derives nothing. While railed it writes `data-nav-railed` on the host, and `cngx-nav.css` crops the rows: each row keeps its place and its icon or letter, the label, badge and chevron move past the clipped row end, section labels paint nothing and the header and footer name fades out. The container sets only its own width.
+`[cngxNavRailed]` runs both pieces on any container of nav rows, typically a `cngxSidebar`. Bind the rail state you already have; the directive derives nothing. It writes `data-nav-railed` on the host (`'true'` while railed, `'false'` otherwise). While railed `cngx-nav.css` crops the rows: each row keeps its place and its icon or letter, the label, badge and chevron move past the clipped row end, section labels paint nothing and the header and footer name fades out. The container sets only its own width.
+
+`cngx-nav.css` also SETs `--cngx-nav-railed-size` on the host: `2 * (--cngx-nav-link-inset + --cngx-nav-link-padding-inline) + --cngx-nav-icon-size`, the rail width at which the icon box sits centred, border not included. Size the rail from it plus your border, on the same host, so the host's own row tokens count:
+
+```html
+<aside
+  cngxSidebar
+  class="cngx-sidebar"
+  style="--cngx-sidebar-rail-size: calc(var(--cngx-nav-railed-size) + var(--cngx-sidebar-border-width, 1px))"
+  ...
+>
+```
 
 ```html
 <aside

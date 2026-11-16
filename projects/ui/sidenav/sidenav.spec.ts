@@ -570,7 +570,7 @@ describe('CngxSidenav collapsed rail', () => {
     expect(el.style.inlineSize).toBe('var(--cngx-sidebar-rail-size, 3.5rem)');
     expect(el.style.getPropertyValue('--cngx-sidebar-rail-size')).toBe('56px');
     expect(left.expanded()).toBe(false);
-    expect(el.getAttribute('data-nav-railed')).toBe('');
+    expect(el.getAttribute('data-nav-railed')).toBe('true');
   });
 
   it('leaves the rail width to the stylesheet while miniWidth is unbound', () => {
@@ -590,7 +590,7 @@ describe('CngxSidenav collapsed rail', () => {
     fixture.detectChanges();
     expect(left.expanded()).toBe(true);
     expect(el.getAttribute('data-sidebar-state')).toBe('peek');
-    expect(el.hasAttribute('data-nav-railed')).toBe(false);
+    expect(el.getAttribute('data-nav-railed')).toBe('false');
   });
 
   it('ends the peek on a debounced pointer leave', () => {

@@ -13,9 +13,11 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
  * `cngxSidebar`, and bind the rail state you already have; the directive
  * derives nothing and syncs nothing.
  *
- * The host renders `data-nav-railed` while railed; `cngx-nav.css` reads it
- * and crops the rows to their icon box, so the container's own skin needs no
- * nav selectors.
+ * The host renders `data-nav-railed` (`'true'` while railed, `'false'`
+ * otherwise); `cngx-nav.css` reads it, crops the rows to their icon box while
+ * railed and SETs `--cngx-nav-railed-size` on the host, the rail width that
+ * centres the icon box (border not included). The container's own skin needs
+ * no nav selectors; it sizes its rail from that token.
  *
  * It runs the same two pieces as the organisms
  * (`CNGX_NAV_RAIL_TOOLTIP_FACTORY`, `CNGX_NAV_RAIL_FLYOUT_FACTORY`), so an
@@ -41,7 +43,7 @@ import { CNGX_NAV_RAIL_TOOLTIP_FACTORY } from './nav-rail-tooltip';
   exportAs: 'cngxNavRailed',
   standalone: true,
   host: {
-    '[attr.data-nav-railed]': "railed() ? '' : null",
+    '[attr.data-nav-railed]': "railed() ? 'true' : 'false'",
   },
 })
 export class CngxNavRailed {
