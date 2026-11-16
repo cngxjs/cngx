@@ -1,4 +1,4 @@
-import { computed, Directive, effect, ElementRef, inject, untracked } from '@angular/core';
+import { computed, Directive, ElementRef, inject } from '@angular/core';
 
 import { CngxSliderTrack } from '@cngx/common/interactive';
 import { cngxDevWarn } from '@cngx/utils';
@@ -48,10 +48,8 @@ import type { CngxFormFieldControl } from './models';
   providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSliderFieldBridge }],
   host: {
     '[id]': 'id()',
-    '[attr.aria-describedby]': 'describedBy()',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-invalid]': 'ariaInvalid()',
-    '[attr.aria-required]': 'ariaRequired()',
     '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-errormessage]': 'ariaErrorMessage()',
     '[attr.aria-readonly]': 'ariaReadonly()',
@@ -64,7 +62,11 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
-  private readonly aria = createFieldControlAria(this.presenter);
+  // The track's own disabled input stays the consumer's: it is OR-ed with
+  // the field here and inside the track, never overwritten.
+  private readonly aria = createFieldControlAria(this.presenter, {
+    localDisabled: () => this.slider.disabled(),
+  });
 
   readonly id = this.aria.id;
 
@@ -83,13 +85,9 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected readonly describedBy = this.aria.describedBy;
-  /** @internal */
   protected readonly labelledBy = this.aria.labelledBy;
   /** @internal */
   protected readonly ariaInvalid = this.aria.ariaInvalid;
-  /** @internal */
-  protected readonly ariaRequired = this.aria.ariaRequired;
   /** @internal */
   protected readonly ariaBusy = this.aria.ariaBusy;
   /** @internal */
@@ -105,16 +103,8 @@ export class CngxSliderFieldBridge implements CngxFormFieldControl {
           '<cngx-form-field [field]="...">.',
       );
     }
-    const presenter = this.presenter;
-    if (presenter !== null) {
-      // The track's disabled model gates keyboard, pointer and tabindex in the
-      // atom itself - without this write a Signal-Forms-disabled field leaves
-      // the slider fully operable.
-      effect(() => {
-        const disabled = presenter.disabled();
-        untracked(() => this.slider.disabled.set(disabled));
-      });
-    }
+    // The track reads the field's disabled state and description through
+    // CNGX_FORM_FIELD_HOST and stays the single writer of aria-describedby.
 
     // A numeric slider always asserts its own value: an absent/non-finite field
     // is skipped on read but still seeded on write (createFieldSync's

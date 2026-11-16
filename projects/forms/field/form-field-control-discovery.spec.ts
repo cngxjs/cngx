@@ -209,13 +209,13 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
       expect(presenter.control()).toBe(checkbox);
     });
 
-    it('points the label for-target at the checkbox host id instead of a dangling reference', () => {
+    it('reports the checkbox host id as the control id but binds no for on a non-labelable host', () => {
       const hostId = checkboxEl.getAttribute('id');
       expect(hostId).toMatch(/^cngx-checkbox-/);
-      expect(labelEl.getAttribute('for')).toBe(hostId);
-      // Before the discovery query the label dangled at the non-existent
-      // deterministic id - locked here as the documented cleanup.
-      expect(labelEl.getAttribute('for')).not.toBe('cngx-terms-input');
+      expect(presenter.controlId()).toBe(hostId);
+      // `for` names only labelable elements; the checkbox takes the field
+      // label through aria-labelledby instead.
+      expect(labelEl.hasAttribute('for')).toBe(false);
     });
 
     it('tracks the field showError through the CNGX_FORM_FIELD_HOST cascade into --error', () => {
@@ -243,11 +243,12 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
       expect(fieldEl.classList.contains('cngx-field--empty')).toBe(false);
     });
 
-    it('keeps name-from-content on the leaf atom', () => {
-      // role="checkbox" names itself from the projected content; wiring the
-      // field label in via aria-labelledby would REPLACE that name and
-      // double-announce. The field-label channel is for group roles only.
-      expect(checkboxEl.hasAttribute('aria-labelledby')).toBe(false);
+    it('names the leaf atom by the field label, then its own content', () => {
+      // aria-labelledby replaces name-from-content, so the checkbox lists the
+      // field label first and its own label span second.
+      const [field, own] = (checkboxEl.getAttribute('aria-labelledby') ?? '').split(' ');
+      expect(field).toBe(labelEl.id);
+      expect(checkboxEl.querySelector(`[id="${own}"]`)).not.toBeNull();
     });
   });
 
@@ -276,7 +277,8 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
 
     it('discovers the outer group, not the inner checkboxes (content-order precedence)', () => {
       expect(presenter.control()).toBe(group);
-      expect(labelEl.getAttribute('for')).toBe(groupEl.getAttribute('id'));
+      expect(presenter.controlId()).toBe(groupEl.getAttribute('id'));
+      expect(labelEl.hasAttribute('for')).toBe(false);
     });
 
     it('names the group from the field label via aria-labelledby', () => {
@@ -313,7 +315,9 @@ describe('CNGX_FORM_FIELD_CONTROL discovery integration', () => {
 
     it('resolves the main control, not the affix that precedes it', () => {
       expect(presenter.control()?.id()).toBe('main');
-      expect(labelEl.getAttribute('for')).toBe('main');
+      expect(presenter.controlId()).toBe('main');
+      // The stub hosts are spans, not labelable: no `for`.
+      expect(labelEl.hasAttribute('for')).toBe(false);
     });
 
     it('reports controlDisabled from the main control while the affix is disabled', () => {

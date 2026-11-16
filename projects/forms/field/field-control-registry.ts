@@ -1,3 +1,4 @@
+import type { Signal } from '@angular/core';
 import type { CngxFormFieldControl } from '@cngx/core/tokens';
 
 import type { CngxErrorFieldState } from './models';
@@ -15,6 +16,49 @@ import type { CngxErrorFieldState } from './models';
  * guard (only its own entry is removed).
  */
 const CONTROLS = new WeakMap<object, CngxFormFieldControl>();
+
+/**
+ * Field state to the label text its `cngx-form-field` publishes, so the error
+ * summary names a field without reading the DOM. Same keying and guard as
+ * the control lookup above.
+ */
+const LABELS = new WeakMap<object, FieldLabel>();
+
+/**
+ * A field's published label: its text and whether it renders one. A reader
+ * that must not follow text changes (a polite live region) tracks only
+ * `present`.
+ *
+ * @internal
+ */
+export interface FieldLabel {
+  readonly text: Signal<string>;
+  readonly present: Signal<boolean>;
+}
+
+/**
+ * Registers the label text of the field for `state` and returns the matching
+ * unregister, which only removes its own entry.
+ *
+ * @internal
+ */
+export function registerFieldLabel(state: object, label: FieldLabel): () => void {
+  LABELS.set(state, label);
+  return () => {
+    if (LABELS.get(state) === label) {
+      LABELS.delete(state);
+    }
+  };
+}
+
+/**
+ * The label text registered for `state`, `undefined` when no field renders it.
+ *
+ * @internal
+ */
+export function fieldLabelFor(state: object): FieldLabel | undefined {
+  return LABELS.get(state);
+}
 
 /**
  * Registers `control` for `state` and returns the matching unregister. The

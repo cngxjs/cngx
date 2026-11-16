@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -7,7 +7,9 @@ import {
   CNGX_FORM_FIELD_HOST,
   type CngxFormFieldControl,
 } from '@cngx/core/tokens';
+import { CngxInput } from '@cngx/forms/input';
 import { CngxFormField } from './form-field.component';
+import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CngxLabel } from './label.component';
 import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
 import { createMockField, type MockFieldRef } from './testing/mock-field';
@@ -17,9 +19,10 @@ import type { CngxFieldAccessor } from './models';
   template: `
     <cngx-form-field [field]="field()">
       <label cngxLabel #lbl="cngxLabel">Test Label</label>
+      <input cngxInput />
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxLabel],
+  imports: [CngxFormField, CngxLabel, CngxInput],
 })
 class TestHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email' }).accessor);
@@ -29,17 +32,19 @@ class TestHost {
   template: `
     <cngx-form-field [field]="field()">
       <label cngxLabel [showRequired]="false">Opt-out Label</label>
+      <input cngxInput />
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxLabel],
+  imports: [CngxFormField, CngxLabel, CngxInput],
 })
 class OptOutHost {
   field = signal<CngxFieldAccessor>(createMockField({ name: 'email', required: true }).accessor);
 }
 
-@Component({
-  selector: 'stub-id-control',
-  template: '',
+@Directive({
+  // A labelable host, so the label may point `for` at it.
+  selector: 'input[stubIdControl]',
+  host: { '[id]': 'id()' },
   providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: StubIdControl }],
 })
 class StubIdControl implements CngxFormFieldControl {
@@ -54,7 +59,7 @@ class StubIdControl implements CngxFormFieldControl {
   template: `
     <cngx-form-field [field]="field()">
       <label cngxLabel>Control Label</label>
-      <stub-id-control />
+      <input stubIdControl />
     </cngx-form-field>
   `,
   imports: [CngxFormField, CngxLabel, StubIdControl],
@@ -69,9 +74,10 @@ class ControlHost {
       @if (shown()) {
         <label cngxLabel>{{ text() }}</label>
       }
+      <input cngxInput />
     </cngx-form-field>
   `,
-  imports: [CngxFormField, CngxLabel],
+  imports: [CngxFormField, CngxLabel, CngxInput],
 })
 class TextHost {
   readonly field = createMockField({ name: 'colour' }).accessor;
@@ -289,7 +295,7 @@ describe('CngxLabel', () => {
       TestBed.flushEffects();
 
       labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement;
-      stub = fixture.debugElement.query(By.directive(StubIdControl)).componentInstance;
+      stub = fixture.debugElement.query(By.directive(StubIdControl)).injector.get(StubIdControl);
     });
 
     it('prefers the control-reported id as the for target', () => {
@@ -300,7 +306,12 @@ describe('CngxLabel', () => {
       stub.id.set('');
       TestBed.flushEffects();
       fixture.detectChanges();
-      expect(labelEl.getAttribute('for')).toBe('cngx-email-input');
+      const presenter = fixture.debugElement
+        .query(By.directive(CngxLabel))
+        .injector.get(CngxFormFieldPresenter);
+      expect(presenter.controlId()).toBe('cngx-email-input');
+      // No element carries the fallback id, so the label binds no `for`.
+      expect(labelEl.hasAttribute('for')).toBe(false);
     });
 
     it('mirrors the control error state on cngx-label--error', () => {

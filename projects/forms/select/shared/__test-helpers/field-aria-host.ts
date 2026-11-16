@@ -216,8 +216,17 @@ export function describeFieldAriaHost(
       const { control, presenter, root } = mountTouched();
       expect(control.id()).toBe(presenter.inputId());
       const label = root.querySelector<HTMLLabelElement>('label[cngxLabel]')!;
-      expect(label.htmlFor).not.toBe('');
-      expect(document.getElementById(label.htmlFor)).not.toBeNull();
+      const target = document.getElementById(control.id());
+      expect(target).not.toBeNull();
+      // `for` only names a labelable element; a custom host takes the label
+      // through aria-labelledby on its combobox.
+      if (target!.matches('input, select, textarea, button')) {
+        expect(label.htmlFor).toBe(control.id());
+      } else {
+        expect(label.hasAttribute('for')).toBe(false);
+        const combo = root.querySelector('[role="combobox"]')!;
+        expect((combo.getAttribute('aria-labelledby') ?? '').split(/\s+/)).toContain(label.id);
+      }
     });
 
     // ARIA 1.2 allows aria-readonly on a combobox; on the role-less host it

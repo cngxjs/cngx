@@ -89,9 +89,10 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
     '[attr.aria-checked]': 'value() ? "true" : "false"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': 'errorMessageId()',
-    '[attr.aria-labelledby]': 'hasProjectedLabel() ? labelId : null',
-    '[attr.aria-describedby]': 'describedById()',
+    '[attr.aria-errormessage]': 'errorMessageId() ?? groupHost.fieldErrorMessage()',
+    '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.aria-describedby]': 'ariaDescribedBy()',
+    '[attr.aria-required]': 'groupHost.fieldRequired() ? "true" : null',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-toggle--checked]': 'value()',
     '[class.cngx-toggle--disabled]': 'disabled()',
@@ -211,10 +212,28 @@ export class CngxToggle implements CngxControlValue<boolean>, CngxFormFieldContr
     });
   }
 
-  private readonly groupHost = injectInteractiveGroupHost({
+  protected readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-toggle-',
     invalid: this.invalid,
+    control: this,
   });
+
+  /**
+   * The field label first while this toggle is the field's control, then
+   * the projected label when there is one.
+   */
+  protected readonly ariaLabelledBy = computed(
+    () =>
+      [this.groupHost.fieldLabelledBy(), this.hasProjectedLabel() ? this.labelId : null]
+        .filter(Boolean)
+        .join(' ') || null,
+  );
+
+  /** Field description ids, then the gated disabled reason. */
+  protected readonly ariaDescribedBy = computed(
+    () =>
+      [this.groupHost.fieldDescribedBy(), this.describedById()].filter(Boolean).join(' ') || null,
+  );
 
   /** Stable per-instance id used for `<label for>` wiring. */
   readonly id = this.groupHost.id;

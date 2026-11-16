@@ -1,6 +1,7 @@
 import { computed, Directive, ElementRef, inject, input, model } from '@angular/core';
 
 import { createSliderDisabledReason } from './slider-disabled-reason';
+import { injectSliderFieldHost } from './slider-field-host';
 import { pointerFraction } from './slider-interaction';
 import {
   CNGX_SLIDER_RANGE,
@@ -44,7 +45,7 @@ import {
   providers: [{ provide: CNGX_SLIDER_RANGE, useExisting: CngxRangeSliderTrack }],
   host: {
     role: 'group',
-    '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.aria-disabled]': 'isDisabled() || null',
     '[attr.aria-describedby]': 'reason.resolvedDescribedBy()',
     '[attr.aria-orientation]': 'orientation()',
     '[style.--cngx-slider-start-fraction]': 'startFraction()',
@@ -66,9 +67,8 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
    */
   readonly largeStep = input<number | undefined>(undefined);
   /**
-   * Whether the range slider is disabled. A `ModelSignal` so form-field
-   * bridges can drive it programmatically, mirroring the checkbox/toggle
-   * family's bridge write path.
+   * Whether the range slider is disabled. A field that bridges the track
+   * never writes it; {@link isDisabled} ORs the field's disabled state in.
    */
   readonly disabled = model<boolean>(false);
   /**
@@ -82,7 +82,8 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
   /**
    * Optional consumer-supplied id of an external description element.
    * Consumers bind via `[cngxDescribedBy]="someId"` - same surface as
-   * `CngxChipInteraction`. The active disabled-reason wins.
+   * `CngxChipInteraction`. Listed after the field ids and the active
+   * disabled reason.
    */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
@@ -92,12 +93,21 @@ export class CngxRangeSliderTrack implements CngxSliderRangeHost {
   /** Optional `aria-valuetext` formatter shared across both thumbs. */
   readonly valueText = input<((value: number) => string) | undefined>(undefined);
 
+  private readonly field = injectSliderFieldHost();
+
+  /**
+   * Effective disabled state: the `disabled` input OR a disabled field that
+   * bridges this track. Both thumbs read it.
+   */
+  readonly isDisabled = computed(() => this.disabled() || this.field.disabled());
+
   /** Disabled-"why" span + gated `aria-describedby` resolution. */
   protected readonly reason = createSliderDisabledReason({
     idPrefix: 'cngx-range-slider-desc',
-    disabled: () => this.disabled(),
+    disabled: () => this.isDisabled(),
     reason: () => this.disabledReason(),
     describedBy: () => this.describedBy(),
+    fieldDescribedBy: () => this.field.describedBy(),
   });
 
   // Sibling-clamp bounds. The start thumb's ceiling tracks the end value;

@@ -15,8 +15,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { form, schema, required } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxRequired } from '@cngx/forms/field';",
+    "import { CngxInput } from '@cngx/forms/input';",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule', 'CngxInput'],
   setup: `protected readonly model = signal<{ email: string; nickname: string }>({ email: '', nickname: '' });
   protected readonly profileForm = form(this.model, schema((root) => {
     required(root.email, { message: 'Please enter an email' });
@@ -24,7 +25,7 @@ export const STORY: DemoSpec = {
   template: `  <div style="display:grid;gap:16px;grid-template-columns:repeat(2, minmax(0, 1fr));max-width:560px">
     <cngx-form-field [field]="profileForm.email">
       <label cngxLabel>Email <cngx-required /></label>
-      <input
+      <input cngxInput
         type="email"
         [ngModel]="profileForm.email().value()"
         (ngModelChange)="profileForm.email().value.set($event)"
@@ -33,7 +34,7 @@ export const STORY: DemoSpec = {
 
     <cngx-form-field [field]="profileForm.nickname">
       <label cngxLabel>Nickname <cngx-required /></label>
-      <input
+      <input cngxInput
         type="text"
         [ngModel]="profileForm.nickname().value()"
         (ngModelChange)="profileForm.nickname().value.set($event)"

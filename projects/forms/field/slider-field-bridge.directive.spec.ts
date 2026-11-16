@@ -81,18 +81,18 @@ describe('CngxSliderFieldBridge', () => {
     expect(bridge.empty()).toBe(false);
   });
 
-  it('propagates field disabled into the track and back out again', () => {
+  it('ORs the field disabled state into the track and back out again', () => {
     const { fixture, brain, bridge, ref } = setup();
-    expect(brain.disabled()).toBe(false);
+    expect(brain.isDisabled()).toBe(false);
 
     ref.disabled.set(true);
     flush(fixture);
     expect(bridge.disabled()).toBe(true);
-    expect(brain.disabled()).toBe(true);
+    expect(brain.isDisabled()).toBe(true);
 
     ref.disabled.set(false);
     flush(fixture);
-    expect(brain.disabled()).toBe(false);
+    expect(brain.isDisabled()).toBe(false);
   });
 
   it('reflects field disabled on the track host (aria-disabled, tabindex=-1)', () => {

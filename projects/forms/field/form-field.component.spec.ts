@@ -182,7 +182,7 @@ describe('CngxFormField', () => {
     });
 
     it('hides errors initially (untouched)', () => {
-      expect(errorsEl.getAttribute('aria-hidden')).toBe('true');
+      expect(errorsEl.getAttribute('aria-hidden')).toBeNull();
       expect(inputEl.getAttribute('aria-invalid')).toBeNull();
     });
 
@@ -194,7 +194,7 @@ describe('CngxFormField', () => {
       TestBed.flushEffects();
 
       expect(errorsEl.getAttribute('aria-hidden')).toBeNull();
-      expect(errorsEl.getAttribute('role')).toBe('alert');
+      expect(errorsEl.getAttribute('role')).toBe('status');
       expect(errorsEl.textContent?.trim()).toBe('Required.');
       expect(inputEl.getAttribute('aria-invalid')).toBe('true');
       expect(inputEl.getAttribute('aria-errormessage')).toBe('cngx-email-error');
@@ -221,7 +221,7 @@ describe('CngxFormField', () => {
     it('full lifecycle: pristine → dirty → touched → error → fixed', () => {
       // Pristine
       expect(inputEl.getAttribute('aria-invalid')).toBeNull();
-      expect(errorsEl.getAttribute('aria-hidden')).toBe('true');
+      expect(errorsEl.getAttribute('aria-hidden')).toBeNull();
 
       // User types (dirty)
       ref.dirty.set(true);
@@ -244,7 +244,7 @@ describe('CngxFormField', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(inputEl.getAttribute('aria-invalid')).toBeNull();
-      expect(errorsEl.getAttribute('aria-hidden')).toBe('true');
+      expect(errorsEl.getAttribute('aria-hidden')).toBeNull();
       expect(errorsEl.textContent?.trim()).toBe('');
     });
   });
@@ -263,7 +263,7 @@ describe('CngxFormField', () => {
       const errorEl = fixture.debugElement.query(By.directive(CngxError))
         .nativeElement as HTMLElement;
       expect(errorEl.id).toBe('cngx-password-error');
-      expect(errorEl.getAttribute('aria-hidden')).toBe('true');
+      expect(errorEl.getAttribute('aria-hidden')).toBeNull();
       expect(errorEl.textContent?.trim()).toBe('Manual error');
 
       mock.ref.touched.set(true);
@@ -271,7 +271,7 @@ describe('CngxFormField', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
       expect(errorEl.getAttribute('aria-hidden')).toBeNull();
-      expect(errorEl.getAttribute('role')).toBe('alert');
+      expect(errorEl.getAttribute('role')).toBe('status');
     });
   });
 

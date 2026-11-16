@@ -87,9 +87,10 @@ import {
     '[attr.aria-label]': 'label()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-required]': 'required() || groupHost.fieldRequired() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': 'errorMessageId()',
+    '[attr.aria-errormessage]': 'errorMessageId() ?? groupHost.fieldErrorMessage()',
+    '[attr.aria-describedby]': 'groupHost.fieldDescribedBy()',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-radio-group--horizontal]': 'orientation() === "horizontal"',
@@ -190,8 +191,9 @@ export class CngxRadioGroup<T = unknown>
   private readonly registry = new Map<string, CngxRadioRegistration<T>>();
   private readonly roving = inject(CngxRovingTabindex, { host: true });
 
-  private readonly groupHost = injectInteractiveGroupHost({
+  protected readonly groupHost = injectInteractiveGroupHost({
     uidPrefix: 'cngx-radio-group-',
+    control: this,
     invalid: this.invalid,
     state: this.state,
     label: this.label,

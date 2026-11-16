@@ -10,8 +10,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { focusFieldControl } from './field-control-registry';
-import { fieldIdName } from './form-field-presenter';
+import { fieldLabelFor, focusFieldControl } from './field-control-registry';
 import { CNGX_ERROR_MESSAGES } from './form-field.token';
 import { injectFormFieldI18n, resolveErrorMessage } from './i18n/form-field-i18n';
 import type { CngxFieldAccessor } from './models';
@@ -54,22 +53,6 @@ function segmentsEqual(a: readonly SummarySegment[], b: readonly SummarySegment[
 }
 
 /**
- * @internal The visible text of a field's `CngxLabel` (id `cngx-{name}-label`)
- * without its `aria-hidden` parts such as the required marker, or `undefined`
- * when the field renders no label.
- */
-function visibleLabelOf(doc: Document, name: string): string | undefined {
-  const label = doc.getElementById(`cngx-${fieldIdName(name)}-label`);
-  if (!label) {
-    return undefined;
-  }
-  const copy = label.cloneNode(true) as Element;
-  copy.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
-  const text = copy.textContent?.replace(/\s+/g, ' ').trim();
-  return text || undefined;
-}
-
-/**
  * Form-level error summary - lists all validation errors across all fields.
  *
  * Place outside (or at the top/bottom of) the form. Each error is a focusable link
@@ -80,10 +63,15 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
  * Only visible when `showErrors()` is `true` (controlled by the consumer, typically
  * set after a failed submit).
  *
- * Each item names the field by the visible text of its `CngxLabel`, never by its
- * model key, and places label and message in the order of the
- * `errorSummaryItem` message of `CNGX_FORM_FIELD_I18N` (English
- * `'{label}: {message}'`). A field without a label shows its message alone.
+ * Each item names the field by the visible text of its `CngxLabel`, which the
+ * field publishes (no DOM read), never by its model key, and places label and
+ * message in the order of the `errorSummaryItem` message of
+ * `CNGX_FORM_FIELD_I18N` (English `'{label}: {message}'`). A field without a
+ * label shows its message alone.
+ *
+ * The host is a polite status region from the first render; only its content
+ * changes. A language flip does not re-voice it: the messages and labels keep
+ * the old language until the errors change, then the new copy is spoken.
  *
  * This implements the WCAG 3.3.1 pattern: "If an input error is detected, the item
  * that is in error is identified and the error is described to the user in text."
@@ -127,7 +115,7 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
         <ng-container *ngTemplateOutlet="customTpl()!; context: tplContext()" />
       } @else {
         <ul class="cngx-form-errors__list">
-          @for (err of errorItems(); track err.fieldName + err.kind) {
+          @for (err of errorItems(); track $index) {
             <li>
               <a (click)="err.focus()" (keydown.enter)="err.focus()" tabindex="0" role="link">
                 @for (segment of err.label ? segments() : messageOnly; track $index) {
@@ -156,8 +144,8 @@ function visibleLabelOf(doc: Document, name: string): string | undefined {
   exportAs: 'cngxFormErrors',
   host: {
     class: 'cngx-form-errors',
-    '[attr.role]': 'show() && errorItems().length > 0 ? "alert" : null',
-    '[attr.aria-live]': '"polite"',
+    role: 'status',
+    'aria-live': 'polite',
   },
 })
 export class CngxFormErrors {
@@ -204,12 +192,16 @@ export class CngxFormErrors {
       }
       const errors = state.errors();
       const fieldName = state.name();
-      // Copy is read untracked: a language flip must not re-voice the polite
+      // Tracked: whether the field renders a label, so a summary placed above
+      // its fields names them once they render. The text itself and the copy
+      // are read untracked: a language flip must not re-voice the polite
       // region; the next error change speaks the new language.
+      const fieldLabel = fieldLabelFor(state);
+      const labelled = fieldLabel?.present() === true;
       return untracked(() => {
         const map = this.errorMap();
         const i18n = this.i18n();
-        const label = visibleLabelOf(this.doc, fieldName);
+        const label = labelled ? fieldLabel?.text() : undefined;
         return errors.map((err) => ({
           fieldName,
           label,
@@ -241,9 +233,9 @@ export interface FormErrorItem {
    */
   fieldName: string;
   /**
-   * The visible text of the field's `CngxLabel`, read when the summary
-   * resolves, without its `aria-hidden` parts. `undefined` when the field has
-   * no label; the default summary then shows the message alone.
+   * The visible text of the field's `CngxLabel`, without its `aria-hidden`
+   * parts, as the field publishes it. `undefined` when the field has no
+   * label; the default summary then shows the message alone.
    */
   label: string | undefined;
   /** Resolved error message. */

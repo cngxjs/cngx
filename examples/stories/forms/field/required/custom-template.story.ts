@@ -15,8 +15,9 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { form, schema, required } from '@angular/forms/signals'",
     "import { CngxFormField, CngxLabel, CngxRequired } from '@cngx/forms/field'",
+    "import { CngxInput } from '@cngx/forms/input'",
   ],
-  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule'],
+  imports: ['CngxFormField', 'CngxLabel', 'CngxRequired', 'FormsModule', 'CngxInput'],
   setup: `protected readonly model = signal<{ email: string; phone: string }>({ email: '', phone: '' });
   protected readonly contactForm = form(this.model, schema((root) => {
     required(root.email, { message: 'Please enter an email' });
@@ -40,7 +41,7 @@ export const STORY: DemoSpec = {
           </ng-template>
         </cngx-required>
       </label>
-      <input
+      <input cngxInput
         type="email"
         [ngModel]="contactForm.email().value()"
         (ngModelChange)="contactForm.email().value.set($event)"
@@ -56,7 +57,7 @@ export const STORY: DemoSpec = {
           </ng-template>
         </cngx-required>
       </label>
-      <input
+      <input cngxInput
         type="tel"
         [ngModel]="contactForm.phone().value()"
         (ngModelChange)="contactForm.phone().value.set($event)"
