@@ -168,7 +168,7 @@ const ATOMS: {
   },
   {
     name: 'alert-dismiss',
-    route: '/#/ui/feedback/alert/closable',
+    route: '/#/ui/feedback/alert/dismissible',
     selector: '.cngx-alert__dismiss',
     axis: 'inline',
   },

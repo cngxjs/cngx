@@ -35,7 +35,7 @@ protected resetState(): void {
 ## Wiring
 
 ```html
-<cngx-alert [state]="saveState" severity="error" title="Operation Status" [closable]="true">
+<cngx-alert [state]="saveState" severity="error" title="Operation Status" [dismissible]="true">
   @switch (saveState.status()) {
     @case ('error') { {{ saveState.error() }} }
     @case ('success') { Saved successfully. This will auto-dismiss in 5s. Hover to pause. }

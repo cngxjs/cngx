@@ -28,7 +28,7 @@ export const STORY: DemoSpec = {
   }`,
   template: `
   <cngx-alert [state]="collapseState" severity="error" title="Validation Failed"
-    [collapsible]="true" [collapseDelay]="3000" [closable]="true">
+    [collapsible]="true" [collapseDelay]="3000" [dismissible]="true">
     3 fields have errors. Please review the form and correct the highlighted fields before submitting again.
     <button cngxAlertAction class="chip" type="button" style="margin-top:8px">Show Details</button>
   </cngx-alert>`,

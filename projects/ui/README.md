@@ -462,13 +462,13 @@ Three visibility modes:
 
 ```html
 <!-- Static -->
-<cngx-alert severity="warning" title="Unsaved changes" [closable]="true">
+<cngx-alert severity="warning" title="Unsaved changes" [dismissible]="true">
   Your changes will be lost if you leave.
   <button cngxAlertAction (click)="save()">Save now</button>
 </cngx-alert>
 
 <!-- State-driven -->
-<cngx-alert [state]="saveState" severity="error" title="Save failed" [closable]="true">
+<cngx-alert [state]="saveState" severity="error" title="Save failed" [dismissible]="true">
   {{ saveState.error() }}
 </cngx-alert>
 
@@ -490,8 +490,7 @@ Three visibility modes:
 |-|-|-|-|
 | `severity` | `AlertSeverity` | `'info'` | Visual style + ARIA role |
 | `title` | `string` | -- | Bold title above content |
-| `closable` | `boolean` | `false` | Show dismiss button |
-| `dismissible` | `boolean` | `false` | Deprecated alias for `closable` |
+| `dismissible` | `boolean` | `false` | Show dismiss button |
 | `state` | `CngxAsyncState<unknown>` | -- | State-driven visibility |
 | `when` | `boolean` | -- | Boolean visibility trigger |
 | `autoDismissDelay` | `number` | `5000` | Auto-dismiss delay for success state (ms) |

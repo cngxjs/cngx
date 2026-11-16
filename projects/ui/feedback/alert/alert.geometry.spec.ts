@@ -18,7 +18,7 @@ import { CngxAlert } from './alert';
   selector: 'cngx-alert-geometry-host',
   standalone: true,
   imports: [CngxAlert],
-  template: `<cngx-alert [severity]="'info'" [closable]="true">Something happened</cngx-alert>`,
+  template: `<cngx-alert [severity]="'info'" [dismissible]="true">Something happened</cngx-alert>`,
 })
 class AlertHost {}
 
