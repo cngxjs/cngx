@@ -124,11 +124,12 @@ export interface FormFieldConfig {
   noSpellcheckFields?: ReadonlySet<string>;
   /**
    * When set, `CngxLabel` auto-renders a required marker for required fields.
-   * The string value is the marker text (e.g. `'*'` or `'(required)'`).
-   * Set to `false` or omit to disable. Individual labels can override via
+   * The value is the marker text (e.g. `'*'` or `'(required)'`); a word is
+   * copy, so pass a `Signal` to follow a runtime language switch. Set to
+   * `false` or omit to disable. Individual labels can override via
    * `[showRequired]="false"`.
    */
-  requiredMarker?: string | false;
+  requiredMarker?: string | Signal<string> | false;
   /**
    * Fully overrides the default error gate (`touched OR errorScope.showErrors`).
    * The presenter invokes this inside `untracked()` so strategy-internal
@@ -499,16 +500,17 @@ export interface ConstraintMetadata {
  * Auto-render a required marker (e.g. `*`) inside every `CngxLabel` for required fields.
  * Individual labels can opt out via `[showRequired]="false"`.
  *
- * @param marker The marker text. Defaults to `'*'`.
+ * @param marker The marker text. Defaults to `'*'`. A word is copy: pass a
+ * `Signal` so it follows a runtime language switch.
  *
  * ```ts
  * provideFormField(withRequiredMarker())       // shows '*'
- * provideFormField(withRequiredMarker('(required)'))
+ * provideFormField(withRequiredMarker(requiredWord)) // Signal<string>
  * ```
  *
  * @relatedTo provideFormField, CngxLabel, CngxRequired
  */
-export function withRequiredMarker(marker = '*'): FormFieldFeature {
+export function withRequiredMarker(marker: string | Signal<string> = '*'): FormFieldFeature {
   return { _apply: (c) => ({ ...c, requiredMarker: marker }) };
 }
 
