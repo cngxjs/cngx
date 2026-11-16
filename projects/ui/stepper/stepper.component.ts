@@ -543,9 +543,9 @@ export class CngxStepper implements CngxStepPanelHost {
       return;
     }
     // No-op when the header is not reachable - disabled, linear-blocked,
-    // or a commit or the finish run is in flight. The reachability gate (which now includes
-    // `busy()`) is the single source, so a mid-commit click cannot
-    // supersede the pending transition.
+    // or a commit or the finish run is in flight. The reachability gate
+    // (`busy()` included) is the single source, so a mid-commit click
+    // cannot supersede the pending transition.
     if (node.kind !== 'step' || !this.isHeaderReachable(node)) {
       return;
     }

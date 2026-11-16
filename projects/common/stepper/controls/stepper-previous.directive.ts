@@ -27,8 +27,8 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
  * the finish run is in flight (`busy()`): `selectPrevious()` writes
  * `activeStepIndex` directly, bypassing the commit controller, so
  * disabling it during an in-flight forward commit or finish run prevents
- * a navigate-mid-run race. The gate
- * is the host's `canGoPrevious` bound - never re-derived from `stepsOnly`.
+ * a navigate-mid-run race. The gate is the host's `canGoPrevious` bound -
+ * never re-derived from `stepsOnly`.
  *
  * Reflects the disabled state via `aria-disabled` only - never native
  * `disabled` - so the control stays focusable and AT-reachable; the
