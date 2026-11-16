@@ -73,7 +73,6 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
  * @relatedTo CngxChipGroup, CngxMultiChipGroup, CngxChipInteraction
  * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
- * <example-url>/#/forms/field/form-primitives/coming-in-a-follow-up</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
  * <example-url>/#/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * @axis level atom

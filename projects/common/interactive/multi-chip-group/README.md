@@ -42,7 +42,7 @@ Membership is then tracked by stable key, not identity.
 
 ## Forms integration
 
-The group provides `CNGX_CONTROL_VALUE` and `CNGX_FORM_FIELD_CONTROL` directly, so it drops into `<cngx-form-field [field]="f.tags">` without a CVA. Reactive Forms bind via `adaptFormControl`.
+Drops into `<cngx-form-field [field]="f.tags">` without a value binding; see [Binding an atom](../../../forms/field/README.md#binding-an-atom). Reactive Forms bind via `adaptFormControl`.
 
 ## Accessibility
 

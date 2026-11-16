@@ -23,7 +23,7 @@ import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
 protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
 ```
 
-Drop the same atom into a Signal Forms field; no extra binding, the group provides `CNGX_FORM_FIELD_CONTROL` itself:
+Drop the same atom into a Signal Forms field, no value binding (see [Binding an atom](../../../forms/field/README.md#binding-an-atom)):
 
 ```html
 <cngx-form-field [field]="form.payment">

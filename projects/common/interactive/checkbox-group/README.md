@@ -57,13 +57,16 @@ The master binds the group's derived flags. `aria-checked` flips between `true`,
 
 ### Signal Forms
 
-The group satisfies `CngxFormFieldControl`, so a `Field<T[]>` binds directly.
+The group is the field's control and needs no value binding (see [Binding an atom](../../../forms/field/README.md#binding-an-atom)). The leaves bind the group, not the field:
 
 ```html
 <cngx-form-field [field]="form.channels" label="Channels">
-  <cngx-checkbox-group [allValues]="options">
+  <cngx-checkbox-group [allValues]="options" #g="cngxCheckboxGroup">
     @for (opt of options; track opt) {
-      <cngx-checkbox [value]="form.channels().value.includes(opt)">
+      <cngx-checkbox
+        [value]="g.selectedValues().includes(opt)"
+        (valueChange)="$event ? g.select(opt) : g.deselect(opt)"
+      >
         {{ opt }}
       </cngx-checkbox>
     }
