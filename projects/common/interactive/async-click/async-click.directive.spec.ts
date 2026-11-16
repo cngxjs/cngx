@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 import { of, type Observable } from 'rxjs';
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
@@ -360,6 +361,67 @@ describe('CngxAsyncClick', () => {
     expect(region.textContent).toBe('');
     flush(fixture);
     expect(region.textContent).toBe('Action succeeded');
+  });
+
+  it('hands a settle to the live announcer and leaves the region empty when the host is not rendered', async () => {
+    const announce = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    // jsdom has no checkVisibility; a closed popover or hidden branch reads false here.
+    Object.assign(btn, { checkVisibility: () => false });
+    host.actionImpl = () => Promise.reject(new Error('nope'));
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(announce).toHaveBeenCalledWith('Action failed', 'polite', btn);
+    });
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(region.textContent).toBe('');
+  });
+
+  it('counts a host under visibility: hidden as not rendered', async () => {
+    const announce = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    // A hidden sidenav rail: rendered boxes, but visibility: hidden, which a
+    // reader skips. Only the visibilityProperty probe sees it.
+    Object.assign(btn, {
+      checkVisibility: (options?: CheckVisibilityOptions) => options?.visibilityProperty !== true,
+    });
+    host.actionImpl = () => Promise.reject(new Error('nope'));
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(announce).toHaveBeenCalledWith('Action failed', 'polite', btn);
+    });
+    expect(region.textContent).toBe('');
+  });
+
+  it('empties the region when a run starts, so a repeated identical outcome is a second write', async () => {
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    host.actionImpl = () => Promise.reject(new Error('nope'));
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region.textContent).toBe('Action failed');
+    });
+
+    const run = deferred();
+    host.actionImpl = () => run.promise;
+    btn.click();
+    flush(fixture);
+    expect(region.textContent).toBe('');
+
+    run.reject(new Error('nope'));
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(region.textContent).toBe('Action failed');
+    });
   });
 
   it('announce() speaks a host message once after the next render', () => {

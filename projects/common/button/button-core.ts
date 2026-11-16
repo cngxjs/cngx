@@ -99,8 +99,7 @@ export function resolveButtonSize(
 /**
  * Derivation behind `CngxButtonBrain`. The activation guard is a capture-phase `click` /
  * `auxclick` listener: while `blocked` it stops every same-element handler (`RouterLink`,
- * `CngxAsyncClick` included) and prevents the default, implicit form submission included. A
- * click on an expanded popup trigger (`aria-expanded="true"`) passes, so it can close the popup.
+ * `CngxAsyncClick` included) and prevents the default, implicit form submission included.
  *
  * @internal
  */
@@ -115,8 +114,8 @@ export function injectButtonCore(
   // the CNGX_HOST_INTERACTION_STATE this button provides, so an eager inject
   // in either direction is a cycle.
   const runState = injectLazySelf(CNGX_ASYNC_RUN_STATE, { optional: true });
-  const reasonId = nextUid('cngx-button-reason-');
-  const describedByKey = nextUid('cngx-button-describedby-');
+  const reasonId = nextUid('cngx-button-reason');
+  const describedByKey = nextUid('cngx-button-describedby');
   const isButtonHost = host.tagName === 'BUTTON';
 
   const fixed = defaults.fixed;
@@ -186,11 +185,10 @@ export function injectButtonCore(
 
   // Keyed on `blocked`, not on the own refusal: a runner that refuses or
   // runs renders aria-disabled too, and a co-located listener (RouterLink, a
-  // consumer handler) must not act on an element that reads as disabled.
-  // A click on an expanded popup trigger only closes what it opened, so it
-  // passes: a run started by the opening click never leaves a menu that
-  // cannot be clicked shut.
-  injectActivationGuard(() => blocked() && host.getAttribute('aria-expanded') !== 'true');
+  // consumer handler) must not act on an element that reads as disabled,
+  // an expanded popup trigger included: its popup closes by Escape, Tab, an
+  // outside press or an item activation.
+  injectActivationGuard(blocked);
 
   return {
     variant,

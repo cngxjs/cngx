@@ -33,8 +33,10 @@ import { CngxPopover } from './popover.directive';
  * a success that arms a close is covered (`CNGX_ANNOUNCEMENT_COVER`, the
  * region gets `''`) and spoken through `CngxLiveAnnouncer` outside, scoped
  * to the popover's parent, once, with the text `CNGX_ACTION_STATUS` resolves
- * for it, unless another co-hosted cover (a toast) voices it already. A
- * selector-less host directive; `CngxPopoverAction` co-hosts it
+ * for it, unless another co-hosted cover (a toast) voices it already. Only
+ * this arming case is covered here: the runner speaks any other settle in a
+ * closed panel through `CngxLiveAnnouncer` itself. A selector-less host
+ * directive; `CngxPopoverAction` co-hosts it
  * next to `CngxActionStatusBrain`.
  *
  * @wcag AA

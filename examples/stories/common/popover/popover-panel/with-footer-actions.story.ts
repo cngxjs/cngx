@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Compose <code>button[cngxPopoverDismiss]</code> and <code>button[cngxPopoverAction]</code> inside <code>cngxPopoverFooter</code>. The dismiss button closes the panel; the action runs an async <code>[action]</code> with <code>cngxPending</code> / <code>cngxSucceeded</code> / <code>cngxFailed</code> templates.',
   description:
-    'A confirm panel pairs a dismiss button with an async confirm. Both are button-family hosts pinned to <code>sm</code>; the confirm sets <code>cngxPopoverAction="solid"</code> plus a <code>tone</code> and co-hosts <code>CngxAsyncClick</code>, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. A confirm that settles inside the show delay never shows the busy template; a longer one holds the pending template through its dwell while the action refuses a second click. Each settle is spoken once through the polite live region of the action itself, with the text the button shows.',
+    'A confirm panel pairs a dismiss button with an async confirm. Both are button-family hosts pinned to <code>sm</code>; the confirm sets <code>cngxPopoverAction="solid"</code> plus a <code>tone</code> and co-hosts <code>CngxAsyncClick</code>, so the projected templates swap based on the returned promise. The first popover resolves and renders the success template; the second rejects and surfaces the rejection value via <code>cngxFailed</code> with <code>$implicit</code>. A confirm that settles inside the show delay never shows the busy template; a longer one holds the pending template through its dwell while the action refuses a second click. Each settle is spoken once through the polite live region of the action itself, with the text the button shows. A run that settles after the panel closed (Escape during a slow confirm) is spoken once through <code>CngxLiveAnnouncer</code> outside the panel instead, because a reader skips a region inside a hidden popover.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -57,9 +57,11 @@ export const STORY: DemoSpec = {
     new Promise<void>((_, reject) => setTimeout(() => reject('Permission denied'), this.latencyMs())),
   );
 
-  // Logs the real DOM writes into the live region next to each async button.
+  // Logs the real DOM writes into the live region next to each async button
+  // and into the page-level announcer region a closed panel speaks through.
   private readonly srMirror = afterNextRender(() => {
     const host = this.hostEl.nativeElement;
+    const body = host.ownerDocument.body;
     const lastText = new WeakMap<Element, string>();
     let count = 0;
     const readBusy = (): void => {
@@ -74,7 +76,12 @@ export const STORY: DemoSpec = {
       for (const record of records) {
         const el = record.target instanceof Element ? record.target : record.target.parentElement;
         const region = el?.closest('[aria-live]');
-        if (!region || !host.contains(region) || region.previousElementSibling?.tagName !== 'BUTTON') {
+        if (!region) {
+          continue;
+        }
+        const own = host.contains(region) && region.previousElementSibling?.tagName === 'BUTTON';
+        const page = region.parentElement === body && region.getAttribute('aria-live') === 'polite';
+        if (!own && !page) {
           continue;
         }
         const text = region.textContent?.trim() ?? '';
@@ -84,13 +91,14 @@ export const STORY: DemoSpec = {
         lastText.set(region, text);
         if (text !== '') {
           count += 1;
-          const entry = { n: count, text: this.srLabel(region.previousElementSibling) + '"' + text + '"' };
+          const prefix = own ? this.srLabel(region.previousElementSibling) : 'Page region: ';
+          const entry = { n: count, text: prefix + '"' + text + '"' };
           this.heard.update((list) => [...list, entry].slice(-5));
         }
       }
       readBusy();
     });
-    observer.observe(host, {
+    observer.observe(body, {
       childList: true,
       characterData: true,
       subtree: true,
@@ -180,7 +188,7 @@ export const STORY: DemoSpec = {
       }
     </dl>
     <p class="cngx-ex-sr-output__note">
-      The last five texts written to the polite live region next to each confirm button, newest last, prefixed with the panel. They are spoken as well as painted on the button; two writes in one frame may be voiced once, depending on the screen reader.
+      The last five texts written to the polite live region next to each confirm button, newest last, prefixed with the panel. A run that settles after its panel closed shows up as "Page region", the announcer region outside every popover. They are spoken as well as painted on the button; two writes in one frame may be voiced once, depending on the screen reader.
     </p>
   </div>`,
 };

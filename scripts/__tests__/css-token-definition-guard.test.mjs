@@ -31,13 +31,17 @@ import { describe, expect, it } from 'vitest';
  * component is allowlisted with that reason. A fallback equal to the initial or
  * `inherit` passes, and so does a sentinel fallback on a sentinel registration.
  *
- * Rules C to E cover every scanned component stylesheet. Rule C - a
+ * Rules C to E cover every scanned component stylesheet, `.css` and `.scss`
+ * (a `.scss` sheet loses its `//` line comments first). Rule C - a
  * `--mat-sys-*` read: Material system tokens belong to the theme bridges in
- * `projects/themes/**`. Rule D - a bare hex colour: a colour is a token read
- * with a fallback. A hex literal as a `var()` fallback is the documented
- * convention and an `@property` `initial-value` must be a literal, so both
- * pass; anywhere else a hex is flagged. `projects/forms/**` keeps the stricter
- * rule and flags every hex literal. Rule E - a `var()` with no fallback on a
+ * `projects/themes/**`. Rule D - a bare colour: a colour is a token read with a
+ * fallback. Hex literals, `rgb()` / `rgba()` / `hsl()` / `hsla()` and CSS
+ * named colours in a declaration value are flagged; system colours
+ * (`Canvas`, ...), `transparent` and `currentColor` are not named colours. A
+ * colour as a `var()` fallback is the documented convention and an
+ * `@property` `initial-value` must be a literal, so both pass. A functional
+ * colour is reported by its function name (`rgb()`). `projects/forms/**`
+ * keeps the stricter hex rule and flags every hex literal. Rule E - a `var()` with no fallback on a
  * token the default palette does not define: unset, the declaration computes
  * to its initial value, so the read needs a fallback or a stated reason. A
  * property registered by an `@property` rule counts as defined when the
@@ -196,17 +200,78 @@ export function rawHexColours(source) {
   ];
 }
 
-/**
- * Rule D outside `projects/forms/**`: hex literals left after every
- * `@property` block and every `var()` call is removed, so a hex fallback and a
- * registered `initial-value` pass.
- */
-export function bareHexColours(source) {
+/** The CSS named colours (CSS Color 4), without `transparent` and `currentColor`. */
+const NAMED_COLOURS = new Set(
+  (
+    'aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue ' +
+    'blueviolet brown burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk ' +
+    'crimson cyan darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki ' +
+    'darkmagenta darkolivegreen darkorange darkorchid darkred darksalmon darkseagreen ' +
+    'darkslateblue darkslategray darkslategrey darkturquoise darkviolet deeppink deepskyblue ' +
+    'dimgray dimgrey dodgerblue firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite ' +
+    'gold goldenrod gray green greenyellow grey honeydew hotpink indianred indigo ivory khaki ' +
+    'lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan ' +
+    'lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen ' +
+    'lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen ' +
+    'magenta maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen ' +
+    'mediumslateblue mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream ' +
+    'mistyrose moccasin navajowhite navy oldlace olive olivedrab orange orangered orchid ' +
+    'palegoldenrod palegreen paleturquoise palevioletred papayawhip peachpuff peru pink plum ' +
+    'powderblue purple rebeccapurple red rosybrown royalblue saddlebrown salmon sandybrown ' +
+    'seagreen seashell sienna silver skyblue slateblue slategray slategrey snow springgreen ' +
+    'steelblue tan teal thistle tomato turquoise violet wheat white whitesmoke yellow yellowgreen'
+  ).split(' '),
+);
+
+/** `source` without every `@property` block and every `var()` call. */
+function withoutRegistrationsAndVars(source) {
   let rest = source.replace(/@property\s+--[\w-]+\s*\{[^}]*\}/g, ' ');
   for (const body of varBodies(rest)) {
     rest = rest.replace(`var(${body})`, ' ');
   }
-  return rawHexColours(rest);
+  return rest;
+}
+
+/** Every value of a `property: value` declaration in `source`, quoted strings removed. */
+function declarationValues(source) {
+  return [...source.matchAll(/(?<![\w-])-{0,2}[a-z][\w-]*\s*:\s*([^;{}]+)(?=[;}])/gi)].map((m) =>
+    m[1].replace(/(["'])(?:\\.|(?!\1).)*\1/g, ' '),
+  );
+}
+
+/** Functional and named colours in `source`: `rgb()`, `hsla()`, `red`, ... */
+function functionalAndNamedColours(source) {
+  const found = new Set();
+  for (const m of source.matchAll(/(?<![\w-])(rgba?|hsla?)\(/gi)) {
+    found.add(`${m[1].toLowerCase()}()`);
+  }
+  for (const value of declarationValues(source)) {
+    for (const m of value.matchAll(/(?<![\w$.#-])([a-z]+)(?![\w(-])/gi)) {
+      const word = m[1].toLowerCase();
+      if (NAMED_COLOURS.has(word)) {
+        found.add(word);
+      }
+    }
+  }
+  return [...found];
+}
+
+/**
+ * Rule D outside `projects/forms/**`: hex literals, functional colours and
+ * named colours left after every `@property` block and every `var()` call is
+ * removed, so a colour fallback and a registered `initial-value` pass.
+ */
+export function bareColours(source) {
+  const rest = withoutRegistrationsAndVars(source);
+  return [...rawHexColours(rest), ...functionalAndNamedColours(rest)];
+}
+
+/** Rule D in `projects/forms/**`: every hex literal, plus the bare functional and named colours. */
+export function strictColours(source) {
+  return [
+    ...rawHexColours(source),
+    ...functionalAndNamedColours(withoutRegistrationsAndVars(source)),
+  ];
 }
 
 /** Every custom property registered by an `@property` rule in `source`. */
@@ -233,6 +298,47 @@ export function undefinedReadsWithoutFallback(source, defined, registered = new 
 
 // --- repo scan ---------------------------------------------------------------
 
+/**
+ * `source` without its `//` line comments, for a `.scss` sheet. A `//` inside
+ * `url()` or a quoted string is content, not a comment.
+ */
+export function stripLineComments(source) {
+  let out = '';
+  let quote = null;
+  let urlDepth = 0;
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
+    if (quote) {
+      out += ch;
+      if (ch === '\\') {
+        out += source[++i] ?? '';
+      } else if (ch === quote) {
+        quote = null;
+      }
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (/url\($/i.test(source.slice(Math.max(0, i - 3), i + 1))) {
+      urlDepth = 1;
+    } else if (urlDepth > 0 && ch === ')') {
+      urlDepth = 0;
+    } else if (urlDepth === 0 && ch === '/' && source[i + 1] === '/') {
+      const eol = source.indexOf('\n', i);
+      i = eol === -1 ? source.length : eol - 1;
+      continue;
+    }
+    out += ch;
+  }
+  return out;
+}
+
+/** The scanned text of one stylesheet: block comments out, and `//` comments for `.scss`. */
+export function scannedSource(rel, raw) {
+  const source = stripComments(raw);
+  return rel.endsWith('.scss') ? stripLineComments(source) : source;
+}
+
 function walkCss(dir) {
   const out = [];
   for (const entry of readdirSync(dir)) {
@@ -242,7 +348,7 @@ function walkCss(dir) {
     const full = resolve(dir, entry);
     if (statSync(full).isDirectory()) {
       out.push(...walkCss(full));
-    } else if (entry.endsWith('.css')) {
+    } else if (entry.endsWith('.css') || entry.endsWith('.scss')) {
       out.push(full);
     }
   }
@@ -250,10 +356,8 @@ function walkCss(dir) {
 }
 
 function read(full) {
-  return {
-    rel: relative(REPO_ROOT, full).replaceAll('\\', '/'),
-    source: stripComments(readFileSync(full, 'utf8')),
-  };
+  const rel = relative(REPO_ROOT, full).replaceAll('\\', '/');
+  return { rel, source: scannedSource(rel, readFileSync(full, 'utf8')) };
 }
 
 const ALL_CSS = walkCss(PROJECTS).map(read);
@@ -261,7 +365,8 @@ const SCANNED = ALL_CSS.filter(
   ({ rel }) =>
     !rel.startsWith('projects/themes/') &&
     !rel.includes('.spec-host.') &&
-    !rel.includes('/examples/'),
+    !rel.includes('/examples/') &&
+    !rel.includes('/testing/fixtures/'),
 );
 
 const DEFINED = new Set();
@@ -316,8 +421,8 @@ function repoOffenders(files = SCANNED) {
     for (const token of materialSystemReads(source)) {
       rows.push({ rule: 'C', token, file: rel });
     }
-    const hex = rel.startsWith('projects/forms/') ? rawHexColours(source) : bareHexColours(source);
-    for (const token of hex) {
+    const colours = rel.startsWith('projects/forms/') ? strictColours(source) : bareColours(source);
+    for (const token of colours) {
       rows.push({ rule: 'D', token, file: rel });
     }
     const registered = new Set([...BUNDLED_REGISTRATIONS, ...registeredProperties(source)]);
@@ -514,6 +619,19 @@ const ALLOWLIST = [
       'the mat-tabs bridge SETS the property; without it transparent paints instead of the strip background; out of feature area, follow-up',
   },
   {
+    rule: 'D',
+    token: 'rgb()',
+    file: 'projects/ui/data-grid-accordion/data-grid-accordion.component.css',
+    reason: 'mask-image gradients: only the alpha channel is read, the colour never paints',
+  },
+  {
+    rule: 'D',
+    token: 'black',
+    file: 'projects/common/theming/components/cngx-button-toggle.css',
+    reason:
+      'the pressed fill mixes 12% toward black, the darkening the button solid hover used before T6; PR 9 (T14) moves the family paint into one sheet, re-evaluate there',
+  },
+  {
     rule: 'E',
     token: '--cngx-field-bare-inline-size',
     file: 'projects/forms/select/shared/select-base.css',
@@ -666,13 +784,53 @@ describe('Rules C to E - component stylesheets', () => {
   });
 
   it('bare Rule D flags a hex outside a var() fallback and an @property initial-value', () => {
-    expect(bareHexColours('.a { color: #ff00aa; }')).toEqual(['#ff00aa']);
+    expect(bareColours('.a { color: #ff00aa; }')).toEqual(['#ff00aa']);
     expect(
-      bareHexColours(`
+      bareColours(`
         @property --cngx-a-border { syntax: '<color>'; inherits: true; initial-value: #e0e0e0; }
         .a { color: var(--x, #fff); border-color: var(--y, var(--z, #abcdef)); }
       `),
     ).toEqual([]);
+  });
+
+  it('bare Rule D flags functional and named colours (probe t04)', () => {
+    const source = '.a { color: rgb(255 0 170); background: red; }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/t04.css', source }]).map(key)).toEqual([
+      'D rgb() projects/ui/x/t04.css',
+      'D red projects/ui/x/t04.css',
+    ]);
+    expect(
+      bareColours('.a { b: hsla(0 0% 0% / 0.5); c: rgba(0, 0, 0, 0.2); d: hsl(1 2% 3%); }'),
+    ).toEqual(['hsla()', 'rgba()', 'hsl()']);
+  });
+
+  it('bare Rule D passes system colours, transparent, currentColor and a colour fallback', () => {
+    expect(
+      bareColours(`
+        .a:hover { color: Canvas; background: transparent; border-color: currentColor; }
+        .b { color: var(--x, rgb(0 0 0)); outline: 1px solid var(--y, red); }
+        .c { transition: color 0.2s, background-color 0.2s; content: 'red'; }
+        .d { grid-template-areas: "white black"; animation-name: var(--z, tan); }
+      `),
+    ).toEqual([]);
+  });
+
+  it('scans a .scss sheet without its line comments (probe t13)', () => {
+    const raw = [
+      '// a comment with #ffffff and --mat-sys-primary',
+      '.a {',
+      '  color: var(--mat-sys-tertiary, currentColor);',
+      '  border-color: #123456; // trailing #abcdef',
+      '  background: url(//cdn.example.com/x.png);',
+      '}',
+    ].join('\n');
+    const rel = 'projects/ui/x/t13.scss';
+    expect(repoOffenders([{ rel, source: scannedSource(rel, raw) }]).map(key)).toEqual([
+      'C --mat-sys-tertiary projects/ui/x/t13.scss',
+      'D #123456 projects/ui/x/t13.scss',
+    ]);
+    expect(scannedSource(rel, raw)).toContain('url(//cdn.example.com/x.png)');
+    expect(scannedSource('projects/ui/x/t13.css', '.a { b: c; } // d')).toContain('// d');
   });
 
   it('collects the stylesheets the cngx.css bundle imports', () => {

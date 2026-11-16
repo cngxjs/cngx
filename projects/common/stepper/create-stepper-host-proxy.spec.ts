@@ -49,6 +49,12 @@ describe('createStepperHostProxy', () => {
       }).not.toThrow();
     });
 
+    it('returns a no-op release from registerBusy', () => {
+      const release = proxy.registerBusy?.('finish', signal(true));
+      expect(() => release?.()).not.toThrow();
+      expect(proxy.busy()).toBe(false);
+    });
+
     it('canNavigateTo returns false (no host to reach)', () => {
       expect(proxy.canNavigateTo(0)).toBe(false);
       expect(proxy.canNavigateTo(2)).toBe(false);
@@ -89,6 +95,23 @@ describe('createStepperHostProxy', () => {
 
       proxy.selectNext();
       expect(selectNext).toHaveBeenCalledTimes(1);
+    });
+
+    it('forwards registerBusy to the host current at the call and releases there', () => {
+      const releaseFirst = vi.fn();
+      const first = { registerBusy: vi.fn(() => releaseFirst) } as unknown as CngxStepperHost;
+      const second = { registerBusy: vi.fn(() => vi.fn()) } as unknown as CngxStepperHost;
+      const supplier = signal<CngxStepperHost | null>(first);
+      const proxy = createStepperHostProxy(() => supplier());
+      const pending = signal(true);
+
+      const release = proxy.registerBusy?.('finish', pending);
+      expect(first.registerBusy).toHaveBeenCalledWith('finish', pending);
+
+      supplier.set(second);
+      expect(second.registerBusy).not.toHaveBeenCalled();
+      release?.();
+      expect(releaseFirst).toHaveBeenCalledTimes(1);
     });
   });
 });

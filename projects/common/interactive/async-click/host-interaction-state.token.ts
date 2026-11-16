@@ -17,9 +17,12 @@ import type { CngxAsyncSettle } from './async-click.directive';
  * - `announcement` (optional) - called once per settle, after render, with
  *   the settle it speaks for; its value fully replaces the text the directive's auto-rendered live region
  *   speaks for that settle, `''` included: an empty string silences the
- *   region, it does not fall back to the directive's own settle copy. The
- *   directive's public `announcement` signal keeps reporting its own text,
- *   and with `[autoAnnounce]="false"` no region renders at all.
+ *   region, it does not fall back to the directive's own settle copy. When
+ *   the host is not rendered at that point (a closed popover), a non-empty
+ *   text goes to `CngxLiveAnnouncer`, scoped to the host, and the region
+ *   stays empty. The directive's public `announcement` signal keeps
+ *   reporting its own text, and with `[autoAnnounce]="false"` no region
+ *   renders at all.
  */
 export interface CngxHostInteractionState {
   /** `true` while the host is disabled; clicks are swallowed and `aria-disabled` is set. */

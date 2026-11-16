@@ -1,6 +1,6 @@
 import { computed, signal, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import { firstValueFrom, isObservable } from 'rxjs';
+import { firstValueFrom, fromEvent, isObservable, takeUntil } from 'rxjs';
 
 import { CNGX_ASYNC_CANCELLED, type AsyncAction } from '../async-click/async-click.directive';
 
@@ -64,16 +64,19 @@ export interface RetryState {
  * ```
  *
  * The returned action takes the optional `AbortSignal` that
- * `cngxAsyncClick` passes (it aborts when the runner is destroyed) and
- * forwards it to every attempt. On abort the backoff timer is cleared, no
- * further attempt starts and an aborted run settles the retry state idle
- * (`attempt` 0, `retrying` false, `lastError` kept), unless a newer run
- * already owns the state; the in-flight attempt is not aborted by the
- * library, an action that passes the signal to `fetch` / `HttpClient` opts
- * in to that. A run that ends without an outcome
- * (superseded by a new call, `reset()`, or aborted) resolves
- * `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct call without a
- * signal (`saveWithRetry()`) has no destroy binding: it runs to its end.
+ * `cngxAsyncClick` passes (it aborts when the runner is destroyed). Each run
+ * gets its own signal, linked to that one, which also aborts on `reset()`
+ * and when a new call supersedes the run; every attempt receives it. On
+ * abort the run stops at once: the awaited attempt and the backoff timer are
+ * dropped, no further attempt starts, and the run settles the retry state
+ * idle (`attempt` 0, `retrying` false, `lastError` kept), unless a newer run
+ * already owns the state. A dropped Observable attempt is unsubscribed, so
+ * an `HttpClient` request is cancelled. A dropped Promise attempt keeps
+ * running unless the action passes the signal on (`fetch`); its late
+ * outcome is ignored. A run that ends without an outcome (superseded, `reset()`, or
+ * aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct
+ * call without a signal (`saveWithRetry()`) has no destroy binding, but
+ * `reset()` and a newer call still end it.
  *
  * A pure factory that needs no injection context. The lifetime comes from
  * the signal of the runner that owns the run.
@@ -112,6 +115,13 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
   // Generation counter cancels any in-flight retry loop on re-invocation
   // (and on reset - a stale loop must not overwrite freshly reset state).
   let generation = 0;
+  // The current run's own signal: aborting it wakes the awaited attempt and
+  // the backoff, so a cancelled run settles now instead of when they end.
+  let runController: AbortController | null = null;
+  const abortRun = (): void => {
+    runController?.abort();
+    runController = null;
+  };
 
   const retryState: RetryState = {
     attempt: attemptState.asReadonly(),
@@ -122,6 +132,7 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
     state: asyncState,
     reset() {
       generation++;
+      abortRun();
       attemptState.set(0);
       retryingState.set(false);
       exhaustedState.set(false);
@@ -130,12 +141,8 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
     },
   };
 
-  const retryableAction: AsyncAction = async (abort?: AbortSignal): Promise<unknown> => {
-    if (abort?.aborted) {
-      return CNGX_ASYNC_CANCELLED;
-    }
-    const thisGeneration = ++generation;
-    const cancelled = (): boolean => generation !== thisGeneration || abort?.aborted === true;
+  const runAttempts = async (thisGeneration: number, run: AbortSignal): Promise<unknown> => {
+    const cancelled = (): boolean => generation !== thisGeneration || run.aborted;
     // A superseded run leaves the state to the newer run (or to reset()); an
     // aborted run that still owns it settles idle, so no pending view outlives
     // the runner.
@@ -160,12 +167,15 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
       attemptState.set(attempt);
 
       try {
-        const result$ = action(abort);
-        if (isObservable(result$)) {
-          await firstValueFrom(result$, { defaultValue: undefined });
-        } else {
-          await result$;
-        }
+        const result$ = action(run);
+        // An abort unsubscribes an Observable attempt: that is its
+        // cancellation, so an HttpClient request ends with the run.
+        const work = isObservable(result$)
+          ? firstValueFrom(result$.pipe(takeUntil(fromEvent(run, 'abort'))), {
+              defaultValue: undefined,
+            })
+          : Promise.resolve(result$);
+        await untilSettledOrAborted(work, run);
         if (cancelled()) {
           return cancel();
         }
@@ -187,7 +197,7 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
         retryingState.set(true);
         const delayMs =
           backoff === 'exponential' ? baseDelay * Math.pow(2, attempt - 1) : baseDelay * attempt;
-        await backoffDelay(delayMs, abort);
+        await backoffDelay(delayMs, run);
         if (cancelled()) {
           return cancel();
         }
@@ -196,7 +206,45 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
     }
   };
 
+  const retryableAction: AsyncAction = async (abort?: AbortSignal): Promise<unknown> => {
+    if (abort?.aborted) {
+      return CNGX_ASYNC_CANCELLED;
+    }
+    const thisGeneration = ++generation;
+    abortRun();
+    const controller = new AbortController();
+    runController = controller;
+    const run = controller.signal;
+    const forward = (): void => controller.abort();
+    abort?.addEventListener('abort', forward, { once: true });
+    try {
+      return await runAttempts(thisGeneration, run);
+    } finally {
+      abort?.removeEventListener('abort', forward);
+      if (runController === controller) {
+        runController = null;
+      }
+    }
+  };
+
   return [retryableAction, retryState];
+}
+
+/**
+ * Settles with `work`, or resolves at once when `abort` fires. The race
+ * handles a late rejection of the dropped `work`, so it is never unhandled.
+ */
+function untilSettledOrAborted(work: Promise<unknown>, abort: AbortSignal): Promise<unknown> {
+  if (abort.aborted) {
+    work.catch(() => undefined);
+    return Promise.resolve();
+  }
+  let onAbort = (): void => undefined;
+  const aborted = new Promise<void>((resolve) => {
+    onAbort = resolve;
+    abort.addEventListener('abort', onAbort, { once: true });
+  });
+  return Promise.race([work, aborted]).finally(() => abort.removeEventListener('abort', onAbort));
 }
 
 /** Resolves after `ms`, or at once (timer cleared) when `abort` fires. */

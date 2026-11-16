@@ -1067,18 +1067,17 @@ describe('CngxPopoverAction', () => {
       expect(host.action().status()).toBe('error');
     });
 
-    // H4: expected to fail until PR 8 (T9) speaks a settle in a closed popover through CngxLiveAnnouncer.
-    it.fails(
-      'speaks a failure that settles after the popover closed outside the popover',
-      async () => {
-        const announce = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce');
-        const { fixture, popoverEl } = setup(ConfirmHost);
-        await rejectAfterClose(fixture);
-        const call = announce.mock.calls.find(([message]) => message === 'Failed: Network error');
-        expect(call, 'announcer calls').toBeDefined();
-        expect(popoverEl.contains(call?.[2] ?? null)).toBe(false);
-      },
-    );
+    it('speaks a failure that settles after the popover closed through the live announcer', async () => {
+      const announce = vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce');
+      const { fixture } = setup(ConfirmHost);
+      const host = fixture.componentInstance;
+      // jsdom has no checkVisibility; the button is rendered exactly while its popover is.
+      Object.assign(button(fixture), { checkVisibility: () => host.popover().isVisible() });
+      await rejectAfterClose(fixture);
+      const calls = announce.mock.calls.filter(([message]) => message === 'Failed: Network error');
+      expect(calls, 'announcer calls').toHaveLength(1);
+      expect(region(fixture).textContent).toBe('');
+    });
 
     it('leaves no close timer and no write when destroyed mid-run', async () => {
       TestBed.configureTestingModule({

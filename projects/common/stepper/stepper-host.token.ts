@@ -136,12 +136,21 @@ export interface CngxStepperHost {
   readonly canGoNext: Signal<boolean>;
 
   /**
-   * `true` while a commit is in flight (`commitState.status() ===
-   * 'pending'`). Drives the busy-disable on nav affordances. Keyed on
-   * the strict `'pending'` status, consistent with the per-step busy
-   * gate.
+   * `true` while a commit or the finish run is in flight: the commit
+   * (`commitState.status() === 'pending'`) or any source registered
+   * through {@link registerBusy}. Drives the busy-disable on nav
+   * affordances. Keyed on the strict `'pending'` status, consistent
+   * with the per-step busy gate.
    */
   readonly busy: Signal<boolean>;
+
+  /**
+   * Registers a run outside the commit (the `CngxStepperComplete`
+   * finish run) under `key`, so {@link busy} reads `true` while
+   * `pending()` does. Returns the release. Optional: a host without it
+   * reflects only its commit.
+   */
+  registerBusy?(key: string, pending: Signal<boolean>): () => void;
 
   /**
    * Label of the step {@link selectNext} would land on, or `undefined`

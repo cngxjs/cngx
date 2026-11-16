@@ -45,7 +45,7 @@ import {
  * Commit-lifecycle transitions speak: the shared announcement builder
  * feeds the root live announcer (pending / landed / rolled-back
  * phrases, identical to `<cngx-stepper>`), and the host carries
- * `aria-busy="true"` while a commit is in flight.
+ * `aria-busy="true"` while a commit or the finish run is in flight.
  *
  * Inputs/outputs are forwarded from {@link CngxStepperPresenter}:
  * - `activeStepIndex` (two-way, with `activeStepIndexChange`),

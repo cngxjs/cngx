@@ -19,7 +19,7 @@ import { CNGX_SPLIT_CARET, type CngxSplitCaretRole } from './split-caret.token';
  * While the main action is blocked it refuses activation through `CNGX_BUTTON_HOST_STATE` and
  * adds the cause to `aria-describedby`. The host renders `label()` as visually hidden text (an
  * `aria-label` still wins) and `busyNote()` in a `hidden` span with `[id]="busyNoteId"`. Its click
- * toggle must refuse to open while the brain is `blocked()` and still close an open menu.
+ * toggle must refuse every click while the brain is `blocked()`.
  *
  * Co-host `CngxPopoverTrigger`: the split reads the caret's popover through it to hang the menu
  * under the group. A host that provides `CNGX_BUTTON_HOST_STATE` itself replaces this entry and
@@ -54,7 +54,7 @@ export class CngxSplitCaret implements CngxButtonHostState {
   readonly refusing = computed(() => this.isCaret() && (this.split?.mainBlocked() ?? false));
 
   /** Id the host template puts on its hidden busy note. */
-  readonly busyNoteId = nextUid('cngx-split-caret-busy-');
+  readonly busyNoteId = nextUid('cngx-split-caret-busy');
 
   /** The caret's name, `menuButton.splitToggle`. */
   readonly label = computed(() => this.i18n().splitToggle);

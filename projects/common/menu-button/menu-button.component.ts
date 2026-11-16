@@ -120,9 +120,9 @@ export class CngxMenuButton {
   protected readonly brain = inject(CngxButtonBrain);
 
   /**
-   * @internal - refuses to open while the button is blocked; an open menu
-   * still closes. The brain's capture guard swallows every other click while
-   * blocked, consumer `(click)` handlers included.
+   * @internal - neither opens nor closes on click while the button is
+   * blocked. The brain's capture guard swallows every click while blocked,
+   * consumer `(click)` handlers included.
    */
   protected readonly toggle = injectMenuToggle(this.brain.blocked);
 
