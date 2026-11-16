@@ -170,6 +170,22 @@ describe('CngxSidenav RTL geometry (:dir scoping)', () => {
 })
 class SidenavAutoHost {}
 
+@Component({
+  selector: 'cngx-sidenav-auto-medium-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <div class="auto-medium-wrapper">
+      <cngx-sidenav-layout>
+        <cngx-sidenav position="start" ariaLabel="Nav">Nav</cngx-sidenav>
+        <cngx-sidenav-content>Main</cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
+  `,
+  styles: ['.auto-medium-wrapper { inline-size: 56rem; }'],
+})
+class SidenavAutoMediumHost {}
+
 function mountAuto(): {
   wrapper: HTMLElement;
   layout: HTMLElement;
@@ -240,6 +256,35 @@ describe('CngxSidenav auto mode geometry', () => {
     await nextFrame();
     expect(rail.classList.contains('cngx-sidenav--side')).toBe(true);
     expect(rail.classList.contains('cngx-sidenav--over')).toBe(false);
+  });
+
+  // The width class arrives with the container's first ResizeObserver entry,
+  // after the first render. A --ready gate opened before it let the rail slide
+  // from the compact drawer to its rail width and drag the content margin along.
+  it('settles a medium rail on load without a transition', async () => {
+    const fixture = TestBed.createComponent(SidenavAutoMediumHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const layout = mountedRoot.querySelector('cngx-sidenav-layout') as HTMLElement;
+    const rail = mountedRoot.querySelector('cngx-sidenav') as HTMLElement;
+    const content = mountedRoot.querySelector('cngx-sidenav-content') as HTMLElement;
+
+    const transitions: string[] = [];
+    for (let frame = 0; frame < 8; frame++) {
+      for (const el of [rail, content]) {
+        for (const animation of el.getAnimations()) {
+          if (animation instanceof CSSTransition) {
+            transitions.push(`${el.localName}: ${animation.transitionProperty}`);
+          }
+        }
+      }
+      await nextFrame();
+    }
+
+    expect(layout.classList.contains('cngx-sidenav-layout--ready')).toBe(true);
+    expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
+    expect(transitions).toEqual([]);
   });
 });
 

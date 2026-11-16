@@ -1,9 +1,12 @@
+import { DOCUMENT } from '@angular/common';
 import {
-  afterNextRender,
+  afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
+  ElementRef,
+  inject,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
@@ -77,7 +80,7 @@ import {
 })
 export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   private readonly readyState = signal(false);
-  /** @internal First render done - gates transitions against an open-on-load flash. */
+  /** @internal First settled render done - gates transitions against a load-time flash or slide. */
   protected readonly ready = this.readyState.asReadonly();
 
   private readonly sidenavs = contentChildren(CNGX_SIDENAV);
@@ -99,8 +102,26 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
   );
 
   constructor() {
-    // Gate transitions until after first render - prevents open-on-load flash.
-    afterNextRender(() => this.readyState.set(true));
+    // Gate transitions until the first settled render - prevents an
+    // open-on-load flash and the load-time slide of an `auto` rail. The rails
+    // read their width class off the container's first ResizeObserver entry,
+    // which lands after the first render, so the gate waits for it (unless
+    // there is no ResizeObserver, where the class never changes). The forced
+    // layout read commits the resolved state as the before-change style; set
+    // in the same style pass as the class change, `--ready` would still
+    // animate it.
+    const container = inject(CngxContainer, { self: true });
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const observes = typeof inject(DOCUMENT).defaultView?.ResizeObserver === 'function';
+    afterRenderEffect({
+      read: () => {
+        if (this.readyState() || (observes && !container.isReady())) {
+          return;
+        }
+        host.getBoundingClientRect();
+        this.readyState.set(true);
+      },
+    });
   }
 
   /** Closes all sidenavs that are currently in overlay mode. */
