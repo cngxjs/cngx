@@ -53,6 +53,7 @@ describe('field Material bridge', () => {
     '--cngx-field-hint-color',
     '--cngx-field-label-color',
     '--cngx-field-required-color',
+    '--cngx-field-ring-color',
     '--cngx-field-underline-color',
     '--cngx-field-underline-focus-color',
     '--cngx-form-errors-color',
@@ -84,6 +85,20 @@ describe('field Material bridge', () => {
     ]) {
       expect(css).toContain(`${host}[data-skin]`);
     }
+  });
+
+  it('maps the field ring to the primary in the field and skinned-control scopes', () => {
+    const v1 = compiledCss('v1');
+    expect(v1).toMatch(
+      /:where\(input\[data-skin\][^{]*\{[^}]*--cngx-field-ring-color: var\(--mat-sys-primary\)/,
+    );
+    expect(v1).toMatch(
+      /cngx-form-field\)\s*\{[^}]*--cngx-field-ring-color: var\(--mat-sys-primary\)/,
+    );
+    // the outlined M2 twin draws its focus outline in the primary 500 (indigo)
+    expect(compiledCss('v0')).toMatch(
+      /:where\(input\[data-skin\][^{]*\{[^}]*--cngx-field-ring-color: #3f51b5/,
+    );
   });
 
   it('emits a consumed-name subset (M2)', () => {
