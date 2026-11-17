@@ -313,6 +313,21 @@ describe('planTheme', () => {
       expect(bridge?.kind === 'edit-file' ? bridge.edit(edited) : '').toBe(edited);
     });
 
+    it('keeps the CRLF line endings of the theme file it bridges', () => {
+      const facts = createFacts({
+        material: material({ themeShape: 'define-theme', themeVariable: 'app-theme', density: -1 }),
+      });
+      const bridge = byId(planTheme(facts, createAnswers({ theme: 'material' }), VERSIONS), 'theme:bridge');
+      const edit = (content: string): string => (bridge?.kind === 'edit-file' ? bridge.edit(content) : '');
+
+      const edited = edit('html {}\r\n\r\n');
+      expect(edited).toBe(
+        'html {}\r\n\r\nhtml {\r\n  @include cngx-material.theme($app-theme); /* cngx:theme:bridge */\r\n}\r\n',
+      );
+      expect(edited.replace(/\r\n/g, '')).not.toContain('\n');
+      expect(edit(edited)).toBe(edited);
+    });
+
     it('bridges an M2 theme object the same way', () => {
       const facts = createFacts({ material: material({ themeShape: 'm2', themeVariable: 'theme' }) });
       expect(byId(planTheme(facts, createAnswers({ theme: 'material' }), VERSIONS), 'theme:bridge')).toBeDefined();

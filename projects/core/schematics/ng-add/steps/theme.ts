@@ -9,6 +9,7 @@ import {
   insertLeadingStyleImport,
   joinNames,
   mergeStepResults,
+  newlineOf,
   type Provenance,
   skipChange,
   type StepResult,
@@ -185,7 +186,9 @@ function appendBridge(variable: string): (content: string) => string {
       return content;
     }
     const include = withProvenanceMarker(`  @include cngx-material.theme($${variable});`, BRIDGE_MARKER);
-    return `${content.replace(/\n*$/, '\n')}\nhtml {\n${include}\n}\n`;
+    const newline = newlineOf(content);
+    const block = `\nhtml {\n${include}\n}\n`.replace(/\n/g, newline);
+    return `${content.replace(/(\r?\n)*$/, newline)}${block}`;
   };
 }
 
