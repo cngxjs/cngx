@@ -50,6 +50,15 @@ import { describe, expect, it } from 'vitest';
  * registered initial. A registration in another component's sheet applies only
  * once that sheet is loaded, so a read relying on it carries a reason row.
  *
+ * Rule F - a translucent primary literal. `oklch(0.66 0.19 50 / a)` and
+ * `oklch(0.72 0.18 50 / a)` are the Ember primary at a fixed alpha: a tint
+ * written that way stays orange under a brand primary, a theme bridge or a
+ * re-themed scheme island. A tint is `color-mix(in oklch,
+ * var(--cngx-color-primary, ...) N%, transparent)`. The only place the
+ * literal may stay is an `@property` `initial-value`, which must be
+ * computationally independent. The opaque `var(--cngx-color-primary,
+ * oklch(0.66 0.19 50))` fallback passes. Rule F has no allowlist rows.
+ *
  * The allowlist is an exact-set ratchet: a new offender fails, and a row that
  * no longer matches fails as stale, so every closed defect removes its row.
  */
@@ -296,6 +305,17 @@ export function strictColours(source) {
   ];
 }
 
+const TRANSLUCENT_PRIMARY = /oklch\(\s*0\.(?:66\s+0\.19|72\s+0\.18)\s+50\s*\/[^)]*\)/gi;
+
+/**
+ * Rule F: every translucent Ember primary literal that is not the value of an
+ * `initial-value:` declaration, whitespace folded.
+ */
+export function translucentPrimaryLiterals(source) {
+  const rest = source.replace(/initial-value\s*:[^;}]*/gi, ' ');
+  return [...rest.matchAll(TRANSLUCENT_PRIMARY)].map((m) => m[0].replace(/\s+/g, ' '));
+}
+
 /** Every custom property registered by an `@property` rule in `source`. */
 export function registeredProperties(source) {
   return new Set([...source.matchAll(/@property\s+(--[\w-]+)/g)].map((m) => m[1]));
@@ -452,6 +472,9 @@ function repoOffenders(files = SCANNED) {
     const registered = new Set([...BUNDLED_REGISTRATIONS, ...registeredProperties(source)]);
     for (const token of undefinedReadsWithoutFallback(source, DEFINED, registered)) {
       rows.push({ rule: 'E', token, file: rel });
+    }
+    for (const token of translucentPrimaryLiterals(source)) {
+      rows.push({ rule: 'F', token, file: rel });
     }
   }
   return rows;
@@ -911,6 +934,32 @@ describe('Rules C to E - component stylesheets', () => {
   });
 });
 
+describe('Rule F - translucent primary literals', () => {
+  it('flags an assignment and a use-site fallback', () => {
+    const css = `:root { --x-bg: oklch(0.66 0.19 50 / 0.1); }
+      .a { background: var(--x-bg, oklch(0.72  0.18 50 / 0.18)); }`;
+    expect(translucentPrimaryLiterals(css)).toEqual([
+      'oklch(0.66 0.19 50 / 0.1)',
+      'oklch(0.72 0.18 50 / 0.18)',
+    ]);
+  });
+
+  it('flags the literal in a .scss sheet but not in its line comments', () => {
+    const scss = `// oklch(0.66 0.19 50 / 0.1) was the old tint
+      .a { --x-bg: oklch(0.66 0.19 50 / 0.12); }`;
+    expect(translucentPrimaryLiterals(scannedSource('projects/a/x.scss', scss))).toEqual([
+      'oklch(0.66 0.19 50 / 0.12)',
+    ]);
+  });
+
+  it('passes an initial-value, the opaque primary fallback and a derived tint', () => {
+    const css = `@property --x-bg { syntax: '<color>'; inherits: true; initial-value: oklch(0.66 0.19 50 / 0.1); }
+      .a { color: var(--cngx-color-primary, oklch(0.66 0.19 50)); }
+      .b { background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%, transparent); }`;
+    expect(translucentPrimaryLiterals(css)).toEqual([]);
+  });
+});
+
 describe('repo-wide token definition ratchet', () => {
   const offenders = repoOffenders().map(key).sort();
   const allowed = ALLOWLIST.map(key).sort();
@@ -930,5 +979,10 @@ describe('repo-wide token definition ratchet', () => {
 
   it('no stale allowlist row', () => {
     expect(allowed.filter((row) => !offenders.includes(row))).toEqual([]);
+  });
+
+  it('no translucent primary literal outside an initial-value (Rule F, no allowlist)', () => {
+    expect(offenders.filter((row) => row.startsWith('F '))).toEqual([]);
+    expect(ALLOWLIST.filter((row) => row.rule === 'F')).toEqual([]);
   });
 });
