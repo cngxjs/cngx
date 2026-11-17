@@ -30,7 +30,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * @relatedTo CngxSort, CngxFilter, CngxSmartDataSource
  *
  * <example-url>/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
- * <example-url>/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
+ * <example-url>/#/common/data/paginate-list/paginated-list-cngxpaginate</example-url>
  * <example-url>/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  * <example-url>/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
  * @axis level atom

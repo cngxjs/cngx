@@ -17,33 +17,6 @@ import { CngxMenuTrigger } from './menu-trigger.directive';
 import { CngxMenu } from './menu.directive';
 import { CNGX_SUBMENU_TRY_FALLBACKS } from './submenu-defaults';
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 @Component({
   template: `
     <button
@@ -85,7 +58,6 @@ class SubmenuHost {
 
 describe('CngxMenuItemSubmenu', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SubmenuHost] });
   });
 
@@ -348,7 +320,6 @@ class StandaloneSubmenuHost {}
 
 describe('CngxMenuItemSubmenu - applied without a sibling [cngxMenuItem]', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [StandaloneSubmenuHost] });
   });
 
@@ -414,7 +385,6 @@ class WiredFallbacksHost {
 
 describe('CngxMenuItemSubmenu submenu try-fallbacks dev warning', () => {
   beforeEach(() => {
-    polyfillPopover();
     __resetSubmenuFallbackWarnings(document);
     vi.stubGlobal('CSS', { supports: () => true });
   });
@@ -540,7 +510,6 @@ describe('CngxMenuItemSubmenu language switch', () => {
   let calls: string[];
 
   beforeEach(() => {
-    polyfillPopover();
     lang.set('en');
     calls = [];
     const stub: CngxMenuAnnouncerLike = { announce: (msg) => calls.push(msg) };

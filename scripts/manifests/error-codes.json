@@ -2251,6 +2251,23 @@
       ]
     },
     {
+      "code": "CNGX2031",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "A cngxInput without a [formField] binding",
+      "page": "core-concepts/error-codes/cngx2031.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2031.html",
+      "status": "active",
+      "files": ["projects/forms/input/input.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/input/input.directive.ts",
+          "text": "[cngxInput] the field \"${...}\" has no [formField] binding, so typing never reaches the field value. Bind the field on the control: <input cngxInput [formField]=\"...\">."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

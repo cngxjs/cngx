@@ -1,4 +1,4 @@
-import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxMatPaginator: in-place instrumentation of an existing mat-paginator',
@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { MatPaginatorModule } from \'@angular/material/paginator\';',
-    'import { PEOPLE, type Person } from \'../../../../fixtures\';',
+    'import { PEOPLE, type Person } from \'../../../fixtures\';',
   ],
   imports: ['CngxMatPaginator', 'MatPaginatorModule'],
   setup: `protected readonly items = signal<Person[]>([

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { SchematicsException } from '@angular-devkit/schematics';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -89,6 +90,18 @@ describe('the answer guards', () => {
     expect(isBoolean(false)).toBe(true);
     expect(isBoolean('true')).toBe(false);
     expect(isBoolean(0)).toBe(false);
+  });
+});
+
+describe('the flag errors', () => {
+  it('are schematics exceptions, the user error the CLI reports', () => {
+    for (const error of [
+      createInvalidAnswerError('theme', ['dark'], THEME_CHOICES),
+      createRepeatedAnswerError('aiTools', ['claude']),
+      createEmptyEntryError('aiTools', AI_TOOLS),
+    ]) {
+      expect(error).toBeInstanceOf(SchematicsException);
+    }
   });
 });
 

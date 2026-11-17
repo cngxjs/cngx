@@ -43,7 +43,7 @@ const terminal = vi.hoisted(() => ({
   asked: [] as string[],
 }));
 
-vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
+vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git, workspaceRootOf: (cwd: string) => cwd }));
 
 // Specs run unstamped, as a local build does; a case that checks the real
 // pins sets `stamped` to the versions a release writes into versions.json.
@@ -307,6 +307,14 @@ describe('ngAdd', () => {
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it('names a missing angular.json in its own words and writes nothing', async () => {
+    const tree = createFixtureTree();
+    tree.delete('angular.json');
+
+    await expect(runRule(ngAdd({ yes: true }), tree)).rejects.toThrow('angular.json is missing at the workspace root.');
+    expect(tree.exists('src/cngx-theme.css')).toBe(false);
   });
 
   it('asks no preset when the preflight refuses the run', async () => {

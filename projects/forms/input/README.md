@@ -43,6 +43,8 @@ These directives enhance native `<input>`, `<textarea>`, and `<select>` elements
 
 ## CngxInput
 
+The value flows through `[formField]` (Signal Forms) or `[formControl]` (Reactive Forms) on the same element; a Signal Forms field without it warns [`CNGX2031`](../../../core-concepts/error-codes/cngx2031.md) in dev mode.
+
 Projects these attributes automatically when inside a `cngx-form-field`:
 
 `id`, `aria-describedby`, `aria-labelledby`, `aria-invalid`, `aria-required`,

@@ -185,10 +185,17 @@ function moduleSpecImport(newline: string): string {
 // How many `export ... from` hops a class lookup follows before giving up.
 const MAX_REEXPORTS = 4;
 
-// The file a relative specifier names: `./app` is `./app.ts` or `./app/index.ts`.
+// A `.js` specifier under NodeNext resolution names the `.ts` source.
+const SOURCE_EXTENSIONS: Readonly<Record<string, string>> = { '.js': '.ts', '.mjs': '.mts', '.cjs': '.cts' };
+
+// The file a relative specifier names: `./app` is `./app.ts` or `./app/index.ts`,
+// `./app.js` is `./app.ts` first.
 function resolveSpecifier(read: Read, from: string, specifier: string): string | undefined {
   const base = posix.join(posix.dirname(from), specifier);
-  return [`${base}.ts`, posix.join(base, 'index.ts')].find((path) => read(path) !== undefined);
+  const extension = posix.extname(base);
+  const source = SOURCE_EXTENSIONS[extension];
+  const swapped = source === undefined ? [] : [`${base.slice(0, -extension.length)}${source}`];
+  return [...swapped, `${base}.ts`, posix.join(base, 'index.ts')].find((path) => read(path) !== undefined);
 }
 
 function isRelative(specifier: string): boolean {

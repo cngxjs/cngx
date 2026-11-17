@@ -11,23 +11,6 @@ import { CngxContextMenuContent } from './context-menu-content.directive';
 import { CngxContextMenuFor } from './context-menu-for.directive';
 import { CngxContextMenuItem } from './context-menu-item.component';
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-  }
-}
-
 interface Row {
   readonly id: number;
   readonly name: string;
@@ -71,7 +54,6 @@ describe('CngxContextMenuItem submenu wiring', () => {
   let sub: CngxContextMenu<Row>;
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SubmenuHost] });
     fixture = TestBed.createComponent(SubmenuHost);
     fixture.detectChanges();

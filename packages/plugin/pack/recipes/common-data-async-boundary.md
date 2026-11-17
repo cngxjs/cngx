@@ -1,19 +1,17 @@
 ---
-title: "CngxAsyncBoundary: per-source error attribution"
-whenToUse: "The aggregate's own error stays the first error for the single-error toast/bridge path; failures() is the persistent per-source breakdown. Fail either source to see both surfaces label the failure from f.label."
-symbols: [CngxAsyncBoundary, CngxAsyncContainer, CngxAlert, CngxBannerTrigger]
+title: "CngxAsyncBoundary: content renders when every source settles"
+whenToUse: "The boundary derives one aggregate state from N sources via computed(). The content template renders only on the aggregate content view, where every source has reached success, and receives the per-source data in input order."
+symbols: [CngxAsyncBoundary, CngxAsync]
 ---
 
-# CngxAsyncBoundary: per-source error attribution
+# CngxAsyncBoundary: content renders when every source settles
 
-The aggregate's own error stays the first error for the single-error toast/bridge path; failures() is the persistent per-source breakdown. Fail either source to see both surfaces label the failure from f.label.
+The boundary derives one aggregate state from N sources via computed(). The content template renders only on the aggregate content view, where every source has reached success, and receives the per-source data in input order.
 
 ## Symbols
 
 - `CngxAsyncBoundary`
-- `CngxAsyncContainer`
-- `CngxAlert`
-- `CngxBannerTrigger`
+- `CngxAsync`
 
 ## Setup
 
@@ -32,32 +30,23 @@ protected readonly sources = signal<readonly AggregateSource[]>([
 ## Wiring
 
 ```html
-<div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary">
-  <cngx-async-container [state]="b.state" ariaLabel="Account bootstrap">
-    <ng-template cngxAsyncSkeleton>
-      <div class="demo-skeleton-bar" style="height:20px"></div>
-    </ng-template>
+<div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary" [attr.aria-busy]="b.state.isBusy()">
+  <ul
+    *cngxAsync="b.state; let data; skeleton: skeletonTpl"
+    class="demo-stack"
+    aria-label="Account bootstrap"
+    style="list-style:none;padding:0;margin:0;gap:6px">
+    <li class="demo-card-tile">User: {{ data[0] }}</li>
+    <li class="demo-card-tile">Permissions: {{ data[1] }}</li>
+    <li class="demo-card-tile">Feature flags: {{ data[2] }}</li>
+  </ul>
 
-    <ng-template cngxAsyncContent let-data>
-      <ul class="demo-stack" style="list-style:none;padding:0;margin:0;gap:6px">
-        <li class="demo-card-tile">User: {{ data[0] }}</li>
-        <li class="demo-card-tile">Permissions: {{ data[1] }}</li>
-        <li class="demo-card-tile">Feature flags: {{ data[2] }}</li>
-      </ul>
-    </ng-template>
-
-    <ng-template cngxAsyncError>
-      <div class="demo-stack" style="display:flex;flex-direction:column;gap:8px">
-        @for (f of b.failures(); track f.key) {
-          <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
-          <cngx-banner-trigger
-            [when]="true"
-            [message]="(f.label ?? f.key) + ' failed to load'"
-            [id]="'async-boundary:' + f.key"
-            severity="error" />
-        }
-      </div>
-    </ng-template>
-  </cngx-async-container>
+  <ng-template #skeletonTpl>
+    <div class="demo-stack" style="display:flex;flex-direction:column;gap:8px">
+      @for (i of [1,2,3]; track i) {
+        <div class="demo-skeleton-bar" style="height:20px"></div>
+      }
+    </div>
+  </ng-template>
 </div>
 ```

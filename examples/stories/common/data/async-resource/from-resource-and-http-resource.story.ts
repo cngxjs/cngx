@@ -3,27 +3,20 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'fromResource: from resource and http resource',
   subtitle:
-    '<code>fromResource(ref)</code> projects any Angular <code>Resource&lt;T&gt;</code> onto <code>CngxAsyncState&lt;T&gt;</code>, so a <code>resource()</code> or <code>rxResource()</code> binds straight into <code>cngx-async-container</code>. The resource stays the single source of truth; every flag is derived from it.',
+    '<code>fromResource(ref)</code> projects any Angular <code>Resource&lt;T&gt;</code> onto <code>CngxAsyncState&lt;T&gt;</code>, so a <code>resource()</code> or <code>rxResource()</code> binds straight into <code>*cngxAsync</code>. The resource stays the single source of truth; every flag is derived from it.',
   description:
-    'Status mapping: <code>idle</code> stays <code>idle</code>, <code>loading</code> stays <code>loading</code>, <code>reloading</code> becomes <code>refreshing</code>, <code>resolved</code> and <code>local</code> both become <code>success</code>, <code>error</code> stays <code>error</code>. Angular has no first-load concept, so the bridge latches the first resolved or local value for <code>isFirstLoad</code> and stamps <code>lastUpdated</code> on every resolved or local value; it must be called in an injection context for that reason. A resource drops its value on error, so after an error that follows a success the container keeps its content slot with <code>data</code> undefined, which is why the content template guards on <code>data</code>. Pick a region to load, reload to see <code>refreshing</code>, turn on failures to see <code>error</code>, and set a value locally to see <code>local</code> map to <code>success</code>. <code>fromHttpResource(ref)</code> is the same bridge for an <code>httpResource()</code> ref and additionally maps its download progress to a 0-100 <code>progress</code>; it needs an <code>HttpClient</code> backend, which this examples app does not have, so only <code>fromResource</code> runs here.',
+    'Status mapping: <code>idle</code> stays <code>idle</code>, <code>loading</code> stays <code>loading</code>, <code>reloading</code> becomes <code>refreshing</code>, <code>resolved</code> and <code>local</code> both become <code>success</code>, <code>error</code> stays <code>error</code>. Angular has no first-load concept, so the bridge latches the first resolved or local value for <code>isFirstLoad</code> and stamps <code>lastUpdated</code> on every resolved or local value; it must be called in an injection context for that reason. A resource drops its value on error, so after an error that follows a success the view is <code>content+error</code>: <code>*cngxAsync</code> renders one template and keeps the last content, so the story surfaces that error in its own alert line; the content template still guards on <code>data</code> for the views that reach it without a value. Pick a region to load, reload to see <code>refreshing</code>, turn on failures to see <code>error</code>, and set a value locally to see <code>local</code> map to <code>success</code>. <code>fromHttpResource(ref)</code> is the same bridge for an <code>httpResource()</code> ref and additionally maps its download progress to a 0-100 <code>progress</code>; it needs an <code>HttpClient</code> backend, which this examples app does not have, so only <code>fromResource</code> runs here.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['async-state', 'integration'],
-  apiComponents: ['CngxAsyncContainer'],
+  apiComponents: ['CngxAsync'],
   moduleImports: [
     "import { rxResource } from '@angular/core/rxjs-interop';",
     "import { map, timer } from 'rxjs';",
-    "import { fromResource } from '@cngx/common/data';",
-    "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';",
+    "import { CngxAsync, fromResource } from '@cngx/common/data';",
   ],
-  imports: [
-    'CngxAsyncContainer',
-    'CngxAsyncSkeletonTpl',
-    'CngxAsyncContentTpl',
-    'CngxAsyncEmptyTpl',
-    'CngxAsyncErrorTpl',
-  ],
+  imports: ['CngxAsync'],
   setup: `protected readonly region = signal<string | undefined>(undefined);
 
   // undefined params keep the resource idle until a region is picked;
@@ -34,22 +27,26 @@ export const STORY: DemoSpec = {
   });
 
   protected readonly orders = fromResource(this.ordersResource);`,
-  template: `  <cngx-async-container [state]="orders" ariaLabel="Open orders">
-    <ng-template cngxAsyncSkeleton>
-      <div class="demo-skeleton-line"></div>
-    </ng-template>
-    <ng-template cngxAsyncContent let-data>
+  template: `  <section aria-label="Open orders" [attr.aria-busy]="orders.isBusy()">
+    <div *cngxAsync="orders; let data; skeleton: skeletonTpl; empty: emptyTpl; error: errorTpl">
       @if (data) {
         <p>{{ data.region }}: {{ data.open }} open, {{ data.shipped }} shipped</p>
       }
-    </ng-template>
-    <ng-template cngxAsyncEmpty>
-      <p class="demo-empty-state-block">No orders.</p>
-    </ng-template>
-    <ng-template cngxAsyncError let-err>
-      <p class="demo-error-block">{{ err }}</p>
-    </ng-template>
-  </cngx-async-container>`,
+    </div>
+    @if (orders.status() === 'error' && !orders.isFirstLoad()) {
+      <p class="demo-error-block" role="alert">Reload failed: {{ orders.error() }}</p>
+    }
+  </section>
+
+  <ng-template #skeletonTpl>
+    <div class="demo-skeleton-line"></div>
+  </ng-template>
+  <ng-template #emptyTpl>
+    <p class="demo-empty-state-block">No orders.</p>
+  </ng-template>
+  <ng-template #errorTpl let-err>
+    <p class="demo-error-block" role="alert">{{ err }}</p>
+  </ng-template>`,
   setupChrome: `protected readonly regions = ['North', 'South'] as const;
   protected readonly failRequests = signal(false);
   private requestCount = 0;

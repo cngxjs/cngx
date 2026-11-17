@@ -1,4 +1,4 @@
-import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSmartDataSource: options-passed sort',
@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { injectSmartDataSource } from '@cngx/common';",
-    "import { PEOPLE, type Person } from '../../../../fixtures';",
+    "import { PEOPLE, type Person } from '../../../fixtures';",
   ],
   imports: [
     'CngxDataGridAccordion',

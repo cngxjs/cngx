@@ -103,6 +103,18 @@ describe('planAiTools', () => {
     expect(agents?.edit(edited)).toBe(edited);
   });
 
+  it('keeps the CRLF line endings of an existing AGENTS.md', () => {
+    const facts = createFacts({ agentsMd: 'present' });
+    const agents = planAiTools(facts, createAnswers({ aiTools: ['cursor'] }), VERSIONS).changes.find(
+      (change): change is EditFile => change.id === 'ai-tools:agents' && change.kind === 'edit-file',
+    );
+
+    const edited = agents?.edit('# Agents\r\nUse pnpm.\r\n') ?? '';
+    expect(edited.startsWith('# Agents\r\nUse pnpm.\r\n\r\n<!-- cngx:agents -->\r\n')).toBe(true);
+    expect(edited.replace(/\r\n/g, '')).not.toContain('\n');
+    expect(agents?.edit(edited)).toBe(edited);
+  });
+
   it('skips AGENTS.md when it already carries the block', () => {
     const facts = createFacts({ agentsMd: 'wired' });
     const result = planAiTools(facts, createAnswers({ aiTools: ['cursor'] }), VERSIONS);

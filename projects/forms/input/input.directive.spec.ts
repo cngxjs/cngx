@@ -1,10 +1,15 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, inject, signal, viewChild, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { form, FormField } from '@angular/forms/signals';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CngxCheckbox } from '@cngx/common/interactive';
 import {
+  adaptFormControl,
   CngxFormField,
   CngxHint,
+  CngxSuffix,
   CNGX_FORM_FIELD_CONTROL,
   type CngxFieldAccessor,
 } from '@cngx/forms/field';
@@ -367,5 +372,130 @@ describe('CngxInput readonly', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     expect(fixture.componentInstance.input().readonly()).toBe(false);
+  });
+});
+
+describe('CngxInput - unbound field warning (CNGX2031)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function settle(fixture: { detectChanges: () => void }): void {
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+  }
+
+  function mountCollecting<T>(type: Type<T>) {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(type);
+    fixture.detectChanges();
+    settle(fixture);
+    const warnings = () =>
+      warn.mock.calls
+        .map((call: unknown[]) => String(call[0]))
+        .filter((message) => message.startsWith('CNGX2031: '));
+    return { fixture, warnings };
+  }
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.name">
+        <input cngxInput />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput],
+  })
+  class UnboundHost {
+    readonly f = form(signal({ name: '' }));
+  }
+
+  it('warns once when the field control has no [formField] binding', () => {
+    const { fixture, warnings } = mountCollecting(UnboundHost);
+    expect(warnings()).toHaveLength(1);
+    expect(warnings()[0]).toMatch(
+      /^CNGX2031: \[cngxInput\] the field "[^"]*name" has no \[formField\] binding/,
+    );
+
+    const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    input.value = 'x';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    settle(fixture);
+    settle(fixture);
+    expect(warnings()).toHaveLength(1);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.name">
+        <input cngxInput />
+      </cngx-form-field>
+      <cngx-form-field [field]="f.name">
+        <input cngxInput />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput],
+  })
+  class TwoUnboundFieldsHost {
+    readonly f = form(signal({ name: '' }));
+  }
+
+  it('warns once per field, not per cngx-form-field', () => {
+    const { warnings } = mountCollecting(TwoUnboundFieldsHost);
+    expect(warnings()).toHaveLength(1);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.name">
+        <input cngxInput [formField]="f.name" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput, FormField],
+  })
+  class BoundHost {
+    readonly f = form(signal({ name: '' }));
+  }
+
+  it('stays silent with [formField] on the input', () => {
+    expect(mountCollecting(BoundHost).warnings()).toEqual([]);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="name">
+        <input cngxInput [formControl]="control" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput, ReactiveFormsModule],
+  })
+  class AdaptedHost {
+    readonly control = new FormControl('', { nonNullable: true });
+    readonly name = adaptFormControl(this.control, 'name', inject(DestroyRef));
+  }
+
+  it('stays silent for an adaptFormControl() field', () => {
+    expect(mountCollecting(AdaptedHost).warnings()).toEqual([]);
+  });
+
+  it('stays silent for a createMockField() accessor', () => {
+    expect(mountCollecting(HostWithFormField).warnings()).toEqual([]);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.agreed">
+        <cngx-checkbox>Agree</cngx-checkbox>
+        <input cngxInput cngxSuffix />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxInput, CngxCheckbox, CngxSuffix],
+  })
+  class AffixHost {
+    readonly f = form(signal({ agreed: false }));
+  }
+
+  it('stays silent for an affix cngxInput next to another control', () => {
+    expect(mountCollecting(AffixHost).warnings()).toEqual([]);
   });
 });

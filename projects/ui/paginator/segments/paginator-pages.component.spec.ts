@@ -187,23 +187,6 @@ describe('CngxPaginatorPages', () => {
   });
 });
 
-// jsdom has no Popover API; a minimal stand-in lets CngxPopover toggle.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-  };
-  if (typeof proto.showPopover === 'function') {
-    return;
-  }
-  proto.showPopover = function (this: HTMLElement) {
-    this.setAttribute('data-popover-open', 'true');
-  };
-  proto.hidePopover = function (this: HTMLElement) {
-    this.removeAttribute('data-popover-open');
-  };
-}
-
 describe('CngxPaginatorPages - ellipsis trigger keyboard', () => {
   function key(target: HTMLElement, name: string, alt = false): void {
     target.dispatchEvent(
@@ -212,7 +195,6 @@ describe('CngxPaginatorPages - ellipsis trigger keyboard', () => {
   }
 
   async function open() {
-    polyfillPopover();
     const { fixture } = await setup();
     const root = fixture.nativeElement as HTMLElement;
     const more = root.querySelector<HTMLElement>('.cngx-paginator__more')!;

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { type GitExec, readGitState } from './git-state';
+import { type GitExec, readGitState, workspaceRootOf } from './git-state';
 
 // Answers `git rev-parse --show-prefix` with the folder the app sits in
 // inside its repository, and `git status --porcelain` with the given lines.
@@ -53,5 +53,28 @@ describe('readGitState', () => {
     expect(readGitState('/app', failing({ status: 128 }))).toBe('no-repository');
     expect(readGitState('/app', failing({ code: 'ENOENT' }))).toBe('no-git');
     expect(readGitState('/app', failing({ status: 1 }))).toBe('unknown');
+  });
+});
+
+describe('workspaceRootOf', () => {
+  const workspace =
+    (...files: readonly string[]) =>
+    (path: string): boolean =>
+      files.includes(path);
+
+  it('walks up from a subfolder to the folder with angular.json', () => {
+    expect(workspaceRootOf('/repo/app/src/app', workspace('/repo/app/angular.json'))).toBe('/repo/app');
+  });
+
+  it('accepts a hidden .angular.json', () => {
+    expect(workspaceRootOf('/repo/app/src', workspace('/repo/app/.angular.json'))).toBe('/repo/app');
+  });
+
+  it('stops at the nearest workspace file', () => {
+    expect(workspaceRootOf('/repo/app/src', workspace('/repo/angular.json', '/repo/app/angular.json'))).toBe('/repo/app');
+  });
+
+  it('keeps the start folder when no folder above has one', () => {
+    expect(workspaceRootOf('/repo/app/src', workspace())).toBe('/repo/app/src');
   });
 });
