@@ -86,6 +86,26 @@
     );
     --cngx-color-text-muted: var(--cngx-color-text);
   }
+
+  /* The boost lifts muted text to full text, so a placeholder would read
+   * like a typed value. Italic plus a 75% text mix keeps it apart and still
+   * clears 4.5:1 on the page and on a field fill. Element rules, not tokens:
+   * the field, select and typeahead skins paint the placeholder in
+   * cngx.components, which this layer sits above. */
+  [data-contrast='more'] ::placeholder,
+  .cngx-contrast-more ::placeholder {
+    font-style: italic;
+    color: color-mix(in oklab, var(--cngx-color-text) 75%, var(--cngx-color-surface));
+  }
+
+  /* The OS twin of the placeholder rule stays layered: an element rule needs
+   * no unlayered escape, and a consumer's own placeholder rule keeps winning. */
+  @media (prefers-contrast: more) {
+    :root:not([data-contrast='normal']) ::placeholder {
+      font-style: italic;
+      color: color-mix(in oklab, var(--cngx-color-text) 75%, var(--cngx-color-surface));
+    }
+  }
 }
 
 /* OS-driven boost with a `normal` escape. `:root:not([data-contrast='normal'])`
