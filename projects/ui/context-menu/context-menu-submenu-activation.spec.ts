@@ -9,23 +9,6 @@ import { CngxContextMenuFor } from './context-menu-for.directive';
 import { CngxContextMenuItem } from './context-menu-item.component';
 import type { CngxContextMenuPanel } from './context-menu-panel';
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-  }
-}
-
 @Component({
   template: `
     <div class="target" tabindex="0" [cngxContextMenuFor]="parent">Right-click</div>
@@ -69,7 +52,6 @@ describe('CngxContextMenuItem submenu activation', () => {
   let sub: CngxContextMenu;
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [ActivationHost] });
     fixture = TestBed.createComponent(ActivationHost);
     host = fixture.componentInstance;
@@ -203,7 +185,6 @@ describe('CngxContextMenuItem submenu activation at depth 2', () => {
   let panels: CngxContextMenu[];
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [ThreeLevelHost] });
     fixture = TestBed.createComponent(ThreeLevelHost);
     fixture.detectChanges();
@@ -309,7 +290,6 @@ describe('CngxContextMenu parent link', () => {
   let second: CngxContextMenu;
 
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [BarePanelsHost] });
     fixture = TestBed.createComponent(BarePanelsHost);
     fixture.detectChanges();

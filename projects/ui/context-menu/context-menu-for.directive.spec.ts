@@ -1,27 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuFor } from './context-menu-for.directive';
-
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-  }
-}
 
 interface Row {
   readonly id: number;
@@ -104,10 +87,6 @@ function rightClick(el: HTMLElement): MouseEvent {
 }
 
 describe('CngxContextMenuFor', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
-
   afterEach(() => {
     document.body
       .querySelectorAll('.cngx-context-menu-anchor, .cngx-menu-announcer')
