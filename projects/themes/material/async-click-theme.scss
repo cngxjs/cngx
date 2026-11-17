@@ -5,7 +5,8 @@
 // success and error phases of a bare cngxAsyncClick host (a plain <button>,
 // an anchor) tint toward the Material primary and error roles.
 // Button-family hosts (`.cngx-button`) keep their own paint through every
-// phase and do not read these tokens; their bridge is button-theme.
+// phase: it outranks the zero-specificity async rules, so these tokens never
+// show on them. Their bridge is button-theme.
 //
 // The directive binds `[cngxAsyncClick]="fn"`, a property binding that leaves
 // no attribute in the DOM, so the bridge targets the `cngx-async` class the
