@@ -128,7 +128,7 @@ cngx-slider .cngx-slider__value {
   unicode-bidi: var(--cngx-slider-value-bidi, isolate);
 }
 
-/* Discrete value bubble: a primary pill above the thumb, shown only while the
+/* Discrete value bubble: a strong-primary pill above the thumb, shown only while the
  * slider is focused or being dragged (Material-style). */
 cngx-slider .cngx-slider__bubble {
   position: absolute;
@@ -137,8 +137,14 @@ cngx-slider .cngx-slider__bubble {
   translate: -50% 0;
   padding: var(--cngx-slider-bubble-padding, 0.125rem 0.4rem);
   border-radius: var(--cngx-radius-sm, 0.25rem);
-  background: var(--cngx-slider-bubble-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary, oklch(0.99 0.01 250)));
+  background: var(
+    --cngx-slider-bubble-bg,
+    var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    )
+  );
+  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary-strong, oklch(1 0 0)));
   font-size: var(--cngx-font-size-sm, 0.8125rem);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
