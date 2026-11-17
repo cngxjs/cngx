@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Hotkey registry: app, focus and dialog scopes',
   subtitle: 'One keymap, three scopes. <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd> is an app binding and fires anywhere, also in the text field. <kbd>N</kbd> / <kbd>P</kbd> belong to the result list and fire only while focus is in it. The modal dialog blocks the app binding while it is open; its own <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Enter</kbd> fires only while it is open.',
-  description: 'The hotkey registry resolves every press against the scope chain of the focused element: the deepest scope wins, a modal scope blocks app bindings outside it, and a closed dialog mutes the bindings inside it. [cngxHotkeyScope] marks a subtree: [cngxHotkeyScopeModal] blocks app bindings while focus is inside it, [cngxHotkeyScopeActive] mutes it. Here a native dialog carries both and is active only while open; CngxDialog and CngxDrawerSurface provide the same scope on their own.',
+  description: 'The hotkey registry resolves every press against the scope chain of the focused element: the deepest scope wins, a modal scope blocks app bindings outside it, and a closed dialog mutes the bindings inside it. CngxDialog and CngxDrawerSurface provide their scope; [cngxHotkeyScope] marks any other subtree.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -14,14 +14,15 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxHotkeyScope',
     'CngxKeyboardShortcut',
+    'CngxDialog',
   ],
   moduleImports: [
     'import { CngxHotkeyScope, CngxKeyboardShortcut } from \'@cngx/common/interactive\';',
+    'import { CngxDialog, CngxDialogClose, CngxDialogTitle } from \'@cngx/common/dialog\';',
     'import { HotkeyResultsList } from \'./_hotkey-results-list.component\';',
   ],
-  imports: ['CngxHotkeyScope', 'CngxKeyboardShortcut', 'HotkeyResultsList'],
+  imports: ['CngxHotkeyScope', 'CngxKeyboardShortcut', 'CngxDialog', 'CngxDialogClose', 'CngxDialogTitle', 'HotkeyResultsList'],
   setup: `protected readonly lastFired = signal('none');
-  protected readonly dialogOpen = signal(false);
   protected readonly saveCount = signal(0);
   protected readonly submitCount = signal(0);
   protected handleSave(): void {
@@ -36,7 +37,7 @@ export const STORY: DemoSpec = {
     <button type="button" class="chip" [cngxKeyboardShortcut]="'mod+s'" shortcutId="app.save" (shortcutTriggered)="handleSave()">
       Save (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd>)
     </button>
-    <button type="button" class="chip" (click)="confirm.showModal(); dialogOpen.set(true)">Open dialog</button>
+    <button type="button" class="chip" (click)="confirm.open()">Open dialog</button>
   </div>
 
   <label class="demo-gesture-hint" style="display:block;margin-top:12px">
@@ -48,18 +49,12 @@ export const STORY: DemoSpec = {
     <demo-hotkey-results-list (fired)="lastFired.set($event)" />
   </div>
 
-  <dialog
-    #confirm
-    cngxHotkeyScope
-    cngxHotkeyScopeModal
-    [cngxHotkeyScopeActive]="dialogOpen()"
-    aria-labelledby="registry-scopes-dialog-title"
-    (close)="dialogOpen.set(false)">
-    <h2 id="registry-scopes-dialog-title">Submit changes</h2>
+  <dialog cngxDialog #confirm="cngxDialog">
+    <h2 cngxDialogTitle>Submit changes</h2>
     <p style="margin:12px 0">Ctrl/Cmd+Enter submits. Ctrl/Cmd+S is blocked while this dialog is open.</p>
     <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button type="button" class="chip" (click)="confirm.close()">Cancel</button>
-      <button type="button" class="chip chip--active" [cngxKeyboardShortcut]="'mod+enter'" shortcutId="dialog.submit" (shortcutTriggered)="handleSubmit(); confirm.close()" (click)="handleSubmit(); confirm.close()">
+      <button type="button" class="chip" cngxDialogClose>Cancel</button>
+      <button type="button" class="chip chip--active" [cngxDialogClose]="'submitted'" [cngxKeyboardShortcut]="'mod+enter'" shortcutId="dialog.submit" (shortcutTriggered)="handleSubmit(); confirm.close('submitted')" (click)="handleSubmit()">
         Submit (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>Enter</kbd>)
       </button>
     </div>

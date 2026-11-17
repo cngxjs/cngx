@@ -9,7 +9,7 @@ test.describe('common/interactive/ripple', () => {
     await gotoDemo(page, 'common/interactive/ripple/base/button-ripples');
 
     const target = page.getByRole('button', { name: 'Default ripple', exact: true });
-    await expect(target).toHaveClass(/cngx-ripple/);
+    await expect(target).toHaveClass(/cngx-button/);
     await expect(target.locator('.cngx-ripple__wave')).toHaveCount(0);
     await target.click();
     await expect(target.locator('.cngx-ripple__wave')).toHaveCount(1);
@@ -21,7 +21,7 @@ test.describe('common/interactive/ripple', () => {
 
     // The centred variant sits on an icon button.
     const centred = page.getByRole('button', { name: 'Centered ripple', exact: true });
-    await expect(centred).toHaveClass(/cngx-ripple/);
+    await expect(centred).toHaveClass(/cngx-icon-button/);
     await centred.click();
     await expect(centred.locator('.cngx-ripple__wave')).toHaveCount(1);
 
@@ -30,8 +30,8 @@ test.describe('common/interactive/ripple', () => {
   test('card-with-ripple: ripple paints on a card-shaped host', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/ripple/base/card-with-ripple');
 
-    // A plain button card tile co-hosts the ripple directive.
-    const card = page.getByRole('button', { name: /Tappable card/ });
+    // An action cngx-card co-hosts the ripple directive.
+    const card = page.locator('cngx-card[cngxripple]');
     await expect(card).toHaveCount(1);
     await card.click({ position: { x: 10, y: 10 } });
     await expect(card.locator('.cngx-ripple__wave')).toHaveCount(1);
