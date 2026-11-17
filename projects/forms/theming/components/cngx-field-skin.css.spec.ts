@@ -277,6 +277,29 @@ describe('cngx-field-skin.css', () => {
     expect(SOURCE).toContain(':scope:autofill');
   });
 
+  // box-shadow lists interpolate index by index. If the resting autofill list
+  // lacks the underline slot, focus pairs the thin primary line with the
+  // full-height fill and the input flashes the primary colour mid-transition.
+  it('keeps the autofill shadow list in the focus shape: underline slot first, fill second', () => {
+    const flat = SOURCE.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    const shadowOf = (selector: string): string => {
+      const at = flat.indexOf(`${selector} {`);
+      expect(at).toBeGreaterThan(-1);
+      const body = flat.slice(at, flat.indexOf('}', at));
+      return body.slice(
+        body.indexOf('box-shadow:'),
+        body.indexOf(';', body.indexOf('box-shadow:')),
+      );
+    };
+    const underline =
+      'inset 0 calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0';
+    const rest = shadowOf(':scope:autofill');
+    const focus = shadowOf(':scope:autofill:is(:focus-visible, :focus-within)');
+    expect(rest).toContain(`box-shadow: ${underline} transparent, inset 0 0 0 100vh`);
+    expect(focus).toContain(`box-shadow: ${underline} var(`);
+    expect(focus.indexOf('inset 0 0 0 100vh')).toBeGreaterThan(focus.indexOf(underline));
+  });
+
   it('keeps Material system tokens out of the default stylesheet', () => {
     expect(SOURCE).not.toContain('--mat-sys-');
   });
