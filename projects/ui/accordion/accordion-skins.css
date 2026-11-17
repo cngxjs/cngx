@@ -313,7 +313,7 @@
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
     background: var(
       --cngx-color-primary-strong,
-      oklch(from var(--cngx-color-primary, #1d4ed8) 0.58 c h)
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
     );
     border-color: transparent;
     color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
@@ -479,7 +479,7 @@
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
     background: var(
       --cngx-color-primary-strong,
-      oklch(from var(--cngx-color-primary, #1d4ed8) 0.58 c h)
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
     );
     color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
     box-shadow: none;
