@@ -1,17 +1,24 @@
 import {
+  afterEveryRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DOCUMENT,
+  ElementRef,
   inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 
+import { CNGX_FOCUSABLE_SELECTOR } from '@cngx/common/a11y';
 import {
   CNGX_STEPPER_HOST,
   createStepperHostProxy,
   type CngxStepperHost,
 } from '@cngx/common/stepper';
+
+const REGIONS =
+  '.cngx-stepper-footer__start, .cngx-stepper-footer__center, .cngx-stepper-footer__end';
 
 /**
  * Navigation action-bar molecule for the stepper family. \
@@ -31,6 +38,11 @@ import {
  * `providers` (not `viewProviders`) carries the proxy to the
  * consumer-projected button content. With no host at all, the proxy's
  * neutral set renders the nav buttons disabled.
+ *
+ * **Keeps focus in a region when its control is replaced:** \
+ * When the focused control of a region leaves the DOM (Continue swapped
+ * for Finish by an `@if`) and focus fell to `body`, the footer focuses
+ * the first focusable control of the same region after that render.
  *
  * ```html
  * <cngx-stepper #s="cngxStepper"> … </cngx-stepper>
@@ -60,7 +72,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxStepperFooter',
-  host: { class: 'cngx-stepper-footer' },
+  host: { class: 'cngx-stepper-footer', '(focusin)': 'trackFocus($event)' },
   providers: [
     {
       provide: CNGX_STEPPER_HOST,
@@ -96,4 +108,41 @@ export class CngxStepperFooter {
 
   /** Resolved host: explicit input wins, else the ambient ancestor host. */
   readonly resolvedHost = computed<CngxStepperHost | null>(() => this.host() ?? this.injectedHost);
+
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly document = inject(DOCUMENT);
+
+  // Firefox, WebKit and jsdom fire no focusout when a focused node is
+  // removed, so the last focused control is tracked on focusin and checked
+  // after each render instead.
+  private lastFocus: { readonly control: HTMLElement; readonly region: HTMLElement } | null = null;
+
+  constructor() {
+    afterEveryRender(() => this.restoreFocus());
+  }
+
+  /** @internal */
+  protected trackFocus(event: FocusEvent): void {
+    this.lastFocus = null;
+    const control = event.target;
+    if (!(control instanceof HTMLElement)) {
+      return;
+    }
+    const region = control.closest<HTMLElement>(REGIONS);
+    if (region?.parentElement === this.hostEl) {
+      this.lastFocus = { control, region };
+    }
+  }
+
+  private restoreFocus(): void {
+    const last = this.lastFocus;
+    if (!last || last.control.isConnected) {
+      return;
+    }
+    this.lastFocus = null;
+    if (this.document.activeElement !== this.document.body) {
+      return;
+    }
+    last.region.querySelector<HTMLElement>(CNGX_FOCUSABLE_SELECTOR)?.focus();
+  }
 }

@@ -113,6 +113,24 @@ class ExplicitHostFooterHost {
 })
 class NestedInStepperHost {}
 
+@Component({
+  standalone: true,
+  imports: [CngxStepperFooter, CngxStepperFooterStart, CngxStepperFooterEnd],
+  template: `
+    <cngx-stepper-footer>
+      <button cngxStepperFooterStart>Back</button>
+      @if (last()) {
+        <button cngxStepperFooterEnd class="finish">Finish</button>
+      } @else {
+        <button cngxStepperFooterEnd class="continue">Continue</button>
+      }
+    </cngx-stepper-footer>
+  `,
+})
+class SwapFooterHost {
+  readonly last = signal(false);
+}
+
 describe('CngxStepperFooter', () => {
   beforeEach(() => {
     TestBed.resetTestingModule();
@@ -129,6 +147,36 @@ describe('CngxStepperFooter', () => {
         'Step 1 of 3',
       );
       expect(el.querySelector('.cngx-stepper-footer__end')?.textContent).toContain('Next');
+    });
+  });
+
+  describe('focus after a region control is replaced', () => {
+    it('moves focus to the replacement in the same region instead of leaving it on body', async () => {
+      const fixture = TestBed.createComponent(SwapFooterHost);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      (el.querySelector('.continue') as HTMLButtonElement).focus();
+      expect(document.activeElement).toBe(el.querySelector('.continue'));
+
+      fixture.componentInstance.last.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(el.querySelector('.finish'));
+    });
+
+    it('leaves focus alone when the focused control stays rendered', async () => {
+      const fixture = TestBed.createComponent(SwapFooterHost);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      const back = el.querySelector('[cngxStepperFooterStart]') as HTMLButtonElement;
+      back.focus();
+
+      fixture.componentInstance.last.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(back);
     });
   });
 
