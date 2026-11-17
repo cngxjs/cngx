@@ -744,15 +744,24 @@
   /*
    * Active chip - reuses the current-page tokens so selection reads identically
    * inside the shell. Standalone (no shell, so the component.css `:root` token
-   * routing is absent), the fallbacks chain straight to the foundation primary,
-   * so the active bucket still reads as a filled primary chip.
+   * routing is absent), the fallbacks chain straight to the strong primary
+   * pair, so the active bucket still reads as a filled primary chip.
    */
   .cngx-paginator__alpha-chip[aria-pressed='true'] {
-    background: var(--cngx-paginator-current-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-    color: var(--cngx-paginator-current-color, var(--cngx-color-on-primary, oklch(1 0 0)));
+    background: var(
+      --cngx-paginator-current-bg,
+      var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      )
+    );
+    color: var(--cngx-paginator-current-color, var(--cngx-color-on-primary-strong, oklch(1 0 0)));
     border-color: var(
       --cngx-paginator-current-border-color,
-      var(--cngx-color-primary, oklch(0.66 0.19 50))
+      var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      )
     );
     font-weight: 600;
   }

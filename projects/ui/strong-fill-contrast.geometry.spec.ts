@@ -2,6 +2,7 @@ import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue, contrastRatio } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target). A solid primary fill
 // that carries a label paints from the strong pair (`--cngx-color-primary-strong`
@@ -27,6 +28,8 @@ const CASES: readonly FillCase[] = [
     pseudo: '::before',
   },
   { name: 'breadcrumb shell product mark', selector: '.breadcrumb-shell .product-mark' },
+  { name: 'paginator pill current page', selector: '.pag-pill .cngx-paginator__page' },
+  { name: 'paginator bar current page', selector: '.pag-bar .cngx-paginator__page' },
 ];
 
 @Component({
@@ -41,6 +44,8 @@ const CASES: readonly FillCase[] = [
     './accordion/accordion-skins.css',
     './data-grid-accordion/data-grid-accordion-skins.css',
     './breadcrumb/breadcrumb-bar.component.css',
+    '../common/data/paginate/styles/paginator-base.css',
+    './paginator/paginator.component.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -76,12 +81,23 @@ const CASES: readonly FillCase[] = [
         <div class="cngx-breadcrumb breadcrumb-shell" data-skin="shell">
           <span class="product-mark">AC</span>
         </div>
+        @for (skin of paginatorSkins; track skin) {
+          <nav [class]="'cngx-paginator pag-' + skin" [attr.data-skin]="skin">
+            <button type="button" class="cngx-paginator__button cngx-paginator__page" aria-current="page">
+              2
+            </button>
+          </nav>
+        }
+        <nav class="cngx-paginator pag-alpha">
+          <button type="button" class="cngx-paginator__alpha-chip" aria-pressed="true">B</button>
+        </nav>
       </div>
     }
   `,
 })
 class StrongFillHost {
   readonly schemes = SCHEMES;
+  readonly paginatorSkins = ['pill', 'bar'] as const;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -106,20 +122,35 @@ function read(el: HTMLElement, property: string, pseudo?: string): string {
   return pseudo ? getComputedStyle(el, pseudo).getPropertyValue(property) : computedValue(el, property);
 }
 
-afterEach(() => {
+afterEach(async () => {
   mountedRoot?.remove();
   mountedRoot = null;
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
+
+function expectStrongPair(scope: HTMLElement, el: HTMLElement, pseudo?: string): void {
+  const fill = read(el, 'background-color', pseudo);
+  const label = read(el, 'color', pseudo);
+  expect(contrastRatio(label, fill)).toBeGreaterThanOrEqual(4.5);
+  expect(contrastRatio(fill, computedValue(one(scope, '.probe-strong'), 'color'))).toBe(1);
+  expect(contrastRatio(label, computedValue(one(scope, '.probe-on-strong'), 'color'))).toBe(1);
+}
 
 describe.each(SCHEMES)('strong primary fill under a label, %s', (scheme) => {
   it.each(CASES)('$name paints the strong pair at 4.5:1', ({ selector, pseudo }) => {
     const root = mount();
     const scope = one(root, `.scheme-${scheme}`);
-    const el = one(scope, selector);
-    const fill = read(el, 'background-color', pseudo);
-    const label = read(el, 'color', pseudo);
-    expect(contrastRatio(label, fill)).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio(fill, computedValue(one(scope, '.probe-strong'), 'color'))).toBe(1);
-    expect(contrastRatio(label, computedValue(one(scope, '.probe-on-strong'), 'color'))).toBe(1);
+    expectStrongPair(scope, one(scope, selector), pseudo);
+  });
+
+  // The shell routes the alpha chip's current tokens from `:root`, where the
+  // registered colour resolves, so the page scheme decides the pair.
+  it('paginator alpha active chip paints the strong pair at 4.5:1', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-color-scheme', value: scheme }],
+    });
+    const root = mount();
+    const scope = one(root, `.scheme-${scheme}`);
+    expectStrongPair(scope, one(scope, '.pag-alpha .cngx-paginator__alpha-chip'));
   });
 });
