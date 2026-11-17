@@ -1,14 +1,18 @@
 {
   "name": "@cngx/core",
   "version": "0.0.0-PLACEHOLDER",
-  "description": "Core tokens, async state primitives, selection controller, and DI utilities for the CNGX Angular component library.",
+  "description": "Design tokens, preference axes (density, motion, contrast, text size, touch targets), bidi support, i18n language packs, async state, selection, a testing kit and the ng add schematic for the CNGX Angular component library.",
   "keywords": [
     "cngx",
     "angular",
     "signals",
     "async-state",
     "selection",
-    "tokens"
+    "tokens",
+    "i18n",
+    "a11y",
+    "theming",
+    "rtl"
   ],
   "author": "Christian Weiss <info@cngx.dev>",
   "license": "MIT",
