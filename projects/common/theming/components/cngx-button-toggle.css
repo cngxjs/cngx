@@ -9,14 +9,14 @@
  *
  * **State modifiers**
  *
- * - `--checked` - primary fill, on-primary text, primary border
+ * - `--checked` - strong primary fill and border, on-primary-strong text
  * - `--disabled` - `cursor: not-allowed`; 38% text on a faint text tint,
  *   a checked segment fills with the disabled colour; GrayText under
  *   forced colors
  * - `:hover:not(--disabled):not(--checked)` - 8% primary tint over the surface
- * - `--checked:hover:not(--disabled)` - primary fill darkened for feedback,
- *   keeping the on-primary text contrast (an unguarded plain hover would drop
- *   a checked segment to the pale tint under near-white text)
+ * - `--checked:hover:not(--disabled)` - strong fill shaded away from its ink,
+ *   keeping the label contrast (an unguarded plain hover would drop a checked
+ *   segment to the pale tint under its ink)
  *
  * **Segmented-control geometry**
  *
@@ -35,7 +35,7 @@
  * - background -> `--cngx-color-surface`
  * - color -> `--cngx-color-text`
  * - border -> `--cngx-color-border`
- * - checked fill -> `--cngx-color-primary` / `--cngx-color-on-primary`
+ * - checked fill -> `--cngx-color-primary-strong` / `--cngx-color-on-primary-strong`
  * - corner radius -> `--cngx-radius-md`
  * - font-size -> `--cngx-font-size-sm`
  *
@@ -102,34 +102,48 @@
      * `:not(--checked)` guard is load-bearing - this rule sets only the
      * background, and it out-specifies the checked rule below (0,3,0 vs 0,2,0),
      * so without the guard a hovered checked segment would drop to the pale
-     * tint while keeping its on-primary (near-white) text: white-on-pale, an
+     * tint while keeping its on-primary-strong ink: white-on-pale in light, an
      * invisible label. Checked hover is handled by its own rule. */
     :scope:hover:not(.cngx-button-toggle--disabled):not(.cngx-button-toggle--checked) {
       background: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%, var(--cngx-color-surface, oklch(1 0 0)));
     }
 
     :scope.cngx-button-toggle--checked {
-      background: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      color: var(--cngx-color-on-primary, oklch(0.99 0.01 250));
-      border-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      background: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
+      color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
+      border-color: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
     }
 
-    /* Hover on a CHECKED segment: keep the primary fill (so the on-primary text
-     * stays legible) and shade it 12% away from its ink. The shade is the ink's
-     * opposite lightness (round(1 - l)): dark under the default near-white ink,
-     * light under a dark ink, so the fill always moves away from the label and
-     * the on-primary contrast holds in light and dark. The same derivation as
-     * `--cngx-button-hover-shade` in cngx-button.css. */
+    /* Hover on a CHECKED segment: keep the strong fill and shade it 12% away
+     * from its ink. The shade is the ink's opposite lightness (round(1 - l)):
+     * dark under the light-scheme white ink, light under the dark-scheme dark
+     * ink, so the fill moves away from the label and the strong pair keeps
+     * 4.5:1 in both schemes. The same pair and derivation as a solid primary
+     * button (`--cngx-button-hover-shade` in cngx-button.css). */
     :scope.cngx-button-toggle--checked:hover:not(.cngx-button-toggle--disabled) {
       background: color-mix(
         in oklch,
-        var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%,
-        oklch(from var(--cngx-color-on-primary, oklch(0.99 0.01 250)) round(1 - l, 1) 0 0)
+        var(
+            --cngx-color-primary-strong,
+            oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+          )
+          88%,
+        oklch(from var(--cngx-color-on-primary-strong, oklch(1 0 0)) round(1 - l, 1) 0 0)
       );
       border-color: color-mix(
         in oklch,
-        var(--cngx-color-primary, oklch(0.66 0.19 50)) 88%,
-        oklch(from var(--cngx-color-on-primary, oklch(0.99 0.01 250)) round(1 - l, 1) 0 0)
+        var(
+            --cngx-color-primary-strong,
+            oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+          )
+          88%,
+        oklch(from var(--cngx-color-on-primary-strong, oklch(1 0 0)) round(1 - l, 1) 0 0)
       );
     }
 
@@ -150,8 +164,8 @@
   }
 }
 
-/* forced-colors (WHCM): the checked segment is a primary background fill (with a
- * primary border-color and on-primary text); the fill flattens to Canvas and the
+/* forced-colors (WHCM): the checked segment is a strong-primary background fill
+ * (with a matching border-color and on-primary-strong text); the fill flattens to Canvas and the
  * border/text force to the same system colours as an unchecked segment, so the
  * pressed state is lost. Re-signal with the system Highlight pair. Two rules are
  * load-bearing here: (1) the host is a `<button>`, and the UA forces a

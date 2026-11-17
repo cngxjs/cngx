@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, contrastRatio, parkPointer } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
@@ -176,7 +176,7 @@ describe('CngxButtonToggle geometry (Track-B)', () => {
     expect(computedValue(host, 'min-block-size')).toBe('44px');
   });
 
-  // The checked hover shades the fill away from the on-primary ink: darker
+  // The checked hover shades the fill away from the on-primary-strong ink: darker
   // under the default near-white ink, lighter under a dark ink.
   it('shades the checked hover away from its ink', async () => {
     const host = mount(CheckedButtonToggleHost, '.cngx-button-toggle');
@@ -184,9 +184,52 @@ describe('CngxButtonToggle geometry (Track-B)', () => {
     const rest = lightness(host);
     await userEvent.hover(host);
     expect(lightness(host)).toBeLessThan(rest);
-    host.style.setProperty('--cngx-color-on-primary', 'oklch(0.2 0 0)');
+    host.style.setProperty('--cngx-color-on-primary-strong', 'oklch(0.2 0 0)');
     expect(lightness(host)).toBeGreaterThan(rest);
     await userEvent.unhover(host);
+  });
+});
+
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: [
+    '../../../core/theming/layers.css',
+    '../../../core/theming/system-tokens.css',
+    './cngx-button-toggle.css',
+  ],
+  template: `
+    @for (scheme of schemes; track scheme) {
+      <p [attr.data-color-scheme]="scheme">
+        <button class="cngx-button-toggle cngx-button-toggle--checked toggle-{{ scheme }}">
+          Grid
+        </button>
+      </p>
+    }
+  `,
+})
+class CheckedToggleContrastHost {
+  protected readonly schemes = ['light', 'dark'] as const;
+}
+
+describe('CngxButtonToggle checked label contrast (default palette)', () => {
+  it.each([
+    ['light', 'rest'],
+    ['light', 'hover'],
+    ['dark', 'rest'],
+    ['dark', 'hover'],
+  ] as const)('a checked segment in the %s scheme clears 4.5:1 at %s', async (scheme, state) => {
+    const host = mount(CheckedToggleContrastHost, `.toggle-${scheme}`);
+    host.style.transition = 'none';
+    if (state === 'hover') {
+      await userEvent.hover(host);
+    }
+    const ratio = contrastRatio(
+      computedValue(host, 'color'),
+      computedValue(host, 'background-color'),
+    );
+    await parkPointer();
+    expect(ratio, `${scheme} / ${state}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
   });
 });
 

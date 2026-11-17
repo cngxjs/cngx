@@ -43,6 +43,26 @@ test.describe('ui/stepper/stepper-footer complete', () => {
     await expect(finish).toHaveText('Finish');
   });
 
+  test('complete-finish-button: keyboard Continue on the second-to-last step leaves focus on Finish', async ({
+    page,
+  }) => {
+    await gotoDemo(page, ROUTE);
+    const footer = page.locator('cngx-stepper-footer');
+    const activeLabel = () =>
+      page.evaluate(() => {
+        const el = document.activeElement;
+        return el?.closest('cngx-stepper-footer') ? `${el.tagName}:${el.textContent?.trim()}` : el?.tagName;
+      });
+
+    await footer.getByRole('button', { name: 'Continue' }).focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(activeLabel).toBe('BUTTON:Continue');
+
+    await page.keyboard.press('Enter');
+    await expect(footer.getByRole('button', { name: 'Finish' })).toBeVisible();
+    await expect.poll(activeLabel).toBe('BUTTON:Finish');
+  });
+
   // Shared by the precondition test and the Back refusal test below: reach
   // the last step and start the Finish run.
   async function startFinish(page: Page) {

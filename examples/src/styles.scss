@@ -1705,7 +1705,7 @@ button.chip:is(:disabled, [aria-disabled='true']) {
 }
 // Unchecked + hover: tint the surface toward the text color so the hint is
 // visible in both light and dark mode. The checked branch below overrides
-// this so the orange-on-white selection state stays orange on hover.
+// this so the selected segment keeps its strong primary fill on hover.
 .demo-button-toggle-group
   .cngx-button-toggle:not(.cngx-button-toggle--checked):hover:not([disabled]) {
   background: color-mix(
@@ -1714,20 +1714,19 @@ button.chip:is(:disabled, [aria-disabled='true']) {
     var(--cngx-color-on-surface, oklch(0.25 0 0)) 8%
   );
 }
-// Checked + hover: shift the primary background toward black so the selected
-// state still gets a hover hint instead of being painted over by a
-// currentColor mix (currentColor on checked == on-primary == white in light
-// mode, which made the previous universal rule render white-on-white).
+// Checked + hover: the strong primary pair the library skin paints, shaded
+// 12% away from its ink (round(1 - l): dark under white ink in light, light
+// under dark ink in dark), so the label keeps 4.5:1 in both schemes.
 .demo-button-toggle-group .cngx-button-toggle--checked:hover:not([disabled]) {
   background: color-mix(
     in oklch,
-    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
-    #000
+    var(--cngx-color-primary-strong, oklch(0.58 0.19 50)) 88%,
+    oklch(from var(--cngx-color-on-primary-strong, oklch(1 0 0)) round(1 - l, 1) 0 0)
   );
   border-color: color-mix(
     in oklch,
-    var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250))) 88%,
-    #000
+    var(--cngx-color-primary-strong, oklch(0.58 0.19 50)) 88%,
+    oklch(from var(--cngx-color-on-primary-strong, oklch(1 0 0)) round(1 - l, 1) 0 0)
   );
 }
 .demo-button-toggle-group .cngx-button-toggle:focus-visible {
@@ -1737,9 +1736,9 @@ button.chip:is(:disabled, [aria-disabled='true']) {
   z-index: 1;
 }
 .demo-button-toggle-group .cngx-button-toggle--checked {
-  background: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
-  color: var(--cngx-color-on-primary, #ffffff);
-  border-color: var(--cngx-color-primary, var(--cngx-ex-accent, oklch(0.6 0.15 250)));
+  background: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+  color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
+  border-color: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
   z-index: 1;
 }
 .demo-button-toggle-group .cngx-button-toggle--disabled,

@@ -88,11 +88,33 @@ export function paletteFamilies(defined) {
   return new Set([...defined].map(familyOf));
 }
 
+/** `source` with every `var(` lower-cased: CSS function names are case-insensitive. */
+function foldVarCase(source) {
+  return source.replace(/var\(/gi, 'var(');
+}
+
+/** `source` without its quoted strings, so `content: "--x: y"` is no declaration. */
+function withoutStrings(source) {
+  return source.replace(/(["'])(?:\\.|(?!\1).)*\1/g, ' ');
+}
+
 /**
- * Body of every `var(...)` in `source`, balanced over nested parentheses, so
- * `var(--a, var(--b, oklch(1 0 0)))` yields both the outer and the inner body.
+ * `source` with every CSS escape resolved: `\2d` and `\-` both read as `-`, so
+ * an escaped name cannot hide from a name match.
  */
-export function varBodies(source) {
+export function unescapeCss(source) {
+  return source.replace(/\\(?:([0-9a-f]{1,6})\s?|(.))/gi, (_, hex, ch) =>
+    hex ? String.fromCodePoint(parseInt(hex, 16)) : ch,
+  );
+}
+
+/**
+ * Body of every `var(...)` in `source`, any case, balanced over nested
+ * parentheses, so `var(--a, var(--b, oklch(1 0 0)))` yields both the outer and
+ * the inner body.
+ */
+export function varBodies(raw) {
+  const source = foldVarCase(raw);
   const bodies = [];
   let start = source.indexOf('var(');
   while (start !== -1) {
@@ -190,7 +212,7 @@ export function deadFallbacks(source, registered, { anyInitial = false } = {}) {
 
 /** Rule C: every `--mat-sys-*` name read or set in one stylesheet. */
 export function materialSystemReads(source) {
-  return [...new Set([...source.matchAll(/--mat-sys-[a-z0-9-]+/g)].map((m) => m[0]))];
+  return [...new Set([...unescapeCss(source).matchAll(/--mat-sys-[a-z0-9-]+/g)].map((m) => m[0]))];
 }
 
 /** Rule D: every raw hex colour literal in one stylesheet. */
@@ -225,7 +247,7 @@ const NAMED_COLOURS = new Set(
 
 /** `source` without every `@property` block and every `var()` call. */
 function withoutRegistrationsAndVars(source) {
-  let rest = source.replace(/@property\s+--[\w-]+\s*\{[^}]*\}/g, ' ');
+  let rest = foldVarCase(source).replace(/@property\s+--[\w-]+\s*\{[^}]*\}/g, ' ');
   for (const body of varBodies(rest)) {
     rest = rest.replace(`var(${body})`, ' ');
   }
@@ -235,7 +257,7 @@ function withoutRegistrationsAndVars(source) {
 /** Every value of a `property: value` declaration in `source`, quoted strings removed. */
 function declarationValues(source) {
   return [...source.matchAll(/(?<![\w-])-{0,2}[a-z][\w-]*\s*:\s*([^;{}]+)(?=[;}])/gi)].map((m) =>
-    m[1].replace(/(["'])(?:\\.|(?!\1).)*\1/g, ' '),
+    withoutStrings(m[1]),
   );
 }
 
@@ -285,7 +307,9 @@ export function registeredProperties(source) {
  * nor an `@property` registration defines.
  */
 export function undefinedReadsWithoutFallback(source, defined, registered = new Set()) {
-  const local = new Set([...source.matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]));
+  const local = new Set(
+    [...withoutStrings(source).matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]),
+  );
   const found = new Set();
   for (const body of varBodies(source)) {
     const { name, fallback } = splitVarBody(body);
@@ -515,13 +539,6 @@ const ALLOWLIST = [
     rule: 'A',
     token: '--cngx-color-on-primary',
     file: 'projects/common/interactive/slider/slider.component.css',
-    reason:
-      'undefined in the default palette, solid fill below 4.5:1; owner decision 2026-11-03 limits the fix to the button, follow-up',
-  },
-  {
-    rule: 'A',
-    token: '--cngx-color-on-primary',
-    file: 'projects/common/theming/components/cngx-button-toggle.css',
     reason:
       'undefined in the default palette, solid fill below 4.5:1; owner decision 2026-11-03 limits the fix to the button, follow-up',
   },
@@ -866,6 +883,31 @@ describe('Rules C to E - component stylesheets', () => {
         defined,
       ),
     ).toEqual(['--cngx-review-probe']);
+  });
+
+  it('Rule C reads a Material system token through a CSS escape (probe t02)', () => {
+    const source = '.t2 { color: var(--mat\\-sys-secondary, currentColor); }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/t02.css', source }]).map(key)).toEqual([
+      'C --mat-sys-secondary projects/ui/x/t02.css',
+    ]);
+  });
+
+  it('Rules C to E read an uppercase VAR() like var() (probe t07)', () => {
+    const source =
+      '.t7 { color: VAR(--cngx-zzprobe-e-two); border-color: VAR(--mat-sys-outline); outline-color: VAR(--x, red); }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/t07.css', source }]).map(key)).toEqual([
+      'C --mat-sys-outline projects/ui/x/t07.css',
+      'E --cngx-zzprobe-e-two projects/ui/x/t07.css',
+      'E --mat-sys-outline projects/ui/x/t07.css',
+    ]);
+  });
+
+  it('Rule E does not take a string literal for a local SET (probe t08)', () => {
+    const source =
+      '.t8::before { content: "--cngx-zzprobe-e-three: x"; } .t8 { color: var(--cngx-zzprobe-e-three); }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/t08.css', source }]).map(key)).toEqual([
+      'E --cngx-zzprobe-e-three projects/ui/x/t08.css',
+    ]);
   });
 });
 
