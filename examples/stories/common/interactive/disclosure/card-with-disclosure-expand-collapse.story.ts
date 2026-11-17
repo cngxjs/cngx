@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDisclosure: Card with disclosure expand collapse',
   subtitle:
-    'The card header doubles as a disclosure trigger: click to expand or collapse the body. <code>cngxDisclosure</code> paints <code>aria-expanded</code> and <code>aria-controls</code>, the body sits behind the matching id and <code>@if</code>-mounts when opened.',
+    'The card title is a disclosure button: click it or press Enter / Space to expand or collapse the body. <code>cngxDisclosure</code> on the native <code>&lt;button&gt;</code> paints <code>aria-expanded</code> and <code>aria-controls</code>, the body sits behind the matching id and <code>@if</code>-mounts when opened.',
   description:
-    'Composes two atoms into a real disclosure pattern: the card supplies the surface and the header slot, <code>cngxDisclosure</code> on the header handles the toggle wiring + ARIA. Each card runs its own disclosure instance so the two demos toggle independently.',
+    'Composes two atoms into a real disclosure pattern: the card supplies the surface and the header slot, a <code>&lt;button cngxDisclosure&gt;</code> inside the title handles the toggle wiring + ARIA (APG accordion header: heading wraps the button, so the button keeps its role and focus). Each card runs its own disclosure instance so the two demos toggle independently.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -35,12 +35,16 @@ export const STORY: DemoSpec = {
   ],
   template: `  <div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
     <cngx-card>
-      <header cngxCardHeader
-              cngxDisclosure
-              #d1="cngxDisclosure"
-              [controls]="'cngx-card-disclosure-1'"
-              style="cursor:pointer;user-select:none">
-        <h3 cngxCardTitle>Issue #1042: Onboarding flow drop-off</h3>
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>
+          <button type="button"
+                  cngxDisclosure
+                  #d1="cngxDisclosure"
+                  [controls]="'cngx-card-disclosure-1'"
+                  style="font:inherit;color:inherit;background:none;border:0;padding:0;text-align:start;cursor:pointer">
+            Issue #1042: Onboarding flow drop-off
+          </button>
+        </h3>
         <span cngxCardSubtitle>Status: Open, {{ d1.opened() ? 'expanded' : 'collapsed' }}</span>
       </header>
       @if (d1.opened()) {
@@ -54,12 +58,16 @@ export const STORY: DemoSpec = {
     </cngx-card>
 
     <cngx-card>
-      <header cngxCardHeader
-              cngxDisclosure
-              #d2="cngxDisclosure"
-              [controls]="'cngx-card-disclosure-2'"
-              style="cursor:pointer;user-select:none">
-        <h3 cngxCardTitle>Issue #3004: Search index latency</h3>
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>
+          <button type="button"
+                  cngxDisclosure
+                  #d2="cngxDisclosure"
+                  [controls]="'cngx-card-disclosure-2'"
+                  style="font:inherit;color:inherit;background:none;border:0;padding:0;text-align:start;cursor:pointer">
+            Issue #3004: Search index latency
+          </button>
+        </h3>
         <span cngxCardSubtitle>Status: Open, {{ d2.opened() ? 'expanded' : 'collapsed' }}</span>
       </header>
       @if (d2.opened()) {
