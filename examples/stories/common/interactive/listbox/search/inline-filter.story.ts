@@ -20,7 +20,7 @@ export const STORY: DemoSpec = {
       href: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard',
     },
   ],
-  apiComponents: ['CngxListboxSearch', 'CngxListbox', 'CngxOption', 'CngxPopover'],
+  apiComponents: ['CngxListboxSearch', 'CngxListbox', 'CngxOption'],
   moduleImports: [
     "import { CngxListbox, CngxListboxSearch, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",

@@ -123,42 +123,6 @@ const STORY_OWNERSHIP_EXEMPT = [
       'ui/empty-state is a higher-level entry; the story moves to that artifact or renders without it',
   },
   {
-    file: 'examples/stories/common/interactive/gestures/keyboard-shortcut/registry-scopes.story.ts',
-    symbol: 'CngxDialog',
-    reason:
-      'common/dialog is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/interactive/ripple/base/button-ripples.story.ts',
-    symbol: 'CngxButton',
-    reason:
-      'common/button is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/interactive/ripple/base/button-ripples.story.ts',
-    symbol: 'CngxIconButton',
-    reason:
-      'common/button is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/interactive/ripple/base/card-with-ripple.story.ts',
-    symbol: 'CngxCard',
-    reason:
-      'common/card is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/interactive/ripple/press/buttons-with-press-ripple.story.ts',
-    symbol: 'CngxButton',
-    reason:
-      'common/button is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/interactive/ripple/press/buttons-with-press-ripple.story.ts',
-    symbol: 'CngxIconButton',
-    reason:
-      'common/button is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
     file: 'examples/stories/common/layout/skeleton/skeleton-container.story.ts',
     symbol: 'CngxSkeletonContainer',
     reason:

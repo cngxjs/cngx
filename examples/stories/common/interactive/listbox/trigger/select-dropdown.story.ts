@@ -28,7 +28,6 @@ export const STORY: DemoSpec = {
     'CngxListboxTrigger',
     'CngxListbox',
     'CngxOption',
-    'CngxPopover',
   ],
   moduleImports: [
     "import { CngxListbox, CngxListboxTrigger, CngxOption } from '@cngx/common/interactive';",

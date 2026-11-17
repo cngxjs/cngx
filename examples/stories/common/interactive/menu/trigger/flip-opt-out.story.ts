@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['composition', 'behavior'],
-  apiComponents: ['CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem', 'CngxPopover'],
+  apiComponents: ['CngxMenuTrigger', 'CngxMenu', 'CngxMenuItem'],
   moduleImports: [
     "import { CNGX_MENU_TRY_FALLBACKS, CngxMenu, CngxMenuItem, CngxMenuTrigger, provideMenuConfigAt, withTryFallbacks } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
