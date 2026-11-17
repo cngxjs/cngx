@@ -40,9 +40,8 @@ test.describe('core/theming — spacing scale inheritance', () => {
   });
 
   test('an ancestor value cascades to a descendant (inherits: true)', async ({ page }) => {
-    // The load-bearing assertion: fails while the registration is
-    // inherits: false (descendant would resolve to the 16px
-    // initial-value), passes once the flip lands.
+    // The load-bearing assertion: fails if the registration regresses to
+    // inherits: false (the descendant would resolve to the 16px initial-value).
     expect(await descendantSpaceMd(page, '8px')).toBe('8px');
   });
 });

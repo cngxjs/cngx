@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['async-state', 'composition', 'error-handling'],
-  apiComponents: ['CngxAsyncContainer'],
+  apiComponents: ['createAggregateAsyncState', 'CngxAsyncContainer'],
   moduleImports: [
     "import { createAggregateAsyncState } from '@cngx/core/utils';",
     "import { createManualState, type ManualAsyncState } from '@cngx/common/data';",
