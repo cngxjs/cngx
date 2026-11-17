@@ -218,6 +218,63 @@ Conversely, a Forms-related organism that happens to wrap a Material control bel
 
 ---
 
+## Skin and story ownership
+
+The level rules above govern imports. Stylesheets and stories can break the same direction without a single import: a skin that selects a consumer's class, a story that teaches a higher-level artifact from a lower-level folder. Seven rules close that gap. Each one comes with a violation and the fix from the codebase.
+
+### S0 - Opt in to a skin by class
+
+A base skin is switched on by a class, never by the directive's attribute. An organism that composes the directive carries the attribute too, so an attribute selector reaches into it.
+
+- Violation: `cngx-accordion.css` paints its twisty on `[cngxAccordionPanel]::after`. `CngxAccordionItem` puts that directive on its header and ships its own chevron, so the header rendered two (`0dcb48e36`).
+- Fix: the region opts in with `.cngx-accordion__region`, the drawer with `.cngx-drawer` next to `[cngxDrawer]`. Neither class appears on an organism unless the organism adds it on purpose.
+
+### S1 - Select only what you own
+
+A skin selector's subject is an element its artifact owns: its own parts, or children its contract names. It never names an artifact of a higher level or an independent sibling; a foreign artifact is reached through its public tokens. The inverse counts too: a base must not exclude a known consumer by class.
+
+- Violation: the bare-popover reset in `cngx-popover.css` excluded `.cngx-select__panel` and `.cngx-tab-overflow__panel`, classes of level 3 and level 4. The menu skin stripped its own surface inside `.cngx-popover-panel`, a sibling entry it does not import.
+- Fix: the reset runs at `:where([cngxPopover])` zero specificity and names no consumer; every surface that paints itself wins by specificity (#822). The menu skin drops the strip; the breadcrumb overflow menu zeroes the menu surface tokens on its own class (#823).
+
+### S2 - State travels to the owner
+
+When a parent needs a child to look different, the child's owner offers a hook: an attribute its own directive writes, or a token. The parent sets the hook; it does not restyle the child.
+
+- Violation: `.cngx-accordion-item__header::after { display: none }` in the accordion organism, a blanket reset of the skin's pseudo-element (`0dcb48e36`).
+- Fix: the skin reads `--cngx-accordion-twisty-display`, and the organism sets it to `none` on its header (`936ba0334`). Same shape for the button: the async paint no longer excludes `.cngx-button`; the button sets `--cngx-async-pending-opacity: 1` on its own host (#834).
+
+### S3 - One visual rule exists once
+
+A rule that paints the same thing lives in one place. The test is "same rule", not "same purpose": diff the bodies before merging copies.
+
+- Violation: `.cngx-sr-only` is declared in `projects/core/theming/utilities.css` and again, with an identical body, in component stylesheets of `common`, `forms` and `ui`.
+- Kept on purpose: the context-menu divider (`projects/ui/context-menu/context-menu.component.css`) has the purpose of the menu separator but its own tokens (`--cngx-context-menu-separator-*`). It is a different rule, not a copy.
+
+### S4 - Containers do not pad their content
+
+A container molecule sets no padding or gap for its content. An element atom styles its own inner box.
+
+- Violation: during the sidebar consolidation, `cngx-sidebar.css` made the nav header and footer sticky and set the rail `gap` on nav rows inside the sidebar.
+- Fix: the sidebar skin styles the sidebar box only (surface, border on the content side, peek shadow) and selects nothing inside it. Nav rows crop themselves on a rail under `[cngxNavRailed]` in `cngx-nav.css` (#812).
+
+### S5 - A story lives with the contract it teaches
+
+A story sits in the folder of the artifact whose contract it teaches. Its `apiComponents` lists no artifact of a higher level or an independent sibling, except the layout primitives `CngxStack` and `CngxGrid`. Full compositions live with the organism. Stories under `examples/stories/core/**` are exempt: core renders nothing, so its stories need a carrier. A carrier the demo only renders around the taught artifact (a reference, slot content) is imported but not listed.
+
+- Violation: `common/data/paginate-list/bridge-announce-page-changes` listed `CngxMatPaginator`, a level 4 bridge, from a level 2 folder.
+- Fix: the story moved to `ui/mat-paginator/`, the folder of the bridge it teaches (#836).
+
+### S6 - Exceptions are guard rows
+
+An exception to S1 or S5 exists only as a row in the guard, with exact counts and a written reason. A row whose hits are gone fails as stale, so the list only shrinks.
+
+- Violation: the popover reset's exclusions were explained in the `cngx-popover.css` overview comment ("the styled surfaces are excluded by class"). No guard, no review step and no debt entry knew about them.
+- Fix: a row in `SKIN_OWNERSHIP_EXEMPT` or `STORY_OWNERSHIP_EXEMPT` (`{ file, selector, count, reason }` or `{ file, symbol, reason }`). Both lists are empty today.
+
+S1 and S5 are enforced by `scripts/__tests__/skin-ownership-guard.test.mjs`.
+
+---
+
 ## Atomic levels inside a lib
 
 Within a single library, components are classified by composition depth:
