@@ -251,6 +251,16 @@ function readUtf8(tree: Tree, path: string): string | undefined {
 }
 
 /**
+ * Refuses a run without a workspace file at the root, in cngx words, before
+ * the devkit reader fails with a bare path error.
+ */
+export function assertWorkspaceFile(tree: Tree): void {
+  if (!tree.exists('angular.json') && !tree.exists('.angular.json')) {
+    throw new SchematicsException('angular.json is missing at the workspace root.');
+  }
+}
+
+/**
  * Reads the facts every onboarding step branches on from the tree and the
  * parsed workspace. Pure: it only reads, and git state, time and the
  * environment are not facts (a devkit `Tree` carries no `.git`).

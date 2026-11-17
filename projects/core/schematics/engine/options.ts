@@ -1,3 +1,5 @@
+import { SchematicsException } from '@angular-devkit/schematics';
+
 /**
  * The ng-add answer vocabulary, shared by `NgAddOptions`, the typed answers
  * the steps read and the shim delegation. `ng-add/schema.json` repeats these
@@ -42,23 +44,26 @@ function flagName(key: string): string {
   return `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
 }
 
+// A flag error is the user's, so it is a `SchematicsException`; a plain
+// `Error` stays for a broken invariant.
+
 /** The message for a list flag that names an entry more than once. */
-export function createRepeatedAnswerError(key: string, entries: readonly string[]): Error {
+export function createRepeatedAnswerError(key: string, entries: readonly string[]): SchematicsException {
   const verb = entries.length === 1 ? 'is' : 'are';
-  return new Error(`"${entries.join('", "')}" ${verb} given more than once for ${flagName(key)}.`);
+  return new SchematicsException(`"${entries.join('", "')}" ${verb} given more than once for ${flagName(key)}.`);
 }
 
 /** The message for a comma list with an empty slot (`core,,ui`, `core,`, `--libs=`). */
-export function createEmptyEntryError(key: string, allowed: readonly string[]): Error {
+export function createEmptyEntryError(key: string, allowed: readonly string[]): SchematicsException {
   const flag = flagName(key);
-  return new Error(
+  return new SchematicsException(
     `${flag} has an empty entry. Separate the values with single commas, for example ${flag} ${allowed.slice(0, 2).join(',')}.`,
   );
 }
 
 /** The one message for a flag or prompt answer outside its vocabulary. */
-export function createInvalidAnswerError(key: string, entries: readonly string[], allowed: readonly string[]): Error {
-  return new Error(
+export function createInvalidAnswerError(key: string, entries: readonly string[], allowed: readonly string[]): SchematicsException {
+  return new SchematicsException(
     `"${entries.join('", "')}" is not a valid answer for ${flagName(key)}. Expected one of: ${allowed.join(', ')}.`,
   );
 }

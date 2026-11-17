@@ -25,7 +25,7 @@ import {
   resolveVersions,
   type TodoNext,
 } from '../engine';
-import { detectProject, type ProjectFacts } from './detect/detect';
+import { assertWorkspaceFile, detectProject, type ProjectFacts } from './detect/detect';
 import { readGitState, workspaceRootOf } from './shell/git-state';
 import { angularReading, angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, askPreset, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
@@ -182,6 +182,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
     const interactive = canPrompt(reachable, flagged.prompts) && promptsOff === undefined;
     const renderer = createRenderer(rendererOptions);
 
+    assertWorkspaceFile(tree);
     const facts = detectProject(tree, await readWorkspace(tree), flagged.project);
     renderer.preflight(
       preflightItems({ facts, peerRange: versions.angular, git: readGitState(workspaceRootOf(process.cwd())), projectFlag: flagged.project }),

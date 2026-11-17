@@ -25,7 +25,7 @@ import {
   type StepResult,
   type SummaryHeadlines,
 } from '../engine';
-import { detectProject, type ProjectFacts } from '../ng-add/detect/detect';
+import { assertWorkspaceFile, detectProject, type ProjectFacts } from '../ng-add/detect/detect';
 import { type InstallManifestState, readInstallManifest, manifestOf } from '../ng-add/shell/install-manifest';
 import { presetDefaults } from '../ng-add/shell/questions';
 import {
@@ -166,6 +166,7 @@ export function createMigration(migration: Migration): Rule {
     const { versions, warning } = resolveVersions(join(migration.bundleDir, '..'));
     const provenance = createProvenance('ng-update', versions.cngx);
     const stored = readInstallManifest(tree);
+    assertWorkspaceFile(tree);
     const workspace = await readWorkspace(tree);
     const roots = [...workspace.projects.values()].map(sourceRootOf);
     const renames = planRenames(migration.renames, tree, roots, provenance);
