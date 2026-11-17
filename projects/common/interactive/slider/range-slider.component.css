@@ -173,13 +173,19 @@ cngx-range-slider .cngx-slider__value--range {
   direction: var(--cngx-slider-range-direction, inherit);
 }
 
-/* Bubble variant: a primary pill shown only while a thumb is focused / dragged. */
+/* Bubble variant: a strong-primary pill shown only while a thumb is focused / dragged. */
 cngx-range-slider .cngx-slider__value--range.cngx-slider__bubble {
   inset-block-end: calc(100% + var(--cngx-slider-bubble-gap, 0.5rem));
   padding: var(--cngx-slider-bubble-padding, 0.125rem 0.4rem);
   border-radius: var(--cngx-radius-sm, 0.25rem);
-  background: var(--cngx-slider-bubble-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary, oklch(0.99 0.01 250)));
+  background: var(
+    --cngx-slider-bubble-bg,
+    var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    )
+  );
+  color: var(--cngx-slider-bubble-color, var(--cngx-color-on-primary-strong, oklch(1 0 0)));
   opacity: 0;
   transition: opacity var(--cngx-duration-fast, 150ms) ease;
 }

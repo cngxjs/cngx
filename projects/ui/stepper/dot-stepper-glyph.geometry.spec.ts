@@ -130,7 +130,7 @@ describe('dot stepper error marks', () => {
     expect(visiblePath(svg).classList.contains('cngx-icon-svg__micro')).toBe(false);
   });
 
-  it('paints the mark over the dot in the on-danger colour', async () => {
+  it('paints the mark over the dot in the on-danger-strong colour', async () => {
     const dots = await mount();
     const mark = icon(dots[3]);
     const centre = ink(mark);

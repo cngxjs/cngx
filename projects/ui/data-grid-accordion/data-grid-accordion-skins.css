@@ -424,10 +424,14 @@
     background: color-mix(in oklab, var(--cngx-color-primary, #1d4ed8) 8%, transparent);
   }
 
-  /* The gutter pseudo-cell fills primary when its row opens - the active-cell cue. */
+  /* The gutter pseudo-cell fills the strong primary pair when its row opens -
+     the active-cell cue. */
   .cngx-dga-row[data-expanded] .cngx-dga-row__cells::before {
-    background: var(--cngx-color-primary, #1d4ed8);
-    color: var(--cngx-color-on-primary, #fff);
+    background: var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    );
+    color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   }
 
   /* Detail zone as a warning-tinted note cell with a small NOTE tag pinned top

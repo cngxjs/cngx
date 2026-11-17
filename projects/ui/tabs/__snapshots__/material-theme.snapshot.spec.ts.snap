@@ -3,7 +3,9 @@
 exports[`Material tabs-theme bridge baseline > v0 light: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-color-border": "rgba(0, 0, 0, 0.12)",
+  "--cngx-color-on-primary-strong": "white",
   "--cngx-color-primary": "#3f51b5",
+  "--cngx-color-primary-strong": "#3f51b5",
   "--cngx-color-surface": "white",
   "--cngx-mat-tab-error-color": "#f44336",
   "--cngx-mat-tab-has-errors-color": "#f44336",
@@ -32,8 +34,9 @@ exports[`Material tabs-theme bridge baseline > v0 light: resolved --cngx-* decla
 exports[`Material tabs-theme bridge baseline > v1 dark: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-color-border": "var(--mat-sys-outline-variant)",
-  "--cngx-color-on-primary": "var(--mat-sys-on-primary)",
+  "--cngx-color-on-primary-strong": "var(--mat-sys-on-primary)",
   "--cngx-color-primary": "var(--mat-sys-primary)",
+  "--cngx-color-primary-strong": "var(--mat-sys-primary)",
   "--cngx-color-surface": "var(--mat-sys-surface)",
   "--cngx-mat-tab-error-color": "var(--mat-sys-error)",
   "--cngx-mat-tab-has-errors-color": "var(--mat-sys-error)",
@@ -65,8 +68,9 @@ exports[`Material tabs-theme bridge baseline > v1 dark: resolved --cngx-* declar
 exports[`Material tabs-theme bridge baseline > v1 light: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-color-border": "var(--mat-sys-outline-variant)",
-  "--cngx-color-on-primary": "var(--mat-sys-on-primary)",
+  "--cngx-color-on-primary-strong": "var(--mat-sys-on-primary)",
   "--cngx-color-primary": "var(--mat-sys-primary)",
+  "--cngx-color-primary-strong": "var(--mat-sys-primary)",
   "--cngx-color-surface": "var(--mat-sys-surface)",
   "--cngx-mat-tab-error-color": "var(--mat-sys-error)",
   "--cngx-mat-tab-has-errors-color": "var(--mat-sys-error)",

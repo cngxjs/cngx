@@ -38,7 +38,9 @@
     // components actually read. One assignment themes every skin and
     // tracks light / dark, since `--mat-sys-*` already carries both.
     --cngx-color-primary: var(--mat-sys-primary);
-    --cngx-color-on-primary: var(--mat-sys-on-primary);
+    // The active pill fills from the strong pair (pill skin `:scope`).
+    --cngx-color-primary-strong: var(--mat-sys-primary);
+    --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
     --cngx-color-surface: var(--mat-sys-surface);
     --cngx-color-border: var(--mat-sys-outline-variant);
 
@@ -64,6 +66,8 @@
     --cngx-tab-refused-text-color: var(--mat-sys-tertiary);
   } @else {
     --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
     --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
     --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
 
