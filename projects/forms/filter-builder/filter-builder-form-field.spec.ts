@@ -26,34 +26,6 @@ import {
 } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 
-// jsdom does not implement the Popover API - polyfill so the inner select panels can open.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 const FIELDS: readonly FilterFieldDef[] = [
   { key: 'name', label: 'Name', editorType: 'string' },
   { key: 'age', label: 'Age', editorType: 'number' },
@@ -225,7 +197,6 @@ describe('CngxFilterBuilder - form-field bridge', () => {
   });
 
   it('an inner select pick leaves the composite untouched', async () => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [PopulatedSignalFormsHost] });
     const fixture = TestBed.createComponent(PopulatedSignalFormsHost);
     fixture.detectChanges();
