@@ -26,6 +26,7 @@ import { cdp } from 'vitest/browser';
     './cngx-async.css',
     './async-click-bridge.spec-host.scss',
   ],
+  styles: ['@layer app { .btn-outlined { outline: 3px dotted; outline-offset: 4px; } }'],
   encapsulation: ViewEncapsulation.None,
   template: `
     <button type="button" class="ok" [cngxAsyncClick]="succeed" [feedbackDuration]="60000">
@@ -36,6 +37,14 @@ import { cdp } from 'vitest/browser';
     </button>
     <button cngxButton class="ref">Save</button>
     <button cngxButton class="btn-ok" [cngxAsyncClick]="succeed" [feedbackDuration]="60000">
+      Save
+    </button>
+    <button
+      cngxButton
+      class="btn-outlined"
+      [cngxAsyncClick]="succeed"
+      [feedbackDuration]="60000"
+    >
       Save
     </button>
     <span class="probe-primary" style="color: var(--mat-sys-primary)"></span>
@@ -192,5 +201,12 @@ describe('async-click state under forced colors', () => {
     for (const prop of ['border-top-style', 'border-top-width', 'outline-style']) {
       expect(computedValue(el, prop), prop).toBe(computedValue(ref, prop));
     }
+  });
+
+  it('keeps a consumer outline on a settled cngxButton host', async () => {
+    const el = await settle(one(await forced(), '.btn-outlined'), 'cngx-async--success');
+    expect(computedValue(el, 'outline-style')).toBe('dotted');
+    expect(computedValue(el, 'outline-width')).toBe('3px');
+    expect(computedValue(el, 'outline-offset')).toBe('4px');
   });
 });

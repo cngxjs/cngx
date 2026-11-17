@@ -16,9 +16,9 @@
  *
  * The state rules sit at zero specificity (`:where()`), so a host with its own
  * paint wins by specificity and keeps it through every phase. Such a host
- * sets `--cngx-async-pending-opacity: 1` and the two forced-colors outline
- * tokens to `none` on itself; the button family does, and shows its own busy
- * treatment and settle result instead.
+ * sets `--cngx-async-pending-opacity: 1` on itself and reverts the
+ * forced-colors outline in its own unlayered rule; the button family does,
+ * and shows its own busy treatment and settle result instead.
  *
  * **State modifiers**
  *
@@ -28,9 +28,9 @@
  *   it; `aria-busy` is immediate. `--success` / `--error` wait until the
  *   gate releases, so a host never wears two modifiers
  * - `--success` - success-tinted surface, border, text; under forced colors
- *   a 2px solid outline (`--cngx-async-success-outline`)
+ *   a 2px solid outline
  * - `--error` - danger-tinted surface, border, text; under forced colors a
- *   2px dashed outline (`--cngx-async-error-outline`)
+ *   2px dashed outline
  *
  * **Inheritance**
  *
@@ -150,28 +150,6 @@
     syntax: '*';
     inherits: true;
   }
-
-  /**
-   * Forced-colors outline after a successful async commit. Unset by default:
-   * `2px solid` in the UA system colour. A host with its own settle cue sets
-   * it to `none`; a focused host keeps its focus ring either way.
-   * @group State / Success
-   */
-  @property --cngx-async-success-outline {
-    syntax: '*';
-    inherits: true;
-  }
-
-  /**
-   * Forced-colors outline after a failed async commit. Unset by default:
-   * `2px dashed` in the UA system colour. A host with its own settle cue sets
-   * it to `none`; a focused host keeps its focus ring either way.
-   * @group State / Error
-   */
-  @property --cngx-async-error-outline {
-    syntax: '*';
-    inherits: true;
-  }
 }
 
 @layer cngx.components {
@@ -225,15 +203,15 @@
  * style; its colour is left to the UA's system colour. An outline takes no
  * layout space, so the host keeps its box size when the cue appears.
  * Unlayered, so a consumer outline reset does not hide the cue on a bare host;
- * a host with its own cue opts out through the outline tokens. A focused host
- * keeps its focus ring. */
+ * a host with its own cue reverts it in a more specific unlayered rule. A
+ * focused host keeps its focus ring. */
 @media (forced-colors: active) {
   :where(.cngx-async--success):not(:focus-visible) {
-    outline: var(--cngx-async-success-outline, 2px solid);
+    outline: 2px solid;
     outline-offset: -2px;
   }
   :where(.cngx-async--error):not(:focus-visible) {
-    outline: var(--cngx-async-error-outline, 2px dashed);
+    outline: 2px dashed;
     outline-offset: -2px;
   }
 }
