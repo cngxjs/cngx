@@ -17,8 +17,8 @@
 //                          `:scope` rules (current fill, hover wash, the
 //                          segmented track, the bar enclosure). Routed to
 //                          Material so the `:scope` blocks resolve a Material
-//                          value; `--cngx-color-on-primary` is set here because
-//                          the system bridge omits it.
+//                          value; the strong primary pair is routed here too,
+//                          so the current fill holds without the system bridge.
 //   - --cngx-paginator-*   leaf segment + popover knobs read directly (range
 //                          readout, items-per-page / page-of-pages / overflow
 //                          popover surface, go-to input, load-more count,
@@ -37,11 +37,12 @@
     // leaf `--cngx-paginator-*` knobs loses to those `:scope` rules, so route
     // the Material palette through the foundation knobs the skins actually
     // read. One assignment themes every skin and tracks light / dark, since
-    // `--mat-sys-*` already carries both. `on-primary` is set here because the
-    // system bridge does not map it, and the pill / bar current label reads
-    // against the primary fill.
+    // `--mat-sys-*` already carries both. The current fill and its label read
+    // the strong primary pair, routed here too so they hold without the
+    // system bridge.
     --cngx-color-primary: var(--mat-sys-primary);
-    --cngx-color-on-primary: var(--mat-sys-on-primary);
+    --cngx-color-primary-strong: var(--mat-sys-primary);
+    --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
     --cngx-color-surface: var(--mat-sys-surface);
     --cngx-color-border: var(--mat-sys-outline-variant);
 
@@ -104,7 +105,8 @@
     $divider: mat.get-theme-color($theme, foreground, divider);
 
     --cngx-color-primary: #{$primary};
-    --cngx-color-on-primary: oklch(1 0 0);
+    --cngx-color-primary-strong: #{$primary};
+    --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
     --cngx-color-surface: #{$surface};
     --cngx-color-border: #{rgba($divider, 0.12)};
 

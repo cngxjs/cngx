@@ -183,18 +183,21 @@
       /**
        * Surface that the active tab fuses with under the `contained` skin
        * (the panel surface) and the active-pill fill under the `pill` skin.
-       * Set from `--cngx-color-surface` / `--cngx-color-primary` via the
+       * Set from `--cngx-color-surface` / `--cngx-color-primary-strong` via the
        * per-skin `:scope` assignment.
        * @type <color>
        * @group Skin
        */
-      --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      --cngx-tab-active-bg: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
       /**
        * Text color of the active pill (paints against `--cngx-tab-active-bg`).
        * @type <color>
        * @group Skin
        */
-      --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-tab-pill-active-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
       /**
        * Resting-pill hover fill under the `pill` skin.
        * @type <color>
