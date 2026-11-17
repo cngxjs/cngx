@@ -89,8 +89,10 @@ describe('field Material bridge', () => {
   it('emits a consumed-name subset (M2)', () => {
     const names = bridgeTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);
+    // M3 leaves the placeholder on the bridged muted text; M2 raises it to 4.5:1
+    // on the fill (consumed by cngx-field-affix.css and cngx-field-skin.css).
     for (const name of names) {
-      expect(CONSUMED).toContain(name);
+      expect([...CONSUMED, '--cngx-field-placeholder-color']).toContain(name);
     }
   });
 
@@ -105,15 +107,18 @@ describe('field Material bridge', () => {
 
 // The M2 warn 500 is a fill colour: red sits at 3.7:1 on white and 2.7:1 on
 // the dark card. The bridge derives the error colour so the error text clears
-// 4.5:1 and the error line (same token) 3:1 on the page and on the fill
-// surface, for every warn palette in either scheme.
+// 4.5:1 on the page and the card, and the error line (same token) 3:1 on the
+// fill and hover surfaces of mat-form-field appearance="fill", for every warn
+// palette in either scheme.
 describe('field Material bridge M2 error contrast', () => {
   function m2(scheme: 'light' | 'dark', warn: string): Record<string, string> {
     const css = compileThemeEntry(
       `
 @use 'sass:color';
+@use 'sass:map';
 @use '@angular/material' as mat;
 @use 'material/field-theme' as bridge;
+@use 'material/select-theme' as select;
 
 $theme: mat.m2-define-${scheme}-theme((color: (
   primary: mat.m2-define-palette(mat.$m2-indigo-palette),
@@ -122,10 +127,12 @@ $theme: mat.m2-define-${scheme}-theme((color: (
 )));
 
 @include bridge.theme($theme);
+@include select.theme($theme);
 probe {
   --warn: #{color.ie-hex-str(mat.get-theme-color($theme, warn))};
   --page: #{color.ie-hex-str(mat.get-theme-color($theme, background, background))};
   --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
+  --surface-variant: #{color.ie-hex-str(map.get($theme, _mat-system, surface-variant))};
 }
 `,
     );
@@ -143,9 +150,17 @@ probe {
       formErrorsScope: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
       required: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-required-color: (#[0-9a-f]{6})/),
       summary: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-form-errors-color: (#[0-9a-f]{6})/),
+      fill: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-fill-bg: (#[0-9a-f]{6})/),
+      hover: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-fill-bg-hover: (#[0-9a-f]{6})/),
+      underline: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-underline-color: (rgba\([^)]*\))/),
+      placeholder: pick(
+        /cngx-form-field\)\s*\{[^}]*--cngx-field-placeholder-color: (rgba\([^)]*\))/,
+      ),
+      selectPlaceholder: pick(/--cngx-select-placeholder-color: (rgba\([^)]*\))/),
       warn: probe('warn'),
       page: probe('page'),
       card: probe('card'),
+      surfaceVariant: probe('surface-variant'),
     };
   }
 
@@ -161,6 +176,26 @@ probe {
     return (hi + 0.05) / (lo + 0.05);
   }
 
+  // An rgba() token composited over an opaque surface, as the browser paints it.
+  function flatten(rgba: string, surface: string): string {
+    const [r, g, b, a] = rgba
+      .slice(rgba.indexOf('(') + 1, -1)
+      .split(',')
+      .map(Number);
+    return `#${[r, g, b]
+      .map((c, i) => {
+        const under = parseInt(surface.slice(1 + i * 2, 3 + i * 2), 16);
+        return Math.round(c * a + under * (1 - a))
+          .toString(16)
+          .padStart(2, '0');
+      })
+      .join('')}`;
+  }
+
+  function withAlpha(rgba: string, alpha: number): string {
+    return rgba.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
+  }
+
   for (const scheme of ['light', 'dark'] as const) {
     for (const warn of ['red', 'deep-orange', 'pink', 'orange']) {
       it(`${scheme} ${warn}: error text 4.5:1 and error line 3:1 on page and fill`, () => {
@@ -172,6 +207,13 @@ probe {
         expect(t['formErrorsScope']).toBe(t['error']);
       });
 
+      it(`${scheme} ${warn}: error line 3:1 on the M2 fill and hover surfaces`, () => {
+        const t = m2(scheme, warn);
+        for (const surface of [t['fill'], t['hover']]) {
+          expect(contrast(t['error'], surface)).toBeGreaterThanOrEqual(3);
+        }
+      });
+
       it(`${scheme} ${warn}: required asterisk and error summary read as 4.5:1 text`, () => {
         const t = m2(scheme, warn);
         for (const surface of [t['page'], t['card']]) {
@@ -181,6 +223,49 @@ probe {
       });
     }
   }
+
+  // mat-form-field appearance="fill" paints the M2 system surface-variant and
+  // lays the 4% on-surface hover state layer over it.
+  const M2_FILL = {
+    light: { fill: '#f6f6f6', hover: '#ededed' },
+    dark: { fill: '#4a4a4a', hover: '#515151' },
+  };
+
+  for (const scheme of ['light', 'dark'] as const) {
+    it(`${scheme}: fill and hover match the mat-form-field fill twin`, () => {
+      const t = m2(scheme, 'red');
+      expect(t['fill']).toBe(M2_FILL[scheme].fill);
+      expect(t['hover']).toBe(M2_FILL[scheme].hover);
+      // drift pin: the bridge literal is Material's own surface-variant
+      expect(t['fill']).toBe(t['surfaceVariant']);
+    });
+
+    it(`${scheme}: resting underline 3:1 on the M2 fill`, () => {
+      const t = m2(scheme, 'red');
+      expect(contrast(flatten(t['underline'], t['fill']), t['fill'])).toBeGreaterThanOrEqual(3);
+    });
+
+    it(`${scheme}: field and select placeholder 4.5:1 on M2 fill and hover`, () => {
+      const t = m2(scheme, 'red');
+      expect(t['selectPlaceholder']).toBe(t['placeholder']);
+      for (const surface of [t['fill'], t['hover']]) {
+        expect(contrast(flatten(t['placeholder'], surface), surface)).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+  }
+
+  // Light raises the secondary-text alpha (0.54 sits at 4.42:1 on the hover
+  // fill) to the lowest alpha that clears 4.5:1; dark keeps its 0.7.
+  it('light: placeholder alpha is the lowest that clears 4.5:1 on the hover fill', () => {
+    const t = m2('light', 'red');
+    const lower = withAlpha(t['placeholder'], 0.54);
+    expect(t['placeholder']).toBe('rgba(0, 0, 0, 0.55)');
+    expect(contrast(flatten(lower, t['hover']), t['hover'])).toBeLessThan(4.5);
+  });
+
+  it('dark: placeholder keeps the secondary-text alpha, which already clears 4.5:1', () => {
+    expect(m2('dark', 'red')['placeholder']).toBe('rgba(255, 255, 255, 0.7)');
+  });
 
   it('keeps the default red recognisably red (hue shift only toward the text colour)', () => {
     const t = m2('light', 'red');

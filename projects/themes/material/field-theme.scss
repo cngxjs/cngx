@@ -33,7 +33,9 @@
 // module (4.5:1 on page and card, which covers the 3:1 the lines need).
 
 // The fill surface, the underline in both its resting and focus colour, and
-// the affix glyph tint. Shared by the field scope and the bare-control scope
+// the affix glyph tint. M2 mirrors mat-form-field appearance="fill": the
+// container is the M2 `surface-variant`, the hover the 4% `on-surface` state
+// layer over it, and the placeholder holds 4.5:1 on both. Shared by the field scope and the bare-control scope
 // below, because a `bare` or `fill` control can sit outside any
 // `cngx-form-field` - a table filter cell has no label, hint or error block.
 @mixin skin-color($theme) {
@@ -44,8 +46,9 @@
     --cngx-field-underline-focus-color: var(--mat-sys-primary);
     --cngx-field-affix-color: var(--mat-sys-on-surface-variant);
   } @else {
-    --cngx-field-fill-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-field-fill-bg-hover: #{mat.get-theme-color($theme, background, hover)};
+    --cngx-field-fill-bg: #{bridge.m2-field-fill($theme)};
+    --cngx-field-fill-bg-hover: #{bridge.m2-field-fill-hover($theme)};
+    --cngx-field-placeholder-color: #{bridge.m2-field-placeholder($theme)};
     --cngx-field-underline-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
     --cngx-field-underline-focus-color: #{mat.get-theme-color($theme, primary)};
     --cngx-field-affix-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};

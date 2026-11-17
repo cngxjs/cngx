@@ -109,6 +109,7 @@
     --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
 
     --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-select-placeholder-color: #{bridge.m2-field-placeholder($theme)};
 
     --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
     --cngx-select-error-color: #{bridge.m2-warn-text($theme)};
