@@ -125,6 +125,7 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   },
   // @cngx/ui - stepper base
   { file: 'projects/ui/stepper/styles/stepper-base.css', note: 'stepper step header' },
+  { file: 'projects/ui/stepper/stepper.component.css', note: 'mobile step dots' },
   // @cngx/ui - a11y panel
   { file: 'projects/ui/a11y/a11y-panel.component.css', note: 'accessibility-panel reset button' },
   // @cngx/ui - command palette
@@ -171,10 +172,6 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/common/theming/components/cngx-slider.css',
     note: 'slider directive skin; thumb is a visual gauge, not a tap target',
-  },
-  {
-    file: 'projects/ui/stepper/stepper.component.css',
-    note: 'interactive step already floored by stepper-base.css; the skin min-heights are 52/72px, already >= 44px',
   },
   {
     file: 'projects/data-display/treetable/examples/app/app.component.css',
@@ -230,7 +227,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(55);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(56);
   });
 });
 
