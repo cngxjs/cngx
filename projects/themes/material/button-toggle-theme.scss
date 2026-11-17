@@ -5,8 +5,10 @@
 // CngxButtonMultiToggleGroup, button[cngxButtonToggle]). The leaf chrome
 // (projects/common/theming/components/cngx-button-toggle.css) reads no
 // component-level color tokens - every tone derives from the cngx
-// foundation knobs (--cngx-color-primary / -on-primary / -surface /
-// -border / -text), so a leaf-token bridge would have nothing to assign.
+// foundation knobs (--cngx-color-primary for the unchecked hover tint,
+// --cngx-color-primary-strong / -on-primary-strong for the checked
+// segment, -surface / -border / -text), so a leaf-token bridge would have
+// nothing to assign.
 // Route the Material palette through the knobs instead (tabs-theme
 // precedent): assigned on the group hosts AND on the toggle button itself.
 // The knobs inherit, so the group assignment cascades into every segment
@@ -16,9 +18,10 @@
 //
 // Knob-routing consequences, named on purpose: (1) in the theme.scss
 // aggregate this block overlaps system-bridge, which already maps the
-// same four knobs at the theme host - only --cngx-color-on-primary is
-// net-new there; the duplicate exists for selective per-bridge use,
-// where system-bridge may be absent (tabs-theme precedent). (2) A
+// same knobs at the theme host - only --cngx-color-on-primary is net-new
+// there, and the toggle chrome no longer reads it; the duplicate exists
+// for selective per-bridge use, where system-bridge may be absent
+// (tabs-theme precedent). (2) A
 // directly-set property beats an INHERITED value regardless of layer
 // or specificity, so a consumer's :root-level --cngx-color-* override
 // does not reach the toggles - re-skinning them means overriding on
@@ -41,12 +44,17 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-color-primary: var(--mat-sys-primary);
     --cngx-color-on-primary: var(--mat-sys-on-primary);
+    --cngx-color-primary-strong: var(--mat-sys-primary);
+    --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
     --cngx-color-surface: var(--mat-sys-surface);
     --cngx-color-border: var(--mat-sys-outline-variant);
     --cngx-color-text: var(--mat-sys-on-surface);
   } @else {
-    // M2 has no on-primary role; the cngx default (near-white) stays.
+    // M2 has no on-primary role: the checked fill takes the primary and its
+    // palette's default contrast, like the button bridge.
     --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
+    --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
     --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
     --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
     --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
