@@ -48,7 +48,7 @@ const CNGX_PACKAGES: readonly { name: string; description: string }[] = [
   {
     name: '@cngx/core',
     description:
-      'Core tokens, async state primitives, selection controller, and DI utilities for the CNGX Angular component library.',
+      'Design tokens, preference axes (density, motion, contrast, text size, touch targets), bidi support, i18n language packs, async state, selection, a testing kit and the ng add schematic for the CNGX Angular component library.',
   },
   {
     name: '@cngx/data-display',
