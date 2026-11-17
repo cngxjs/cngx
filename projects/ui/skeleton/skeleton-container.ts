@@ -51,8 +51,7 @@ import {
  * @since 0.1.0
  * @relatedTo CngxSkeletonPlaceholder, CngxAsyncState, CngxEmptyState
  * @slot cngxSkeletonPlaceholder Replaces the generated placeholder shape.
- * <example-url>/#/common/layout/skeleton/basic-skeleton</example-url>
- * <example-url>/#/common/layout/skeleton/skeleton-container</example-url>
+ * <example-url>/#/ui/skeleton/skeleton-container</example-url>
  * <example-url>/#/ui/skeleton/card-skeleton</example-url>
  * <example-url>/#/ui/skeleton/template-context</example-url>
  * @axis level molecule

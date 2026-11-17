@@ -81,60 +81,6 @@ const SKIN_OWNERSHIP_EXEMPT = [];
  */
 const STORY_OWNERSHIP_EXEMPT = [
   {
-    file: 'examples/stories/common/button/button/aligned-with-inputs.story.ts',
-    symbol: 'CngxInput',
-    reason:
-      'forms/input is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/card/card-with-disclosure-expand-collapse.story.ts',
-    symbol: 'CngxDisclosure',
-    reason:
-      'common/interactive is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/card/card-with-expandable-text.story.ts',
-    symbol: 'CngxExpandableText',
-    reason:
-      'common/layout is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/card/card-with-expandable-text.story.ts',
-    symbol: 'CngxExpandableToggle',
-    reason:
-      'common/layout is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/card/card-with-speak-badge.story.ts',
-    symbol: 'CngxSpeakButton',
-    reason:
-      'ui/speak is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/card/card-with-speak-badge.story.ts',
-    symbol: 'CngxSpeak',
-    reason:
-      'common/interactive is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/chart/primitives/async-state-machine-on-the-primitive.story.ts',
-    symbol: 'CngxEmptyState',
-    reason:
-      'ui/empty-state is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/layout/skeleton/skeleton-container.story.ts',
-    symbol: 'CngxSkeletonContainer',
-    reason:
-      'ui/skeleton is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/common/layout/skeleton/skeleton-container.story.ts',
-    symbol: 'CngxSkeletonPlaceholder',
-    reason:
-      'ui/skeleton is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
     file: 'examples/stories/interop/query/from-query/tanstack-query-bridge.story.ts',
     symbol: 'CngxAsyncContainer',
     reason:

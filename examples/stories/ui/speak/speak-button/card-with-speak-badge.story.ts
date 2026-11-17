@@ -1,4 +1,4 @@
-import type { DemoSpec } from '../../../dev-tools/demo-spec';
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxSpeakButton: Card with speak badge',

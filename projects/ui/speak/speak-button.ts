@@ -30,6 +30,7 @@ import { injectSpeakI18n } from './speak-i18n';
  * @since 0.1.0
  * @relatedTo CngxSpeak
  * <example-url>/#/ui/speak/speak-button/styled-speaker-icon</example-url>
+ * <example-url>/#/ui/speak/speak-button/card-with-speak-badge</example-url>
  * @axis level molecule
  */
 @Component({
