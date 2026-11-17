@@ -127,9 +127,10 @@
   }
 
   /**
-   * Background of the active page button. Delegates to `--cngx-color-primary`.
+   * Background of the active page button. Delegates to
+   * `--cngx-color-primary-strong`.
    * @group State / Active
-   * @see [[--cngx-color-primary]]
+   * @see [[--cngx-color-primary-strong]]
    */
   @property --cngx-paginator-current-bg {
     syntax: '<color>';
@@ -138,7 +139,8 @@
   }
 
   /**
-   * Text colour of the active page button (reads against the primary fill).
+   * Text colour of the active page button (reads against the strong primary
+   * fill). Delegates to `--cngx-color-on-primary-strong`.
    * @group State / Active
    */
   @property --cngx-paginator-current-color {
