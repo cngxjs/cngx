@@ -22,7 +22,7 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 {
   "--cngx-step-chips-bg-completed": "color-mix( in srgb, var(--cngx-color-success, oklch(0.6 0.15 145)) 14%, transparent )",
   "--cngx-step-chips-color-active": "oklch(1 0 0)",
-  "--cngx-step-chips-color-completed": "var(--cngx-color-success, oklch(0.6 0.15 145))",
+  "--cngx-step-chips-color-completed": "var(--cngx-color-success-text, oklch(0.46 0.15 145))",
   "--cngx-step-chips-fill-active": "#3f51b5",
 }
 `;
@@ -31,7 +31,7 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 {
   "--cngx-step-chips-bg-completed": "color-mix( in srgb, var(--cngx-color-success, oklch(0.6 0.15 145)) 14%, transparent )",
   "--cngx-step-chips-color-active": "var(--mat-sys-on-primary)",
-  "--cngx-step-chips-color-completed": "var(--cngx-color-success, oklch(0.6 0.15 145))",
+  "--cngx-step-chips-color-completed": "var(--cngx-color-success-text, oklch(0.46 0.15 145))",
   "--cngx-step-chips-fill-active": "var(--mat-sys-primary)",
 }
 `;
@@ -40,7 +40,7 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 {
   "--cngx-step-chips-bg-completed": "color-mix( in srgb, var(--cngx-color-success, oklch(0.6 0.15 145)) 14%, transparent )",
   "--cngx-step-chips-color-active": "var(--mat-sys-on-primary)",
-  "--cngx-step-chips-color-completed": "var(--cngx-color-success, oklch(0.6 0.15 145))",
+  "--cngx-step-chips-color-completed": "var(--cngx-color-success-text, oklch(0.46 0.15 145))",
   "--cngx-step-chips-fill-active": "var(--mat-sys-primary)",
 }
 `;

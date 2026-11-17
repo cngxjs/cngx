@@ -826,13 +826,22 @@
 
   /**
    * Completed chip label + check colour in the `chips` skin. Inherits so
-   * the host-set value reaches the step descendant.
+   * the host-set value reaches the step descendant. Defaults to
+   * `--cngx-color-success-text`.
    * @group Skin / chips
+   * @see [[--cngx-color-success-text]]
    */
   @property --cngx-step-chips-color-completed {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.5 0.15 145);
+    initial-value: oklch(0.46 0.15 145);
+  }
+
+  /* The registered initial-value cannot hold var(), so the text rung is
+   * assigned on the chips host, where it resolves against the host's own
+   * scheme. Zero specificity keeps a consumer host value on top. */
+  :where(.cngx-stepper[data-skin='chips']) {
+    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
   }
 
   /**

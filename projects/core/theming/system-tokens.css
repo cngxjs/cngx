@@ -507,7 +507,11 @@
    * so a themed --cngx-color-text no longer moves it. Deliberately
    * not registered: an initial-value cannot hold var(), and a registered
    * literal would never let the derivation fall through. Assigned in the
-   * scheme blocks below so it follows a consumer's --cngx-color-danger. */
+   * scheme blocks below so it follows a consumer's --cngx-color-danger.
+   * --cngx-color-success-text, --cngx-color-warning-text and
+   * --cngx-color-info-text are the same rung for their tone (6.6:1 or more
+   * on the page for the default tones), for state colour carried by text
+   * such as a trend or delta value or a completed step label. */
 
   /**
    * Semantic success color - green. Drives confirmations,
@@ -678,6 +682,9 @@
     --cngx-color-danger-strong: oklch(from var(--cngx-color-danger) 0.48 c h);
     --cngx-color-on-danger-strong: oklch(1 0 0);
     --cngx-color-danger-text: oklch(from var(--cngx-color-danger) 0.46 c h);
+    --cngx-color-success-text: oklch(from var(--cngx-color-success) 0.46 c h);
+    --cngx-color-warning-text: oklch(from var(--cngx-color-warning) 0.46 c h);
+    --cngx-color-info-text: oklch(from var(--cngx-color-info) 0.46 c h);
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
@@ -708,6 +715,9 @@
       --cngx-color-danger-strong: oklch(from var(--cngx-color-danger) 0.68 c h);
       --cngx-color-on-danger-strong: oklch(0.2 0.01 250);
       --cngx-color-danger-text: oklch(from var(--cngx-color-danger) 0.74 c h);
+      --cngx-color-success-text: oklch(from var(--cngx-color-success) 0.74 c h);
+      --cngx-color-warning-text: oklch(from var(--cngx-color-warning) 0.74 c h);
+      --cngx-color-info-text: oklch(from var(--cngx-color-info) 0.74 c h);
       --cngx-color-success: oklch(0.68 0.14 145);
       --cngx-color-warning: oklch(0.78 0.14 75);
       --cngx-color-info: oklch(0.72 0.11 240);
@@ -740,6 +750,9 @@
     --cngx-color-danger-strong: oklch(from var(--cngx-color-danger) 0.68 c h);
     --cngx-color-on-danger-strong: oklch(0.2 0.01 250);
     --cngx-color-danger-text: oklch(from var(--cngx-color-danger) 0.74 c h);
+    --cngx-color-success-text: oklch(from var(--cngx-color-success) 0.74 c h);
+    --cngx-color-warning-text: oklch(from var(--cngx-color-warning) 0.74 c h);
+    --cngx-color-info-text: oklch(from var(--cngx-color-info) 0.74 c h);
     --cngx-color-success: oklch(0.68 0.14 145);
     --cngx-color-warning: oklch(0.78 0.14 75);
     --cngx-color-info: oklch(0.72 0.11 240);
@@ -769,6 +782,9 @@
     --cngx-color-danger-strong: oklch(from var(--cngx-color-danger) 0.48 c h);
     --cngx-color-on-danger-strong: oklch(1 0 0);
     --cngx-color-danger-text: oklch(from var(--cngx-color-danger) 0.46 c h);
+    --cngx-color-success-text: oklch(from var(--cngx-color-success) 0.46 c h);
+    --cngx-color-warning-text: oklch(from var(--cngx-color-warning) 0.46 c h);
+    --cngx-color-info-text: oklch(from var(--cngx-color-info) 0.46 c h);
     --cngx-color-success: oklch(0.6 0.15 145);
     --cngx-color-warning: oklch(0.72 0.15 75);
     --cngx-color-info: oklch(0.65 0.12 240);
