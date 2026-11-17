@@ -142,7 +142,7 @@ describe('createMigration', () => {
     const files = Object.fromEntries(Object.entries(before).filter(([path]) => path !== 'angular.json'));
     const tree = createMemoryTree(files);
 
-    await expect(runRule(migration(), tree, ENTRY)).rejects.toThrow('Path "/angular.json" does not exist.');
+    await expect(runRule(migration(), tree, ENTRY)).rejects.toThrow('angular.json is missing at the workspace root.');
     expect(tree.actions).toEqual([]);
   });
 

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createProvenanceStamp, parseManifest } from '../../engine';
 import { createFixtureTree } from '../../testing/run-schematic';
-import { detectProject, type ProjectFacts } from './detect';
+import { assertWorkspaceFile, detectProject, type ProjectFacts } from './detect';
 
 const MAP_API_THEME = `@use '@angular/material' as mat;
 
@@ -337,5 +337,27 @@ export const appConfig: ApplicationConfig = {
     const before = tree.files.map((path) => [path, tree.readText(path)]);
     detectProject(tree, await readWorkspace(tree));
     expect(tree.files.map((path) => [path, tree.readText(path)])).toEqual(before);
+  });
+});
+
+describe('assertWorkspaceFile', () => {
+  it('accepts a workspace with angular.json', () => {
+    expect(() => assertWorkspaceFile(createFixtureTree())).not.toThrow();
+  });
+
+  it('refuses a workspace without angular.json in cngx words', () => {
+    const tree = createFixtureTree();
+    tree.delete('angular.json');
+
+    expect(() => assertWorkspaceFile(tree)).toThrow('angular.json is missing at the workspace root.');
+  });
+
+  it('refuses a .angular.json workspace, which readWorkspace cannot open', async () => {
+    const tree = createFixtureTree();
+    tree.create('.angular.json', tree.readText('angular.json'));
+    tree.delete('angular.json');
+
+    expect(() => assertWorkspaceFile(tree)).toThrow('angular.json is missing at the workspace root.');
+    await expect(readWorkspace(tree)).rejects.toThrow('Path "/angular.json" does not exist.');
   });
 });

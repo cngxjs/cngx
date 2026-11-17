@@ -10,7 +10,7 @@ const LOGGER: RenderLogger = {
 };
 
 const options = (env: Record<string, string>, isTTY: boolean | undefined, quiet = false) =>
-  createShellRendererOptions(env, { isTTY }, LOGGER, quiet);
+  createShellRendererOptions(env, { isTTY }, {}, LOGGER, quiet);
 
 describe('createShellRendererOptions', () => {
   it('asks for the live renderer on an interactive, coloured terminal outside CI', () => {
@@ -93,18 +93,36 @@ describe('canReachPrompts', () => {
 });
 
 describe('the terminal writer', () => {
-  it('writes whole lines to the stream on a terminal', () => {
-    const written: string[] = [];
-    const result = createShellRendererOptions({}, { isTTY: true, write: (chunk) => written.push(chunk) }, LOGGER, false);
+  it('writes whole lines to stdout and warnings and errors to stderr on a terminal', () => {
+    const out: string[] = [];
+    const err: string[] = [];
+    const result = createShellRendererOptions(
+      {},
+      { isTTY: true, write: (chunk) => out.push(chunk) },
+      { write: (chunk) => err.push(chunk) },
+      LOGGER,
+      false,
+    );
 
     result.terminal?.info('Preflight:');
     result.terminal?.warn('  ! warn');
+    result.terminal?.error('  x error');
 
-    expect(written).toEqual(['Preflight:\n', '  ! warn\n']);
+    expect(out).toEqual(['Preflight:\n']);
+    expect(err).toEqual(['  ! warn\n', '  x error\n']);
+  });
+
+  it('keeps every line on stdout when stderr cannot be written', () => {
+    const out: string[] = [];
+    const result = createShellRendererOptions({}, { isTTY: true, write: (chunk) => out.push(chunk) }, {}, LOGGER, false);
+
+    result.terminal?.warn('  ! warn');
+
+    expect(out).toEqual(['  ! warn\n']);
   });
 
   it('is absent without a terminal', () => {
-    const result = createShellRendererOptions({}, { isTTY: false, write: () => true }, LOGGER, false);
+    const result = createShellRendererOptions({}, { isTTY: false, write: () => true }, {}, LOGGER, false);
 
     expect(result.terminal).toBeUndefined();
   });

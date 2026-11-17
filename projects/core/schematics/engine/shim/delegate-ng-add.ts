@@ -71,7 +71,7 @@ function withOwnLib(options: NgAddFlags, ownName: string): NgAddFlags {
 // The CLI indents `context.logger`; on a terminal the shim's line goes to
 // the stream at the left edge, like the output of core's renderer after it.
 function shimLogger(context: SchematicContext): RenderLogger {
-  const options = createShellRendererOptions(process.env, process.stdout, context.logger, false);
+  const options = createShellRendererOptions(process.env, process.stdout, process.stderr, context.logger, false);
   return options.terminal ?? options.logger;
 }
 

@@ -5,6 +5,7 @@ import {
   createProvenance,
   joinNames,
   mergeStepResults,
+  newlineOf,
   type Provenance,
   skipChange,
   type StepResult,
@@ -113,18 +114,19 @@ const AGENTS_BLOCK = [
 
 // One blank line between the user's last line and the block.
 function blockSeparator(content: string): string {
-  if (content === '' || content.endsWith('\n\n')) {
+  if (content === '' || /(\r?\n){2}$/.test(content)) {
     return '';
   }
-  return content.endsWith('\n') ? '\n' : '\n\n';
+  return /\r?\n$/.test(content) ? '\n' : '\n\n';
 }
 
-// Appended, never rewritten: an existing file keeps every line it had.
+// Appended, never rewritten: an existing file keeps every line it had, and its line ending.
 function appendAgentsBlock(content: string): string {
   if (content.includes(AGENTS_MARKER)) {
     return content;
   }
-  return `${content}${blockSeparator(content)}${AGENTS_BLOCK}`;
+  const block = `${blockSeparator(content)}${AGENTS_BLOCK}`;
+  return `${content}${block.replace(/\n/g, newlineOf(content))}`;
 }
 
 /** A file the cngx block goes into, with the editors that read it. */

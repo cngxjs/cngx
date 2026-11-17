@@ -51,6 +51,7 @@ export function canReachPrompts(env: ColorEnv, isTTY: boolean, stdin: TerminalSt
 export function createShellRendererOptions(
   env: ColorEnv,
   stdout: TerminalStream,
+  stderr: TerminalStream,
   logger: RenderLogger,
   quiet: boolean,
 ): RendererOptions {
@@ -60,20 +61,24 @@ export function createShellRendererOptions(
     color: createPalette(env, isTTY),
     quiet,
     logger,
-    terminal: isTTY ? streamLogger(stdout) : undefined,
+    terminal: isTTY ? streamLogger(stdout, stderr) : undefined,
   };
 }
 
 // The CLI hands a schematic an indenting child logger, so every line through
 // `context.logger` lands two levels in. On a terminal both renderers write
 // beside the prompts and the task list, which go to the stream straight, so
-// their lines go there too and start at the left edge like theirs.
-function streamLogger(stream: TerminalStream): RenderLogger | undefined {
-  if (stream.write === undefined) {
+// their lines go there too and start at the left edge like theirs. Warnings
+// and errors take stderr, as `context.logger` routes them off a terminal.
+function streamLogger(stdout: TerminalStream, stderr: TerminalStream): RenderLogger | undefined {
+  if (stdout.write === undefined) {
     return undefined;
   }
-  const line = (message: string): void => {
-    stream.write?.(`${message}\n`);
-  };
-  return { info: line, warn: line, error: line };
+  const lineTo =
+    (stream: TerminalStream) =>
+    (message: string): void => {
+      stream.write?.(`${message}\n`);
+    };
+  const problem = lineTo(stderr.write === undefined ? stdout : stderr);
+  return { info: lineTo(stdout), warn: problem, error: problem };
 }
