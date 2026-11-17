@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxDrawer: Direction all four sides',
+  title: 'CngxDrawer: Slide in from all four edges',
   subtitle:
-    'Change <code>[position]</code> to <code>left</code>, <code>right</code>, <code>top</code>, or <code>bottom</code>. The panel reflects it as a position class, and the <code>cngx-drawer</code> base skin slides it in from that edge over the content.',
+    'A drawer opens from any edge of its host, a sidebar only from the start or the end. Change <code>[position]</code> to <code>left</code>, <code>right</code>, <code>top</code>, or <code>bottom</code>. The panel reflects it as a position class, and the <code>cngx-drawer</code> base skin slides it in from that edge over the content.',
   description:
     'Switches the [position] input across left, right, top, and bottom so the same drawer renders with four different slide directions. The directive only flips the position class on the panel; the cngx-drawer class opts into the base skin, which owns the slide transform per edge and the scrim. The over panel is modal by default, so it overlays the content instead of moving it.',
   level: 'organism',
@@ -34,12 +34,12 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </aside>
 
-    <main [cngxDrawerContent]="dirDrawer" style="padding: var(--cngx-space-md, 1rem)">
+    <div [cngxDrawerContent]="dirDrawer" style="padding: var(--cngx-space-md, 1rem)">
       <button type="button" aria-controls="dir-panel"
               [attr.aria-expanded]="dirDrawer.opened()" (click)="dirDrawer.toggle()">
         Toggle {{ direction() }} drawer
       </button>
       <p>The panel slides over this content from the chosen edge. Direction: <strong>{{ direction() }}</strong></p>
-    </main>
+    </div>
   </div>`,
 };

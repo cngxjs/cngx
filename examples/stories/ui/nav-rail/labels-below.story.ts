@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxNavRail: labels below the icons',
+  title: 'CngxNavRail: Labels below the icons',
   subtitle:
-    'The stacked look, <code>labelPlacement="below"</code>: the icon over a short, centred label, no tooltip.',
+    'A nav rail that never expands, in the stacked look, <code>labelPlacement="below"</code>: the icon over a short, centred label, no tooltip.',
   description:
     'Use it when the labels are short enough to read at rail width. The rail is <code>--cngx-nav-rail-below-size</code> wide (5rem), the label takes <code>--cngx-nav-rail-below-font-size</code>, and a badge moves to the icon corner. Rows keep the touch-target floor (<code>--cngx-target-min</code>). A nav group still opens as a flyout beside its head.',
   level: 'organism',

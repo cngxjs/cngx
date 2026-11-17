@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxNavRail: rail at the inline end',
+  title: 'CngxNavRail: Rail at the inline end',
   subtitle:
-    'A rail placed after the page content. side="end" moves the border to the rail edge that faces the content and opens the flyout and the label tooltip toward the content.',
+    'A nav rail, the navigation surface that stays narrow and never expands, placed after the page content. side="end" moves the border to the rail edge that faces the content and opens the flyout and the label tooltip toward the content.',
   description:
     'The rail sits at the inline end because it comes last in the DOM; <code>side</code> does not move it, it only turns the parts that depend on the side. The value is logical: under <code>dir="rtl"</code> an end rail is the left one and its tooltip and flyout open to the right. A tooltip that would overflow the viewport flips to the other side of its row. <code>withNavRailSide(\'end\')</code> sets the side app-wide. Without <code>[ariaLabel]</code> an end rail is named by its own copy key (English: <code>Secondary navigation</code>), so it never shares a landmark name with a start rail; this one is named <code>Tools</code>.',
   level: 'organism',

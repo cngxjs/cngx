@@ -1,8 +1,8 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSidenav: full navigation sidebar',
-  subtitle: 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. The library paints the row states; Material theming via <code>sidenav-theme.scss</code> maps them onto M3 roles.',
+  title: 'CngxSidenav: Full app navigation',
+  subtitle: 'The sidenav as a complete app navigation, with every nav atom inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. The library paints the row states; Material theming via <code>sidenav-theme.scss</code> maps them onto M3 roles.',
   description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. No <code>mode</code> is bound, so the rail follows the width class of its layout: docked beside the content from 64rem (<code>expanded</code>), where the toggle button and <code>shortcut="mod+b"</code> collapse it to an icon rail that peeks on hover; an icon rail with the full nav as an overlay from 48rem (<code>medium</code>); an overlay drawer below that (<code>compact</code>). The toggle is a <code>[cngxPanelTrigger]</code>, so its <code>aria-expanded</code> states the resting state and ignores a hover peek.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],

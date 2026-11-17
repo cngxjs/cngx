@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxDrawer: Pattern consumer wiring',
+  title: 'CngxDrawer: Trigger wired with CngxAriaExpanded',
   subtitle:
-    'The drawer is headless. The consumer wires <code>CngxAriaExpanded</code> on the trigger; the over panel is modal by default, so it traps focus and restores it to the trigger on close without further bindings.',
+    'A drawer leaves its trigger to the consumer. The consumer wires <code>CngxAriaExpanded</code> on the trigger; the over panel is modal by default, so it traps focus and restores it to the trigger on close without further bindings.',
   description:
     'Live drawer wired through the consumer-owned a11y seams: CngxAriaExpanded with aria-controls on the <button type="button"> trigger, the panel id it points at, and a single drawer.opened() signal everything reads from. The modal over panel traps focus while open and hands it back to the trigger on close. The readout below shows the opened model, which the trigger reflects as aria-expanded, and the id of the focused element, so the keyboard semantics are observable.',
   level: 'organism',
@@ -54,14 +54,14 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </nav>
 
-    <main style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
+    <div style="flex: 1 1 auto; padding: var(--cngx-space-md, 1rem)">
       <button id="pcw-trigger" type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'pcw-panel'"
               (click)="drawer.toggle()">
         {{ drawer.opened() ? 'Close' : 'Open' }} navigation
       </button>
       <p>Open the navigation, then Tab through the panel. Focus stays trapped inside until the drawer closes; on close, the trigger re-receives focus.</p>
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">

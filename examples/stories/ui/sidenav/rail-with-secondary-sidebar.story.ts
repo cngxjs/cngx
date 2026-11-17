@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxNavRail: rail beside a secondary sidebar',
+  title: 'CngxSidenav: Section pages beside a nav rail',
   subtitle:
-    'A rail of sections next to a <code>cngx-sidenav</code> with the pages of the current section.',
+    'A nav rail and a sidenav side by side: the rail of sections never expands, the <code>cngx-sidenav</code> next to it lists the pages of the current section.',
   description:
     'Two navigation landmarks, each with its own name: the rail switches the section, the sidenav lists that section\'s pages and can collapse on its own. The two organisms share the nav atoms and know nothing of each other; the consumer derives the sidenav rows from the rail selection with one <code>computed()</code>.',
   level: 'organism',

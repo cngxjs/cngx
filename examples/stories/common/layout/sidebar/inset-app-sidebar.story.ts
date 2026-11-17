@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidebar: Inset app sidebar',
   subtitle:
-    'A full-height <code>[cngxSidebar]</code> with the brand in its head, grouped navigation and the account in its foot. A <code>[cngxPanelToggle]</code> at the top of the content column collapses it to an icon rail.',
+    'An app shell assembled from a sidebar and the nav atoms; <code>cngx-sidenav</code> ships the same shell finished. A full-height <code>[cngxSidebar]</code> with the brand in its head, grouped navigation and the account in its foot. A <code>[cngxPanelToggle]</code> at the top of the content column collapses it to an icon rail.',
   description:
     'The inset app layout: there is no global header, the brand lives in the sidebar and the sidebar toggle sits at the top of the content column. The navigation groups are CngxNavGroup disclosures that expand inline. Collapsed, the sidebar rests as a rail: <code>[cngxNavRailed]</code> crops the rows to the brand mark, one icon per entry and the avatar, the labels stay in the accessible name and show as a tooltip on hover and focus, and an opened group shows its entries as a flyout beside its head. The rail width comes from <code>--cngx-nav-railed-size</code> plus the sidebar border, so the icons sit centred.',
   level: 'organism',

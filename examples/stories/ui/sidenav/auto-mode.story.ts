@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxSidenav: auto mode',
+  title: 'CngxSidenav: Auto mode',
   subtitle:
-    'Nothing is bound. <code>mode</code> defaults to <code>auto</code>, so the rail follows the width class of the layout: an overlay below <code>48rem</code>, docked beside the content from there. Drag the right edge of the dashed frame across the thresholds, or use the width presets. One <code>[cngxPanelTrigger]="nav.panelTarget"</code> drives every width class: it collapses the docked rail in <code>expanded</code>, opens the full nav over the rail in <code>medium</code> and the drawer in <code>compact</code>.',
+    'The sidenav is the finished navigation organism on a sidebar that turns into a drawer on narrow layouts. Nothing is bound. <code>mode</code> defaults to <code>auto</code>, so the rail follows the width class of the layout: an overlay below <code>48rem</code>, docked beside the content from there. Drag the right edge of the dashed frame across the thresholds, or use the width presets. One <code>[cngxPanelTrigger]="nav.panelTarget"</code> drives every width class: it collapses the docked rail in <code>expanded</code>, opens the full nav over the rail in <code>medium</code> and the drawer in <code>compact</code>.',
   description:
     'The thresholds live in one place: a <code>@container cngx-sidenav-layout</code> rule block in <code>sidenav-layout.css</code> that writes <code>--cngx-sidenav-width-class</code> (<code>compact</code> below 48rem, <code>medium</code> from 48rem, <code>expanded</code> from 64rem) on the rail. The component reads that resolved value through <code>CngxContainer.property()</code> and derives <code>widthClass()</code> and <code>effectiveMode()</code> from it in <code>computed()</code>s - it never re-evaluates a condition in TypeScript, so overriding the CSS rules moves the thresholds for both. The rule targets the rail rather than the layout because a container query resolves against an ancestor container, never against the container itself. The switch needs no announcement: it flips aria-modal, the focus trap and the backdrop, and every width-class change starts the new presentation closed, unless focus is inside the rail: then it stays open, so the focused element is never orphaned.',
   level: 'organism',

@@ -1,9 +1,9 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxPanelToggle: Projected glyph',
+  title: 'CngxSidebar: Inspector toggle with its own glyph',
   subtitle:
-    'A <code>[cngxPanelToggle]</code> with its own icon. The exported instance (<code>#toggle="cngxPanelToggle"</code>) exposes <code>expanded()</code>, <code>modalOverlay()</code> and <code>mirrored()</code>, so the projected glyph follows the panel the way the default one does.',
+    'A sidebar as a hidden inspector on the end edge, opened by a <code>[cngxPanelToggle]</code> with its own icon. The exported instance (<code>#toggle="cngxPanelToggle"</code>) exposes <code>expanded()</code>, <code>modalOverlay()</code> and <code>mirrored()</code>, so the projected glyph follows the panel the way the default one does.',
   description:
     'An order inspector on the end edge: a [cngxSidebar] with side="end" that rests hidden. The toggle in the header projects a Material chevron instead of the built-in panel glyph. The chevron reads toggle.expanded() to point the way a press moves the panel, and toggle.mirrored() flips it because the panel sits on the end edge (it would flip back under RTL). toggle.modalOverlay() stays false here; for a modal over-drawer it switches to true, which is where the default glyph draws menu bars and a cross. The projected icon sits inside the toggle glyph slot, which is aria-hidden, so the toggle stays icon-only and is named after the sidebar label. aria-expanded and aria-controls come from the composed panel trigger.',
   level: 'molecule',

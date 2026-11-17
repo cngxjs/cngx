@@ -1,11 +1,11 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxDrawer: Basic scroll lock backdrop',
+  title: 'CngxDrawer: Scroll lock and backdrop by hand',
   subtitle:
-    '<code>[cngxScrollLock]</code> locks the content area while the drawer is open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
+    'A drawer with its overlay parts wired by hand: <code>[cngxScrollLock]</code> locks the content area while the drawer is open. <code>[cngxBackdrop]</code> fades in an overlay and sets <code>inert</code> on sibling elements. Press <strong>Escape</strong>, click the backdrop, or click outside to close.',
   description:
-    'Drawer wired with CngxScrollLock and CngxBackdrop. Opening locks the scroll of the content area, fades the backdrop in, traps focus inside the panel, and links the trigger via CngxAriaExpanded.',
+    'Drawer wired with CngxScrollLock and CngxBackdrop. Opening locks the scroll of the content area, fades the backdrop in, traps focus inside the panel, and links the trigger via CngxAriaExpanded. Its twin, <em>CngxDrawer: Full-height modal drawer</em>, is the same page-modal drawer with nothing added: the panel locks the scroll container above it and the cngx-drawer skin paints the scrim. Add the two atoms only when the lock belongs on another element (here the content column) or the backdrop is your own (the skin scrim is set transparent here).',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
       </cngx-stack>
     </nav>
 
-    <main #content [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem); overflow: auto">
+    <div #content [cngxDrawerContent]="drawer" style="padding: var(--cngx-space-md, 1rem); overflow: auto">
       <button type="button"
               [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
               (click)="drawer.toggle()">
@@ -62,7 +62,7 @@ export const STORY: DemoSpec = {
       @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track n) {
         <p>Content row {{ n }}</p>
       }
-    </main>
+    </div>
   </div>`,
   templateChrome: `<div class="status-row">
     <span class="status-badge" [class.active]="drawer.opened()">

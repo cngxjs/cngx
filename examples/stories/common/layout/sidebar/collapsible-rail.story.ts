@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidebar: Collapsible rail',
   subtitle:
-    '<code>[cngxSidebar]</code> on its own: a box that rests as a rail or hidden, peeks over the content without reflow and sits on either side. <code>class="cngx-sidebar"</code> adds the base skin.',
+    'The sidebar on its own, the layout panel under every sidenav: <code>[cngxSidebar]</code> is a box that rests as a rail or hidden, peeks over the content without reflow and sits on either side. <code>class="cngx-sidebar"</code> adds the base skin.',
   description:
     'The sidebar is a flex item whose inline size follows its state. Collapsed as rail it keeps <code>--cngx-sidebar-rail-size</code> and clips what does not fit; it does not rearrange its content. Resting the pointer on the rail peeks the sidebar at full size over the content: the content column keeps its position because the reserved space stays at the rail size, and the base skin adds a shadow. Escape, moving focus out or leaving with the pointer ends the peek. Collapsed as hidden, the sidebar reserves no space and is inert and aria-hidden until expanded. <code>side</code> names the edge the sidebar sits on; the base skin draws its border toward the content. The page shell is yours: here a <code>cngx-stack</code> row, with <code>order</code> putting an end sidebar after the column. The <code>[cngxPanelToggle]</code> in the content column toggles collapsed and carries aria-expanded and aria-controls.',
   level: 'molecule',
