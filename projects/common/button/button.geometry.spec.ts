@@ -312,8 +312,8 @@ describe('CngxButton paint: neutral secondary', () => {
       const match = computedValue(el, 'background-color').match(/\/\s*([\d.]+)\)$|,\s*([\d.]+)\)$/);
       return match ? parseFloat(match[1] ?? match[2]) : 1;
     };
-    expect(computedValue(query(root, '.b-secondary-light'), '--cngx-button-neutral-tint').trim()).toBe('5%');
-    expect(computedValue(query(root, '.b-secondary-dark'), '--cngx-button-neutral-tint').trim()).toBe('10%');
+    expect(computedValue(query(root, '.b-secondary-light'), '--cngx-button-neutral-tint').trim()).toBe('10%');
+    expect(computedValue(query(root, '.b-secondary-dark'), '--cngx-button-neutral-tint').trim()).toBe('16%');
     expect(alpha(query(root, '.b-secondary-dark'))).toBeGreaterThan(alpha(query(root, '.b-secondary-light')));
   });
 });
