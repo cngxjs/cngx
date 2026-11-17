@@ -283,6 +283,26 @@
     --cngx-accordion-focus-color: var(--cngx-color-primary, #1d4ed8);
   }
 
+  /* The edge headers sit on the clipped frame curve: their inset ring and hover
+     fill take the frame's inner radius instead of being cut square. */
+  .cngx-accordion-item:first-child .cngx-accordion-item__header {
+    border-start-start-radius: calc(
+      var(--cngx-accordion-frame-radius, 1.375rem) - var(--cngx-accordion-frame-border-width, 1px)
+    );
+    border-start-end-radius: calc(
+      var(--cngx-accordion-frame-radius, 1.375rem) - var(--cngx-accordion-frame-border-width, 1px)
+    );
+  }
+
+  .cngx-accordion-item:last-child:not([data-expanded]) .cngx-accordion-item__header {
+    border-end-start-radius: calc(
+      var(--cngx-accordion-frame-radius, 1.375rem) - var(--cngx-accordion-frame-border-width, 1px)
+    );
+    border-end-end-radius: calc(
+      var(--cngx-accordion-frame-radius, 1.375rem) - var(--cngx-accordion-frame-border-width, 1px)
+    );
+  }
+
   /* Boxed marker (POC `.ctrl`): a soft surface-2 tile with a faint border and a
      9px radius. The base draws the two +/- bars inside; this only paints the box
      and softens the bars (below). */
