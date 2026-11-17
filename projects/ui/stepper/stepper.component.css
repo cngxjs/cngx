@@ -2103,7 +2103,10 @@
 
 .cngx-stepper__mobile-dot {
   position: relative;
-  display: inline-block;
+  /* Grid, so a projected *cngxDotStepperDot body centres in the dot instead
+     of hanging off an inline line box. */
+  display: inline-grid;
+  place-items: center;
   width: var(--cngx-dot-step-size, 0.625rem);
   height: var(--cngx-dot-step-size, 0.625rem);
   padding: 0;
@@ -2116,6 +2119,13 @@
     transform var(--cngx-duration-fast, 150ms) ease-out;
   margin-inline: var(--_cngx-dot-step-pad);
   margin-block: max((var(--cngx-target-min, 0px) - var(--cngx-dot-step-size, 0.625rem)) / 2, 0px);
+}
+
+/* The aria-hidden wrapper around a projected dot body: a grid of its own so
+   the body sizes the box, with no line box below it. */
+.cngx-stepper__mobile-dot > span {
+  display: grid;
+  place-items: center;
 }
 
 /* Hit area, centred on the dot and slot-sized, so a marked (larger) dot keeps

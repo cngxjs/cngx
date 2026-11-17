@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxStep, provideStepperConfigAt, withStepperMobileCollapse } from '@cngx/common/stepper';
+import {
+  CngxDotStepperDot,
+  CngxStep,
+  provideStepperConfigAt,
+  withStepperMobileCollapse,
+} from '@cngx/common/stepper';
 import { computedValue, containerState } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -68,6 +73,24 @@ class VerticalChevronStepperHost {}
   `,
 })
 class DotsStepperHost {}
+
+@Component({
+  selector: 'cngx-stepper-dot-body-geometry-host',
+  standalone: true,
+  imports: [CngxStepper, CngxStep, CngxDotStepperDot],
+  providers: [provideStepperConfigAt(withStepperMobileCollapse('dots'))],
+  template: `
+    <cngx-stepper aria-label="Wizard" style="inline-size: 320px">
+      <ng-template cngxDotStepperDot>
+        <svg class="dot-body" viewBox="0 0 10 10" width="10" height="10"></svg>
+      </ng-template>
+      <div cngxStep label="A">Panel A</div>
+      <div cngxStep label="B">Panel B</div>
+      <div cngxStep label="C">Panel C</div>
+    </cngx-stepper>
+  `,
+})
+class DotBodyStepperHost {}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -269,5 +292,26 @@ describe('CngxStepper mobile dots target size', () => {
     expect(errored.dataset['state']).toBe('error');
     expect(errored.offsetWidth).toBe(16);
     expect(getComputedStyle(errored).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('centres a projected dot body inside every dot, the active one included', async () => {
+    const fixture = TestBed.createComponent(DotBodyStepperHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    await nextFrame();
+    fixture.detectChanges();
+    await nextFrame();
+    const dots = Array.from(
+      mountedRoot.querySelectorAll<HTMLElement>('.cngx-stepper__mobile-dot'),
+    );
+    expect(dots).toHaveLength(3);
+    expect(dots[0].classList).toContain('cngx-stepper__mobile-dot--active');
+    for (const dot of dots) {
+      const body = dot.querySelector('.dot-body')!.getBoundingClientRect();
+      const box = dot.getBoundingClientRect();
+      expect(Math.abs(body.left + body.width / 2 - (box.left + box.width / 2))).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(body.top + body.height / 2 - (box.top + box.height / 2))).toBeLessThanOrEqual(0.5);
+    }
   });
 });
