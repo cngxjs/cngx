@@ -78,11 +78,8 @@ export interface CngxMatPaginatorAnnounceContext {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-paginator/mat-paginator-bridge.directive.ts
  * @since 0.1.0
  * @relatedTo CngxPaginate, CngxMatStepper, CngxPaginator
- * <example-url>/#/common/data/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
- * <example-url>/#/common/data/paginate-list/bridge-announce-page-changes</example-url>
- * <example-url>/#/common/data/paginate-list/instrumentation-bridge-cngxmatpaginator</example-url>
- * <example-url>/#/common/data/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
- * <example-url>/#/common/data/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
+ * <example-url>/#/ui/mat-paginator/bridge-announce-page-changes</example-url>
+ * <example-url>/#/ui/mat-paginator/instrumentation-bridge-cngxmatpaginator</example-url>
  * @axis level molecule
  */
 @Directive({

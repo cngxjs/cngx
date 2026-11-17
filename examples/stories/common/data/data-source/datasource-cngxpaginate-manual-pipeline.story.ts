@@ -2,20 +2,17 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxPaginate + manual DataSource pipeline',
-  subtitle: 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. The <code>[cngxMatPaginator]</code> bridge runs in controlled mode: it wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the composed brain, and <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.',
+  subtitle: 'Pagination slots into a manual pipeline: a <code>computed()</code> slices the rows by the component\'s <code>pageIndex</code> / <code>pageSize</code> signals. <code>[cngxPaginate]</code> runs in controlled mode: <code>[cngxPageIndex]</code> / <code>[cngxPageSize]</code> feed it, and <code>(pageChange)</code> / <code>(pageSizeChange)</code> write the native controls\' requests back.',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['integration', 'async-state'],
-  apiComponents: [
-    'CngxPaginate',
-    'CngxMatPaginator',
-  ],
+  apiComponents: ['CngxPaginate'],
   moduleImports: [
-    'import { MatPaginatorModule } from \'@angular/material/paginator\';',
+    'import { CngxPaginate } from \'@cngx/common/data\';',
     'import { PEOPLE, type Person } from \'../../../../fixtures\';',
   ],
-  imports: ['CngxMatPaginator', 'MatPaginatorModule'],
+  imports: ['CngxPaginate'],
   setup: `protected readonly pageIndex = signal(0);
   protected readonly pageSize  = signal(3);
   protected readonly paginated = computed((): Person[] =>
@@ -33,33 +30,43 @@ export const STORY: DemoSpec = {
     this.pageSize.set(s);
     this.pageIndex.set(0);
   }`,
-  template: `  <div class="table-wrap">
-    <table class="demo-table">
-      <thead>
-        <tr><th>Name</th><th>Role</th><th>Location</th></tr>
-      </thead>
-      <tbody>
-        @for (row of paginated(); track row.name) {
-          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
-        } @empty {
-          <tr><td colspan="3" class="empty-cell">No results.</td></tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <!-- CngxMatPaginator bridge in controlled mode -->
-  <mat-paginator
-    cngxMatPaginator
-    #pg="cngxMatPaginator"
+  template: `  <div
+    cngxPaginate
+    #pg="cngxPaginate"
     [cngxPageIndex]="pageIndex()"
     [cngxPageSize]="pageSize()"
     [total]="totalPeople"
-    [pageSizeOptions]="[3, 5, 8]"
     (pageChange)="setPage($event)"
-    (pageSizeChange)="setPageSize($event)"
-  ></mat-paginator>`,
+    (pageSizeChange)="setPageSize($event)">
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of paginated(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="button-row" aria-label="Pagination" style="margin-top:12px">
+      <label>
+        Rows per page
+        <select (change)="pg.setPageSize(+$any($event.target).value)">
+          @for (size of [3, 5, 8]; track size) {
+            <option [value]="size" [selected]="size === pg.pageSize()">{{ size }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="chip" [disabled]="pg.isFirst()" (click)="pg.previous()">Previous</button>
+      <button type="button" class="chip" [disabled]="pg.isLast()" (click)="pg.next()">Next</button>
+    </nav>
+  </div>`,
   templateChrome: `<div class="status-row">
-    <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.paginate.totalPages() }}</span>
+    <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.totalPages() }}</span>
   </div>`,
 };
