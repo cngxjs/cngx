@@ -3,7 +3,6 @@ import {
   Component,
   ViewEncapsulation,
   computed,
-  DestroyRef,
   inject,
   input,
   model,
@@ -143,7 +142,6 @@ export class CngxRadio<T = unknown> {
    */
   readonly skin = input<CngxRadioSkin | undefined>(undefined);
 
-  private readonly id = nextUid('cngx-radio');
   protected readonly describedId = nextUid('cngx-radio-desc');
 
   protected readonly radioChecked = computed(() => this.group.value() === this.value());
@@ -170,15 +168,6 @@ export class CngxRadio<T = unknown> {
   protected readonly describedById = computed(() =>
     this.radioDisabled() && this.disabledReason() ? this.describedId : null,
   );
-
-  constructor() {
-    this.group.register({
-      id: this.id,
-      value: () => this.value(),
-      disabled: () => this.radioDisabled(),
-    });
-    inject(DestroyRef).onDestroy(() => this.group.unregister(this.id));
-  }
 
   // A group-disabled radio is focusable, so it still consumes the roving flag; the group
   // refuses the selection. Returning early here would leave the flag set for the next,

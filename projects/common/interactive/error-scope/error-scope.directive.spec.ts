@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { provideErrorRegistry } from '../error-registry/provide-error-registry';
 import { CngxErrorScope } from './error-scope.directive';
@@ -13,6 +13,21 @@ import { CNGX_ERROR_SCOPE } from './error-scope.token';
 })
 class RenameHost {
   readonly name = signal<string | undefined>('one');
+}
+
+@Component({
+  template: `
+    @if (show()[0]) {
+      <div cngxErrorScope cngxErrorScopeName="shared"></div>
+    }
+    @if (show()[1]) {
+      <div cngxErrorScope cngxErrorScopeName="shared"></div>
+    }
+  `,
+  imports: [CngxErrorScope],
+})
+class DuplicateNameHost {
+  readonly show = signal<readonly [boolean, boolean]>([true, true]);
 }
 
 @Component({
@@ -107,5 +122,31 @@ describe('CngxErrorScope registry registration', () => {
 
     fixture.destroy();
     expect(registry.getScope('one')).toBeUndefined();
+  });
+
+  it('hands a shared name to the waiting scope once the holder is destroyed', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(DuplicateNameHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    TestBed.flushEffects();
+
+    const registry = TestBed.inject(CngxErrorRegistry);
+    const scopes = fixture.debugElement
+      .queryAll(By.directive(CngxErrorScope))
+      .map((de) => de.injector.get(CngxErrorScope));
+    const holderIndex = scopes.indexOf(registry.getScope('shared') as CngxErrorScope);
+    expect(holderIndex).toBeGreaterThanOrEqual(0);
+    const waiting = scopes[1 - holderIndex];
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    fixture.componentInstance.show.set(holderIndex === 0 ? [false, true] : [true, false]);
+    fixture.detectChanges();
+    expect(registry.getScope('shared')).toBe(waiting);
+
+    registry.reveal('shared');
+    expect(waiting.showErrors()).toBe(true);
+    warn.mockRestore();
   });
 });

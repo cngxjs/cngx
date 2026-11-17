@@ -66,6 +66,16 @@ const QUOTE_EXEMPT = [
       'CNGX1035: [cngx-popover-action] role="confirm" without an [action] renders a button whose click runs nothing',
     reason: 'retired in 0.3.0; quotes the message of the removed call site for older releases',
   },
+  {
+    code: 'CNGX1021',
+    quote: 'CNGX1021: registerScope(): a scope named "address" is already registered',
+    reason: 'retired in 0.3.0; quotes the message of the removed call site for older releases',
+  },
+  {
+    code: 'CNGX1021',
+    quote: 'CNGX1021: registerAggregator(): an aggregator named "address" is already registered',
+    reason: 'retired in 0.3.0; quotes the message of the removed call site for older releases',
+  },
 ];
 
 /**

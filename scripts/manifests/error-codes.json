@@ -559,23 +559,14 @@
     {
       "code": "CNGX1021",
       "lib": "common",
-      "severity": "warn",
-      "production": "stripped",
+      "severity": null,
+      "production": null,
       "title": "Duplicate name in the error registry",
       "page": "core-concepts/error-codes/cngx1021.md",
       "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1021.html",
-      "status": "active",
-      "files": ["projects/common/interactive/error-registry/error-registry.ts"],
-      "messages": [
-        {
-          "file": "projects/common/interactive/error-registry/error-registry.ts",
-          "text": "registerAggregator(): an aggregator named \"${...}\" is already registered. The existing instance stays live (swap-is-noop); unregister it first for a true swap."
-        },
-        {
-          "file": "projects/common/interactive/error-registry/error-registry.ts",
-          "text": "registerScope(): a scope named \"${...}\" is already registered. The existing instance stays live (swap-is-noop); unregister it first for a true swap."
-        }
-      ]
+      "status": "retired",
+      "files": [],
+      "messages": []
     },
     {
       "code": "CNGX1022",

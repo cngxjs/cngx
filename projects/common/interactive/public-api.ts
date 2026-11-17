@@ -177,7 +177,6 @@ export { CngxButtonToggle } from './button-toggle/button-toggle.directive';
 export {
   CNGX_RADIO_GROUP,
   type CngxRadioGroupContract,
-  type CngxRadioRegistration,
 } from './radio/radio-group.token';
 export { CngxRadioGroup } from './radio/radio-group.component';
 export { CngxRadio } from './radio/radio.component';
