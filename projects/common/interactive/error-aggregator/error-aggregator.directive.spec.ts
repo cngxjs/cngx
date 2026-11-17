@@ -2,6 +2,8 @@ import { Component, effect, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it, vi } from 'vitest';
+import { CngxErrorRegistry } from '../error-registry/error-registry';
+import { provideErrorRegistry } from '../error-registry/provide-error-registry';
 import { CngxErrorScope } from '../error-scope/error-scope.directive';
 import { CngxErrorSource } from '../error-source/error-source.directive';
 import { CngxErrorAggregator } from './error-aggregator.directive';
@@ -11,6 +13,26 @@ import { CngxErrorAggregator } from './error-aggregator.directive';
   imports: [CngxErrorAggregator],
 })
 class BareHost {}
+
+@Component({
+  template: `
+    @if (show()[0]) {
+      <div cngxErrorAggregator cngxErrorAggregatorName="shared">
+        <span [cngxErrorSource]="'a'" [when]="active()[0]" [label]="'A failed'"></span>
+      </div>
+    }
+    @if (show()[1]) {
+      <div cngxErrorAggregator cngxErrorAggregatorName="shared">
+        <span [cngxErrorSource]="'b'" [when]="active()[1]" [label]="'B failed'"></span>
+      </div>
+    }
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class DuplicateNameHost {
+  readonly show = signal<readonly [boolean, boolean]>([true, true]);
+  readonly active = signal<readonly [boolean, boolean]>([false, false]);
+}
 
 @Component({
   template: `
@@ -91,7 +113,8 @@ describe('CngxErrorAggregator', () => {
   it('binds reactive class.cngx-error and aria-invalid to shouldShow()', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const el = fixture.debugElement.query(By.directive(CngxErrorAggregator)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxErrorAggregator))
+      .nativeElement as HTMLElement;
 
     expect(el.classList.contains('cngx-error')).toBe(false);
     expect(el.getAttribute('aria-invalid')).toBe('false');
@@ -306,5 +329,38 @@ describe('CngxErrorAggregator', () => {
     agg.addSource({ key: 'a', condition: refA, label: 'New label' });
     TestBed.flushEffects();
     expect(agg.errorLabels()).toEqual(['New label']);
+  });
+});
+
+describe('CngxErrorAggregator registry registration', () => {
+  it('hands a shared name to the waiting aggregator once the holder is destroyed', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(DuplicateNameHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    TestBed.flushEffects();
+
+    const registry = TestBed.inject(CngxErrorRegistry);
+    const aggregators = fixture.debugElement
+      .queryAll(By.directive(CngxErrorAggregator))
+      .map((de) => de.injector.get(CngxErrorAggregator));
+    const holderIndex = aggregators.indexOf(
+      registry.getAggregator('shared') as CngxErrorAggregator,
+    );
+    expect(holderIndex).toBeGreaterThanOrEqual(0);
+    const waitingIndex = 1 - holderIndex;
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    // Only the waiting aggregator has an error; the registry cannot see it yet.
+    fixture.componentInstance.active.set(waitingIndex === 0 ? [true, false] : [false, true]);
+    fixture.detectChanges();
+    expect(registry.hasAnyError()).toBe(false);
+
+    fixture.componentInstance.show.set(holderIndex === 0 ? [false, true] : [true, false]);
+    fixture.detectChanges();
+    expect(registry.getAggregator('shared')).toBe(aggregators[waitingIndex]);
+    expect(registry.hasAnyError()).toBe(true);
+    warn.mockRestore();
   });
 });
