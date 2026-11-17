@@ -10,8 +10,6 @@ export const STORY: DemoSpec = {
   focus: ['visual-variants', 'behavior'],
   apiComponents: [
     'CngxRipple',
-    'CngxButton',
-    'CngxIconButton',
   ],
   moduleImports: [
     'import { CngxRipple } from \'@cngx/common/interactive\';',

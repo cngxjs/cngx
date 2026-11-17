@@ -87,7 +87,7 @@ test.describe('common/interactive/keyboard-shortcut', () => {
   test('scopes: an open modal dialog blocks the app binding, its own fires only while open', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/interactive/gestures/keyboard-shortcut/registry-scopes');
+    await gotoDemo(page, 'common/dialog/hotkey-registry-scopes');
     const mod = await modKey(page);
     const saves = page.getByTestId('save-count');
     const submits = page.getByTestId('submit-count');

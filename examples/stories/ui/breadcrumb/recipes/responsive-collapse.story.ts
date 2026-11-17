@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A <code>CngxResizeObserver</code> on the <code>nav</code> feeds a <code>computed</code> <code>maxVisible</code> - wider container, more crumbs. Drag the right edge to resize.',
   description:
-    'No responsive directive is needed: <code>maxVisible</code> is derived from the observed width in a <code>computed()</code> (Pillar 1), and the trio collapses the middle crumbs into the ellipsis <code>CngxMenu</code> purely from that count. This is the recipe an organism can later package as a first-class capability.',
+    'No responsive directive is needed: <code>maxVisible</code> is derived from the observed width in a <code>computed()</code> (Pillar 1), and the trio collapses the middle crumbs into the ellipsis <code>CngxMenu</code> purely from that count. <code>CngxBreadcrumbBar</code> packages this recipe out of the box (<code>/ui/breadcrumb/overflow/responsive</code>).',
   level: 'molecule',
   audience: ['dev'],
   artifact: 'building-block',
