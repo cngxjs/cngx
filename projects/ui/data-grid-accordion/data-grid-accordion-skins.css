@@ -429,7 +429,7 @@
   .cngx-dga-row[data-expanded] .cngx-dga-row__cells::before {
     background: var(
       --cngx-color-primary-strong,
-      oklch(from var(--cngx-color-primary, #1d4ed8) 0.58 c h)
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
     );
     color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   }
