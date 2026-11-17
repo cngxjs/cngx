@@ -700,6 +700,11 @@
                 "file": "error-codes/cngx2030.md"
             },
             {
+                "title": "CNGX2031",
+                "label": "CNGX2031: A cngxInput without a [formField] binding",
+                "file": "error-codes/cngx2031.md"
+            },
+            {
                 "title": "CNGX3001",
                 "label": "CNGX3001: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx3001.md"

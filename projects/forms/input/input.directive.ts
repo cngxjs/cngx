@@ -1,4 +1,5 @@
 import {
+  afterRenderEffect,
   computed,
   Directive,
   ElementRef,
@@ -15,8 +16,13 @@ import {
   CNGX_FORM_FIELD_CONTROL,
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
+  type CngxErrorFieldState,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
+import { cngxDevWarn } from '@cngx/utils';
+
+// Field states that already warned CNGX2031.
+const unboundWarned = new WeakSet<object>();
 
 /** A field value that shows nothing in a text control. */
 function isEmptyValue(value: unknown): boolean {
@@ -41,8 +47,13 @@ function isEmptyValue(value: unknown): boolean {
  *
  * Hosts {@link CngxFieldSkinHost} and re-aliases it to `skin`, so
  * `<input cngxInput skin="bare">` renders chrome-less without a wrapper.
- * The cost is one directive instance and one `computed()` per input; no
+ * The skin costs one directive instance and one `computed()` per input; no
  * extra DOM, no effect, and the default resolves to no attribute at all.
+ *
+ * The value flows only through `[formField]` (Signal Forms) or `[formControl]`
+ * (Reactive Forms) on the same element. In dev mode the directive warns
+ * [`CNGX2031`](/error-codes/cngx2031.md) when it is the control of a Signal Forms field that no
+ * `[formField]` binds.
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input.directive.ts
@@ -109,6 +120,27 @@ export class CngxInput implements CngxFormFieldControl {
   readonly readonly = computed(
     () => this.readonlyAttribute || (this.presenter?.readonly() ?? false),
   );
+
+  constructor() {
+    if (typeof ngDevMode !== 'undefined' && ngDevMode && this.presenter) {
+      const presenter = this.presenter;
+      afterRenderEffect(() => {
+        const state = presenter.fieldState();
+        const bindings = (state as Partial<CngxErrorFieldState>).formFieldBindings?.();
+        const unbound = bindings?.length === 0;
+        if (!unbound || presenter.control() !== this || unboundWarned.has(state)) {
+          return;
+        }
+        unboundWarned.add(state);
+        cngxDevWarn(
+          'CNGX2031',
+          `[cngxInput] the field "${presenter.name()}" has no [formField] binding, so typing ` +
+            'never reaches the field value. Bind the field on the control: ' +
+            '<input cngxInput [formField]="...">.',
+        );
+      });
+    }
+  }
 
   // Host binding computeds - null-safe when no presenter.
 
