@@ -162,13 +162,19 @@
     }
 
     /* The UA autofill tint would replace the surface outright. Painting it
-       back as a full-height inset shadow keeps the cngx fill visible. */
+       back as a full-height inset shadow keeps the cngx fill visible. The
+       list keeps the focus shape, a transparent underline slot first:
+       shadows interpolate by index, and without the slot focus would grow
+       the primary line into the full-height fill mid-transition. */
     :scope:autofill {
-      box-shadow: inset 0 0 0 100vh
-        var(
-          --cngx-field-fill-bg,
-          color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
-        );
+      box-shadow:
+        inset 0 calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0
+          transparent,
+        inset 0 0 0 100vh
+          var(
+            --cngx-field-fill-bg,
+            color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+          );
       -webkit-text-fill-color: var(--cngx-color-text, oklch(0.2 0.01 250));
     }
 
