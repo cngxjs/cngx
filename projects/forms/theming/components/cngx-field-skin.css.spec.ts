@@ -281,3 +281,66 @@ describe('cngx-field-skin.css', () => {
     expect(SOURCE).not.toContain('--mat-sys-');
   });
 });
+
+// A registered token's var() fallback is dead while the registration is
+// loaded, but select-base.css and the char-count ship as component styles and
+// the registrations only arrive through the aggregated theme. Without it the
+// fallback is the painted value, so it has to be the registered default.
+describe('field token fallbacks', () => {
+  const FILES = [
+    'projects/forms/theming/components/cngx-field-affix.css',
+    'projects/forms/theming/components/cngx-field-skin.css',
+    'projects/forms/theming/components/cngx-field-text.css',
+    'projects/forms/select/shared/select-base.css',
+    'projects/forms/input/char-count.component.css',
+  ].map((file) => ({ file, css: readFileSync(resolve(process.cwd(), file), 'utf8') }));
+
+  const normalise = (value: string): string => value.trim().replace(/\s+/g, ' ');
+
+  // The fallback runs to the closing paren of the var() call, nested calls
+  // included, so a regex alone cannot cut it.
+  function fallbackAt(css: string, start: number): string {
+    let depth = 0;
+    for (let i = start; i < css.length; i++) {
+      if (css[i] === '(') {
+        depth++;
+      } else if (css[i] === ')') {
+        if (depth === 0) {
+          return normalise(css.slice(start, i));
+        }
+        depth--;
+      }
+    }
+    throw new Error(`unclosed var() at ${start}`);
+  }
+
+  const initials = new Map<string, string>();
+  for (const { css } of FILES) {
+    for (const [, name, body] of css.matchAll(/@property (--cngx-field-[\w-]+) \{([^}]*)\}/g)) {
+      const initial = /initial-value:\s*([^;]+);/.exec(body)?.[1];
+      if (initial !== undefined) {
+        initials.set(name, normalise(initial));
+      }
+    }
+  }
+
+  it('finds the registered field tokens', () => {
+    expect(initials.get('--cngx-field-ring-offset')).toBe('3px');
+    expect(initials.get('--cngx-field-affix-gap')).toBe('8px');
+    expect(initials.get('--cngx-field-char-count-color')).toBe('oklch(0.45 0 0)');
+  });
+
+  it('reads every registered field token with its registered initial as the fallback', () => {
+    const drift: string[] = [];
+    for (const { file, css } of FILES) {
+      for (const match of css.matchAll(/var\(\s*(--cngx-field-[\w-]+)\s*,/g)) {
+        const initial = initials.get(match[1]);
+        const fallback = fallbackAt(css, match.index + match[0].length);
+        if (initial !== undefined && fallback !== initial) {
+          drift.push(`${file}: ${match[1]} falls back to ${fallback}, registered ${initial}`);
+        }
+      }
+    }
+    expect(drift).toEqual([]);
+  });
+});

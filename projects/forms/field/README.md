@@ -330,6 +330,30 @@ back.
 The Material bridge (`@cngx/themes/material/field-theme`) sets the surface,
 underline, label, hint, affix and error colours from `--mat-sys-*`.
 
+### Overriding field tokens
+
+The spacing tokens (`--cngx-field-padding-block`, `--cngx-field-padding-inline`,
+`--cngx-field-affix-gap`, `--cngx-field-affix-pad`, `--cngx-field-label-gap`,
+`--cngx-field-hint-gap`) are set from the `--cngx-space-*` scale on the field
+itself: the field box, the skinned control, or `cngx-form-field`. That is how
+`[data-density]` reaches them. A value on `:root` loses to that rule, and
+`--cngx-field-affix-gap` does not inherit at all. Set an override on the field
+selector, or on a class you put on it:
+
+```css
+.invoice-form .cngx-field-box {
+  --cngx-field-padding-inline: 0.75rem;
+  --cngx-field-affix-gap: 4px;
+}
+
+.invoice-form cngx-form-field {
+  --cngx-field-hint-gap: 2px;
+}
+```
+
+A fixed value turns density off for that token; to keep it, point the override
+at another step of the scale (`var(--cngx-space-xs)`).
+
 ### Affix patterns
 
 `CngxPrefix` and `CngxSuffix` inside a `cngxFieldBox` cover the four shapes
