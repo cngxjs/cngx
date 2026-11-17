@@ -2,7 +2,7 @@ import { InteractivityChecker } from '@angular/cdk/a11y';
 import { Component, effect, Injector, signal, untracked, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
-import { CngxSwipeDismiss } from '@cngx/common/interactive';
+import { CngxAsyncClick, CngxSwipeDismiss } from '@cngx/common/interactive';
 import { WINDOW } from '@cngx/core/tokens';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -250,6 +250,25 @@ class StrayTitleHost {}
   imports: [CngxPopoverSheet],
 })
 class SheetWithoutPopoverHost {}
+
+@Component({
+  template: `
+    <button type="button" class="opener">Open</button>
+    <div cngxPopover #pop="cngxPopover" cngxPopoverSheet="sheet">
+      <h2 cngxPopoverSheetTitle>Edit</h2>
+      <button type="button" class="save" [cngxAsyncClick]="save">Save</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverSheet, CngxPopoverSheetTitle, CngxAsyncClick],
+})
+class AsyncActionSheetHost {
+  readonly popover = viewChild.required('pop', { read: CngxPopover });
+  fail: (reason: Error) => void = () => undefined;
+  readonly save = (): Promise<void> =>
+    new Promise<void>((_, reject) => {
+      this.fail = reject;
+    });
+}
 
 describe('CngxPopoverSheet', () => {
   beforeEach(() => {
@@ -1221,6 +1240,57 @@ describe('CngxPopoverSheet', () => {
       openFromOpener(ctx);
       ctx.host.popover().hide();
       expect(watchers).toHaveLength(0);
+    });
+  });
+
+  describe('async action settling after close', () => {
+    it('drops aria-modal once the sheet stops being open and speaks a late failure from the page', async () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(AsyncActionSheetHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const pop = fixture.componentInstance.popover();
+      const panel = pop.elementRef.nativeElement;
+      const rec = panel as unknown as Record<string, unknown>;
+      rec['showPopover'] = vi.fn();
+      rec['hidePopover'] = vi.fn();
+      const root = fixture.nativeElement as HTMLElement;
+      const save = root.querySelector<HTMLButtonElement>('.save')!;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      root.querySelector<HTMLButtonElement>('.opener')!.focus();
+      pop.show();
+      flush();
+      save.click();
+      flush();
+
+      stubTransition('0.2s');
+      pop.hide();
+      flush();
+      expect(pop.state()).toBe('closing');
+      expect(panel.getAttribute('aria-modal')).toBeNull();
+
+      vi.advanceTimersByTime(500);
+      flush();
+      expect(pop.state()).toBe('closed');
+      expect(panel.getAttribute('aria-modal')).toBeNull();
+
+      // jsdom has no checkVisibility; the closed sheet hides its controls.
+      Object.assign(save, { checkVisibility: () => false });
+      fixture.componentInstance.fail(new Error('offline'));
+      await vi.advanceTimersByTimeAsync(0);
+      flush();
+      await vi.advanceTimersByTimeAsync(200);
+
+      const spoken = (inside: boolean) =>
+        Array.from(document.querySelectorAll<HTMLElement>('[aria-live]'))
+          .filter((region) => panel.contains(region) === inside)
+          .map((region) => region.textContent ?? '');
+      expect(spoken(true)).not.toContain('Action failed');
+      expect(spoken(false)).toContain('Action failed');
     });
   });
 });

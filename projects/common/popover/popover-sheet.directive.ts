@@ -273,7 +273,12 @@ export class CngxPopoverSheet
   });
 
   protected readonly roleAttr = computed(() => (this.modal() ? 'dialog' : this.staticRole));
-  protected readonly ariaModal = computed(() => (this.modal() ? 'true' : null));
+  // Only an opening or open sheet is modal to a reader: a closing or closed
+  // one would pull CngxLiveAnnouncer's scoped messages into a hidden panel.
+  protected readonly ariaModal = computed(() => {
+    const state = this.popover.state();
+    return this.modal() && (state === 'opening' || state === 'open') ? 'true' : null;
+  });
   protected readonly ariaLabelledBy = computed(() =>
     this.modal()
       ? (this.labelledBy() ?? this.titleRegistry.current()?.id() ?? null)
