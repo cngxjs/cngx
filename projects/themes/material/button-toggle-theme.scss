@@ -18,10 +18,9 @@
 //
 // Knob-routing consequences, named on purpose: (1) in the theme.scss
 // aggregate this block overlaps system-bridge, which already maps the
-// same knobs at the theme host - only --cngx-color-on-primary is net-new
-// there, and the toggle chrome no longer reads it; the duplicate exists
-// for selective per-bridge use, where system-bridge may be absent
-// (tabs-theme precedent). (2) A
+// same knobs at the theme host; the duplicate exists for selective
+// per-bridge use, where system-bridge may be absent (tabs-theme
+// precedent). (2) A
 // directly-set property beats an INHERITED value regardless of layer
 // or specificity, so a consumer's :root-level --cngx-color-* override
 // does not reach the toggles - re-skinning them means overriding on
@@ -43,7 +42,6 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-color-primary: var(--mat-sys-primary);
-    --cngx-color-on-primary: var(--mat-sys-on-primary);
     --cngx-color-primary-strong: var(--mat-sys-primary);
     --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
     --cngx-color-surface: var(--mat-sys-surface);

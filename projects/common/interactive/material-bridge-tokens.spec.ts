@@ -281,13 +281,15 @@ $theme: mat.define-theme((
 describe('button-toggle Material bridge', () => {
   // The leaf chrome (theming/components/cngx-button-toggle.css) reads no
   // component-level color token - every tone derives from the foundation
-  // knobs, so the bridge routes those (tabs-theme precedent). The spacing
-  // tokens are deliberately absent: SET from --cngx-space-* at the toggle
-  // host, density-bridge territory.
+  // knobs, so the bridge routes those (tabs-theme precedent): the primary
+  // for the unchecked hover tint, the strong pair for the checked segment.
+  // The spacing tokens are deliberately absent: SET from --cngx-space-* at
+  // the toggle host, density-bridge territory.
   const CONSUMED = [
     '--cngx-color-border',
-    '--cngx-color-on-primary',
+    '--cngx-color-on-primary-strong',
     '--cngx-color-primary',
+    '--cngx-color-primary-strong',
     '--cngx-color-surface',
     '--cngx-color-text',
   ];
