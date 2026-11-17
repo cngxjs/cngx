@@ -34,7 +34,7 @@
     {
       "artifact": "pack/recipes/common-chart-primitives.md",
       "source": "examples/stories/common/chart/primitives/async-state-machine-on-the-primitive.story.ts",
-      "contentHash": "sha256:81c2f0349011065994b55a19e881ae1e91a793dda1950504c9dcd733e9674e35"
+      "contentHash": "sha256:464cf669c8bf15f1de780b2fb59ed5477a782829205ac913862513fd78c484da"
     },
     {
       "artifact": "pack/recipes/common-chart-realtime.md",
