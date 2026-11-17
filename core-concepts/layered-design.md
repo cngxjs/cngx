@@ -259,7 +259,9 @@ A container molecule sets no padding or gap for its content. An element atom sty
 
 ### S5 - A story lives with the contract it teaches
 
-A story sits in the folder of the artifact whose contract it teaches. Its `apiComponents` lists no artifact of a higher level or an independent sibling, except the layout primitives `CngxStack` and `CngxGrid`. Full compositions live with the organism. Stories under `examples/stories/core/**` are exempt: core renders nothing, so its stories need a carrier. A carrier the demo only renders around the taught artifact (a reference, slot content) is imported but not listed.
+A story sits in the folder of the artifact whose contract it teaches. Its `apiComponents` lists no artifact of a higher level or an independent sibling, except three neutral symbols: the layout primitives `CngxStack` and `CngxGrid`, and `CngxFormBridge`, the one Reactive Forms bridge, which attaches by `[formControl]` to whatever control the story teaches. Full compositions live with the organism.
+
+Two homes need a carrier. Stories under `examples/stories/core/**` are exempt: core renders nothing. A `forms/field` story may list the same-level control that imports the field (the input or select the field contract runs on), because the field renders no value control of its own. Anywhere else, a carrier the demo only renders around the taught artifact (a reference, slot content) is imported but not listed.
 
 - Violation: `common/data/paginate-list/bridge-announce-page-changes` listed `CngxMatPaginator`, a level 4 bridge, from a level 2 folder.
 - Fix: the story moved to `ui/mat-paginator/`, the folder of the bridge it teaches (#836).
