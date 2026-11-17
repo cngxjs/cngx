@@ -56,7 +56,8 @@
  * A11y note: the `fill` focus underline is a bottom edge, not a full
  * perimeter, so it satisfies WCAG 2.4.7 and 2.4.11 but consciously not 2.4.13
  * (Focus Appearance, AAA) - the same trade-off a filled Material field makes.
- * `outline` and `bare` keep the full focus ring. Under `forced-colors` an
+ * `outline` and `bare` keep the full focus ring, coloured by
+ * `--cngx-field-ring-color`. Under `forced-colors` an
  * underline does not survive at all, so the reset outline is restored there.
  *
  * @themes CngxFieldSkinHost
@@ -301,6 +302,7 @@
     }
 
     :scope:is(:focus-visible, :focus-within) {
+      outline-color: var(--cngx-field-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       outline-offset: var(--cngx-field-ring-offset, 3px);
     }
 
@@ -360,6 +362,17 @@
       color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
       cursor: not-allowed;
     }
+  }
+
+  /* Lone outline control in a field: cngx.reset draws the ring, the field
+     only recolours it. */
+  cngx-form-field
+    :is(input, textarea, select):not(
+      [data-skin='fill'],
+      [data-skin='bare'],
+      .cngx-field-box > *
+    ):focus-visible {
+    outline-color: var(--cngx-field-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
   }
 
   /* Lone outline control: cngx.base draws its edge and knows no field state,

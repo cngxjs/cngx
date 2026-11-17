@@ -313,6 +313,7 @@ back.
 | `--cngx-field-border-width` | Box border width in every skin (default `1px`) |
 | `--cngx-field-bare-inline-size` | Width of a `bare` control or box (default `100%`, fills its cell); set it on a container that lines bare fields up, such as a toolbar |
 | `--cngx-field-ring-width` | Focus ring width of `outline` and `bare` (default `2px`) |
+| `--cngx-field-ring-color` | Focus ring colour of `outline` and `bare`, and of the select trigger ring (unset: `--cngx-color-primary`) |
 | `--cngx-field-ring-offset` | Focus ring offset (default `3px`; `bare` draws it inside) |
 | `--cngx-field-affix-color` | Text and icon colour of a non-interactive affix |
 | `--cngx-field-affix-divider` | Width of the line between an affix and the value (default `0px`, set `1px` to draw it) |

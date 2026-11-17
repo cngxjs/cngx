@@ -199,7 +199,7 @@
    * `2px solid var(--cngx-color-primary)` resolves on the trigger, and a
    * value set on an ancestor reaches the trigger.
    * @group State / Focus
-   * @default 2px solid var(--cngx-color-primary)
+   * @default 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-select-focus-outline {
@@ -292,7 +292,7 @@
       outline: var(
         --cngx-select-focus-outline,
         2px solid
-          var(--_cngx-select-focus-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+          var(--_cngx-select-focus-ring-color, var(--cngx-field-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50))))
       );
       outline-offset: var(--cngx-select-focus-offset, 2px);
     }

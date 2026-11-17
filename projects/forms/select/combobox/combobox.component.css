@@ -172,7 +172,7 @@
    * `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no
    * `initial-value` is declared.
    * @group State / Focus
-   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))
+   * @default var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary)))
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-combobox-focus-outline {
@@ -285,7 +285,7 @@
     .cngx-combobox__trigger:is(:focus-within, :has([aria-expanded='true'])) {
       outline: var(
         --cngx-combobox-focus-outline,
-        var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)))
+        var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50))))
       );
       outline-offset: var(--cngx-select-focus-offset, 2px);
     }

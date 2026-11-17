@@ -66,6 +66,21 @@
   }
 
   /**
+   * Colour of the focus ring around an outline or bare field and of the
+   * select-family trigger ring. Unset by default: the ring follows
+   * `--cngx-color-primary` where it is drawn, so a primary override on a
+   * subtree reaches it. Fill shows focus as an underline instead
+   * (`--cngx-field-underline-focus-color`).
+   * @type <color>
+   * @default var(--cngx-color-primary)
+   * @group Color
+   */
+  @property --cngx-field-ring-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Gap between the prefix, control, and suffix in an affix row.
    * @group Layout
    */
@@ -176,7 +191,7 @@
         :has(:is(.cngx-field-prefix, .cngx-field-suffix):focus-within)
       ) {
       outline: var(--cngx-field-ring-width, 2px) solid
-        var(--cngx-color-primary, oklch(0.66 0.19 50));
+        var(--cngx-field-ring-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       outline-offset: var(--cngx-field-ring-offset, 3px);
     }
 
