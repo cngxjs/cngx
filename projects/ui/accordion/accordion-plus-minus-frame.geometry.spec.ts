@@ -10,7 +10,8 @@ import { CngxAccordionItem } from './accordion-item.component';
 // frames all rows in one rounded, overflow-clipped surface and keeps the base
 // inset header ring. A square header ring on the first and last row gets its
 // corners cut by the frame curve, so the edge headers take the frame's inner
-// radius.
+// radius. The region starts flush under the header, so a focused header ring
+// sat on the body text; the expanded region gets a density-derived top gap.
 
 @Component({
   selector: 'cngx-accordion-plus-minus-frame-host',
@@ -22,7 +23,7 @@ import { CngxAccordionItem } from './accordion-item.component';
     <cngx-accordion-group
       [skin]="'plus-minus'"
       [multi]="true"
-      style="--cngx-accordion-frame-radius: 20px; --cngx-accordion-frame-border-width: 2px"
+      style="--cngx-accordion-frame-radius: 20px; --cngx-accordion-frame-border-width: 2px; --cngx-space-sm: 11px"
     >
       <cngx-accordion-item class="first">
         <span cngxAccordionItemTitle>First</span>
@@ -96,5 +97,17 @@ describe('plus-minus frame', () => {
     await settle();
 
     expect(radius(last, 'bottom-left')).toBe('0px');
+  });
+
+  it('gives the expanded region a top gap from the space scale', async () => {
+    const root = mount();
+    header(root, 'first').click();
+    await settle();
+    const region = root.querySelector<HTMLElement>('.first .cngx-accordion-item__region');
+    if (!region) {
+      throw new Error('first region did not render');
+    }
+
+    expect(getComputedStyle(region).paddingTop).toBe('11px');
   });
 });
