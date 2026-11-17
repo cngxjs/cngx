@@ -271,6 +271,11 @@ describe('select review 2 theming', () => {
     if (shadowColour && shadowColour.a > 0) affordances.push(contrast(shadowColour, panelBg));
     if (borderWidth > 0) affordances.push(contrast(borderStart, panelBg));
     expect(Math.max(...affordances)).toBeGreaterThanOrEqual(3);
+    // The bar borders the row tint, not the panel: it clears 3:1 against that too.
+    expect(shadowColour).not.toBeNull();
+    if (shadowColour) {
+      expect(contrast(shadowColour, rowBg)).toBeGreaterThanOrEqual(3);
+    }
   });
 
   // E5 - the tree container keeps a focus-visible outline.
