@@ -8,19 +8,19 @@
  * `<button cngxAsyncClick>` or an anchor.
  *
  * Every host also carries the stable `cngx-async` class, whatever its
- * phase. A theme that sets the `--cngx-async-*` tokens per host targets it
- * (the Material bridge does): `[cngxAsyncClick]` is a property binding and
- * leaves no attribute to select on.
+ * phase. A theme that sets the `--cngx-async-*` colour tokens per host targets
+ * it (the Material bridge does): `[cngxAsyncClick]` is a property binding and
+ * leaves no attribute to select on. `--cngx-async-pending-opacity` belongs to
+ * the host: a theme rule on `.cngx-async` would outrank a host that turns the
+ * dim off on itself.
  *
  * **Scope**
  *
- * The button family owns the paint of its own states. A `.cngx-button` host
- * (`cngxButton`, `cngxIconButton`, `cngxCloseButton`, `cngxActionButton`)
- * keeps its variant paint through every phase: pending shows the button's
- * busy treatment (`[data-busy]`), and the action button reports the settle
- * result through its label swap and live region. The exclusion is
- * `:not(:where(.cngx-button))`, so the state rules keep the specificity of a
- * single class.
+ * The state rules sit at zero specificity (`:where()`), so a host with its own
+ * paint wins by specificity and keeps it through every phase. Such a host
+ * sets `--cngx-async-pending-opacity: 1` on itself and reverts the
+ * forced-colors outline in its own unlayered rule; the button family does,
+ * and shows its own busy treatment and settle result instead.
  *
  * **State modifiers**
  *
@@ -82,8 +82,8 @@
 
   /**
    * Opacity applied while `cngxAsyncClick` reports `pending`. Combined
-   * with `cursor: wait` on the same state. Not applied to `.cngx-button`
-   * hosts, which show their own busy treatment.
+   * with `cursor: wait` on the same state. A host with its own busy
+   * treatment sets it to `1`.
    * @group State / Pending
    */
   @property --cngx-async-pending-opacity {
@@ -95,7 +95,6 @@
   /**
    * Background tint after a successful async commit. Unset by default:
    * 12% `--cngx-color-success`.
-   * Not read on `.cngx-button` hosts.
    * @group State / Success
    */
   @property --cngx-async-success-bg {
@@ -107,7 +106,6 @@
    * Text color after a successful async commit. Unset by default:
    * `--cngx-color-success` mixed 75% toward `--cngx-color-text`, so it
    * reads as text in both schemes.
-   * Not read on `.cngx-button` hosts.
    * @group State / Success
    */
   @property --cngx-async-success-color {
@@ -118,7 +116,6 @@
   /**
    * Border color after a successful async commit. Unset by default:
    * `--cngx-color-success`.
-   * Not read on `.cngx-button` hosts.
    * @group State / Success
    */
   @property --cngx-async-success-border {
@@ -129,7 +126,6 @@
   /**
    * Background tint after a failed async commit. Unset by default:
    * 12% `--cngx-color-danger`.
-   * Not read on `.cngx-button` hosts.
    * @group State / Error
    */
   @property --cngx-async-error-bg {
@@ -140,7 +136,6 @@
   /**
    * Text color after a failed async commit. Unset by default:
    * `--cngx-color-danger-text`.
-   * Not read on `.cngx-button` hosts.
    * @group State / Error
    */
   @property --cngx-async-error-color {
@@ -151,7 +146,6 @@
   /**
    * Border color after a failed async commit. Unset by default:
    * `--cngx-color-danger`.
-   * Not read on `.cngx-button` hosts.
    * @group State / Error
    */
   @property --cngx-async-error-border {
@@ -161,13 +155,13 @@
 }
 
 @layer cngx.components {
-  .cngx-async--pending:not(:where(.cngx-button)) {
+  :where(.cngx-async--pending) {
     opacity: var(--cngx-async-pending-opacity, 0.7);
     cursor: wait;
     transition: opacity var(--cngx-async-transition, 0.2s ease);
   }
 
-  .cngx-async--success:not(:where(.cngx-button)) {
+  :where(.cngx-async--success) {
     background-color: var(
       --cngx-async-success-bg,
       color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, transparent)
@@ -187,7 +181,7 @@
       border-color var(--cngx-async-transition, 0.2s ease);
   }
 
-  .cngx-async--error:not(:where(.cngx-button)) {
+  :where(.cngx-async--error) {
     background-color: var(
       --cngx-async-error-bg,
       color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 12%, transparent)
@@ -209,13 +203,16 @@
 
 /* Forced colors drop the tints, so success and error differ by an outline's
  * style; its colour is left to the UA's system colour. An outline takes no
- * layout space, so the host keeps its box size when the cue appears. */
+ * layout space, so the host keeps its box size when the cue appears.
+ * Unlayered, so a consumer outline reset does not hide the cue on a bare host;
+ * a host with its own cue reverts it in a more specific unlayered rule. A
+ * focused host keeps its focus ring. */
 @media (forced-colors: active) {
-  .cngx-async--success:not(:where(.cngx-button)) {
+  :where(.cngx-async--success):not(:focus-visible) {
     outline: 2px solid;
     outline-offset: -2px;
   }
-  .cngx-async--error:not(:where(.cngx-button)) {
+  :where(.cngx-async--error):not(:focus-visible) {
     outline: 2px dashed;
     outline-offset: -2px;
   }

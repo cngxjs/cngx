@@ -439,6 +439,8 @@
       --cngx-button-tone: var(--cngx-color-text, oklch(0.2 0.01 250));
       --cngx-button-tone-text: var(--cngx-color-text, oklch(0.2 0.01 250));
       --cngx-button-on-tone: var(--cngx-color-surface, oklch(1 0 0));
+      /* The button shows its own busy treatment, not the async dim. */
+      --cngx-async-pending-opacity: 1;
 
       position: relative;
       display: inline-flex;
@@ -852,6 +854,13 @@
   }
   .cngx-button:focus-visible {
     outline-color: Highlight !important;
+  }
+  /* The async settle outline is for hosts without their own cue. revert-layer
+   * hands a settled button back to its layered outline, the consumer's
+   * included, instead of writing one over it. */
+  .cngx-button:where(.cngx-async--success, .cngx-async--error):not(:focus-visible) {
+    outline: revert-layer;
+    outline-offset: revert-layer;
   }
 }
 
