@@ -17,6 +17,7 @@ import type {
   selector: 'demo-rating-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { style: 'display: flex; align-items: center;' },
   template: `
     <span
       role="radiogroup"
