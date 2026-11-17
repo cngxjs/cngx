@@ -1,30 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { CNGX_SUBMENU_TRY_FALLBACKS } from '@cngx/common/interactive';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuContent } from './context-menu-content.directive';
 import type { CngxContextMenuPanel } from './context-menu-panel';
-
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-  }
-}
 
 interface Row {
   readonly id: number;
@@ -69,10 +52,6 @@ class EventsHost {
 }
 
 describe('CngxContextMenu', () => {
-  beforeEach(() => {
-    polyfillPopover();
-  });
-
   function setupTemplate() {
     TestBed.configureTestingModule({ imports: [TemplateHost] });
     const fixture = TestBed.createComponent(TemplateHost);
