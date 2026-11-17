@@ -2,14 +2,16 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 // Runs in a real Chromium (the `test-geometry` target). The keyboard-highlighted
 // command row tints its background and inherits the text colour, so the tint
 // must read in both schemes: a translucent wash over the panel surface, never
 // an opaque light fill that leaves the dark scheme's light text on a light row.
-// The `--cngx-command-row-active-bg` override still wins.
+// The `--cngx-command-row-active-bg` override still wins. The tint is a mix of
+// the primary in the use-site fallback (the token is unregistered), so a
+// wrapper that re-themes the primary alone moves it.
 
 const SCHEMES = ['light', 'dark'] as const;
 // The old dead fallback (`#eef2ff`) the row painted whatever the scheme.
@@ -38,6 +40,11 @@ const LIGHT_LITERAL = 'rgb(238, 242, 255)';
         </div>
       </div>
     }
+    <div class="rethemed" style="--cngx-color-primary: oklch(0.55 0.15 250)">
+      <div class="cngx-command-row cngx-option--highlighted row-rethemed">
+        <span class="cngx-command-row-label">Find</span>
+      </div>
+    </div>
   `,
 })
 class CommandRowHighlightHost {
@@ -99,5 +106,16 @@ describe.each(SCHEMES)('highlighted command row, %s', (scheme) => {
   it('lets --cngx-command-row-active-bg override the tint', () => {
     const root = mount();
     expect(computedValue(at(root, '.row-override'), 'background-color')).toBe('rgb(1, 2, 3)');
+  });
+});
+
+describe('highlighted command row under a re-themed primary', () => {
+  it('mixes the wrapper primary at 10%', () => {
+    const root = mount();
+    const bg = computedValue(one(root, '.row-rethemed'), 'background-color');
+    expect(rasterise(bg)).toEqual(
+      rasterise('color-mix(in oklch, oklch(0.55 0.15 250) 10%, transparent)'),
+    );
+    expect(rasterise(bg)).not.toEqual(rasterise('oklch(0.66 0.19 50 / 0.1)'));
   });
 });

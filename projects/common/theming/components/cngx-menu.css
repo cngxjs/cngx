@@ -372,7 +372,10 @@
   }
 
   .cngx-menu-item--highlighted {
-    background: var(--cngx-menu-item-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+    background: var(
+      --cngx-menu-item-highlight-bg,
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+    );
   }
 
   /* Disabled by colour, never opacity (the field recipe). The shortcut and

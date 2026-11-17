@@ -81,7 +81,10 @@
   }
 
   :host(.cngx-option--highlighted) {
-    background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+    background: var(
+      --cngx-select-option-highlight-bg,
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+    );
   }
 
   .cngx-option__status {
