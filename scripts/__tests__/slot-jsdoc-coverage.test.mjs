@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { posix, resolve } from 'node:path';
 
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
@@ -81,20 +81,54 @@ function decoratorOf(node, names) {
   return undefined;
 }
 
-/** @param {ts.CallExpression} call */
-function selectorOf(call) {
+const isStringInitializer = (node) =>
+  !!node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node));
+
+/**
+ * Top-level `const X = '...'` strings of a file, so a selector held in a
+ * const resolves.
+ *
+ * @param {ts.SourceFile} sf
+ */
+function stringConstsOf(sf) {
+  const consts = new Map();
+  for (const statement of sf.statements) {
+    if (
+      !ts.isVariableStatement(statement) ||
+      !(statement.declarationList.flags & ts.NodeFlags.Const)
+    ) {
+      continue;
+    }
+    for (const decl of statement.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name) && isStringInitializer(decl.initializer)) {
+        consts.set(decl.name.text, decl.initializer.text);
+      }
+    }
+  }
+  return consts;
+}
+
+/**
+ * @param {ts.CallExpression} call
+ * @param {Map<string, string>} consts output of {@link stringConstsOf}
+ */
+function selectorOf(call, consts) {
   const meta = call.arguments[0];
   if (!meta || !ts.isObjectLiteralExpression(meta)) {
     return undefined;
   }
   for (const prop of meta.properties) {
-    if (
-      ts.isPropertyAssignment(prop) &&
-      ts.isIdentifier(prop.name) &&
-      prop.name.text === 'selector' &&
-      (ts.isStringLiteral(prop.initializer) || ts.isNoSubstitutionTemplateLiteral(prop.initializer))
-    ) {
+    if (!ts.isPropertyAssignment(prop) || !ts.isIdentifier(prop.name)) {
+      continue;
+    }
+    if (prop.name.text !== 'selector') {
+      continue;
+    }
+    if (isStringInitializer(prop.initializer)) {
       return prop.initializer.text;
+    }
+    if (ts.isIdentifier(prop.initializer)) {
+      return consts.get(prop.initializer.text);
     }
   }
   return undefined;
@@ -215,12 +249,14 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
   const hosts = [];
 
   for (const { path, sf } of parsed) {
+    const consts = stringConstsOf(sf);
     const visit = (node) => {
       if (ts.isClassDeclaration(node) && node.name) {
         const decorator = decoratorOf(node, new Set(['Component', 'Directive']));
         if (decorator) {
           hosts.push({ path, node, hostDirectives: hostDirectivesOf(decorator.call) });
-          const selector = decorator.name === 'Directive' ? selectorOf(decorator.call) : undefined;
+          const selector =
+            decorator.name === 'Directive' ? selectorOf(decorator.call, consts) : undefined;
           const attrs = selector ? [...selector.matchAll(SLOT_SELECTOR)].map((m) => m[1]) : [];
           if (attrs.length > 0) {
             slotDirectives.set(node.name.text, attrs);
@@ -315,10 +351,30 @@ export function scanSlotCoverage(files, { exempt = EXEMPT } = {}) {
   };
 }
 
-const BARREL = /(^|\/)public-api\.ts$/;
+/**
+ * A `@cngx/<path>` specifier as a path relative to `from`: every alias in
+ * `tsconfig.base.json` maps `@cngx/<path>` to `projects/<path>` and its
+ * `public-api.ts` or `index.ts`, which {@link moduleFilesOf} tries.
+ */
+const aliasToRelative = (from, specifier) =>
+  specifier.startsWith('@cngx/')
+    ? `./${posix.relative(posix.dirname(from), `projects/${specifier.slice('@cngx/'.length)}`)}`
+    : specifier;
 
 /**
- * What the `public-api.ts` barrels expose, as `<file>::*` (every export of the
+ * The entry barrel of every `ng-package.json`: its `lib.entryFile`, or the
+ * ng-packagr default `src/public_api.ts`, next to the package file.
+ *
+ * @param {{ path: string, text: string }[]} packages
+ */
+export function entryBarrels(packages) {
+  return packages.map(({ path, text }) =>
+    posix.join(posix.dirname(path), JSON.parse(text).lib?.entryFile ?? 'src/public_api.ts'),
+  );
+}
+
+/**
+ * What the entry barrels expose, as `<file>::*` (every export of the
  * file, reached through an `export * from` chain) and `<file>::<name>` (one
  * name, reached through `export { X } from` or a local `export { X }` of an
  * imported binding). A relative specifier resolves to `x.ts`, `x/index.ts` or
@@ -326,18 +382,17 @@ const BARREL = /(^|\/)public-api\.ts$/;
  * same-named export elsewhere never reaches a slot directive.
  *
  * @param {{ path: string, text: string }[]} files
+ * @param {string[]} entries entry barrel paths, see {@link entryBarrels}
  */
-export function barrelReach(files) {
+export function barrelReach(files, entries) {
   const byPath = new Map(files.map((file) => [file.path, file.text]));
   const resolveSpecifier = (from, specifier) =>
     ts.isStringLiteral(specifier)
-      ? moduleFilesOf(from, specifier.text)?.find((c) => byPath.has(c))
+      ? moduleFilesOf(from, aliasToRelative(from, specifier.text))?.find((c) => byPath.has(c))
       : undefined;
   const reached = new Set();
   /** @type {{ path: string, name: string | null }[]} */
-  const queue = files
-    .filter((file) => BARREL.test(file.path))
-    .map((file) => ({ path: file.path, name: null }));
+  const queue = entries.filter((path) => byPath.has(path)).map((path) => ({ path, name: null }));
   const push = (path, name) => {
     if (path) {
       queue.push({ path, name });
@@ -380,7 +435,8 @@ export function barrelReach(files) {
         push(target, name);
         continue;
       }
-      if (!ts.isNamedExports(clause)) {
+      if (ts.isNamespaceExport(clause)) {
+        push(name === null || name === clause.name.text ? target : undefined, null);
         continue;
       }
       for (const el of clause.elements) {
@@ -421,6 +477,12 @@ describe('slot JSDoc coverage (repo)', () => {
     .filter((path) => !isSpec(path))
     .map((path) => ({ path, text: readFileSync(resolve(REPO_ROOT, path), 'utf8') }));
   const result = scanSlotCoverage(files);
+  const entries = entryBarrels(
+    walkSources('projects', /^ng-package\.json$/).map((path) => ({
+      path,
+      text: readFileSync(resolve(REPO_ROOT, path), 'utf8'),
+    })),
+  );
 
   it('finds the slot directives and host-slot pairs', () => {
     expect(result.slotDirectives.size).toBeGreaterThan(100);
@@ -446,7 +508,10 @@ describe('slot JSDoc coverage (repo)', () => {
   });
 
   it('exports every slot directive from a public-api barrel', () => {
-    const unreachable = unreachableSlotDirectives(result.slotDirectiveFiles, barrelReach(files));
+    const unreachable = unreachableSlotDirectives(
+      result.slotDirectiveFiles,
+      barrelReach(files, entries),
+    );
     expect(
       unreachable,
       'a slot directive no public-api.ts reaches cannot be imported, so it never matches in a consumer template; export it from its entry barrel',
@@ -622,9 +687,12 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
       },
     ];
     const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
-    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([
-      'projects/x/hidden.ts CngxHidden',
-    ]);
+    expect(
+      unreachableSlotDirectives(
+        slotDirectiveFiles,
+        barrelReach(files, ['projects/x/public-api.ts']),
+      ),
+    ).toEqual(['projects/x/hidden.ts CngxHidden']);
   });
 
   it('does not let a same-named export from another module reach a slot directive', () => {
@@ -637,9 +705,12 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
       { path: 'projects/x/public-api.ts', text: "export { CngxHidden } from './other';" },
     ];
     const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
-    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([
-      'projects/x/hidden.ts CngxHidden',
-    ]);
+    expect(
+      unreachableSlotDirectives(
+        slotDirectiveFiles,
+        barrelReach(files, ['projects/x/public-api.ts']),
+      ),
+    ).toEqual(['projects/x/hidden.ts CngxHidden']);
   });
 
   it('follows an imported binding the barrel exports locally', () => {
@@ -654,7 +725,12 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
       },
     ];
     const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
-    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([]);
+    expect(
+      unreachableSlotDirectives(
+        slotDirectiveFiles,
+        barrelReach(files, ['projects/x/public-api.ts']),
+      ),
+    ).toEqual([]);
   });
 
   it('passes a slot directive a barrel re-exports by name', () => {
@@ -666,7 +742,12 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
       { path: 'projects/x/public-api.ts', text: "export { CngxHidden } from './hidden';" },
     ];
     const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
-    expect(unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files))).toEqual([]);
+    expect(
+      unreachableSlotDirectives(
+        slotDirectiveFiles,
+        barrelReach(files, ['projects/x/public-api.ts']),
+      ),
+    ).toEqual([]);
   });
 
   describe('type-only exports reach no slot directive', () => {
@@ -677,7 +758,10 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
     const unreachable = (barrel) => {
       const files = [hidden, { path: 'projects/x/public-api.ts', text: barrel }];
       const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
-      return unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files));
+      return unreachableSlotDirectives(
+        slotDirectiveFiles,
+        barrelReach(files, ['projects/x/public-api.ts']),
+      );
     };
 
     it('reports a slot directive re-exported with export type (S2)', () => {
@@ -707,6 +791,76 @@ describe('slot JSDoc coverage (scanner fixtures)', () => {
     it('passes a renamed value re-export (S8)', () => {
       expect(unreachable("export { CngxHidden as CngxShown } from './hidden';")).toEqual([]);
     });
+  });
+
+  describe('barrels come from ng-package.json entries', () => {
+    const slot = (cls, attr) => ({
+      path: 'projects/x/slot.ts',
+      text: `@Directive({ selector: 'ng-template[${attr}]' }) export class ${cls} {}`,
+    });
+    const unreachable = (files) => {
+      const { slotDirectiveFiles } = scanSlotCoverage(files, { exempt: [] });
+      const entries = entryBarrels([
+        { path: 'projects/x/ng-package.json', text: '{ "lib": { "entryFile": "public-api.ts" } }' },
+      ]);
+      return unreachableSlotDirectives(slotDirectiveFiles, barrelReach(files, entries));
+    };
+
+    it('reads the entry file of every ng-package.json', () => {
+      expect(
+        entryBarrels([
+          {
+            path: 'projects/x/ng-package.json',
+            text: '{ "lib": { "entryFile": "public-api.ts" } }',
+          },
+          {
+            path: 'projects/x/y/ng-package.json',
+            text: '{ "lib": { "entryFile": "src/api.ts" } }',
+          },
+        ]),
+      ).toEqual(['projects/x/public-api.ts', 'projects/x/y/src/api.ts']);
+    });
+
+    it('reports a slot directive only a non-entry public-api.ts reaches (S3)', () => {
+      expect(
+        unreachable([
+          slot('CngxZzF', 'cngxZzF'),
+          { path: 'projects/x/public-api.ts', text: '' },
+          { path: 'projects/x/internal/deep/public-api.ts', text: "export * from '../../slot';" },
+        ]),
+      ).toEqual(['projects/x/slot.ts CngxZzF']);
+    });
+
+    it('passes a namespace re-export (S4)', () => {
+      expect(
+        unreachable([
+          slot('CngxZzE', 'cngxZzE'),
+          { path: 'projects/x/public-api.ts', text: "export * as zz from './slot';" },
+        ]),
+      ).toEqual([]);
+    });
+
+    it('passes a re-export through a @cngx path alias (S7)', () => {
+      expect(
+        unreachable([
+          slot('CngxZzH', 'cngxZzH'),
+          { path: 'projects/x/public-api.ts', text: "export { CngxZzH } from '@cngx/x/slot';" },
+        ]),
+      ).toEqual([]);
+    });
+  });
+
+  it('collects a slot directive whose selector is a const (S6)', () => {
+    const result = scanSlotCoverage(
+      [
+        {
+          path: 'projects/x/slot.ts',
+          text: "const SEL = 'ng-template[cngxZzG]';\n@Directive({ selector: SEL })\nexport class CngxZzG {}\n",
+        },
+      ],
+      { exempt: [] },
+    );
+    expect(result.slotDirectives.get('CngxZzG')).toEqual(['cngxZzG']);
   });
 
   it('resolves contentChild.required and contentChildren', () => {

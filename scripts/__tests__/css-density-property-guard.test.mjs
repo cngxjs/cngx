@@ -39,7 +39,8 @@ import { describe, expect, it } from 'vitest';
  *
  * (c) Literal spacing: a `gap` / `row-gap` / `column-gap` / `padding*`
  *     declaration in a component stylesheet whose value is a length list
- *     (`<number><unit>` and `0` tokens, `!important` ignored) with at least
+ *     (`<number><unit>` and `0` tokens in any case, `calc()` / `min()` /
+ *     `max()` over literal lengths, `!important` ignored) with at least
  *     one non-zero length is a literal that no `[data-density]` swap reaches:
  *     `padding: 0 2px` keeps its `2px`. A value of zeros only, a `var()` read
  *     or a custom-property SET is not a literal declaration. Declarations
@@ -284,12 +285,37 @@ function hasNonSkinGatedScaleSet(css) {
 
 const SPACING_DECLARATION =
   /(?<![\w-])(gap|row-gap|column-gap|padding(?:-[a-z-]+)?)\s*:\s*([^;{}]+)(?=[;}])/g;
-const LENGTH_OR_ZERO = /^(?:0|[0-9.]+(?:px|rem|em))$/;
+const LENGTH_OR_ZERO = /^(?:0|[0-9.]+(?:px|rem|em|pt|ch|vw|vh|%))$/i;
+const NUMBER = /^[0-9.]+$/;
 const NON_ZERO = /[1-9]/;
+// An innermost calc() / min() / max() call; its operators are a comma, `*`,
+// `/`, or a `+` / `-` with whitespace on both sides.
+const MATH_CALL = /\b(?:calc|min|max)\(([^()]*)\)/gi;
+const MATH_OPERATOR = /\s[-+]\s|[*/,]/g;
+
+/** One math call reduced to its lengths when every term is a literal, else unchanged. */
+function unwrapLiteralMath(call, args) {
+  const terms = args.replace(MATH_OPERATOR, ' ').trim().split(/\s+/);
+  const literal = terms.every((t) => LENGTH_OR_ZERO.test(t) || NUMBER.test(t));
+  return literal ? terms.filter((t) => LENGTH_OR_ZERO.test(t)).join(' ') : call;
+}
+
+/** `value` with every literal math call, innermost first, replaced by its lengths. */
+function withoutLiteralMath(value) {
+  let previous;
+  let current = value;
+  while (current !== previous) {
+    previous = current;
+    current = current.replace(MATH_CALL, unwrapLiteralMath);
+  }
+  return current;
+}
 
 /** A list of lengths and zeros with at least one non-zero length. */
 function isLiteralLengthList(value) {
-  const tokens = value.replace(/\s*!important$/i, '').split(/\s+/);
+  const tokens = withoutLiteralMath(value.replace(/\s*!\s*important$/i, ''))
+    .trim()
+    .split(/\s+/);
   return tokens.every((t) => LENGTH_OR_ZERO.test(t)) && tokens.some((t) => NON_ZERO.test(t));
 }
 
@@ -442,6 +468,33 @@ describe('literal spacing detection (rule c)', () => {
     ]);
     expect(
       literalSpacingDeclarations("[data-skin='a'] .x, [data-skin='b'] .y { padding: 12px; }"),
+    ).toEqual([]);
+  });
+
+  it('flags a spaced !important and an uppercase unit (probes d03, d04)', () => {
+    expect(
+      literalSpacingDeclarations('.d3 { padding: 8px ! important; } .d4 { padding: 8PX; }'),
+    ).toEqual(['padding: 8px ! important', 'padding: 8PX']);
+  });
+
+  it('flags pt, ch, vw, vh and % lengths (probe d05)', () => {
+    expect(
+      literalSpacingDeclarations(
+        '.d5 { padding: 4pt 0.5ch; gap: 1vw; padding-block: 2vh 0; padding-inline: 5%; }',
+      ),
+    ).toEqual(['padding: 4pt 0.5ch', 'gap: 1vw', 'padding-block: 2vh 0', 'padding-inline: 5%']);
+  });
+
+  it('flags calc(), min() and max() over literal lengths and passes math over a token (probe d06)', () => {
+    expect(
+      literalSpacingDeclarations(
+        '.d6 { padding: calc(8px); gap: max(4px, 8px); row-gap: min(1rem, calc(2px * 2)); }',
+      ),
+    ).toEqual(['padding: calc(8px)', 'gap: max(4px, 8px)', 'row-gap: min(1rem, calc(2px * 2))']);
+    expect(
+      literalSpacingDeclarations(
+        '.a { padding: calc(var(--cngx-space-sm) * 2); gap: max(0px, calc(0 * 1)); }',
+      ),
     ).toEqual([]);
   });
 
