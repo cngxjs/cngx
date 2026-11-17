@@ -177,7 +177,7 @@ export function createMigration(migration: Migration): Rule {
     );
 
     const renderer = createRenderer(
-      createShellRendererOptions(process.env, process.stdout, context.logger, false),
+      createShellRendererOptions(process.env, process.stdout, process.stderr, context.logger, false),
     );
 
     const release = entryVersion(context) ?? versions.cngx;

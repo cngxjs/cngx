@@ -176,7 +176,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     const flagged = parseNgAddOptions(flags);
     const { versions, warning } = resolveVersions(__dirname);
-    const rendererOptions = createShellRendererOptions(process.env, process.stdout, context.logger, flagged.quiet === true);
+    const rendererOptions = createShellRendererOptions(process.env, process.stdout, process.stderr, context.logger, flagged.quiet === true);
     const promptsOff = readPromptFlags(process.argv) ?? (context.interactive === false ? 'interactive: false' : undefined);
     const reachable = canReachPrompts(process.env, rendererOptions.isTTY, process.stdin);
     const interactive = canPrompt(reachable, flagged.prompts) && promptsOff === undefined;
