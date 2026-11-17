@@ -153,10 +153,10 @@
   /**
    * Interactive hit-area floor. `inherits: true` so a `[data-touch]`
    * ancestor cascades the floor to the subtree, orthogonal to the
-   * `--cngx-space-*` density scale. Defaults to `0px` (no floor) so a
+   * `--cngx-space-*` density scale. Registers `0px` (no floor) so a
    * use-site `max(<current>, var(--cngx-target-min, 0px))` is inert
-   * until the coarse-pointer media block below lifts it to 44px - a
-   * fixed non-zero initial would have defeated that use-site fallback.
+   * where no block below applies; the blocks set 24px for a fine pointer,
+   * 44px for a coarse one and 0px for `data-touch='off'`.
    * @group Layout
    */
   @property --cngx-target-min {
@@ -804,11 +804,20 @@
    * `--cngx-target-min` nor `--cngx-target-gap` is wired into
    * `@cngx/themes` - a missing bridge here is intentional, not an omission.
    *
+   * Block 0 - fine-pointer default. A mouse gets the WCAG 2.5.8 (AA) 24px
+   * size floor; the gap stays 0, so the floor itself carries 2.5.8 rather
+   * than the spacing exception. Zero specificity, so Blocks 1-3 below win
+   * on any element they key, `:root` included.
+   *
    * Block 1 - coarse-pointer default. A touch/pen pointer lifts the size
    * floor to the WCAG 2.5.5 / Apple-HIG 44px and the spacing floor to 8px.
    * Both opt-out signals are excluded so a page/section pinned `off` wins
    * over the media query, exactly as a pinned light island wins over OS
    * dark. */
+  :where(:root) {
+    --cngx-target-min: 24px;
+  }
+
   @media (any-pointer: coarse) {
     :root:not([data-touch='off']):not(.cngx-touch-off) {
       --cngx-target-min: 44px;
