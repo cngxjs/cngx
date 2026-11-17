@@ -52,6 +52,7 @@ describe('field Material bridge', () => {
     '--cngx-field-fill-bg-hover',
     '--cngx-field-hint-color',
     '--cngx-field-label-color',
+    '--cngx-field-placeholder-color',
     '--cngx-field-required-color',
     '--cngx-field-ring-color',
     '--cngx-field-underline-color',
@@ -101,13 +102,17 @@ describe('field Material bridge', () => {
     );
   });
 
+  it('maps the field placeholder to on-surface-variant, as the M3 select bridge does (M3)', () => {
+    expect(compiledCss('v1')).toMatch(
+      /cngx-form-field\)\s*\{[^}]*--cngx-field-placeholder-color: var\(--mat-sys-on-surface-variant\)/,
+    );
+  });
+
   it('emits a consumed-name subset (M2)', () => {
     const names = bridgeTokenNames('v0');
     expect(names.length).toBeGreaterThan(0);
-    // M3 leaves the placeholder on the bridged muted text; M2 raises it to 4.5:1
-    // on the fill (consumed by cngx-field-affix.css and cngx-field-skin.css).
     for (const name of names) {
-      expect([...CONSUMED, '--cngx-field-placeholder-color']).toContain(name);
+      expect(CONSUMED).toContain(name);
     }
   });
 

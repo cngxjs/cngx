@@ -47,6 +47,7 @@
     --cngx-field-underline-focus-color: var(--mat-sys-primary);
     --cngx-field-ring-color: var(--mat-sys-primary);
     --cngx-field-affix-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-placeholder-color: var(--mat-sys-on-surface-variant);
   } @else {
     --cngx-field-fill-bg: #{bridge.m2-field-fill($theme)};
     --cngx-field-fill-bg-hover: #{bridge.m2-field-fill-hover($theme)};
