@@ -261,7 +261,7 @@
 @property --cngx-breadcrumb-pill-active-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.66 0.19 50);
+  initial-value: oklch(0.58 0.19 50);
 }
 
 /**
@@ -271,7 +271,7 @@
 @property --cngx-breadcrumb-pill-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.2 0.01 250);
+  initial-value: oklch(1 0 0);
 }
 
 /**
@@ -431,7 +431,7 @@
 @property --cngx-breadcrumb-ribbon-active-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.66 0.19 50);
+  initial-value: oklch(0.58 0.19 50);
 }
 /**
  * Ribbon skin: label colour of the current-page segment.
@@ -440,7 +440,7 @@
 @property --cngx-breadcrumb-ribbon-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.2 0.01 250);
+  initial-value: oklch(1 0 0);
 }
 /**
  * Ribbon skin: font size of the segment labels.
@@ -1600,7 +1600,7 @@
 @property --cngx-breadcrumb-icononly-active-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.66 0.19 50);
+  initial-value: oklch(0.58 0.19 50);
 }
 /**
  * Icononly skin: icon colour of the current-page square.
@@ -1609,7 +1609,7 @@
 @property --cngx-breadcrumb-icononly-active-color {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.2 0.01 250);
+  initial-value: oklch(1 0 0);
 }
 /**
  * Icononly skin: background of the label tooltip shown on hover and focus.
@@ -1785,7 +1785,7 @@
 @property --cngx-breadcrumb-shell-mark-bg {
   syntax: '<color>';
   inherits: true;
-  initial-value: oklch(0.66 0.19 50);
+  initial-value: oklch(0.58 0.19 50);
 }
 /**
  * Shell skin: text colour of the root product mark.
