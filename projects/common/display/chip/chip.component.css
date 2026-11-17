@@ -107,9 +107,10 @@
   }
 
   /**
-   * Background of the default (unkeyed) chip. Primary-tinted at low
-   * alpha so the chip reads as accented without competing with
-   * stronger surfaces.
+   * Background of the default (unkeyed) chip: the primary mixed with
+   * `transparent` at 12%, assigned on `:root` and the scheme islands.
+   * The initial is the light default. A subtree that re-themes
+   * `--cngx-color-primary` re-declares this tint too.
    * @group Surface
    * @see [[--cngx-color-primary]]
    */
@@ -179,8 +180,11 @@
 
   /**
    * Background of the hover state for interactive chips
-   * (`[role=button]`, `[tabindex]`, or a chip with a remove button).
+   * (`[role=button]`, `[tabindex]`, or a chip with a remove button):
+   * the primary mixed with `transparent` at 20%, assigned like
+   * `--cngx-chip-bg`.
    * @group State / Hover
+   * @see [[--cngx-color-primary]]
    */
   @property --cngx-chip-hover-bg {
     syntax: '<color>';
@@ -225,8 +229,10 @@
 
   /**
    * Background of the selected state (`[aria-selected=true]` /
-   * `[aria-pressed=true]`).
+   * `[aria-pressed=true]`): the primary mixed with `transparent` at
+   * 32%, assigned like `--cngx-chip-bg`.
    * @group State / Selected
+   * @see [[--cngx-color-primary]]
    */
   @property --cngx-chip-selected-bg {
     syntax: '<color>';
@@ -372,6 +378,17 @@
     initial-value: -3px;
   }
 
+  /* Primary tints of the default, hover and selected chip. Assigned here
+   * because the registered initial defeats the use-site fallback; each
+   * mix resolves against the primary of the element it is declared on, so
+   * the scheme islands restate them. The OS-dark block needs no line: same
+   * alphas, and the :root primary it flips is the one :root resolves. */
+  :root {
+    --cngx-chip-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent);
+    --cngx-chip-hover-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent);
+    --cngx-chip-selected-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 32%, transparent);
+  }
+
   /* Dark-mode swap - only the variant text colors flip. The variant
    * backgrounds use alpha-tints which mix correctly with either
    * light or dark surface, but the dark hue text colors disappear
@@ -391,6 +408,9 @@
     --cngx-chip-success-color: oklch(0.85 0.13 145);
     --cngx-chip-warning-color: oklch(0.88 0.14 75);
     --cngx-chip-danger-color: oklch(0.82 0.15 25);
+    --cngx-chip-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent);
+    --cngx-chip-hover-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent);
+    --cngx-chip-selected-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 32%, transparent);
   }
   [data-color-scheme='light'],
   .light {
@@ -398,6 +418,9 @@
     --cngx-chip-success-color: oklch(0.45 0.15 145);
     --cngx-chip-warning-color: oklch(0.5 0.15 75);
     --cngx-chip-danger-color: oklch(0.5 0.2 25);
+    --cngx-chip-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent);
+    --cngx-chip-hover-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent);
+    --cngx-chip-selected-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 32%, transparent);
   }
 }
 
@@ -423,7 +446,10 @@
       padding-block: var(--cngx-chip-padding-block, 2px);
       padding-inline: var(--cngx-chip-padding-inline, var(--cngx-space-sm, 8px));
       border-radius: var(--cngx-chip-radius, var(--cngx-radius-pill, 999px));
-      background: var(--cngx-chip-bg, oklch(0.66 0.19 50 / 0.12));
+      background: var(
+        --cngx-chip-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
+      );
       color: var(--cngx-chip-color, inherit);
       border: var(--cngx-chip-border, 0 solid transparent);
       font-size: var(--cngx-chip-font-size, var(--cngx-font-size-sm, 0.8125rem));
@@ -455,7 +481,10 @@
     :scope[role='button']:hover,
     :scope[tabindex]:hover,
     :scope:has(.cngx-chip__remove):hover {
-      background: var(--cngx-chip-hover-bg, oklch(0.66 0.19 50 / 0.2));
+      background: var(
+        --cngx-chip-hover-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent)
+      );
       color: var(--cngx-chip-hover-color, inherit);
     }
     :scope:focus-visible {
@@ -467,7 +496,10 @@
     }
     :scope[aria-selected='true'],
     :scope[aria-pressed='true'] {
-      background: var(--cngx-chip-selected-bg, oklch(0.66 0.19 50 / 0.32));
+      background: var(
+        --cngx-chip-selected-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 32%, transparent)
+      );
       color: var(--cngx-chip-selected-color, inherit);
     }
     /* Variant palette via [data-color] attribute (open-string so consumers
