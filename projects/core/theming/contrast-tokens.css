@@ -98,12 +98,26 @@
     color: color-mix(in oklab, var(--cngx-color-text) 75%, var(--cngx-color-surface));
   }
 
-  /* The OS twin of the placeholder rule stays layered: an element rule needs
-   * no unlayered escape, and a consumer's own placeholder rule keeps winning. */
+  /* The focus ring moves to the primary text rung (4.5:1 on the page, where
+   * the primary itself sits near 3:1) and to 3px. Colour and width only:
+   * style and offset stay with the reset ring or the component's own ring. */
+  [data-contrast='more'] :focus-visible,
+  .cngx-contrast-more :focus-visible {
+    outline-color: var(--cngx-color-primary-text);
+    outline-width: 3px;
+  }
+
+  /* The OS twins of the placeholder and focus rules stay layered: an element
+   * rule needs no unlayered escape, and a consumer's own rule keeps winning. */
   @media (prefers-contrast: more) {
     :root:not([data-contrast='normal']) ::placeholder {
       font-style: italic;
       color: color-mix(in oklab, var(--cngx-color-text) 75%, var(--cngx-color-surface));
+    }
+
+    :root:not([data-contrast='normal']) :focus-visible {
+      outline-color: var(--cngx-color-primary-text);
+      outline-width: 3px;
     }
   }
 }
