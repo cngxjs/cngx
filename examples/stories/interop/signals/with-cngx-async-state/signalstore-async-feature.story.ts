@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['integration', 'async-state', 'error-handling'],
-  apiComponents: ['withCngxAsyncState', 'CngxAsyncContainer'],
+  apiComponents: ['withCngxAsyncState'],
   moduleImports: [
     "import { signalStore, withMethods } from '@ngrx/signals';",
     "import { withCngxAsyncState } from '@cngx/interop/signals';",

@@ -79,50 +79,7 @@ const SKIN_OWNERSHIP_EXEMPT = [];
  *
  * @type {{ file: string; symbol: string; reason: string }[]}
  */
-const STORY_OWNERSHIP_EXEMPT = [
-  {
-    file: 'examples/stories/interop/query/from-query/tanstack-query-bridge.story.ts',
-    symbol: 'CngxAsyncContainer',
-    reason:
-      'ui/feedback is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/interop/signals/with-cngx-async-state/signalstore-async-feature.story.ts',
-    symbol: 'CngxAsyncContainer',
-    reason:
-      'ui/feedback is a higher-level entry; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/accordion/panel-content/checklist.story.ts',
-    symbol: 'CngxProgress',
-    reason:
-      'ui/feedback is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/stepper/stepper-footer/mat-stepper-footer.story.ts',
-    symbol: 'CngxMatStepper',
-    reason:
-      'ui/mat-stepper is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives.story.ts',
-    symbol: 'CngxToastOn',
-    reason:
-      'ui/feedback is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives.story.ts',
-    symbol: 'CngxBannerOn',
-    reason:
-      'ui/feedback is an independent sibling; the story moves to that artifact or renders without it',
-  },
-  {
-    file: 'examples/stories/ui/timeline/async/toast-on-bridge.story.ts',
-    symbol: 'CngxToastOn',
-    reason:
-      'ui/feedback is an independent sibling; the story moves to that artifact or renders without it',
-  },
-];
+const STORY_OWNERSHIP_EXEMPT = [];
 
 /** Blank comments, keeping every newline so line numbers stay true. */
 function blank(text) {

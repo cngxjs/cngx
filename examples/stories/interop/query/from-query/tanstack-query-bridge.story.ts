@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['integration', 'async-state', 'error-handling'],
-  apiComponents: ['fromQuery', 'CngxAsyncContainer'],
+  apiComponents: ['fromQuery'],
   moduleImports: [
     "import { fromQuery } from '@cngx/interop/query';",
     "import { injectQuery, provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';",
