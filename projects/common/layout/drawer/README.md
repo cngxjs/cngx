@@ -233,7 +233,7 @@ The header sits outside the `[cngxDrawer]` host, so the contained panel leaves i
 ## See Also
 
 - [compodocx API documentation](https://cngxjs.github.io/cngx/main/common/layout/drawer/)
-- Demo: `examples/stories/common/drawer-demo/`
+- Demo: `examples/stories/common/layout/drawer/`
 - Tests: `projects/common/layout/drawer/*.spec.ts`
 - `CngxDrawerSurface` in `@cngx/common/layout` - Composed by `CngxDrawerPanel`
 - `CngxScrollLock` in `@cngx/common/layout` - Pair with drawer to prevent scrolling
