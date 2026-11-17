@@ -172,6 +172,29 @@ describe('appShellOf', () => {
     });
   });
 
+  it('resolves a js specifier to its typescript source', () => {
+    const read = readerOf('standalone-app', {
+      'src/main.ts': readFixture('standalone-app')['src/main.ts'].replace("'./app/app'", "'./app/app.js'"),
+    });
+
+    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')).toMatchObject({
+      componentFile: 'src/app/app.ts',
+      template: { kind: 'file', path: 'src/app/app.html' },
+    });
+  });
+
+  it('follows a re-export written with a js specifier', () => {
+    const read = readerOf('standalone-app', {
+      'src/main.ts': readFixture('standalone-app')['src/main.ts'].replace("'./app/app'", "'./app/index.js'"),
+      'src/app/index.ts': "export { App } from './app.js';\n",
+    });
+
+    expect(appShellOf(read, 'src/main.ts', true, 'fixture-app')).toMatchObject({
+      componentFile: 'src/app/app.ts',
+      template: { kind: 'file', path: 'src/app/app.html' },
+    });
+  });
+
   it('follows a re-export through the AST when a comment names the class', () => {
     const read = readerOf('standalone-app', {
       'src/main.ts': readFixture('standalone-app')['src/main.ts'].replace("'./app/app'", "'./app'"),
