@@ -58,6 +58,7 @@ import { createActivationKeyHandler } from '../keyboard/activation-key';
  * <example-url>/#/common/interactive/disclosure/basic-uncontrolled</example-url>
  * <example-url>/#/common/interactive/disclosure/controlled-mode</example-url>
  * <example-url>/#/common/interactive/disclosure/faq-accordion</example-url>
+ * <example-url>/#/common/interactive/disclosure/card-with-disclosure-expand-collapse</example-url>
  * @axis level atom
  */
 @Directive({
