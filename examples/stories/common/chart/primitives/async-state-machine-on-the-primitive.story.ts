@@ -19,7 +19,6 @@ export const STORY: DemoSpec = {
     'CngxBand',
     'CngxChartEmpty',
     'CngxChartError',
-    'CngxEmptyState',
   ],
   references: [
     {

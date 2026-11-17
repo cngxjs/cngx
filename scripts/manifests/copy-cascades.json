@@ -301,7 +301,7 @@
     {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
-      "line": 151,
+      "line": 152,
       "member": "resolvedMoreLabel",
       "enclosing": "computed",
       "tiers": [
@@ -317,7 +317,7 @@
     {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
-      "line": 154,
+      "line": 155,
       "member": "resolvedLessLabel",
       "enclosing": "computed",
       "tiers": [
@@ -1054,7 +1054,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 88,
+      "line": 89,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -1065,7 +1065,7 @@
     {
       "class": "CngxSpeakButton",
       "file": "projects/ui/speak/speak-button.ts",
-      "line": 89,
+      "line": 90,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [

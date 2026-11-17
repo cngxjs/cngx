@@ -11,7 +11,7 @@ test.describe('common/layout/skeleton', () => {
   test('skeleton-container: placeholder template repeats while loading, content swaps on toggle', async ({
     page,
   }) => {
-    await gotoDemo(page, 'common/layout/skeleton/skeleton-container');
+    await gotoDemo(page, 'ui/skeleton/skeleton-container');
 
     const container = page.locator('cngx-skeleton');
     await expect(container).toHaveClass(/cngx-skeleton--loading/);

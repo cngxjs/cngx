@@ -1,7 +1,7 @@
 ---
 title: "CngxChart: Async state machine on the primitive"
 whenToUse: "Same four-state machine the presets follow, but applied to the lowest-level primitive composition. Array-valued, so the empty branch is reached by setSuccess([]). This story projects &lt;cngx-empty-state&gt; from @cngx/ui into the empty and error slots to demonstrate richer fallback content."
-symbols: [CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxEmptyState]
+symbols: [CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError]
 ---
 
 # CngxChart: Async state machine on the primitive
@@ -18,7 +18,6 @@ Same four-state machine the presets follow, but applied to the lowest-level prim
 - `CngxBand`
 - `CngxChartEmpty`
 - `CngxChartError`
-- `CngxEmptyState`
 
 ## Setup
 

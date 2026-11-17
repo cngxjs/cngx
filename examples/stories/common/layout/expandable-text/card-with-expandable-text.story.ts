@@ -1,4 +1,4 @@
-import type { DemoSpec } from '../../../dev-tools/demo-spec';
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxExpandableText: Card with expandable text',
@@ -37,7 +37,7 @@ export const STORY: DemoSpec = {
           customers, GDPR-compliant data handling for EU users.
           Next review planned for 22.03.2026.
           <ng-template cngxExpandableToggle let-expanded let-toggle="toggle">
-            <button type="button" class="chip" style="margin-top:8px" (click)="toggle()">
+            <button type="button" class="chip" style="margin-top:8px" [attr.aria-expanded]="expanded" (click)="toggle()">
               {{ expanded ? 'Show less' : 'Read more' }}
             </button>
           </ng-template>
