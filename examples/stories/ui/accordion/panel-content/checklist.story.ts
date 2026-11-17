@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'standalone',
   focus: ['composition'],
-  apiComponents: ['CngxAccordionGroup', 'CngxAccordionItem', 'CngxProgress'],
+  apiComponents: ['CngxAccordionGroup', 'CngxAccordionItem'],
   imports: [
     'CngxAccordionGroup',
     'CngxAccordionItem',

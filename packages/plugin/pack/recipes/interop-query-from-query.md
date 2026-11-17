@@ -1,7 +1,7 @@
 ---
 title: "fromQuery: TanStack query bridge"
 whenToUse: "The query is a genuine TanStack Angular Query - provideTanStackQuery(new QueryClient()) is component-scoped via viewProviders, no app-level setup. fromQuery is pure computed(): first load reads loading, a refetch over retained data reads refreshing, and a failed refetch keeps the rows on screen while status flips to error. The demo sets retry: false so the error path is immediate; TanStack's default is three retries with backoff. The readout shows the raw TanStack pair next to the mapped cngx status."
-symbols: [CngxAsyncContainer]
+symbols: [CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl]
 ---
 
 # fromQuery: TanStack query bridge
@@ -11,6 +11,9 @@ The query is a genuine TanStack Angular Query - provideTanStackQuery(new QueryCl
 ## Symbols
 
 - `CngxAsyncContainer`
+- `CngxAsyncSkeletonTpl`
+- `CngxAsyncContentTpl`
+- `CngxAsyncErrorTpl`
 
 ## Setup
 

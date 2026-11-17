@@ -1,7 +1,7 @@
 ---
 title: "CngxTabGroup: optimistic and pessimistic commits with bridge directives"
 whenToUse: "Tabs treat [commitAction] as a navigation guard. Optimistic flips the panel immediately and rolls back when the commit does not land; pessimistic blocks until the action resolves. A throw or an erroring observable is a failure: the commit state goes to error and the bridges report it. Answering false is a refusal: the tab rolls back, the tab group announces it, lastOutcome() reads refused and the commit state goes back to idle with its data, so no bridge fires. To toast a refusal, the action shows its own warning toast before it answers false; the visible reason next to the tab group is driven by lastOutcome(). presenter.clearLastFailed() wipes the persistent rejection icon programmatically."
-symbols: [CngxTabGroup, CngxTabGroupPresenter, CngxTab, CngxTabContent, CngxToastOn, CngxBannerOn]
+symbols: [CngxTabGroup, CngxTabGroupPresenter, CngxTab, CngxTabContent]
 ---
 
 # CngxTabGroup: optimistic and pessimistic commits with bridge directives
@@ -14,8 +14,6 @@ Tabs treat [commitAction] as a navigation guard. Optimistic flips the panel imme
 - `CngxTabGroupPresenter`
 - `CngxTab`
 - `CngxTabContent`
-- `CngxToastOn`
-- `CngxBannerOn`
 
 ## Setup
 

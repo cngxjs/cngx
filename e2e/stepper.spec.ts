@@ -28,7 +28,7 @@ const ROUTER_SYNC =
 // The cngxMatStepper directive now ships a single example: a cngx footer
 // driving a vanilla <mat-stepper>. No mat-stepper commitAction or
 // router-sync example exists in the examples app.
-const MAT_FOOTER = '/#/ui/stepper/stepper-footer/mat-stepper-footer';
+const MAT_FOOTER = '/#/ui/mat-stepper/stepper-footer/mat-stepper-footer';
 const MAT_COMMIT =
   '/#/ui/mat-stepper/commit-action/pessimistic-holds-material-on-origin';
 const MAT_ROUTER_SYNC =

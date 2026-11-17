@@ -13,8 +13,6 @@ export const STORY: DemoSpec = {
     'CngxTabGroupPresenter',
     'CngxTab',
     'CngxTabContent',
-    'CngxToastOn',
-    'CngxBannerOn',
   ],
   moduleImports: [
     'import { Observable } from \'rxjs\';',

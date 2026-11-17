@@ -25,8 +25,6 @@ import { CngxBanner } from './banner.service';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner-on.directive.ts
  * @since 0.1.0
  * @relatedTo CngxBanner, CngxBannerOutlet, CngxBannerTrigger, CngxAlertOn, CngxToastOn
- *
- * <example-url>/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxBannerOn]',
