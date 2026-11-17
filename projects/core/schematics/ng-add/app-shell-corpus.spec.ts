@@ -25,7 +25,7 @@ import { STARTER_ID, starterLeftOutText } from './steps/starter';
 // token of the user's text, sit there once and plan nothing more, raw and
 // after Prettier.
 
-vi.mock('./shell/git-state', () => ({ readGitState: () => 'clean' }));
+vi.mock('./shell/git-state', () => ({ readGitState: () => 'clean', workspaceRootOf: (cwd: string) => cwd }));
 
 type Files = Readonly<Record<string, string>>;
 type Tree = ReturnType<typeof createFixtureTree>;
