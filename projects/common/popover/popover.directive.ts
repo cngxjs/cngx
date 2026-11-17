@@ -211,6 +211,8 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  * State lifecycle: `closed` → `opening` → `open` → `closing` → `closed`.
  * CSS classes `cngx-popover--opening`, `cngx-popover--open`, and
  * `cngx-popover--closing` are applied to the host for transition hooks.
+ * The host is `inert` while `closing`, so a reader and a pointer skip a
+ * panel that is fading out.
  *
  * ### Declarative click popover
  * ```html
@@ -269,6 +271,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[class.cngx-popover--opening]': 'isOpening()',
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
+    '[attr.inert]': "isClosing() ? '' : null",
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.--cngx-popover-anchor-margin]': 'cssMargin()',
