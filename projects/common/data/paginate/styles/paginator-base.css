@@ -510,20 +510,28 @@
     display: inline-flex;
     align-items: center;
     /*
-     * Touch-target floor (WCAG 2.5.5/2.5.8). The visual dot stays at
-     * --cngx-paginator-dot-size; padding lifts each button's hit box onto
-     * max(dot-size, --cngx-target-min). The pad is 0 while no floor is active
-     * (target-min initial 0px), so the slot degrades to the bare dot size and
-     * the geometry below is unchanged on fine pointers.
+     * Target floor (WCAG 2.5.5/2.5.8). The visual dot stays at
+     * --cngx-paginator-dot-size; padding lifts each button's hit box. On a
+     * mouse the slot plus the gap reaches --cngx-paginator-dot-target-min, so
+     * dot centres sit 24px apart and the 2.5.8 spacing circles never meet. On
+     * touch --cngx-target-min wins and the slot itself reaches 44px.
      */
     /**
-     * Hit padding around each dot, derived so the dot button reaches
-     * `--cngx-target-min`. `0px` while no touch-target floor is active.
+     * Hit padding around each dot, derived so the slot plus the gap reaches
+     * `--cngx-paginator-dot-target-min` on a mouse and the slot alone reaches
+     * `--cngx-target-min` on touch.
      * @type <length>
      * @group Layout
      */
     --cngx-paginator-dot-pad: max(
-      (var(--cngx-target-min, 0px) - var(--cngx-paginator-dot-size, 0.5rem)) / 2,
+      (
+          max(
+              var(--cngx-target-min, 0px),
+              var(--cngx-paginator-dot-target-min, 24px) - var(--cngx-paginator-dot-gap, 0.5rem)
+            ) -
+            var(--cngx-paginator-dot-size, 0.5rem)
+        ) /
+        2,
       0px
     );
     /* Layout size of one dot button (visual + hit padding); the viewport clip

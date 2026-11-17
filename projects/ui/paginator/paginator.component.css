@@ -383,6 +383,19 @@
   }
 
   /**
+   * Centre-to-centre pitch of the dots on a mouse (WCAG 2.5.8). The hit
+   * padding grows each dot slot until slot plus `--cngx-paginator-dot-gap`
+   * reaches this value; the visual dot size does not change. On touch the
+   * larger `--cngx-target-min` sizes the slot itself.
+   * @group Layout
+   */
+  @property --cngx-paginator-dot-target-min {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /**
    * Fill of an inactive dot.
    * @group Skin
    */
