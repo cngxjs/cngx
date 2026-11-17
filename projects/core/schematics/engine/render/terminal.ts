@@ -69,7 +69,7 @@ export function createShellRendererOptions(
 // `context.logger` lands two levels in. On a terminal both renderers write
 // beside the prompts and the task list, which go to the stream straight, so
 // their lines go there too and start at the left edge like theirs. Warnings
-// and errors go to stderr, so a redirected stdout still shows them.
+// and errors take stderr, as `context.logger` routes them off a terminal.
 function streamLogger(stdout: TerminalStream, stderr: TerminalStream): RenderLogger | undefined {
   if (stdout.write === undefined) {
     return undefined;

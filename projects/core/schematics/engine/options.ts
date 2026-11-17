@@ -44,9 +44,6 @@ function flagName(key: string): string {
   return `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
 }
 
-// A flag error is the user's, so it is a `SchematicsException`; a plain
-// `Error` stays for a broken invariant.
-
 /** The message for a list flag that names an entry more than once. */
 export function createRepeatedAnswerError(key: string, entries: readonly string[]): SchematicsException {
   const verb = entries.length === 1 ? 'is' : 'are';
