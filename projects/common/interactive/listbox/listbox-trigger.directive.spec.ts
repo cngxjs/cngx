@@ -54,38 +54,8 @@ class TriggerHost {
 })
 class DeferredTriggerHost {}
 
-// jsdom does not implement the Popover API - polyfill minimally so CngxPopover
-// can toggle state without throwing.
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 describe('CngxListboxTrigger', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [TriggerHost] });
   });
 
@@ -372,7 +342,6 @@ class NestedButtonHost {}
 
 describe('CngxListboxTrigger - interactive descendants', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [NestedButtonHost] });
   });
 
@@ -440,7 +409,6 @@ class SearchInputHost {}
 
 describe('CngxListboxTrigger - co-located search input', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SearchInputHost] });
   });
 
@@ -557,7 +525,6 @@ class DebouncedSearchHost {
 
 describe('CngxListboxTrigger - keys inside the search debounce window', () => {
   beforeEach(() => {
-    polyfillPopover();
     vi.useFakeTimers();
     TestBed.configureTestingModule({ imports: [DebouncedSearchHost] });
   });
@@ -655,7 +622,6 @@ class BlockedTriggerHost {}
 
 describe('CngxListboxTrigger on a blocked host', () => {
   beforeEach(() => {
-    polyfillPopover();
     stateDisabled.set(false);
     TestBed.configureTestingModule({ imports: [BlockedTriggerHost] });
   });
@@ -749,7 +715,6 @@ class InputComboHost {
 
 describe('CngxListboxTrigger - review 2 editable combobox and Alt shortcuts', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [TriggerHost, InputComboHost] });
   });
 
@@ -853,7 +818,6 @@ function keydownRaw(target: HTMLElement, key: string): void {
 
 describe('CngxListboxTrigger - settles a pending search term before listbox keys', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [DebouncedSearchInputHost] });
   });
 
@@ -945,7 +909,6 @@ class TypeaheadBufferHost {
 
 describe('CngxListboxTrigger - a host typeahead buffer on a closed panel', () => {
   beforeEach(() => {
-    polyfillPopover();
     hostBuffer.set('');
     TestBed.configureTestingModule({ imports: [TypeaheadBufferHost] });
   });

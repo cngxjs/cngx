@@ -28,33 +28,6 @@ import { CngxMenuItem } from './menu-item.directive';
 import { CngxMenuItemSubmenu } from './menu-item-submenu.directive';
 import { CngxMenu } from './menu.directive';
 
-function polyfillPopover(): void {
-  const proto = HTMLElement.prototype as unknown as {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-    togglePopover?: (force?: boolean) => boolean;
-  };
-  if (typeof proto.showPopover !== 'function') {
-    proto.showPopover = function (this: HTMLElement) {
-      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
-      this.setAttribute('data-popover-open', 'true');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.hidePopover = function (this: HTMLElement) {
-      this.removeAttribute('data-popover-open');
-      this.dispatchEvent(new Event('toggle', { bubbles: false }));
-    };
-    proto.togglePopover = function (this: HTMLElement) {
-      if (this.hasAttribute('data-popover-open')) {
-        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
-        return false;
-      }
-      (this as HTMLElement & { showPopover: () => void }).showPopover();
-      return true;
-    };
-  }
-}
-
 @Component({
   template: `
     <button
@@ -121,7 +94,6 @@ function press(el: Element | null, key: string, init: KeyboardEventInit = {}): K
 
 describe('CngxMenuTrigger', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [TriggerHost] });
   });
 
@@ -625,7 +597,6 @@ describe('CngxMenuTrigger submenu arrows under dir', () => {
   // routing at the trigger dispatch: under `rtl` a physical ArrowLeft must
   // reach handleArrowRight (open), ArrowRight must reach handleArrowLeft (pop).
   function configure(dir: 'ltr' | 'rtl') {
-    polyfillPopover();
     let stack: CngxMenuFocusStack | undefined;
     TestBed.configureTestingModule({
       imports: [TriggerHost],
@@ -684,7 +655,6 @@ describe('CngxMenuTrigger focus settle per open cycle', () => {
   });
 
   it('does not settle focus at mount and settles exactly once per real close', () => {
-    polyfillPopover();
     let stack: CngxMenuFocusStack | undefined;
     TestBed.configureTestingModule({
       imports: [TriggerHost],
@@ -785,7 +755,6 @@ class BlockedTriggerHost {}
 
 describe('CngxMenuTrigger on a blocked host', () => {
   beforeEach(() => {
-    polyfillPopover();
     stateDisabled.set(false);
     TestBed.configureTestingModule({ imports: [BlockedTriggerHost] });
   });
@@ -881,7 +850,6 @@ class GuardedClickHost {
 
 describe('CngxMenuTrigger on a plain aria-disabled button with a click toggle', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [GuardedClickHost] });
   });
 
@@ -917,7 +885,6 @@ describe('CngxMenuTrigger on a plain aria-disabled button with a click toggle', 
 
 describe('CngxMenuTrigger without a co-hosted popover trigger', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [BareTriggerHost] });
   });
 
@@ -991,7 +958,6 @@ class SubmenuTriggerHost {}
 
 describe('CngxMenuTrigger submenu keys on the focused menu', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [SubmenuTriggerHost] });
   });
 
@@ -1124,7 +1090,6 @@ class LateItemsHost {
 
 describe('CngxMenuTrigger - an open gesture does not outlive the close', () => {
   beforeEach(() => {
-    polyfillPopover();
     TestBed.configureTestingModule({ imports: [LateItemsHost] });
   });
 
