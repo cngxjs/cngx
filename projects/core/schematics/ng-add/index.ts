@@ -26,7 +26,7 @@ import {
   type TodoNext,
 } from '../engine';
 import { detectProject, type ProjectFacts } from './detect/detect';
-import { readGitState } from './shell/git-state';
+import { readGitState, workspaceRootOf } from './shell/git-state';
 import { angularReading, angularSupport, preflightItems } from './shell/preflight';
 import { askOnboarding, askPreset, givenAnswers, libsFloorNote, presetChangeNote, presetDefaults } from './shell/questions';
 import { planAiTools, withdrawnAiTargets } from './steps/ai-tools';
@@ -184,7 +184,7 @@ export function ngAdd(flags: NgAddFlags): Rule {
 
     const facts = detectProject(tree, await readWorkspace(tree), flagged.project);
     renderer.preflight(
-      preflightItems({ facts, peerRange: versions.angular, git: readGitState(process.cwd()), projectFlag: flagged.project }),
+      preflightItems({ facts, peerRange: versions.angular, git: readGitState(workspaceRootOf(process.cwd())), projectFlag: flagged.project }),
     );
     assertSupportedAngular(facts, versions.angular);
     assertBuildTarget(facts);

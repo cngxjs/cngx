@@ -1,4 +1,6 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 /**
  * `install-only`: the only changes are the package install `ng add` ran
@@ -65,5 +67,23 @@ export function readGitState(cwd: string, exec: GitExec = run): GitState {
     return stateOf(exec('git', ['status', '--porcelain'], options), prefix);
   } catch (error) {
     return failureOf(error);
+  }
+}
+
+const WORKSPACE_FILES: readonly string[] = ['angular.json', '.angular.json'];
+
+/**
+ * The workspace root `ng add` runs against: the nearest folder at or above
+ * `cwd` with an `angular.json` (or `.angular.json`), else `cwd` itself. The
+ * CLI accepts a call from a subfolder, and git reads its prefix from there.
+ */
+export function workspaceRootOf(cwd: string, exists: (path: string) => boolean = existsSync): string {
+  for (let folder = cwd; ; folder = dirname(folder)) {
+    if (WORKSPACE_FILES.some((file) => exists(join(folder, file)))) {
+      return folder;
+    }
+    if (dirname(folder) === folder) {
+      return cwd;
+    }
   }
 }

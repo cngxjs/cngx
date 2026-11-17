@@ -43,7 +43,7 @@ const terminal = vi.hoisted(() => ({
   asked: [] as string[],
 }));
 
-vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git }));
+vi.mock('./shell/git-state', () => ({ readGitState: () => terminal.git, workspaceRootOf: (cwd: string) => cwd }));
 
 // Specs run unstamped, as a local build does; a case that checks the real
 // pins sets `stamped` to the versions a release writes into versions.json.
