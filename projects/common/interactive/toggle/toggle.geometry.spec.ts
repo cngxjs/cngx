@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxToggle } from './toggle.component';
@@ -43,6 +43,18 @@ function query(root: HTMLElement, selector: string): HTMLElement {
   return el as HTMLElement;
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxToggle],
+  template: `
+    <cngx-toggle class="toggle-default" [value]="true">Default</cngx-toggle>
+    <div style="--cngx-color-primary: oklch(0.55 0.15 250)">
+      <cngx-toggle class="toggle-branded" [value]="true">Branded</cngx-toggle>
+    </div>
+  `,
+})
+class CheckedToggleHost {}
+
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
@@ -71,5 +83,21 @@ describe('CngxToggle geometry', () => {
   it('reverses the row under label-before', () => {
     const host = mount('before');
     expect(computedValue(host, 'flex-direction')).toBe('row-reverse');
+  });
+
+  // The on-track falls back to the primary at the use site; a registered
+  // initial-value would shadow that fallback and paint Ember under any brand.
+  it('paints the checked track with the primary in scope', () => {
+    const fixture = TestBed.createComponent(CheckedToggleHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const trackBg = (selector: string): string =>
+      computedValue(
+        query(mountedRoot as HTMLElement, `${selector} .cngx-toggle__track`),
+        'background-color',
+      );
+    expect(rasterise(trackBg('.toggle-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
+    expect(rasterise(trackBg('.toggle-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
   });
 });
