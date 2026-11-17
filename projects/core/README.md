@@ -125,6 +125,9 @@ it (defaults to `computed(() => false)`).
 
 ## Theming
 
+The `./theming/*.css` files are the layers `@cngx/themes/cngx.css` imports. Import
+them one by one only for a custom theme, in the order `cngx.css` gives.
+
 ### Typography units
 
 Library `font-size` is always root-relative -- `rem`, `em`, or `%`, never `px`.

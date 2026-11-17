@@ -48,7 +48,7 @@ export const CNGX_LANGUAGE_DE = {
     failed: '',
   },
   breadcrumb: {
-    bar: 'Breadcrumb',
+    bar: 'Pfadnavigation',
     overflowTrigger: 'Ausgeblendete Pfadeinträge anzeigen',
     overflowMenu: 'Ausgeblendete Pfadeinträge',
     siblingsTrigger: 'Seiten derselben Ebene anzeigen',
@@ -312,7 +312,7 @@ export const CNGX_LANGUAGE_DE = {
     copiedAnnouncement: 'In die Zwischenablage kopiert',
     rangeMinimum: 'Minimum',
     rangeMaximum: 'Maximum',
-    breadcrumb: 'Breadcrumb',
+    breadcrumb: 'Pfadnavigation',
     unsavedChanges: 'Es gibt ungespeicherte Änderungen. Trotzdem verlassen?',
     rangeValue: '{start}–{end}',
   },

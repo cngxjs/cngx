@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['async-state', 'behavior'],
-  apiComponents: ['CngxToaster'],
+  apiComponents: ['createTransitionTracker', 'CngxToaster'],
   moduleImports: [
     "import { createTransitionTracker, type AsyncStatus } from '@cngx/core/utils';",
     "import { CngxToaster, type ToastConfig } from '@cngx/ui/feedback';",

@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['dev'],
   artifact: 'building-block',
   focus: ['behavior', 'error-handling'],
+  apiComponents: ['createKeyedRegistry'],
   moduleImports: ["import { createKeyedRegistry } from '@cngx/core/utils';"],
   setup: `protected readonly panels = ['Summary panel', 'Audit panel'] as const;
   protected readonly registry = createKeyedRegistry<string>({ name: 'PanelRegistry' });

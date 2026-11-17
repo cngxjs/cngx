@@ -41,6 +41,13 @@ describe('CNGX_LANGUAGE_DE', () => {
     expect(CNGX_LANGUAGE_DE.formField.timeRange).not.toBe('Enter a valid time.');
   });
 
+  it('translates the breadcrumb labels', () => {
+    expect(CNGX_LANGUAGE_DE.breadcrumb.bar).not.toBe(CNGX_LANGUAGE_EN.breadcrumb.bar);
+    expect(CNGX_LANGUAGE_DE.interactive.breadcrumb).not.toBe(
+      CNGX_LANGUAGE_EN.interactive.breadcrumb,
+    );
+  });
+
   it('picks the German plural form for one and many', () => {
     const message = CNGX_LANGUAGE_DE.treetable.rowsSelected;
     expect(formatMessage(message, { count: 1 }, 'de')).not.toBe(

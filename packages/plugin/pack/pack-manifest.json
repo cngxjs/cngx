@@ -229,12 +229,12 @@
     {
       "artifact": "pack/recipes/core-utils-aggregate-async-state.md",
       "source": "examples/stories/core/utils/aggregate-async-state/create-aggregate-async-state.story.ts",
-      "contentHash": "sha256:f0c053e1f80559485c3a81d31002491b93e06563ae4c86243cdbd9aceca10802"
+      "contentHash": "sha256:2848e476d43dd8be79d02082fe75e8ef375727eb4e90f76dfdfc976b50a6de26"
     },
     {
       "artifact": "pack/recipes/core-utils-transition-tracker.md",
       "source": "examples/stories/core/utils/transition-tracker/status-transitions.story.ts",
-      "contentHash": "sha256:b183db020d6f60e1122fab6750b2b4eb6e4575eefc7233160636405df950e021"
+      "contentHash": "sha256:18609ca7ad05fa131aa87a70a0484b31890de07250af0614925d9d809bc921e0"
     },
     {
       "artifact": "pack/recipes/common-button-button.md",
