@@ -480,8 +480,9 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     await page.keyboard.press('ArrowDown');
     const active = page.locator('.cngx-tree-select__node--active').first();
     await expect(active).toBeVisible();
-    const s = await readAffordance(active);
-    expect(s.backgroundColor).toBe(s.highlight);
+    // The active paint transitions in, so poll until it lands.
+    const { highlight } = await readAffordance(active);
+    await expect.poll(async () => (await readAffordance(active)).backgroundColor).toBe(highlight);
   });
 
   // Phase D - @cngx/ui organisms. The dialog re-draws its shadow-lost boundary

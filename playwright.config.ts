@@ -28,6 +28,9 @@ const firefoxUse = firefoxMacHome
     }
   : { ...devices['Desktop Firefox'] };
 
+const BASE_URL = process.env['PLAYWRIGHT_TEST_BASE_URL'] ?? 'http://localhost:4200';
+const PORT = new URL(BASE_URL).port || '4200';
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -52,7 +55,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env['PLAYWRIGHT_TEST_BASE_URL'] ?? 'http://localhost:4200',
+    baseURL: BASE_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -69,8 +72,8 @@ export default defineConfig({
      is how a gate turns into a timeout. Run `npm run examples:generate`
      first when starting from a clean tree locally. */
   webServer: {
-    command: 'npx ng serve examples',
-    url: 'http://localhost:4200',
+    command: `npx ng serve examples --port ${PORT}`,
+    url: BASE_URL,
     reuseExistingServer: !process.env['CI'],
     timeout: 180_000,
   },
