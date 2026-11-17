@@ -36,8 +36,8 @@ itself - for that, `get_api` plus `get_story_example` are the source of record; 
 not assume a recipe exists where it does not. Two committed recipes cover the
 shapes next to it - read the one that matches when your collection needs it:
 
-- `pack/recipes/common-data-async-boundary.md` - per-source error attribution when
-  the data arrives from several async sources.
+- `pack/recipes/common-data-async-boundary.md` - one aggregate state over several
+  async sources, rendered when every source has settled.
 - `pack/recipes/common-data-recycler.md` - a recycled, virtualised list with a
   first-load skeleton for large collections.
 

@@ -3,24 +3,18 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncBoundary: one loading source shows the aggregate skeleton',
   subtitle:
-    'While any source is <code>loading</code> or <code>pending</code>, the combined status is <code>loading</code> and the container shows one aggregate skeleton - the screen never renders a half-loaded state.',
+    'While any source is <code>loading</code> or <code>pending</code>, the combined status is <code>loading</code> and <code>*cngxAsync</code> shows one aggregate skeleton - the screen never renders a half-loaded state.',
   description:
     'The 5-step status rule puts loading above refreshing and success, so a single in-flight source holds the whole boundary in the skeleton view until every source settles.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['async-state', 'composition'],
-  apiComponents: ['CngxAsyncBoundary', 'CngxAsyncContainer'],
+  apiComponents: ['CngxAsyncBoundary', 'CngxAsync'],
   moduleImports: [
-    "import { createManualState, CngxAsyncBoundary, type AggregateSource } from '@cngx/common/data';",
-    "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl } from '@cngx/ui/feedback';",
+    "import { createManualState, CngxAsync, CngxAsyncBoundary, type AggregateSource } from '@cngx/common/data';",
   ],
-  imports: [
-    'CngxAsyncBoundary',
-    'CngxAsyncContainer',
-    'CngxAsyncSkeletonTpl',
-    'CngxAsyncContentTpl',
-  ],
+  imports: ['CngxAsyncBoundary', 'CngxAsync'],
   setup: `protected readonly user = createManualState<string>();
   protected readonly permissions = createManualState<string[]>();
   protected readonly flags = createManualState<string>();
@@ -30,24 +24,24 @@ export const STORY: DemoSpec = {
     { key: 'permissions', label: 'Permissions', state: this.permissions },
     { key: 'flags', label: 'Feature flags', state: this.flags },
   ]);`,
-  template: `  <div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary">
-    <cngx-async-container [state]="b.state" ariaLabel="Account bootstrap">
-      <ng-template cngxAsyncSkeleton>
-        <div class="demo-stack" style="display:flex;flex-direction:column;gap:8px">
-          @for (i of [1,2,3]; track i) {
-            <div class="demo-skeleton-bar" style="height:20px"></div>
-          }
-        </div>
-      </ng-template>
+  template: `  <div [cngxAsyncBoundary]="sources()" #b="cngxAsyncBoundary" [attr.aria-busy]="b.state.isBusy()">
+    <ul
+      *cngxAsync="b.state; let data; skeleton: skeletonTpl"
+      class="demo-stack"
+      aria-label="Account bootstrap"
+      style="list-style:none;padding:0;margin:0;gap:6px">
+      <li class="demo-card-tile">User: {{ data[0] }}</li>
+      <li class="demo-card-tile">Permissions: {{ data[1] }}</li>
+      <li class="demo-card-tile">Feature flags: {{ data[2] }}</li>
+    </ul>
 
-      <ng-template cngxAsyncContent let-data>
-        <ul class="demo-stack" style="list-style:none;padding:0;margin:0;gap:6px">
-          <li class="demo-card-tile">User: {{ data[0] }}</li>
-          <li class="demo-card-tile">Permissions: {{ data[1] }}</li>
-          <li class="demo-card-tile">Feature flags: {{ data[2] }}</li>
-        </ul>
-      </ng-template>
-    </cngx-async-container>
+    <ng-template #skeletonTpl>
+      <div class="demo-stack" style="display:flex;flex-direction:column;gap:8px">
+        @for (i of [1,2,3]; track i) {
+          <div class="demo-skeleton-bar" style="height:20px"></div>
+        }
+      </div>
+    </ng-template>
   </div>`,
   setupChrome: `constructor() {
     this.user.setSuccess('Ada Lovelace');
