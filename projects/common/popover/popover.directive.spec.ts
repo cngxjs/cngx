@@ -705,6 +705,33 @@ describe('CngxPopover', () => {
       fixture.detectChanges();
       expect(popoverEl.classList.contains('cngx-popover--opening')).toBe(true);
     });
+
+    it('makes the host inert only for the close fade', () => {
+      vi.useFakeTimers();
+      const { fixture, popoverEl } = setup(BasicHost);
+      const host = fixture.componentInstance as BasicHost;
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+      expect(popoverEl.hasAttribute('inert')).toBe(false);
+
+      host.popover().show();
+      fixture.detectChanges();
+      expect(popoverEl.hasAttribute('inert')).toBe(false);
+
+      host.popover().hide();
+      fixture.detectChanges();
+      expect(host.popover().state()).toBe('closing');
+      expect(popoverEl.getAttribute('inert')).toBe('');
+
+      vi.advanceTimersByTime(1000);
+      fixture.detectChanges();
+      expect(host.popover().state()).toBe('closed');
+      expect(popoverEl.hasAttribute('inert')).toBe(false);
+      vi.useRealTimers();
+    });
   });
 
   describe('cleanup', () => {

@@ -781,6 +781,42 @@ describe('CngxPopoverSheet', () => {
       document.removeEventListener('focusout', log);
     });
 
+    it('keeps the inert of its own close fade out of the page claims', () => {
+      vi.useFakeTimers();
+      const ctx = setup();
+      openFromOpener(ctx);
+      const opener = ctx.q<HTMLButtonElement>('.opener');
+      const check = ctx.q('.page-check');
+
+      stubTransition('0.2s');
+      ctx.host.popover().hide();
+      ctx.flush();
+      expect(ctx.host.popover().state()).toBe('closing');
+      // The release ran before the fade: page live, focus home, panel inert.
+      expect(ctx.panel.getAttribute('inert')).toBe('');
+      expect(opener.hasAttribute('inert')).toBe(false);
+      expect(check.hasAttribute('inert')).toBe(false);
+      expect(document.activeElement).toBe(opener);
+
+      vi.advanceTimersByTime(500);
+      ctx.flush();
+      expect(ctx.host.popover().state()).toBe('closed');
+      expect(ctx.panel.hasAttribute('inert')).toBe(false);
+      expect(document.activeElement).toBe(opener);
+
+      // A reopen engages cleanly: nothing left over from the fade is lifted
+      // or restored as a claim.
+      openFromOpener(ctx);
+      expect(ctx.panel.hasAttribute('inert')).toBe(false);
+      expect(check.hasAttribute('inert')).toBe(true);
+      ctx.host.popover().hide();
+      ctx.flush();
+      vi.advanceTimersByTime(500);
+      ctx.flush();
+      expect(check.hasAttribute('inert')).toBe(false);
+      expect(ctx.panel.hasAttribute('inert')).toBe(false);
+    });
+
     it('returns focus to the anchor when the opening tap did not focus anything', () => {
       const ctx = setup();
       const opener = ctx.q<HTMLButtonElement>('.opener');

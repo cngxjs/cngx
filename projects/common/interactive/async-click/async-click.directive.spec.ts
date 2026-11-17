@@ -401,6 +401,26 @@ describe('CngxAsyncClick', () => {
     expect(region.textContent).toBe('');
   });
 
+  it('counts a host inside an inert subtree as not rendered', async () => {
+    const announce = vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+    const { btn, fixture, host } = setupButton();
+    const region = btn.nextElementSibling as HTMLElement;
+    // A popover fading out: still rendered, but inert, so the region it is
+    // about to hide would never be spoken.
+    Object.assign(btn, { checkVisibility: () => true });
+    btn.parentElement!.setAttribute('inert', '');
+    host.actionImpl = () => Promise.reject(new Error('nope'));
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(announce).toHaveBeenCalledWith('Action failed', 'polite', btn);
+    });
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(region.textContent).toBe('');
+  });
+
   it('empties the region when a run starts, so a repeated identical outcome is a second write', async () => {
     const { btn, fixture, host } = setupButton();
     const region = btn.nextElementSibling as HTMLElement;
