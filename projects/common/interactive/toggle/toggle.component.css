@@ -179,15 +179,14 @@
   }
 
   /**
-   * Background of the on-state track. Falls back to
-   * `--cngx-color-primary`.
+   * Background of the on-state track. Unset by default, so the track
+   * paints the `--cngx-color-primary` in scope.
    * @group State / On
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-toggle-track-bg-on {
-    syntax: '<color>';
+    syntax: '*';
     inherits: false;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
