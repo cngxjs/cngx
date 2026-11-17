@@ -1019,13 +1019,6 @@
     }
   }
 
-  /* Coarse pointer (touch): bump the hit target into the comfortable range. */
-  @media (pointer: coarse) {
-    .cngx-paginator {
-      --cngx-paginator-button-size: 2.75rem;
-    }
-  }
-
   /*
    * RTL: mirror the directional nav chevrons, which draw LTR-pointing as svg
    * (no bidi glyph mirroring applies). `:dir(rtl)` matches the element's
