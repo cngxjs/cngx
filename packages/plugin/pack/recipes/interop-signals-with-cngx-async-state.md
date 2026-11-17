@@ -1,7 +1,7 @@
 ---
 title: "withCngxAsyncState: SignalStore async feature"
 whenToUse: "The feature contributes one createManualState per key via withProps - no hand-written isLoading flags, no new state machine. The &lt;T&gt;() / (key) currying keeps the key literal, so the members are concretely named. The demo instantiates the store inline for a self-contained example; an application registers the store class in providers and injects it. Check the fail flag to route the same stream through setError and watch the error surface take over."
-symbols: [CngxAsyncContainer]
+symbols: [CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl]
 ---
 
 # withCngxAsyncState: SignalStore async feature
@@ -11,6 +11,9 @@ The feature contributes one createManualState per key via withProps - no hand-wr
 ## Symbols
 
 - `CngxAsyncContainer`
+- `CngxAsyncSkeletonTpl`
+- `CngxAsyncContentTpl`
+- `CngxAsyncErrorTpl`
 
 ## Setup
 
