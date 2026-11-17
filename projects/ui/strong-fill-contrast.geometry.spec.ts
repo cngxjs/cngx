@@ -4,10 +4,11 @@ import { computedValue, contrastRatio } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { cdp } from 'vitest/browser';
 
-// Runs in a real Chromium (the `test-geometry` target). A solid primary fill
-// that carries a label paints from the strong pair (`--cngx-color-primary-strong`
-// with `--cngx-color-on-primary-strong`), like a solid primary button, so the
-// label clears 4.5:1 in both default schemes with no theme bridge loaded.
+// Runs in a real Chromium (the `test-geometry` target). A solid primary or
+// danger fill that carries a label or mark paints from the strong pair
+// (`--cngx-color-primary-strong` with `--cngx-color-on-primary-strong`, the
+// danger pair likewise), like a solid button, so the ink clears 4.5:1 in both
+// default schemes with no theme bridge loaded.
 
 const SCHEMES = ['light', 'dark'] as const;
 
@@ -15,6 +16,9 @@ interface FillCase {
   readonly name: string;
   readonly selector: string;
   readonly pseudo?: '::before';
+  /** The ink sits on a separate element painted over the fill. */
+  readonly ink?: string;
+  readonly tone?: 'primary' | 'danger';
 }
 
 const CASES: readonly FillCase[] = [
@@ -26,6 +30,19 @@ const CASES: readonly FillCase[] = [
     name: 'data-grid-accordion spreadsheet open gutter',
     selector: '.dga-sheet .cngx-dga-row__cells',
     pseudo: '::before',
+  },
+  {
+    name: 'dot-stepper error dot',
+    selector: '.cngx-dot-stepper__dot',
+    ink: '.cngx-dot-stepper__dot-glyph',
+    tone: 'danger',
+  },
+  { name: 'stepper chips errored step', selector: '.stepper-chips .cngx-stepper__step', tone: 'danger' },
+  {
+    name: 'stepper mobile error dot',
+    selector: '.cngx-stepper__mobile-dot',
+    ink: '.cngx-stepper__mobile-dot-glyph',
+    tone: 'danger',
   },
   { name: 'breadcrumb shell product mark', selector: '.breadcrumb-shell .product-mark' },
   { name: 'paginator pill current page', selector: '.pag-pill .cngx-paginator__page' },
@@ -43,6 +60,9 @@ const CASES: readonly FillCase[] = [
     './tabs/tab-group.component.css',
     './accordion/accordion-skins.css',
     './data-grid-accordion/data-grid-accordion-skins.css',
+    './stepper/styles/stepper-base.css',
+    './stepper/stepper.component.css',
+    './stepper/dot-stepper.component.css',
     './breadcrumb/breadcrumb-bar.component.css',
     '../common/data/paginate/styles/paginator-base.css',
     './paginator/paginator.component.css',
@@ -57,6 +77,11 @@ const CASES: readonly FillCase[] = [
       >
         <span class="probe-strong" style="color: var(--cngx-color-primary-strong)"></span>
         <span class="probe-on-strong" style="color: var(--cngx-color-on-primary-strong)"></span>
+        <span class="probe-danger-strong" style="color: var(--cngx-color-danger-strong)"></span>
+        <span
+          class="probe-on-danger-strong"
+          style="color: var(--cngx-color-on-danger-strong)"
+        ></span>
         <nav class="cngx-tab-nav tab-nav-pill" data-skin="pill">
           <a class="cngx-tab-nav__link cngx-tab-nav__link--active">Overview</a>
         </nav>
@@ -77,6 +102,23 @@ const CASES: readonly FillCase[] = [
           <div class="cngx-dga-row" data-expanded>
             <div class="cngx-dga-row__cells"><span class="cngx-dga-cell">Row</span></div>
           </div>
+        </div>
+        <div class="cngx-dot-stepper">
+          <span class="cngx-dot-stepper__cell">
+            <span class="cngx-dot-stepper__dot cngx-dot-stepper__dot--error" data-state="error"></span>
+            <span class="cngx-dot-stepper__dot-glyph">!</span>
+          </span>
+        </div>
+        <div class="cngx-stepper stepper-chips" data-skin="chips">
+          <div class="cngx-stepper__step">
+            <span class="cngx-stepper__indicator" data-state="error"></span>
+            Billing
+          </div>
+        </div>
+        <div class="cngx-stepper">
+          <span class="cngx-stepper__mobile-dot cngx-stepper__mobile-dot--error" data-state="error">
+            <span class="cngx-stepper__mobile-dot-glyph">!</span>
+          </span>
         </div>
         <div class="cngx-breadcrumb breadcrumb-shell" data-skin="shell">
           <span class="product-mark">AC</span>
@@ -128,19 +170,24 @@ afterEach(async () => {
   await cdp().send('Emulation.setEmulatedMedia', { features: [] });
 });
 
-function expectStrongPair(scope: HTMLElement, el: HTMLElement, pseudo?: string): void {
+function expectStrongPair(
+  scope: HTMLElement,
+  el: HTMLElement,
+  { pseudo, ink, tone = 'primary' }: Partial<FillCase> = {},
+): void {
   const fill = read(el, 'background-color', pseudo);
-  const label = read(el, 'color', pseudo);
+  const label = ink ? computedValue(one(el.parentElement ?? el, ink), 'color') : read(el, 'color', pseudo);
+  const probe = tone === 'danger' ? 'danger-strong' : 'strong';
   expect(contrastRatio(label, fill)).toBeGreaterThanOrEqual(4.5);
-  expect(contrastRatio(fill, computedValue(one(scope, '.probe-strong'), 'color'))).toBe(1);
-  expect(contrastRatio(label, computedValue(one(scope, '.probe-on-strong'), 'color'))).toBe(1);
+  expect(contrastRatio(fill, computedValue(one(scope, `.probe-${probe}`), 'color'))).toBe(1);
+  expect(contrastRatio(label, computedValue(one(scope, `.probe-on-${probe}`), 'color'))).toBe(1);
 }
 
 describe.each(SCHEMES)('strong primary fill under a label, %s', (scheme) => {
-  it.each(CASES)('$name paints the strong pair at 4.5:1', ({ selector, pseudo }) => {
+  it.each(CASES)('$name paints the strong pair at 4.5:1', (fillCase) => {
     const root = mount();
     const scope = one(root, `.scheme-${scheme}`);
-    expectStrongPair(scope, one(scope, selector), pseudo);
+    expectStrongPair(scope, one(scope, fillCase.selector), fillCase);
   });
 
   // The shell routes the alpha chip's current tokens from `:root`, where the

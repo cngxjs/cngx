@@ -509,20 +509,6 @@ const ALLOWLIST = [
   },
   {
     rule: 'A',
-    token: '--cngx-color-on-danger',
-    file: 'projects/ui/stepper/dot-stepper.component.css',
-    reason:
-      'undefined in the default palette, solid fill below 4.5:1; owner decision 2026-11-03 limits the fix to the button, follow-up',
-  },
-  {
-    rule: 'A',
-    token: '--cngx-color-on-danger',
-    file: 'projects/ui/stepper/stepper.component.css',
-    reason:
-      'undefined in the default palette, solid fill below 4.5:1; owner decision 2026-11-03 limits the fix to the button, follow-up',
-  },
-  {
-    rule: 'A',
     token: '--cngx-color-surface-alt',
     file: 'projects/ui/accordion/accordion-skins.css',
     reason: 'out of feature area, follow-up (button family roadmap, outside-roadmap list)',
