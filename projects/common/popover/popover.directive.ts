@@ -226,7 +226,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
  *   {{ errorSummary() }}
  * </div>
  * ```
- * <example-url>/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>/#/common/popover/listbox/select-dropdown</example-url>
  * <example-url>/#/common/popover/click-popover</example-url>
  * <example-url>/#/common/popover/controlled-open</example-url>
  * <example-url>/#/common/popover/escape-mode</example-url>

@@ -109,6 +109,8 @@ test.describe('common/interactive/keyboard-shortcut', () => {
     await page.getByRole('button', { name: 'Open dialog' }).click();
     const dialog = page.getByRole('dialog', { name: 'Submit changes' });
     await expect(dialog).toBeVisible();
+    // The dialog scope turns active on the next render; the submit binding lists its keys once it is live.
+    await expect(dialog.getByRole('button', { name: /Submit/ })).toHaveAttribute('aria-keyshortcuts', /Enter/);
     await page.keyboard.press(`${mod}+s`);
     await expect(saves).toHaveText('1');
 

@@ -72,7 +72,7 @@ function readOptionText(el: HTMLElement): string {
  * @since 0.1.0
  * @relatedTo CngxListbox, CngxOptionGroup, CngxActiveDescendant
  * <example-url>/#/common/interactive/listbox/search/command-palette</example-url>
- * <example-url>/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>/#/common/popover/listbox/select-dropdown</example-url>
  * <example-url>/#/common/interactive/listbox/base/multi-select</example-url>
  * <example-url>/#/common/interactive/listbox/base/single-select</example-url>
  * <example-url>/#/common/interactive/option/flat-options-with-ad</example-url>

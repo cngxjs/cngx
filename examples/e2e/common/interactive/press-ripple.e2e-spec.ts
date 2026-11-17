@@ -12,9 +12,9 @@ test.describe('common/interactive/press-ripple', () => {
     const defaultBtn = page.getByRole('button', { name: 'Default', exact: true });
     const amberBtn = page.getByRole('button', { name: 'Amber ripple', exact: true });
     const centredBtn = page.getByRole('button', { name: 'Centered press + ripple', exact: true });
-    await expect(defaultBtn).toHaveClass(/cngx-button/);
-    await expect(amberBtn).toHaveClass(/cngx-button/);
-    await expect(centredBtn).toHaveClass(/cngx-icon-button/);
+    await expect(defaultBtn).toHaveClass(/cngx-ripple/);
+    await expect(amberBtn).toHaveClass(/cngx-ripple/);
+    await expect(centredBtn).toHaveClass(/cngx-ripple/);
 
     // Pressing the button should flip the cngx-pressed class while the
     // pointer is down. Use mouse down/up because click is too fast to catch.

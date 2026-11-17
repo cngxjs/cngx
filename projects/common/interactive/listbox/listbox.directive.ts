@@ -48,7 +48,7 @@ import { CngxOption } from './option.directive';
  * @relatedTo CngxListboxSearch, CngxListboxTrigger, CngxOption, CngxOptionGroup, CngxActiveDescendant
  * <example-url>/#/common/interactive/listbox/base/synced-listboxes</example-url>
  * <example-url>/#/common/interactive/listbox/search/command-palette</example-url>
- * <example-url>/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>/#/common/popover/listbox/select-dropdown</example-url>
  * <example-url>/#/common/interactive/listbox/base/multi-select</example-url>
  * <example-url>/#/common/interactive/listbox/base/single-select</example-url>
  * <example-url>/#/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>

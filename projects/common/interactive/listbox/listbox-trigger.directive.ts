@@ -95,7 +95,7 @@ interface PopoverController {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-trigger.directive.ts
  * @since 0.1.0
  * @relatedTo CngxListbox, CngxListboxSearch, CngxPopoverTrigger, CngxActiveDescendant
- * <example-url>/#/common/interactive/listbox/trigger/select-dropdown</example-url>
+ * <example-url>/#/common/popover/listbox/select-dropdown</example-url>
  * @axis level molecule
  */
 @Directive({
