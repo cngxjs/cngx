@@ -260,7 +260,7 @@
   @property --cngx-button-neutral-tint {
     syntax: '*';
     inherits: true;
-    initial-value: 5%;
+    initial-value: 10%;
   }
 
   /**
@@ -270,7 +270,7 @@
   @property --cngx-button-neutral-tint-hover {
     syntax: '*';
     inherits: true;
-    initial-value: 9%;
+    initial-value: 14%;
   }
 
   /**
@@ -316,7 +316,52 @@
   @property --cngx-button-neutral-tint-pressed {
     syntax: '*';
     inherits: true;
-    initial-value: 13%;
+    initial-value: 18%;
+  }
+
+  /**
+   * Fill strength of a neutral `solid` button, the tone mixed into the
+   * surface. One rung above `--cngx-button-neutral-tint`, so solid stays the
+   * stronger neutral fill; the dark scheme steps it up.
+   * @group Tone
+   */
+  @property --cngx-button-neutral-solid {
+    syntax: '*';
+    inherits: true;
+    initial-value: 18%;
+  }
+
+  /**
+   * Hover fill strength of a neutral `solid` button.
+   * @group State / Hover
+   */
+  @property --cngx-button-neutral-solid-hover {
+    syntax: '*';
+    inherits: true;
+    initial-value: 23%;
+  }
+
+  /**
+   * Pressed fill strength of a neutral `solid` button, one step above
+   * `--cngx-button-neutral-solid-hover`.
+   * @group State / Pressed
+   */
+  @property --cngx-button-neutral-solid-pressed {
+    syntax: '*';
+    inherits: true;
+    initial-value: 28%;
+  }
+
+  /**
+   * Lightness offset of a primary or danger `secondary` label from the tone
+   * text rung, so the label holds 4.5:1 on the stronger wash: darker in the
+   * light scheme, lighter in the dark one.
+   * @group Tone
+   */
+  @property --cngx-button-secondary-text-shift {
+    syntax: '*';
+    inherits: true;
+    initial-value: -0.07;
   }
 
   /**
@@ -331,7 +376,7 @@
 
   /**
    * Fill of a `secondary` button. Unset by default, so the fill is the tone
-   * mixed into transparency (the neutral tint for `neutral`, 12% otherwise).
+   * mixed into transparency (the neutral tint for `neutral`, 20% otherwise).
    * A theme sets it to paint a container colour instead (the Material bridge
    * maps it to the `*-container` roles).
    * @group Tone
@@ -362,31 +407,47 @@
   }
 
   :root {
-    --cngx-button-neutral-tint: 5%;
-    --cngx-button-neutral-tint-hover: 9%;
-    --cngx-button-neutral-tint-pressed: 13%;
+    --cngx-button-neutral-tint: 10%;
+    --cngx-button-neutral-tint-hover: 14%;
+    --cngx-button-neutral-tint-pressed: 18%;
+    --cngx-button-neutral-solid: 18%;
+    --cngx-button-neutral-solid-hover: 23%;
+    --cngx-button-neutral-solid-pressed: 28%;
+    --cngx-button-secondary-text-shift: -0.07;
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-button-neutral-tint: 10%;
-      --cngx-button-neutral-tint-hover: 15%;
-      --cngx-button-neutral-tint-pressed: 20%;
+      --cngx-button-neutral-tint: 16%;
+      --cngx-button-neutral-tint-hover: 21%;
+      --cngx-button-neutral-tint-pressed: 26%;
+      --cngx-button-neutral-solid: 26%;
+      --cngx-button-neutral-solid-hover: 31%;
+      --cngx-button-neutral-solid-pressed: 36%;
+      --cngx-button-secondary-text-shift: 0.06;
     }
   }
 
   [data-color-scheme='dark'],
   .dark {
-    --cngx-button-neutral-tint: 10%;
-    --cngx-button-neutral-tint-hover: 15%;
-    --cngx-button-neutral-tint-pressed: 20%;
+    --cngx-button-neutral-tint: 16%;
+    --cngx-button-neutral-tint-hover: 21%;
+    --cngx-button-neutral-tint-pressed: 26%;
+    --cngx-button-neutral-solid: 26%;
+    --cngx-button-neutral-solid-hover: 31%;
+    --cngx-button-neutral-solid-pressed: 36%;
+    --cngx-button-secondary-text-shift: 0.06;
   }
 
   [data-color-scheme='light'],
   .light {
-    --cngx-button-neutral-tint: 5%;
-    --cngx-button-neutral-tint-hover: 9%;
-    --cngx-button-neutral-tint-pressed: 13%;
+    --cngx-button-neutral-tint: 10%;
+    --cngx-button-neutral-tint-hover: 14%;
+    --cngx-button-neutral-tint-pressed: 18%;
+    --cngx-button-neutral-solid: 18%;
+    --cngx-button-neutral-solid-hover: 23%;
+    --cngx-button-neutral-solid-pressed: 28%;
+    --cngx-button-secondary-text-shift: -0.07;
   }
 
   /* Derive the colour transition from the motion scale; the registered
@@ -537,7 +598,7 @@
     :scope[data-variant='solid'][data-tone='neutral'] {
       background: color-mix(
         in oklch,
-        var(--cngx-button-tone, currentColor) 10%,
+        var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-solid, 18%),
         var(--cngx-color-surface, Canvas)
       );
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
@@ -546,7 +607,7 @@
     :scope[data-variant='solid'][data-tone='neutral']:hover:not([aria-disabled='true']) {
       background: color-mix(
         in oklch,
-        var(--cngx-button-tone, currentColor) 15%,
+        var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-solid-hover, 23%),
         var(--cngx-color-surface, Canvas)
       );
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
@@ -556,14 +617,25 @@
     :scope[data-variant='secondary'] {
       background: var(
         --cngx-button-secondary-bg,
-        color-mix(in oklch, var(--cngx-button-tone, currentColor) 12%, transparent)
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 20%, transparent)
       );
       color: var(--cngx-button-secondary-color, var(--cngx-button-tone-text, currentColor));
+    }
+    /* A primary or danger label sits on a stronger wash than the surface the
+       tone text rung is tuned for, so it shifts one step further from it. */
+    :scope[data-variant='secondary']:not([data-tone='neutral']) {
+      color: var(
+        --cngx-button-secondary-color,
+        oklch(
+          from var(--cngx-button-tone-text, currentColor)
+            calc(l + var(--cngx-button-secondary-text-shift, -0.07)) c h
+        )
+      );
     }
     :scope[data-variant='secondary']:hover:not([aria-disabled='true']) {
       background: var(
         --cngx-button-secondary-bg-hover,
-        color-mix(in oklch, var(--cngx-button-tone, currentColor) 14%, transparent)
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 24%, transparent)
       );
     }
     /* Neutral secondary steps below the neutral solid fill so the two stay apart. */
@@ -572,7 +644,7 @@
         --cngx-button-secondary-bg,
         color-mix(
           in oklch,
-          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 5%),
+          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint, 10%),
           transparent
         )
       );
@@ -582,7 +654,7 @@
         --cngx-button-secondary-bg-hover,
         color-mix(
           in oklch,
-          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-hover, 9%),
+          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-hover, 14%),
           transparent
         )
       );
@@ -636,7 +708,7 @@
       ) {
       background: color-mix(
         in oklch,
-        var(--cngx-button-tone, currentColor) 20%,
+        var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-solid-pressed, 28%),
         var(--cngx-color-surface, Canvas)
       );
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
@@ -644,7 +716,7 @@
     :scope[data-variant='secondary']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
       background: var(
         --cngx-button-secondary-bg-pressed,
-        color-mix(in oklch, var(--cngx-button-tone, currentColor) 15%, transparent)
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 27%, transparent)
       );
     }
     :scope[data-variant='secondary'][data-tone='neutral']:is(:active, .cngx-pressed):not(
@@ -654,7 +726,7 @@
         --cngx-button-secondary-bg-pressed,
         color-mix(
           in oklch,
-          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-pressed),
+          var(--cngx-button-tone, currentColor) var(--cngx-button-neutral-tint-pressed, 18%),
           transparent
         )
       );
