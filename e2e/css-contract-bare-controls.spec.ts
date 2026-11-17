@@ -73,4 +73,29 @@ test.describe('css-contract: bare controls under a coarse pointer', () => {
     const { bare } = await measure(page, 'text');
     expect(bare.height).toBeGreaterThanOrEqual(44);
   });
+
+  test('a bare text input marks invalid with a danger border and busy with a progress cursor', async ({
+    page,
+  }) => {
+    await page.goto('/#/');
+    const paint = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--cngx-color-danger)';
+      const input = document.createElement('input');
+      document.body.append(probe, input);
+      const resting = getComputedStyle(input).borderTopColor;
+      input.setAttribute('aria-invalid', 'true');
+      const invalid = getComputedStyle(input).borderTopColor;
+      input.removeAttribute('aria-invalid');
+      input.setAttribute('aria-busy', 'true');
+      const cursor = getComputedStyle(input).cursor;
+      const danger = getComputedStyle(probe).color;
+      probe.remove();
+      input.remove();
+      return { resting, invalid, cursor, danger };
+    });
+    expect(paint.invalid).toBe(paint.danger);
+    expect(paint.invalid).not.toBe(paint.resting);
+    expect(paint.cursor).toBe('progress');
+  });
 });

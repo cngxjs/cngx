@@ -11,7 +11,10 @@ const css = readFileSync(resolve(__dirname, 'system-tokens.css'), 'utf-8');
 // The four tone rungs keep the tone's hue and chroma and pin the lightness
 // per scheme and per tone, so a brand override re-hues them while the
 // contrast pairing against the fixed surface and inks holds.
-function derived(tone: 'primary' | 'danger', lightness: string): string {
+function derived(
+  tone: 'primary' | 'danger' | 'success' | 'warning' | 'info',
+  lightness: string,
+): string {
   return `oklch(from var(--cngx-color-${tone}) ${lightness} c h)`;
 }
 
@@ -23,8 +26,7 @@ function schemeBlock(pattern: RegExp): string {
 
 const BLOCKS = {
   light: () => schemeBlock(/\n {2}:root {[^}]+}/),
-  'os dark': () =>
-    schemeBlock(/:root:not\(\[data-color-scheme='light'\]\):not\(\.light\) {[^}]+}/),
+  'os dark': () => schemeBlock(/:root:not\(\[data-color-scheme='light'\]\):not\(\.light\) {[^}]+}/),
   'explicit dark': () => schemeBlock(/\[data-color-scheme='dark'\],\s*\.dark {[^}]+}/),
   'explicit light': () => schemeBlock(/\[data-color-scheme='light'\],\s*\.light {[^}]+}/),
 };
@@ -112,7 +114,24 @@ describe('--cngx-color-danger-text', () => {
     ['explicit dark', '0.74'],
     ['explicit light', '0.46'],
   ] as const)('derives from danger in the %s block', (scheme, lightness) => {
-    expect(BLOCKS[scheme]()).toContain(`--cngx-color-danger-text: ${derived('danger', lightness)};`);
+    expect(BLOCKS[scheme]()).toContain(
+      `--cngx-color-danger-text: ${derived('danger', lightness)};`,
+    );
+  });
+});
+
+describe.each(['success', 'warning', 'info'] as const)('--cngx-color-%s-text', (tone) => {
+  it('is not registered', () => {
+    expect(css).not.toMatch(new RegExp(`@property --cngx-color-${tone}-text`));
+  });
+
+  it.each([
+    ['light', '0.46'],
+    ['os dark', '0.74'],
+    ['explicit dark', '0.74'],
+    ['explicit light', '0.46'],
+  ] as const)('derives from the tone in the %s block', (scheme, lightness) => {
+    expect(BLOCKS[scheme]()).toContain(`--cngx-color-${tone}-text: ${derived(tone, lightness)};`);
   });
 });
 

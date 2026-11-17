@@ -168,6 +168,49 @@
     cursor: not-allowed;
   }
 
+  /* Invalid and busy: the UA paints neither on a styled control. Invalid is
+   * an ARIA mark or :user-invalid, which only fires after the user touched
+   * the field, so an empty required field does not load red. The danger
+   * border clears 3:1 (WCAG 1.4.11); busy shows a progress cursor. */
+  input:where(
+      :not([type]),
+      [type='text'],
+      [type='search'],
+      [type='email'],
+      [type='url'],
+      [type='tel'],
+      [type='password'],
+      [type='number'],
+      [type='date'],
+      [type='time'],
+      [type='datetime-local'],
+      [type='month'],
+      [type='week']
+    ):is([aria-invalid='true'], :user-invalid),
+  textarea:is([aria-invalid='true'], :user-invalid),
+  select:is([aria-invalid='true'], :user-invalid) {
+    border-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
+  }
+  input:where(
+      :not([type]),
+      [type='text'],
+      [type='search'],
+      [type='email'],
+      [type='url'],
+      [type='tel'],
+      [type='password'],
+      [type='number'],
+      [type='date'],
+      [type='time'],
+      [type='datetime-local'],
+      [type='month'],
+      [type='week']
+    )[aria-busy='true'],
+  textarea[aria-busy='true'],
+  select[aria-busy='true'] {
+    cursor: progress;
+  }
+
   kbd {
     display: inline-block;
     margin: 0 2px;

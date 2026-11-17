@@ -79,6 +79,9 @@ const brand = (hue: number): string => `oklch(0.62 0.19 ${hue})`;
       <span class="surface" style="color: var(--cngx-color-surface)"></span>
       <span class="primary-text" style="color: var(--cngx-color-primary-text)"></span>
       <span class="danger-text" style="color: var(--cngx-color-danger-text)"></span>
+      <span class="success-text" style="color: var(--cngx-color-success-text)"></span>
+      <span class="warning-text" style="color: var(--cngx-color-warning-text)"></span>
+      <span class="info-text" style="color: var(--cngx-color-info-text)"></span>
       <span class="primary-strong" style="color: var(--cngx-color-primary-strong)"></span>
       <span class="on-primary-strong" style="color: var(--cngx-color-on-primary-strong)"></span>
       <span class="danger-strong" style="color: var(--cngx-color-danger-strong)"></span>
@@ -143,6 +146,15 @@ describe.each(SCHEMES)('tone rungs, default palette, %s', (scheme: Scheme) => {
     expect(rasterise(read('danger-text'))[3]).toBe(255);
     expect(contrastRatio(read('danger-text'), read('surface'))).toBeGreaterThanOrEqual(4.5);
   });
+
+  it.each(['success-text', 'warning-text', 'info-text'])(
+    'pairs %s with the surface at 4.5:1',
+    (probe) => {
+      const read = reader(mount(), `default-${scheme}`);
+      expect(rasterise(read(probe))[3]).toBe(255);
+      expect(contrastRatio(read(probe), read('surface'))).toBeGreaterThanOrEqual(4.5);
+    },
+  );
 
   it('carries the strong ink on both strong fills at 4.5:1', () => {
     const read = reader(mount(), `default-${scheme}`);

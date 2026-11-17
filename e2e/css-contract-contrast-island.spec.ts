@@ -78,3 +78,41 @@ for (const via of ['attribute', 'os'] as const) {
     }
   });
 }
+
+for (const via of ['attribute', 'os'] as const) {
+  test(`css-contract: the focus ring under more contrast (${via}) is 3px in the primary text rung`, async ({
+    page,
+  }) => {
+    if (via === 'os') {
+      await page.emulateMedia({ contrast: 'more' });
+    }
+    await page.goto('/#/');
+    const ring = await page.evaluate((boostOnRoot) => {
+      if (boostOnRoot) {
+        document.documentElement.setAttribute('data-contrast', 'more');
+      }
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--cngx-color-primary-text)';
+      const button = document.createElement('button');
+      button.textContent = 'Focus';
+      document.body.append(probe, button);
+      return { expected: getComputedStyle(probe).color };
+    }, via === 'attribute');
+    await page.keyboard.press('Tab');
+    await page.locator('body > button').last().focus();
+    const style = await page
+      .locator('body > button')
+      .last()
+      .evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          color: s.outlineColor,
+          width: s.outlineWidth,
+          focused: el.matches(':focus-visible'),
+        };
+      });
+    expect(style.focused).toBe(true);
+    expect(style.width).toBe('3px');
+    expect(style.color).toBe(ring.expected);
+  });
+}

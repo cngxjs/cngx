@@ -101,7 +101,7 @@
       var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
       transparent
     );
-    --cngx-step-chips-color-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
+    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
 
     // Skin: breadcrumb
     --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
@@ -156,7 +156,7 @@
       var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
       transparent
     );
-    --cngx-step-chips-color-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
+    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
 
     // Skin: breadcrumb
     --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
