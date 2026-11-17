@@ -250,15 +250,13 @@ function readUtf8(tree: Tree, path: string): string | undefined {
   }
 }
 
-/** The file names an Angular workspace root carries. */
-export const WORKSPACE_FILES: readonly string[] = ['angular.json', '.angular.json'];
-
 /**
- * Refuses a run without a workspace file at the root, in cngx words, before
- * the devkit reader fails with a bare path error.
+ * Refuses a run without `angular.json` at the root, in cngx words, before
+ * `readWorkspace` fails with a bare path error. That reader opens
+ * `/angular.json` only, so a `.angular.json` workspace is refused here too.
  */
 export function assertWorkspaceFile(tree: Tree): void {
-  if (!WORKSPACE_FILES.some((file) => tree.exists(file))) {
+  if (!tree.exists('angular.json')) {
     throw new SchematicsException('angular.json is missing at the workspace root.');
   }
 }

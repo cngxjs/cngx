@@ -2,8 +2,6 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-import { WORKSPACE_FILES } from '../detect/detect';
-
 /**
  * `install-only`: the only changes are the package install `ng add` ran
  * first. `no-repository`: the folder is outside a repository; `no-git`: git
@@ -71,6 +69,9 @@ export function readGitState(cwd: string, exec: GitExec = run): GitState {
     return failureOf(error);
   }
 }
+
+// The CLI finds a workspace by either name, so the walk accepts both.
+const WORKSPACE_FILES: readonly string[] = ['angular.json', '.angular.json'];
 
 /**
  * The workspace root `ng add` runs against: the nearest folder at or above

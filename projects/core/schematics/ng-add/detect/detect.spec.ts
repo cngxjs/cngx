@@ -341,18 +341,23 @@ export const appConfig: ApplicationConfig = {
 });
 
 describe('assertWorkspaceFile', () => {
-  it('accepts a workspace whose only workspace file is .angular.json', () => {
-    const tree = createFixtureTree();
-    tree.create('.angular.json', tree.readText('angular.json'));
-    tree.delete('angular.json');
-
-    expect(() => assertWorkspaceFile(tree)).not.toThrow();
+  it('accepts a workspace with angular.json', () => {
+    expect(() => assertWorkspaceFile(createFixtureTree())).not.toThrow();
   });
 
-  it('refuses a workspace with neither file in cngx words', () => {
+  it('refuses a workspace without angular.json in cngx words', () => {
     const tree = createFixtureTree();
     tree.delete('angular.json');
 
     expect(() => assertWorkspaceFile(tree)).toThrow('angular.json is missing at the workspace root.');
+  });
+
+  it('refuses a .angular.json workspace, which readWorkspace cannot open', async () => {
+    const tree = createFixtureTree();
+    tree.create('.angular.json', tree.readText('angular.json'));
+    tree.delete('angular.json');
+
+    expect(() => assertWorkspaceFile(tree)).toThrow('angular.json is missing at the workspace root.');
+    await expect(readWorkspace(tree)).rejects.toThrow('Path "/angular.json" does not exist.');
   });
 });
