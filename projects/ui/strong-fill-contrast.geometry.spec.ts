@@ -26,6 +26,7 @@ const CASES: readonly FillCase[] = [
     selector: '.dga-sheet .cngx-dga-row__cells',
     pseudo: '::before',
   },
+  { name: 'breadcrumb shell product mark', selector: '.breadcrumb-shell .product-mark' },
 ];
 
 @Component({
@@ -39,6 +40,7 @@ const CASES: readonly FillCase[] = [
     './tabs/tab-group.component.css',
     './accordion/accordion-skins.css',
     './data-grid-accordion/data-grid-accordion-skins.css',
+    './breadcrumb/breadcrumb-bar.component.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -70,6 +72,9 @@ const CASES: readonly FillCase[] = [
           <div class="cngx-dga-row" data-expanded>
             <div class="cngx-dga-row__cells"><span class="cngx-dga-cell">Row</span></div>
           </div>
+        </div>
+        <div class="cngx-breadcrumb breadcrumb-shell" data-skin="shell">
+          <span class="product-mark">AC</span>
         </div>
       </div>
     }

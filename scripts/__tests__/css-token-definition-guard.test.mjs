@@ -531,13 +531,6 @@ const ALLOWLIST = [
   {
     rule: 'A',
     token: '--cngx-color-on-primary',
-    file: 'projects/ui/breadcrumb/breadcrumb-bar.component.css',
-    reason:
-      'undefined in the default palette, solid fill below 4.5:1; owner decision 2026-11-03 limits the fix to the button, follow-up',
-  },
-  {
-    rule: 'A',
-    token: '--cngx-color-on-primary',
     file: 'projects/ui/paginator/paginator.component.css',
     reason:
       'undefined in the default palette, solid fill below 4.5:1; owner decision 2026-11-03 limits the fix to the button, follow-up',
