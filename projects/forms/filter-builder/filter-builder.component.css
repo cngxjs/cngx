@@ -618,16 +618,33 @@
       font-size: var(--cngx-filter-builder-joiner-font-size, 0.6875rem);
       font-weight: 650;
       letter-spacing: 0.06em;
-      color: var(--cngx-filter-builder-joiner-fg, var(--cngx-color-primary, oklch(0.55 0.17 50)));
-      background: var(--cngx-filter-builder-joiner-bg, oklch(0.66 0.19 50 / 0.12));
+      /* Colour-only text on its own primary tint: the primary text rung
+         clears 4.5:1 there, the regular primary does not. */
+      color: var(
+        --cngx-filter-builder-joiner-fg,
+        var(
+          --cngx-color-primary-text,
+          oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
+        )
+      );
+      background: var(
+        --cngx-filter-builder-joiner-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
+      );
       cursor: pointer;
       /* Small square-ish target: floor both axes on a coarse pointer. */
       min-inline-size: max(2rem, var(--cngx-target-min, 0px));
       min-block-size: var(--cngx-target-min, 0px);
     }
 
+    /* The primary text rung drops under 4.5:1 on the 20% tint, so the
+       hovered label switches to the text colour. */
     .cngx-filter-builder__logic-joiner:hover {
-      background: var(--cngx-filter-builder-joiner-hover-bg, oklch(0.66 0.19 50 / 0.2));
+      color: var(--cngx-color-text, oklch(0.2 0.01 250));
+      background: var(
+        --cngx-filter-builder-joiner-hover-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent)
+      );
     }
 
     .cngx-filter-builder__logic-joiner:focus-visible {
