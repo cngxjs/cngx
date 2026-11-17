@@ -120,6 +120,12 @@ interface FieldModel {
   reqName: string;
   errEmail: string;
   locked: string;
+  m2LightFill: string;
+  m2LightOff: string;
+  m2LightCard: string;
+  m2DarkFill: string;
+  m2DarkOff: string;
+  m2DarkCard: string;
 }
 
 /**
@@ -136,7 +142,9 @@ interface FieldModel {
  * field bridge (`field-theme.scss`, scoped to `:where(cngx-form-field)`) themes
  * the cngxInput family shown here. The standalone formatting behaviours
  * (numeric / mask / otp / format / copy-value / file-drop) live in their own
- * story routes and are outside that scope.
+ * story routes and are outside that scope. The M2 light and dark pairs
+ * (`.lab-m2-light` / `.lab-m2-dark`) measure the M2 field bridge against
+ * `mat-form-field appearance="fill"` under the same M2 theme.
  *
  * Route: `/#/material-lab`.
  */
@@ -959,6 +967,70 @@ interface FieldModel {
         </mat-form-field>
       </section>
 
+      <section class="lab-m2 lab-m2-light">
+        <h3>M2 light: fill</h3>
+        <cngx-form-field [field]="fieldForm.m2LightFill" skin="fill">
+          <label cngxLabel>Fill</label>
+          <input cngxInput class="probe-m2-light-cngx" [formField]="fieldForm.m2LightFill" placeholder="Placeholder" />
+        </cngx-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Fill</mat-label>
+          <input matInput class="probe-m2-light-mat" [(ngModel)]="matM2LightFill" placeholder="Placeholder" />
+        </mat-form-field>
+
+        <cngx-form-field [field]="fieldForm.m2LightOff" skin="fill">
+          <label cngxLabel>Disabled</label>
+          <input cngxInput class="probe-m2-light-cngx-disabled" [formField]="fieldForm.m2LightOff" />
+        </cngx-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Disabled</mat-label>
+          <input matInput class="probe-m2-light-mat-disabled" disabled [(ngModel)]="matM2LightOff" />
+        </mat-form-field>
+
+        <div class="lab-m2-card">
+          <cngx-form-field [field]="fieldForm.m2LightCard" skin="fill">
+            <label cngxLabel>On card</label>
+            <input cngxInput class="probe-m2-light-cngx-card" [formField]="fieldForm.m2LightCard" />
+          </cngx-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>On card</mat-label>
+            <input matInput class="probe-m2-light-mat-card" [(ngModel)]="matM2LightCard" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="lab-m2 lab-m2-dark">
+        <h3>M2 dark: fill</h3>
+        <cngx-form-field [field]="fieldForm.m2DarkFill" skin="fill">
+          <label cngxLabel>Fill</label>
+          <input cngxInput class="probe-m2-dark-cngx" [formField]="fieldForm.m2DarkFill" placeholder="Placeholder" />
+        </cngx-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Fill</mat-label>
+          <input matInput class="probe-m2-dark-mat" [(ngModel)]="matM2DarkFill" placeholder="Placeholder" />
+        </mat-form-field>
+
+        <cngx-form-field [field]="fieldForm.m2DarkOff" skin="fill">
+          <label cngxLabel>Disabled</label>
+          <input cngxInput class="probe-m2-dark-cngx-disabled" [formField]="fieldForm.m2DarkOff" />
+        </cngx-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Disabled</mat-label>
+          <input matInput class="probe-m2-dark-mat-disabled" disabled [(ngModel)]="matM2DarkOff" />
+        </mat-form-field>
+
+        <div class="lab-m2-card">
+          <cngx-form-field [field]="fieldForm.m2DarkCard" skin="fill">
+            <label cngxLabel>On card</label>
+            <input cngxInput class="probe-m2-dark-cngx-card" [formField]="fieldForm.m2DarkCard" />
+          </cngx-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>On card</mat-label>
+            <input matInput class="probe-m2-dark-mat-card" [(ngModel)]="matM2DarkCard" />
+          </mat-form-field>
+        </div>
+      </section>
+
       <section>
         <h3>state: form-error summary (cngx only)</h3>
         <cngx-form-errors
@@ -1058,6 +1130,12 @@ export class MaterialLab {
     reqName: '',
     errEmail: 'not-an-email',
     locked: 'ACC-100425',
+    m2LightFill: '',
+    m2LightOff: 'Locked',
+    m2LightCard: '',
+    m2DarkFill: '',
+    m2DarkOff: 'Locked',
+    m2DarkCard: '',
   });
 
   protected readonly fieldForm = form(
@@ -1067,6 +1145,8 @@ export class MaterialLab {
       required(root.errEmail);
       email(root.errEmail);
       disabled(root.locked);
+      disabled(root.m2LightOff);
+      disabled(root.m2DarkOff);
     }),
   );
 
@@ -1087,6 +1167,12 @@ export class MaterialLab {
   protected matReqName = '';
   protected matErrEmail = 'not-an-email';
   protected matLocked = 'ACC-100425';
+  protected matM2LightFill = '';
+  protected matM2LightOff = 'Locked';
+  protected matM2LightCard = '';
+  protected matM2DarkFill = '';
+  protected matM2DarkOff = 'Locked';
+  protected matM2DarkCard = '';
 
   constructor() {
     // The lab sheet (full Material theme + every bridge) outgrows the

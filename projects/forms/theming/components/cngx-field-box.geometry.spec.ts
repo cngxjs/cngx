@@ -223,6 +223,38 @@ class InnerLabelHost {
   readonly touch = signal<'on' | null>(null);
 }
 
+// Every field ring a focused control can show: the outline and bare box rings,
+// the inset ring of a lone bare control and the cngx.reset ring of a lone
+// outline control inside a field. One mock field each, so ids stay unique.
+@Component({
+  selector: 'cngx-field-box-ring-host',
+  standalone: true,
+  imports: [CngxFieldBox, CngxFormField, CngxInput],
+  styleUrls: HARNESS_STYLES,
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <span class="r-primary" style="color: var(--cngx-color-primary)">primary</span>
+    <cngx-form-field [field]="outlineBox">
+      <span cngxFieldBox class="r-outline-box" skin="outline"><input cngxInput /></span>
+    </cngx-form-field>
+    <cngx-form-field [field]="bareBox">
+      <span cngxFieldBox class="r-bare-box" skin="bare"><input cngxInput /></span>
+    </cngx-form-field>
+    <cngx-form-field [field]="bareLone">
+      <input cngxInput class="r-bare-lone" skin="bare" />
+    </cngx-form-field>
+    <cngx-form-field [field]="outlineLone">
+      <input cngxInput class="r-outline-lone" skin="outline" />
+    </cngx-form-field>
+  `,
+})
+class RingHost {
+  readonly outlineBox = createMockField({ name: 'outlineBox' }).accessor;
+  readonly bareBox = createMockField({ name: 'bareBox' }).accessor;
+  readonly bareLone = createMockField({ name: 'bareLone' }).accessor;
+  readonly outlineLone = createMockField({ name: 'outlineLone' }).accessor;
+}
+
 let mountedRoot: HTMLElement | null = null;
 
 // A toolbar lines bare fields up in a wrapping flex row. The bare width is the
@@ -700,5 +732,41 @@ describe('bare field width token', () => {
     expect(box.getBoundingClientRect().width).toBeCloseTo(256, 0);
     expect(lone.getBoundingClientRect().width).toBeCloseTo(256, 0);
     expect(lone.getBoundingClientRect().top).toBeCloseTo(box.getBoundingClientRect().top, 0);
+  });
+});
+
+// The ring colour token reaches every field ring; unset, the ring keeps the
+// primary it painted before the token existed.
+describe('field ring colour token', () => {
+  function mountRings(): HTMLElement {
+    const fixture = TestBed.createComponent(RingHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+
+  // [focused control, element that draws the ring]
+  const RINGS: readonly [string, string, string][] = [
+    ['outline box', '.r-outline-box input', '.r-outline-box'],
+    ['bare box', '.r-bare-box input', '.r-bare-box'],
+    ['lone bare control', '.r-bare-lone', '.r-bare-lone'],
+    ['lone outline control', '.r-outline-lone', '.r-outline-lone'],
+  ];
+
+  it.each(RINGS)('paints the %s ring in the token colour', (_, control, ring) => {
+    const root = mountRings();
+    root.style.setProperty('--cngx-field-ring-color', 'rgb(0, 128, 0)');
+    query(root, control).focus();
+    expect(computedValue(query(root, ring), 'outline-style')).toBe('solid');
+    expect(computedValue(query(root, ring), 'outline-color')).toBe('rgb(0, 128, 0)');
+  });
+
+  it('falls back to the primary when the token is unset', () => {
+    const root = mountRings();
+    query(root, '.r-outline-box input').focus();
+    expect(computedValue(query(root, '.r-outline-box'), 'outline-color')).toBe(
+      computedValue(query(root, '.r-primary'), 'color'),
+    );
   });
 });

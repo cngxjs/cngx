@@ -343,4 +343,44 @@ describe('field token fallbacks', () => {
     }
     expect(drift).toEqual([]);
   });
+
+  // The ring colour stays unregistered-in-effect (`syntax: '*'`, no initial)
+  // so the primary fallback resolves where the ring is drawn and a subtree
+  // primary override reaches it; every read site carries that one fallback.
+  it('reads the ring colour with the primary fallback at all twelve ring sites', () => {
+    const affix = FILES[0].css;
+    const registration = /@property --cngx-field-ring-color \{([^}]*)\}/.exec(affix)?.[1] ?? '';
+    expect(registration).toContain("syntax: '*'");
+    expect(registration).not.toContain('initial-value');
+
+    const ringFiles = [
+      ...FILES.map(({ file, css }) => ({ file, css })),
+      ...[
+        'single-select/select',
+        'typeahead/typeahead',
+        'action-select/action-select',
+        'multi-select/multi-select',
+        'combobox/combobox',
+        'tree-select/tree-select',
+        'select-shell/select-shell',
+        'reorderable-multi-select/reorderable-multi-select',
+        'action-multi-select/action-multi-select',
+      ].map((name) => {
+        const file = `projects/forms/select/${name}.component.css`;
+        return { file, css: readFileSync(resolve(process.cwd(), file), 'utf8') };
+      }),
+    ];
+    const sites: string[] = [];
+    for (const { file, css: source } of ringFiles) {
+      // doc blocks quote the chain in its short @default form
+      const css = source.replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const match of css.matchAll(/var\(\s*--cngx-field-ring-color\s*,/g)) {
+        const fallback = fallbackAt(css, match.index + match[0].length);
+        sites.push(`${file}: ${fallback}`);
+        expect(fallback, file).toBe('var(--cngx-color-primary, oklch(0.66 0.19 50))');
+      }
+    }
+    // affix box ring, skin bare lone control, skin lone outline control, nine triggers
+    expect(sites).toHaveLength(12);
+  });
 });
