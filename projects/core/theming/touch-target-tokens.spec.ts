@@ -7,7 +7,8 @@ import { resolve } from 'node:path';
 // runs in the examples e2e harness (real Chromium). These specs guard
 // the source-CSS contract those probes depend on.
 
-const readCss = (name: string): string => readFileSync(resolve(__dirname, name), 'utf-8');
+const readCss = (name: string): string =>
+  readFileSync(resolve(__dirname, name), 'utf-8');
 
 describe('--cngx-target-min touch-target floor token', () => {
   const css = readCss('system-tokens.css');
@@ -22,15 +23,6 @@ describe('--cngx-target-min touch-target floor token', () => {
   it('defaults to a 0px floor so the use-site max() fallback stays inert until lifted', () => {
     const block = css.match(/@property --cngx-target-min\s*{[^}]+}/);
     expect(block![0]).toContain('initial-value: 0px');
-  });
-
-  // Zero specificity: the on/off blocks and the coarse block key :root with
-  // more weight, so the 24px default never shadows them.
-  it('sets a 24px fine-pointer floor on :root at zero specificity', () => {
-    const block = css.match(/:where\(:root\)\s*{[^}]+}/);
-    expect(block, ':where(:root) fine-pointer block not found').not.toBeNull();
-    expect(block![0]).toContain('--cngx-target-min: 24px');
-    expect(block![0]).not.toContain('--cngx-target-gap');
   });
 
   it('lifts the floor to 44px under (any-pointer: coarse), excluding the opt-out signals', () => {

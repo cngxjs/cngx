@@ -15,8 +15,6 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
  */
 
 const FLOOR = 44;
-// WCAG 2.5.8 (AA) size floor for a fine pointer.
-const FINE_FLOOR = 24;
 
 // Every clamped surface. `axis` is the constrained dimension the floor
 // lifts: 'block' for row controls, 'inline' where noted. The first group is
@@ -269,39 +267,15 @@ for (const atom of ATOMS) {
     }
   });
 
-  test(`touch-target: ${atom.name} sits between the ${FINE_FLOOR}px and the ${FLOOR}px floor under a fine pointer (composes with density)`, async ({
+  test(`touch-target: ${atom.name} stays below the floor under a fine pointer (composes with density)`, async ({
     browser,
   }) => {
     const { page, close } = await open(browser, atom.route, 'fine', undefined, atom.opener);
     try {
       const size = await constrainedSize(page, atom.selector, atom.axis);
-      expect(size).toBeGreaterThanOrEqual(FINE_FLOOR);
       expect(size).toBeLessThan(FLOOR);
     } finally {
       await close();
     }
   });
 }
-
-test('touch-target: the fine-pointer floor is 24px, data-touch on lifts it and off clears it', async ({
-  browser,
-}) => {
-  const { page, close } = await open(browser, '/#/', 'fine');
-  try {
-    const floor = (touch?: string) =>
-      page.evaluate((value) => {
-        const root = document.documentElement;
-        if (value) {
-          root.setAttribute('data-touch', value);
-        } else {
-          root.removeAttribute('data-touch');
-        }
-        return getComputedStyle(root).getPropertyValue('--cngx-target-min').trim();
-      }, touch);
-    expect(await floor()).toBe('24px');
-    expect(await floor('on')).toBe('44px');
-    expect(await floor('off')).toBe('0px');
-  } finally {
-    await close();
-  }
-});

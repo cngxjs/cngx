@@ -249,9 +249,6 @@
       justify-content: center;
       gap: var(--cngx-space-xs, 4px);
       box-sizing: border-box;
-      /* Same floor as the button box beside it, so the row stays one height
-       * when the target floor lifts a small button. */
-      min-block-size: var(--cngx-target-min, 0px);
       padding-block: var(--cngx-button-padding-block, var(--cngx-space-sm, 0.5rem));
       padding-inline: var(--cngx-button-group-addon-padding-inline, 1rem);
       border: var(--cngx-button-border-width, 1px) solid var(--cngx-color-border, oklch(0.88 0.005 250));
