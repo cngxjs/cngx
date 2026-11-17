@@ -31,8 +31,10 @@
  * **Inheritance**
  *
  * - `--cngx-listbox-focus-outline-color` -> `--cngx-color-primary`
- * - `--cngx-option-highlight-bg`, `--cngx-option-selected-bg` -
- *   low-alpha primary tints, no foundation delegation by design
+ * - `--cngx-option-highlight-bg`, `--cngx-option-selected-bg` ->
+ *   `--cngx-color-primary`, mixed with `transparent` at 10% / 18%.
+ *   Assigned on `:root`; a subtree that re-themes the primary
+ *   re-declares both tints
  *
  * **Dark mode**
  *
@@ -84,9 +86,10 @@
   }
 
   /**
-   * Background tint of the keyboard-highlighted option. Low-alpha
-   * primary so the highlight reads as an accent without competing
-   * with selected-state visuals.
+   * Background tint of the keyboard-highlighted option: the primary
+   * mixed with `transparent` at 10% (18% dark), assigned on `:root`.
+   * The initial is the light default. A subtree that re-themes
+   * `--cngx-color-primary` re-declares this tint too.
    * @group State / Highlighted
    * @see [[--cngx-color-primary]]
    */
@@ -97,9 +100,11 @@
   }
 
   /**
-   * Background of a selected option. Slightly higher alpha than the
-   * highlight tint so selection reads as committed state rather than
-   * transient cursor position.
+   * Background of a selected option: the primary mixed with
+   * `transparent` at 18% (28% dark), a step above the highlight so
+   * selection reads as committed state. The initial is the light
+   * default. A subtree that re-themes `--cngx-color-primary`
+   * re-declares this tint too.
    * @group State / Selected
    * @see [[--cngx-color-primary]]
    */
@@ -140,33 +145,66 @@
   }
 
   /*
-   * Default-theme palette. Highlight + selected tints flip to higher
-   * alphas on dark surfaces so the accent stays perceptible against
+   * Default-theme palette. Highlight + selected tints are `color-mix()`
+   * tints of the foundation primary and flip to higher alphas on dark
+   * surfaces so the accent stays perceptible against
    * the darker background without blowing out into a solid block.
    */
   :root {
     --cngx-listbox-focus-outline-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
-    --cngx-option-highlight-bg: oklch(0.66 0.19 50 / 0.1);
-    --cngx-option-selected-bg: oklch(0.66 0.19 50 / 0.18);
+    --cngx-option-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+      transparent
+    );
+    --cngx-option-selected-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%,
+      transparent
+    );
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-option-highlight-bg: oklch(0.72 0.18 50 / 0.18);
-      --cngx-option-selected-bg: oklch(0.72 0.18 50 / 0.28);
+      --cngx-option-highlight-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%,
+        transparent
+      );
+      --cngx-option-selected-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary, oklch(0.72 0.18 50)) 28%,
+        transparent
+      );
     }
   }
 
   :root[data-color-scheme='dark'],
   :root.dark {
-    --cngx-option-highlight-bg: oklch(0.72 0.18 50 / 0.18);
-    --cngx-option-selected-bg: oklch(0.72 0.18 50 / 0.28);
+    --cngx-option-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.72 0.18 50)) 18%,
+      transparent
+    );
+    --cngx-option-selected-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.72 0.18 50)) 28%,
+      transparent
+    );
   }
 
   :root[data-color-scheme='light'],
   :root.light {
-    --cngx-option-highlight-bg: oklch(0.66 0.19 50 / 0.1);
-    --cngx-option-selected-bg: oklch(0.66 0.19 50 / 0.18);
+    --cngx-option-highlight-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%,
+      transparent
+    );
+    --cngx-option-selected-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%,
+      transparent
+    );
   }
 }
 
@@ -206,11 +244,17 @@
   }
 
   .cngx-option--highlighted {
-    background: var(--cngx-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+    background: var(
+      --cngx-option-highlight-bg,
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+    );
   }
 
   .cngx-option--selected {
-    background: var(--cngx-option-selected-bg, oklch(0.66 0.19 50 / 0.18));
+    background: var(
+      --cngx-option-selected-bg,
+      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent)
+    );
   }
 
   /* Disabled by colour, never opacity (the field recipe). */

@@ -55,6 +55,39 @@ test.describe('common/popover/popover-panel', () => {
     await expect(panel.locator('[role="status"][aria-live="polite"]')).toHaveText('');
   });
 
+  // The panel is inert for its close fade, so a run that settles while it
+  // fades out also goes to CngxLiveAnnouncer instead of the region the fade
+  // is about to hide. Focus still lands on the trigger.
+  for (const offsetMs of [0, 80, 160]) {
+    test(`with-footer-actions: a failure that settles during the close fade (Escape at ${offsetMs} ms) reaches the body live region`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, 'common/popover/popover-panel/with-footer-actions');
+      await page.getByRole('radio', { name: 'medium (200 ms)' }).check();
+      const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Delete Confirm' });
+      const panel = page.locator('cngx-popover-panel', { hasText: 'Delete Item?' });
+
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      await expect(panel).toBeVisible();
+      // Click and Escape are scheduled in the page, so the offset into the
+      // 200 ms run is exact instead of riding on protocol round trips.
+      await panel.locator('button.cngx-popover-action').evaluate((action, offset) => {
+        (action as HTMLButtonElement).click();
+        setTimeout(() => {
+          (document.activeElement ?? document.body).dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+          );
+        }, offset);
+      }, offsetMs);
+      await expect(panel).toBeHidden();
+
+      await expect(page.locator('body > span[aria-live="polite"]')).toHaveText('Permission denied');
+      await expect(panel.locator('[role="status"][aria-live="polite"]')).toHaveText('');
+      await expect(trigger).toBeFocused();
+    });
+  }
+
   // The footer hosts own no focus restore: the panel's restore claim returns
   // focus to the trigger after a dismiss and after a confirm run.
   test('with-footer-actions: dismiss and confirm return focus to the trigger', async ({ page }) => {

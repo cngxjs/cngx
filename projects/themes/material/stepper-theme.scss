@@ -21,6 +21,9 @@
     // system-bridge deliberately leaves green) with a green fallback.
     --cngx-step-completed-color: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-errored-color: var(--mat-sys-error);
+    // The error dots and the errored chip fill from the strong danger pair.
+    --cngx-color-danger-strong: var(--mat-sys-error);
+    --cngx-color-on-danger-strong: var(--mat-sys-on-error);
     --cngx-step-pending-color: var(--mat-sys-primary);
 
     --cngx-step-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
@@ -54,7 +57,8 @@
 
     // Commit rejections: a refused commit wears tertiary (the rejection
     // surface and icon, the refused dot / line marker), a failed one is an
-    // error and reads --cngx-step-errored-color (mapped to the error role).
+    // error and reads the error role (--cngx-step-errored-color on text, the
+    // strong danger pair on fills).
     --cngx-step-refused-color: var(--mat-sys-tertiary);
 
     // Skin: linear-minimal
@@ -101,7 +105,7 @@
       var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
       transparent
     );
-    --cngx-step-chips-color-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
+    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
 
     // Skin: breadcrumb
     --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
@@ -109,6 +113,8 @@
     --cngx-step-active-color: #{mat.get-theme-color($theme, primary)};
     --cngx-step-completed-color: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-step-errored-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-color-danger-strong: #{mat.get-theme-color($theme, warn)};
+    --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
     --cngx-step-pending-color: #{mat.get-theme-color($theme, primary)};
     --cngx-step-indicator-active-color: oklch(1 0 0);
     --cngx-step-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
@@ -156,7 +162,7 @@
       var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
       transparent
     );
-    --cngx-step-chips-color-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
+    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
 
     // Skin: breadcrumb
     --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
@@ -172,10 +178,14 @@
     --cngx-dot-step-active-fill: var(--mat-sys-primary);
     --cngx-dot-step-completed-fill: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-dot-step-upcoming-bg: var(--mat-sys-surface-variant);
+    --cngx-color-danger-strong: var(--mat-sys-error);
+    --cngx-color-on-danger-strong: var(--mat-sys-on-error);
   } @else {
     --cngx-dot-step-active-fill: #{mat.get-theme-color($theme, primary)};
     --cngx-dot-step-completed-fill: var(--cngx-color-success, oklch(0.6 0.15 145));
     --cngx-dot-step-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
+    --cngx-color-danger-strong: #{mat.get-theme-color($theme, warn)};
+    --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
   }
 }
 

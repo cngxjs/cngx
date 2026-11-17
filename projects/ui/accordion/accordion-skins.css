@@ -306,14 +306,17 @@
     border-radius: var(--cngx-accordion-pm-bar-radius, 2px);
   }
 
-  /* On open the box fills primary, the border folds away, the bars go white
-     (POC `.pm details[open] .ctrl` -> bars #fff). On-primary keeps the bars
-     readable on the accent box in both schemes - `--cngx-color-surface` would
-     turn them dark on dark. */
+  /* On open the box fills primary, the border folds away, the bars take the
+     ink (POC `.pm details[open] .ctrl` -> bars #fff). The strong pair keeps
+     the bars readable on the accent box in both schemes - `--cngx-color-surface`
+     would turn them dark on dark. */
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__chevron {
-    background: var(--cngx-color-primary, #1d4ed8);
+    background: var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    );
     border-color: transparent;
-    color: var(--cngx-color-on-primary, #fff);
+    color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   }
 
   /* Neutral full-row hover (POC `.pm summary:hover` -> surface-2). */
@@ -451,8 +454,8 @@
   }
 
   /* Icon tile leading (POC `.tile`): 42px, 14px radius, an inset ring, a soft
-     primary tint + primary glyph when closed, filling solid primary with a white
-     glyph on open (re-mapped from the gradient). */
+     primary tint + primary glyph when closed, filling the strong primary pair on
+     open (re-mapped from the gradient). */
   .cngx-accordion-item__leading {
     inline-size: var(--cngx-accordion-bento-tile-size, 2.625rem);
     block-size: var(--cngx-accordion-bento-tile-size, 2.625rem);
@@ -474,8 +477,11 @@
   }
 
   .cngx-accordion-item[data-expanded] .cngx-accordion-item__leading {
-    background: var(--cngx-color-primary, #1d4ed8);
-    color: var(--cngx-color-on-primary, #fff);
+    background: var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    );
+    color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
     box-shadow: none;
   }
 

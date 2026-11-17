@@ -19,9 +19,11 @@ import { userEvent } from 'vitest/browser';
   // `box-sizing: border-box` and the `:focus-visible` ring the fill scope
   // suppresses on its own root and the bare scope keeps.
   styleUrls: [
+    '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
     '../../../core/theming/reset.css',
     '../../../core/theming/base.css',
+    '../../../core/theming/contrast-tokens.css',
     './cngx-field-skin.css',
     './cngx-field-affix.css',
     '../../select/shared/select-base.css',
@@ -39,7 +41,13 @@ import { userEvent } from 'vitest/browser';
     <input class="fill-invalid" type="text" data-skin="fill" aria-invalid="true" />
     <input class="fill-disabled" type="text" data-skin="fill" disabled />
     <input class="fill-readonly" type="text" data-skin="fill" readonly />
-    <input class="fill-readonly-invalid" type="text" data-skin="fill" readonly aria-invalid="true" />
+    <input
+      class="fill-readonly-invalid"
+      type="text"
+      data-skin="fill"
+      readonly
+      aria-invalid="true"
+    />
     <span class="cngx-field-box cngx-field-affix-row fill-readonly-invalid-row" data-skin="fill">
       <span class="cngx-field-prefix">$</span>
       <input type="text" readonly aria-invalid="true" />
@@ -72,11 +80,18 @@ import { userEvent } from 'vitest/browser';
       <input class="fill-light" type="text" data-skin="fill" placeholder="Search" />
       <input class="fill-invalid-light" type="text" data-skin="fill" aria-invalid="true" />
       <input class="bare-light" type="text" data-skin="bare" placeholder="Search" />
+      <div data-contrast="more">
+        <input class="fill-more-light" type="text" data-skin="fill" placeholder="Search" />
+        <input class="bare-more-light" type="text" data-skin="bare" placeholder="Search" />
+      </div>
       <input class="bare-invalid-light" type="text" data-skin="bare" aria-invalid="true" />
       <span class="probe-page-light" style="background: var(--cngx-color-surface)"></span>
       <input class="outline-light" type="text" value="Value" />
       <input class="outline-disabled-light" type="text" value="Value" disabled />
-      <span class="cngx-field-box cngx-field-affix-row outline-box-disabled-light" data-skin="outline">
+      <span
+        class="cngx-field-box cngx-field-affix-row outline-box-disabled-light"
+        data-skin="outline"
+      >
         <span class="cngx-field-prefix">$</span>
         <input type="text" data-skin="bare" value="Value" disabled />
       </span>
@@ -116,11 +131,18 @@ import { userEvent } from 'vitest/browser';
       <input class="fill-dark" type="text" data-skin="fill" placeholder="Search" />
       <input class="fill-invalid-dark" type="text" data-skin="fill" aria-invalid="true" />
       <input class="bare-dark" type="text" data-skin="bare" placeholder="Search" />
+      <div data-contrast="more">
+        <input class="fill-more-dark" type="text" data-skin="fill" placeholder="Search" />
+        <input class="bare-more-dark" type="text" data-skin="bare" placeholder="Search" />
+      </div>
       <input class="bare-invalid-dark" type="text" data-skin="bare" aria-invalid="true" />
       <span class="probe-page-dark" style="background: var(--cngx-color-surface)"></span>
       <input class="outline-dark" type="text" value="Value" />
       <input class="outline-disabled-dark" type="text" value="Value" disabled />
-      <span class="cngx-field-box cngx-field-affix-row outline-box-disabled-dark" data-skin="outline">
+      <span
+        class="cngx-field-box cngx-field-affix-row outline-box-disabled-dark"
+        data-skin="outline"
+      >
         <span class="cngx-field-prefix">$</span>
         <input type="text" data-skin="bare" value="Value" disabled />
       </span>
@@ -424,6 +446,24 @@ describe('field skin geometry', () => {
       const bare = getComputedStyle(query(root, `.bare-${scheme}`), '::placeholder').color;
       expect(contrast(surface, fill)).toBeGreaterThanOrEqual(4.5);
       expect(contrast(page, bare)).toBeGreaterThanOrEqual(4.5);
+    });
+
+    // The boost lifts muted text to full text; the placeholder must still
+    // read apart from a typed value.
+    it('sets the placeholder apart from the value under more contrast at 4.5:1', () => {
+      const root = mount();
+      const { page } = colours(root);
+      const fill = query(root, `.fill-more-${scheme}`);
+      const bare = query(root, `.bare-more-${scheme}`);
+      for (const [el, ground] of [
+        [fill, getComputedStyle(fill).backgroundColor],
+        [bare, page],
+      ] as const) {
+        const placeholder = getComputedStyle(el, '::placeholder');
+        expect(placeholder.fontStyle).toBe('italic');
+        expect(toRgb(placeholder.color)).not.toEqual(toRgb(getComputedStyle(el).color));
+        expect(contrast(ground, placeholder.color)).toBeGreaterThanOrEqual(4.5);
+      }
     });
 
     it('holds 4.5:1 for the select placeholder on the fill surface and on the page', () => {

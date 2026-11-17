@@ -39,6 +39,8 @@
  *
  * - `--cngx-step-completed-color` -> `--cngx-color-success`
  * - `--cngx-step-errored-color` -> `--cngx-color-danger`
+ * - error dots and the errored chip -> `--cngx-color-danger-strong` /
+ *   `--cngx-color-on-danger-strong`
  * - `--cngx-step-pending-color` -> `--cngx-step-active-color`
  *
  * **Pair with**
@@ -159,9 +161,10 @@
   /**
    * Fill of a refused-commit marker (the commit action answered `false`) on
    * the dots and the aggregate error line. A refusal is no error, so it
-   * wears the rejection amber; a failed commit keeps
-   * `--cngx-step-errored-color`. Registered without an initial value, so the
-   * amber fallback applies until a theme sets it.
+   * wears the rejection amber; a failed commit keeps the danger red (the
+   * strong danger fill on the dots, `--cngx-step-errored-color` on the line).
+   * Registered without an initial value, so the amber fallback applies until
+   * a theme sets it.
    * @group State / Refused
    */
   @property --cngx-step-refused-color {
@@ -826,13 +829,22 @@
 
   /**
    * Completed chip label + check colour in the `chips` skin. Inherits so
-   * the host-set value reaches the step descendant.
+   * the host-set value reaches the step descendant. Defaults to
+   * `--cngx-color-success-text`.
    * @group Skin / chips
+   * @see [[--cngx-color-success-text]]
    */
   @property --cngx-step-chips-color-completed {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.5 0.15 145);
+    initial-value: oklch(0.46 0.15 145);
+  }
+
+  /* The registered initial-value cannot hold var(), so the text rung is
+   * assigned on the chips host, where it resolves against the host's own
+   * scheme. Zero specificity keeps a consumer host value on top. */
+  :where(.cngx-stepper[data-skin='chips']) {
+    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
   }
 
   /**
@@ -1756,7 +1768,7 @@
       order: -1;
     }
 
-    /* Errored step: solid danger fill + the alert badge after the label.
+    /* Errored step: the strong danger pair + the alert badge after the label.
        The disc indicator is display:none in this skin, so a chip with only
        the active fill would be indistinguishable from a normal active step -
        the error has to ride the chip itself. Color alone is not enough
@@ -1766,9 +1778,15 @@
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
       background: var(
         --cngx-step-chips-bg-errored,
-        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+        var(
+          --cngx-color-danger-strong,
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+        )
       );
-      color: var(--cngx-step-chips-color-errored, var(--cngx-color-on-danger, oklch(1 0 0)));
+      color: var(
+        --cngx-step-chips-color-errored,
+        var(--cngx-color-on-danger-strong, oklch(1 0 0))
+      );
     }
 
     .cngx-stepper__badge {
@@ -2107,7 +2125,10 @@
 }
 
 .cngx-stepper__mobile-dot[data-state='error'] {
-  background: var(--cngx-step-errored-color, currentColor);
+  background: var(
+    --cngx-color-danger-strong,
+    oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+  );
 }
 
 /* A refused commit marks the dot amber; a failed one keeps the red. */
@@ -2130,7 +2151,7 @@
   margin: auto;
   pointer-events: none;
   font-size: var(--cngx-dot-step-error-glyph-size, 0.75rem);
-  color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger, white));
+  color: var(--cngx-dot-step-error-glyph-color, var(--cngx-color-on-danger-strong, white));
 }
 
 /* Error sub-line for the mobile-collapse `text` branch - the count alone

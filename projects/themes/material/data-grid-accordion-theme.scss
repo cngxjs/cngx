@@ -107,12 +107,14 @@
 
   @include bridge.on("cngx-data-grid-accordion[data-skin='spreadsheet']") {
     @include _skin-surfaces($theme);
-    // The row-number gutter fills primary on open; its digit reads --cngx-color-on-primary,
-    // which the system bridge does not map. Align it so the contrast holds under any theme.
+    // The row-number gutter fills the strong primary pair on open. Routed here
+    // too, so the pair holds where the system bridge is absent.
     @if mat.get-theme-version($theme) == 1 {
-      --cngx-color-on-primary: var(--mat-sys-on-primary);
+      --cngx-color-primary-strong: var(--mat-sys-primary);
+      --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
     } @else {
-      --cngx-color-on-primary: white;
+      --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
+      --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
     }
   }
 }

@@ -27,8 +27,7 @@ import { resolve } from 'node:path';
 
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 
-const readRepoCss = (relPath: string): string =>
-  readFileSync(resolve(REPO_ROOT, relPath), 'utf-8');
+const readRepoCss = (relPath: string): string => readFileSync(resolve(REPO_ROOT, relPath), 'utf-8');
 
 const CONTRAST_TOKENS_CSS = 'projects/core/theming/contrast-tokens.css';
 const THEMES_ENTRY_CSS = 'projects/themes/cngx.css';
@@ -78,6 +77,32 @@ describe('contrast-axis override integrity', () => {
     for (const decl of decls) {
       expect(decl).toContain('var(--cngx-color-');
       expect(decl).not.toMatch(/oklch\(|rgb\(|hsl\(|#[0-9a-fA-F]{3,}/);
+    }
+  });
+});
+
+describe('contrast-axis focus ring', () => {
+  const net = readRepoCss(CONTRAST_TOKENS_CSS);
+
+  it.each([
+    [
+      'the attribute and its class twin',
+      /\[data-contrast='more'\] :focus-visible,\s*\.cngx-contrast-more :focus-visible\s*{[^}]+}/,
+    ],
+    ['the OS preference', /:root:not\(\[data-contrast='normal'\]\) :focus-visible\s*{[^}]+}/],
+  ])('strengthens the ring to the primary text rung at 3px for %s', (_, pattern) => {
+    const rule = net.match(pattern);
+    expect(rule, `${pattern} not found`).not.toBeNull();
+    expect(rule![0]).toContain('outline-color: var(--cngx-color-primary-text)');
+    expect(rule![0]).toContain('outline-width: 3px');
+  });
+
+  // Style and offset stay with the reset ring or a component's own ring.
+  it('sets only the outline colour and width', () => {
+    const rules = net.match(/:focus-visible\s*{[^}]+}/g) ?? [];
+    expect(rules.length).toBe(2);
+    for (const rule of rules) {
+      expect(rule).not.toMatch(/outline:|outline-style|outline-offset/);
     }
   });
 });

@@ -44,6 +44,7 @@ const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
           </button>
         }
         <button cngxButton="outline" class="o-neutral-{{ scheme }}">Cancel</button>
+        <button cngxButton class="n-solid-{{ scheme }}">Close</button>
         @for (tone of tones; track tone) {
           <button cngxButton="secondary" [tone]="tone" class="s-{{ tone }}-{{ scheme }}">
             Archive
@@ -265,4 +266,42 @@ describe('secondary button label contrast at rest, hover and press (default pale
       4.5,
     );
   });
+});
+
+// The secondary wash has to read as a fill, not as the page: flattened over
+// the surface it clears a floor against the surface itself. The neutral solid
+// fill stays the stronger neutral rung: darker in light, lighter in dark.
+const FILL_FLOOR = 1.22;
+
+describe('secondary button fill against the page (default palette)', () => {
+  const cases = (['neutral', 'primary', 'danger'] as const).flatMap((tone) =>
+    (['light', 'dark'] as const).map((scheme) => [tone, scheme] as const),
+  );
+
+  it.each(cases)(`secondary %s in the %s scheme clears ${FILL_FLOOR}:1 at rest`, (tone, scheme) => {
+    const root = mount();
+    const surface = computedValue(query(root, `.surface-${scheme}`), 'color');
+    const fill = flatten(
+      computedValue(query(root, `.s-${tone}-${scheme}`), 'background-color'),
+      surface,
+    );
+    const ratio = contrastRatio(fill, surface);
+    expect(ratio, `${tone} / ${scheme}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(FILL_FLOOR);
+  });
+
+  it.each(['light', 'dark'] as const)(
+    'neutral solid sits past neutral secondary in the %s scheme',
+    (scheme) => {
+      const root = mount();
+      const surface = computedValue(query(root, `.surface-${scheme}`), 'color');
+      const [secondary] = oklabOf(
+        flatten(computedValue(query(root, `.s-neutral-${scheme}`), 'background-color'), surface),
+      );
+      const [solid] = oklabOf(
+        flatten(computedValue(query(root, `.n-solid-${scheme}`), 'background-color'), surface),
+      );
+      const step = scheme === 'light' ? secondary - solid : solid - secondary;
+      expect(step, `solid ${solid.toFixed(3)} / secondary ${secondary.toFixed(3)}`).toBeGreaterThan(0);
+    },
+  );
 });

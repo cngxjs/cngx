@@ -119,7 +119,10 @@
 /* A translucent tint over the panel surface (the select option recipe), so
    the inherited row text stays readable in both schemes. */
 .cngx-command-row.cngx-option--highlighted {
-  background: var(--cngx-command-row-active-bg, oklch(0.66 0.19 50 / 0.1));
+  background: var(
+    --cngx-command-row-active-bg,
+    color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+  );
   color: var(--cngx-command-row-active-color, inherit);
 }
 

@@ -14,7 +14,7 @@
  *
  * **Inheritance**
  *
- * - `--cngx-delta-positive-color` -> `--cngx-color-success`
+ * - `--cngx-delta-positive-color` -> `--cngx-color-success-text`
  * - `--cngx-delta-negative-color` -> `--cngx-color-danger`
  * - `--cngx-delta-neutral-color` - leaf neutral token, swaps in dark mode
  *
@@ -72,15 +72,15 @@
   }
 
   /**
-   * Colour of the `.cngx-delta--positive` modifier. Falls back to
-   * `--cngx-color-success`.
+   * Colour of the `.cngx-delta--positive` modifier. Reads
+   * `--cngx-color-success-text`.
    * @group Variant / Positive
-   * @see [[--cngx-color-success]]
+   * @see [[--cngx-color-success-text]]
    */
   @property --cngx-delta-positive-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.65 0.18 145);
+    initial-value: oklch(0.46 0.15 145);
   }
 
   /**
@@ -95,26 +95,33 @@
     initial-value: oklch(0.65 0.22 25);
   }
 
+  /* The success colour is text here, so it reads the text rung, which already
+   * swaps per scheme; it is re-assigned in every scheme block so a scheme
+   * island resolves its own rung. */
+  :root {
+    --cngx-delta-positive-color: var(--cngx-color-success-text, oklch(0.46 0.15 145));
+  }
+
   /* Dark-mode swap. Neutral text lifts to the foundation's muted-text
    * lightness; the sentiment colours lift L slightly and shed C to match the
    * foundation's dark-mode success/danger tones. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-delta-neutral-color: oklch(0.7 0.01 290);
-      --cngx-delta-positive-color: oklch(0.78 0.16 145);
+      --cngx-delta-positive-color: var(--cngx-color-success-text, oklch(0.74 0.14 145));
       --cngx-delta-negative-color: oklch(0.75 0.18 25);
     }
   }
   [data-color-scheme='dark'],
   .dark {
     --cngx-delta-neutral-color: oklch(0.7 0.01 290);
-    --cngx-delta-positive-color: oklch(0.78 0.16 145);
+    --cngx-delta-positive-color: var(--cngx-color-success-text, oklch(0.74 0.14 145));
     --cngx-delta-negative-color: oklch(0.75 0.18 25);
   }
   [data-color-scheme='light'],
   .light {
     --cngx-delta-neutral-color: oklch(0.36 0.02 290);
-    --cngx-delta-positive-color: oklch(0.65 0.18 145);
+    --cngx-delta-positive-color: var(--cngx-color-success-text, oklch(0.46 0.15 145));
     --cngx-delta-negative-color: oklch(0.65 0.22 25);
   }
 }

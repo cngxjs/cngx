@@ -12,11 +12,11 @@ import { cdp, userEvent } from 'vitest/browser';
 // open siblings caret), it paints the primary text rung
 // (`--cngx-color-primary-text`, falling back to primary at the text-rung
 // lightness) at 4.5:1 instead of the raw primary (2.9-3.3:1 on light). The
-// filled skins (pill, ribbon, icononly) keep the raw primary fill and set the
-// label (and the icononly glyph, currentColor) in the scheme's dark neutral:
-// the text colour in light, the surface colour in dark. A declared
-// --cngx-color-on-primary still wins. The path separator reads the muted text
-// colour.
+// filled skins (pill, ribbon, icononly) paint the strong primary pair, like a
+// solid primary button: the fill from --cngx-color-primary-strong, the label
+// (and the icononly glyph, currentColor) in --cngx-color-on-primary-strong. A
+// declared --cngx-color-on-primary-strong still wins. The path separator reads
+// the muted text colour.
 // Under forced colors the current sibling row paints the Highlight pair.
 
 const SCHEMES = ['light', 'dark'] as const;
@@ -65,7 +65,7 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
             </nav>
           </div>
         }
-        <div class="hook" style="--cngx-color-on-primary: rgb(1, 2, 3)">
+        <div class="hook" style="--cngx-color-on-primary-strong: rgb(1, 2, 3)">
           <div data-skin="pill" class="cngx-breadcrumb">
             <ol class="cngx-breadcrumb__list">
               <li class="cngx-breadcrumb__crumb">
@@ -102,9 +102,8 @@ const FILLED_SKINS = ['pill', 'ribbon', 'icononly'] as const;
           class="probe-pt"
           [style.color]="'oklch(from var(--cngx-color-primary) ' + textLightness[scheme] + ' c h)'"
         ></span>
-        <span class="probe-primary" style="color: var(--cngx-color-primary)"></span>
-        <span class="probe-text" style="color: var(--cngx-color-text)"></span>
-        <span class="probe-surface" style="color: var(--cngx-color-surface)"></span>
+        <span class="probe-strong" style="color: var(--cngx-color-primary-strong)"></span>
+        <span class="probe-on-strong" style="color: var(--cngx-color-on-primary-strong)"></span>
         <span class="probe-muted" style="color: var(--cngx-color-text-muted)"></span>
         <span class="probe-highlight" style="color: Highlight"></span>
         <span class="probe-highlighttext" style="color: HighlightText"></span>
@@ -199,34 +198,28 @@ describe.each(SCHEMES)('breadcrumb current marker by colour, %s', (scheme) => {
     expect(contrast(ink(current), ground(current))).toBeGreaterThanOrEqual(4.5);
   });
 
-  // The dark neutral of the scheme: the text colour on light, the surface on dark.
-  const darkInk = scheme === 'light' ? '.probe-text' : '.probe-surface';
+  it.each(FILLED_SKINS)('%s paints the strong primary pair at 4.5:1', (skin) => {
+    const root = mount();
+    const current = at(root, `.skin-${skin} .current`);
+    expect(paint('#fff', computedValue(current, 'background-color'))).toEqual(
+      ink(at(root, '.probe-strong')),
+    );
+    expect(ink(current)).toEqual(ink(at(root, '.probe-on-strong')));
+    expect(contrast(ink(current), ground(current))).toBeGreaterThanOrEqual(4.5);
+  });
 
-  it.each(FILLED_SKINS)(
-    '%s keeps the primary fill and sets the label in the dark ink at 4.5:1',
-    (skin) => {
-      const root = mount();
-      const current = at(root, `.skin-${skin} .current`);
-      expect(paint('#fff', computedValue(current, 'background-color'))).toEqual(
-        ink(at(root, '.probe-primary')),
-      );
-      expect(ink(current)).toEqual(ink(at(root, darkInk)));
-      expect(contrast(ink(current), ground(current))).toBeGreaterThanOrEqual(4.5);
-    },
-  );
-
-  it('draws the icononly current glyph in the dark ink at 3:1 on the fill', () => {
+  it('draws the icononly current glyph in the strong ink at 3:1 on the fill', () => {
     const root = mount();
     const current = at(root, '.skin-icononly .current');
     const glyph = paint(
       '#fff',
       computedValue(at(root, '.skin-icononly .current .glyph rect'), 'fill'),
     );
-    expect(glyph).toEqual(ink(at(root, darkInk)));
+    expect(glyph).toEqual(ink(at(root, '.probe-on-strong')));
     expect(contrast(glyph, ground(current))).toBeGreaterThanOrEqual(3);
   });
 
-  it('honours a declared --cngx-color-on-primary on the filled label', () => {
+  it('honours a declared --cngx-color-on-primary-strong on the filled label', () => {
     const root = mount();
     expect(computedValue(at(root, '.hook .current'), 'color')).toBe('rgb(1, 2, 3)');
   });

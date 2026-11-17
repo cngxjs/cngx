@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, contrastRatio, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cdp } from 'vitest/browser';
 
 import { CngxFilterBuilder } from './filter-builder.component';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
@@ -122,6 +123,66 @@ function resolvedColor(value: string): string {
   const color = getComputedStyle(probe).color;
   probe.remove();
   return color;
+}
+
+// Composite a translucent fill over the page the way it renders.
+function paint(...layers: string[]): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('no 2d context');
+  }
+  for (const layer of layers) {
+    ctx.fillStyle = layer;
+    ctx.fillRect(0, 0, 1, 1);
+  }
+  const [r, g, b] = Array.from(ctx.getImageData(0, 0, 1, 1).data);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+interface DomNode {
+  readonly nodeId: number;
+  readonly children?: readonly DomNode[];
+  readonly contentDocument?: DomNode;
+}
+
+function documentsOf(node: DomNode): DomNode[] {
+  const nested = [
+    ...(node.children ?? []),
+    ...(node.contentDocument ? [node.contentDocument] : []),
+  ];
+  return [...(node.contentDocument ? [node.contentDocument] : []), ...nested.flatMap(documentsOf)];
+}
+
+// Hold :hover over CDP instead of moving a pointer. The spec runs in the runner
+// iframe, so the lookup walks nested documents.
+async function forceHover(selector: string): Promise<void> {
+  const session = cdp();
+  await session.send('DOM.enable');
+  await session.send('CSS.enable');
+  const { root } = (await session.send('DOM.getDocument', { depth: -1, pierce: true })) as {
+    root: DomNode;
+  };
+  for (const doc of [root, ...documentsOf(root)]) {
+    const { nodeId } = (await session.send('DOM.querySelector', {
+      nodeId: doc.nodeId,
+      selector,
+    })) as { nodeId: number };
+    if (nodeId) {
+      await session.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: ['hover'] });
+      return;
+    }
+  }
+  throw new Error(`${selector} is in no document`);
+}
+
+const PAGE = resolvedColor('var(--cngx-color-surface, oklch(1 0 0))');
+
+function joinerContrast(joiner: HTMLElement): number {
+  const fill = paint(PAGE, computedValue(joiner, 'background-color'));
+  return contrastRatio(computedValue(joiner, 'color'), fill);
 }
 
 afterEach(() => {
@@ -261,5 +322,32 @@ describe('CngxFilterBuilder geometry', () => {
     // the assertion pins the min-size wiring rather than a concrete 44px.
     expect(computedValue(remove, 'min-inline-size')).toBe(computedValue(remove, 'min-block-size'));
     expect(computedValue(remove, 'justify-content')).toBe('center');
+  });
+
+  // The joiner label is colour-only text on its own primary tint: the primary
+  // text rung at rest, the text colour on the stronger hover tint.
+  it('keeps the joiner label at 4.5:1 on its rest tint', () => {
+    const joiner = query(mountRaster(), '.cngx-filter-builder__logic-joiner');
+    expect(joinerContrast(joiner)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('keeps the joiner label at 4.5:1 on its hover tint', async () => {
+    const joiner = query(mountRaster(), '.cngx-filter-builder__logic-joiner');
+    const rest = computedValue(joiner, 'background-color');
+    await forceHover('.cngx-filter-builder__logic-joiner');
+    expect(computedValue(joiner, 'background-color')).not.toBe(rest);
+    expect(joinerContrast(joiner)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('mixes the joiner tint from a re-themed root primary', () => {
+    setRoot({ '--cngx-color-primary': 'oklch(0.55 0.15 250)' });
+    try {
+      const joiner = query(mountRaster(), '.cngx-filter-builder__logic-joiner');
+      expect(rasterise(computedValue(joiner, 'background-color'))).toEqual(
+        rasterise('color-mix(in oklch, oklch(0.55 0.15 250) 12%, transparent)'),
+      );
+    } finally {
+      document.documentElement.style.removeProperty('--cngx-color-primary');
+    }
   });
 });

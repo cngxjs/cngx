@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxChip } from './chip.component';
@@ -27,6 +27,21 @@ let mountedRoot: HTMLElement | null = null;
   template: `<cngx-chip [removable]="true">Label</cngx-chip>`,
 })
 class ChipHost {}
+
+@Component({
+  standalone: true,
+  imports: [CngxChip],
+  styleUrls: ['../../../core/theming/layers.css', '../../../core/theming/system-tokens.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <cngx-chip class="chip-default">Default</cngx-chip>
+    <cngx-chip class="chip-selected" aria-pressed="true">Selected</cngx-chip>
+    <div class="island" data-color-scheme="dark">
+      <cngx-chip class="chip-island">Island</cngx-chip>
+    </div>
+  `,
+})
+class ChipTintHost {}
 
 function mount(): HTMLElement {
   const fixture = TestBed.createComponent(ChipHost);
@@ -149,5 +164,35 @@ describe('CngxChip geometry', () => {
     );
     expect(painted).toHaveLength(1);
     expect(painted[0].classList.contains('cngx-icon-svg__small')).toBe(true);
+  });
+
+  // The tints are mixes of the primary assigned on :root and the islands, so a
+  // re-themed root primary moves them and a dark island mixes its own primary.
+  it('derives the default, selected and island tints from the active primary', () => {
+    const blue = 'oklch(0.55 0.15 250)';
+    const mix = (primary: string, percent: number): string =>
+      `color-mix(in oklch, ${primary} ${percent}%, transparent)`;
+    document.documentElement.style.setProperty('--cngx-color-primary', blue);
+    try {
+      const fixture = TestBed.createComponent(ChipTintHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      const bg = (selector: string): string =>
+        computedValue(query(mountedRoot as HTMLElement, selector), 'background-color');
+      expect(rasterise(bg('.chip-default'))).toEqual(rasterise(mix(blue, 12)));
+      expect(rasterise(bg('.chip-selected'))).toEqual(rasterise(mix(blue, 32)));
+      const islandPrimary = computedValue(query(mountedRoot, '.island'), '--cngx-color-primary');
+      const islandChip = query(mountedRoot, '.chip-island');
+      expect(rasterise(computedValue(islandChip, '--cngx-chip-bg'))).toEqual(
+        rasterise(mix(islandPrimary, 12)),
+      );
+      expect(rasterise(computedValue(islandChip, '--cngx-chip-selected-bg'))).toEqual(
+        rasterise(mix(islandPrimary, 32)),
+      );
+      expect(rasterise(mix(islandPrimary, 12))).not.toEqual(rasterise(mix(blue, 12)));
+    } finally {
+      document.documentElement.style.removeProperty('--cngx-color-primary');
+    }
   });
 });

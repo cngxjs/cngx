@@ -43,20 +43,20 @@
  * **Inheritance**
  *
  * Node tokens fall back to hardcoded defaults; the hover background
- * carries its own light / dark pair (no foundation delegation since the
- * alpha-on-black surface would dissolve on a dark page).
+ * is a mix of `--cngx-color-primary` with `transparent`, assigned on
+ * `:root` and the scheme islands.
  *
  * - `--cngx-tree-select-node-color` - currentColor
  * - `--cngx-tree-select-node-bg` - transparent
- * - `--cngx-tree-select-node-hover-bg` - light: `oklch(0 0 0 / 0.04)`,
- *   dark: `oklch(1 0 0 / 0.06)`
+ * - `--cngx-tree-select-node-hover-bg` -> `--cngx-color-primary`,
+ *   light 10%, dark 16%
  * - `--cngx-tree-select-node-selected-bg` - transparent (opt-in fill)
  * - `--cngx-tree-select-node-selected-font-weight` - 600
  *
  * **Dark mode**
  *
- * Three hooks swap the hover tint from alpha-on-black to alpha-on-white
- * so it reads on a dark panel-bg:
+ * Three hooks lift the hover tint to 16% of the dark primary so it
+ * reads on a dark panel-bg:
  *
  * - `prefers-color-scheme: dark`
  * - `[data-color-scheme="dark"]`
@@ -164,8 +164,11 @@
   }
 
   /**
-   * Background applied on hover. `inherits: true` so the :root
-   * dark-mode override (alpha-on-white on dark) reaches each node.
+   * Background applied on hover: the primary mixed with `transparent`
+   * at 10% (16% dark), assigned on `:root` and the scheme islands.
+   * `inherits: true` so the assignment reaches each node. The initial
+   * is the light default; a subtree that re-themes
+   * `--cngx-color-primary` re-declares this tint too.
    * @group State / Hover
    */
   @property --cngx-tree-select-node-hover-bg {
@@ -292,21 +295,40 @@
     inherits: true;
   }
 
-  /* Dark-mode component-local swap - an alpha-on-black hover surface
-   * dissolves into a dark panel-bg, so the dark blocks flip it to
-   * alpha-on-white. */
+  /* The hover tint mixes the primary of the element it is declared on:
+   * 10% in light, 16% in the dark blocks so it reads on a dark panel-bg.
+   * The islands restate it so it re-reads the island's primary. */
+  :root {
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary) 10%,
+      transparent
+    );
+  }
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-tree-select-node-hover-bg: oklch(0.72 0.18 50 / 0.16);
+      --cngx-tree-select-node-hover-bg: color-mix(
+        in oklch,
+        var(--cngx-color-primary) 16%,
+        transparent
+      );
     }
   }
   [data-color-scheme='dark'],
   .dark {
-    --cngx-tree-select-node-hover-bg: oklch(0.72 0.18 50 / 0.16);
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary) 16%,
+      transparent
+    );
   }
   [data-color-scheme='light'],
   .light {
-    --cngx-tree-select-node-hover-bg: oklch(0.66 0.19 50 / 0.1);
+    --cngx-tree-select-node-hover-bg: color-mix(
+      in oklch,
+      var(--cngx-color-primary) 10%,
+      transparent
+    );
   }
 }
 
@@ -425,11 +447,17 @@
      * so the tree highlights identically to the rest of the family and themes
      * through the same Material bridge mapping. */
     .cngx-tree-select__node:hover {
-      background: var(--cngx-tree-select-node-hover-bg, oklch(0.66 0.19 50 / 0.1));
+      background: var(
+        --cngx-tree-select-node-hover-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+      );
     }
 
     .cngx-tree-select__node.cngx-tree-select__node--active {
-      background: var(--cngx-select-option-highlight-bg, oklch(0.66 0.19 50 / 0.1));
+      background: var(
+        --cngx-select-option-highlight-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+      );
     }
 
     /* Disabled fades by colour, never opacity: 38% text, the recipe of a
@@ -559,7 +587,10 @@
     }
 
     .cngx-tree-select__footer-clear:hover {
-      background: var(--cngx-tree-select-node-hover-bg, oklch(0.66 0.19 50 / 0.1));
+      background: var(
+        --cngx-tree-select-node-hover-bg,
+        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
+      );
     }
 
     .cngx-tree-select__footer-clear[aria-disabled='true'] {

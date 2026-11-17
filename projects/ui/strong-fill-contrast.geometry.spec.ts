@@ -1,0 +1,203 @@
+import { Component, ViewEncapsulation } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { computedValue, contrastRatio } from '@cngx/testing/geometry';
+import { afterEach, describe, expect, it } from 'vitest';
+import { cdp } from 'vitest/browser';
+
+// Runs in a real Chromium (the `test-geometry` target). A solid primary or
+// danger fill that carries a label or mark paints from the strong pair
+// (`--cngx-color-primary-strong` with `--cngx-color-on-primary-strong`, the
+// danger pair likewise), like a solid button, so the ink clears 4.5:1 in both
+// default schemes with no theme bridge loaded.
+
+const SCHEMES = ['light', 'dark'] as const;
+
+interface FillCase {
+  readonly name: string;
+  readonly selector: string;
+  readonly pseudo?: '::before';
+  /** The ink sits on a separate element painted over the fill. */
+  readonly ink?: string;
+  readonly tone?: 'primary' | 'danger';
+}
+
+const CASES: readonly FillCase[] = [
+  { name: 'tab-nav active pill', selector: '.tab-nav-pill .cngx-tab-nav__link--active' },
+  { name: 'tab-group active pill', selector: '.tab-group-pill .cngx-tabs__tab' },
+  { name: 'accordion plus-minus open box', selector: '.accordion-pm .cngx-accordion-item__chevron' },
+  { name: 'accordion bento open tile', selector: '.accordion-bento .cngx-accordion-item__leading' },
+  {
+    name: 'data-grid-accordion spreadsheet open gutter',
+    selector: '.dga-sheet .cngx-dga-row__cells',
+    pseudo: '::before',
+  },
+  {
+    name: 'dot-stepper error dot',
+    selector: '.cngx-dot-stepper__dot',
+    ink: '.cngx-dot-stepper__dot-glyph',
+    tone: 'danger',
+  },
+  { name: 'stepper chips errored step', selector: '.stepper-chips .cngx-stepper__step', tone: 'danger' },
+  {
+    name: 'stepper mobile error dot',
+    selector: '.cngx-stepper__mobile-dot',
+    ink: '.cngx-stepper__mobile-dot-glyph',
+    tone: 'danger',
+  },
+  { name: 'breadcrumb shell product mark', selector: '.breadcrumb-shell .product-mark' },
+  { name: 'paginator pill current page', selector: '.pag-pill .cngx-paginator__page' },
+  { name: 'paginator bar current page', selector: '.pag-bar .cngx-paginator__page' },
+];
+
+@Component({
+  selector: 'cngx-strong-fill-contrast-host',
+  standalone: true,
+  styleUrls: [
+    '../core/theming/layers.css',
+    '../core/theming/system-tokens.css',
+    '../common/tabs/styles/tabs-base.css',
+    './tabs/tab-nav.component.css',
+    './tabs/tab-group.component.css',
+    './accordion/accordion-skins.css',
+    './data-grid-accordion/data-grid-accordion-skins.css',
+    './stepper/styles/stepper-base.css',
+    './stepper/stepper.component.css',
+    './stepper/dot-stepper.component.css',
+    './breadcrumb/breadcrumb-bar.component.css',
+    '../common/data/paginate/styles/paginator-base.css',
+    './paginator/paginator.component.css',
+  ],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @for (scheme of schemes; track scheme) {
+      <div
+        [attr.data-color-scheme]="scheme"
+        [class]="'scheme-' + scheme"
+        style="background: var(--cngx-color-surface); --cngx-duration-fast: 0s"
+      >
+        <span class="probe-strong" style="color: var(--cngx-color-primary-strong)"></span>
+        <span class="probe-on-strong" style="color: var(--cngx-color-on-primary-strong)"></span>
+        <span class="probe-danger-strong" style="color: var(--cngx-color-danger-strong)"></span>
+        <span
+          class="probe-on-danger-strong"
+          style="color: var(--cngx-color-on-danger-strong)"
+        ></span>
+        <nav class="cngx-tab-nav tab-nav-pill" data-skin="pill">
+          <a class="cngx-tab-nav__link cngx-tab-nav__link--active">Overview</a>
+        </nav>
+        <div class="cngx-tab-group tab-group-pill" data-skin="pill">
+          <div role="tab" class="cngx-tabs__tab" aria-selected="true">Overview</div>
+        </div>
+        <div class="cngx-accordion-group accordion-pm" data-skin="plus-minus">
+          <div class="cngx-accordion-item" data-expanded>
+            <span class="cngx-accordion-item__chevron">+</span>
+          </div>
+        </div>
+        <div class="cngx-accordion-group accordion-bento" data-skin="bento">
+          <div class="cngx-accordion-item" data-expanded>
+            <span class="cngx-accordion-item__leading">A</span>
+          </div>
+        </div>
+        <div class="cngx-data-grid-accordion dga-sheet" data-skin="spreadsheet">
+          <div class="cngx-dga-row" data-expanded>
+            <div class="cngx-dga-row__cells"><span class="cngx-dga-cell">Row</span></div>
+          </div>
+        </div>
+        <div class="cngx-dot-stepper">
+          <span class="cngx-dot-stepper__cell">
+            <span class="cngx-dot-stepper__dot cngx-dot-stepper__dot--error" data-state="error"></span>
+            <span class="cngx-dot-stepper__dot-glyph">!</span>
+          </span>
+        </div>
+        <div class="cngx-stepper stepper-chips" data-skin="chips">
+          <div class="cngx-stepper__step">
+            <span class="cngx-stepper__indicator" data-state="error"></span>
+            Billing
+          </div>
+        </div>
+        <div class="cngx-stepper">
+          <span class="cngx-stepper__mobile-dot cngx-stepper__mobile-dot--error" data-state="error">
+            <span class="cngx-stepper__mobile-dot-glyph">!</span>
+          </span>
+        </div>
+        <div class="cngx-breadcrumb breadcrumb-shell" data-skin="shell">
+          <span class="product-mark">AC</span>
+        </div>
+        @for (skin of paginatorSkins; track skin) {
+          <nav [class]="'cngx-paginator pag-' + skin" [attr.data-skin]="skin">
+            <button type="button" class="cngx-paginator__button cngx-paginator__page" aria-current="page">
+              2
+            </button>
+          </nav>
+        }
+        <nav class="cngx-paginator pag-alpha">
+          <button type="button" class="cngx-paginator__alpha-chip" aria-pressed="true">B</button>
+        </nav>
+      </div>
+    }
+  `,
+})
+class StrongFillHost {
+  readonly schemes = SCHEMES;
+  readonly paginatorSkins = ['pill', 'bar'] as const;
+}
+
+let mountedRoot: HTMLElement | null = null;
+
+function mount(): HTMLElement {
+  const fixture = TestBed.createComponent(StrongFillHost);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  return mountedRoot;
+}
+
+function one(root: ParentNode, selector: string): HTMLElement {
+  const el = root.querySelector<HTMLElement>(selector);
+  if (!el) {
+    throw new Error(`${selector} did not render`);
+  }
+  return el;
+}
+
+function read(el: HTMLElement, property: string, pseudo?: string): string {
+  return pseudo ? getComputedStyle(el, pseudo).getPropertyValue(property) : computedValue(el, property);
+}
+
+afterEach(async () => {
+  mountedRoot?.remove();
+  mountedRoot = null;
+  await cdp().send('Emulation.setEmulatedMedia', { features: [] });
+});
+
+function expectStrongPair(
+  scope: HTMLElement,
+  el: HTMLElement,
+  { pseudo, ink, tone = 'primary' }: Partial<FillCase> = {},
+): void {
+  const fill = read(el, 'background-color', pseudo);
+  const label = ink ? computedValue(one(el.parentElement ?? el, ink), 'color') : read(el, 'color', pseudo);
+  const probe = tone === 'danger' ? 'danger-strong' : 'strong';
+  expect(contrastRatio(label, fill)).toBeGreaterThanOrEqual(4.5);
+  expect(contrastRatio(fill, computedValue(one(scope, `.probe-${probe}`), 'color'))).toBe(1);
+  expect(contrastRatio(label, computedValue(one(scope, `.probe-on-${probe}`), 'color'))).toBe(1);
+}
+
+describe.each(SCHEMES)('strong primary fill under a label, %s', (scheme) => {
+  it.each(CASES)('$name paints the strong pair at 4.5:1', (fillCase) => {
+    const root = mount();
+    const scope = one(root, `.scheme-${scheme}`);
+    expectStrongPair(scope, one(scope, fillCase.selector), fillCase);
+  });
+
+  // The shell routes the alpha chip's current tokens from `:root`, where the
+  // registered colour resolves, so the page scheme decides the pair.
+  it('paginator alpha active chip paints the strong pair at 4.5:1', async () => {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-color-scheme', value: scheme }],
+    });
+    const root = mount();
+    const scope = one(root, `.scheme-${scheme}`);
+    expectStrongPair(scope, one(scope, '.pag-alpha .cngx-paginator__alpha-chip'));
+  });
+});

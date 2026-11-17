@@ -391,7 +391,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
    * so a host can read content the settle rendered. Two settles before a
    * render produce two writes in that one render pass. A host that is not
    * rendered at that point (a closed popover, a hidden branch, a
-   * `visibility: hidden` ancestor) leaves the
+   * `visibility: hidden` ancestor, an `inert` popover fading out) leaves the
    * region empty and hands a non-empty text to `CngxLiveAnnouncer`, scoped
    * to the host, because a reader never speaks a region in a hidden subtree.
    */
@@ -429,12 +429,16 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   }
 
   /**
-   * `false` for a host a reader skips: not rendered, or under
-   * `visibility: hidden` (a hidden sidenav rail). An engine without
-   * `checkVisibility()` counts the host as rendered.
+   * `false` for a host a reader skips: not rendered, under
+   * `visibility: hidden` (a hidden sidenav rail), or inside an `inert`
+   * subtree (a popover in its close fade). An engine without
+   * `checkVisibility()` counts a host outside `inert` as rendered.
    */
   private hostRendered(): boolean {
     const host = this.el.nativeElement;
+    if (host.closest('[inert]') !== null) {
+      return false;
+    }
     return (
       typeof host.checkVisibility !== 'function' ||
       host.checkVisibility({ visibilityProperty: true })
