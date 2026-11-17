@@ -44,6 +44,11 @@ const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
           </button>
         }
         <button cngxButton="outline" class="o-neutral-{{ scheme }}">Cancel</button>
+        @for (tone of tones; track tone) {
+          <button cngxButton="secondary" [tone]="tone" class="s-{{ tone }}-{{ scheme }}">
+            Archive
+          </button>
+        }
         <span class="surface-{{ scheme }}" style="color: var(--cngx-color-surface)"></span>
       </p>
     }
@@ -52,6 +57,7 @@ const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
 class ContrastHost {
   protected readonly schemes = ['light', 'dark'] as const;
   protected readonly textVariants = TEXT_VARIANTS;
+  protected readonly tones = ['neutral', 'primary', 'danger'] as const;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -220,4 +226,43 @@ describe('toned outline boundary contrast (default palette)', () => {
     ['danger', 'light'],
     ['danger', 'dark'],
   ] as const)(title, expectClears);
+});
+
+// The secondary fill is a translucent tone wash, so the label is read against
+// the wash flattened over the surface, the way the screen shows it.
+async function secondaryRatio(
+  tone: 'neutral' | 'primary' | 'danger',
+  scheme: 'light' | 'dark',
+  state: 'rest' | 'hover' | 'pressed',
+): Promise<number> {
+  const root = mount();
+  const surface = computedValue(query(root, `.surface-${scheme}`), 'color');
+  const button = query(root, `.s-${tone}-${scheme}`);
+  button.style.transition = 'none';
+  if (state === 'hover') {
+    await userEvent.hover(button);
+  }
+  if (state === 'pressed') {
+    button.classList.add('cngx-pressed');
+  }
+  const fill = flatten(computedValue(button, 'background-color'), surface);
+  const ratio = contrastRatio(computedValue(button, 'color'), fill);
+  button.classList.remove('cngx-pressed');
+  await parkPointer();
+  return ratio;
+}
+
+describe('secondary button label contrast at rest, hover and press (default palette)', () => {
+  const cases = (['neutral', 'primary', 'danger'] as const).flatMap((tone) =>
+    (['light', 'dark'] as const).flatMap((scheme) =>
+      (['rest', 'hover', 'pressed'] as const).map((state) => [tone, scheme, state] as const),
+    ),
+  );
+
+  it.each(cases)('secondary %s in the %s scheme clears 4.5:1 at %s', async (tone, scheme, state) => {
+    const ratio = await secondaryRatio(tone, scheme, state);
+    expect(ratio, `${tone} / ${scheme} / ${state}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  });
 });

@@ -563,7 +563,7 @@
     :scope[data-variant='secondary']:hover:not([aria-disabled='true']) {
       background: var(
         --cngx-button-secondary-bg-hover,
-        color-mix(in oklch, var(--cngx-button-tone, currentColor) 18%, transparent)
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 14%, transparent)
       );
     }
     /* Neutral secondary steps below the neutral solid fill so the two stay apart. */
@@ -644,7 +644,7 @@
     :scope[data-variant='secondary']:is(:active, .cngx-pressed):not([aria-disabled='true']) {
       background: var(
         --cngx-button-secondary-bg-pressed,
-        color-mix(in oklch, var(--cngx-button-tone, currentColor) 24%, transparent)
+        color-mix(in oklch, var(--cngx-button-tone, currentColor) 15%, transparent)
       );
     }
     :scope[data-variant='secondary'][data-tone='neutral']:is(:active, .cngx-pressed):not(
