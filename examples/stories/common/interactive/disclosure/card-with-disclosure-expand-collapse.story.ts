@@ -1,4 +1,4 @@
-import type { DemoSpec } from '../../../dev-tools/demo-spec';
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxDisclosure: Card with disclosure expand collapse',

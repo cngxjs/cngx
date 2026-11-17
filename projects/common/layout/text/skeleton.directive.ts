@@ -47,7 +47,7 @@ import { injectEffectiveMotion } from '@cngx/core';
  * @since 0.1.0
  * @relatedTo CngxTruncate, CngxExpandableText, CngxHighlight
  * <example-url>/#/common/layout/skeleton/basic-skeleton</example-url>
- * <example-url>/#/common/layout/skeleton/skeleton-container</example-url>
+ * <example-url>/#/ui/skeleton/skeleton-container</example-url>
  * @axis level atom
  */
 @Directive({

@@ -8,7 +8,7 @@ export const STORY: DemoSpec = {
   audience: ['dev', 'design'],
   artifact: 'standalone',
   focus: ['integration', 'visual-variants'],
-  apiComponents: ['CngxButton', 'CngxInput'],
+  apiComponents: ['CngxButton'],
   moduleImports: [
     "import { CngxButton } from '@cngx/common/button';",
     "import { CngxInput } from '@cngx/forms/input';",
