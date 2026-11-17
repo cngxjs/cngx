@@ -19,6 +19,8 @@ interface FillCase {
 const CASES: readonly FillCase[] = [
   { name: 'tab-nav active pill', selector: '.tab-nav-pill .cngx-tab-nav__link--active' },
   { name: 'tab-group active pill', selector: '.tab-group-pill .cngx-tabs__tab' },
+  { name: 'accordion plus-minus open box', selector: '.accordion-pm .cngx-accordion-item__chevron' },
+  { name: 'accordion bento open tile', selector: '.accordion-bento .cngx-accordion-item__leading' },
 ];
 
 @Component({
@@ -30,6 +32,7 @@ const CASES: readonly FillCase[] = [
     '../common/tabs/styles/tabs-base.css',
     './tabs/tab-nav.component.css',
     './tabs/tab-group.component.css',
+    './accordion/accordion-skins.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -46,6 +49,16 @@ const CASES: readonly FillCase[] = [
         </nav>
         <div class="cngx-tab-group tab-group-pill" data-skin="pill">
           <div role="tab" class="cngx-tabs__tab" aria-selected="true">Overview</div>
+        </div>
+        <div class="cngx-accordion-group accordion-pm" data-skin="plus-minus">
+          <div class="cngx-accordion-item" data-expanded>
+            <span class="cngx-accordion-item__chevron">+</span>
+          </div>
+        </div>
+        <div class="cngx-accordion-group accordion-bento" data-skin="bento">
+          <div class="cngx-accordion-item" data-expanded>
+            <span class="cngx-accordion-item__leading">A</span>
+          </div>
         </div>
       </div>
     }
