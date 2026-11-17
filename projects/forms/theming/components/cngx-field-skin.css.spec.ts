@@ -298,6 +298,18 @@ describe('cngx-field-skin.css', () => {
     expect(rest).toContain(`box-shadow: ${underline} transparent, inset 0 0 0 100vh`);
     expect(focus).toContain(`box-shadow: ${underline} var(`);
     expect(focus.indexOf('inset 0 0 0 100vh')).toBeGreaterThan(focus.indexOf(underline));
+
+    // Invalid and autofilled: the error rule alone drops the fill at rest and
+    // loses to the autofill focus rule on focus. One rule after both keeps
+    // the danger line in the underline slot and the fill in the second slot.
+    const invalidSelector = ":scope:autofill:is([aria-invalid='true'], [data-invalid])";
+    const invalid = shadowOf(invalidSelector);
+    expect(invalid).toContain(
+      `box-shadow: ${underline} var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25))), inset 0 0 0 100vh`,
+    );
+    expect(flat.indexOf(`${invalidSelector} {`)).toBeGreaterThan(
+      flat.indexOf(":scope:is([aria-invalid='true'], [data-invalid]),"),
+    );
   });
 
   it('keeps Material system tokens out of the default stylesheet', () => {

@@ -231,6 +231,20 @@
         var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25)));
     }
 
+    /* Invalid AND autofilled: the error rule above would drop the fill, and
+       the autofill focus rule outranks it. Same list shape as the autofill
+       rules, danger in the underline slot, at rest and while focused. */
+    :scope:autofill:is([aria-invalid='true'], [data-invalid]) {
+      box-shadow:
+        inset 0 calc(var(--cngx-field-border-width, 1px) - var(--cngx-field-underline-size, 2px)) 0
+          var(--cngx-field-error-color, var(--cngx-color-danger, oklch(0.6 0.18 25))),
+        inset 0 0 0 100vh
+          var(
+            --cngx-field-fill-bg,
+            color-mix(in oklch, var(--cngx-color-text, oklch(0.2 0.01 250)) 6%, transparent)
+          );
+    }
+
     /* Disabled fades by colour, not opacity: opacity would also fade an
        affix that is still meaningful, and it stacks with the UA dimming. The
        dashed underline keeps the state readable without colour. */
