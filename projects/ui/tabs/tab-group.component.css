@@ -158,7 +158,7 @@
   /**
    * Surface that the active tab fuses with under the `contained` skin
    * (the panel surface) and the active-pill fill under the `pill` skin.
-   * Set from `--cngx-color-surface` / `--cngx-color-primary` via the
+   * Set from `--cngx-color-surface` / `--cngx-color-primary-strong` via the
    * per-skin `:scope` assignment.
    * @group Skin
    */
@@ -815,8 +815,11 @@
        * @group Skin
        */
       --cngx-tab-pill-strip-padding: var(--cngx-space-xs, 0.25rem);
-      --cngx-tab-active-bg: var(--cngx-color-primary, oklch(0.66 0.19 50));
-      --cngx-tab-pill-active-color: var(--cngx-color-on-primary, oklch(1 0 0));
+      --cngx-tab-active-bg: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
+      --cngx-tab-pill-active-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
       /* Resting pills lift onto a faint tint of the brand accent on hover,
          not a neutral grey - keeps the row reading as one accent family. */
       --cngx-tab-pill-hover-bg: color-mix(
