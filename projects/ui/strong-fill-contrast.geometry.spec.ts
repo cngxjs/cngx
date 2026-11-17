@@ -21,6 +21,11 @@ const CASES: readonly FillCase[] = [
   { name: 'tab-group active pill', selector: '.tab-group-pill .cngx-tabs__tab' },
   { name: 'accordion plus-minus open box', selector: '.accordion-pm .cngx-accordion-item__chevron' },
   { name: 'accordion bento open tile', selector: '.accordion-bento .cngx-accordion-item__leading' },
+  {
+    name: 'data-grid-accordion spreadsheet open gutter',
+    selector: '.dga-sheet .cngx-dga-row__cells',
+    pseudo: '::before',
+  },
 ];
 
 @Component({
@@ -33,6 +38,7 @@ const CASES: readonly FillCase[] = [
     './tabs/tab-nav.component.css',
     './tabs/tab-group.component.css',
     './accordion/accordion-skins.css',
+    './data-grid-accordion/data-grid-accordion-skins.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -58,6 +64,11 @@ const CASES: readonly FillCase[] = [
         <div class="cngx-accordion-group accordion-bento" data-skin="bento">
           <div class="cngx-accordion-item" data-expanded>
             <span class="cngx-accordion-item__leading">A</span>
+          </div>
+        </div>
+        <div class="cngx-data-grid-accordion dga-sheet" data-skin="spreadsheet">
+          <div class="cngx-dga-row" data-expanded>
+            <div class="cngx-dga-row__cells"><span class="cngx-dga-cell">Row</span></div>
           </div>
         </div>
       </div>
