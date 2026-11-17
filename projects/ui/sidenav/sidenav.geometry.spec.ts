@@ -510,3 +510,60 @@ describe('CngxSidenav focus after an expanded to compact change under focus', ()
     fixture.destroy();
   });
 });
+
+@Component({
+  selector: 'cngx-sidenav-resize-geometry-host',
+  standalone: true,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+  template: `
+    <cngx-sidenav-layout style="block-size: 300px">
+      <cngx-sidenav mode="side" [opened]="true" [resizable]="true" ariaLabel="Nav">
+        <button type="button" class="nav-row" style="display: block; inline-size: 100%">
+          Row
+        </button>
+      </cngx-sidenav>
+      <cngx-sidenav-content>Main</cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+})
+class ResizableSidenavHost {}
+
+// WCAG 2.5.8 on a mouse: `--cngx-target-min` is 0px on a fine pointer, so the
+// handle hit zone reaches 24px through its own token while the bar stays 4px.
+describe('CngxSidenav resize handle hit zone on a fine pointer', () => {
+  it('grabs 24px centred on the rail edge and leaves the nav row 13px inside', () => {
+    const fixture = TestBed.createComponent(ResizableSidenavHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const handle = mountedRoot.querySelector<HTMLElement>('.cngx-sidenav__resize-handle');
+    const row = mountedRoot.querySelector<HTMLElement>('.nav-row');
+    if (!handle || !row) {
+      throw new Error('resizable cngx-sidenav did not render its handle and row');
+    }
+    const bar = handle.getBoundingClientRect();
+    expect(bar.width).toBe(4);
+    expect(parseFloat(getComputedStyle(handle, '::before').width)).toBe(24);
+    const edge = bar.left + bar.width / 2;
+    const y = row.getBoundingClientRect().top + row.getBoundingClientRect().height / 2;
+    expect(document.elementFromPoint(edge - 11, y)).toBe(handle);
+    // Past the rail edge: the resizable rail must not clip the outer half.
+    expect(document.elementFromPoint(edge + 11, y)).toBe(handle);
+    expect(document.elementFromPoint(edge - 13, y)?.closest('.nav-row')).toBe(row);
+  });
+
+  it('lets the 44px touch zone reach 22px past the rail edge', () => {
+    const fixture = TestBed.createComponent(ResizableSidenavHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    // What system-tokens.css resolves on a coarse pointer or `data-touch='on'`.
+    mountedRoot.style.setProperty('--cngx-target-min', '44px');
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const handle = mountedRoot.querySelector<HTMLElement>('.cngx-sidenav__resize-handle')!;
+    const bar = handle.getBoundingClientRect();
+    const edge = bar.left + bar.width / 2;
+    const y = bar.top + bar.height / 2;
+    expect(document.elementFromPoint(edge + 21, y)).toBe(handle);
+    expect(document.elementFromPoint(edge - 21, y)).toBe(handle);
+  });
+});
