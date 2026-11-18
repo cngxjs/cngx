@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3228 tokens across 164 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3231 tokens across 166 components.
 
 ## CngxA11yPanel
 
@@ -1477,6 +1477,13 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |-|-|-|-|
 |`--cngx-filter-builder-empty-row-opacity`|`0.85`|State / Empty|Opacity multiplier applied to the empty row variant - fades the placeholder slot without removing it from the layout.|
 |`--cngx-filter-builder-action-padding-compact`|`var(--cngx-space-sm)`|Variant / Remove|Padding of the remove button at the end of the row capsule.|
+
+## CngxFormErrors
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-form-errors-font-size`|``|Typography|Font size of the error summary list. Unset by default, so the list matches the field-level error lines via `--cngx-field-hint-font-size`.|
+|`--cngx-form-errors-color`|``|State / Error|Text colour of the error summary list and its links. Unset by default, so the list follows `--cngx-field-error-color`, then the `--cngx-color-danger-text` rung of the scheme in scope.|
 
 ## CngxGoal
 
@@ -3073,6 +3080,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-reorderable-multi-select-color`|`var(--cngx-multi-select-color, var(--cngx-select-color, inherit))`|Surface|Text color of the trigger. Falls back to `--cngx-multi-select-color`, then `--cngx-select-color`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-reorderable-multi-select-min-height`|`var(--cngx-multi-select-min-height, var(--cngx-select-min-height, 2.125rem))`|Layout|Minimum block size of the trigger. Falls back to `--cngx-multi-select-min-height`, then `--cngx-select-min-height`; see {@link --cngx-select-min-height} for why no `initial-value` is declared. The touch floor still lifts the trigger to `--cngx-target-min`.|
 |`--cngx-reorderable-multi-select-focus-outline`|`var(--cngx-multi-select-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary))))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-multi-select-focus-outline`, then `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
+
+## CngxRequired
+
+|Token|Default|Group|Description|
+|-|-|-|-|
+|`--cngx-field-required-color`|``|State / Error|Colour of the required marker glyph, shared with `CngxLabel`. Unset by default, so the marker follows `--cngx-field-error-color`, then the `--cngx-color-danger-text` rung of the scheme in scope.|
 
 ## CngxRipple
 

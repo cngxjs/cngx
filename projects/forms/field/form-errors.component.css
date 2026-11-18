@@ -26,6 +26,21 @@
  */
 
 @layer cngx.components {
+  /**
+   * Font size of the error summary list. Unset by default, so the list
+   * matches the field-level error lines via `--cngx-field-hint-font-size`.
+   * @cssprop {<length>} --cngx-form-errors-font-size
+   * @group Typography
+   */
+
+  /**
+   * Text colour of the error summary list and its links. Unset by default,
+   * so the list follows `--cngx-field-error-color`, then the
+   * `--cngx-color-danger-text` rung of the scheme in scope.
+   * @cssprop {<color>} --cngx-form-errors-color
+   * @group State / Error
+   */
+
   @scope (.cngx-form-errors) {
     :scope {
       display: contents;
