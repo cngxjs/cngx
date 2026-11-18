@@ -2,8 +2,8 @@
  * @overview
  * Layout-level styles for `CngxSidenavLayout`: the flex container that
  * holds one or two `cngx-sidenav` rails and a `cngx-sidenav-content`,
- * the content offset behaviour, the mobile backdrop scrim, the
- * `--ready` transition gate, and the reduced-motion fallback. Loaded
+ * the content offset behaviour, the mobile backdrop scrim
+ * and the `--ready` transition gate. Loaded
  * via the layout component's `styleUrl`; under `encapsulation: None`
  * these rules match globally.
  *
@@ -29,7 +29,9 @@
  *
  * - `.cngx-sidenav-backdrop` - mobile scrim for `over` mode
  *
- * All transitions short-circuit under `prefers-reduced-motion`.
+ * Reduced motion: the core motion tokens (`@cngx/core/theming/motion-tokens`)
+ * shorten every transition under `prefers-reduced-motion`, with the
+ * `data-motion="full"` escape.
  *
  * **Pair with**
  *
@@ -166,13 +168,5 @@
       opacity var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
       visibility 0s 0s;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    cngx-sidenav,
-    cngx-sidenav-content,
-    .cngx-sidenav-backdrop {
-      transition: none !important;
-    }
   }
 }

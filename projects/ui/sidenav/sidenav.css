@@ -12,8 +12,8 @@
  * `cngx-sidenav-` prefix is the namespace.
  *
  * `CngxSidenavLayout`'s own styles (flex container, content offset,
- * backdrop scrim, the `--ready` transition gate, reduced-motion) live
- * in `sidenav-layout.css`.
+ * backdrop scrim, the `--ready` transition gate) live in
+ * `sidenav-layout.css`.
  *
  * **State modifiers**
  *
@@ -27,7 +27,10 @@
  * - `[data-sidebar-state]` - `expanded | rail | hidden | peek`, written by
  *   the composed `CngxSidebar`: `rail` is the collapsed icon rail
  *   (`--cngx-sidenav-mini-width`), `peek` grows it to full width over the
- *   content without shifting it, plus `--cngx-sidenav-expanded-shadow`
+ *   content without shifting it, plus `--cngx-sidenav-expanded-shadow`;
+ *   the peek stacks at `--cngx-sidebar-peek-z-index` (default `2`, from
+ *   `CngxSidebar`), SET it on the host or an ancestor to lift the peek
+ *   over other stacked content
  *
  * On `.cngx-nav-group-content`:
  *
@@ -75,6 +78,8 @@
  * **Inheritance**
  *
  * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
+ * - `--cngx-sidenav-color` -> `--cngx-color-text`
+ * - `--cngx-sidenav-z-index` -> `2`, the rail's stacking over the content
  * - `--cngx-sidenav-border-color` -> `--cngx-color-border`
  * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color`
  *   -> `--cngx-sidenav-border-color` -> `--cngx-color-border`
@@ -95,11 +100,15 @@
  *
  * The nav row fills need no hook: they are one accent mixed over
  * transparent, so they follow the scheme through the surface beneath.
- * Three hooks deepen the expanded-rail shadow:
+ * Three hooks deepen the peek and overlay shadow, on the root or on any
+ * island around the rail:
  *
  * - `prefers-color-scheme: dark`
  * - `[data-color-scheme="dark"]`
  * - `.dark` class
+ *
+ * The shadow falls toward the content: an end rail and an RTL rail cast it
+ * to the inline start.
  *
  * **Pair with**
  *
@@ -125,24 +134,28 @@
   }
 
   /**
-   * Background of the rail surface.
+   * Background of the rail surface. Unset by default: the reading rules fall
+   * back to `--cngx-color-surface` on the rail itself, so a
+   * `[data-color-scheme]` island around the rail paints its own surface.
    * @group Surface
+   * @see [[--cngx-color-surface]]
    */
   @property --cngx-sidenav-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.97 0.005 250);
   }
 
   /**
-   * Text color of the rail. Defaults to `currentColor` so it inherits
-   * from the page.
+   * Text color of the rail. Unset by default: the rail falls back to
+   * `--cngx-color-text` on itself, so a `[data-color-scheme]` island around
+   * the rail writes its own text colour; without the foundation tokens it
+   * inherits from the page.
    * @group Surface
+   * @see [[--cngx-color-text]]
    */
   @property --cngx-sidenav-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
@@ -198,13 +211,14 @@
   }
 
   /**
-   * Drop-shadow applied while the collapsed rail peeks over content.
+   * Drop-shadow applied while the collapsed rail peeks over content. Unset
+   * by default: the rail casts a 12px shadow toward the content, deeper in a
+   * dark scheme or island.
    * @group Variant / Mini
    */
   @property --cngx-sidenav-expanded-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
   }
 
   /**
@@ -218,14 +232,15 @@
   }
 
   /**
-   * Stroke color of the rail edge border. Falls back through
-   * `--cngx-color-border`.
+   * Stroke color of the rail edge border. Unset by default: the reading rules
+   * fall back to `--cngx-color-border` on the rail itself, so a
+   * `[data-color-scheme]` island around the rail draws its own border.
    * @group Surface
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-sidenav-border-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.89 0 0);
   }
 
   /**
@@ -240,6 +255,19 @@
        reaches it, as before the header and footer moved to cngx-nav.css. */
     inherits: true;
     initial-value: 16px;
+  }
+
+  /**
+   * Block gap between the body rows. A collapsed rail keeps it as a margin
+   * before a group whose content became a popover, so no row moves between
+   * rail and expanded sidenav. Unset by default: the readers fall back to
+   * half of `--cngx-space-xs`, so density reaches it; the Material 3 bridge
+   * sets it to `0` (mat-nav-list rows touch).
+   * @group Layout
+   */
+  @property --cngx-sidenav-row-gap {
+    syntax: '*';
+    inherits: true;
   }
 
   /**
@@ -330,13 +358,13 @@
   /**
    * Drop-shadow of an open overlay rail (the `compact` drawer and the full
    * nav over the `medium` rail), so it reads as a layer over the content
-   * rather than a third column. Defaults to `--cngx-sidenav-expanded-shadow`.
+   * rather than a third column. Unset by default: falls back to
+   * `--cngx-sidenav-expanded-shadow`, then to the rail's own shadow.
    * @group State / Over
    */
   @property --cngx-sidenav-overlay-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
   }
 
   /**
@@ -350,36 +378,30 @@
   }
 
   /*
-   * Default-theme palette pass. The @property `initial-value` shadows
-   * any `var(…)` fallback inside component CSS, so we must explicitly
-   * paint the resolved value at :root for each color-flavoured token.
-   * Rail surface + border delegate to the foundation tokens; the
-   * expanded shadow flips per scheme below. The nav-link tokens are not
-   * here: they are SET on the cngx-sidenav host, so a host-scoped accent
-   * reaches them, and their primary tints follow the scheme through the
-   * surface they composite over, with no per-scheme hook.
+   * Shadow tint per scheme. Only the tint is SET here: it is a plain colour,
+   * so resolving it on the scheme element is right, while the offset depends
+   * on the rail and is SET there. The scheme selectors match the root and any
+   * island, as in core system-tokens.css. Surface, border and ink are not SET
+   * at all: the reading rules fall back on the rail.
    */
   :root {
-    --cngx-sidenav-bg: var(--cngx-color-surface, oklch(0.97 0.005 250));
-    --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
-    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
-    --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
+    --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.1);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+      --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.45);
     }
   }
 
-  :root[data-color-scheme='dark'],
-  :root.dark {
-    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+  [data-color-scheme='dark'],
+  .dark {
+    --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.45);
   }
 
-  :root[data-color-scheme='light'],
-  :root.light {
-    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+  [data-color-scheme='light'],
+  .light {
+    --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.1);
   }
 }
 
@@ -451,7 +473,10 @@
       transparent
     );
     --cngx-nav-link-focus-outline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    --cngx-nav-link-focus-inner-color: var(--cngx-sidenav-bg, oklch(0.97 0.005 250));
+    --cngx-nav-link-focus-inner-color: var(
+      --cngx-sidenav-bg,
+      var(--cngx-color-surface, oklch(0.97 0.005 250))
+    );
     --cngx-nav-link-active-indicator-color: var(
       --cngx-color-primary-text,
       oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
@@ -465,10 +490,10 @@
     box-sizing: border-box;
     flex-shrink: 0;
     overflow: hidden;
-    z-index: 2;
+    z-index: var(--cngx-sidenav-z-index, 2);
     width: var(--cngx-sidenav-width, 280px);
-    background: var(--cngx-sidenav-bg, oklch(0.97 0.005 250));
-    color: var(--cngx-sidenav-color, inherit);
+    background: var(--cngx-sidenav-bg, var(--cngx-color-surface, oklch(0.97 0.005 250)));
+    color: var(--cngx-sidenav-color, var(--cngx-color-text, inherit));
     transition:
       width var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
@@ -538,11 +563,29 @@
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--open {
     transform: translateX(0);
     visibility: visible;
-    box-shadow: var(--cngx-sidenav-overlay-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
+    box-shadow: var(
+      --cngx-sidenav-overlay-shadow,
+      var(
+        --cngx-sidenav-expanded-shadow,
+        var(--_cngx-sidenav-shadow-x, 4px) 0 12px
+          var(--_cngx-sidenav-shadow-tint, oklch(0 0 0 / 0.1))
+      )
+    );
     transition:
       transform var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
       visibility 0s 0s;
+  }
+
+  /* The default shadow falls toward the content: the inline start for an end
+     rail, mirrored again under RTL. */
+  cngx-sidenav.cngx-sidenav--end,
+  cngx-sidenav:dir(rtl) {
+    --_cngx-sidenav-shadow-x: -4px;
+  }
+
+  cngx-sidenav.cngx-sidenav--end:dir(rtl) {
+    --_cngx-sidenav-shadow-x: 4px;
   }
 
   /* Side mode: in flex flow */
@@ -581,8 +624,10 @@
    * edge facing the content keeps the flex footprint at the rail width.
    */
   cngx-sidenav[data-sidebar-state='peek'] {
-    z-index: 3;
-    box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
+    box-shadow: var(
+      --cngx-sidenav-expanded-shadow,
+      var(--_cngx-sidenav-shadow-x, 4px) 0 12px var(--_cngx-sidenav-shadow-tint, oklch(0 0 0 / 0.1))
+    );
   }
 
   cngx-sidenav.cngx-sidenav--start {
@@ -605,7 +650,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: calc(var(--cngx-space-xs, 4px) / 2);
+    gap: var(--cngx-sidenav-row-gap, calc(var(--cngx-space-xs, 4px) / 2));
     overflow-y: auto;
     overflow-x: hidden;
     min-width: var(--cngx-sidenav-width, 280px);
@@ -647,7 +692,7 @@
   cngx-sidenav[data-sidebar-state='rail']
     .cngx-sidenav__body
     > :has(+ .cngx-nav-group-content[popover]) {
-    margin-block-end: calc(var(--cngx-space-xs, 4px) / 2);
+    margin-block-end: var(--cngx-sidenav-row-gap, calc(var(--cngx-space-xs, 4px) / 2));
   }
 
   /*

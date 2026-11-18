@@ -126,6 +126,25 @@ afterEach(() => {
 });
 
 describe('CngxNavRail geometry', () => {
+  it('writes the rows in the rail ink token, falling back to the text token', () => {
+    const { el } = mount();
+    const railEl = el('cngx-nav-rail');
+    // the row transitions its colour; read the end value
+    el('.row').style.transition = 'none';
+    railEl.style.setProperty('--cngx-color-text', 'rgb(1, 2, 3)');
+    expect(getComputedStyle(el('.row')).color).toBe('rgb(1, 2, 3)');
+    railEl.style.setProperty('--cngx-nav-rail-color', 'rgb(4, 5, 6)');
+    expect(getComputedStyle(el('.row')).color).toBe('rgb(4, 5, 6)');
+  });
+
+  it('gaps the body rows by half of space-xs unless the row-gap token says otherwise', () => {
+    const { el } = mount();
+    const body = el('.cngx-nav-rail__body');
+    expect(getComputedStyle(body).rowGap).toBe('2px');
+    el('cngx-nav-rail').style.setProperty('--cngx-nav-rail-row-gap', '6px');
+    expect(getComputedStyle(body).rowGap).toBe('6px');
+  });
+
   it('draws the border on the inner edge of an end-side rail', () => {
     const { el } = mount('end', 'end');
     const railEl = el('cngx-nav-rail');

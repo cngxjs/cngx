@@ -120,12 +120,14 @@ $theme: mat.define-theme((
   it('broadcasts the layout tokens to host + descendants (inherits:false backdrop)', () => {
     const css = compiledTheme();
     const broadcast = css.match(
-      /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*\)\s*\{[^}]*\}/,
+      /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*, cngx-sidenav\)\s*\{[^}]*\}/,
     );
     expect(broadcast).not.toBeNull();
     expect(broadcast![0]).toContain('--cngx-sidenav-backdrop-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-overlay-shadow:');
     expect(broadcast![0]).toContain('--mat-sys-level1');
+    // a bare mode="side" rail without a layout gets the surface too
+    expect(broadcast![0]).toContain('--cngx-sidenav-bg:');
   });
 
   it('emits the nav header and footer tokens on the slot hosts (inherits:false bg and type)', () => {
@@ -158,10 +160,12 @@ $theme: mat.define-theme((
       expect(metrics![0]).toContain(token);
     }
     expect(metrics![0]).toContain('var(--cngx-space-');
+    // one row gap for the body and the rail's popover-group margin
+    expect(metrics![0]).toContain('--cngx-sidenav-row-gap: 0');
     expect(css).not.toMatch(/:where\([^)]*cngx-sidenav\[data-nav-railed\]/);
     const body = css.match(/cngx-sidenav\[data-nav-railed\] \.cngx-sidenav__body\s*\{[^}]*\}/);
     expect(body).not.toBeNull();
-    expect(body![0]).toContain('gap: 0');
+    expect(body![0]).not.toMatch(/\bgap:/);
   });
 
   it('emits no list item metrics for an M2 theme', () => {
@@ -174,6 +178,22 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $primary))
 `);
     expect(css).not.toContain('--cngx-nav-icon-size');
     expect(css).not.toContain('.cngx-sidenav__body');
+  });
+
+  it('reads the M2 rail ink from the theme foreground, so a dark theme stays readable', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/sidenav-theme' as sidenav;
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$theme: mat.m2-define-dark-theme((color: (primary: $primary, accent: $primary)));
+@include sidenav.theme($theme);
+`);
+    expect(css).toContain('--cngx-sidenav-color:');
+    expect(css).not.toContain('--cngx-sidenav-color: rgba(0, 0, 0, 0.87)');
+    expect(css).not.toContain('--cngx-sidenav-border-color: rgba(0, 0, 0, 0.12)');
+    // the row ink inherits the rail ink (currentColor); a fixed M2 row colour
+    // would stay dark on the dark surface
+    expect(css).not.toMatch(/--cngx-nav-link-(hover-)?color:/);
   });
 
   it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {
