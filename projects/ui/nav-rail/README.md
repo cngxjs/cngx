@@ -211,6 +211,7 @@ Rail tokens (`nav-rail.css`):
 | `--cngx-nav-rail-bg` | `--cngx-color-surface` |
 | `--cngx-nav-rail-color` | `--cngx-color-text`, the ink rows, header and footer inherit |
 | `--cngx-nav-rail-border-color` | `--cngx-color-border`, the border on the rail's inner edge |
+| `--cngx-nav-rail-row-gap` | half of `--cngx-space-xs`, the gap between body rows |
 | `--cngx-nav-rail-border-width` | `1px`, the border on the rail's inner edge |
 | `--cngx-nav-tooltip-offset` | `--cngx-space-sm`, the gap between a row and its label tooltip |
 

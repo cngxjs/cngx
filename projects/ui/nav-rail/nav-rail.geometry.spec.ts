@@ -137,6 +137,14 @@ describe('CngxNavRail geometry', () => {
     expect(getComputedStyle(el('.row')).color).toBe('rgb(4, 5, 6)');
   });
 
+  it('gaps the body rows by half of space-xs unless the row-gap token says otherwise', () => {
+    const { el } = mount();
+    const body = el('.cngx-nav-rail__body');
+    expect(getComputedStyle(body).rowGap).toBe('2px');
+    el('cngx-nav-rail').style.setProperty('--cngx-nav-rail-row-gap', '6px');
+    expect(getComputedStyle(body).rowGap).toBe('6px');
+  });
+
   it('draws the border on the inner edge of an end-side rail', () => {
     const { el } = mount('end', 'end');
     const railEl = el('cngx-nav-rail');
