@@ -55,6 +55,30 @@ function query(root: HTMLElement, selector: string): HTMLElement {
 })
 class CheckedToggleHost {}
 
+// Track and thumb tokens are read on the __track / __thumb descendants, so a
+// consumer SET on the host only reaches them through inheritance.
+@Component({
+  standalone: true,
+  imports: [CngxToggle],
+  template: `
+    <cngx-toggle
+      [value]="true"
+      style="
+        --cngx-toggle-track-bg-on: rgb(255, 0, 0);
+        --cngx-toggle-track-width: 3rem;
+        --cngx-toggle-track-height: 2rem;
+        --cngx-toggle-track-radius: 4px;
+        --cngx-toggle-thumb-size: 1.5rem;
+        --cngx-toggle-thumb-travel: 1.5rem;
+        --cngx-toggle-thumb-bg: rgb(0, 0, 255);
+        --cngx-toggle-thumb-shadow: none;
+      "
+      >Host tokens</cngx-toggle
+    >
+  `,
+})
+class HostTokenToggleHost {}
+
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
@@ -99,5 +123,29 @@ describe('CngxToggle geometry', () => {
       );
     expect(rasterise(trackBg('.toggle-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
     expect(rasterise(trackBg('.toggle-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
+  });
+
+  it('carries track and thumb tokens set on the host to the descendants', () => {
+    const fixture = TestBed.createComponent(HostTokenToggleHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const track = query(mountedRoot, '.cngx-toggle__track');
+    const thumb = query(mountedRoot, '.cngx-toggle__thumb');
+    expect(rasterise(computedValue(track, 'background-color'))).toEqual(
+      rasterise('rgb(255, 0, 0)'),
+    );
+    expect(computedValue(track, 'inline-size')).toBe('48px');
+    expect(computedValue(track, 'block-size')).toBe('32px');
+    expect(computedValue(track, 'border-top-left-radius')).toBe('4px');
+    expect(computedValue(thumb, 'inline-size')).toBe('24px');
+    expect(computedValue(thumb, 'transform')).toBe('matrix(1, 0, 0, 1, 24, 0)');
+    expect(rasterise(computedValue(thumb, 'background-color'))).toEqual(
+      rasterise('rgb(0, 0, 255)'),
+    );
+    expect(computedValue(thumb, 'box-shadow')).toBe('none');
+    // The inset is derived on the host from the same height and size, so the
+    // thumb stays centred in the track instead of overflowing it.
+    expect(computedValue(thumb, 'inset-block-start')).toBe('4px');
   });
 });

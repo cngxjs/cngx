@@ -42,6 +42,10 @@
  * - `--cngx-toggle-track-bg-on` -> `--cngx-color-primary`
  * - `--cngx-toggle-color` - direct (defaults to `currentColor`)
  *
+ * The track and thumb tokens are read on the `__track` / `__thumb`
+ * descendants and register `inherits: true`, so a value set on the host
+ * or any ancestor reaches them.
+ *
  * **Dark mode**
  *
  * Three hooks flip the off-state track from `oklch(0 0 0 / 0.25)` to
@@ -142,7 +146,7 @@
    */
   @property --cngx-toggle-track-width {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 2.25rem;
   }
 
@@ -152,7 +156,7 @@
    */
   @property --cngx-toggle-track-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.25rem;
   }
 
@@ -162,7 +166,7 @@
    */
   @property --cngx-toggle-track-radius {
     syntax: '<length>';
-    inherits: false;
+    inherits: true;
     initial-value: 9999px;
   }
 
@@ -186,7 +190,7 @@
    */
   @property --cngx-toggle-track-bg-on {
     syntax: '*';
-    inherits: false;
+    inherits: true;
   }
 
   /**
@@ -206,7 +210,7 @@
    */
   @property --cngx-toggle-thumb-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -216,7 +220,7 @@
    */
   @property --cngx-toggle-thumb-travel {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1rem;
   }
 
@@ -226,7 +230,7 @@
    */
   @property --cngx-toggle-thumb-bg {
     syntax: '<color>';
-    inherits: false;
+    inherits: true;
     initial-value: oklch(1 0 0);
   }
 
@@ -236,7 +240,7 @@
    */
   @property --cngx-toggle-thumb-shadow {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0 1px 2px oklch(0 0 0 / 0.25);
   }
 
