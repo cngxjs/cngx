@@ -83,6 +83,13 @@ describe('CngxSidenav mini-rail geometry', () => {
     );
   });
 
+  it('gaps the body rows by half of space-xs unless the row-gap token says otherwise', () => {
+    const { host, body } = mount();
+    expect(getComputedStyle(body).rowGap).toBe('2px');
+    host.style.setProperty('--cngx-sidenav-row-gap', '6px');
+    expect(getComputedStyle(body).rowGap).toBe('6px');
+  });
+
   it('insets the body rows from the panel edge like the nav-rail body', () => {
     const { body } = mount();
     expect(computedValue(body, 'padding-block-start')).toBe('4px');
@@ -518,9 +525,7 @@ describe('CngxSidenav focus after an expanded to compact change under focus', ()
   template: `
     <cngx-sidenav-layout style="block-size: 300px">
       <cngx-sidenav mode="side" [opened]="true" [resizable]="true" ariaLabel="Nav">
-        <button type="button" class="nav-row" style="display: block; inline-size: 100%">
-          Row
-        </button>
+        <button type="button" class="nav-row" style="display: block; inline-size: 100%">Row</button>
       </cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
     </cngx-sidenav-layout>
