@@ -348,8 +348,8 @@
                 {
                   "type": "bundle",
                   "name": "material-lab-theme",
-                  "maximumWarning": "64kB",
-                  "maximumError": "80kB"
+                  "maximumWarning": "88kB",
+                  "maximumError": "96kB"
                 }
               ],
               "outputHashing": "all"

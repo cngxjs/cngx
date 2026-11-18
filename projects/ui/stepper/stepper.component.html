@@ -39,7 +39,7 @@
           [attr.data-reason]="stateView.rejectionReason(node)"
         >
           @if (templates.dot(); as dotTpl) {
-            <span aria-hidden="true">
+            <span class="cngx-stepper__mobile-dot-body" aria-hidden="true">
               <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
             </span>
           }
@@ -71,7 +71,7 @@
           (click)="handleHeaderClick(node)"
         >
           @if (templates.dot(); as dotTpl) {
-            <span aria-hidden="true">
+            <span class="cngx-stepper__mobile-dot-body" aria-hidden="true">
               <ng-container *ngTemplateOutlet="dotTpl; context: slotContext.dotContextFor(node)" />
             </span>
           }

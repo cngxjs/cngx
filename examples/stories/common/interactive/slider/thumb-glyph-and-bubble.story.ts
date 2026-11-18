@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
     Focus or drag the thumb - the value bubble appears above the custom handle.
   </p>`,
   template: `  <ng-template #grip>
-    <span style="font-size:9px;line-height:1;color:var(--cngx-color-on-primary,#fff)">||</span>
+    <span style="font-size:9px;line-height:1;color:var(--cngx-color-primary,oklch(0.66 0.19 50))">||</span>
   </ng-template>
   <div style="max-width:320px;padding-top:32px">
     <label id="vol-label" style="display:block;margin-bottom:12px;font-weight:600">Volume</label>

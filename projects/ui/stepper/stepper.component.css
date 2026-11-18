@@ -2197,6 +2197,16 @@
   background: var(--cngx-step-refused-color, oklch(0.62 0.15 60));
 }
 
+/* A projected `*cngxDotStepperDot` body sits centred on the dot; as an
+   inline box it rode the text baseline and hung below the dot. */
+.cngx-stepper__mobile-dot-body {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
 /* Non-color error cue (WCAG 1.4.1) for the mobile dot - an icon centred
    over the red fill so error never relies on colour alone; a refused dot
    takes the ban icon, so it never differs from an error by colour alone.
