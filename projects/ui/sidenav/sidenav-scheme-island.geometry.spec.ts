@@ -103,6 +103,13 @@ describe('CngxSidenav scheme island', () => {
         );
       });
 
+      it('writes the rail text in the island text colour', () => {
+        const root = mountIn();
+        expect(getComputedStyle(el(root, '.island-rail')).color).toBe(
+          getComputedStyle(el(root, '.island-probe')).color,
+        );
+      });
+
       it('draws the rail edge in the island border colour', () => {
         const root = mountIn();
         expect(getComputedStyle(el(root, '.island-rail')).borderInlineEndColor).toBe(

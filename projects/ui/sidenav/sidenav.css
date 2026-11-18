@@ -75,6 +75,7 @@
  * **Inheritance**
  *
  * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
+ * - `--cngx-sidenav-color` -> `--cngx-color-text`
  * - `--cngx-sidenav-border-color` -> `--cngx-color-border`
  * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color`
  *   -> `--cngx-sidenav-border-color` -> `--cngx-color-border`
@@ -137,14 +138,16 @@
   }
 
   /**
-   * Text color of the rail. Defaults to `currentColor` so it inherits
-   * from the page.
+   * Text color of the rail. Unset by default: the rail falls back to
+   * `--cngx-color-text` on itself, so a `[data-color-scheme]` island around
+   * the rail writes its own text colour; without the foundation tokens it
+   * inherits from the page.
    * @group Surface
+   * @see [[--cngx-color-text]]
    */
   @property --cngx-sidenav-color {
     syntax: '*';
     inherits: true;
-    initial-value: currentColor;
   }
 
   /**
@@ -486,7 +489,7 @@
     z-index: 2;
     width: var(--cngx-sidenav-width, 280px);
     background: var(--cngx-sidenav-bg, var(--cngx-color-surface, oklch(0.97 0.005 250)));
-    color: var(--cngx-sidenav-color, inherit);
+    color: var(--cngx-sidenav-color, var(--cngx-color-text, inherit));
     transition:
       width var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
