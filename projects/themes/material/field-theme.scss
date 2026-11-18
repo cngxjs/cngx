@@ -84,14 +84,15 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-error, .cngx-char-count';
 // Metrics of mat-form-field appearance="outline", density 0: a 56px control
 // (the body-large line box plus 16px each side, the 1px edge inside it, as
 // the M3 outline is drawn over the padding), 4px corners, and a subscript line
-// that starts right under the edge, inset 16px on both sides.
+// inset 16px on both sides. The hint keeps the cngx gap: mat-hint sits flush
+// under the edge but bottom-aligns its 16px line, so its text lands as low as
+// the cngx hint one gap below.
 //
 // The lone control takes its padding, edge and radius from cngx.base, so a
 // zero-specificity rule in cngx.components wins over it; the fill and bare
 // skins SET their own padding and radius in an `@scope` (0,1,0) and keep them.
 // The block padding is the md rung minus the edge, so density re-scales the
-// field like the select trigger next to it (56 / 40 / 64). The hint gap is SET
-// on the labelled field at (0,1,1); `:scope` lifts this rule above it.
+// field like the select trigger next to it (56 / 40 / 64).
 @mixin -metrics($theme) {
   @include bridge.on('cngx-form-field :is(#{$-controls})') {
     padding-block: calc(var(--cngx-space-md, 16px) - 1px);
@@ -103,13 +104,6 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-error, .cngx-char-count';
     'cngx-form-field :is(.cngx-hint, .cngx-error, cngx-field-errors > p, .cngx-char-count__readout)'
   ) {
     padding-inline: var(--cngx-space-md, 16px);
-  }
-  @layer cngx.components {
-    @scope (cngx-form-field) {
-      :scope:has(> .cngx-label) {
-        --cngx-field-hint-gap: 0;
-      }
-    }
   }
 }
 

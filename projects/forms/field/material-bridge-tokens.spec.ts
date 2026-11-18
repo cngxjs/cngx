@@ -54,7 +54,6 @@ describe('field Material bridge', () => {
     '--cngx-field-fill-bg-hover',
     '--cngx-field-hint-color',
     '--cngx-field-hint-font-size',
-    '--cngx-field-hint-gap',
     '--cngx-field-label-color',
     '--cngx-field-placeholder-color',
     '--cngx-field-required-color',
@@ -122,7 +121,7 @@ describe('field Material bridge', () => {
 
   // mat-form-field appearance="outline", density 0: 24px line + 2 * 15px
   // padding + 2 * 1px edge = 56px, 4px corners, body-large in the control,
-  // body-small on the subscript line inset 16px, right under the edge.
+  // body-small on the subscript line inset 16px.
   it('brings the outlined control and the subscript line onto the M3 metrics (M3)', () => {
     const css = compiledCss('v1');
     expect(css).toMatch(
@@ -138,7 +137,9 @@ describe('field Material bridge', () => {
       /:where\(cngx-form-field :is\(\.cngx-hint, cngx-field-errors[^{]*\{[^}]*line-height: var\(--mat-sys-body-small-line-height\);\s*letter-spacing: var\(--mat-sys-body-small-tracking\)/,
     );
     expect(css).toMatch(/--cngx-field-hint-font-size: var\(--mat-sys-body-small-size, 0\.75rem\)/);
-    expect(css).toMatch(/:scope:has\(> \.cngx-label\)\s*\{\s*--cngx-field-hint-gap: 0/);
+    // mat-hint bottom-aligns its 16px line, so its text already sits one cngx
+    // hint gap below the edge: the gap stays on the cngx scale.
+    expect(css).not.toContain('--cngx-field-hint-gap');
   });
 
   // mat-hint and the counter end hint carry no colour and inherit the page
