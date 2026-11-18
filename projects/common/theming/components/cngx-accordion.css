@@ -107,6 +107,8 @@
     display: block;
     border: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
     border-radius: var(--cngx-radius-md, 0.375rem);
+    /* Radius inside the 1px border, for the headers that touch a rounded edge. */
+    --_cngx-accordion-inner-radius: calc(var(--cngx-radius-md, 0.375rem) - 1px);
     overflow: hidden;
   }
 
@@ -127,6 +129,19 @@
     font: inherit;
     text-align: start;
     cursor: pointer;
+  }
+
+  /* A header on a rounded edge takes the inner radius, so its focus outline
+     follows the curve instead of being clipped by the host's overflow. The last
+     header only sits on the edge while its region is closed. */
+  .cngx-accordion__header:first-of-type {
+    border-start-start-radius: var(--_cngx-accordion-inner-radius, 0);
+    border-start-end-radius: var(--_cngx-accordion-inner-radius, 0);
+  }
+
+  .cngx-accordion__header:last-of-type:not([aria-expanded='true']) {
+    border-end-start-radius: var(--_cngx-accordion-inner-radius, 0);
+    border-end-end-radius: var(--_cngx-accordion-inner-radius, 0);
   }
 
   .cngx-accordion__header:hover {
