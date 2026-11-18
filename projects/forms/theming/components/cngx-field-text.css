@@ -3,10 +3,12 @@
  * Track B typography for the text around a field control: the label
  * (`CngxLabel`, host class `.cngx-label`), the hint (`CngxHint`, host class
  * `.cngx-hint`), the error list (`cngx-field-errors`) and the manual error
- * container (`CngxError`, host class `.cngx-error`). Class and element
+ * container (`CngxError`, host class `.cngx-field-error`). Class and element
  * selectors only: the classes are the directives' own host classes, so every
  * use of the directive gets this paint, and an organism opts out by
- * overriding the tokens, not by avoiding the attribute.
+ * overriding the tokens, not by avoiding the attribute. Never `.cngx-error`:
+ * `CngxErrorState` and `CngxErrorAggregator` set it on any container as a
+ * state hook.
  *
  * Label and hint are supporting text: `--cngx-color-text-muted` at
  * `0.8125rem`, which clears 4.5:1 on the page and on the fill surface in both
@@ -113,7 +115,7 @@
      is a zero-height flex item that would still take one hint gap. Out of
      flow it keeps its node and its live-region identity, and it is back in
      flow the moment content lands. */
-  cngx-form-field:has(> .cngx-label) > .cngx-error:empty {
+  cngx-form-field:has(> .cngx-label) > .cngx-field-error:empty {
     position: absolute;
   }
 
@@ -143,7 +145,7 @@
   }
 
   cngx-field-errors,
-  .cngx-error {
+  .cngx-field-error {
     font-size: var(--cngx-field-hint-font-size, 0.8125rem);
     color: var(
       --cngx-field-error-color,
