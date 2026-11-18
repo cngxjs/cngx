@@ -294,10 +294,11 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 |-|-|-|
 | `--cngx-sidenav-width` | `280px` | Panel width |
 | `--cngx-sidenav-mini-width` | derived from the row tokens | Collapsed rail width |
-| `--cngx-sidenav-bg` | M3 surface-container | Background |
-| `--cngx-sidenav-color` | M3 on-surface | Text color |
-| `--cngx-sidenav-border-color` | M3 outline-variant | Border color |
+| `--cngx-sidenav-bg` | `--cngx-color-surface` (Material bridge: surface-container) | Background |
+| `--cngx-sidenav-color` | `--cngx-color-text` (Material bridge: on-surface) | Text color |
+| `--cngx-sidenav-border-color` | `--cngx-color-border` (Material bridge: outline-variant) | Border color |
 | `--cngx-sidenav-padding` | density-dependent | Header/footer block padding |
+| `--cngx-sidenav-row-gap` | half of `--cngx-space-xs` (Material 3 bridge: `0`) | Gap between body rows |
 | `--cngx-nav-header-bg` | M3 surface-container-low | Header background (nav atom token) |
 | `--cngx-nav-footer-bg` | M3 surface-container-low | Footer background (nav atom token) |
 | `--cngx-sidenav-backdrop-bg` | M3 scrim | Backdrop color |
@@ -305,7 +306,8 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `--cngx-sidenav-transition-duration` | `0.25s` | Animation duration |
 | `--cngx-sidenav-resize-handle-width` | `4px` | Resize handle hit area |
 | `--cngx-sidenav-resize-handle-color` | M3 primary | Handle highlight color |
-| `--cngx-sidenav-expanded-shadow` | `4px 0 12px rgba(0,0,0,0.1)` | Mini expanded shadow |
+| `--cngx-sidenav-expanded-shadow` | 12px shadow toward the content, deeper in a dark scheme or island | Peek shadow |
+| `--cngx-sidenav-overlay-shadow` | `--cngx-sidenav-expanded-shadow` (Material 3 bridge: level 1) | Open overlay shadow |
 
 **Nav row theming** (links and `[cngxNavGroup]` heads inside `cngx-sidenav`; the state fills, indicator, inset and ring colours are SET on the `cngx-sidenav` host, `sidenav.theme()` maps them onto M3 roles):
 

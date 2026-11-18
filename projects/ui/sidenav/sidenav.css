@@ -12,8 +12,8 @@
  * `cngx-sidenav-` prefix is the namespace.
  *
  * `CngxSidenavLayout`'s own styles (flex container, content offset,
- * backdrop scrim, the `--ready` transition gate, reduced-motion) live
- * in `sidenav-layout.css`.
+ * backdrop scrim, the `--ready` transition gate) live in
+ * `sidenav-layout.css`.
  *
  * **State modifiers**
  *
@@ -27,7 +27,10 @@
  * - `[data-sidebar-state]` - `expanded | rail | hidden | peek`, written by
  *   the composed `CngxSidebar`: `rail` is the collapsed icon rail
  *   (`--cngx-sidenav-mini-width`), `peek` grows it to full width over the
- *   content without shifting it, plus `--cngx-sidenav-expanded-shadow`
+ *   content without shifting it, plus `--cngx-sidenav-expanded-shadow`;
+ *   the peek stacks at `--cngx-sidebar-peek-z-index` (default `2`, from
+ *   `CngxSidebar`), SET it on the host or an ancestor to lift the peek
+ *   over other stacked content
  *
  * On `.cngx-nav-group-content`:
  *

@@ -2,8 +2,8 @@
  * @overview
  * Layout-level styles for `CngxSidenavLayout`: the flex container that
  * holds one or two `cngx-sidenav` rails and a `cngx-sidenav-content`,
- * the content offset behaviour, the mobile backdrop scrim, the
- * `--ready` transition gate, and the reduced-motion fallback. Loaded
+ * the content offset behaviour, the mobile backdrop scrim
+ * and the `--ready` transition gate. Loaded
  * via the layout component's `styleUrl`; under `encapsulation: None`
  * these rules match globally.
  *
