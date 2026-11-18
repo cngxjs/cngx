@@ -10,12 +10,12 @@ import type { CngxSidenavConfig, CngxSidenavLabels } from './sidenav.config';
 import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './sidenav.config.defaults';
 
 /**
- * Discriminated-union shape returned by the sidenav config features -
- * `withSidenavDimensions`, `withSidenavShortcut`, `withSidenavHoverDwell`, and
- * `withSidenavRouterSync`. The reducer in `provideSidenavConfig` /
- * `provideSidenavConfigAt` matches on `kind` and merges `payload` into the
- * corresponding config sub-tree: `dimensions`, `hover`, and `routerSync` are
- * one-level nested sub-trees, `shortcut` is a flat top-level scalar. Mirrors `CngxBreadcrumbConfigFeature` from
+ * Discriminated-union shape returned by the six sidenav config features -
+ * `withSidenavDimensions`, `withSidenavShortcut`, `withSidenavHoverDwell`,
+ * `withSidenavRouterSync`, `withSidenavLabels` and `withSidenavPersistence`.
+ * The reducer in `provideSidenavConfig` / `provideSidenavConfigAt` matches on
+ * `kind`: `dimensions`, `hover` and `routerSync` merge per key, `shortcut`,
+ * `labels` and `persistence` replace. Mirrors `CngxBreadcrumbConfigFeature` from
  * `@cngx/ui/breadcrumb` (nested-sub-tree style; the stepper family uses flat
  * scalar keys instead).
  *
@@ -91,10 +91,9 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
 }
 
 /**
- * Two-level deep merge: the nested sub-tree keys (`dimensions` / `hover`) are
- * spread-merged so the partial fills in missing keys without nuking unrelated
- * config sub-trees; the flat top-level scalar (`shortcut`) takes the partial
- * when present, else the base. Inner objects are flat (one level),
+ * Two-level merge: `dimensions`, `hover` and `routerSync` are spread-merged per
+ * key; `shortcut`, `labels` and `persistence` take the partial when present,
+ * else the base. Inner objects are flat (one level),
  * so a single spread per key suffices. Invariant: a config key nested more than
  * one level deep would shallow-merge silently here - if the config ever grows a
  * deeper sub-tree, add a dedicated spread for it rather than relying on this
@@ -118,9 +117,8 @@ function mergeConfig(
 
 /**
  * Application-root configuration cascade for the sidenav family. Pass any
- * combination of `withSidenavDimensions`,
- * `withSidenavShortcut`, `withSidenavHoverDwell`, and `withSidenavRouterSync`
- * features in `bootstrapApplication`'s providers array.
+ * combination of the `withSidenav*` features in `bootstrapApplication`'s
+ * providers array.
  *
  * Resolution priority (high -> low):
  *   1. Per-instance Input binding.
@@ -128,8 +126,8 @@ function mergeConfig(
  *   3. `provideSidenavConfig(...)` at the application root.
  *   4. Library defaults (`CNGX_SIDENAV_DEFAULTS`).
  *
- * The provider deep-merges supplied features with the library defaults so
- * consumers only declare keys they want to override.
+ * `dimensions`, `hover` and `routerSync` merge per key with the library
+ * defaults; `shortcut`, `labels` and `persistence` replace them.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -171,9 +169,12 @@ export function provideSidenavConfig(
  * Unlike `provideSidenavConfig` (root-only), `provideSidenavConfigAt` injects
  * the parent injector's `CNGX_SIDENAV_CONFIG` value (resolves through the
  * priority chain - root provider, library defaults, or another
- * `provideSidenavConfigAt` further up) and deep-merges the supplied features on
- * top. Descendant sidenav instances see the merged config; sibling sub-trees
- * keep the inherited value untouched.
+ * `provideSidenavConfigAt` further up) and applies the supplied features on
+ * top: `dimensions`, `hover` and `routerSync` merge per key, `shortcut`,
+ * `labels` and `persistence` replace. Descendant sidenav instances see the
+ * result; sibling sub-trees keep the inherited value untouched. Pass only the
+ * keys you set: an explicit `undefined` inside a merged sub-tree overrides
+ * the parent.
  *
  * ```ts
  * @Component({

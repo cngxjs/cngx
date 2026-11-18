@@ -13,7 +13,7 @@ import type { CngxSidenavConfig } from './sidenav.config';
  * `sidenav.css`.
  *
  * The `leaveDelay 0` default is kept deliberately (instant collapse, asymmetric
- * with the 120ms enter): the dwell becomes tunable via `[leaveDelay]` /
+ * with the 120ms enter): the dwell becomes tunable via `[collapseDelay]` /
  * `withSidenavHoverDwell(...)`, not silently changed - the breadcrumb
  * "un-configured consumer sees no change" principle.
  *

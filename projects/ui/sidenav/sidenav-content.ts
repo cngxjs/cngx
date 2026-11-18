@@ -31,8 +31,6 @@ import { CngxSidenavLayout } from './sidenav-layout';
   encapsulation: ViewEncapsulation.None,
   host: {
     '[class.cngx-sidenav-content]': 'true',
-    '[style.margin-inline-start]': 'marginStart',
-    '[style.margin-inline-end]': 'marginEnd',
   },
   template: `<ng-content />`,
 })
@@ -49,19 +47,4 @@ export class CngxSidenavContent {
       );
     }
   }
-
-  /**
-   * Margin offset for the start sidenav.
-   *
-   * Push and side modes use `position: relative` - the sidenav sits in
-   * the flex flow and the content shrinks naturally via `flex: 1`.
-   * No margin needed. Over mode uses `position: absolute` - no margin needed
-   * either since the sidenav floats above content.
-   *
-   * Kept as a public computed so tests and consumers can still read it.
-   */
-  readonly marginStart = '0';
-
-  /** Margin offset for the end sidenav - same rationale as start. */
-  readonly marginEnd = '0';
 }

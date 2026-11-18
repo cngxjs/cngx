@@ -21,6 +21,7 @@ export function sidenavLabelsFrom(
       formatMessage(section.resizeValueText, { percent, value }, locale),
     collapsedAnnouncement: section.collapsedAnnouncement,
     expandedAnnouncement: section.expandedAnnouncement,
+    toggleShortcut: section.toggleShortcut,
   };
 }
 
