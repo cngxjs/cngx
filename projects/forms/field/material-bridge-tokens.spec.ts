@@ -55,6 +55,7 @@ describe('field Material bridge', () => {
     '--cngx-field-hint-color',
     '--cngx-field-hint-font-size',
     '--cngx-field-label-color',
+    '--cngx-field-padding-block',
     '--cngx-field-placeholder-color',
     '--cngx-field-required-color',
     '--cngx-field-ring-color',

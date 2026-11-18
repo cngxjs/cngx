@@ -738,3 +738,62 @@ html {
     expect(await computedValue(page, '#probe', '--cngx-color-border')).toBe(boosted);
   });
 });
+
+test.describe('material-bridge rendered values: field metrics', () => {
+  const FIELD_CSS = [
+    'projects/core/theming/system-tokens.css',
+    'projects/core/theming/density-tokens.css',
+    'projects/core/theming/reset.css',
+    'projects/core/theming/base.css',
+    'projects/forms/theming/components/cngx-field-skin.css',
+    'projects/forms/theming/components/cngx-field-affix.css',
+  ] as const;
+
+  // A lone outlined control, an outlined affix box and a lone fill control,
+  // each in a field, plus a bare box child, which keeps the cngx compact box.
+  const FIELD_HTML = `
+<cngx-form-field><input id="lone" value="Ada" /></cngx-form-field>
+<cngx-form-field>
+  <span id="box" class="cngx-field-box" data-skin="outline">
+    <input id="box-input" data-skin="bare" value="Ada" />
+  </span>
+</cngx-form-field>
+<cngx-form-field><input id="fill" data-skin="fill" value="Ada" /></cngx-form-field>`;
+
+  // body-large is the control's type role; the line box decides the height.
+  const TYPE_STANDINS = `:root {
+  --mat-sys-body-large-font: sans-serif;
+  --mat-sys-body-large-size: 16px;
+  --mat-sys-body-large-weight: 400;
+  --mat-sys-body-large-line-height: 24px;
+  --mat-sys-body-large-tracking: 0.5px;
+}`;
+
+  // No `html { }` wrapper around the include: the scoped skin rules must lose
+  // to the bridge on specificity alone, as in a consumer's root include.
+  const BRIDGE_CSS = compileBridge('field-theme');
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: FIELD_CSS, bridgeCss: BRIDGE_CSS, html: FIELD_HTML });
+    await page.addStyleTag({ content: TYPE_STANDINS });
+  });
+
+  const height = (page: Page, id: string): Promise<number> =>
+    page.locator(id).evaluate((el) => el.getBoundingClientRect().height);
+
+  test('the lone outlined control stands 56px with 4px corners', async ({ page }) => {
+    expect(await height(page, '#lone')).toBe(56);
+    expect(await computedValue(page, '#lone', 'border-top-left-radius')).toBe('4px');
+  });
+
+  test('the outlined affix box stands 56px with 4px corners', async ({ page }) => {
+    expect(await height(page, '#box')).toBe(56);
+    expect(await computedValue(page, '#box', 'border-top-left-radius')).toBe('4px');
+  });
+
+  test('the fill control stands 56px and keeps its square bottom', async ({ page }) => {
+    expect(await height(page, '#fill')).toBe(56);
+    expect(await computedValue(page, '#fill', 'border-top-left-radius')).toBe('4px');
+    expect(await computedValue(page, '#fill', 'border-bottom-left-radius')).toBe('0px');
+  });
+});
