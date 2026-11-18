@@ -298,6 +298,7 @@ switching, a collapsible rail (composed `CngxSidebar`), resize handle, and keybo
 | `--cngx-sidenav-color` | `--cngx-color-text` (Material bridge: on-surface) | Text color |
 | `--cngx-sidenav-border-color` | `--cngx-color-border` (Material bridge: outline-variant) | Border color |
 | `--cngx-sidenav-padding` | density-dependent | Header/footer block padding |
+| `--cngx-sidenav-z-index` | `2` | Stacking of the rail over the content |
 | `--cngx-sidenav-row-gap` | half of `--cngx-space-xs` (Material 3 bridge: `0`) | Gap between body rows |
 | `--cngx-nav-header-bg` | M3 surface-container-low | Header background (nav atom token) |
 | `--cngx-nav-footer-bg` | M3 surface-container-low | Footer background (nav atom token) |

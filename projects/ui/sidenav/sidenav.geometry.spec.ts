@@ -90,6 +90,13 @@ describe('CngxSidenav mini-rail geometry', () => {
     expect(getComputedStyle(body).rowGap).toBe('6px');
   });
 
+  it('stacks the rail over the content from the z-index token', () => {
+    const { host } = mount();
+    expect(getComputedStyle(host).zIndex).toBe('2');
+    host.style.setProperty('--cngx-sidenav-z-index', '5');
+    expect(getComputedStyle(host).zIndex).toBe('5');
+  });
+
   it('insets the body rows from the panel edge like the nav-rail body', () => {
     const { body } = mount();
     expect(computedValue(body, 'padding-block-start')).toBe('4px');

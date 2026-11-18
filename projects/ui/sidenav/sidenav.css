@@ -79,6 +79,7 @@
  *
  * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
  * - `--cngx-sidenav-color` -> `--cngx-color-text`
+ * - `--cngx-sidenav-z-index` -> `2`, the rail's stacking over the content
  * - `--cngx-sidenav-border-color` -> `--cngx-color-border`
  * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color`
  *   -> `--cngx-sidenav-border-color` -> `--cngx-color-border`
@@ -489,7 +490,7 @@
     box-sizing: border-box;
     flex-shrink: 0;
     overflow: hidden;
-    z-index: 2;
+    z-index: var(--cngx-sidenav-z-index, 2);
     width: var(--cngx-sidenav-width, 280px);
     background: var(--cngx-sidenav-bg, var(--cngx-color-surface, oklch(0.97 0.005 250)));
     color: var(--cngx-sidenav-color, var(--cngx-color-text, inherit));
