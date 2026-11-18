@@ -1060,6 +1060,77 @@ describe('CngxSidenav auto mode', () => {
     TestBed.flushEffects();
     expect(nav.opened()).toBe(true);
   });
+
+  it('engages the surface of an open standalone auto rail without a layout', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, nav } = mount(StandaloneRailHost);
+    fixture.componentInstance.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.surfaceActive()).toBe(true);
+    expect((nav.elementRef.nativeElement as HTMLElement).getAttribute('role')).toBe('dialog');
+  });
+
+  it('keeps an auto rail at compact open when the mode resolves over -> over', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    fixture.componentInstance.mode.set('over');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(true);
+  });
+
+  it('closes an open overlay when a pinned mode flips from over to side', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('over');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(true);
+    (fixture.nativeElement.querySelector('.content-item') as HTMLElement).focus();
+
+    fixture.componentInstance.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(false);
+  });
+});
+
+describe('CngxSidenav width clamp', () => {
+  @Component({
+    template: `<cngx-sidenav [width]="width()" maxWidth="600px">Nav</cngx-sidenav>`,
+    imports: [CngxSidenav],
+  })
+  class ClampHost {
+    width = signal('900px');
+  }
+
+  it('clamps a bound px width to maxWidth on both host styles', () => {
+    const fixture = TestBed.createComponent(ClampHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-sidenav-width')).toBe('600px');
+    expect(el.style.getPropertyValue('--cngx-sidebar-size')).toBe('600px');
+  });
+
+  it('passes a non-px width through unclamped', () => {
+    const fixture = TestBed.createComponent(ClampHost);
+    fixture.componentInstance.width.set('40rem');
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-sidenav-width')).toBe('40rem');
+  });
 });
 
 describe('CngxSidenav resize math and shortcut', () => {
