@@ -8,6 +8,7 @@ export {
   type SidenavPosition,
   type SidenavMode,
   type ResolvedSidenavMode,
+  type SidenavWidthClass,
 } from './sidenav';
 export { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
 export {

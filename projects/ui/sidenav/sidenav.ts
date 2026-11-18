@@ -193,9 +193,9 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
-    '[style.--cngx-sidenav-width]': 'width()',
+    '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth() ?? null',
-    '[style.--cngx-sidebar-size]': 'width()',
+    '[style.--cngx-sidebar-size]': 'effectiveWidth()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth() ?? null',
     '[attr.data-nav-railed]': "railed() ? 'true' : 'false'",
   },
@@ -272,7 +272,11 @@ export class CngxSidenav
    */
   readonly mode = input<SidenavMode>('auto');
 
-  /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
+  /**
+   * Width of the sidenav panel. Supports two-way `[(width)]` for resize. A px
+   * value renders clamped to `minWidth` / `maxWidth`; any other unit passes
+   * through unclamped.
+   */
   readonly width = model<string>(this.cfg.dimensions?.width ?? '280px');
 
   /**
@@ -746,8 +750,16 @@ export class CngxSidenav
     return this.effectiveMode() === 'side' && !this.railBase();
   }
 
-  /** @internal Numeric px of the current width, or null for non-px units. */
-  protected readonly widthPx = computed(() => parsePx(this.width()));
+  /** @internal Numeric px of the current width clamped to min / max, or null for non-px units. */
+  protected readonly widthPx = computed(() => {
+    const px = parsePx(this.width());
+    return px === null ? null : clamp(px, this.minPx(), this.maxPx());
+  });
+  /** @internal The rendered width: the clamped px width, else the bound value as is. */
+  protected readonly effectiveWidth = computed(() => {
+    const px = this.widthPx();
+    return px === null ? this.width() : `${px}px`;
+  });
   /** @internal Resize bounds in px; a non-px bound falls back to 120 / 600. */
   protected readonly minPx = computed(() => parsePx(this.minWidth()) ?? 120);
   protected readonly maxPx = computed(() => parsePx(this.maxWidth()) ?? 600);
