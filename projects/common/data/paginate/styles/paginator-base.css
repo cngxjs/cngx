@@ -241,7 +241,10 @@
   }
 
   .cngx-paginator__button:focus-visible {
-    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline: var(
+      --cngx-paginator-focus-ring,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
@@ -346,7 +349,10 @@
   }
 
   .cngx-paginator__goto-input:focus-visible {
-    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline: var(
+      --cngx-paginator-focus-ring,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
@@ -626,7 +632,10 @@
   }
 
   .cngx-paginator__dot:focus-visible {
-    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline: var(
+      --cngx-paginator-focus-ring,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
