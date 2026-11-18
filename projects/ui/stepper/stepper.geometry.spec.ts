@@ -285,6 +285,15 @@ describe('CngxStepper primary tokens', () => {
     });
   });
 
+  it('paints the step focus ring with the primary in scope', () => {
+    const root = mountSkin('classic');
+    expectPrimary((scope) => {
+      const step = one(root, `${scope} button.cngx-stepper__step`);
+      step.focus();
+      return computedValue(step, 'outline-color');
+    });
+  });
+
   it('fills the linear-minimal active dot with the primary in scope', () => {
     const root = mountSkin('linear-minimal');
     expectPrimary((scope) =>

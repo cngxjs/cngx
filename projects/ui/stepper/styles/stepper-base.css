@@ -105,14 +105,15 @@
   }
 
   /**
-   * Focus-ring outline shorthand. Matches the cngx focus convention
-   * from `@cngx/core/theming/reset.css` - 2px solid primary ember.
+   * Focus-ring outline shorthand. Unset by default, so the ring is
+   * 2px solid in the `--cngx-color-primary` in scope, the cngx focus
+   * convention from `@cngx/core/theming/reset.css`.
    * @group State / Focus
+   * @see [[--cngx-color-primary]]
    */
   @property --cngx-step-focus-ring {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -476,7 +477,7 @@
   }
 
   .cngx-stepper__step:focus-visible {
-    outline: var(--cngx-step-focus-ring, 2px solid currentColor);
+    outline: var(--cngx-step-focus-ring, 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50)));
     outline-offset: var(--cngx-step-focus-offset, 3px);
   }
 
