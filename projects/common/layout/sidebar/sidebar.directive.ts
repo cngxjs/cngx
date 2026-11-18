@@ -72,6 +72,8 @@ export interface CngxSidebarDriver {
   readonly sidebarConcealed?: Signal<boolean>;
   /** Accessible name; wins over `[label]` and the i18n fallback. */
   readonly sidebarLabel?: Signal<string>;
+  /** Landmark role the sidebar renders while no `[role]` is bound. */
+  readonly sidebarRole?: Signal<string | null>;
 }
 
 /** @internal See {@link CngxSidebarDriver}. */
@@ -143,7 +145,7 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
   host: {
     '[attr.id]': 'id()',
     '[attr.role]': 'role()',
-    '[attr.aria-label]': 'label()',
+    '[attr.aria-label]': 'label() ?? null',
     '[attr.inert]': "concealed() ? '' : null",
     '[attr.aria-hidden]': "concealed() ? 'true' : null",
     '[attr.data-sidebar-state]': 'state()',
@@ -186,8 +188,11 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
    * Landmark role. Defaults to `complementary`; pass `navigation` for a nav
    * sidebar, or `null` on a `<nav>` / `<aside>` host to keep its implicit role.
    */
-  readonly role = input<string | null>('complementary');
-  /** Accessible name of the region. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`. */
+  readonly roleInput = input<string | null | undefined>(undefined, { alias: 'role' });
+  /**
+   * Accessible name of the region. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`
+   * while the role is `complementary`.
+   */
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   private readonly hover = inject(CngxHoverIntent, { self: true });
@@ -256,22 +261,36 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
     return this.peeked() ? 'peek' : this.restAs();
   });
 
+  /**
+   * The rendered landmark role: the bound `role` (`null` keeps the host's
+   * implicit role), else the composer's, else `complementary`.
+   */
+  readonly role = computed(() => {
+    const bound = this.roleInput();
+    if (bound !== undefined) {
+      return bound;
+    }
+    return this.driver()?.sidebarRole?.() ?? 'complementary';
+  });
+
   protected readonly concealed = computed(
     () => this.state() === 'hidden' || (this.driver()?.sidebarConcealed?.() ?? false),
   );
   /**
    * {@link CngxPanelTarget}: the region's resolved accessible name, the bound
-   * `label` or `CNGX_LAYOUT_I18N.sidebarRegion`. An icon-only trigger takes
-   * it as its name.
+   * `label`, else `CNGX_LAYOUT_I18N.sidebarRegion` while the role is
+   * `complementary` (a `navigation` landmark announces its role already). An
+   * icon-only trigger takes it as its name.
    */
-  readonly label = computed(() => {
+  readonly label = computed<string | undefined>(() => {
     // A composer that names the region itself wins outright; its own
     // cascade already resolved input, config and copy.
     const driven = this.driver()?.sidebarLabel;
     if (driven) {
       return driven();
     }
-    return this.labelInput() ?? this.i18n().sidebarRegion;
+    const fallback = this.role() === 'complementary' ? this.i18n().sidebarRegion : undefined;
+    return this.labelInput() ?? fallback;
   });
 
   protected readonly inlineSize = computed(() => {

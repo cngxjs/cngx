@@ -162,6 +162,7 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
         'expandDelay',
         'collapseDelay',
         'side: position',
+        'role',
       ],
       outputs: ['collapsedChange'],
     },
@@ -241,7 +242,7 @@ export class CngxSidenav
   readonly position = input<SidenavPosition>('start');
 
   /**
-   * Accessible name of the rail: of the `complementary` landmark, or of the
+   * Accessible name of the rail: of the `navigation` landmark, or of the
    * modal `dialog` while it is an open overlay. Unbound, the `startRegion` /
    * `endRegion` label (`withSidenavLabels`, then the language pack) applies by
    * `position`, so two rails never share one name. An empty or blank value
@@ -362,7 +363,7 @@ export class CngxSidenav
    * dialog: focus trap, `aria-modal`, everything outside `inert`, scroll lock,
    * backdrop), `'contained'` (inert and lock inside the layout only) or
    * `'none'` (the page stays operable, no backdrop). Docked, the rail is a
-   * `complementary` landmark in every modality.
+   * landmark (`navigation` unless `[role]` is bound) in every modality.
    */
   readonly modality = input<CngxDrawerModality>('page');
 
@@ -458,12 +459,16 @@ export class CngxSidenav
   readonly sidebarPeek = computed(() => this.railBase() && this.opened());
 
   /** @internal Drives the composed `CngxSidebar`: a closed drawer leaves the a11y tree. */
-  readonly sidebarConcealed = computed(
-    () => this.effectiveMode() === 'over' && !this.opened(),
-  );
+  readonly sidebarConcealed = computed(() => this.effectiveMode() === 'over' && !this.opened());
 
   /** @internal Drives the composed `CngxSidebar`: the rail's accessible name. */
   readonly sidebarLabel = computed(() => this.resolvedAriaLabel());
+
+  /**
+   * @internal Drives the composed `CngxSidebar`: the body is nav rows, so an
+   * unbound `[role]` renders a `navigation` landmark on either edge.
+   */
+  readonly sidebarRole = signal<string | null>('navigation').asReadonly();
 
   /**
    * @internal Drives the composed `CngxDrawerSurface`: engaged while an open
@@ -475,6 +480,11 @@ export class CngxSidenav
    * pinned mode or a standalone rail has nothing to wait for and engages at once.
    */
   readonly surfaceActive = computed(() => this.overlayActive() && !this.widthClassPending());
+  /**
+   * @internal Drives the composed `CngxDrawerSurface`: the sidebar's resolved
+   * role, so both host writers render one landmark; `dialog` wins while engaged.
+   */
+  readonly surfaceLandmarkRole = computed(() => this.sidebar.role());
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceModality = this.modality;
   /** @internal Drives the composed `CngxDrawerSurface`: one name in every state. */

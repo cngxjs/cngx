@@ -22,6 +22,7 @@ import {
       [collapsedAs]="collapsedAs()"
       [expandOnHover]="expandOnHover()"
       [label]="label()"
+      [role]="role()"
       [side]="side()"
       [expandDelay]="50"
     >
@@ -36,6 +37,7 @@ class Host {
   readonly collapsedAs = signal<CngxSidebarCollapsedAs>('rail');
   readonly expandOnHover = signal(true);
   readonly label = signal<string | undefined>(undefined);
+  readonly role = signal<string | null | undefined>(undefined);
   readonly side = signal<CngxSidebarSide>('start');
 }
 
@@ -80,6 +82,17 @@ describe('CngxSidebar', () => {
         provideLayoutI18n(withLayoutI18nLabels({ sidebarRegion: 'Seitenleiste' })),
       ]);
       expect(el.getAttribute('aria-label')).toBe('Seitenleiste');
+    });
+
+    it('drops the i18n name off complementary, a bound label stays', () => {
+      const { el, sidebar, set } = setup();
+      expect(sidebar.role()).toBe('complementary');
+      set((h) => h.role.set('navigation'));
+      expect(el.getAttribute('role')).toBe('navigation');
+      expect(el.hasAttribute('aria-label')).toBe(false);
+      expect(sidebar.label()).toBeUndefined();
+      set((h) => h.label.set('Filters'));
+      expect(el.getAttribute('aria-label')).toBe('Filters');
     });
 
     it('keeps a static id and drops the role for null', () => {

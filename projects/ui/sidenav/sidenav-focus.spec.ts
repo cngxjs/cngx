@@ -155,9 +155,9 @@ describe('CngxSidenav focus management', () => {
     expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
   });
 
-  it('is a complementary landmark while closed and a modal dialog while the overlay is open', () => {
+  it('is a navigation landmark while closed and a modal dialog while the overlay is open', () => {
     const { fixture, host, sidenavEl } = setup();
-    expect(sidenavEl.getAttribute('role')).toBe('complementary');
+    expect(sidenavEl.getAttribute('role')).toBe('navigation');
 
     host.open.set(true);
     fixture.detectChanges();
@@ -166,17 +166,17 @@ describe('CngxSidenav focus management', () => {
 
     host.open.set(false);
     fixture.detectChanges();
-    expect(sidenavEl.getAttribute('role')).toBe('complementary');
+    expect(sidenavEl.getAttribute('role')).toBe('navigation');
     expect(sidenavEl.getAttribute('aria-modal')).toBeNull();
   });
 
-  it('stays complementary while docked, open or not', () => {
+  it('stays a navigation landmark while docked, open or not', () => {
     const { fixture, host, sidenavEl } = setup();
     host.open.set(true);
     for (const mode of ['side'] as const) {
       host.mode.set(mode);
       fixture.detectChanges();
-      expect(sidenavEl.getAttribute('role')).toBe('complementary');
+      expect(sidenavEl.getAttribute('role')).toBe('navigation');
     }
   });
 

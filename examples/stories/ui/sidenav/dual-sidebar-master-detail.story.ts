@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: Two sidenavs, navigation and inspector',
   subtitle: 'Two sidenavs in one layout. Left: docked as permanent navigation (<code>side</code> mode, <code>collapsedAs="hidden"</code>). Right: a non-modal inspector (<code>modality="none"</code>): it overlays the content without a backdrop, so the order list and the left nav stay operable while it is open.',
-  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left docked nav that hides to zero width and a right over-mode inspector. <code>modality="none"</code> keeps the page live: no backdrop, no inert, no focus trap. Clicking another order swaps the detail in place (the order buttons name the inspector in <code>aria-controls</code>, so their press is not an outside press); Escape or Close dismisses it.',
+  description: 'Two <code>cngx-sidenav</code> instances scoped to one <code>cngx-sidenav-layout</code>: a left docked nav that hides to zero width and a right over-mode inspector. <code>modality="none"</code> keeps the page live: no backdrop, no inert, no focus trap. Clicking another order swaps the detail in place (the order buttons name the inspector in <code>aria-controls</code>, so their press is not an outside press); Escape or Close dismisses it. The inspector binds <code>role="complementary"</code> over the default <code>navigation</code> landmark.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -51,7 +51,7 @@ export const STORY: DemoSpec = {
     </cngx-sidenav-content>
 
     <cngx-sidenav #detailNav position="end" [(opened)]="rightOpen" mode="over" modality="none"
-                  ariaLabel="Order details" width="280px">
+                  role="complementary" ariaLabel="Order details" width="280px">
       <div style="padding: var(--cngx-space-md, 1rem)">
         @if (selectedItem()) {
           <h3>{{ selectedItem() }}</h3>
