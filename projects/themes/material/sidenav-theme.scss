@@ -32,8 +32,8 @@
     );
   } @else {
     --cngx-sidenav-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-sidenav-color: rgba(0, 0, 0, 0.87);
-    --cngx-sidenav-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-sidenav-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-sidenav-border-color: #{mat.get-theme-color($theme, foreground, divider)};
     --cngx-sidenav-backdrop-bg: rgba(0, 0, 0, 1);
   }
 }
@@ -42,16 +42,18 @@
   // Host + descendants broadcast (select-theme precedent): the backdrop
   // tokens are registered inherits:false in sidenav.css and are read on the
   // -backdrop descendant - a layout-host-only set resolves to the
-  // initial-value there.
-  @include bridge.on(bridge.broadcast(cngx-sidenav-layout)) {
+  // initial-value there. A bare cngx-sidenav (no layout) gets the rail
+  // tokens on its own host.
+  @include bridge.on(bridge.broadcast(cngx-sidenav-layout), cngx-sidenav) {
     @include color($theme);
   }
 
   // M3 list item metrics on the sidenav host, which reads the railed size
   // from them and passes them on to rows, header and footer; the body takes
-  // the mat-nav-list block padding and no gap between rows. sidenav.css SETs
-  // the row inset and padding on `cngx-sidenav` (0,0,1) and the body gap on
-  // `.cngx-sidenav__body` (0,1,0) in the same layer, so these rules carry
+  // the mat-nav-list block padding and no gap between rows (the row gap also
+  // sizes the collapsed rail's margin before a popover group). sidenav.css
+  // SETs the row inset, padding and row gap on `cngx-sidenav` (0,0,1) and the
+  // body padding on `.cngx-sidenav__body` (0,1,0) in the same layer, so these rules carry
   // real specificity instead of the bridge's zero-specificity :where() -
   // select-theme's option-row precedent. A consumer's unlayered rule still
   // wins.
@@ -59,10 +61,10 @@
     @layer cngx.components {
       cngx-sidenav[data-nav-railed] {
         @include nav-link.metrics($theme);
+        --cngx-sidenav-row-gap: 0;
       }
 
       cngx-sidenav[data-nav-railed] .cngx-sidenav__body {
-        gap: 0;
         padding-block: var(--cngx-space-sm, 8px);
       }
     }

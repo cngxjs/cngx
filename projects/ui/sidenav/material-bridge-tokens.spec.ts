@@ -120,12 +120,14 @@ $theme: mat.define-theme((
   it('broadcasts the layout tokens to host + descendants (inherits:false backdrop)', () => {
     const css = compiledTheme();
     const broadcast = css.match(
-      /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*\)\s*\{[^}]*\}/,
+      /:where\(cngx-sidenav-layout, cngx-sidenav-layout \*, cngx-sidenav\)\s*\{[^}]*\}/,
     );
     expect(broadcast).not.toBeNull();
     expect(broadcast![0]).toContain('--cngx-sidenav-backdrop-bg:');
     expect(broadcast![0]).toContain('--cngx-sidenav-overlay-shadow:');
     expect(broadcast![0]).toContain('--mat-sys-level1');
+    // a bare mode="side" rail without a layout gets the surface too
+    expect(broadcast![0]).toContain('--cngx-sidenav-bg:');
   });
 
   it('emits the nav header and footer tokens on the slot hosts (inherits:false bg and type)', () => {
@@ -158,10 +160,12 @@ $theme: mat.define-theme((
       expect(metrics![0]).toContain(token);
     }
     expect(metrics![0]).toContain('var(--cngx-space-');
+    // one row gap for the body and the rail's popover-group margin
+    expect(metrics![0]).toContain('--cngx-sidenav-row-gap: 0');
     expect(css).not.toMatch(/:where\([^)]*cngx-sidenav\[data-nav-railed\]/);
     const body = css.match(/cngx-sidenav\[data-nav-railed\] \.cngx-sidenav__body\s*\{[^}]*\}/);
     expect(body).not.toBeNull();
-    expect(body![0]).toContain('gap: 0');
+    expect(body![0]).not.toMatch(/\bgap:/);
   });
 
   it('emits no list item metrics for an M2 theme', () => {

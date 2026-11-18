@@ -246,6 +246,20 @@
   }
 
   /**
+   * Block gap between the body rows. A collapsed rail keeps it as a margin
+   * before a group whose content became a popover, so no row moves between
+   * rail and expanded sidenav. The host SETs it from `--cngx-space-xs`; the
+   * Material 3 bridge sets it to `0` (mat-nav-list rows touch).
+   * @group Layout
+   */
+  @property --cngx-sidenav-row-gap {
+    syntax: '<length>';
+    /* Read on the body and its rows; inherits so the host SET reaches them. */
+    inherits: true;
+    initial-value: 2px;
+  }
+
+  /**
    * Width of the drag-to-resize handle on the rail's edge.
    * @group Layout
    */
@@ -395,6 +409,7 @@
        are inherits:true so the SET cascades from this host. sidenav-padding
        16 -> md; nav-link-padding 10/16 -> sm/md (10 -> 8). */
     --cngx-sidenav-padding: var(--cngx-space-md);
+    --cngx-sidenav-row-gap: calc(var(--cngx-space-xs, 4px) / 2);
     --cngx-nav-header-padding-block: var(--cngx-sidenav-padding, 16px);
     --cngx-nav-footer-padding-block: var(--cngx-sidenav-padding, 16px);
     --cngx-nav-header-border-color: var(
@@ -608,7 +623,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: calc(var(--cngx-space-xs, 4px) / 2);
+    gap: var(--cngx-sidenav-row-gap, 2px);
     overflow-y: auto;
     overflow-x: hidden;
     min-width: var(--cngx-sidenav-width, 280px);
@@ -650,7 +665,7 @@
   cngx-sidenav[data-sidebar-state='rail']
     .cngx-sidenav__body
     > :has(+ .cngx-nav-group-content[popover]) {
-    margin-block-end: calc(var(--cngx-space-xs, 4px) / 2);
+    margin-block-end: var(--cngx-sidenav-row-gap, 2px);
   }
 
   /*
