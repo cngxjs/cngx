@@ -58,15 +58,12 @@
 // so a Material-paired accordion is skin-aware out of the box. These mixins
 // refine only what the foundation mapping does not cover ideally.
 
-// Dim text + subtitle: --cngx-color-text-muted is NOT in the system bridge, so
-// the editorial index / split time / subtitle would fall back to their literal
-// defaults under Material. Aligned here, scoped to the accordion.
+// Subtitle tone. The dim text of the skins (editorial index, split time) reads
+// --cngx-color-text-muted, which the system bridge maps.
 @mixin _skin-text($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
     --cngx-accordion-subtitle-color: var(--mat-sys-on-surface-variant);
   } @else {
-    --cngx-color-text-muted: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
     --cngx-accordion-subtitle-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
   }
 }

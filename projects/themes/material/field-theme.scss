@@ -4,9 +4,11 @@
 // Material bridge for CngxFormField (+ sub-directives CngxLabel,
 // CngxHint, CngxError, CngxFieldErrors, CngxCharCount, CngxInput).
 // Default visuals + shake animation ship with the components; this
-// file aligns the token families the forms lib actually reads:
-// label, hint, error, required, and the char-count typography. Label and
-// hint sizes stay on the cngx scale (no Material type token here).
+// file aligns the token families the forms lib actually reads (label, hint,
+// error, required, char-count) and brings the outlined control and the
+// subscript line (hint, error, char-count) onto the mat-form-field
+// appearance="outline" metrics and type roles, see `-metrics`. The label keeps
+// the cngx position and size, and the dashed disabled border stays.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/field-theme' as form-field;
@@ -15,19 +17,28 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-field-label-color: var(--mat-sys-on-surface-variant);
-    --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-hint-color: var(--mat-sys-on-surface);
+    --cngx-field-char-count-color: var(--mat-sys-on-surface);
+    --cngx-field-char-count-over-color: var(--mat-sys-error);
     --cngx-field-error-color: var(--mat-sys-error);
     --cngx-field-required-color: var(--mat-sys-error);
     @include skin-color($theme);
   } @else {
     --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
-    --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    --cngx-field-hint-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-field-char-count-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-field-char-count-over-color: #{bridge.m2-warn-text($theme)};
     --cngx-field-error-color: #{bridge.m2-warn-text($theme)};
     --cngx-field-required-color: #{bridge.m2-warn-text($theme)};
     @include skin-color($theme);
   }
 }
 
+// mat-hint and the end hint mat-form-field uses as a counter carry no colour
+// in M2 or M3 and inherit the page text, so hint and char-count take the text
+// role, not the muted one the label rests in. Over the limit the counter is
+// an error.
+//
 // M2 error, underline and invalid outline share one token, and the required
 // asterisk is label text: all read the warn text colour from the bridge
 // module (4.5:1 on page and card, which covers the 3:1 the lines need).
@@ -52,7 +63,8 @@
     --cngx-field-fill-bg: #{bridge.m2-field-fill($theme)};
     --cngx-field-fill-bg-hover: #{bridge.m2-field-fill-hover($theme)};
     --cngx-field-placeholder-color: #{bridge.m2-field-placeholder($theme)};
-    --cngx-field-underline-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    // The resting line of mat-form-field fill: 54% light, 70% dark.
+    --cngx-field-underline-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-field-underline-focus-color: #{mat.get-theme-color($theme, primary)};
     --cngx-field-ring-color: #{mat.get-theme-color($theme, primary)};
     --cngx-field-affix-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
@@ -62,6 +74,76 @@
 @mixin typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-field-char-count-font-size: var(--mat-sys-body-small-size, 0.75rem);
+    --cngx-field-hint-font-size: var(--mat-sys-body-small-size, 0.75rem);
+  }
+}
+
+// Text-like controls, the same list cngx.base paints with the outline edge.
+$-controls: 'input:is(:not([type]), [type="text"], [type="search"], [type="email"], [type="url"], [type="tel"], [type="password"], [type="number"], [type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]), textarea, select';
+$-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count';
+
+// Metrics of mat-form-field appearance="outline", density 0: a 56px control
+// (the body-large line box plus 16px each side, the 1px edge inside it, as
+// the M3 outline is drawn over the padding), 4px corners, and a subscript line
+// inset 16px on both sides. The hint keeps the cngx gap: mat-hint sits flush
+// under the edge but bottom-aligns its 16px line, so its text lands as low as
+// the cngx hint one gap below.
+//
+// The lone control takes its padding, edge and radius from cngx.base, so a
+// zero-specificity rule in cngx.components wins over it; the fill and bare
+// skins SET their own padding and radius in an `@scope` (0,1,0) and keep them.
+// The block padding is the md rung minus the edge, so density re-scales the
+// field like the select trigger next to it (56 / 40 / 64).
+@mixin -metrics($theme) {
+  @include bridge.on('cngx-form-field :is(#{$-controls})') {
+    padding-block: calc(var(--cngx-space-md, 16px) - 1px);
+    border-radius: 4px; // var(--mat-sys-corner-extra-small)
+  }
+  // The error list and the char-count hosts are display: contents, so the
+  // inset sits on the error lines and the readout.
+  @include bridge.on(
+    'cngx-form-field :is(.cngx-hint, .cngx-field-error, cngx-field-errors > p, .cngx-char-count__readout)'
+  ) {
+    padding-inline: var(--cngx-space-md, 16px);
+  }
+  // The affix box and the fill skin read --cngx-field-padding-block, SET from
+  // the scale in an `@scope` `:scope` rule (0,1,0); these selectors outrank
+  // it. Their edge is --cngx-field-border-width, so the padding gives that
+  // back; the lone control's edge is a fixed 1px in cngx.base. The box radius
+  // sits in a scoped `:scope[data-skin='outline']` rule (0,2,0), and a scoped
+  // rule wins a specificity tie, so the class is doubled. The fill keeps its own 4px-top radius, which is already M3's.
+  // The bare skin has no Material twin and stays compact for table cells.
+  @layer cngx.components {
+    :is(input, textarea, select)[data-skin='fill'],
+    .cngx-field-box:is([data-skin='fill'], [data-skin='outline']) {
+      --cngx-field-padding-block: calc(
+        var(--cngx-space-md, 16px) - var(--cngx-field-border-width, 1px)
+      );
+    }
+    .cngx-field-box.cngx-field-box[data-skin='outline'] {
+      border-radius: 4px; // var(--mat-sys-corner-extra-small)
+    }
+  }
+}
+
+// Type roles of the outlined twin: body-large in the control, body-small on
+// the subscript line. Sizes the hint and char-count tokens already carry; the
+// tracking and line box have no token, so they are set on the element.
+@mixin -type($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @include bridge.on('cngx-form-field :is(#{$-controls})') {
+      font-family: var(--mat-sys-body-large-font);
+      font-size: var(--mat-sys-body-large-size);
+      font-weight: var(--mat-sys-body-large-weight);
+      line-height: var(--mat-sys-body-large-line-height);
+      letter-spacing: var(--mat-sys-body-large-tracking);
+    }
+    @include bridge.on('cngx-form-field :is(#{$-subscript})') {
+      font-family: var(--mat-sys-body-small-font);
+      font-weight: var(--mat-sys-body-small-weight);
+      line-height: var(--mat-sys-body-small-line-height);
+      letter-spacing: var(--mat-sys-body-small-tracking);
+    }
   }
 }
 
@@ -90,6 +172,8 @@
     @include color($theme);
     @include typography($theme);
   }
+  @include -metrics($theme);
+  @include -type($theme);
 
   @include bridge.on(cngx-form-errors) {
     @include form-errors-color($theme);

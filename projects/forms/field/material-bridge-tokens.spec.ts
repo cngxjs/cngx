@@ -46,12 +46,16 @@ describe('field Material bridge', () => {
   // every name is consumed by the forms field/input/form-errors CSS
   const CONSUMED = [
     '--cngx-field-affix-color',
+    '--cngx-field-char-count-color',
     '--cngx-field-char-count-font-size',
+    '--cngx-field-char-count-over-color',
     '--cngx-field-error-color',
     '--cngx-field-fill-bg',
     '--cngx-field-fill-bg-hover',
     '--cngx-field-hint-color',
+    '--cngx-field-hint-font-size',
     '--cngx-field-label-color',
+    '--cngx-field-padding-block',
     '--cngx-field-placeholder-color',
     '--cngx-field-required-color',
     '--cngx-field-ring-color',
@@ -114,6 +118,62 @@ describe('field Material bridge', () => {
     for (const name of names) {
       expect(CONSUMED).toContain(name);
     }
+  });
+
+  // mat-form-field appearance="outline", density 0: 24px line + 2 * 15px
+  // padding + 2 * 1px edge = 56px, 4px corners, body-large in the control,
+  // body-small on the subscript line inset 16px.
+  it('brings the outlined control and the subscript line onto the M3 metrics (M3)', () => {
+    const css = compiledCss('v1');
+    expect(css).toMatch(
+      /:where\(cngx-form-field :is\(input[^{]*\{[^}]*padding-block: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*border-radius: 4px;/,
+    );
+    expect(css).toMatch(
+      /:where\(cngx-form-field :is\(input[^{]*\{[^}]*letter-spacing: var\(--mat-sys-body-large-tracking\)/,
+    );
+    expect(css).toMatch(
+      /:where\(cngx-form-field :is\(\.cngx-hint, \.cngx-field-error, cngx-field-errors > p, \.cngx-char-count__readout\)\)\s*\{\s*padding-inline: var\(--cngx-space-md, 16px\)/,
+    );
+    // `.cngx-error` is the state hook CngxErrorState and CngxErrorAggregator set
+    // on any container; the manual error container is `.cngx-field-error`.
+    expect(css).not.toContain('.cngx-error');
+    expect(css).toMatch(
+      /:where\(cngx-form-field :is\(\.cngx-hint, cngx-field-errors[^{]*\{[^}]*line-height: var\(--mat-sys-body-small-line-height\);\s*letter-spacing: var\(--mat-sys-body-small-tracking\)/,
+    );
+    expect(css).toMatch(/--cngx-field-hint-font-size: var\(--mat-sys-body-small-size, 0\.75rem\)/);
+    // mat-hint bottom-aligns its 16px line, so its text already sits one cngx
+    // hint gap below the edge: the gap stays on the cngx scale.
+    expect(css).not.toContain('--cngx-field-hint-gap');
+  });
+
+  // mat-hint and the counter end hint carry no colour and inherit the page
+  // text, so the bridge maps both to the text role, never the muted one.
+  it('paints hint and char-count in the text role, the over-limit count in the error role', () => {
+    const v1 = compiledCss('v1');
+    expect(v1).toContain('--cngx-field-hint-color: var(--mat-sys-on-surface);');
+    expect(v1).toContain('--cngx-field-char-count-color: var(--mat-sys-on-surface);');
+    expect(v1).toContain('--cngx-field-char-count-over-color: var(--mat-sys-error);');
+    const v0 = compiledCss('v0');
+    expect(v0).toContain('--cngx-field-hint-color: rgba(0, 0, 0, 0.87);');
+    expect(v0).toContain('--cngx-field-char-count-color: rgba(0, 0, 0, 0.87);');
+    expect(v0).toMatch(/--cngx-field-char-count-over-color: #[0-9a-f]{6};/);
+  });
+
+  // mat-form-field fill draws its resting line in secondary-text, which is
+  // not the same alpha in both theme types.
+  it('draws the M2 resting underline at 54% light and 70% dark', () => {
+    const underline = (scheme: 'light' | 'dark'): string | undefined =>
+      compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/field-theme' as bridge;
+$theme: mat.m2-define-${scheme}-theme((color: (
+  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+  accent: mat.m2-define-palette(mat.$m2-pink-palette),
+)));
+@include bridge.theme($theme);
+`).match(/--cngx-field-underline-color: ([^;]+);/)?.[1];
+    expect(underline('light')).toBe('rgba(0, 0, 0, 0.54)');
+    expect(underline('dark')).toBe('rgba(255, 255, 255, 0.7)');
   });
 
   // The box class is the stable hook; the affix-row class only survives as a

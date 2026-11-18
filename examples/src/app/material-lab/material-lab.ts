@@ -91,6 +91,8 @@ import {
   CngxHint,
   CngxFieldErrors,
   CngxFormErrors,
+  CngxFieldBox,
+  CngxSuffix,
 } from '@cngx/forms/field';
 import {
   CngxInput,
@@ -138,6 +140,7 @@ interface FieldModel {
   bio: string;
   about: string;
   clearable: string;
+  search: string;
   reqName: string;
   errEmail: string;
   locked: string;
@@ -264,6 +267,8 @@ interface FieldModel {
     CngxHint,
     CngxFieldErrors,
     CngxFormErrors,
+    CngxFieldBox,
+    CngxSuffix,
     CngxInput,
     CngxPasswordToggle,
     CngxCharCount,
@@ -1080,6 +1085,48 @@ interface FieldModel {
       </section>
 
       <section>
+        <h3>input: affix (clear button)</h3>
+        <cngx-form-field [field]="fieldForm.search">
+          <label cngxLabel>Search</label>
+          <span cngxFieldBox class="probe-cngx">
+            <input
+              cngxInput
+              #searchInput
+              type="search"
+              [formField]="fieldForm.search"
+              placeholder="Type, then clear"
+            />
+            <button
+              type="button"
+              cngxSuffix
+              cngxSuffixInteractive
+              [cngxInputClear]="searchInput"
+              #searchClear="cngxInputClear"
+              [disabled]="!searchClear.hasValue()"
+            >
+              <cngx-icon><mat-icon>close</mat-icon></cngx-icon>
+            </button>
+          </span>
+          <span cngxHint>Clears with the button</span>
+        </cngx-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Search</mat-label>
+          <input
+            matInput
+            class="probe-mat"
+            type="search"
+            [(ngModel)]="matSearch"
+            placeholder="Type, then clear"
+          />
+          <button matIconButton matSuffix aria-label="Clear" (click)="matSearch = ''">
+            <mat-icon>close</mat-icon>
+          </button>
+          <mat-hint>Clears with the button</mat-hint>
+        </mat-form-field>
+      </section>
+
+      <section>
         <h3>state: required</h3>
         <cngx-form-field [field]="fieldForm.reqName">
           <label cngxLabel>Display name</label>
@@ -1302,6 +1349,7 @@ export class MaterialLab {
     bio: '',
     about: '',
     clearable: '',
+    search: '',
     reqName: '',
     errEmail: 'not-an-email',
     locked: 'ACC-100425',
@@ -1338,6 +1386,7 @@ export class MaterialLab {
   protected matComboboxValues: string[] = [];
   protected matName = '';
   protected matPassword = '';
+  protected matSearch = '';
   protected matBio = '';
   protected matReqName = '';
   protected matErrEmail = 'not-an-email';
