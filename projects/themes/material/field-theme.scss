@@ -92,11 +92,13 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count
 // The lone control takes its padding, edge and radius from cngx.base, so a
 // zero-specificity rule in cngx.components wins over it; the fill and bare
 // skins SET their own padding and radius in an `@scope` (0,1,0) and keep them.
-// The block padding is the md rung minus the edge, so density re-scales the
-// field like the select trigger next to it (56 / 40 / 64).
+// Both paddings are the md rung minus the edge, so the value starts 16px in
+// like the M3 input and density re-scales the field like the select trigger
+// next to it (56 / 40 / 64).
 @mixin -metrics($theme) {
   @include bridge.on('cngx-form-field :is(#{$-controls})') {
     padding-block: calc(var(--cngx-space-md, 16px) - 1px);
+    padding-inline: calc(var(--cngx-space-md, 16px) - 1px);
     border-radius: 4px; // var(--mat-sys-corner-extra-small)
   }
   // The error list and the char-count hosts are display: contents, so the
@@ -119,9 +121,54 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count
       --cngx-field-padding-block: calc(
         var(--cngx-space-md, 16px) - var(--cngx-field-border-width, 1px)
       );
+      --cngx-field-padding-inline: calc(
+        var(--cngx-space-md, 16px) - var(--cngx-field-border-width, 1px)
+      );
     }
     .cngx-field-box.cngx-field-box[data-skin='outline'] {
       border-radius: 4px; // var(--mat-sys-corner-extra-small)
+    }
+  }
+}
+
+// Affixes of mat-form-field (matIconPrefix, matIconButton matSuffix) in the
+// fill and outlined box: 24px glyphs, a leading glyph 12px from the edge with
+// the value 16px after it, and a trailing icon button 40px wide, round and
+// flush with the edge so its glyph sits 8px in. The button keeps the cngx line
+// box height, so the box stays on its formula. The box SETs the affix tokens
+// on its `@scope` `:scope` (0,1,0); the doubled class outranks it. Text
+// affixes and an interactive prefix keep the cngx metrics.
+$-affix-box: '.cngx-field-box.cngx-field-box:is([data-skin="fill"], [data-skin="outline"])';
+
+@mixin -affix($theme) {
+  @layer cngx.components {
+    #{$-affix-box} {
+      --cngx-field-affix-icon-size: 1.5em;
+      --cngx-field-affix-target: 2.5rem;
+    }
+    #{$-affix-box}:has(
+      > .cngx-field-prefix:first-child:not(.cngx-field-affix--interactive) > cngx-icon
+    ) {
+      padding-inline-start: calc(
+        var(--cngx-space-sm, 8px) * 1.5 - var(--cngx-field-border-width, 1px)
+      );
+    }
+    #{$-affix-box}
+      > .cngx-field-prefix:first-child:not(.cngx-field-affix--interactive):has(> cngx-icon) {
+      margin-inline-end: var(--cngx-space-sm, 8px);
+    }
+    #{$-affix-box}:has(> .cngx-field-suffix.cngx-field-affix--interactive:last-child) {
+      padding-inline-end: 0;
+    }
+    // Over the edge like the Material state layer, so the glyph lands 8px in.
+    #{$-affix-box} > .cngx-field-suffix.cngx-field-affix--interactive:last-child {
+      margin-inline-end: calc(-1 * var(--cngx-field-border-width, 1px));
+      border-radius: var(--mat-sys-corner-full, 9999px);
+    }
+    // mat-form-field tints its icon buttons like its icons; a disabled
+    // button keeps the cngx 38% rule.
+    #{$-affix-box} > .cngx-field-affix--interactive:not(:disabled) {
+      color: var(--cngx-field-affix-color, inherit);
     }
   }
 }
@@ -173,6 +220,7 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count
     @include typography($theme);
   }
   @include -metrics($theme);
+  @include -affix($theme);
   @include -type($theme);
 
   @include bridge.on(cngx-form-errors) {
