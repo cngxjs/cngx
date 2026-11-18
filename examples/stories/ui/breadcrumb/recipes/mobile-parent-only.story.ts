@@ -3,15 +3,16 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxBreadcrumb: Mobile parent-only',
   subtitle:
-    'A <code>CngxMediaQuery</code> collapses the trail to a single root crumb plus an ellipsis <code>CngxMenu</code> under a narrow breakpoint. Narrow the viewport below 640px.',
+    'A swapped <code>CNGX_BREADCRUMB_COLLAPSE_STRATEGY</code> keeps the parent and the current page under a narrow breakpoint and folds every crumb before them into an ellipsis <code>CngxMenu</code>. Narrow the viewport below 640px.',
   description:
-    'On small screens the full trail wastes horizontal space. Binding <code>[maxVisible]="matches() ? 1 : undefined"</code> keeps only the first crumb visible and folds the rest into the overflow menu - the breakpoint drives the count, the trio derives the collapse (Pillar 1).',
+    'On small screens the full trail wastes horizontal space, but the current page must stay in it. The keep-tail strategy in <code>viewProviders</code> keeps the last <code>maxVisible</code> crumbs and collapses everything before them, root included; <code>[maxVisible]="narrow.matches() ? 2 : undefined"</code> turns it on only below the breakpoint. The media query drives the count, the strategy decides which crumbs stay, the trio derives the collapse (Pillar 1).',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'behavior'],
   apiComponents: ['CngxBreadcrumb', 'CngxMediaQuery', 'CngxMenu'],
   moduleImports: [
+    "import { CNGX_BREADCRUMB_COLLAPSE_STRATEGY } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
   ],
   imports: [
@@ -24,6 +25,21 @@ export const STORY: DemoSpec = {
     'CngxMenuTrigger',
     'CngxPopover',
     'CngxPopoverTrigger',
+  ],
+  viewProviders: [
+    `{
+      provide: CNGX_BREADCRUMB_COLLAPSE_STRATEGY,
+      useValue: (total: number, maxVisible: number) => {
+        const collapsed = new Set<number>();
+        if (!maxVisible || total <= maxVisible) {
+          return collapsed;
+        }
+        for (let i = 0; i < total - maxVisible; i++) {
+          collapsed.add(i);
+        }
+        return collapsed;
+      },
+    }`,
   ],
   references: [
     {
@@ -42,7 +58,7 @@ export const STORY: DemoSpec = {
     cngxBreadcrumb
     cngxMediaQuery="(max-width: 640px)"
     class="cngx-breadcrumb"
-    [maxVisible]="narrow.matches() ? 1 : undefined"
+    [maxVisible]="narrow.matches() ? 2 : undefined"
     #bc="cngxBreadcrumb"
     #narrow="cngxMediaQuery">
     <ol>

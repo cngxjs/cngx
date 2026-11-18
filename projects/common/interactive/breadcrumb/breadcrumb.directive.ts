@@ -32,6 +32,11 @@ import { CNGX_BREADCRUMB, type CngxBreadcrumbHost } from './breadcrumb.token';
  * @since 0.1.0
  * @relatedTo CngxBreadcrumbItem, CngxBreadcrumbSeparator, CngxBreadcrumbBar
  * <example-url>/#/common/interactive/breadcrumb/basic-trail</example-url>
+ * <example-url>/#/common/interactive/breadcrumb/custom-collapse-strategy</example-url>
+ * <example-url>/#/common/interactive/breadcrumb/overflow-collapse</example-url>
+ * <example-url>/#/ui/breadcrumb/recipes/mobile-parent-only</example-url>
+ * <example-url>/#/ui/breadcrumb/recipes/responsive-collapse</example-url>
+ * <example-url>/#/ui/breadcrumb/recipes/truncated-labels</example-url>
  * @axis level molecule
  */
 @Directive({

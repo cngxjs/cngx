@@ -172,6 +172,10 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/data-source/smart-data-source.ts
  * @since 0.1.0
  * @relatedTo CngxDataSource, CngxSort, CngxFilter, CngxPaginate
+ * <example-url>/#/common/data/smart-data-source/auto-wired</example-url>
+ * <example-url>/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
+ * <example-url>/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
+ * <example-url>/#/ui/data-grid-accordion/smart-data-source-options-sort</example-url>
  */
 export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -328,6 +332,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * readonly residents = injectAsyncState(() => this.api.getAll());
  * readonly dataSource = injectSmartDataSource(this.residents);
  * ```
+ * <example-url>/#/ui/data-grid-accordion/smart-data-source-options-sort</example-url>
  */
 export function injectSmartDataSource<T>(
   source: Signal<T[]> | CngxAsyncState<T[]>,

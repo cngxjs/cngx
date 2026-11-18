@@ -593,6 +593,7 @@ export function injectHotkey(binding: CngxHotkeyBinding): CngxHotkeyRef {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
  * @since 0.1.0
  * @relatedTo injectHotkey, CngxHotkeyBinding, CngxHotkeyRegistration
+ * <example-url>/#/common/dialog/hotkey-registry-scopes</example-url>
  */
 export function injectHotkeys(
   source: Signal<readonly CngxHotkeyBinding[]>,

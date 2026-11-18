@@ -70,6 +70,7 @@ function sameBinding(
  * @relatedTo CngxClickOutside, CngxSearch, CngxHotkeyScope, injectHotkey
  * <example-url>/#/common/interactive/gestures/keyboard-shortcut/global-shortcut</example-url>
  * <example-url>/#/common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut</example-url>
+ * <example-url>/#/common/dialog/hotkey-registry-scopes</example-url>
  * @axis level atom
  */
 @Directive({

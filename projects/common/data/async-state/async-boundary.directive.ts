@@ -61,6 +61,10 @@ export interface AggregateFailure {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/async-state/async-boundary.directive.ts
  * @since 0.1.0
+ * <example-url>/#/ui/feedback/async-container/async-boundary-bridges-aggregate-vs-per-source</example-url>
+ * <example-url>/#/ui/feedback/async-container/async-boundary-per-source-errors-surface</example-url>
+ * <example-url>/#/common/data/async-boundary/all-settled-renders-content</example-url>
+ * <example-url>/#/common/data/async-boundary/any-loading-shows-skeleton</example-url>
  * @axis level molecule
  */
 @Directive({

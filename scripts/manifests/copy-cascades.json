@@ -161,7 +161,7 @@
     {
       "class": "CngxBreadcrumb",
       "file": "projects/common/interactive/breadcrumb/breadcrumb.directive.ts",
-      "line": 54,
+      "line": 59,
       "member": "resolvedLabel",
       "enclosing": "computed",
       "tiers": [

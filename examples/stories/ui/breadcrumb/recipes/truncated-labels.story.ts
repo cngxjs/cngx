@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Long crumb labels clamp to one line with <code>CngxTruncate</code>; the full text is revealed on hover or keyboard focus via <code>CngxTooltip</code>.',
   description:
-    'Truncation and reveal are pure composition on the bare trail - no breadcrumb-specific code. Each link crumb clamps to a fixed width and its full label lives in an accessible <code>role="tooltip"</code> the trigger exposes through <code>aria-describedby</code>.',
+    'Truncation and reveal are pure composition on the bare trail - no breadcrumb-specific code. Each link crumb clamps to a fixed width; the tooltip is enabled only while <code>isClamped()</code> reports a clipped label, so a crumb that fits carries no <code>role="tooltip"</code> and no extra <code>aria-describedby</code>. The current page is never clamped, it stays readable without focus.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -40,10 +40,12 @@ export const STORY: DemoSpec = {
           <a
             cngxBreadcrumbItem
             [cngxTruncate]="1"
+            #trunc="cngxTruncate"
             [cngxTooltip]="crumb.label"
+            [enabled]="trunc.isClamped()"
             tooltipPlacement="bottom"
             [attr.href]="last ? null : crumb.href"
-            style="max-width: 12ch;">
+            [style.max-width]="last ? null : '12ch'">
             {{ crumb.label }}
           </a>
         </li>

@@ -40,6 +40,7 @@ import { observeResize } from './resize-signal';
  * @since 0.1.0
  * @relatedTo CngxIntersectionObserver, CngxMediaQuery
  * <example-url>/#/common/layout/resize-observer/live-size</example-url>
+ * <example-url>/#/ui/breadcrumb/recipes/responsive-collapse</example-url>
  * @axis level atom
  */
 @Directive({
