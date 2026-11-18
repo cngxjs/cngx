@@ -33,7 +33,7 @@
    * Colour of the required marker glyph, shared with `CngxLabel`. Unset by
    * default, so the marker follows `--cngx-field-error-color`, then the
    * `--cngx-color-danger-text` rung of the scheme in scope.
-   * @cssprop {<color>} --cngx-field-required-color
+   * @cssprop {<color>} [--cngx-field-required-color=var(--cngx-field-error-color)]
    * @group State / Error
    */
 

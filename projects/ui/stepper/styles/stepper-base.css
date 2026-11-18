@@ -110,6 +110,7 @@
    * convention from `@cngx/core/theming/reset.css`.
    * @group State / Focus
    * @see [[--cngx-color-primary]]
+   * @default 2px solid var(--cngx-color-primary)
    */
   @property --cngx-step-focus-ring {
     syntax: '*';
