@@ -1,5 +1,15 @@
 // Skin and story ownership guard.
 //
+// S0  a skin (`projects/*/theming/components/*.css`) is switched on by a class,
+//     never by a directive attribute (`[cngxMenu]`): a host directive writes
+//     no attribute, so an attribute-keyed skin reaches only the templates that
+//     spell it out, and the organisms among them have to compensate. An
+//     attribute selector passes in a compound with a top-level cngx class
+//     (the element itself opted in) or inside `:where()` (a zero-specificity
+//     UA reset every owner beats; the guard cannot tell a reset from paint,
+//     review can). A class on an ancestor or an `@scope (<class>)` root does
+//     not opt the element in: an organism inside the opted-in container
+//     still carries the attribute.
 // S1  a skin (`projects/*/theming/components/*.css`) or a ui component
 //     stylesheet (`projects/ui/**/*.css`) selects only its own classes and the
 //     classes of lower-level or imported entries. It fails on a class whose
@@ -14,9 +24,10 @@
 //     (`forms/field`) renders no value control either, so its stories may
 //     list a same-level entry that imports it (the input or select the field
 //     contract runs on).
-// S6  an exception lives only as a row of SKIN_OWNERSHIP_EXEMPT or
-//     STORY_OWNERSHIP_EXEMPT, with exact counts and a reason. A row whose
-//     hits are gone fails as stale, so the ratchet only shrinks.
+// S6  an exception lives only as a row of SKIN_OPT_IN_EXEMPT,
+//     SKIN_OWNERSHIP_EXEMPT or STORY_OWNERSHIP_EXEMPT, with exact counts and a
+//     reason. A row whose hits are gone fails as stale, so the ratchet only
+//     shrinks.
 //
 // Class owner: the entry whose non-spec, comment-stripped TS/HTML writes the
 // class literal (`host` class, `[class.x]`, `classList.*(...)` args, template
@@ -39,9 +50,11 @@
 // to (...)` preludes are.
 //
 // Known limits: nesting (`&`) is not resolved against the parent rule, so a
-// foreign class nested under an own class is judged on its own. A class built
-// at runtime from a template string (`'cngx-' + x`) has no literal writer and
-// reads as unowned when a stylesheet selects it.
+// foreign class nested under an own class is judged on its own (S1), and a
+// nested `&[cngxX]` under a class rule fails although `&` puts the class in
+// its compound (S0). A class inside `:is()` does not opt an attribute in. A class
+// built at runtime from a template string (`'cngx-' + x`) has no literal
+// writer and reads as unowned when a stylesheet selects it.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -72,6 +85,129 @@ const CONTEXT_AXIS = /^cngx-(density|text-scale|motion|contrast|touch)(-|$)/;
  * @type {{ file: string; selector: string; count: number; reason: string }[]}
  */
 const SKIN_OWNERSHIP_EXEMPT = [];
+
+// Which library templates write the attribute and what the skin does there.
+const OPT_IN_REASON = {
+  breadcrumb:
+    'CngxBreadcrumbBar writes the attributes; the link font-size reaching it is under review',
+  dialog:
+    'the dialog outlet is the owner; the command palette leak (max-width, scrollbar-gutter) is open',
+  listbox: 'the select panels want this skin; paginator and multi-select neutralise parts of it',
+  menu: 'only the breadcrumb overflow writes it and zeroes the menu surface tokens on its own class',
+  popover: 'applies the offset CngxPopover writes inline; every writer wants it',
+  slider: 'no template outside the slider family writes these attributes',
+};
+
+/**
+ * Skin selectors allowed to key on a directive attribute. Exact counts per
+ * (file, attribute); a new hit or a gone one fails.
+ *
+ * @type {{ file: string; selector: string; count: number; reason: string }[]}
+ */
+const SKIN_OPT_IN_EXEMPT = [
+  {
+    file: 'projects/common/theming/components/cngx-breadcrumb.css',
+    selector: '[cngxBreadcrumb]',
+    count: 2,
+    reason: OPT_IN_REASON.breadcrumb,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-breadcrumb.css',
+    selector: '[cngxBreadcrumbItem]',
+    count: 3,
+    reason: OPT_IN_REASON.breadcrumb,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-breadcrumb.css',
+    selector: '[cngxBreadcrumbSeparator]',
+    count: 1,
+    reason: OPT_IN_REASON.breadcrumb,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-dialog.css',
+    selector: '[cngxDialog]',
+    count: 2,
+    reason: OPT_IN_REASON.dialog,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-dialog.css',
+    selector: '[cngxDialogDraggable]',
+    count: 1,
+    reason: OPT_IN_REASON.dialog,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-listbox.css',
+    selector: '[cngxListbox]',
+    count: 2,
+    reason: OPT_IN_REASON.listbox,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-listbox.css',
+    selector: '[cngxOption]',
+    count: 1,
+    reason: OPT_IN_REASON.listbox,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenu]',
+    count: 2,
+    reason: OPT_IN_REASON.menu,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItem]',
+    count: 3,
+    reason: OPT_IN_REASON.menu,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItemCheckbox]',
+    count: 4,
+    reason: OPT_IN_REASON.menu,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItemRadio]',
+    count: 4,
+    reason: OPT_IN_REASON.menu,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItemSubmenu]',
+    count: 3,
+    reason: OPT_IN_REASON.menu,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuSeparator]',
+    count: 2,
+    reason: OPT_IN_REASON.menu,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-popover.css',
+    selector: '[cngxPopover]',
+    count: 1,
+    reason: OPT_IN_REASON.popover,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-slider.css',
+    selector: '[cngxSliderTrack]',
+    count: 15,
+    reason: OPT_IN_REASON.slider,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-slider.css',
+    selector: '[cngxRangeSliderTrack]',
+    count: 12,
+    reason: OPT_IN_REASON.slider,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-slider.css',
+    selector: '[cngxSliderThumb]',
+    count: 3,
+    reason: OPT_IN_REASON.slider,
+  },
+];
 
 /**
  * Stories allowed to list a higher-level or sibling artifact in
@@ -340,20 +476,28 @@ function preludes(css) {
 }
 
 /**
- * The classes of one selector list: `{ cls, index, compound, positive }`.
- * `positive` = at the top level of its compound, not inside a functional
- * pseudo-class; `compound` groups the top-level simple selectors joined
- * without a combinator.
+ * The cngx classes and directive attributes of one selector list. A class is
+ * `{ cls, index, compound, positive }`, an attribute `{ name, index, compound,
+ * fns }`. `positive` = at the top level of its compound, not inside a
+ * functional pseudo-class; `compound` groups the top-level simple selectors
+ * joined without a combinator; `fns` names the enclosing functional
+ * pseudo-classes. HTML attribute names are case-insensitive, so is the match.
  */
-function selectorClasses(selector) {
-  const out = [];
-  let depth = 0;
+function selectorParts(selector) {
+  const classes = [];
+  const attrs = [];
+  const fns = [];
   let compound = 0;
   for (let i = 0; i < selector.length; i++) {
     const ch = selector[i];
     if (ch === '[') {
       const close = selector.indexOf(']', i);
-      i = close === -1 ? selector.length : close;
+      const end = close === -1 ? selector.length : close;
+      const m = /^\s*(cngx[a-z][a-z0-9]*)/i.exec(selector.slice(i + 1, end));
+      if (m) {
+        attrs.push({ name: m[1], index: i, compound, fns: [...fns] });
+      }
+      i = end;
       continue;
     }
     if (ch === '"' || ch === "'") {
@@ -362,26 +506,26 @@ function selectorClasses(selector) {
       continue;
     }
     if (ch === '(') {
-      depth++;
+      fns.push(/:([a-z-]+)$/.exec(selector.slice(0, i))?.[1] ?? '');
       continue;
     }
     if (ch === ')') {
-      depth--;
+      fns.pop();
       continue;
     }
-    if (depth === 0 && /[\s>+~,]/.test(ch)) {
+    if (fns.length === 0 && /[\s>+~,]/.test(ch)) {
       compound++;
       continue;
     }
     if (ch === '.') {
       const m = /^cngx-[a-z0-9_-]+/.exec(selector.slice(i + 1));
       if (m) {
-        out.push({ cls: m[0], index: i + 1, compound, positive: depth === 0 });
+        classes.push({ cls: m[0], index: i + 1, compound, positive: fns.length === 0 });
         i += m[0].length;
       }
     }
   }
-  return out;
+  return { classes, attrs };
 }
 
 /**
@@ -396,7 +540,7 @@ export function scanSkinCss(file, css, index) {
   const text = stripCssComments(css);
   const hits = [];
   for (const prelude of preludes(text)) {
-    const classes = selectorClasses(prelude.text);
+    const { classes } = selectorParts(prelude.text);
     const ownCompounds = new Set(
       classes.filter((c) => c.positive && isOwnClass(c.cls, own, index)).map((c) => c.compound),
     );
@@ -431,6 +575,36 @@ export function scanSkinCss(file, css, index) {
         key: `.${c.cls}`,
         owner: foreign.map((f) => `${f.owner} (level ${f.level}, ${f.kind})`).join(', '),
         detail: `own ${[...own.entries].join(', ') || own.block} (level ${own.level})`,
+      });
+    }
+  }
+  return hits;
+}
+
+/**
+ * S0 hits of one skin: a directive attribute selector outside `:where()` whose
+ * compound carries no top-level cngx class.
+ *
+ * @param {string} file repo-relative path
+ * @param {string} css stylesheet source
+ */
+export function scanSkinOptIn(file, css) {
+  const text = stripCssComments(css);
+  const hits = [];
+  for (const prelude of preludes(text)) {
+    const { classes, attrs } = selectorParts(prelude.text);
+    for (const attr of attrs) {
+      const optedIn = classes.some((c) => c.positive && c.compound === attr.compound);
+      if (optedIn || attr.fns.includes('where')) {
+        continue;
+      }
+      hits.push({
+        rule: 'S0',
+        file,
+        line: lineAt(text, prelude.at + attr.index),
+        key: `[${attr.name}]`,
+        owner: 'its directive',
+        detail: 'keyed outside :where() and outside a compound with a class',
       });
     }
   }
@@ -590,7 +764,7 @@ export function isGuardedStylesheet(path) {
   );
 }
 
-/** Every S1 and S5 hit of the checkout at `root`. */
+/** Every S0, S1 and S5 hit of the checkout at `root`. */
 export function scanRepo(root = REPO_ROOT) {
   const paths = listFiles(root);
   const read = (path) => readFileSync(resolve(root, path), 'utf8');
@@ -608,7 +782,10 @@ export function scanRepo(root = REPO_ROOT) {
   const stories = paths
     .filter((path) => path.startsWith('examples/stories/') && path.endsWith('.story.ts'))
     .flatMap((path) => scanStory(path, read(path), index));
-  return { css, stories, index };
+  const optIn = paths
+    .filter((path) => /^projects\/[^/]+\/theming\/components\/[^/]+\.css$/.test(path))
+    .flatMap((path) => scanSkinOptIn(path, read(path)));
+  return { css, stories, optIn, index };
 }
 
 // A tiny repo: common/interactive imports common/a11y but not common/popover,
@@ -798,6 +975,67 @@ describe('skin-ownership guard - S1 stylesheets', () => {
   });
 });
 
+describe('skin-ownership guard - S0 opt-in by class', () => {
+  const optIn = (body) => keys(scanSkinOptIn(SKIN, `/* [cngxNotRead] */\n${body}`));
+
+  it('fails a bare attribute, one under an ancestor class, one before a class and a lowercase one', () => {
+    expect(
+      optIn(
+        [
+          '[cngxListbox] { color: red; }',
+          '.cngx-listbox [cngxOption] {}',
+          '.cngx-listbox > [cngxOption] {}',
+          '[cngxListbox] .cngx-listbox__item {}',
+          ':not(.cngx-a)[cngxOption] {}',
+          '[cngxoption] {}',
+        ].join('\n'),
+      ),
+    ).toEqual([
+      '2 [cngxListbox]',
+      '3 [cngxOption]',
+      '4 [cngxOption]',
+      '5 [cngxListbox]',
+      '6 [cngxOption]',
+      '7 [cngxoption]',
+    ]);
+  });
+
+  it('fails an attribute inside @scope (<class>) and in an @scope root or limit', () => {
+    expect(
+      optIn(
+        [
+          '@scope (.cngx-listbox) { [cngxOption] { color: red; } }',
+          '@scope ([cngxListbox]) to ([cngxOption]) { :scope {} }',
+        ].join('\n'),
+      ),
+    ).toEqual(['2 [cngxOption]', '3 [cngxListbox]', '3 [cngxOption]']);
+  });
+
+  it('passes a class in the compound, either side, and :where()', () => {
+    expect(
+      optIn(
+        [
+          ':where([cngxListbox]) { margin: 0; }',
+          '.cngx-listbox[cngxListbox]:focus-visible {}',
+          '[cngxOption].cngx-listbox__option {}',
+          '.cngx-listbox .cngx-listbox__option[cngxOption] {}',
+          ':is([cngxSliderTrack], [cngxRangeSliderTrack]).cngx-slider {}',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('judges each selector of a list on its own', () => {
+    expect(optIn('.cngx-listbox[cngxOption], [cngxOption] {}')).toEqual(['2 [cngxOption]']);
+  });
+
+  it('never reads a declaration value or an attribute that is no directive', () => {
+    expect(
+      optIn(".cngx-listbox { --x: '[cngxOption]'; }\n[data-cngx-open] {}\n[cngx-x] {}"),
+    ).toEqual([]);
+  });
+});
+
 describe('skin-ownership guard - S5 stories', () => {
   const story = (file, list) =>
     scanStory(file, `export const S = { apiComponents: [${list}] };`, fixtureIndex());
@@ -899,6 +1137,13 @@ describe('skin-ownership guard - projects/** and examples/stories/**', () => {
   let result;
   beforeAll(() => {
     result = scanRepo();
+  });
+
+  it('S0: no skin keys on a directive attribute outside an opt-in class or the exemptions', () => {
+    expect(
+      exemptionProblems(result.optIn, SKIN_OPT_IN_EXEMPT),
+      'Switch the skin on by a class (.cngx-x) and let the directive or the consumer write it; a UA reset may stay at :where([cngxX]).',
+    ).toEqual([]);
   });
 
   it('S1: no skin or ui stylesheet selects a higher-level or independent-sibling class outside the exemptions', () => {
