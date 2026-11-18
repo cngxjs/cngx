@@ -524,12 +524,14 @@ export class CngxSidenav
   private readonly announcer = inject(CNGX_SIDENAV_ANNOUNCER_FACTORY)();
 
   /**
-   * Current/previous width-class pair for the open-flag reset. `null` until the
-   * layout's first `ResizeObserver` entry resolves the class, so settling from
-   * the unresolved first frame is not a class change.
+   * Current/previous presentation pair for the open-flag reset: the resolved
+   * mode plus whether `medium` rests as a rail. A pinned mode ignores the width
+   * class, so only its own flip is an edge; `auto` -> pinned `over` at compact
+   * keeps the presentation. `null` while an `auto` rail waits for the layout's
+   * first `ResizeObserver` entry, so settling from that frame is not a change.
    */
-  private readonly classTransition = createTransitionTracker<SidenavWidthClass | null>(() =>
-    this.rawWidthClass().trim() === '' ? null : this.widthClass(),
+  private readonly presentationTransition = createTransitionTracker<string | null>(() =>
+    this.widthClassPending() ? null : `${this.effectiveMode()}:${this.railBase()}`,
   );
 
   /**
@@ -622,22 +624,20 @@ export class CngxSidenav
       });
     }
 
-    // Open-flag reset on a width-class change, the one write in an effect here
+    // Open-flag reset on a presentation change, the one write in an effect here
     // (sidenav-accepted-debt §1): opened is a consumer model(), which cannot be
-    // a linkedSignal keyed on the class. In auto, every class change starts the
-    // new presentation closed, so a drawer opened at one width never reopens
-    // stale at another. Focus inside the rail keeps it open instead, so the
-    // focused element is not orphaned behind inert. Pinned modes never reset.
+    // a linkedSignal keyed on the presentation. Every change starts the new
+    // presentation closed, so a drawer opened at one width never reopens stale
+    // at another and a pinned over -> side flip leaves no open overlay behind.
+    // Focus inside the rail keeps it open instead, so the focused element is
+    // not orphaned behind inert.
     effect(() => {
-      const current = this.classTransition.current();
-      const previous = this.classTransition.previous();
+      const current = this.presentationTransition.current();
+      const previous = this.presentationTransition.previous();
       if (previous === null || current === previous) {
         return;
       }
       untracked(() => {
-        if (this.mode() !== 'auto') {
-          return;
-        }
         const host = this.elementRef.nativeElement as HTMLElement;
         this.opened.set(host.contains(this.doc.activeElement));
       });

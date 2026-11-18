@@ -1713,7 +1713,10 @@ describe('CngxSidenav panel target', () => {
 
   it('reports an open overlay as expanded, never as a peek', () => {
     const { fixture, host, nav, outer } = setup();
+    // The side -> over flip is a presentation edge that starts the overlay
+    // closed, so it opens in a later tick.
     host.mode.set('over');
+    fixture.detectChanges();
     host.open.set(true);
     fixture.detectChanges();
     expect(nav.panelTarget.peeked?.()).toBe(false);
