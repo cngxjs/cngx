@@ -1,5 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA, Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { CngxCheckboxIndicator } from '@cngx/common/display';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -33,7 +34,10 @@ const TEMPLATE = `
         <div class="cngx-select__option row-rest">Red</div>
         <div class="cngx-select__option row-hover">Green</div>
         <div class="cngx-select__option cngx-option--highlighted row-active">Blue</div>
-        <div class="cngx-select__option cngx-option--selected row-selected">Amber</div>
+        <div class="cngx-select__option cngx-option--selected row-selected">
+          <cngx-checkbox-indicator class="cngx-select__check" variant="checkmark" [checked]="true" />
+          Amber
+        </div>
         <div class="cngx-select__option cngx-option--selected cngx-option--highlighted row-selected-active">
           Violet
         </div>
@@ -63,6 +67,7 @@ const TEMPLATE = `
 @Component({
   selector: 'cngx-select-bridge-states-host',
   standalone: true,
+  imports: [CngxCheckboxIndicator],
   styleUrls: [
     '../../../core/theming/layers.css',
     '../../../core/theming/system-tokens.css',
@@ -141,6 +146,9 @@ describe('select Material bridge option state layers', () => {
     const root = mount();
     expect(bg(root, '.row-selected')).toBe(bg(root, '.probe-selected'));
     expect(ink(root, '.row-selected')).toBe(ink(root, '.probe-selected'));
+    expect(ink(root, '.row-selected .cngx-checkbox-indicator__check')).toBe(
+      ink(root, '.probe-selected'),
+    );
   });
 
   it('shows the focus layer and the on-surface ink on a selected active row', () => {
