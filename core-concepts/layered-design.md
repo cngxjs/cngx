@@ -224,10 +224,10 @@ The level rules above govern imports. Stylesheets and stories can break the same
 
 ### S0 - Opt in to a skin by class
 
-A base skin is switched on by a class, never by the directive's attribute. An organism that composes the directive carries the attribute too, so an attribute selector reaches into it.
+A base skin is switched on by a class, never by the directive's attribute. An organism whose template writes the directive carries the attribute too, so an attribute selector reaches into it. The one exception is a reset that only neutralises browser chrome: it may key on the attribute inside `:where()`, at zero specificity, so every owner's own paint wins against it (the bare-popover reset in `cngx-popover.css`).
 
-- Violation: `cngx-accordion.css` paints its twisty on `[cngxAccordionPanel]::after`. `CngxAccordionItem` puts that directive on its header and ships its own chevron, so the header rendered two (`0dcb48e36`).
-- Fix: the region opts in with `.cngx-accordion__region`, the drawer with `.cngx-drawer` next to `[cngxDrawer]`. Neither class appears on an organism unless the organism adds it on purpose.
+- Violation: `cngx-accordion.css` keyed every rule on `[cngxAccordion]` and `[cngxAccordionPanel]`. `CngxAccordionItem` and the data-grid-accordion row write `cngxAccordionPanel` in their templates, so both got the skin's `::after` twisty and header gap, and each carried a compensation (`0dcb48e36`, `936ba0334`).
+- Fix: the skin keys on `.cngx-accordion`, `.cngx-accordion__header` and `.cngx-accordion__region`. A consumer opts in by adding the classes; the organisms add none of them and dropped their compensations.
 
 ### S1 - Select only what you own
 
@@ -240,8 +240,8 @@ A skin selector's subject is an element its artifact owns: its own parts, or chi
 
 When a parent needs a child to look different, the child's owner offers a hook: an attribute its own directive writes, or a token. The parent sets the hook; it does not restyle the child.
 
-- Violation: `.cngx-accordion-item__header::after { display: none }` in the accordion organism, a blanket reset of the skin's pseudo-element (`0dcb48e36`).
-- Fix: the skin reads `--cngx-accordion-twisty-display`, and the organism sets it to `none` on its header (`936ba0334`). Same shape for the button: the async paint no longer excludes `.cngx-button`; the button sets `--cngx-async-pending-opacity: 1` on its own host (#834).
+- Violation: the async paint in `cngx-async.css` dimmed every pending host, so it excluded `.cngx-button` with `:not(:where(.cngx-button))` to keep the button's own busy treatment.
+- Fix: the async paint offers `--cngx-async-pending-opacity`, and the button sets it to `1` on its own host (#834). The accordion skin's `--cngx-accordion-twisty-display` is the same kind of hook, for a consumer that projects its own icon.
 
 ### S3 - One visual rule exists once
 
