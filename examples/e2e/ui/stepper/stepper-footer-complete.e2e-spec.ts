@@ -63,6 +63,29 @@ test.describe('ui/stepper/stepper-footer complete', () => {
     await expect.poll(activeLabel).toBe('BUTTON:Finish');
   });
 
+  test('complete-finish-button: a programmatic step change leaves focus on body when the user had clicked away', async ({
+    page,
+  }) => {
+    await gotoDemo(page, ROUTE);
+    const footer = page.locator('cngx-stepper-footer');
+
+    await footer.getByRole('button', { name: 'Continue' }).click();
+    await page.getByText('Fill in your profile.', { exact: true }).click();
+    await expect.poll(() => page.evaluate(() => document.activeElement?.tagName)).toBe('BODY');
+
+    // Programmatic navigation: the demo's [(activeStepIndex)] signal, as an
+    // async flow or a router sync would set it.
+    await page.evaluate(() => {
+      const ng = (window as unknown as { ng: { getOwningComponent(el: Element): unknown } }).ng;
+      const demo = ng.getOwningComponent(document.querySelector('cngx-stepper')!) as {
+        active: { set(value: number): void };
+      };
+      demo.active.set(2);
+    });
+    await expect(footer.getByRole('button', { name: 'Finish' })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.activeElement?.tagName)).toBe('BODY');
+  });
+
   // Shared by the precondition test and the Back refusal test below: reach
   // the last step and start the Finish run.
   async function startFinish(page: Page) {
