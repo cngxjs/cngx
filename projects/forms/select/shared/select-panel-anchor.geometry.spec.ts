@@ -1,4 +1,4 @@
-import { Component, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { Component, computed, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideDirection } from '@cngx/core';
 import { computedValue } from '@cngx/testing/geometry';
@@ -48,6 +48,10 @@ const HARNESS_STYLES = [
   '../../theming/components/cngx-field-affix.css',
   '../../theming/components/cngx-field-skin.css',
   './select-base.css',
+  './internal/sheet-header/sheet-header.component.css',
+  // After select-base.css on purpose: the worst load order for the select's
+  // anchored contract against the sheet skin.
+  '../../../common/theming/components/cngx-popover-sheet.css',
 ];
 
 type Variant =
@@ -105,37 +109,43 @@ interface Openable {
     >
       @switch (variant()) {
         @case ('select') {
-          <cngx-select #v [skin]="skin()" [label]="'C'" [options]="options" />
+          <cngx-select #v [skin]="skin()" [label]="'C'" [options]="options()" />
         }
         @case ('multi') {
-          <cngx-multi-select #v [skin]="skin()" [label]="'C'" [options]="options" />
+          <cngx-multi-select #v [skin]="skin()" [label]="'C'" [options]="options()" />
         }
         @case ('combobox') {
-          <cngx-combobox #v [skin]="skin()" [label]="'C'" [options]="options">
+          <cngx-combobox #v [skin]="skin()" [label]="'C'" [options]="options()">
             <ng-template cngxSelectInputPrefix
               ><span class="pfx" style="display: inline-block; width: 2rem">@</span></ng-template
             >
           </cngx-combobox>
         }
         @case ('typeahead') {
-          <cngx-typeahead #v [skin]="skin()" [label]="'C'" [options]="options">
+          <cngx-typeahead #v [skin]="skin()" [label]="'C'" [options]="options()">
             <ng-template cngxSelectInputPrefix
               ><span class="pfx" style="display: inline-block; width: 2rem">@</span></ng-template
             >
           </cngx-typeahead>
         }
         @case ('tree') {
-          <cngx-tree-select #v [skin]="skin()" [label]="'C'" [nodes]="nodes" [nodeIdFn]="nodeId" />
+          <cngx-tree-select
+            #v
+            [skin]="skin()"
+            [label]="'C'"
+            [nodes]="nodes()"
+            [nodeIdFn]="nodeId"
+          />
         }
         @case ('reorder') {
-          <cngx-reorderable-multi-select #v [skin]="skin()" [label]="'C'" [options]="options" />
+          <cngx-reorderable-multi-select #v [skin]="skin()" [label]="'C'" [options]="options()" />
         }
         @case ('action') {
           <cngx-action-select
             #v
             [skin]="skin()"
             [label]="'C'"
-            [options]="options"
+            [options]="options()"
             [actionPosition]="actionPosition()"
           >
             <ng-template cngxSelectInputPrefix
@@ -151,7 +161,7 @@ interface Openable {
             #v
             [skin]="skin()"
             [label]="'C'"
-            [options]="options"
+            [options]="options()"
             [actionPosition]="actionPosition()"
           >
             <ng-template cngxSelectInputPrefix
@@ -164,8 +174,9 @@ interface Openable {
         }
         @case ('shell') {
           <cngx-select-shell #v [skin]="skin()" [label]="'C'">
-            <cngx-option [value]="'red'">Red</cngx-option>
-            <cngx-option [value]="'green'">Green</cngx-option>
+            @for (option of options(); track option.value) {
+              <cngx-option [value]="option.value">{{ option.label }}</cngx-option>
+            }
           </cngx-select-shell>
         }
       }
@@ -178,14 +189,18 @@ class VariantHost {
   readonly withAction = signal(false);
   readonly actionPosition = signal<'top' | 'bottom'>('bottom');
   readonly actionBorder = signal<string | null>(null);
-  readonly options = [
-    { value: 'red', label: 'Red' },
-    { value: 'green', label: 'Green' },
-  ];
-  readonly nodes = [
-    { value: 'red', label: 'Red' },
-    { value: 'green', label: 'Green' },
-  ];
+  readonly rowCount = signal(2);
+  readonly options = computed(() =>
+    Array.from({ length: this.rowCount() }, (_, i) =>
+      i < 2
+        ? [
+            { value: 'red', label: 'Red' },
+            { value: 'green', label: 'Green' },
+          ][i]
+        : { value: `c${i}`, label: `C${i}` },
+    ),
+  );
+  readonly nodes = this.options;
   readonly nodeId = (value: unknown): string => String(value);
   readonly select = viewChild.required<Openable>('v');
 }
@@ -324,6 +339,44 @@ describe('select panel anchor geometry', () => {
     expect(panelRect.width).toBeGreaterThan(rowRect.width + 2);
     expect(Math.abs(rowRect.right - panelRect.right)).toBeLessThanOrEqual(1);
   });
+});
+
+// The sheet skin widens its column model, cap and header row to the
+// anchored presentation; a select panel keeps its own anchored contract.
+describe('select panel under the sheet skin', () => {
+  for (const variant of VARIANTS) {
+    it(`${variant}: keeps its own cap, scroll, flip order and hidden sheet header`, async () => {
+      const fixture = mount(VariantHost);
+      fixture.componentInstance.variant.set(variant);
+      fixture.componentInstance.rowCount.set(40);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const { panel, rowRect, panelRect } = await openAndMeasure(fixture);
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      expect(panel.getAttribute('data-cngx-presentation')).toBe('anchored');
+      // The tree panel carries its own, taller anchored cap.
+      const capRem = variant === 'tree' ? 20 : 16;
+      expect(panelRect.height).toBeLessThanOrEqual(capRem * rem + 1);
+      expect(computedValue(panel, 'display')).toBe('block');
+      expect(computedValue(panel, 'position-try-order')).toBe('normal');
+      expect(panelRect.top).toBeGreaterThanOrEqual(rowRect.bottom - 1);
+
+      panel.scrollTop = 120;
+      await nextFrame();
+      expect(panel.scrollTop).toBeGreaterThan(0);
+
+      const shell = panel.querySelector<HTMLElement>('.cngx-select-panel-shell');
+      if (shell) {
+        expect(computedValue(shell, 'overflow-y')).toBe('visible');
+      }
+      const header = panel.querySelector<HTMLElement>('.cngx-select-sheet-header');
+      if (header) {
+        expect(computedValue(header, 'display')).toBe('none');
+      }
+    });
+  }
 });
 
 // The panel frame (surface, edges, gap, action-region separator) is one
