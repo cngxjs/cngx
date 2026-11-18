@@ -222,6 +222,22 @@ class SiblingSheetHost {
 
 @Component({
   template: `
+    <button type="button" class="page-button">Page</button>
+    <div cngxPopover #side="cngxPopover" class="side" [exclusive]="false">Side</div>
+    <div cngxPopover #sheet="cngxPopover" cngxPopoverSheet="sheet" [exclusive]="false">
+      <h2 cngxPopoverSheetTitle>Sheet</h2>
+      <button type="button" class="sheet-item">Sheet item</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverSheet, CngxPopoverSheetTitle],
+})
+class SheetBesidePopoverHost {
+  readonly side = viewChild.required('side', { read: CngxPopover });
+  readonly sheet = viewChild.required('sheet', { read: CngxPopover });
+}
+
+@Component({
+  template: `
     <button type="button" class="outer-opener">Open</button>
     <div cngxPopover #outer="cngxPopover" cngxPopoverSheet="sheet">
       <h2 cngxPopoverSheetTitle>Outer</h2>
@@ -1046,6 +1062,49 @@ describe('CngxPopoverSheet', () => {
       host.second().hide();
       expect(first.hasAttribute('inert')).toBe(false);
       expect(root.querySelector('.page-button')!.hasAttribute('inert')).toBe(true);
+    });
+  });
+
+  describe('popover beside an open sheet', () => {
+    // The sheet claims inert on every page sibling, a popover host included.
+    // That popover's own close fade must not drop the claim when it ends.
+    it('keeps the sheet claim on a sibling popover host through its close fade', () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(SheetBesidePopoverHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      for (const pop of [host.side(), host.sheet()]) {
+        const rec = pop.elementRef.nativeElement as unknown as Record<string, unknown>;
+        rec['showPopover'] = vi.fn();
+        rec['hidePopover'] = vi.fn();
+      }
+      const side = host.side().elementRef.nativeElement;
+      const flush = () => {
+        fixture.detectChanges();
+        TestBed.flushEffects();
+      };
+
+      host.side().show();
+      flush();
+      host.sheet().show();
+      flush();
+      expect(side.hasAttribute('inert')).toBe(true);
+
+      stubTransition('0.2s');
+      host.side().hide();
+      flush();
+      expect(host.side().state()).toBe('closing');
+      vi.advanceTimersByTime(500);
+      flush();
+      expect(host.side().state()).toBe('closed');
+      expect(side.hasAttribute('inert')).toBe(true);
+
+      stubTransition('0s');
+      host.sheet().hide();
+      flush();
+      expect(side.hasAttribute('inert')).toBe(false);
+      vi.useRealTimers();
     });
   });
 
