@@ -187,9 +187,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-focus-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -199,21 +198,21 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-selected-border {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
-   * Background of the selected state. The runtime fallback uses
-   * `color-mix()` against `--cngx-color-primary`, so this static
-   * default only matters when a theme pins the token explicitly.
+   * Background of the selected state. Unset by default, so the card
+   * paints a pale tint in the hue of the `--cngx-color-primary` in
+   * scope; the scheme blocks set its lightness and chroma cap, and an
+   * achromatic primary keeps the tint neutral.
    * @group State / Selected
+   * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-selected-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.96 0.04 50);
   }
 
   /**
@@ -496,9 +495,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-badge-primary-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -601,7 +599,7 @@
   /* Dark-mode swap - mirrors `core/theming/system-tokens.css`.
    * Foundation-delegated tokens (bg / text / border / divider /
    * title) ride the foundation cascade via `var()`. Component-
-   * specific tokens (subtitle, selected-bg, four accent tints)
+   * specific tokens (subtitle, selected tint, four accent tints)
    * carry their own light/dark pair across three blocks. */
   :root {
     --cngx-card-bg: var(--cngx-color-surface);
@@ -614,7 +612,8 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
       --cngx-card-subtitle-color: oklch(0.72 0.02 290);
-      --cngx-card-selected-bg: oklch(0.36 0.06 50);
+      --_cngx-card-selected-l: 0.36;
+      --_cngx-card-selected-c: 0.06;
       --cngx-card-accent-info-bg: oklch(0.32 0.05 250);
       --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
       --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
@@ -626,7 +625,8 @@
   [data-color-scheme='dark'],
   .dark {
     --cngx-card-subtitle-color: oklch(0.72 0.02 290);
-    --cngx-card-selected-bg: oklch(0.36 0.06 50);
+    --_cngx-card-selected-l: 0.36;
+    --_cngx-card-selected-c: 0.06;
     --cngx-card-accent-info-bg: oklch(0.32 0.05 250);
     --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
     --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
@@ -637,7 +637,8 @@
   [data-color-scheme='light'],
   .light {
     --cngx-card-subtitle-color: oklch(0.36 0.02 290);
-    --cngx-card-selected-bg: oklch(0.96 0.04 50);
+    --_cngx-card-selected-l: 0.96;
+    --_cngx-card-selected-c: 0.04;
     --cngx-card-accent-info-bg: oklch(0.97 0.03 250);
     --cngx-card-accent-success-bg: oklch(0.97 0.04 145);
     --cngx-card-accent-warning-bg: oklch(0.97 0.04 75);
@@ -701,10 +702,9 @@
       );
       background: var(
         --cngx-card-selected-bg,
-        color-mix(
-          in oklch,
-          var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
-          var(--cngx-card-bg, oklch(1 0 0))
+        oklch(
+          from var(--cngx-color-primary, oklch(0.66 0.19 50))
+            var(--_cngx-card-selected-l, 0.96) min(c, var(--_cngx-card-selected-c, 0.04)) h
         )
       );
     }

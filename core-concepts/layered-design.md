@@ -224,7 +224,7 @@ The level rules above govern imports. Stylesheets and stories can break the same
 
 ### S0 - Opt in to a skin by class
 
-A base skin is switched on by a class, never by the directive's attribute. An organism whose template writes the directive carries the attribute too, so an attribute selector reaches into it. The one exception is a reset that only neutralises browser chrome: it may key on the attribute inside `:where()`, at zero specificity, so every owner's own paint wins against it (the bare-popover reset in `cngx-popover.css`).
+A base skin is switched on by a class, never by the directive's attribute. An organism whose template writes the directive carries the attribute too, so an attribute selector reaches into it. Every element the skin paints carries the skin's class itself; an attribute may only narrow a compound that has the class (`.cngx-menu[cngxMenu]`). A class on an ancestor or an `@scope (.cngx-x)` root does not count: an organism inside the opted-in container still carries the attribute. The one exception is a reset that only neutralises browser chrome: it may key on the attribute inside `:where()`, at zero specificity, so every owner's own paint wins against it (the bare-popover reset in `cngx-popover.css`).
 
 - Violation: `cngx-accordion.css` keyed every rule on `[cngxAccordion]` and `[cngxAccordionPanel]`. `CngxAccordionItem` and the data-grid-accordion row write `cngxAccordionPanel` in their templates, so both got the skin's `::after` twisty and header gap, and each carried a compensation (`0dcb48e36`, `936ba0334`).
 - Fix: the skin keys on `.cngx-accordion`, `.cngx-accordion__header` and `.cngx-accordion__region`. A consumer opts in by adding the classes; the organisms add none of them and dropped their compensations.
@@ -268,12 +268,12 @@ Two homes need a carrier. Stories under `examples/stories/core/**` are exempt: c
 
 ### S6 - Exceptions are guard rows
 
-An exception to S1 or S5 exists only as a row in the guard, with exact counts and a written reason. A row whose hits are gone fails as stale, so the list only shrinks.
+An exception to S0, S1 or S5 exists only as a row in the guard, with exact counts and a written reason. A row whose hits are gone fails as stale, so the list only shrinks.
 
 - Violation: the popover reset's exclusions were explained in the `cngx-popover.css` overview comment ("the styled surfaces are excluded by class"). No guard, no review step and no debt entry knew about them.
-- Fix: a row in `SKIN_OWNERSHIP_EXEMPT` or `STORY_OWNERSHIP_EXEMPT` (`{ file, selector, count, reason }` or `{ file, symbol, reason }`). Both lists are empty today.
+- Fix: a row in `SKIN_OPT_IN_EXEMPT`, `SKIN_OWNERSHIP_EXEMPT` or `STORY_OWNERSHIP_EXEMPT` (`{ file, selector, count, reason }` or `{ file, symbol, reason }`). The last two are empty today; `SKIN_OPT_IN_EXEMPT` lists the attribute-keyed skins, each with the library templates that write the attribute and what the skin does there.
 
-S1 and S5 are enforced by `scripts/__tests__/skin-ownership-guard.test.mjs`.
+S0, S1 and S5 are enforced by `scripts/__tests__/skin-ownership-guard.test.mjs`.
 
 ---
 

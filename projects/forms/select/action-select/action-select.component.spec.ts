@@ -672,6 +672,21 @@ describe('CngxActionSelect - keyboard collapse onto the clear button', () => {
     flush(fixture);
     expect(select.panelOpen()).toBe(true);
   });
+
+  // After an outside click (blocked while dirty) focus sits on body, so the
+  // host's capture Escape listener never runs; the popover's document
+  // listener must still respect the guard.
+  it('keeps a dirty panel open on Escape while focus is outside the host', () => {
+    const { fixture, select } = setupClearable();
+    select.open();
+    flush(fixture);
+    select.actionCallbacks().setDirty(true);
+    flush(fixture);
+
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
+  });
 });
 
 describeFieldSkinHost(

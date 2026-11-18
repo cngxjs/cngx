@@ -14,14 +14,13 @@ exports[`Material nav-rail-theme bridge baseline > v0 light: resolved --cngx-* d
   "--cngx-nav-link-active-font-weight": "500",
   "--cngx-nav-link-active-hover-bg": "rgba(63, 81, 181, 0.12)",
   "--cngx-nav-link-active-indicator-color": "#3f51b5",
-  "--cngx-nav-link-color": "rgba(0, 0, 0, 0.65)",
   "--cngx-nav-link-font-size": "0.875rem",
   "--cngx-nav-link-hover-bg": "rgba(63, 81, 181, 0.04)",
-  "--cngx-nav-link-hover-color": "rgba(0, 0, 0, 0.87)",
   "--cngx-nav-link-pressed-bg": "rgba(63, 81, 181, 0.06)",
   "--cngx-nav-link-radius": "8px",
   "--cngx-nav-rail-bg": "white",
   "--cngx-nav-rail-border-color": "rgba(0, 0, 0, 0.12)",
+  "--cngx-nav-rail-color": "rgba(0, 0, 0, 0.87)",
 }
 `;
 
@@ -61,6 +60,7 @@ exports[`Material nav-rail-theme bridge baseline > v1 dark: resolved --cngx-* de
   "--cngx-nav-rail-bg": "var(--mat-sys-surface)",
   "--cngx-nav-rail-border-color": "var(--mat-sys-outline-variant)",
   "--cngx-nav-rail-border-width": "0px",
+  "--cngx-nav-rail-color": "var(--mat-sys-on-surface)",
 }
 `;
 
@@ -100,5 +100,6 @@ exports[`Material nav-rail-theme bridge baseline > v1 light: resolved --cngx-* d
   "--cngx-nav-rail-bg": "var(--mat-sys-surface)",
   "--cngx-nav-rail-border-color": "var(--mat-sys-outline-variant)",
   "--cngx-nav-rail-border-width": "0px",
+  "--cngx-nav-rail-color": "var(--mat-sys-on-surface)",
 }
 `;

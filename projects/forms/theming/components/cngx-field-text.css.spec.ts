@@ -22,9 +22,16 @@ describe('cngx-field-text.css', () => {
   // that reuses the directive on its own element.
   it('keys on classes and the error element, never on directive attributes', () => {
     expect(CODE).not.toMatch(/\[cngx/i);
-    for (const selector of ['.cngx-label {', '.cngx-hint {', 'cngx-field-errors, .cngx-error {']) {
+    for (const selector of ['.cngx-label {', '.cngx-hint {', 'cngx-field-errors, .cngx-field-error {']) {
       expect(FLAT).toContain(selector);
     }
+  });
+
+  // .cngx-error is also the state hook CngxErrorAggregator and CngxErrorState
+  // set on any container; keying the error text on it shrinks and reddens a
+  // whole form section.
+  it('never keys on the shared .cngx-error state class', () => {
+    expect(CODE).not.toMatch(/\.cngx-error\b/);
   });
 
   it('paints every colour through a token, with literals only as var() fallbacks', () => {
@@ -42,7 +49,7 @@ describe('cngx-field-text.css', () => {
     expect(error).toMatch(
       /^[^}]*color: var\( --cngx-field-error-color, var\( --cngx-color-danger-text,/,
     );
-    const list = FLAT.slice(FLAT.indexOf('cngx-field-errors, .cngx-error {'));
+    const list = FLAT.slice(FLAT.indexOf('cngx-field-errors, .cngx-field-error {'));
     expect(list).toMatch(
       /^[^}]*color: var\( --cngx-field-error-color, var\( --cngx-color-danger-text,/,
     );

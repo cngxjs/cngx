@@ -11,8 +11,9 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  * (`role="status"`, `aria-live="polite"`), never `aria-hidden`. Only its content changes,
  * so every screen reader announces the content when it appears. The presenter references
  * the container in the input's `aria-describedby` and `aria-errormessage` only while
- * {@link visible} is true. The host carries `cngx-error`, which the field typography in
- * `@cngx/themes/cngx.css` sizes and tints like the `cngx-field-errors` list.
+ * {@link visible} is true. The host carries `cngx-field-error`, which the field typography
+ * in `@cngx/themes/cngx.css` sizes and tints like the `cngx-field-errors` list, and
+ * `cngx-error`, the class hook it shares with `CngxErrorState` and `CngxErrorAggregator`.
  *
  * Gate the content on {@link visible}, the field's own reveal gate (error strategy,
  * reveal scope, touched). Content rendered outside it is on screen and spoken.
@@ -46,7 +47,7 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
   standalone: true,
   exportAs: 'cngxError',
   host: {
-    class: 'cngx-error',
+    class: 'cngx-error cngx-field-error',
     '[id]': 'presenter.errorId()',
     role: 'status',
     'aria-live': 'polite',

@@ -102,7 +102,10 @@
      layer) and any consumer override still win, and inherits:true carries
      it into every dot. */
   :where(.cngx-dot-stepper) {
-    --cngx-dot-step-active-fill: var(--cngx-step-active-fill, oklch(0.66 0.19 50));
+    --cngx-dot-step-active-fill: var(
+      --cngx-step-active-fill,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     --cngx-dot-step-completed-fill: var(
       --cngx-step-completed-color,
       var(--cngx-color-success, oklch(0.5 0.15 145))

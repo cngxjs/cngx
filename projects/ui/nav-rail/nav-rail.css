@@ -88,6 +88,29 @@
   }
 
   /**
+   * Text colour of the rail: rows, header and footer inherit it. Unset by
+   * default, so the rail falls back to `--cngx-color-text` on itself and a
+   * `[data-color-scheme]` island writes its own ink.
+   * @group Surface
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-nav-rail-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Block gap between the body rows. Unset by default: the body falls back
+   * to half of `--cngx-space-xs`, so density reaches it. The sidenav
+   * counterpart is `--cngx-sidenav-row-gap`.
+   * @group Layout
+   */
+  @property --cngx-nav-rail-row-gap {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Width of the border on the rail's inner edge (inline end for
    * `side="start"`, inline start for `side="end"`). The group flyout clears it.
    * @group Surface
@@ -134,7 +157,7 @@
     border: 0 solid var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
     border-inline-end-width: var(--cngx-nav-rail-border-width, 1px);
     background: var(--cngx-nav-rail-bg, var(--cngx-color-surface, oklch(1 0 0)));
-    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    color: var(--cngx-nav-rail-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
     /* The flyout anchors to the group head, which sits the row inset and the
        border inside the rail edge: clear both, then keep the gap. */
     --cngx-nav-flyout-offset: calc(
@@ -156,7 +179,7 @@
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: calc(var(--cngx-space-xs, 4px) / 2);
+    gap: var(--cngx-nav-rail-row-gap, calc(var(--cngx-space-xs, 4px) / 2));
     min-block-size: 0;
     padding-block: var(--cngx-space-xs, 4px);
     overflow-x: hidden;

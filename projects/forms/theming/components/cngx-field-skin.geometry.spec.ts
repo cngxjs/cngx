@@ -99,7 +99,10 @@ import { userEvent } from 'vitest/browser';
       <label class="cngx-label cngx-label--error label-error-light">Name</label>
       <span class="cngx-hint hint-light">Hint</span>
       <cngx-field-errors class="errors-light"><p>Required.</p></cngx-field-errors>
-      <div class="cngx-error error-light">Required.</div>
+      <div class="cngx-error cngx-field-error error-light">Required.</div>
+      <section class="cngx-error state-host-light" aria-invalid="true">
+        <p>Payment form goes here.</p>
+      </section>
       <cngx-form-errors class="cngx-form-errors summary-light">
         <ul class="cngx-form-errors__list">
           <li><a href="#x">Name: Required.</a></li>
@@ -150,7 +153,7 @@ import { userEvent } from 'vitest/browser';
       <label class="cngx-label cngx-label--error label-error-dark">Name</label>
       <span class="cngx-hint hint-dark">Hint</span>
       <cngx-field-errors class="errors-dark"><p>Required.</p></cngx-field-errors>
-      <div class="cngx-error error-dark">Required.</div>
+      <div class="cngx-error cngx-field-error error-dark">Required.</div>
       <cngx-form-errors class="cngx-form-errors summary-dark">
         <ul class="cngx-form-errors__list">
           <li><a href="#x">Name: Required.</a></li>
@@ -563,6 +566,16 @@ describe('field skin geometry', () => {
       expect(computedValue(query(root, selector), 'font-size')).toBe('13px');
     }
     expect(computedValue(query(root, '.label-light'), 'font-weight')).toBe('500');
+  });
+
+  // CngxErrorAggregator and CngxErrorState put .cngx-error on any container
+  // as a state hook; the error-text paint belongs to the message atom only.
+  it('leaves a container that carries the .cngx-error state hook at body text', () => {
+    const root = mount();
+    const host = query(root, '.state-host-light');
+    const page = query(root, '.probe-page-light').parentElement as HTMLElement;
+    expect(computedValue(host, 'font-size')).toBe(computedValue(page, 'font-size'));
+    expect(getComputedStyle(host).color).toBe(getComputedStyle(page).color);
   });
 
   it('indents the error summary bullets on the inline start side in RTL', () => {

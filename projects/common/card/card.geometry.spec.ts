@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue, gridTracks } from '@cngx/testing/geometry';
+import { computedValue, gridTracks, rasterise, type Rgba } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CngxCardBadge } from './card-badge.directive';
 import { CngxCard } from './card.component';
 import { CngxCardGrid } from './card-grid.component';
 import { CngxCardSkeleton } from './card-skeleton.component';
@@ -70,6 +71,37 @@ class GridHost {
 })
 class SkeletonHost {}
 
+const BLUE = 'oklch(0.55 0.15 250)';
+const EMBER = 'oklch(0.66 0.19 50)';
+
+@Component({
+  standalone: true,
+  imports: [CngxCard, CngxCardBadge],
+  template: `
+    <div class="default">
+      <cngx-card as="button" [selectable]="true" [selected]="true">
+        <span cngxCardBadge intent="primary">P</span>
+      </cngx-card>
+    </div>
+    <div class="branded" style="--cngx-color-primary: oklch(0.55 0.15 250)">
+      <cngx-card as="button" [selectable]="true" [selected]="true">
+        <span cngxCardBadge intent="primary">P</span>
+      </cngx-card>
+    </div>
+    <div
+      class="branded-dark"
+      data-color-scheme="dark"
+      style="--cngx-color-primary: oklch(0.55 0.15 250)"
+    >
+      <cngx-card as="button" [selectable]="true" [selected]="true">Dark</cngx-card>
+    </div>
+    <div class="achromatic" style="--cngx-color-primary: oklch(0.5 0 0)">
+      <cngx-card as="button" [selectable]="true" [selected]="true">Grey</cngx-card>
+    </div>
+  `,
+})
+class PrimaryCardHost {}
+
 describe('CngxCard geometry', () => {
   it('is a block surface that positions its badge anchor', () => {
     const host = mount(CardHost, '.cngx-card');
@@ -124,5 +156,59 @@ describe('CngxCardSkeleton geometry', () => {
     // gap tracks the scale token.
     host.style.setProperty('--cngx-space-sm', '20px');
     expect(computedValue(host, 'gap')).toBe('20px');
+  });
+});
+
+// Focus ring, selected border and primary badge fall back to the primary at the
+// use site; a registered initial-value would shadow that fallback and paint
+// Ember under any brand.
+describe('CngxCard primary tokens', () => {
+  function mountPrimary(): HTMLElement {
+    const fixture = TestBed.createComponent(PrimaryCardHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+  const one = (root: HTMLElement, selector: string): HTMLElement => {
+    const el = root.querySelector<HTMLElement>(selector);
+    if (!el) {
+      throw new Error(`${selector} did not render`);
+    }
+    return el;
+  };
+  const colour = (root: HTMLElement, selector: string, property: string): Rgba =>
+    rasterise(computedValue(one(root, selector), property));
+
+  it('paints the selected border with the primary in scope', () => {
+    const root = mountPrimary();
+    expect(colour(root, '.branded .cngx-card', 'border-top-color')).toEqual(rasterise(BLUE));
+    expect(colour(root, '.default .cngx-card', 'border-top-color')).toEqual(rasterise(EMBER));
+  });
+
+  it('tints the selected surface in the hue of the primary in scope', () => {
+    const root = mountPrimary();
+    const surface = (scope: string): Rgba =>
+      colour(root, `${scope} .cngx-card`, 'background-color');
+    expect(surface('.branded')).toEqual(rasterise('oklch(0.96 0.04 250)'));
+    expect(surface('.default')).toEqual(rasterise('oklch(0.96 0.04 50)'));
+    expect(surface('.branded-dark')).toEqual(rasterise('oklch(0.36 0.06 250)'));
+    // An achromatic primary has no hue to borrow; the tint stays neutral.
+    expect(surface('.achromatic')).toEqual(rasterise('oklch(0.96 0 0)'));
+  });
+
+  it('paints the focus ring with the primary in scope', () => {
+    const root = mountPrimary();
+    one(root, '.branded .cngx-card').focus();
+    expect(colour(root, '.branded .cngx-card', 'outline-color')).toEqual(rasterise(BLUE));
+    one(root, '.default .cngx-card').focus();
+    expect(colour(root, '.default .cngx-card', 'outline-color')).toEqual(rasterise(EMBER));
+  });
+
+  it('paints the primary badge with the primary in scope', () => {
+    const root = mountPrimary();
+    const badge = '.cngx-card__badge--intent-primary';
+    expect(colour(root, `.branded ${badge}`, 'background-color')).toEqual(rasterise(BLUE));
+    expect(colour(root, `.default ${badge}`, 'background-color')).toEqual(rasterise(EMBER));
   });
 });

@@ -42,13 +42,14 @@ export const STORY: DemoSpec = {
     this.dirtyDescription.set('');
     setDirty(false);
   }`,
-  template: `  <div class="kbd-hint">
-    <strong>How it works:</strong>
-    <span>The trigger input drives the entry <strong>name</strong> (term). The panel-body input is an optional <strong>note</strong> that demonstrates the dirty-guard.</span>
-    <span>1. Type a name in the trigger above (e.g. "Mobile")</span>
-    <span>2. Optional: add a note in the panel body - this flips <code>dirty</code></span>
-    <span>3. Try <kbd>Esc</kbd> or click-outside while dirty - the panel stays open</span>
-    <span>4. Press <kbd>Cancel</kbd> (also clears the note) or <kbd>Create</kbd> to release</span>
+  template: `  <div class="demo-hint">
+    <p>The trigger input holds the project <strong>name</strong>. The note in the panel is optional and drives the dirty guard.</p>
+    <ol>
+      <li>Type a name in the trigger (e.g. "Mobile").</li>
+      <li>Add a note in the panel - this flips <code>dirty</code>.</li>
+      <li>Click outside while dirty - the panel stays open. <kbd>Esc</kbd> clears the note, a second <kbd>Esc</kbd> closes.</li>
+      <li><kbd>Cancel</kbd> clears the note and closes; <kbd>Create</kbd> adds the project.</li>
+    </ol>
   </div>
 
   <cngx-action-select
@@ -65,6 +66,7 @@ export const STORY: DemoSpec = {
       cngxSelectAction
       let-term
       let-commit="commit"
+      let-close="close"
       let-pending="isPending"
       let-dirty="dirty"
       let-setDirty="setDirty"
@@ -82,8 +84,8 @@ export const STORY: DemoSpec = {
         <label class="demo-label" for="dirty-note-input">Optional note</label>
         <input
           id="dirty-note-input"
-          #dirtyInput
           type="text"
+          [value]="dirty ? dirtyDescription() : ''"
           (input)="handleDirtyInput($any($event.target).value, setDirty)"
           placeholder="Anything you want to remember…"
           class="demo-mini-form-input"
@@ -91,7 +93,7 @@ export const STORY: DemoSpec = {
         <div class="demo-mini-form-actions">
           <button
             type="button"
-            (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
+            (click)="handleDirtyCancel(setDirty); close()"
             class="demo-mini-form-btn demo-mini-form-btn--ghost"
           >
             Cancel

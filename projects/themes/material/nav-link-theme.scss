@@ -41,8 +41,6 @@
   } @else {
     $_primary: mat.get-theme-color($theme, primary);
 
-    --cngx-nav-link-color: rgba(0, 0, 0, 0.65);
-    --cngx-nav-link-hover-color: rgba(0, 0, 0, 0.87);
     --cngx-nav-link-hover-bg: #{rgba($_primary, 0.04)};
     --cngx-nav-link-pressed-bg: #{rgba($_primary, 0.06)};
     --cngx-nav-link-active-color: #{$_primary};
