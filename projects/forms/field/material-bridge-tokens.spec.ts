@@ -156,6 +156,23 @@ describe('field Material bridge', () => {
     expect(v0).toMatch(/--cngx-field-char-count-over-color: #[0-9a-f]{6};/);
   });
 
+  // mat-form-field fill draws its resting line in secondary-text, which is
+  // not the same alpha in both theme types.
+  it('draws the M2 resting underline at 54% light and 70% dark', () => {
+    const underline = (scheme: 'light' | 'dark'): string | undefined =>
+      compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/field-theme' as bridge;
+$theme: mat.m2-define-${scheme}-theme((color: (
+  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+  accent: mat.m2-define-palette(mat.$m2-pink-palette),
+)));
+@include bridge.theme($theme);
+`).match(/--cngx-field-underline-color: ([^;]+);/)?.[1];
+    expect(underline('light')).toBe('rgba(0, 0, 0, 0.54)');
+    expect(underline('dark')).toBe('rgba(255, 255, 255, 0.7)');
+  });
+
   // The box class is the stable hook; the affix-row class only survives as a
   // deprecated alias and must not be what the bridge depends on.
   it('keys the skin tokens on the field box class', () => {

@@ -63,7 +63,8 @@
     --cngx-field-fill-bg: #{bridge.m2-field-fill($theme)};
     --cngx-field-fill-bg-hover: #{bridge.m2-field-fill-hover($theme)};
     --cngx-field-placeholder-color: #{bridge.m2-field-placeholder($theme)};
-    --cngx-field-underline-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    // The resting line of mat-form-field fill: 54% light, 70% dark.
+    --cngx-field-underline-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
     --cngx-field-underline-focus-color: #{mat.get-theme-color($theme, primary)};
     --cngx-field-ring-color: #{mat.get-theme-color($theme, primary)};
     --cngx-field-affix-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
