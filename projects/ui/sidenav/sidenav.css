@@ -96,11 +96,15 @@
  *
  * The nav row fills need no hook: they are one accent mixed over
  * transparent, so they follow the scheme through the surface beneath.
- * Three hooks deepen the expanded-rail shadow:
+ * Three hooks deepen the peek and overlay shadow, on the root or on any
+ * island around the rail:
  *
  * - `prefers-color-scheme: dark`
  * - `[data-color-scheme="dark"]`
  * - `.dark` class
+ *
+ * The shadow falls toward the content: an end rail and an RTL rail cast it
+ * to the inline start.
  *
  * **Pair with**
  *
@@ -203,13 +207,14 @@
   }
 
   /**
-   * Drop-shadow applied while the collapsed rail peeks over content.
+   * Drop-shadow applied while the collapsed rail peeks over content. Unset
+   * by default: the rail casts a 12px shadow toward the content, deeper in a
+   * dark scheme or island.
    * @group Variant / Mini
    */
   @property --cngx-sidenav-expanded-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
   }
 
   /**
@@ -350,13 +355,13 @@
   /**
    * Drop-shadow of an open overlay rail (the `compact` drawer and the full
    * nav over the `medium` rail), so it reads as a layer over the content
-   * rather than a third column. Defaults to `--cngx-sidenav-expanded-shadow`.
+   * rather than a third column. Unset by default: falls back to
+   * `--cngx-sidenav-expanded-shadow`, then to the rail's own shadow.
    * @group State / Over
    */
   @property --cngx-sidenav-overlay-shadow {
     syntax: '*';
     inherits: true;
-    initial-value: 4px 0 12px oklch(0 0 0 / 0.1);
   }
 
   /**
@@ -370,33 +375,30 @@
   }
 
   /*
-   * Default-theme palette pass for the shadows: the expanded shadow flips per
-   * scheme below. Surface and border are not SET here: a :root SET resolves
-   * the foundation token once at the root and a scheme island would inherit
-   * it; the reading rules fall back on the rail instead. The nav-link tokens
-   * are SET on the cngx-sidenav host, so a host-scoped accent reaches them,
-   * and their primary tints follow the scheme through the surface they
-   * composite over, with no per-scheme hook.
+   * Shadow tint per scheme. Only the tint is SET here: it is a plain colour,
+   * so resolving it on the scheme element is right, while the offset depends
+   * on the rail and is SET there. The scheme selectors match the root and any
+   * island, as in core system-tokens.css. Surface, border and ink are not SET
+   * at all: the reading rules fall back on the rail.
    */
   :root {
-    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
-    --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
+    --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.1);
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-color-scheme='light']):not(.light) {
-      --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+      --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.45);
     }
   }
 
-  :root[data-color-scheme='dark'],
-  :root.dark {
-    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.45);
+  [data-color-scheme='dark'],
+  .dark {
+    --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.45);
   }
 
-  :root[data-color-scheme='light'],
-  :root.light {
-    --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
+  [data-color-scheme='light'],
+  .light {
+    --_cngx-sidenav-shadow-tint: oklch(0 0 0 / 0.1);
   }
 }
 
@@ -559,11 +561,29 @@
   cngx-sidenav.cngx-sidenav--over.cngx-sidenav--open {
     transform: translateX(0);
     visibility: visible;
-    box-shadow: var(--cngx-sidenav-overlay-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
+    box-shadow: var(
+      --cngx-sidenav-overlay-shadow,
+      var(
+        --cngx-sidenav-expanded-shadow,
+        var(--_cngx-sidenav-shadow-x, 4px) 0 12px
+          var(--_cngx-sidenav-shadow-tint, oklch(0 0 0 / 0.1))
+      )
+    );
     transition:
       transform var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
       visibility 0s 0s;
+  }
+
+  /* The default shadow falls toward the content: the inline start for an end
+     rail, mirrored again under RTL. */
+  cngx-sidenav.cngx-sidenav--end,
+  cngx-sidenav:dir(rtl) {
+    --_cngx-sidenav-shadow-x: -4px;
+  }
+
+  cngx-sidenav.cngx-sidenav--end:dir(rtl) {
+    --_cngx-sidenav-shadow-x: 4px;
   }
 
   /* Side mode: in flex flow */
@@ -602,7 +622,10 @@
    * edge facing the content keeps the flex footprint at the rail width.
    */
   cngx-sidenav[data-sidebar-state='peek'] {
-    box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
+    box-shadow: var(
+      --cngx-sidenav-expanded-shadow,
+      var(--_cngx-sidenav-shadow-x, 4px) 0 12px var(--_cngx-sidenav-shadow-tint, oklch(0 0 0 / 0.1))
+    );
   }
 
   cngx-sidenav.cngx-sidenav--start {

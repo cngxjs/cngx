@@ -28,6 +28,9 @@ import { CngxSidenavLayout } from './sidenav-layout';
       <cngx-sidenav class="island-rail" mode="side" [opened]="true" ariaLabel="Island">
         <span class="ring-probe">Inbox</span>
       </cngx-sidenav>
+      <cngx-sidenav class="island-end" position="end" mode="side" [opened]="true" ariaLabel="End">
+        Inbox
+      </cngx-sidenav>
       <span
         class="island-probe"
         style="
@@ -36,6 +39,17 @@ import { CngxSidenavLayout } from './sidenav-layout';
           color: var(--cngx-color-text);
         "
       ></span>
+    </div>
+    <cngx-sidenav class="page-rail" mode="side" [opened]="true" ariaLabel="Page"
+      >Inbox</cngx-sidenav
+    >
+    <div dir="rtl">
+      <cngx-sidenav class="rtl-rail" mode="side" [opened]="true" ariaLabel="RTL"
+        >Inbox</cngx-sidenav
+      >
+      <cngx-sidenav class="rtl-end" position="end" mode="side" [opened]="true" ariaLabel="RTL end">
+        Inbox
+      </cngx-sidenav>
     </div>
     <div class="bridge-probe">
       <cngx-sidenav-layout>
@@ -125,6 +139,32 @@ describe('CngxSidenav scheme island', () => {
       });
     });
   }
+
+  // The peek casts the expanded shadow; the state is the sidebar's attribute.
+  function peekShadow(root: HTMLElement, selector: string): { x: string; tint: string } {
+    const rail = el(root, selector);
+    rail.setAttribute('data-sidebar-state', 'peek');
+    const shadow = getComputedStyle(rail).boxShadow;
+    const match = /^(.*\)) (-?\d+px) 0px 12px/.exec(shadow);
+    if (!match) {
+      throw new Error(`${selector} casts no expanded shadow: ${shadow}`);
+    }
+    return { tint: match[1], x: match[2] };
+  }
+
+  it('deepens the peek shadow inside a dark island and keeps it light on a light page', () => {
+    const root = mount();
+    expect(peekShadow(root, '.island-rail').tint).toContain('0.45');
+    expect(peekShadow(root, '.page-rail').tint).toContain('0.1');
+  });
+
+  it('casts the shadow toward the content for start, end and RTL rails', () => {
+    const root = mount();
+    expect(peekShadow(root, '.page-rail').x).toBe('4px');
+    expect(peekShadow(root, '.island-end').x).toBe('-4px');
+    expect(peekShadow(root, '.rtl-rail').x).toBe('-4px');
+    expect(peekShadow(root, '.rtl-end').x).toBe('4px');
+  });
 
   it('keeps the Material surface on a rail inside a bridged layout', () => {
     const root = mount();
