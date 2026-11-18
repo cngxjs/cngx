@@ -22,6 +22,7 @@ import {
 } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
+import { claimEscape, escapeOwnedAbove } from '../drawer/escape-layer';
 import { injectLayoutI18n } from '../i18n/layout-i18n';
 import {
   CNGX_PANEL_TARGET,
@@ -154,7 +155,7 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
     '[style.margin-inline-end]': "side() === 'start' ? peekOffset() : null",
     '[style.margin-inline-start]': "side() === 'end' ? peekOffset() : null",
     '[style.z-index]': "peeked() ? 'var(--cngx-sidebar-peek-z-index, 2)' : null",
-    '(keydown.escape)': 'handleEscape()',
+    '(keydown.escape)': 'handleEscape($event)',
     '(focusout)': 'handleFocusOut($event)',
   },
 })
@@ -402,10 +403,18 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
     return ids.includes(this.id());
   }
 
-  protected handleEscape(): void {
-    if (this.peeked()) {
-      this.unpeek();
+  // One Escape dismisses one layer: an open popover inside the host or an
+  // inner surface goes first. A driven peek is the composer's to dismiss, so
+  // its Escape stays unclaimed for the composer's own surface.
+  protected handleEscape(event: Event): void {
+    if (!this.peeked() || escapeOwnedAbove(event, this.host)) {
+      return;
     }
+    if (this.driver()?.sidebarPeek?.()) {
+      return;
+    }
+    claimEscape(event);
+    this.unpeek();
   }
 
   protected handleFocusOut(event: FocusEvent): void {
