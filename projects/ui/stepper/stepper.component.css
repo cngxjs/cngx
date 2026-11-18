@@ -197,19 +197,17 @@
    */
 
   /**
-   * Resolved fill of the active indicator disc. Defaults to the
-   * cngx ember primary (matching `--cngx-color-primary`). Consumers
+   * Resolved fill of the active indicator disc. Unset by default, so
+   * the disc paints the `--cngx-color-primary` in scope. Consumers
    * override via `--cngx-step-active-fill` directly, or upstream
    * via `--cngx-step-active-color` (the consuming rule's `var()`
-   * chain threads through both). Baked-in fallback matches the
-   * cngx primary so the un-themed disc fits the foundation palette.
+   * chain threads through both).
    * @group State / Active
    * @see [[--cngx-step-active-color]]
    */
   @property --cngx-step-active-fill {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -398,14 +396,20 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
-      background: var(--cngx-step-active-color, var(--cngx-step-active-fill));
+      background: var(
+        --cngx-step-active-color,
+        var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
       background: var(
         --cngx-step-pending-color,
-        var(--cngx-step-active-color, var(--cngx-step-active-fill))
+        var(
+          --cngx-step-active-color,
+          var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+        )
       );
       animation: cngx-stepper-pulse 1.2s ease-in-out infinite;
     }
@@ -486,7 +490,6 @@
   @property --cngx-step-linear-dot-fill {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -508,7 +511,6 @@
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -564,7 +566,6 @@
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -716,7 +717,6 @@
   @property --cngx-step-connector-pending-color {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -950,8 +950,14 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
-      background: var(--cngx-step-linear-dot-fill, var(--cngx-step-active-fill, currentColor));
-      border-color: var(--cngx-step-linear-dot-fill, var(--cngx-step-active-fill, currentColor));
+      background: var(
+        --cngx-step-linear-dot-fill,
+        var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
+      border-color: var(
+        --cngx-step-linear-dot-fill,
+        var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+      );
     }
 
     /* Completed = filled success dot. A check glyph at this dot size is
@@ -1178,7 +1184,10 @@
        surfaces commit-in-flight via `aria-busy='true'` on the target step;
        `data-state` stays at its terminal value (idle/success/error). */
     .cngx-stepper__step + .cngx-stepper__step[aria-busy='true']::before {
-      background-color: var(--cngx-step-connector-pending-color);
+      background-color: var(
+        --cngx-step-connector-pending-color,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
     }
 
     /* Target step rejected (commit failed) -> leading rail red. cngx
@@ -1267,7 +1276,10 @@
     }
 
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__status-pill {
-      background: var(--cngx-step-status-pill-bg-in-progress);
+      background: var(
+        --cngx-step-status-pill-bg-in-progress,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
       color: var(--cngx-step-status-pill-color, oklch(1 0 0));
     }
 
@@ -1433,7 +1445,10 @@
     }
 
     .cngx-stepper__step[aria-current='step'] {
-      background: var(--cngx-step-chevron-tile-active);
+      background: var(
+        --cngx-step-chevron-tile-active,
+        var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
       color: var(--cngx-step-chevron-tile-color, oklch(1 0 0));
     }
 
@@ -1620,7 +1635,10 @@
     .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
       background: var(
         --cngx-step-pill-segment-indicator-active-bg,
-        var(--cngx-step-active-color, var(--cngx-step-active-fill))
+        var(
+          --cngx-step-active-color,
+          var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+        )
       );
       color: var(
         --cngx-step-pill-segment-indicator-active-color,
@@ -2030,7 +2048,10 @@
 @layer cngx.tokens {
   :where(.cngx-stepper) {
     --cngx-dot-step-completed-fill: var(--cngx-step-completed-color, currentColor);
-    --cngx-dot-step-active-fill: var(--cngx-step-active-fill, currentColor);
+    --cngx-dot-step-active-fill: var(
+      --cngx-step-active-fill,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
   }
 }
 
@@ -2114,7 +2135,10 @@
 }
 
 .cngx-stepper__mobile-dot--active {
-  background: var(--cngx-dot-step-active-fill, var(--cngx-step-active-fill, currentColor));
+  background: var(
+    --cngx-dot-step-active-fill,
+    var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+  );
   transform: scale(1.25);
 }
 

@@ -664,7 +664,7 @@
     border-radius: 50%;
     background: var(--cngx-paginator-rail-knob-bg, oklch(1 0 0));
     border: var(--cngx-paginator-rail-knob-border-width, 2px) solid
-      var(--cngx-paginator-rail-knob-border-color, oklch(0.66 0.19 50));
+      var(--cngx-paginator-rail-knob-border-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     transform: translate(-50%, -50%);
     transition: inset-inline-start var(--cngx-paginator-motion-duration, 200ms)
       cubic-bezier(0.3, 0.7, 0, 1);

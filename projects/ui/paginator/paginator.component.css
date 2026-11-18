@@ -257,9 +257,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-paginator-rail-knob-border-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxStep } from '@cngx/common/stepper';
-import { computedValue, containerState } from '@cngx/testing/geometry';
+import { computedValue, containerState, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxStepper } from './stepper.component';
@@ -52,6 +52,31 @@ class ChevronStepperHost {}
   `,
 })
 class VerticalChevronStepperHost {}
+
+type PrimarySkin = 'classic' | 'linear-minimal' | 'stripe-status-rich' | 'path-chevron';
+
+@Component({
+  selector: 'cngx-stepper-primary-host',
+  standalone: true,
+  imports: [CngxStepper, CngxStep],
+  template: `
+    <div class="default">
+      <cngx-stepper aria-label="Default" [skin]="skin()" [connectors]="true">
+        <div cngxStep label="A">Panel A</div>
+        <div cngxStep label="B">Panel B</div>
+      </cngx-stepper>
+    </div>
+    <div class="branded" style="--cngx-color-primary: oklch(0.55 0.15 250)">
+      <cngx-stepper aria-label="Branded" [skin]="skin()" [connectors]="true">
+        <div cngxStep label="A">Panel A</div>
+        <div cngxStep label="B">Panel B</div>
+      </cngx-stepper>
+    </div>
+  `,
+})
+class PrimaryStepperHost {
+  readonly skin = input<PrimarySkin>('classic');
+}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -184,5 +209,79 @@ describe('CngxStepper path-chevron direction', () => {
     // no :dir(rtl) override, so it must render identically. This is the guard
     // that a future blanket mirror does not touch the neutral skin.
     expect(computedValue(mid, 'clip-path')).toBe(ltr);
+  });
+});
+
+// The active-state fills fall back to the primary at the use site; a registered
+// initial-value would shadow that fallback and paint Ember under any brand.
+describe('CngxStepper primary tokens', () => {
+  const BLUE = 'oklch(0.55 0.15 250)';
+  const EMBER = 'oklch(0.66 0.19 50)';
+
+  function mountSkin(skin: PrimarySkin): HTMLElement {
+    const fixture = TestBed.createComponent(PrimaryStepperHost);
+    fixture.componentRef.setInput('skin', skin);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+
+  function one(root: HTMLElement, selector: string): HTMLElement {
+    const el = root.querySelector<HTMLElement>(selector);
+    if (!el) {
+      throw new Error(`${selector} did not render`);
+    }
+    return el;
+  }
+
+  // Reads the same paint in the default and the branded stepper.
+  function expectPrimary(read: (scope: string) => string): void {
+    expect(rasterise(read('.branded'))).toEqual(rasterise(BLUE));
+    expect(rasterise(read('.default'))).toEqual(rasterise(EMBER));
+  }
+
+  const ACTIVE = ".cngx-stepper__step[aria-current='step']";
+
+  it('fills the classic active disc with the primary in scope', () => {
+    const root = mountSkin('classic');
+    expectPrimary((scope) =>
+      computedValue(one(root, `${scope} ${ACTIVE} .cngx-stepper__indicator`), 'background-color'),
+    );
+  });
+
+  it('derives the mobile active dot fill from the primary in scope', () => {
+    const root = mountSkin('classic');
+    expectPrimary((scope) =>
+      computedValue(one(root, `${scope} cngx-stepper`), '--cngx-dot-step-active-fill'),
+    );
+  });
+
+  it('paints the pending connector with the primary in scope', () => {
+    const root = mountSkin('classic');
+    expectPrimary((scope) => {
+      const target = one(root, `${scope} .cngx-stepper__step + .cngx-stepper__step`);
+      target.setAttribute('aria-busy', 'true');
+      return getComputedStyle(target, '::before').backgroundColor;
+    });
+  });
+
+  it('fills the linear-minimal active dot with the primary in scope', () => {
+    const root = mountSkin('linear-minimal');
+    expectPrimary((scope) =>
+      computedValue(one(root, `${scope} ${ACTIVE} .cngx-stepper__indicator`), 'background-color'),
+    );
+  });
+
+  it('fills the stripe-status-rich in-progress pill with the primary in scope', () => {
+    const root = mountSkin('stripe-status-rich');
+    expectPrimary((scope) =>
+      computedValue(one(root, `${scope} ${ACTIVE} .cngx-stepper__status-pill`), 'background-color'),
+    );
+  });
+
+  it('fills the path-chevron active tile with the primary in scope', () => {
+    const root = mountSkin('path-chevron');
+    expectPrimary((scope) => computedValue(one(root, `${scope} ${ACTIVE}`), 'background-color'));
   });
 });

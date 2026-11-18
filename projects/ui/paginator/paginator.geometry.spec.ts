@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue, containerState } from '@cngx/testing/geometry';
+import { computedValue, containerState, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
@@ -14,6 +14,7 @@ import {
   CngxPaginatorPageSize,
   CngxPaginatorPages,
   CngxPaginatorPrev,
+  CngxPaginatorRail,
   CngxPaginatorRange,
   CngxPaginatorStatus,
 } from '@cngx/ui/paginator';
@@ -59,6 +60,23 @@ import {
   `,
 })
 class PaginatorHost {}
+
+@Component({
+  selector: 'cngx-paginator-rail-host',
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorRail],
+  template: `
+    <cngx-paginator class="rail-default" skin="rail" aria-label="Default" [total]="100">
+      <cngx-pgn-rail />
+    </cngx-paginator>
+    <div style="--cngx-color-primary: oklch(0.55 0.15 250)">
+      <cngx-paginator class="rail-branded" skin="rail" aria-label="Branded" [total]="100">
+        <cngx-pgn-rail />
+      </cngx-paginator>
+    </div>
+  `,
+})
+class RailPaginatorHost {}
 
 let mountedRoot: HTMLElement | null = null;
 
@@ -426,5 +444,27 @@ describe('CngxPaginator default glyphs', () => {
       const icon = glyph(rtl, selector).svg.closest('.cngx-icon');
       expect(icon && computedValue(icon, 'transform')).toBe('matrix(-1, 0, 0, 1, 0, 0)');
     }
+  });
+});
+
+// The rail knob ring falls back to the primary at the use site; a registered
+// initial-value would shadow that fallback and paint Ember under any brand.
+describe('CngxPaginator rail knob', () => {
+  it('rings the knob with the primary in scope', () => {
+    const fixture = TestBed.createComponent(RailPaginatorHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const ring = (selector: string): string => {
+      const knob = (mountedRoot as HTMLElement).querySelector(
+        `${selector} .cngx-paginator__rail-knob`,
+      );
+      if (!knob) {
+        throw new Error(`${selector} rail knob did not render`);
+      }
+      return computedValue(knob, 'border-top-color');
+    };
+    expect(rasterise(ring('.rail-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
+    expect(rasterise(ring('.rail-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
   });
 });
