@@ -44,9 +44,10 @@ export const STORY: DemoSpec = {
   }`,
   template: `  <div class="kbd-hint">
     <strong>Try it:</strong>
-    <span>Open + type in the note field → dirty</span>
-    <span><kbd>Esc</kbd> fires cancel (resets dirty, keeps panel open)</span>
+    <span>Type a tag name in the trigger, then a note in the panel → dirty</span>
+    <span><kbd>Esc</kbd> clears the note, a second <kbd>Esc</kbd> closes</span>
     <span>Click outside - blocked while dirty</span>
+    <span><kbd>Cancel</kbd> clears and closes</span>
   </div>
 
   <cngx-action-multi-select
@@ -61,6 +62,7 @@ export const STORY: DemoSpec = {
       cngxSelectAction
       let-term
       let-commit="commit"
+      let-close="close"
       let-pending="isPending"
       let-dirty="dirty"
       let-setDirty="setDirty"
@@ -76,8 +78,8 @@ export const STORY: DemoSpec = {
           @if (dirty) { <span class="demo-mini-form-marker">· unsaved</span> }
         </div>
         <input
-          #dirtyNoteInput
           type="text"
+          [value]="dirty ? dirtyNote() : ''"
           (input)="handleDirtyInput($any($event.target).value, setDirty)"
           placeholder="Note (optional)…"
           aria-label="Tag note"
@@ -86,7 +88,7 @@ export const STORY: DemoSpec = {
         <div class="demo-mini-form-actions">
           <button
             type="button"
-            (click)="handleDirtyCancel(setDirty); dirtyNoteInput.value = ''"
+            (click)="handleDirtyCancel(setDirty); close()"
             class="demo-mini-form-btn demo-mini-form-btn--ghost"
           >
             Cancel

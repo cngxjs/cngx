@@ -2927,6 +2927,10 @@ pre.code-block code {
   cursor: pointer;
   font: inherit;
 }
+.demo-mini-form-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 .demo-mini-form-btn--ghost {
   background: transparent;
   border: 1px solid var(--cngx-color-border, #cbd5e1);
