@@ -796,4 +796,12 @@ test.describe('material-bridge rendered values: field metrics', () => {
     expect(await computedValue(page, '#fill', 'border-top-left-radius')).toBe('4px');
     expect(await computedValue(page, '#fill', 'border-bottom-left-radius')).toBe('0px');
   });
+
+  // The box formula is line + 2 * padding + 2 * edge, so the padding has to
+  // give back the edge the box actually draws, not a fixed 1px.
+  test('box and fill keep 56px under a wider field edge', async ({ page }) => {
+    await page.addStyleTag({ content: ':root { --cngx-field-border-width: 2px; }' });
+    expect(await height(page, '#box')).toBe(56);
+    expect(await height(page, '#fill')).toBe(56);
+  });
 });

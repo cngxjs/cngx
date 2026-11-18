@@ -108,14 +108,17 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count
   }
   // The affix box and the fill skin read --cngx-field-padding-block, SET from
   // the scale in an `@scope` `:scope` rule (0,1,0); these selectors outrank
-  // it. The box radius sits in a scoped `:scope[data-skin='outline']` rule
-  // (0,2,0), and a scoped rule wins a specificity tie, so the class is
-  // doubled. The fill keeps its own 4px-top radius, which is already M3's.
+  // it. Their edge is --cngx-field-border-width, so the padding gives that
+  // back; the lone control's edge is a fixed 1px in cngx.base. The box radius
+  // sits in a scoped `:scope[data-skin='outline']` rule (0,2,0), and a scoped
+  // rule wins a specificity tie, so the class is doubled. The fill keeps its own 4px-top radius, which is already M3's.
   // The bare skin has no Material twin and stays compact for table cells.
   @layer cngx.components {
     :is(input, textarea, select)[data-skin='fill'],
     .cngx-field-box:is([data-skin='fill'], [data-skin='outline']) {
-      --cngx-field-padding-block: calc(var(--cngx-space-md, 16px) - 1px);
+      --cngx-field-padding-block: calc(
+        var(--cngx-space-md, 16px) - var(--cngx-field-border-width, 1px)
+      );
     }
     .cngx-field-box.cngx-field-box[data-skin='outline'] {
       border-radius: 4px; // var(--mat-sys-corner-extra-small)
