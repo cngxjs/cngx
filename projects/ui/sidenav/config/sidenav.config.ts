@@ -11,13 +11,13 @@ import type { Signal } from '@angular/core';
  *   3. `provideSidenavConfig(...)` at the application root.
  *   4. Library defaults (merged in via `CNGX_SIDENAV_DEFAULTS`).
  *
- * Every key is optional - partial overrides deep-merge with the library
- * defaults, so consumers declare only the keys they want to override. The
- * `dimensions`, `hover`, and `routerSync` sub-trees are one level deep
- * (spread-merged per key); `shortcut` is a flat top-level scalar.
+ * Every key is optional, so consumers declare only the keys they want to
+ * override. `dimensions`, `hover` and `routerSync` merge per key with the
+ * level above; `shortcut`, `labels` and `persistence` replace it whole.
  *
  * The cascaded keys are the dimension inputs, the rail hover dwell, the
- * `shortcut` default, and the router-sync `param`. `ariaLabel`, `position`,
+ * `shortcut` default, the router-sync `param`, the copy and the `collapsed`
+ * persistence. `ariaLabel`, `position`,
  * and `mode` stay per-instance only, since they describe an individual rail
  * rather than an app-wide default. The docking threshold behind `mode="auto"`
  * is deliberately not here: it lives in `sidenav-layout.css` as a
@@ -127,4 +127,6 @@ export interface CngxSidenavLabels {
   readonly collapsedAnnouncement: string;
   /** Spoken when the toggle hotkey shows the full nav. */
   readonly expandedAnnouncement: string;
+  /** Description of the toggle shortcut in the hotkey help list. */
+  readonly toggleShortcut: string;
 }

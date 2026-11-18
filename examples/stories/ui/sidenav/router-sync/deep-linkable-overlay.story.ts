@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A sidenav overlay whose open state lives in the URL. Add <code>[cngxSidenavRouterSync]</code> to an <code>over</code>-mode sidenav and its open state deep-links to <code>?nav=open</code>. Opening writes the param, an initial <code>?nav=open</code> hydrates it open, closing removes it, and browser back/forward re-hydrates. The directive reaches the rail through the <code>CNGX_SIDENAV</code> contract token and calls the shared <code>injectQueryParamSync</code> kernel.',
   description:
-    'Open the menu, then check the URL for ?nav=open - share or reload that URL to reopen the menu. The param default cascades: per-instance [param] wins, then withSidenavRouterSync({ param }), then the "nav" literal.',
+    'Open the menu, then check the URL for ?nav=open - share or reload that URL to reopen the menu. No [param] is bound, so the start rail uses the default "nav" key.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'building-block',
@@ -13,7 +13,7 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxSidenavRouterSync', 'CngxSidenav'],
   moduleImports: [
     "import { signal } from '@angular/core';",
-    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavRouterSync } from '@cngx/ui';",
+    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavRouterSync } from '@cngx/ui/sidenav';",
     'import { CngxNavHeader } from \'@cngx/common/interactive\';',
     "import { CngxNavLink } from '@cngx/common';",
     "import { CngxTag } from '@cngx/common/display';",

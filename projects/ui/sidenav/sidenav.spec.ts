@@ -1553,7 +1553,7 @@ describe('CngxSidenav toggle hotkey', () => {
     expect(fixture.componentInstance.startOpen()).toBe(false);
   });
 
-  it('registers under the remap id sidenav.toggle, unlisted', () => {
+  it('registers under the remap id sidenav.toggle, listed with the toggleShortcut label', () => {
     const sources: Signal<readonly CngxHotkeyBinding[]>[] = [];
     TestBed.configureTestingModule({
       providers: [
@@ -1580,7 +1580,10 @@ describe('CngxSidenav toggle hotkey', () => {
     // The source is live: read it once the shortcut input has bound.
     const binding = sources.flatMap((source) => source()).find((b) => b.id === 'sidenav.toggle');
     expect(binding).toBeDefined();
-    expect(binding?.description).toBeUndefined();
+    const description = binding?.description;
+    expect(typeof description === 'function' ? description() : description).toBe(
+      'Toggle navigation',
+    );
   });
 });
 

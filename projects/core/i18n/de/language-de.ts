@@ -462,6 +462,7 @@ export const CNGX_LANGUAGE_DE = {
     resizeValueText: '{value}',
     collapsedAnnouncement: 'Navigation eingeklappt',
     expandedAnnouncement: 'Navigation ausgeklappt',
+    toggleShortcut: 'Navigation ein- oder ausklappen',
   },
   speak: {
     readAloud: 'Vorlesen',

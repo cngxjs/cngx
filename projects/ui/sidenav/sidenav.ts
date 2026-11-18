@@ -239,7 +239,11 @@ export class CngxSidenav
    */
   private readonly cfg = injectSidenavConfig();
 
-  /** Logical position: `'start'` (default left in LTR) or `'end'` (right in LTR). */
+  /**
+   * Logical position: `'start'` (default left in LTR) or `'end'` (right in LTR).
+   * Layout projection and the persistence key read the static `position`
+   * attribute; a bound `[position]` moves the rail standalone only.
+   */
   readonly position = input<SidenavPosition>('start');
 
   /**
@@ -324,14 +328,14 @@ export class CngxSidenav
   /**
    * Minimum width constraint during resize. Use a px value: drag and keyboard
    * clamping (and `aria-valuemin`) resolve px only; a rem/ch constraint falls
-   * back to the 120px default for clamping and omits the ARIA value.
+   * back to the 120px default.
    */
   readonly minWidth = input<string>(this.cfg.dimensions?.minWidth ?? '120px');
 
   /**
    * Maximum width constraint during resize. Use a px value: drag and keyboard
    * clamping (and `aria-valuemax`) resolve px only; a rem/ch constraint falls
-   * back to the 600px default for clamping and omits the ARIA value.
+   * back to the 600px default.
    */
   readonly maxWidth = input<string>(this.cfg.dimensions?.maxWidth ?? '600px');
 
@@ -630,10 +634,13 @@ export class CngxSidenav
       }
       afterNextRender(() => this.announcer.announce(true), { injector });
     };
+    const toggleDescription = computed(() => this.labels().toggleShortcut);
     injectHotkeys(
       computed(() => {
         const combo = this.toggleCombo();
-        return combo ? [{ id: 'sidenav.toggle', combo, run: runToggle }] : [];
+        return combo
+          ? [{ id: 'sidenav.toggle', combo, description: toggleDescription, run: runToggle }]
+          : [];
       }),
     );
 

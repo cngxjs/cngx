@@ -466,6 +466,7 @@ export const CNGX_LANGUAGE_EN = {
     resizeValueText: '{value}',
     collapsedAnnouncement: 'Navigation collapsed',
     expandedAnnouncement: 'Navigation expanded',
+    toggleShortcut: 'Toggle navigation',
   },
   speak: {
     readAloud: 'Read aloud',
