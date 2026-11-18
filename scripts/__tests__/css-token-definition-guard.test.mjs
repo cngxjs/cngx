@@ -569,13 +569,6 @@ const ALLOWLIST = [
   },
   {
     rule: 'B',
-    token: '--cngx-paginator-current-border-color',
-    file: 'projects/common/data/paginate/styles/paginator-base.css',
-    reason:
-      'ui/paginator SETS the property on its host, so the fallback only matters for a bare common paginator, where transparent paints; out of feature area, follow-up',
-  },
-  {
-    rule: 'B',
     token: '--cngx-tab-overflow-bg',
     file: 'projects/ui/tabs/tab-overflow.component.css',
     reason:

@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 
+import { CngxRipple } from '@cngx/common/interactive';
 import {
   CngxPaginator,
   CngxPaginatorDots,
@@ -82,6 +83,7 @@ import {
     CngxPaginatorRail,
     CngxPaginatorDots,
     CngxPaginatorPageSize,
+    CngxRipple,
   ],
   styleUrl: './skins-coverage.component.scss',
   template: `
@@ -96,11 +98,11 @@ import {
           [pageSize]="pageSize()"
           (pageSizeChange)="pageSize.set($event)"
         >
-          <cngx-pgn-first />
-          <cngx-pgn-prev />
+          <cngx-pgn-first cngxRipple [rippleCentered]="true" />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-pages />
-          <cngx-pgn-next />
-          <cngx-pgn-last />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
+          <cngx-pgn-last cngxRipple [rippleCentered]="true" />
           <cngx-pgn-range />
         </cngx-paginator>
       </section>
@@ -116,9 +118,9 @@ import {
           [pageSize]="pageSize()"
           (pageSizeChange)="pageSize.set($event)"
         >
-          <cngx-pgn-prev />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-status />
-          <cngx-pgn-next />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
         </cngx-paginator>
       </section>
 
@@ -132,11 +134,11 @@ import {
           [pageSize]="pageSize()"
           (pageSizeChange)="pageSize.set($event)"
         >
-          <cngx-pgn-first />
-          <cngx-pgn-prev />
+          <cngx-pgn-first cngxRipple [rippleCentered]="true" />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-pages />
-          <cngx-pgn-next />
-          <cngx-pgn-last />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
+          <cngx-pgn-last cngxRipple [rippleCentered]="true" />
         </cngx-paginator>
       </section>
 
@@ -150,9 +152,9 @@ import {
           [pageSize]="pageSize()"
           (pageSizeChange)="pageSize.set($event)"
         >
-          <cngx-pgn-prev />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-pages />
-          <cngx-pgn-next />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
         </cngx-paginator>
       </section>
 
@@ -166,10 +168,10 @@ import {
           [pageSize]="pageSize()"
           (pageSizeChange)="pageSize.set($event)"
         >
-          <cngx-pgn-prev />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-rail />
           <cngx-pgn-status />
-          <cngx-pgn-next />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
         </cngx-paginator>
       </section>
 
@@ -183,9 +185,9 @@ import {
           [pageSize]="pageSize()"
           (pageSizeChange)="pageSize.set($event)"
         >
-          <cngx-pgn-prev />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-dots />
-          <cngx-pgn-next />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
         </cngx-paginator>
       </section>
 
@@ -201,11 +203,11 @@ import {
         >
           <cngx-pgn-page-size [options]="sizes" />
           <cngx-pgn-range />
-          <cngx-pgn-first />
-          <cngx-pgn-prev />
+          <cngx-pgn-first cngxRipple [rippleCentered]="true" />
+          <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
           <cngx-pgn-pages />
-          <cngx-pgn-next />
-          <cngx-pgn-last />
+          <cngx-pgn-next cngxRipple [rippleCentered]="true" />
+          <cngx-pgn-last cngxRipple [rippleCentered]="true" />
         </cngx-paginator>
       </section>
 

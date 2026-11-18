@@ -164,6 +164,12 @@
     align-items: center;
   }
 
+  /* A single-button segment co-hosting `cngxRipple` clips the wave to the
+     button's shape: the ripple layer inherits the host radius. */
+  .cngx-paginator__segment.cngx-ripple {
+    border-radius: var(--cngx-paginator-button-radius, 0.375rem);
+  }
+
   /*
    * Nav button text label - the button's accessible name, visually hidden by
    * default so icon-only skins show just the chevron. Skins that want a labelled
@@ -235,7 +241,10 @@
   }
 
   .cngx-paginator__button:focus-visible {
-    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline: var(
+      --cngx-paginator-focus-ring,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
@@ -340,7 +349,10 @@
   }
 
   .cngx-paginator__goto-input:focus-visible {
-    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline: var(
+      --cngx-paginator-focus-ring,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 
@@ -620,7 +632,10 @@
   }
 
   .cngx-paginator__dot:focus-visible {
-    outline: var(--cngx-paginator-focus-ring, 2px solid currentColor);
+    outline: var(
+      --cngx-paginator-focus-ring,
+      2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
     outline-offset: var(--cngx-paginator-focus-offset, 2px);
   }
 

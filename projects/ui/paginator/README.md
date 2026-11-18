@@ -68,6 +68,16 @@ context needs.
 are identical across all seven. `density` (`compact` / `default` / `comfortable`)
 is orthogonal.
 
+The buttons do not ripple by default, like every cngx button. Co-host
+`cngxRipple` (`@cngx/common/interactive`) on a single-button segment and its
+button ripples, clipped to the button radius:
+
+```html
+<cngx-pgn-prev cngxRipple [rippleCentered]="true" />
+<cngx-pgn-next cngxRipple [rippleCentered]="true" />
+<cngx-pgn-load-more cngxRipple />
+```
+
 ## Reset and deep-linking
 
 `[resetOn]` jumps to the first page whenever its bound value changes - bind the

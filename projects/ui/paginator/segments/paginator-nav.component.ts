@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 
 import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
-import { CngxRipple } from '@cngx/common/interactive';
 import {
   CNGX_ICON_CHEVRON_LEFT,
   CNGX_ICON_CHEVRON_RIGHT,
@@ -70,7 +69,6 @@ const NAV_TEMPLATE = `
   <button
     type="button"
     class="cngx-paginator__button cngx-paginator__nav"
-    cngxRipple
     [attr.aria-disabled]="core.disabled() ? 'true' : null"
     (click)="core.activate()"
   >
@@ -98,7 +96,7 @@ const NAV_TEMPLATE = `
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
@@ -127,7 +125,7 @@ export class CngxPaginatorFirst {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
@@ -156,7 +154,7 @@ export class CngxPaginatorPrev {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
@@ -185,7 +183,7 @@ export class CngxPaginatorNext {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
