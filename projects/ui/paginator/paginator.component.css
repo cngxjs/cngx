@@ -581,9 +581,15 @@
   /*
    * Cross-skin default palette. The active fill and its label delegate to the
    * strong primary pair, the focus ring to the foundation primary; both carry
-   * their own light/dark values - so no colour-scheme block is needed for them.
+   * their own light/dark values. A registered colour resolves where it is
+   * declared, so the block repeats on every colour-scheme island: inside a
+   * `[data-color-scheme]` / `.dark` / `.light` subtree the paginator takes the
+   * island's primary, not the page's.
    */
-  :root {
+  :root,
+  [data-color-scheme],
+  .dark,
+  .light {
     --cngx-paginator-current-bg: var(
       --cngx-color-primary-strong,
       oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
