@@ -137,6 +137,18 @@
   }
 
   /**
+   * Minimum block size of each option row. The option floors it against
+   * `--cngx-target-min`, so a coarse pointer keeps its tap target.
+   * @group Layout
+   * @see [[--cngx-target-min]]
+   */
+  @property --cngx-option-min-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
    * Corner radius of each option.
    * @group Layout
    */
@@ -242,7 +254,7 @@
     /* Touch-target floor - each option is a tap target; floor its hit box to
        the pointer-derived minimum on the block axis. Inert at 0px on a fine
        pointer, so [data-density] still drives the natural row height. */
-    min-block-size: var(--cngx-target-min, 0px);
+    min-block-size: max(var(--cngx-option-min-height, 0px), var(--cngx-target-min, 0px));
   }
 
   .cngx-option--highlighted {

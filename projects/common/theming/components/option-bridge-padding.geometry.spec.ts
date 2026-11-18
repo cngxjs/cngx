@@ -8,8 +8,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 // Runs in a real Chromium (the `test-geometry` target) against the compiled
 // option Material bridge (option-bridge-padding.spec-host.scss). The listbox
 // skin SETs the option padding from the scale in the nested
-// `cngx.components.skin` layer, so the bridge value lands on a bare
-// `[cngxOption]`: M3 12px block / 16px inline at comfortable density.
+// `cngx.components.skin` layer, so the bridge values land on a bare
+// `[cngxOption]`. The twin is mat-option: no block padding, 16px inline, and
+// a 48px row from its min height at comfortable density.
 
 @Component({
   selector: 'cngx-option-bridge-padding-host',
@@ -48,12 +49,16 @@ afterEach(() => {
   mountedRoot = null;
 });
 
-describe('option Material bridge padding', () => {
-  it('pads a bare option with the M3 12px block inset', () => {
-    expect(computedValue(mountRow(), 'padding-top')).toBe('12px');
+describe('option Material bridge metrics', () => {
+  it('drops the block padding like mat-option', () => {
+    expect(computedValue(mountRow(), 'padding-top')).toBe('0px');
   });
 
-  it('pads a bare option with the M3 16px inline inset', () => {
+  it('pads a bare option with the 16px inline inset', () => {
     expect(computedValue(mountRow(), 'padding-left')).toBe('16px');
+  });
+
+  it('gives a bare option the 48px mat-option row', () => {
+    expect(mountRow().getBoundingClientRect().height).toBe(48);
   });
 });

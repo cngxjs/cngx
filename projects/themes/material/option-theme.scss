@@ -7,8 +7,9 @@
 // <mat-option> / <mat-list-option> sitting in a popover panel:
 //   - color: highlight = on-surface state-layer at 8%, selected =
 //     secondary-container (M3 filter-chip / mat-list-option selected fill)
-//   - density: padding rides the --cngx-space-* scale (M3 12px block /
-//     16px inline at comfortable; density-bridge.scss rescales the rungs)
+//   - density: the mat-option row (0 block / 16px inline padding, 48px
+//     min height at comfortable) as --cngx-space-* rungs, which
+//     density-bridge.scss rescales
 //   - base: corner-small for the option's own radius. Disabled needs no
 //     bridge: the option paints it as 38% of the text colour, which is M3's
 //     on-surface disabled emphasis once the system bridge maps the text
@@ -39,9 +40,12 @@
 }
 
 @mixin density($theme) {
-  // M3 option padding (mat-option / mat-list-option spec) as scale rungs, the
-  // same expression the select bridge uses for its rows.
-  --cngx-option-padding: calc(var(--cngx-space-sm, 8px) * 1.5) var(--cngx-space-md, 16px);
+  // mat-option takes its 48px from a min height, not from block padding; the
+  // height is the select bridge's row-height expression.
+  --cngx-option-padding: 0 var(--cngx-space-md, 16px);
+  --cngx-option-min-height: calc(
+    var(--mat-sys-body-large-line-height, 1.5rem) + 3 * var(--cngx-space-sm, 8px)
+  );
 }
 
 @mixin base($theme) {
