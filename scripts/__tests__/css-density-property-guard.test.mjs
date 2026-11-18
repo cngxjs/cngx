@@ -283,8 +283,9 @@ function hasNonSkinGatedScaleSet(css) {
   return false;
 }
 
+// Property names are ASCII case-insensitive, so `PADDING: 4px` is scanned too.
 const SPACING_DECLARATION =
-  /(?<![\w-])(gap|row-gap|column-gap|padding(?:-[a-z-]+)?)\s*:\s*([^;{}]+)(?=[;}])/g;
+  /(?<![\w-])(gap|row-gap|column-gap|padding(?:-[a-z-]+)?)\s*:\s*([^;{}]+)(?=[;}])/gi;
 const LENGTH_OR_ZERO = /^(?:0|[0-9.]+(?:px|rem|em|pt|ch|vw|vh|%))$/i;
 const NUMBER = /^[0-9.]+$/;
 const NON_ZERO = /[1-9]/;
@@ -475,6 +476,13 @@ describe('literal spacing detection (rule c)', () => {
     expect(
       literalSpacingDeclarations('.d3 { padding: 8px ! important; } .d4 { padding: 8PX; }'),
     ).toEqual(['padding: 8px ! important', 'padding: 8PX']);
+  });
+
+  // CSS property names are ASCII case-insensitive: PADDING is padding.
+  it('flags a property name in any case', () => {
+    expect(
+      literalSpacingDeclarations('.d9 { PADDING: 4px; Gap: 8px; Padding-Inline: 2px 0; }'),
+    ).toEqual(['PADDING: 4px', 'Gap: 8px', 'Padding-Inline: 2px 0']);
   });
 
   it('flags pt, ch, vw, vh and % lengths (probe d05)', () => {
