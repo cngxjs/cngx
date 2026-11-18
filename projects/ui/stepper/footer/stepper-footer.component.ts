@@ -42,7 +42,8 @@ const REGIONS =
  * **Keeps focus in a region when its control is replaced:** \
  * When the focused control of a region leaves the DOM (Continue swapped
  * for Finish by an `@if`) and focus fell to `body`, the footer focuses
- * the first focusable control of the same region after that render.
+ * the first focusable control of the same region after that render. Focus
+ * the user had already moved out of the footer stays where it is.
  *
  * ```html
  * <cngx-stepper #s="cngxStepper"> … </cngx-stepper>
@@ -72,7 +73,11 @@ const REGIONS =
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxStepperFooter',
-  host: { class: 'cngx-stepper-footer', '(focusin)': 'trackFocus($event)' },
+  host: {
+    class: 'cngx-stepper-footer',
+    '(focusin)': 'trackFocus($event)',
+    '(focusout)': 'forgetFocus($event)',
+  },
   providers: [
     {
       provide: CNGX_STEPPER_HOST,
@@ -132,6 +137,22 @@ export class CngxStepperFooter {
     if (region?.parentElement === this.hostEl) {
       this.lastFocus = { control, region };
     }
+  }
+
+  /** @internal */
+  protected forgetFocus(event: FocusEvent): void {
+    const last = this.lastFocus;
+    if (event.target !== last?.control || !last) {
+      return;
+    }
+    // Chromium also fires focusout when the focused control is removed; the
+    // render hook restores that case in the same tick, before this check. A
+    // control still rendered here means the user moved focus out.
+    queueMicrotask(() => {
+      if (this.lastFocus === last && last.control.isConnected) {
+        this.lastFocus = null;
+      }
+    });
   }
 
   private restoreFocus(): void {

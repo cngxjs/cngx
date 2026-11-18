@@ -271,7 +271,6 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[class.cngx-popover--opening]': 'isOpening()',
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
-    '[attr.inert]': "isClosing() ? '' : null",
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.--cngx-popover-anchor-margin]': 'cssMargin()',
@@ -300,6 +299,10 @@ export class CngxPopover {
   // Armed while a close transition runs; cancelled on destroy so the
   // transitionend listener and fallback timer never outlive the directive.
   private pendingClose: TransitionDoneHandle | null = null;
+  // The close fade sets inert on the host only when the host is not inert
+  // already: an open modal sheet may hold an inert claim on it as a page
+  // sibling, and the end of the fade must not drop that claim.
+  private ownsFadeInert = false;
   /**
    * Arrow-bounds contract resolved lazily on first use.
    * Eager inject() would loop: CngxPopover (host directive on the panel)
@@ -1172,10 +1175,28 @@ export class CngxPopover {
     }
     if (hasTransition(this.popoverElement)) {
       this.stateSignal.set('closing');
+      this.claimFadeInert();
       this.pendingClose = onTransitionDone(this.popoverElement, () => this.finalize());
     } else {
       this.finalize();
     }
+  }
+
+  private claimFadeInert(): void {
+    const el = this.popoverElement;
+    if (el.hasAttribute('inert')) {
+      return;
+    }
+    el.setAttribute('inert', '');
+    this.ownsFadeInert = true;
+  }
+
+  private releaseFadeInert(): void {
+    if (!this.ownsFadeInert) {
+      return;
+    }
+    this.ownsFadeInert = false;
+    this.popoverElement.removeAttribute('inert');
   }
 
   private finalize(emit = true): void {
@@ -1210,6 +1231,7 @@ export class CngxPopover {
       // Element may already be hidden or disconnected
     }
     this.stateSignal.set('closed');
+    this.releaseFadeInert();
     untracked(() => this.closeListenerSlot.current()?.(origin));
     if (emit && !wasClosed) {
       this.closed.emit();

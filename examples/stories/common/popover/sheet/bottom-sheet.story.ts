@@ -57,7 +57,7 @@ export const STORY: DemoSpec = {
       [closeOnEscape]="escapeCloses()"
       (closeRequested)="handleCloseRequested($event, sheet)"
     >
-      <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
+      <header cngxPopoverSheetHeader cngxSwipeDismiss="down" style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--cngx-popover-sheet-header-gap, 8px)">
         <span cngxPopoverSheetHandle></span>
         <h2 cngxPopoverSheetTitle style="margin: 0; font-size: 1rem; flex: 1">City</h2>
         <button cngxCloseButton aria-label="Close" (click)="sheet.requestClose('close')"></button>
@@ -75,7 +75,7 @@ export const STORY: DemoSpec = {
           </li>
         }
       </ul>
-      <footer style="position: sticky; inset-block-end: 0; display: flex; justify-content: flex-end; padding-block: 12px; background: var(--cngx-color-surface, #fff)">
+      <footer style="flex: none; position: sticky; inset-block-end: 0; display: flex; justify-content: flex-end; padding-block: 12px; background: var(--cngx-color-surface, #fff)">
         <button cngxPopoverAction="solid" tone="primary" [action]="saveFavourite">
           Save as favourite
           <ng-template cngxPending>Saving...</ng-template>

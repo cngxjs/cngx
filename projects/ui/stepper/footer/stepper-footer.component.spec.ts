@@ -178,6 +178,25 @@ describe('CngxStepperFooter', () => {
 
       expect(document.activeElement).toBe(back);
     });
+
+    // A click on an empty part of the page moved focus to body before the
+    // programmatic step change; the footer must not pull it back.
+    it('leaves focus on body when the user moved it out before the replacement', async () => {
+      const fixture = TestBed.createComponent(SwapFooterHost);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      const cont = el.querySelector('.continue') as HTMLButtonElement;
+      cont.focus();
+      cont.blur();
+      await Promise.resolve();
+      expect(document.activeElement).toBe(document.body);
+
+      fixture.componentInstance.last.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(document.body);
+    });
   });
 
   describe('null host neutral set (disabled by default)', () => {
