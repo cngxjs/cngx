@@ -274,6 +274,7 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
     '[style.--cngx-popover-anchor-margin]': 'cssMargin()',
+    '[style.--cngx-popover-anchor-offset]': 'cssOffset()',
     '[style.--cngx-popover-arrow-offset]': 'arrowOffset()',
     '(toggle)': 'handleToggle($event)',
   },
@@ -686,6 +687,15 @@ export class CngxPopover {
     SUPPORTS_ANCHOR && this.anchored()
       ? resolveAnchorMargin(this.effectivePlacement(), this.offset())
       : null,
+  );
+
+  /**
+   * The same offset as one length, for `calc()` consumers: the margin above
+   * is a shorthand (`8px 0`) and cannot be multiplied. The sheet skin caps
+   * an anchored sheet with it.
+   */
+  protected readonly cssOffset = computed(() =>
+    SUPPORTS_ANCHOR && this.anchored() ? `${this.offset()}px` : null,
   );
 
   /**
