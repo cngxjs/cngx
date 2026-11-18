@@ -164,6 +164,12 @@
     align-items: center;
   }
 
+  /* A single-button segment co-hosting `cngxRipple` clips the wave to the
+     button's shape: the ripple layer inherits the host radius. */
+  .cngx-paginator__segment.cngx-ripple {
+    border-radius: var(--cngx-paginator-button-radius, 0.375rem);
+  }
+
   /*
    * Nav button text label - the button's accessible name, visually hidden by
    * default so icon-only skins show just the chevron. Skins that want a labelled

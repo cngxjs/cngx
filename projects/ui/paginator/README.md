@@ -68,10 +68,15 @@ context needs.
 are identical across all seven. `density` (`compact` / `default` / `comfortable`)
 is orthogonal.
 
-The buttons do not ripple by default, like every cngx button. Add
-`cngxPaginatorRipple` to `<cngx-paginator>` or any ancestor and the first /
-previous / next / last and load-more buttons get the `cngxRipple` wave; bind
-`false` to turn it off for a subtree.
+The buttons do not ripple by default, like every cngx button. Co-host
+`cngxRipple` (`@cngx/common/interactive`) on a single-button segment and its
+button ripples, clipped to the button radius:
+
+```html
+<cngx-pgn-prev cngxRipple [rippleCentered]="true" />
+<cngx-pgn-next cngxRipple [rippleCentered]="true" />
+<cngx-pgn-load-more cngxRipple />
+```
 
 ## Reset and deep-linking
 

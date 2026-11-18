@@ -7,7 +7,6 @@ import {
 } from '@angular/core';
 
 import { CngxIcon, CngxIconSvg } from '@cngx/common/display';
-import { CngxRipple } from '@cngx/common/interactive';
 import {
   CNGX_ICON_CHEVRON_LEFT,
   CNGX_ICON_CHEVRON_RIGHT,
@@ -17,7 +16,6 @@ import {
 
 import { injectPaginatorAriaLabels, type CngxPaginatorAriaLabels } from '../paginator-config';
 import { injectPaginatorHost, type CngxPaginatorHost } from '../paginator-host.token';
-import { injectPaginatorRippleEnabled } from '../paginator-ripple.directive';
 
 /** Config keys the four nav segments label their button with. */
 type NavAriaKey = keyof Pick<CngxPaginatorAriaLabels, 'first' | 'previous' | 'next' | 'last'>;
@@ -36,8 +34,6 @@ interface NavCoreOptions {
 interface NavCore {
   readonly disabled: Signal<boolean>;
   readonly ariaLabel: Signal<string>;
-  /** `true` while no `cngxPaginatorRipple` switches the wave on. */
-  readonly rippleOff: () => boolean;
   activate(): void;
 }
 
@@ -51,11 +47,9 @@ function createPaginatorNavCore(options: NavCoreOptions): NavCore {
   const labels = injectPaginatorAriaLabels();
   const disabled = computed(() => host.isBusy() || options.atBound(host));
   const ariaLabel = computed(() => labels()[options.ariaKey]);
-  const rippleOn = injectPaginatorRippleEnabled();
   return {
     disabled,
     ariaLabel,
-    rippleOff: () => !rippleOn(),
     activate: () => {
       if (disabled()) {
         return;
@@ -75,8 +69,6 @@ const NAV_TEMPLATE = `
   <button
     type="button"
     class="cngx-paginator__button cngx-paginator__nav"
-    cngxRipple
-    [rippleDisabled]="core.rippleOff()"
     [attr.aria-disabled]="core.disabled() ? 'true' : null"
     (click)="core.activate()"
   >
@@ -104,7 +96,7 @@ const NAV_TEMPLATE = `
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
@@ -133,7 +125,7 @@ export class CngxPaginatorFirst {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
@@ -162,7 +154,7 @@ export class CngxPaginatorPrev {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })
@@ -191,7 +183,7 @@ export class CngxPaginatorNext {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxIcon, CngxIconSvg, CngxRipple],
+  imports: [CngxIcon, CngxIconSvg],
   template: NAV_TEMPLATE,
   host: { class: 'cngx-paginator__segment' },
 })

@@ -865,6 +865,11 @@
       padding-inline: 0;
     }
 
+    /* Square cells: a co-hosted ripple fills the cell edge to edge. */
+    :scope > .cngx-paginator__segment.cngx-ripple {
+      border-radius: 0;
+    }
+
     /* Static readouts (no background): padded, vertically-centred cells. Kept as
        inline text (not flex) so the whitespace inside the formatter output - e.g.
        between the bold range and " of N" - is preserved. */
