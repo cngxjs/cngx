@@ -361,9 +361,8 @@
    * @group State / Remove
    */
   @property --cngx-chip-remove-focus-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**

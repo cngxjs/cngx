@@ -187,9 +187,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-focus-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -199,9 +198,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-selected-border {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -496,9 +494,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-card-badge-primary-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
