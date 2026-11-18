@@ -531,7 +531,7 @@ class ResizableSidenavHost {}
 // WCAG 2.5.8 on a mouse: `--cngx-target-min` is 0px on a fine pointer, so the
 // handle hit zone reaches 24px through its own token while the bar stays 4px.
 describe('CngxSidenav resize handle hit zone on a fine pointer', () => {
-  it('grabs 24px centred on the rail edge and leaves the nav row 13px inside', () => {
+  it('grabs 24px centred on the rail edge and leaves the nav row outside the zone', () => {
     const fixture = TestBed.createComponent(ResizableSidenavHost);
     mountedRoot = fixture.nativeElement as HTMLElement;
     document.body.appendChild(mountedRoot);
@@ -549,7 +549,11 @@ describe('CngxSidenav resize handle hit zone on a fine pointer', () => {
     expect(document.elementFromPoint(edge - 11, y)).toBe(handle);
     // Past the rail edge: the resizable rail must not clip the outer half.
     expect(document.elementFromPoint(edge + 11, y)).toBe(handle);
-    expect(document.elementFromPoint(edge - 13, y)?.closest('.nav-row')).toBe(row);
+    expect(document.elementFromPoint(edge - 13, y)).not.toBe(handle);
+    // A classic scrollbar (Linux CI) fills the reserved body gutter next to the
+    // edge, so probe the row at its own end, which sits at least 13px inside.
+    const rowEnd = Math.min(row.getBoundingClientRect().right - 1, edge - 13);
+    expect(document.elementFromPoint(rowEnd, y)?.closest('.nav-row')).toBe(row);
   });
 
   it('lets the 44px touch zone reach 22px past the rail edge', () => {
