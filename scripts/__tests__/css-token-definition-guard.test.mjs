@@ -113,9 +113,13 @@ function foldVarCase(source) {
   return source.replace(/var\(/gi, 'var(');
 }
 
-/** `source` without its quoted strings, so `content: "--x: y"` is no declaration. */
+/**
+ * `source` without its quoted strings, so `content: "--x: y"` is no declaration.
+ * An escape may be a backslash before a newline, which continues the string on
+ * the next line; a bare newline ends it, as in CSS.
+ */
 function withoutStrings(source) {
-  return source.replace(/(["'])(?:\\.|(?!\1).)*\1/g, ' ');
+  return source.replace(/(["'])(?:\\[\s\S]|(?!\1)[^\\\n])*\1/g, ' ');
 }
 
 /**
@@ -889,6 +893,15 @@ describe('Rules C to E - component stylesheets', () => {
       '.t8::before { content: "--cngx-zzprobe-e-three: x"; } .t8 { color: var(--cngx-zzprobe-e-three); }';
     expect(repoOffenders([{ rel: 'projects/ui/x/t08.css', source }]).map(key)).toEqual([
       'E --cngx-zzprobe-e-three projects/ui/x/t08.css',
+    ]);
+  });
+
+  // A backslash before a newline continues a CSS string onto the next line.
+  it('Rule E does not take a multiline string literal for a local SET (probe t09)', () => {
+    const source =
+      '.t9::before { content: "a\\\n--cngx-zzprobe-e-four: x"; } .t9 { color: var(--cngx-zzprobe-e-four); }';
+    expect(repoOffenders([{ rel: 'projects/ui/x/t09.css', source }]).map(key)).toEqual([
+      'E --cngx-zzprobe-e-four projects/ui/x/t09.css',
     ]);
   });
 });
