@@ -60,15 +60,15 @@ import { describe, expect, it } from 'vitest';
  * oklch(0.66 0.19 50))` fallback passes. Rule F has no allowlist rows.
  *
  * Rule G - an Ember initial on a token cngx never assigns. The registration-side
- * twin of Rule B: an `@property` whose `initial-value` holds the opaque Ember
- * primary (`oklch(0.66 0.19 50)`, `oklch(0.72 0.18 50)`, alone or inside a
- * shorthand such as `2px solid oklch(...)`) always resolves to that literal, so
- * every use-site `var(--cngx-color-primary, ...)` fallback is dead and the
- * surface stays orange under any brand primary. Unless a scanned stylesheet
- * assigns the property (`--p: ...` outside comments and strings), the
- * registration is a hit. A Material bridge assignment in `projects/themes/**`
- * does not count: the default theme must not depend on a bridge. Rule G has no
- * allowlist rows.
+ * twin of Rule B: an `@property` whose `initial-value` holds the Ember primary
+ * (`oklch(0.66 0.19 50)`, `oklch(0.72 0.18 50)`, opaque or with alpha, alone or
+ * inside a shorthand such as `2px solid oklch(...)`) always resolves to that
+ * literal, so every use-site `var(--cngx-color-primary, ...)` fallback is dead
+ * and the surface stays orange under any brand primary. Unless a scanned
+ * stylesheet assigns the property (`--p: ...` outside comments, strings and
+ * `@container` / `@supports` conditions), the registration is a hit. A Material
+ * bridge assignment in `projects/themes/**` does not count: the default theme
+ * must not depend on a bridge. Rule G has no allowlist rows.
  *
  * The allowlist is an exact-set ratchet: a new offender fails, and a row that
  * no longer matches fails as stale, so every closed defect removes its row.
@@ -331,41 +331,13 @@ export function translucentPrimaryLiterals(source) {
 }
 
 /**
- * Rule G input: every `@property` name whose raw `initial-value` holds the Ember
- * primary, opaque or translucent, alone or inside a shorthand.
+ * Every custom property assigned by a `--p:` declaration in `source`. Quoted
+ * strings and the conditions of `@container` and `@supports` are removed first:
+ * `@container style(--p: none)` tests the property, it does not assign it.
  */
-export function emberInitialRegistrations(source) {
-  const names = new Set();
-  for (const m of source.matchAll(/@property\s+(--[\w-]+)\s*\{([^}]*)\}/gi)) {
-    const initial = /initial-value\s*:\s*([^;]+)/i.exec(m[2]);
-    if (initial && EMBER_PRIMARY.test(initial[1])) {
-      names.add(m[1]);
-    }
-  }
-  return [...names];
-}
-
-/** Every custom property assigned by a `--p:` declaration in `source`, quoted strings removed. */
 export function assignedProperties(source) {
-  return new Set(
-    [...withoutStrings(source).matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]),
-  );
-}
-
-/**
- * Rule G: every `{ token, file }` whose Ember-initial registration in `file`
- * (from `registrationsByFile`, file to names) no name in `assigned` covers.
- */
-export function unassignedEmberInitials(registrationsByFile, assigned) {
-  const rows = [];
-  for (const [file, names] of registrationsByFile) {
-    for (const token of names) {
-      if (!assigned.has(token)) {
-        rows.push({ token, file });
-      }
-    }
-  }
-  return rows;
+  const declarations = withoutStrings(source).replace(/@(?:container|supports)\b[^{;]*/gi, ' ');
+  return new Set([...declarations.matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]));
 }
 
 /** Every custom property registered by an `@property` rule in `source`. */
@@ -519,7 +491,6 @@ for (const { rel, source } of ALL_CSS) {
 
 function repoOffenders(files = SCANNED, assigned = assignedAcross(files)) {
   const rows = [];
-  const emberInitials = new Map();
   for (const { rel, source } of files) {
     for (const token of undefinedPaletteReads(source, DEFINED, FAMILIES)) {
       rows.push({ rule: 'A', token, file: rel });
@@ -542,10 +513,12 @@ function repoOffenders(files = SCANNED, assigned = assignedAcross(files)) {
     for (const token of translucentPrimaryLiterals(source)) {
       rows.push({ rule: 'F', token, file: rel });
     }
-    emberInitials.set(rel, emberInitialRegistrations(source));
-  }
-  for (const { token, file } of unassignedEmberInitials(emberInitials, assigned)) {
-    rows.push({ rule: 'G', token, file });
+    for (const [token, initials] of registrations(source)) {
+      const emberInitial = [...initials].some((initial) => EMBER_PRIMARY.test(initial));
+      if (emberInitial && !assigned.has(token)) {
+        rows.push({ rule: 'G', token, file: rel });
+      }
+    }
   }
   return rows;
 }
@@ -958,8 +931,12 @@ describe('Rule G - Ember initial on an unassigned token', () => {
 
   it('flags the literal inside a shorthand initial', () => {
     const source = register('--cngx-g-outline', '2px solid oklch(0.66  0.19 50)');
-    expect(emberInitialRegistrations(source)).toEqual(['--cngx-g-outline']);
     expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`G --cngx-g-outline ${rel}`]);
+  });
+
+  it('flags a translucent Ember initial', () => {
+    const source = register('--cngx-g-tint', 'oklch(0.66 0.19 50 / 0.1)');
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`G --cngx-g-tint ${rel}`]);
   });
 
   it('flags the dark-twin literal', () => {
@@ -984,6 +961,16 @@ describe('Rule G - Ember initial on an unassigned token', () => {
     ]);
   });
 
+  it('still flags a token only a container style query or @supports condition names', () => {
+    const raw = [
+      register('--cngx-g-bg', 'oklch(0.66 0.19 50)'),
+      '@container not style(--cngx-g-bg: none) { .a { display: none; } }',
+      '@supports (--cngx-g-bg: 0) { .b { display: none; } }',
+    ].join('\n');
+    expect(assignedProperties(raw).has('--cngx-g-bg')).toBe(false);
+    expect(repoOffenders([{ rel, source: raw }]).map(key)).toEqual([`G --cngx-g-bg ${rel}`]);
+  });
+
   it('still flags a token assigned only inside a comment', () => {
     const raw = `${register('--cngx-g-bg', 'oklch(0.66 0.19 50)')} /* .a { --cngx-g-bg: red; } */`;
     expect(repoOffenders([{ rel, source: scannedSource(rel, raw) }]).map(key)).toEqual([
@@ -997,10 +984,7 @@ describe('Rule G - Ember initial on an unassigned token', () => {
       register('--cngx-g-tint', 'oklch(0.96 0.04 50)'),
       register('--cngx-g-hue', 'oklch(0.66 0.19 500)'),
     ].join('\n');
-    expect(emberInitialRegistrations(source)).toEqual([]);
-    expect(
-      unassignedEmberInitials(new Map([[rel, emberInitialRegistrations(source)]]), new Set()),
-    ).toEqual([]);
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([]);
   });
 });
 
