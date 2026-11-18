@@ -1209,13 +1209,20 @@
       background-color: var(--cngx-step-connector-completed-color);
     }
 
-    /* Target step pending (commit in flight) -> leading rail primary. cngx
-       surfaces commit-in-flight via `aria-busy='true'` on the target step;
-       `data-state` stays at its terminal value (idle/success/error). */
+    /* Target step pending (commit in flight) -> leading rail in the pending
+       disc colour. cngx surfaces commit-in-flight via `aria-busy='true'` on
+       the target step; `data-state` stays at its terminal value
+       (idle/success/error). */
     .cngx-stepper__step + .cngx-stepper__step[aria-busy='true']::before {
       background-color: var(
         --cngx-step-connector-pending-color,
-        var(--cngx-color-primary, oklch(0.66 0.19 50))
+        var(
+          --cngx-step-pending-color,
+          var(
+            --cngx-step-active-color,
+            var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+          )
+        )
       );
     }
 
@@ -2431,7 +2438,13 @@
 }
 
 .cngx-stepper__group-summary--status[data-state='pending'] {
-  background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
+  background: var(
+    --cngx-step-pending-color,
+    var(
+      --cngx-step-active-color,
+      var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
+    )
+  );
 }
 
 /* Density-auto: every skin's label must be shrinkable so it truncates to

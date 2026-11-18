@@ -324,6 +324,15 @@ describe('CngxStepper primary tokens', () => {
     });
   });
 
+  it('paints the pending connector with the step active colour, like the pending disc', () => {
+    const root = mountSkin('classic');
+    const stepper = one(root, '.default cngx-stepper');
+    stepper.style.setProperty('--cngx-step-active-color', BLUE);
+    const target = one(stepper, '.cngx-stepper__step + .cngx-stepper__step');
+    target.setAttribute('aria-busy', 'true');
+    expect(rasterise(getComputedStyle(target, '::before').backgroundColor)).toEqual(rasterise(BLUE));
+  });
+
   // With connectors the step is an equal-flex slot inside a clipping strip;
   // the disc carries the ring so it stays compact and unclipped.
   it('rings the focused connector disc with the primary in scope', () => {
