@@ -633,8 +633,11 @@ export class CngxSidenav
     // a linkedSignal keyed on the presentation. Every change starts the new
     // presentation closed, so a drawer opened at one width never reopens stale
     // at another and a pinned over -> side flip leaves no open overlay behind.
-    // Focus inside the rail keeps it open instead, so the focused element is
-    // not orphaned behind inert.
+    // A change to an overlay presentation keeps the rail open while focus is
+    // inside it, so the focused element is not orphaned behind inert. A change
+    // to a docked presentation always closes: the rail stays visible there,
+    // and an open trap always holds focus inside, so the exception would leave
+    // opened (and a synced ?nav=open) true on a docked rail.
     effect(() => {
       const current = this.presentationTransition.current();
       const previous = this.presentationTransition.previous();
@@ -643,7 +646,7 @@ export class CngxSidenav
       }
       untracked(() => {
         const host = this.elementRef.nativeElement as HTMLElement;
-        this.opened.set(host.contains(this.doc.activeElement));
+        this.opened.set(this.isOverlay() && host.contains(this.doc.activeElement));
       });
     });
 

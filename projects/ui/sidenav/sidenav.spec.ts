@@ -1034,7 +1034,6 @@ describe('CngxSidenav auto mode', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(nav.overlayActive()).toBe(true);
-    (fixture.nativeElement.querySelector('.content-item') as HTMLElement).focus();
 
     stubWide('expanded');
     flushResize();
@@ -1104,6 +1103,27 @@ describe('CngxSidenav auto mode', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(nav.opened()).toBe(false);
+  });
+
+  it('closes an open modal overlay on a flip to side even with focus inside the rail', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('over');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = nav.elementRef.nativeElement as HTMLElement;
+    (host.querySelector('.nav-item') as HTMLElement).focus();
+    expect(host.contains(document.activeElement)).toBe(true);
+
+    fixture.componentInstance.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(false);
+    expect(fixture.componentInstance.open()).toBe(false);
   });
 });
 

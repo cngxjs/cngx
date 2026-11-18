@@ -194,6 +194,36 @@ describe('CngxSidenavRouterSync', () => {
     expect(start.injector.get(CngxSidenavRouterSync).param()).toBe('nav');
   });
 
+  it('drops ?nav=open when an open overlay flips to a docked rail', async () => {
+    @Component({
+      template: `<cngx-sidenav cngxSidenavRouterSync [mode]="mode()">x</cngx-sidenav>`,
+      imports: [CngxSidenav, CngxSidenavRouterSync],
+    })
+    class FlipHost {
+      mode = signal<'over' | 'side'>('over');
+    }
+
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const router = TestBed.inject(Router);
+    await router.navigate([], { queryParams: { nav: 'open' } });
+
+    const fixture = TestBed.createComponent(FlipHost);
+    fixture.detectChanges();
+    await flush();
+    const sidenav = fixture.debugElement.query(By.directive(CngxSidenav))
+      .componentInstance as CngxSidenav;
+    expect(sidenav.opened()).toBe(true);
+
+    fixture.componentInstance.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(sidenav.opened()).toBe(false);
+    expect(router.parseUrl(router.url).queryParamMap.has('nav')).toBe(false);
+  });
+
   it('warns CNGX1031 once and no-ops without provideRouter(...)', async () => {
     // Router is providedIn: 'root' and still resolves here; ActivatedRoute
     // does not, so the injectQueryParamSync kernel warns and no-ops.
