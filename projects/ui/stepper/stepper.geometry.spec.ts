@@ -285,12 +285,17 @@ describe('CngxStepper primary tokens', () => {
     });
   });
 
-  it('paints the step focus ring with the primary in scope', () => {
+  // With connectors the step is an equal-flex slot inside a clipping strip;
+  // the disc carries the ring so it stays compact and unclipped.
+  it('rings the focused connector disc with the primary in scope', () => {
     const root = mountSkin('classic');
     expectPrimary((scope) => {
       const step = one(root, `${scope} button.cngx-stepper__step`);
       step.focus();
-      return computedValue(step, 'outline-color');
+      expect(computedValue(step, 'outline-style')).toBe('none');
+      const disc = one(step, '.cngx-stepper__indicator');
+      expect(computedValue(disc, 'outline-style')).toBe('solid');
+      return computedValue(disc, 'outline-color');
     });
   });
 

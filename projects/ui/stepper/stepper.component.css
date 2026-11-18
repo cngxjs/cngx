@@ -1071,6 +1071,21 @@
       z-index: 1;
     }
 
+    /* The step is an equal-flex slot far wider than its disc, and the strip
+       clips on overflow; the disc carries the ring instead so it stays
+       compact, unclipped and clear of the rail. */
+    .cngx-stepper__step:focus-visible {
+      outline: 0;
+    }
+
+    .cngx-stepper__step:focus-visible .cngx-stepper__indicator {
+      outline: var(
+        --cngx-step-focus-ring,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: var(--cngx-step-focus-offset, 3px);
+    }
+
     .cngx-stepper__label {
       white-space: normal;
     }
