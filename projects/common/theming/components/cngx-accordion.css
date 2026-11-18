@@ -133,7 +133,8 @@
 
   /* A header on a rounded edge takes the inner radius, so its focus outline
      follows the curve instead of being clipped by the host's overflow. The last
-     header only sits on the edge while its region is closed. */
+     header only sits on the edge while its region is closed; there the host
+     border is its bottom line, so it drops its own. */
   .cngx-accordion__header:first-of-type {
     border-start-start-radius: var(--_cngx-accordion-inner-radius, 0);
     border-start-end-radius: var(--_cngx-accordion-inner-radius, 0);
@@ -142,6 +143,7 @@
   .cngx-accordion__header:last-of-type:not([aria-expanded='true']) {
     border-end-start-radius: var(--_cngx-accordion-inner-radius, 0);
     border-end-end-radius: var(--_cngx-accordion-inner-radius, 0);
+    border-block-end: 0;
   }
 
   .cngx-accordion__header:hover {
@@ -179,5 +181,10 @@
   .cngx-accordion__region {
     padding: var(--cngx-accordion-region-padding, 0.75rem 1rem);
     border-block-end: 1px solid var(--cngx-accordion-border-color, oklch(0.88 0.005 250));
+  }
+
+  /* The open last region sits on the host's bottom border. */
+  .cngx-accordion__region:last-child {
+    border-block-end: 0;
   }
 }

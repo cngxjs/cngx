@@ -56,8 +56,8 @@ function mount(): {
   return { fixture, heads };
 }
 
-describe('accordion skin header radius', () => {
-  it('rounds the first header top and the closed last header bottom, nothing in between', () => {
+describe('accordion skin edge headers', () => {
+  it('rounds the first header top and the closed last header bottom, which drops its own bottom line', () => {
     const { heads } = mount();
     const [first, middle, last] = heads;
     expect(computedValue(first, 'border-start-start-radius')).not.toBe('0px');
@@ -65,13 +65,21 @@ describe('accordion skin header radius', () => {
     expect(computedValue(middle, 'border-start-start-radius')).toBe('0px');
     expect(computedValue(middle, 'border-end-end-radius')).toBe('0px');
     expect(computedValue(last, 'border-end-end-radius')).not.toBe('0px');
+    expect(computedValue(middle, 'border-block-end-width')).toBe('1px');
+    expect(computedValue(last, 'border-block-end-width')).toBe('0px');
   });
 
-  it('drops the bottom radius of the last header while its region is open', () => {
+  it('moves the bottom edge to the last region while it is open', () => {
     const { fixture, heads } = mount();
     fixture.componentInstance.open.set(new Set(['c']));
     fixture.detectChanges();
     expect(heads[2].getAttribute('aria-expanded')).toBe('true');
     expect(computedValue(heads[2], 'border-end-end-radius')).toBe('0px');
+    expect(computedValue(heads[2], 'border-block-end-width')).toBe('1px');
+    const lastRegion = mountedRoot?.querySelector('#r-c');
+    if (!lastRegion) {
+      throw new Error('last region missing');
+    }
+    expect(computedValue(lastRegion, 'border-block-end-width')).toBe('0px');
   });
 });
