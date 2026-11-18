@@ -268,12 +268,12 @@ Two homes need a carrier. Stories under `examples/stories/core/**` are exempt: c
 
 ### S6 - Exceptions are guard rows
 
-An exception to S1 or S5 exists only as a row in the guard, with exact counts and a written reason. A row whose hits are gone fails as stale, so the list only shrinks.
+An exception to S0, S1 or S5 exists only as a row in the guard, with exact counts and a written reason. A row whose hits are gone fails as stale, so the list only shrinks.
 
 - Violation: the popover reset's exclusions were explained in the `cngx-popover.css` overview comment ("the styled surfaces are excluded by class"). No guard, no review step and no debt entry knew about them.
-- Fix: a row in `SKIN_OWNERSHIP_EXEMPT` or `STORY_OWNERSHIP_EXEMPT` (`{ file, selector, count, reason }` or `{ file, symbol, reason }`). Both lists are empty today.
+- Fix: a row in `SKIN_OPT_IN_EXEMPT`, `SKIN_OWNERSHIP_EXEMPT` or `STORY_OWNERSHIP_EXEMPT` (`{ file, selector, count, reason }` or `{ file, symbol, reason }`). The last two are empty today; `SKIN_OPT_IN_EXEMPT` lists the attribute-keyed skins that have not moved to a class yet.
 
-S1 and S5 are enforced by `scripts/__tests__/skin-ownership-guard.test.mjs`.
+S0, S1 and S5 are enforced by `scripts/__tests__/skin-ownership-guard.test.mjs`.
 
 ---
 
