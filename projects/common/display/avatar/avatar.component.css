@@ -337,11 +337,11 @@
       font-weight: 600;
 
       /* Themable */
-      width: var(--cngx-avatar-size, var(--cngx-avatar-size-md, 2.5rem));
-      height: var(--cngx-avatar-size, var(--cngx-avatar-size-md, 2.5rem));
-      font-size: var(--cngx-avatar-font-size, var(--cngx-avatar-font-size-md, 1rem));
-      background: var(--cngx-avatar-bg, var(--cngx-color-border, oklch(0.92 0.01 240)));
-      color: var(--cngx-avatar-color, var(--cngx-color-text, oklch(0.28 0 0)));
+      width: var(--cngx-avatar-size);
+      height: var(--cngx-avatar-size);
+      font-size: var(--cngx-avatar-font-size);
+      background: var(--cngx-avatar-bg);
+      color: var(--cngx-avatar-color);
     }
 
     /* Shape variants */
@@ -393,7 +393,7 @@
       width: var(--cngx-avatar-status-size, 0.65em);
       height: var(--cngx-avatar-status-size, 0.65em);
       border-radius: var(--cngx-radius-pill, 999px);
-      border: 2px solid var(--cngx-avatar-status-border, var(--cngx-color-surface, oklch(1 0 0)));
+      border: 2px solid var(--cngx-avatar-status-border);
       background: var(--cngx-avatar-status-bg, oklch(0.68 0.01 240));
     }
     .cngx-avatar__status--online {

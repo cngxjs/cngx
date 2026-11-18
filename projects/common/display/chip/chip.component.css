@@ -440,14 +440,11 @@
       --cngx-chip-padding-block: var(--cngx-space-xs);
       --cngx-chip-padding-inline: var(--cngx-space-sm);
       /* Themable - token-driven with system-token fallback chains */
-      gap: var(--cngx-chip-inner-gap, var(--cngx-space-xs, 4px));
+      gap: var(--cngx-chip-inner-gap);
       padding-block: var(--cngx-chip-padding-block, 2px);
-      padding-inline: var(--cngx-chip-padding-inline, var(--cngx-space-sm, 8px));
+      padding-inline: var(--cngx-chip-padding-inline);
       border-radius: var(--cngx-chip-radius, var(--cngx-radius-pill, 999px));
-      background: var(
-        --cngx-chip-bg,
-        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 12%, transparent)
-      );
+      background: var(--cngx-chip-bg);
       color: var(--cngx-chip-color, inherit);
       border: var(--cngx-chip-border, 0 solid transparent);
       font-size: var(--cngx-chip-font-size, var(--cngx-font-size-sm, 0.8125rem));
@@ -479,10 +476,7 @@
     :scope[role='button']:hover,
     :scope[tabindex]:hover,
     :scope:has(.cngx-chip__remove):hover {
-      background: var(
-        --cngx-chip-hover-bg,
-        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent)
-      );
+      background: var(--cngx-chip-hover-bg);
       color: var(--cngx-chip-hover-color, inherit);
     }
     :scope:focus-visible {
@@ -494,10 +488,7 @@
     }
     :scope[aria-selected='true'],
     :scope[aria-pressed='true'] {
-      background: var(
-        --cngx-chip-selected-bg,
-        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 32%, transparent)
-      );
+      background: var(--cngx-chip-selected-bg);
       color: var(--cngx-chip-selected-color, inherit);
     }
     /* Variant palette via [data-color] attribute (open-string so consumers

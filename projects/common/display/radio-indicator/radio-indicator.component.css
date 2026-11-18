@@ -257,7 +257,7 @@
       flex: 0 0 auto;
       inline-size: var(--cngx-radio-indicator-size, 1em);
       block-size: var(--cngx-radio-indicator-size, 1em);
-      color: var(--cngx-radio-indicator-color, currentColor);
+      color: var(--cngx-radio-indicator-color);
     }
 
     :scope.cngx-radio-indicator--sm {
@@ -282,35 +282,19 @@
       fill: var(--cngx-radio-indicator-bg, transparent);
       stroke: currentColor;
       stroke-width: var(--cngx-radio-indicator-border-width, 1.5);
-      transition: var(
-        --cngx-radio-indicator-transition,
-        fill 120ms ease,
-        stroke 120ms ease,
-        transform 120ms ease
-      );
+      transition: var(--cngx-radio-indicator-transition);
     }
 
     :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
-      stroke: var(
-        --cngx-radio-indicator-checked-color,
-        var(--cngx-color-primary, oklch(0.66 0.19 50))
-      );
+      stroke: var(--cngx-radio-indicator-checked-color);
     }
 
     .cngx-radio-indicator__dot {
-      fill: var(
-        --cngx-radio-indicator-checked-color,
-        var(--cngx-color-primary, oklch(0.66 0.19 50))
-      );
+      fill: var(--cngx-radio-indicator-checked-color);
       transform-box: fill-box;
       transform-origin: center;
       transform: scale(0);
-      transition: var(
-        --cngx-radio-indicator-transition,
-        fill 120ms ease,
-        stroke 120ms ease,
-        transform 120ms ease
-      );
+      transition: var(--cngx-radio-indicator-transition);
     }
 
     :scope.cngx-radio-indicator--checked .cngx-radio-indicator__dot {
@@ -327,13 +311,7 @@
       transform-origin: center;
       transform: scale(var(--cngx-radio-indicator-mark-scale, 0.75));
       opacity: 0;
-      transition: var(
-        --cngx-radio-indicator-transition,
-        fill 120ms ease,
-        stroke 120ms ease,
-        transform 120ms ease,
-        opacity 120ms ease
-      );
+      transition: var(--cngx-radio-indicator-transition);
     }
 
     .cngx-radio-indicator__glyph {
@@ -341,10 +319,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: var(
-        --cngx-radio-indicator-checked-color,
-        var(--cngx-color-primary, oklch(0.66 0.19 50))
-      );
+      color: var(--cngx-radio-indicator-checked-color);
     }
 
     /* Disabled by colour, never opacity (the field recipe): the checked ring
@@ -371,7 +346,7 @@
  * the disc, the tint and the glyph all read. */
 @scope (.cngx-radio-indicator[data-skin='check']) {
   :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
-    fill: var(--cngx-radio-indicator-checked-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    fill: var(--cngx-radio-indicator-checked-color);
   }
 
   :scope.cngx-radio-indicator--checked .cngx-radio-indicator__mark {
@@ -387,7 +362,7 @@
   :scope.cngx-radio-indicator--checked .cngx-radio-indicator__circle {
     fill: color-mix(
       in oklab,
-      var(--cngx-radio-indicator-checked-color, var(--cngx-color-primary, oklch(0.66 0.19 50))) 16%,
+      var(--cngx-radio-indicator-checked-color) 16%,
       transparent
     );
   }

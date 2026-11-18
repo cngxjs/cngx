@@ -245,8 +245,8 @@
 
     :scope.cngx-checkbox-indicator--checked .cngx-checkbox-indicator__box,
     :scope.cngx-checkbox-indicator--indeterminate .cngx-checkbox-indicator__box {
-      background: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-      border-color: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      background: var(--cngx-checkbox-checked-bg);
+      border-color: var(--cngx-checkbox-checked-bg);
       color: var(--cngx-checkbox-checked-color, oklch(1 0 0));
     }
 
