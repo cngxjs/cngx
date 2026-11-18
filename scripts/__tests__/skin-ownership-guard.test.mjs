@@ -82,8 +82,18 @@ const CONTEXT_AXIS = /^cngx-(density|text-scale|motion|contrast|touch)(-|$)/;
  */
 const SKIN_OWNERSHIP_EXEMPT = [];
 
-const OPT_IN_PENDING =
-  'skin predates S0; moves to an opt-in class one skin per commit, the row goes with it';
+// Reasons from the 2026-11-18 leak check: which library templates write the
+// attribute and what the skin does there.
+const OPT_IN_REASON = {
+  breadcrumb:
+    'CngxBreadcrumbBar writes the attributes; the link font-size reaching it is under review',
+  dialog:
+    'the dialog outlet is the owner; the command palette leak (max-width, scrollbar-gutter) is open',
+  listbox: 'the select panels want this skin; paginator and multi-select neutralise parts of it',
+  menu: 'only the breadcrumb overflow writes it and zeroes the menu surface tokens on its own class',
+  popover: 'applies the offset CngxPopover writes inline; every writer wants it',
+  slider: 'no template outside the slider family writes these attributes',
+};
 
 /**
  * Skin selectors allowed to key on a directive attribute. Exact counts per
@@ -96,103 +106,103 @@ const SKIN_OPT_IN_EXEMPT = [
     file: 'projects/common/theming/components/cngx-breadcrumb.css',
     selector: '[cngxBreadcrumb]',
     count: 2,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.breadcrumb,
   },
   {
     file: 'projects/common/theming/components/cngx-breadcrumb.css',
     selector: '[cngxBreadcrumbItem]',
     count: 3,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.breadcrumb,
   },
   {
     file: 'projects/common/theming/components/cngx-breadcrumb.css',
     selector: '[cngxBreadcrumbSeparator]',
     count: 1,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.breadcrumb,
   },
   {
     file: 'projects/common/theming/components/cngx-dialog.css',
     selector: '[cngxDialog]',
     count: 2,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.dialog,
   },
   {
     file: 'projects/common/theming/components/cngx-dialog.css',
     selector: '[cngxDialogDraggable]',
     count: 1,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.dialog,
   },
   {
     file: 'projects/common/theming/components/cngx-listbox.css',
     selector: '[cngxListbox]',
     count: 2,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.listbox,
   },
   {
     file: 'projects/common/theming/components/cngx-listbox.css',
     selector: '[cngxOption]',
     count: 1,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.listbox,
   },
   {
     file: 'projects/common/theming/components/cngx-menu.css',
     selector: '[cngxMenu]',
     count: 2,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.menu,
   },
   {
     file: 'projects/common/theming/components/cngx-menu.css',
     selector: '[cngxMenuItem]',
     count: 3,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.menu,
   },
   {
     file: 'projects/common/theming/components/cngx-menu.css',
     selector: '[cngxMenuItemCheckbox]',
     count: 4,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.menu,
   },
   {
     file: 'projects/common/theming/components/cngx-menu.css',
     selector: '[cngxMenuItemRadio]',
     count: 4,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.menu,
   },
   {
     file: 'projects/common/theming/components/cngx-menu.css',
     selector: '[cngxMenuItemSubmenu]',
     count: 3,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.menu,
   },
   {
     file: 'projects/common/theming/components/cngx-menu.css',
     selector: '[cngxMenuSeparator]',
     count: 2,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.menu,
   },
   {
     file: 'projects/common/theming/components/cngx-popover.css',
     selector: '[cngxPopover]',
     count: 1,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.popover,
   },
   {
     file: 'projects/common/theming/components/cngx-slider.css',
     selector: '[cngxSliderTrack]',
     count: 15,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.slider,
   },
   {
     file: 'projects/common/theming/components/cngx-slider.css',
     selector: '[cngxRangeSliderTrack]',
     count: 12,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.slider,
   },
   {
     file: 'projects/common/theming/components/cngx-slider.css',
     selector: '[cngxSliderThumb]',
     count: 3,
-    reason: OPT_IN_PENDING,
+    reason: OPT_IN_REASON.slider,
   },
 ];
 
