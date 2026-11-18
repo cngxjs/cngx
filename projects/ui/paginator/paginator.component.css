@@ -133,9 +133,8 @@
    * @see [[--cngx-color-primary-strong]]
    */
   @property --cngx-paginator-current-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -144,9 +143,8 @@
    * @group State / Active
    */
   @property --cngx-paginator-current-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(1 0 0);
   }
 
   /**
@@ -154,9 +152,8 @@
    * @group State / Active
    */
   @property --cngx-paginator-current-border-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: transparent;
   }
 
   /**
@@ -166,7 +163,6 @@
   @property --cngx-paginator-focus-ring {
     syntax: '*';
     inherits: true;
-    initial-value: 2px solid currentColor;
   }
 
   /**
@@ -361,7 +357,6 @@
   @property --cngx-paginator-focus-halo {
     syntax: '*';
     inherits: true;
-    initial-value: 0 0 0 4px color-mix(in oklch, currentColor 18%, transparent);
   }
 
   /**
@@ -413,9 +408,8 @@
    * @see [[--cngx-color-primary]]
    */
   @property --cngx-paginator-dot-current-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**
@@ -576,33 +570,6 @@
     syntax: '<length>';
     inherits: true;
     initial-value: 32px;
-  }
-
-  /*
-   * Cross-skin default palette. The active fill and its label delegate to the
-   * strong primary pair, the focus ring to the foundation primary; both carry
-   * their own light/dark values. A registered colour resolves where it is
-   * declared, so the block repeats on every colour-scheme island: inside a
-   * `[data-color-scheme]` / `.dark` / `.light` subtree the paginator takes the
-   * island's primary, not the page's.
-   */
-  :root,
-  [data-color-scheme],
-  .dark,
-  .light {
-    --cngx-paginator-current-bg: var(
-      --cngx-color-primary-strong,
-      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
-    );
-    --cngx-paginator-current-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
-    --cngx-paginator-current-border-color: var(
-      --cngx-color-primary-strong,
-      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
-    );
-    --cngx-paginator-focus-ring: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
-    --cngx-paginator-focus-halo: 0 0 0 4px
-      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent);
-    --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
   }
 }
 
@@ -797,6 +764,16 @@
   @scope (.cngx-paginator[data-skin='rail']) {
     :scope {
       --cngx-paginator-row-gap: var(--cngx-space-md);
+      /* A projected page row reads the strong primary pair, as on pill / bar. */
+      --cngx-paginator-current-bg: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
+      --cngx-paginator-current-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
+      --cngx-paginator-current-border-color: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
     }
   }
 
@@ -943,6 +920,16 @@
       --cngx-paginator-dot-size: 0.5625rem;
       --cngx-paginator-dot-color: color-mix(in oklch, currentColor 30%, transparent);
       --cngx-paginator-dot-current-color: var(--cngx-color-primary, oklch(0.66 0.19 50));
+      /* A projected page row reads the strong primary pair, as on pill / bar. */
+      --cngx-paginator-current-bg: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
+      --cngx-paginator-current-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
+      --cngx-paginator-current-border-color: var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      );
     }
   }
 
@@ -974,7 +961,8 @@
     .cngx-paginator__button:focus-visible {
       box-shadow: var(
         --cngx-paginator-focus-halo,
-        0 0 0 4px color-mix(in oklch, currentColor 18%, transparent)
+        0 0 0 4px
+          color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent)
       );
     }
 

@@ -190,8 +190,9 @@ describe.each(SCHEMES)('strong primary fill under a label, %s', (scheme) => {
     expectStrongPair(scope, one(scope, fillCase.selector), fillCase);
   });
 
-  // The paginator palette repeats on every colour-scheme island, so the chip
-  // takes the island's strong pair; the page runs the opposite scheme.
+  // The paginator sets no colour on :root; the chip's fallback resolves the
+  // strong pair where it sits, so it takes the island's pair while the page
+  // runs the opposite scheme.
   it('paginator alpha active chip paints the island strong pair at 4.5:1', async () => {
     await cdp().send('Emulation.setEmulatedMedia', {
       features: [{ name: 'prefers-color-scheme', value: scheme === 'dark' ? 'light' : 'dark' }],
