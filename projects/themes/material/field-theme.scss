@@ -17,19 +17,28 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-field-label-color: var(--mat-sys-on-surface-variant);
-    --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-hint-color: var(--mat-sys-on-surface);
+    --cngx-field-char-count-color: var(--mat-sys-on-surface);
+    --cngx-field-char-count-over-color: var(--mat-sys-error);
     --cngx-field-error-color: var(--mat-sys-error);
     --cngx-field-required-color: var(--mat-sys-error);
     @include skin-color($theme);
   } @else {
     --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
-    --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    --cngx-field-hint-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-field-char-count-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-field-char-count-over-color: #{bridge.m2-warn-text($theme)};
     --cngx-field-error-color: #{bridge.m2-warn-text($theme)};
     --cngx-field-required-color: #{bridge.m2-warn-text($theme)};
     @include skin-color($theme);
   }
 }
 
+// mat-hint and the end hint mat-form-field uses as a counter carry no colour
+// in M2 or M3 and inherit the page text, so hint and char-count take the text
+// role, not the muted one the label rests in. Over the limit the counter is
+// an error.
+//
 // M2 error, underline and invalid outline share one token, and the required
 // asterisk is label text: all read the warn text colour from the bridge
 // module (4.5:1 on page and card, which covers the 3:1 the lines need).

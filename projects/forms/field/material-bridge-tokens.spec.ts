@@ -46,7 +46,9 @@ describe('field Material bridge', () => {
   // every name is consumed by the forms field/input/form-errors CSS
   const CONSUMED = [
     '--cngx-field-affix-color',
+    '--cngx-field-char-count-color',
     '--cngx-field-char-count-font-size',
+    '--cngx-field-char-count-over-color',
     '--cngx-field-error-color',
     '--cngx-field-fill-bg',
     '--cngx-field-fill-bg-hover',
@@ -137,6 +139,19 @@ describe('field Material bridge', () => {
     );
     expect(css).toMatch(/--cngx-field-hint-font-size: var\(--mat-sys-body-small-size, 0\.75rem\)/);
     expect(css).toMatch(/:scope:has\(> \.cngx-label\)\s*\{\s*--cngx-field-hint-gap: 0/);
+  });
+
+  // mat-hint and the counter end hint carry no colour and inherit the page
+  // text, so the bridge maps both to the text role, never the muted one.
+  it('paints hint and char-count in the text role, the over-limit count in the error role', () => {
+    const v1 = compiledCss('v1');
+    expect(v1).toContain('--cngx-field-hint-color: var(--mat-sys-on-surface);');
+    expect(v1).toContain('--cngx-field-char-count-color: var(--mat-sys-on-surface);');
+    expect(v1).toContain('--cngx-field-char-count-over-color: var(--mat-sys-error);');
+    const v0 = compiledCss('v0');
+    expect(v0).toContain('--cngx-field-hint-color: rgba(0, 0, 0, 0.87);');
+    expect(v0).toContain('--cngx-field-char-count-color: rgba(0, 0, 0, 0.87);');
+    expect(v0).toMatch(/--cngx-field-char-count-over-color: #[0-9a-f]{6};/);
   });
 
   // The box class is the stable hook; the affix-row class only survives as a
