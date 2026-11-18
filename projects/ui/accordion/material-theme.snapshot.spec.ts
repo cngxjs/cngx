@@ -111,6 +111,16 @@ describe('Material accordion-theme bridge baseline', () => {
     });
   });
 
+  // The system bridge maps the foundation muted text (on-surface-variant in M3,
+  // secondary-text in M2); a scoped copy here would only drift from it.
+  it('leaves the foundation muted text to the system bridge', () => {
+    for (const themeVersion of ['v1', 'v0'] as const) {
+      expect(
+        compileAndExtract({ themeVersion, variant: 'light', mixin: 'theme' }),
+      ).not.toHaveProperty('--cngx-color-text-muted');
+    }
+  });
+
   describe('skins() - per-skin refinements (full aggregation only)', () => {
     it('v1 light: resolved --cngx-* declarations match the baseline', () => {
       expect(
