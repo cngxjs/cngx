@@ -2457,7 +2457,7 @@
       "messages": [
         {
           "file": "projects/ui/sidenav/sidenav.ts",
-          "text": "[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over."
+          "text": "[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> ancestor; rendering as over."
         }
       ]
     },

@@ -463,16 +463,14 @@ export class CngxSidenav
 
   /**
    * @internal Drives the composed `CngxDrawerSurface`: engaged while an open
-   * overlay. An `auto` rail holds off until the container rule has resolved
-   * its width class: before that frame the rail reads as compact, and a
-   * surface engaged then would run its autofocus against a rail that has no
-   * layout yet, so an initially open overlay would go modal with focus left
-   * on the page. Engaging on the resolved frame gives the trap a real edge.
+   * overlay. An `auto` rail inside a layout holds off until the container rule
+   * has resolved its width class: the layout stays hidden until then, and a
+   * surface engaged earlier would run its autofocus against a rail that is
+   * not shown yet, so an initially open overlay would go modal with focus left
+   * on the page. Engaging on the resolved frame gives the trap a real edge. A
+   * pinned mode or a standalone rail has nothing to wait for and engages at once.
    */
-  readonly surfaceActive = computed(
-    () =>
-      this.overlayActive() && (this.mode() !== 'auto' || this.rawWidthClass().trim() !== ''),
-  );
+  readonly surfaceActive = computed(() => this.overlayActive() && !this.widthClassPending());
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceModality = this.modality;
   /** @internal Drives the composed `CngxDrawerSurface`: one name in every state. */
@@ -515,6 +513,14 @@ export class CngxSidenav
 
   private readonly doc = inject(DOCUMENT);
   private readonly layoutCoordinator = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
+
+  /** An `auto` rail inside a layout whose container rule has not written the width class yet. */
+  private readonly widthClassPending = computed(
+    () =>
+      this.mode() === 'auto' &&
+      this.layoutCoordinator !== null &&
+      this.rawWidthClass().trim() === '',
+  );
   private readonly announcer = inject(CNGX_SIDENAV_ANNOUNCER_FACTORY)();
 
   /**
@@ -583,7 +589,7 @@ export class CngxSidenav
       ) {
         cngxDevWarn(
           'CNGX3010',
-          '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over.',
+          '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> ancestor; rendering as over.',
         );
       }
     });
