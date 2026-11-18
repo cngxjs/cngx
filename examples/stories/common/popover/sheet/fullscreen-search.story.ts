@@ -50,7 +50,7 @@ export const STORY: DemoSpec = {
     autoPresentation="fullscreen"
     #sheet="cngxPopoverSheet"
   >
-    <header cngxPopoverSheetHeader>
+    <header cngxPopoverSheetHeader style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--cngx-popover-sheet-header-gap, 8px)">
       <h2 cngxPopoverSheetTitle style="margin: 0; font-size: 1rem; flex: 1">Country</h2>
       <button cngxCloseButton aria-label="Close" (click)="sheet.requestClose('close')"></button>
       <input
