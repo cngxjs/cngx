@@ -90,15 +90,15 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
 
   private readonly sidenavs = contentChildren(CNGX_SIDENAV);
 
-  /** The start-positioned sidenav, if any. */
+  /** @internal The start-positioned sidenav, if any. */
   readonly startSidenav = computed(
     () => this.sidenavs().find((s) => s.position() === 'start') ?? null,
   );
 
-  /** The end-positioned sidenav, if any. */
+  /** @internal The end-positioned sidenav, if any. */
   readonly endSidenav = computed(() => this.sidenavs().find((s) => s.position() === 'end') ?? null);
 
-  /** Whether any sidenav is open in overlay mode. */
+  /** @internal Whether any sidenav is open in overlay mode. */
   readonly hasOverlay = computed(() => this.sidenavs().some((s) => s.overlayActive()));
 
   /** Whether an open overlay takes over the page or the layout (backdrop shown). */
@@ -133,7 +133,7 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
     });
   }
 
-  /** Closes all sidenavs that are currently in overlay mode. */
+  /** @internal Closes all sidenavs that are currently in overlay mode. */
   closeAllOverlays(): void {
     for (const nav of this.sidenavs()) {
       if (nav.overlayActive()) {

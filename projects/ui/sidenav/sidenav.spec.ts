@@ -969,7 +969,7 @@ describe('CngxSidenav auto mode', () => {
     const { nav } = mount(StandaloneRailHost);
     expect(nav.effectiveMode()).toBe('over');
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX3010: \[cngx-sidenav\] auto mode needs/),
+      expect.stringMatching(/^CNGX3010: \[cngx-sidenav\] auto mode needs a <cngx-sidenav-layout> ancestor;/),
     );
   });
 
@@ -1034,7 +1034,6 @@ describe('CngxSidenav auto mode', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(nav.overlayActive()).toBe(true);
-    (fixture.nativeElement.querySelector('.content-item') as HTMLElement).focus();
 
     stubWide('expanded');
     flushResize();
@@ -1059,6 +1058,98 @@ describe('CngxSidenav auto mode', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(nav.opened()).toBe(true);
+  });
+
+  it('engages the surface of an open standalone auto rail without a layout', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, nav } = mount(StandaloneRailHost);
+    fixture.componentInstance.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.surfaceActive()).toBe(true);
+    expect((nav.elementRef.nativeElement as HTMLElement).getAttribute('role')).toBe('dialog');
+  });
+
+  it('keeps an auto rail at compact open when the mode resolves over -> over', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    fixture.componentInstance.mode.set('over');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(true);
+  });
+
+  it('closes an open overlay when a pinned mode flips from over to side', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('over');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(true);
+    (fixture.nativeElement.querySelector('.content-item') as HTMLElement).focus();
+
+    fixture.componentInstance.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(false);
+  });
+
+  it('closes an open modal overlay on a flip to side even with focus inside the rail', () => {
+    stubWide('compact');
+    const { fixture, nav } = mount();
+    fixture.componentInstance.mode.set('over');
+    flushResize();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    nav.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const host = nav.elementRef.nativeElement as HTMLElement;
+    (host.querySelector('.nav-item') as HTMLElement).focus();
+    expect(host.contains(document.activeElement)).toBe(true);
+
+    fixture.componentInstance.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(nav.opened()).toBe(false);
+    expect(fixture.componentInstance.open()).toBe(false);
+  });
+});
+
+describe('CngxSidenav width clamp', () => {
+  @Component({
+    template: `<cngx-sidenav [width]="width()" maxWidth="600px">Nav</cngx-sidenav>`,
+    imports: [CngxSidenav],
+  })
+  class ClampHost {
+    width = signal('900px');
+  }
+
+  it('clamps a bound px width to maxWidth on both host styles', () => {
+    const fixture = TestBed.createComponent(ClampHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-sidenav-width')).toBe('600px');
+    expect(el.style.getPropertyValue('--cngx-sidebar-size')).toBe('600px');
+  });
+
+  it('passes a non-px width through unclamped', () => {
+    const fixture = TestBed.createComponent(ClampHost);
+    fixture.componentInstance.width.set('40rem');
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.directive(CngxSidenav)).nativeElement as HTMLElement;
+    expect(el.style.getPropertyValue('--cngx-sidenav-width')).toBe('40rem');
   });
 });
 
@@ -1642,7 +1733,10 @@ describe('CngxSidenav panel target', () => {
 
   it('reports an open overlay as expanded, never as a peek', () => {
     const { fixture, host, nav, outer } = setup();
+    // The side -> over flip is a presentation edge that starts the overlay
+    // closed, so it opens in a later tick.
     host.mode.set('over');
+    fixture.detectChanges();
     host.open.set(true);
     fixture.detectChanges();
     expect(nav.panelTarget.peeked?.()).toBe(false);

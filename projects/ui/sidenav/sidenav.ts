@@ -193,9 +193,9 @@ const WIDTH_CLASSES: ReadonlySet<string> = new Set<SidenavWidthClass>([
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
-    '[style.--cngx-sidenav-width]': 'width()',
+    '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth() ?? null',
-    '[style.--cngx-sidebar-size]': 'width()',
+    '[style.--cngx-sidebar-size]': 'effectiveWidth()',
     '[style.--cngx-sidebar-rail-size]': 'miniWidth() ?? null',
     '[attr.data-nav-railed]': "railed() ? 'true' : 'false'",
   },
@@ -272,7 +272,11 @@ export class CngxSidenav
    */
   readonly mode = input<SidenavMode>('auto');
 
-  /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
+  /**
+   * Width of the sidenav panel. Supports two-way `[(width)]` for resize. A px
+   * value renders clamped to `minWidth` / `maxWidth`; any other unit passes
+   * through unclamped.
+   */
   readonly width = model<string>(this.cfg.dimensions?.width ?? '280px');
 
   /**
@@ -463,16 +467,14 @@ export class CngxSidenav
 
   /**
    * @internal Drives the composed `CngxDrawerSurface`: engaged while an open
-   * overlay. An `auto` rail holds off until the container rule has resolved
-   * its width class: before that frame the rail reads as compact, and a
-   * surface engaged then would run its autofocus against a rail that has no
-   * layout yet, so an initially open overlay would go modal with focus left
-   * on the page. Engaging on the resolved frame gives the trap a real edge.
+   * overlay. An `auto` rail inside a layout holds off until the container rule
+   * has resolved its width class: the layout stays hidden until then, and a
+   * surface engaged earlier would run its autofocus against a rail that is
+   * not shown yet, so an initially open overlay would go modal with focus left
+   * on the page. Engaging on the resolved frame gives the trap a real edge. A
+   * pinned mode or a standalone rail has nothing to wait for and engages at once.
    */
-  readonly surfaceActive = computed(
-    () =>
-      this.overlayActive() && (this.mode() !== 'auto' || this.rawWidthClass().trim() !== ''),
-  );
+  readonly surfaceActive = computed(() => this.overlayActive() && !this.widthClassPending());
   /** @internal Drives the composed `CngxDrawerSurface`. */
   readonly surfaceModality = this.modality;
   /** @internal Drives the composed `CngxDrawerSurface`: one name in every state. */
@@ -515,15 +517,25 @@ export class CngxSidenav
 
   private readonly doc = inject(DOCUMENT);
   private readonly layoutCoordinator = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
+
+  /** An `auto` rail inside a layout whose container rule has not written the width class yet. */
+  private readonly widthClassPending = computed(
+    () =>
+      this.mode() === 'auto' &&
+      this.layoutCoordinator !== null &&
+      this.rawWidthClass().trim() === '',
+  );
   private readonly announcer = inject(CNGX_SIDENAV_ANNOUNCER_FACTORY)();
 
   /**
-   * Current/previous width-class pair for the open-flag reset. `null` until the
-   * layout's first `ResizeObserver` entry resolves the class, so settling from
-   * the unresolved first frame is not a class change.
+   * Current/previous presentation pair for the open-flag reset: the resolved
+   * mode plus whether `medium` rests as a rail. A pinned mode ignores the width
+   * class, so only its own flip is an edge; `auto` -> pinned `over` at compact
+   * keeps the presentation. `null` while an `auto` rail waits for the layout's
+   * first `ResizeObserver` entry, so settling from that frame is not a change.
    */
-  private readonly classTransition = createTransitionTracker<SidenavWidthClass | null>(() =>
-    this.rawWidthClass().trim() === '' ? null : this.widthClass(),
+  private readonly presentationTransition = createTransitionTracker<string | null>(() =>
+    this.widthClassPending() ? null : `${this.effectiveMode()}:${this.railBase()}`,
   );
 
   /**
@@ -583,7 +595,7 @@ export class CngxSidenav
       ) {
         cngxDevWarn(
           'CNGX3010',
-          '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> (or [cngxContainer]) ancestor; rendering as over.',
+          '[cngx-sidenav] auto mode needs a <cngx-sidenav-layout> ancestor; rendering as over.',
         );
       }
     });
@@ -616,24 +628,25 @@ export class CngxSidenav
       });
     }
 
-    // Open-flag reset on a width-class change, the one write in an effect here
+    // Open-flag reset on a presentation change, the one write in an effect here
     // (sidenav-accepted-debt §1): opened is a consumer model(), which cannot be
-    // a linkedSignal keyed on the class. In auto, every class change starts the
-    // new presentation closed, so a drawer opened at one width never reopens
-    // stale at another. Focus inside the rail keeps it open instead, so the
-    // focused element is not orphaned behind inert. Pinned modes never reset.
+    // a linkedSignal keyed on the presentation. Every change starts the new
+    // presentation closed, so a drawer opened at one width never reopens stale
+    // at another and a pinned over -> side flip leaves no open overlay behind.
+    // A change to an overlay presentation keeps the rail open while focus is
+    // inside it, so the focused element is not orphaned behind inert. A change
+    // to a docked presentation always closes: the rail stays visible there,
+    // and an open trap always holds focus inside, so the exception would leave
+    // opened (and a synced ?nav=open) true on a docked rail.
     effect(() => {
-      const current = this.classTransition.current();
-      const previous = this.classTransition.previous();
+      const current = this.presentationTransition.current();
+      const previous = this.presentationTransition.previous();
       if (previous === null || current === previous) {
         return;
       }
       untracked(() => {
-        if (this.mode() !== 'auto') {
-          return;
-        }
         const host = this.elementRef.nativeElement as HTMLElement;
-        this.opened.set(host.contains(this.doc.activeElement));
+        this.opened.set(this.isOverlay() && host.contains(this.doc.activeElement));
       });
     });
 
@@ -740,8 +753,16 @@ export class CngxSidenav
     return this.effectiveMode() === 'side' && !this.railBase();
   }
 
-  /** @internal Numeric px of the current width, or null for non-px units. */
-  protected readonly widthPx = computed(() => parsePx(this.width()));
+  /** @internal Numeric px of the current width clamped to min / max, or null for non-px units. */
+  protected readonly widthPx = computed(() => {
+    const px = parsePx(this.width());
+    return px === null ? null : clamp(px, this.minPx(), this.maxPx());
+  });
+  /** @internal The rendered width: the clamped px width, else the bound value as is. */
+  protected readonly effectiveWidth = computed(() => {
+    const px = this.widthPx();
+    return px === null ? this.width() : `${px}px`;
+  });
   /** @internal Resize bounds in px; a non-px bound falls back to 120 / 600. */
   protected readonly minPx = computed(() => parsePx(this.minWidth()) ?? 120);
   protected readonly maxPx = computed(() => parsePx(this.maxWidth()) ?? 600);

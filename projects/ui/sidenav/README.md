@@ -207,7 +207,7 @@ import {
 </cngx-sidenav>
 ```
 
-The query-param key defaults to `nav`. Override it per instance with `[param]`, or move the app-wide default through the config cascade:
+The query-param key defaults to `nav` on a start rail and `nav-end` on an end rail, so two synced rails in one layout never open each other. The default reads the static `position` attribute. Override it per instance with `[param]`, or move the app-wide default through the config cascade:
 
 ```typescript
 import { provideSidenavConfig, withSidenavRouterSync } from '@cngx/ui';
@@ -215,7 +215,7 @@ import { provideSidenavConfig, withSidenavRouterSync } from '@cngx/ui';
 provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }));
 ```
 
-Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSync({ param })`, which beats the `nav` literal. `router.navigate` rejections surface on the directive's `(syncError)` output. Without `@angular/router` the directive dev-warns once and no-ops.
+Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSync({ param })`, which beats the `nav` / `nav-end` literal. A config param applies to every rail, so a two-rail layout binds `[param]` on one of them. `router.navigate` rejections surface on the directive's `(syncError)` output. Without `@angular/router` the directive dev-warns once and no-ops.
 
 ## Accessibility
 

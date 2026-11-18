@@ -5,6 +5,8 @@ import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxSidenav } from './sidenav';
+import { CngxSidenavContent } from './sidenav-content';
+import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavRouterSync } from './sidenav-router-sync.directive';
 import { provideSidenavConfig } from './config/provide-sidenav-config';
 import { withSidenavRouterSync } from './config/features';
@@ -157,6 +159,69 @@ describe('CngxSidenavRouterSync', () => {
     fixture.detectChanges();
     await flush();
     expect(directive.param()).toBe('side');
+  });
+
+  it('keeps two synced rails apart: the end rail defaults to nav-end', async () => {
+    @Component({
+      template: `
+        <cngx-sidenav-layout>
+          <cngx-sidenav position="start" mode="over" cngxSidenavRouterSync>s</cngx-sidenav>
+          <cngx-sidenav-content>main</cngx-sidenav-content>
+          <cngx-sidenav position="end" mode="over" cngxSidenavRouterSync>e</cngx-sidenav>
+        </cngx-sidenav-layout>
+      `,
+      imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavRouterSync],
+    })
+    class DualSyncHost {}
+
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const router = TestBed.inject(Router);
+    await router.navigate([], { queryParams: { nav: 'open' } });
+
+    const fixture = TestBed.createComponent(DualSyncHost);
+    fixture.detectChanges();
+    await flush();
+    fixture.detectChanges();
+
+    const rails = fixture.debugElement.queryAll(By.directive(CngxSidenav));
+    const railAt = (position: string) =>
+      rails.find((d) => d.injector.get(CngxSidenav).position() === position)!;
+    const start = railAt('start');
+    const end = railAt('end');
+    expect(start.injector.get(CngxSidenav).opened()).toBe(true);
+    expect(end.injector.get(CngxSidenav).opened()).toBe(false);
+    expect(end.injector.get(CngxSidenavRouterSync).param()).toBe('nav-end');
+    expect(start.injector.get(CngxSidenavRouterSync).param()).toBe('nav');
+  });
+
+  it('drops ?nav=open when an open overlay flips to a docked rail', async () => {
+    @Component({
+      template: `<cngx-sidenav cngxSidenavRouterSync [mode]="mode()">x</cngx-sidenav>`,
+      imports: [CngxSidenav, CngxSidenavRouterSync],
+    })
+    class FlipHost {
+      mode = signal<'over' | 'side'>('over');
+    }
+
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const router = TestBed.inject(Router);
+    await router.navigate([], { queryParams: { nav: 'open' } });
+
+    const fixture = TestBed.createComponent(FlipHost);
+    fixture.detectChanges();
+    await flush();
+    const sidenav = fixture.debugElement.query(By.directive(CngxSidenav))
+      .componentInstance as CngxSidenav;
+    expect(sidenav.opened()).toBe(true);
+
+    fixture.componentInstance.mode.set('side');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(sidenav.opened()).toBe(false);
+    expect(router.parseUrl(router.url).queryParamMap.has('nav')).toBe(false);
   });
 
   it('warns CNGX1031 once and no-ops without provideRouter(...)', async () => {

@@ -1,4 +1,4 @@
-import { computed, Directive, inject, input, output } from '@angular/core';
+import { computed, Directive, HostAttributeToken, inject, input, output } from '@angular/core';
 import { injectQueryParamSync } from '@cngx/common/layout';
 import { CngxRuntimeError } from '@cngx/utils';
 
@@ -14,8 +14,8 @@ import { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
  * contract token, never the concrete class.
  *
  * The `param` default cascades: per-instance `[param]` wins, then
- * `withSidenavRouterSync({ param })` on `CNGX_SIDENAV_CONFIG`, then the `'nav'`
- * literal. Without `@angular/router` the kernel dev-warns once and no-ops.
+ * `withSidenavRouterSync({ param })` on `CNGX_SIDENAV_CONFIG`, then `'nav'` on a
+ * start rail and `'nav-end'` on an end rail, so two synced rails keep apart. Without `@angular/router` the kernel dev-warns once and no-ops.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-router-sync.directive.ts
  * @since 0.1.0
@@ -34,7 +34,8 @@ export class CngxSidenavRouterSync {
 
   /**
    * Query-param key that the sidenav `opened` state syncs to, set through `[param]`.
-   * Falls back to the config `routerSync.param`, then to `'nav'`; the resolved key is
+   * Falls back to the config `routerSync.param`, then to `'nav'` (`'nav-end'` on a
+   * `position="end"` rail); the resolved key is
    * the `param` computed. An empty string is a set value and is used as the key.
    * A `[param]` set after construction renames the synced key: the current state is reflected under the
    * new key and the old key is removed. The initial URL is read once under the resolved key, after
@@ -42,8 +43,14 @@ export class CngxSidenavRouterSync {
    */
   readonly paramInput = input<string | undefined>(undefined, { alias: 'param' });
 
-  /** Resolved query-param key: `[param]` -> config `routerSync.param` -> `'nav'`. */
-  readonly param = computed(() => this.paramInput() ?? this.cfg.routerSync?.param ?? 'nav');
+  // Read from the static attribute, as the persistence key does.
+  private readonly defaultParam =
+    inject(new HostAttributeToken('position'), { optional: true }) === 'end' ? 'nav-end' : 'nav';
+
+  /** Resolved query-param key: `[param]` -> config `routerSync.param` -> `'nav'` / `'nav-end'`. */
+  readonly param = computed(
+    () => this.paramInput() ?? this.cfg.routerSync?.param ?? this.defaultParam,
+  );
 
   /** Emits when a `router.navigate` rejection is observed. Parity with the stepper sibling. */
   readonly syncError = output<unknown>();
