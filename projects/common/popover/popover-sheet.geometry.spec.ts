@@ -283,7 +283,7 @@ describe('CngxPopoverSheet geometry', () => {
       h.rows.set(Array.from({ length: 60 }, (_, i) => i));
     };
 
-    it.fails('caps the block size at the anchor area minus the far margin', async () => {
+    it('caps the block size at the anchor area minus the far margin', async () => {
       const { panel } = await open(tall);
       const content = panel.querySelector<HTMLElement>('.content')!;
       const header = panel.querySelector<HTMLElement>('.header')!;
@@ -297,7 +297,7 @@ describe('CngxPopoverSheet geometry', () => {
       expect(header.offsetTop).toBe(headerTop);
     });
 
-    it.fails('opens above a trigger near the bottom edge', async () => {
+    it('opens above a trigger near the bottom edge', async () => {
       const { panel } = await open((h) => {
         tall(h);
         h.fallbacks.set(['flip-block']);
@@ -309,7 +309,7 @@ describe('CngxPopoverSheet geometry', () => {
       expect(rect.top).toBeGreaterThanOrEqual(8 - 1);
     });
 
-    it.fails('lets the cap track the anchor margin', async () => {
+    it('lets the cap track the anchor margin', async () => {
       const { panel } = await open((h) => {
         tall(h);
         h.offset.set(0);
