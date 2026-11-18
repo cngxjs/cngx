@@ -88,6 +88,18 @@
   }
 
   /**
+   * Text colour of the rail: rows, header and footer inherit it. Unset by
+   * default, so the rail falls back to `--cngx-color-text` on itself and a
+   * `[data-color-scheme]` island writes its own ink.
+   * @group Surface
+   * @see [[--cngx-color-text]]
+   */
+  @property --cngx-nav-rail-color {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
    * Width of the border on the rail's inner edge (inline end for
    * `side="start"`, inline start for `side="end"`). The group flyout clears it.
    * @group Surface
@@ -134,7 +146,7 @@
     border: 0 solid var(--cngx-nav-rail-border-color, var(--cngx-color-border, oklch(0.89 0 0)));
     border-inline-end-width: var(--cngx-nav-rail-border-width, 1px);
     background: var(--cngx-nav-rail-bg, var(--cngx-color-surface, oklch(1 0 0)));
-    color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    color: var(--cngx-nav-rail-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
     /* The flyout anchors to the group head, which sits the row inset and the
        border inside the rail edge: clear both, then keep the gap. */
     --cngx-nav-flyout-offset: calc(
