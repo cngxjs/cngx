@@ -29,7 +29,9 @@
  *
  * - `.cngx-sidenav-backdrop` - mobile scrim for `over` mode
  *
- * All transitions short-circuit under `prefers-reduced-motion`.
+ * Reduced motion: the core motion tokens (`@cngx/core/theming/motion-tokens`)
+ * shorten every transition under `prefers-reduced-motion`, with the
+ * `data-motion="full"` escape.
  *
  * **Pair with**
  *
@@ -166,13 +168,5 @@
       opacity var(--cngx-sidenav-transition-duration, 0.25s)
         var(--cngx-sidenav-transition-easing, ease),
       visibility 0s 0s;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    cngx-sidenav,
-    cngx-sidenav-content,
-    .cngx-sidenav-backdrop {
-      transition: none !important;
-    }
   }
 }

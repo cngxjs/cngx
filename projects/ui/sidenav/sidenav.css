@@ -599,7 +599,6 @@
    * edge facing the content keeps the flex footprint at the rail width.
    */
   cngx-sidenav[data-sidebar-state='peek'] {
-    z-index: 3;
     box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px oklch(0 0 0 / 0.1));
   }
 

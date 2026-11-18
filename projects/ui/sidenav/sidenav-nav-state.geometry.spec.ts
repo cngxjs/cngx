@@ -728,6 +728,16 @@ describe('rail as a crop of the expanded sidenav', () => {
     }
   });
 
+  it('stacks the peek from the sidebar peek token, with no own z-index', async () => {
+    const { fixture, el, settle } = mountCrop();
+    fixture.componentInstance.collapsed.set(true);
+    settle();
+    el('.crop').style.setProperty('--cngx-sidebar-peek-z-index', '7');
+    await peek(el, settle);
+    expect(el('.crop').getAttribute('data-sidebar-state')).toBe('peek');
+    expect(getComputedStyle(el('.crop')).zIndex).toBe('7');
+  });
+
   it('paints no label, badge or chevron pixels on the rail', () => {
     const { fixture, el, settle } = mountCrop();
     fixture.componentInstance.collapsed.set(true);
