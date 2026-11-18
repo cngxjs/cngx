@@ -24,7 +24,9 @@
  * - `cngx.components` - cngx-prefixed component styles
  *   (`.cngx-card`, `.cngx-toggle`, ...). Component CSS files use
  *   `@layer cngx.components { ... }` so they sit here regardless of
- *   their `styleUrl` load order.
+ *   their `styleUrl` load order. A base skin an owner restyles sits in
+ *   the nested `cngx.components.skin`; rules directly in
+ *   `cngx.components` beat every nested layer regardless of load order.
  * - `cngx.theme` - consumer-side token overrides. Re-skin the
  *   library by overriding `--cngx-color-*` and friends here without
  *   touching component selectors.

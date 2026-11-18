@@ -5,8 +5,10 @@
  * as a usable option list: bullets stripped, options laid out with
  * breathing room, keyboard-cursor and selected-state signals
  * painted in. Container surface (background, border, radius) is
- * owned by the surrounding panel - `select-base.css` paints panel
- * chrome at higher specificity for the select family.
+ * owned by the surrounding panel. The rules sit in the nested layer
+ * `cngx.components.skin`, so an owner stylesheet directly in
+ * `cngx.components` (the select panels, the paginator) wins by layer,
+ * never by load order.
  *
  * **Selectors**
  *
@@ -135,6 +137,18 @@
   }
 
   /**
+   * Minimum block size of each option row. The option floors it against
+   * `--cngx-target-min`, so a coarse pointer keeps its tap target.
+   * @group Layout
+   * @see [[--cngx-target-min]]
+   */
+  @property --cngx-option-min-height {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
    * Corner radius of each option.
    * @group Layout
    */
@@ -208,7 +222,7 @@
   }
 }
 
-@layer cngx.components {
+@layer cngx.components.skin {
   [cngxListbox] {
     /* Derive container padding from the global scale (SET-from-scale rule; the
        registered pixel initial defeats the use-site fallback). 4 -> xs. */
@@ -240,7 +254,7 @@
     /* Touch-target floor - each option is a tap target; floor its hit box to
        the pointer-derived minimum on the block axis. Inert at 0px on a fine
        pointer, so [data-density] still drives the natural row height. */
-    min-block-size: var(--cngx-target-min, 0px);
+    min-block-size: max(var(--cngx-option-min-height, 0px), var(--cngx-target-min, 0px));
   }
 
   .cngx-option--highlighted {
@@ -279,7 +293,7 @@
   .cngx-option--selected {
     /* The option is a <div cngxOption> (not a form control), so no
      * forced-color-adjust is needed. The base rule is a plain class in
-     * @layer cngx.components with no @scope, so this unlayered block wins
+     * @layer cngx.components.skin with no @scope, so this unlayered block wins
      * without !important (unlayered beats layered). */
     background: Highlight;
     color: HighlightText;
