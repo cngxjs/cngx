@@ -7,6 +7,11 @@
  * the panel opens, and the region its padding. Without it the accordion renders
  * as bare stacked buttons.
  *
+ * Opt-in: the classes `.cngx-accordion`, `.cngx-accordion__header` and
+ * `.cngx-accordion__region` switch the skin on, not the directive attributes,
+ * so organisms that compose the directives (`CngxAccordionItem`, the data-grid
+ * accordion rows) keep their own look.
+ *
  * Markup the default skin expects (header buttons are direct children of the
  * `cngxAccordion` element so the roving host can find them):
  *
@@ -32,7 +37,7 @@
 @layer cngx.tokens {
   /**
    * Header button padding. The pixel `initial-value` is only the un-set
-   * fallback; the standalone `[cngxAccordion]` host SETs this from
+   * fallback; the standalone `.cngx-accordion` host SETs this from
    * `--cngx-space-*` (below) so a global `[data-density]` re-scales a bare
    * `@cngx/common` accordion, and the `@cngx/ui/accordion` organism SETs the
    * same tokens at its group default. Never put `var()` in the `initial-value`
@@ -88,7 +93,7 @@
 }
 
 @layer cngx.components {
-  [cngxAccordion] {
+  .cngx-accordion {
     /* Derive header + region padding from the scale so a bare @cngx/common
        accordion densifies at its own default host - standalone use must not
        depend on the @cngx/ui/accordion organism (which SETs the same tokens at
@@ -105,7 +110,7 @@
     overflow: hidden;
   }
 
-  [cngxAccordionPanel] {
+  .cngx-accordion__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -124,7 +129,7 @@
     cursor: pointer;
   }
 
-  [cngxAccordionPanel]:hover {
+  .cngx-accordion__header:hover {
     background: color-mix(
       in oklch,
       var(--cngx-color-primary, oklch(0.66 0.19 50)) 6%,
@@ -132,7 +137,7 @@
     );
   }
 
-  [cngxAccordionPanel]:focus-visible {
+  .cngx-accordion__header:focus-visible {
     outline: 2px solid var(--cngx-color-primary, oklch(0.66 0.19 50));
     outline-offset: -2px;
   }
@@ -140,7 +145,7 @@
   /* Twisty: a CSS-drawn chevron after the label that rotates when the panel
    * opens. A skin projecting its own icon hides it via
    * `--cngx-accordion-twisty-display: none` on the header. */
-  [cngxAccordionPanel]::after {
+  .cngx-accordion__header::after {
     content: '';
     display: var(--cngx-accordion-twisty-display, block);
     flex: 0 0 auto;
@@ -152,7 +157,7 @@
     transition: rotate var(--cngx-duration-fast, 150ms) ease;
   }
 
-  [cngxAccordionPanel][aria-expanded='true']::after {
+  .cngx-accordion__header[aria-expanded='true']::after {
     rotate: 225deg;
   }
 

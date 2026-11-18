@@ -255,14 +255,16 @@ owns one open-set signal and arbitrates single- vs multi-open (`[multi]`); each
 `aria-expanded` from that one signal - no panel-owned state, no sibling syncing. The
 container pins `CngxRovingTabindex` to the vertical axis for arrow-key header navigation,
 so the header buttons must be direct children of the `cngxAccordion` element. Default
-chrome ships as Track-B CSS in `@cngx/themes/cngx.css`.
+chrome ships as Track-B CSS in `@cngx/themes/cngx.css` and is switched on by the classes
+`cngx-accordion`, `cngx-accordion__header` and `cngx-accordion__region`, not by the
+directives.
 
 ```html
-<div cngxAccordion #acc="cngxAccordion" [multi]="false">
-  <button cngxAccordionPanel panelId="a" controls="region-a">Section A</button>
-  <div role="region" id="region-a" [hidden]="!acc.isOpen('a')">…</div>
-  <button cngxAccordionPanel panelId="b" controls="region-b">Section B</button>
-  <div role="region" id="region-b" [hidden]="!acc.isOpen('b')">…</div>
+<div cngxAccordion class="cngx-accordion" #acc="cngxAccordion" [multi]="false">
+  <button cngxAccordionPanel class="cngx-accordion__header" panelId="a" controls="region-a">Section A</button>
+  <div role="region" id="region-a" class="cngx-accordion__region" [hidden]="!acc.isOpen('a')">…</div>
+  <button cngxAccordionPanel class="cngx-accordion__header" panelId="b" controls="region-b">Section B</button>
+  <div role="region" id="region-b" class="cngx-accordion__region" [hidden]="!acc.isOpen('b')">…</div>
 </div>
 ```
 
