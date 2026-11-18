@@ -88,6 +88,13 @@ const EMBER = 'oklch(0.66 0.19 50)';
         <span cngxCardBadge intent="primary">P</span>
       </cngx-card>
     </div>
+    <div
+      class="branded-dark"
+      data-color-scheme="dark"
+      style="--cngx-color-primary: oklch(0.55 0.15 250)"
+    >
+      <cngx-card as="button" [selectable]="true" [selected]="true">Dark</cngx-card>
+    </div>
   `,
 })
 class PrimaryCardHost {}
@@ -174,6 +181,15 @@ describe('CngxCard primary tokens', () => {
     const root = mountPrimary();
     expect(colour(root, '.branded .cngx-card', 'border-top-color')).toEqual(rasterise(BLUE));
     expect(colour(root, '.default .cngx-card', 'border-top-color')).toEqual(rasterise(EMBER));
+  });
+
+  it('tints the selected surface in the hue of the primary in scope', () => {
+    const root = mountPrimary();
+    const surface = (scope: string): Rgba =>
+      colour(root, `${scope} .cngx-card`, 'background-color');
+    expect(surface('.branded')).toEqual(rasterise('oklch(0.96 0.04 250)'));
+    expect(surface('.default')).toEqual(rasterise('oklch(0.96 0.04 50)'));
+    expect(surface('.branded-dark')).toEqual(rasterise('oklch(0.36 0.06 250)'));
   });
 
   it('paints the focus ring with the primary in scope', () => {
