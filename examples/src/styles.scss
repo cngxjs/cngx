@@ -2337,8 +2337,10 @@ button.chip.demo-chip--copied {
 // CngxScrollLock demo. The lock toggle reuses the chip surface but turns
 // danger-red when the lock is engaged so the scroll-lock state is visible
 // at a glance. The scroll list shows 20 ambient rows so a meaningful scroll
-// is available to lock against.
-.demo-scroll-lock-chip[aria-pressed='true'] {
+// is available to lock against. The `button.chip` prefix outranks the
+// shared pressed and hover chip fills, which would repaint the chip
+// under the danger ink.
+button.chip.demo-scroll-lock-chip[aria-pressed='true'] {
   background: var(--cngx-color-danger-strong, #b00020);
   color: var(--cngx-color-on-danger-strong, #ffffff);
   border-color: var(--cngx-color-danger-strong, #b00020);
