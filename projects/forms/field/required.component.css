@@ -29,6 +29,14 @@
  */
 
 @layer cngx.components {
+  /**
+   * Colour of the required marker glyph, shared with `CngxLabel`. Unset by
+   * default, so the marker follows `--cngx-field-error-color`, then the
+   * `--cngx-color-danger-text` rung of the scheme in scope.
+   * @cssprop {<color>} --cngx-field-required-color
+   * @group State / Error
+   */
+
   @scope (.cngx-required) {
     :scope {
       /* Inline so the marker sits next to the label text. `display:
