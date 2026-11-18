@@ -90,7 +90,9 @@ class DualHost {
       <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()">
         <button type="button" class="nav-item">Nav</button>
       </cngx-sidenav>
-      <cngx-sidenav-content><button type="button" class="content-item">Content</button></cngx-sidenav-content>
+      <cngx-sidenav-content
+        ><button type="button" class="content-item">Content</button></cngx-sidenav-content
+      >
     </cngx-sidenav-layout>
   `,
   imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
@@ -239,7 +241,9 @@ describe('CngxSidenav', () => {
     fixture.detectChanges();
     expect(host.leftOpen()).toBe(true);
     expect(layoutEl.classList.contains('cngx-sidenav-layout--has-overlay')).toBe(true);
-    expect(layoutEl.querySelector('.cngx-sidenav-backdrop')!.getAttribute('aria-hidden')).toBe('true');
+    expect(layoutEl.querySelector('.cngx-sidenav-backdrop')!.getAttribute('aria-hidden')).toBe(
+      'true',
+    );
   });
 
   it('layout finds start and end sidenavs', () => {
@@ -929,7 +933,9 @@ describe('CngxSidenav auto mode', () => {
     expect(nav.widthClass()).toBe('compact');
     expect(nav.effectiveMode()).toBe('over');
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX3026: \[cngx-sidenav\] unknown --cngx-sidenav-width-class "wide"/),
+      expect.stringMatching(
+        /^CNGX3026: \[cngx-sidenav\] unknown --cngx-sidenav-width-class "wide"/,
+      ),
       expect.anything(),
     );
   });
@@ -969,7 +975,9 @@ describe('CngxSidenav auto mode', () => {
     const { nav } = mount(StandaloneRailHost);
     expect(nav.effectiveMode()).toBe('over');
     expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/^CNGX3010: \[cngx-sidenav\] auto mode needs a <cngx-sidenav-layout> ancestor;/),
+      expect.stringMatching(
+        /^CNGX3010: \[cngx-sidenav\] auto mode needs a <cngx-sidenav-layout> ancestor;/,
+      ),
     );
   });
 
@@ -1373,7 +1381,6 @@ describe('CngxSidenav resize math and shortcut', () => {
   });
 });
 
-
 @Component({
   template: `
     <cngx-sidenav-layout>
@@ -1394,7 +1401,9 @@ class DualShortcutHost {
 
 describe('CngxSidenav toggle hotkey', () => {
   const pressModB = (): void => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }),
+    );
   };
 
   it('announces the new state through CngxLiveAnnouncer, scoped to the rail', () => {
@@ -1426,7 +1435,20 @@ describe('CngxSidenav toggle hotkey', () => {
     const fixture = TestBed.createComponent(ShortcutHost);
     fixture.detectChanges();
     pressModB();
+    fixture.detectChanges();
     expect(announce.mock.calls[0][0]).toBe('Menü offen');
+  });
+
+  it('speaks the open state inside the modal overlay, not in an inert body region', () => {
+    const fixture = TestBed.createComponent(ShortcutHost);
+    fixture.detectChanges();
+    const railEl = fixture.debugElement.query(By.directive(CngxSidenav))
+      .nativeElement as HTMLElement;
+
+    pressModB();
+    fixture.detectChanges();
+    expect(railEl.getAttribute('aria-modal')).toBe('true');
+    expect(railEl.querySelector('[aria-live]')).not.toBeNull();
   });
 
   it('lets CNGX_SIDENAV_ANNOUNCER_FACTORY replace the announcer', () => {
@@ -1442,6 +1464,7 @@ describe('CngxSidenav toggle hotkey', () => {
     const fixture = TestBed.createComponent(ShortcutHost);
     fixture.detectChanges();
     pressModB();
+    fixture.detectChanges();
     pressModB();
     expect(spoken).toEqual([true, false]);
   });
@@ -1456,7 +1479,9 @@ describe('CngxSidenav toggle hotkey', () => {
 
     fixture.componentInstance.shortcut.set('mod+k');
     fixture.detectChanges();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }),
+    );
     fixture.detectChanges();
     expect(fixture.componentInstance.open()).toBe(true);
   });
@@ -1517,7 +1542,9 @@ describe('CngxSidenav toggle hotkey', () => {
     fixture.componentInstance.endShortcut.set('mod+k');
     fixture.detectChanges();
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true }),
+    );
     fixture.detectChanges();
 
     expect(fixture.componentInstance.endOpen()).toBe(true);
@@ -1771,7 +1798,9 @@ describe('CngxSidenav panel target', () => {
 });
 
 describe('CngxSidenav persistence', () => {
-  function memoryStorage(seed: Record<string, string> = {}): Storage & { data: Map<string, string> } {
+  function memoryStorage(
+    seed: Record<string, string> = {},
+  ): Storage & { data: Map<string, string> } {
     const data = new Map(Object.entries(seed));
     return {
       data,
@@ -1797,7 +1826,11 @@ describe('CngxSidenav persistence', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     const navDe = fixture.debugElement.query(By.directive(CngxSidenav));
-    return { fixture, nav: navDe.injector.get(CngxSidenav), rail: navDe.nativeElement as HTMLElement };
+    return {
+      fixture,
+      nav: navDe.injector.get(CngxSidenav),
+      rail: navDe.nativeElement as HTMLElement,
+    };
   }
 
   it('seeds an unbound collapsed from storage', () => {

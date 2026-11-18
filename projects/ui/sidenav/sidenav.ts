@@ -9,6 +9,7 @@ import {
   ElementRef,
   HostAttributeToken,
   inject,
+  Injector,
   input,
   model,
   signal,
@@ -616,9 +617,18 @@ export class CngxSidenav
     // toggle() (never a raw opened flip) and announces the new state, since no
     // focused trigger conveys aria-expanded. An unset shortcut lists no
     // binding at all: an empty combo would warn CNGX1080 as unparseable.
+    // An open is announced after the render that applies the modal state:
+    // spoken earlier, the message lands in a body region the overlay is about
+    // to make inert. The hotkey runs outside an injection context, hence the
+    // captured injector.
+    const injector = inject(Injector);
     const runToggle = (): void => {
       this.toggle();
-      this.announcer.announce(this.expanded());
+      if (!this.expanded()) {
+        this.announcer.announce(false);
+        return;
+      }
+      afterNextRender(() => this.announcer.announce(true), { injector });
     };
     injectHotkeys(
       computed(() => {
