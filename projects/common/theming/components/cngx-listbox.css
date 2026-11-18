@@ -5,8 +5,10 @@
  * as a usable option list: bullets stripped, options laid out with
  * breathing room, keyboard-cursor and selected-state signals
  * painted in. Container surface (background, border, radius) is
- * owned by the surrounding panel - `select-base.css` paints panel
- * chrome at higher specificity for the select family.
+ * owned by the surrounding panel. The rules sit in the nested layer
+ * `cngx.components.skin`, so an owner stylesheet directly in
+ * `cngx.components` (the select panels, the paginator) wins by layer,
+ * never by load order.
  *
  * **Selectors**
  *
@@ -208,7 +210,7 @@
   }
 }
 
-@layer cngx.components {
+@layer cngx.components.skin {
   [cngxListbox] {
     /* Derive container padding from the global scale (SET-from-scale rule; the
        registered pixel initial defeats the use-site fallback). 4 -> xs. */
@@ -279,7 +281,7 @@
   .cngx-option--selected {
     /* The option is a <div cngxOption> (not a form control), so no
      * forced-color-adjust is needed. The base rule is a plain class in
-     * @layer cngx.components with no @scope, so this unlayered block wins
+     * @layer cngx.components.skin with no @scope, so this unlayered block wins
      * without !important (unlayered beats layered). */
     background: Highlight;
     color: HighlightText;

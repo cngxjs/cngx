@@ -22,7 +22,8 @@
  * - `cngx.components` - externalised directive CSS (`CngxAccordion`,
  *   `CngxAsync`, `CngxBackdrop`, `CngxBadge`, `CngxBottomSheet`,
  *   `CngxBreadcrumb`, `CngxButtonToggle`, the data-grid family,
- *   `CngxDialog`, `CngxDivider`, `CngxListbox`,
+ *   `CngxDialog`, `CngxDivider`, `CngxListbox` (nested
+ *   `cngx.components.skin`),
  *   `CngxMenu`, the nav atoms (`CngxNavLink`, `CngxNavGroup`,
  *   `CngxNavLabel`, `CngxNavBadge`, `CngxNavIcon`, `CngxNavHeader`,
  *   `CngxNavFooter`, `CngxNavMark`, `CngxNavName`), `CngxRipple`, `CngxSlider`, `CngxTooltip`,
