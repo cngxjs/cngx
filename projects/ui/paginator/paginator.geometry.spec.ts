@@ -1,7 +1,8 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue, containerState, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
+import { cdp } from 'vitest/browser';
 
 import {
   CngxPaginator,
@@ -500,5 +501,66 @@ describe('CngxPaginator rail knob', () => {
     };
     expect(rasterise(ring('.rail-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
     expect(rasterise(ring('.rail-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
+  });
+});
+
+// ── Touch floor follows the shared token (paginator-base.css) ────────────────
+
+// The touch floor comes from the `--cngx-target-min` family alone, so the
+// host loads the core token sheet next to the paginator. A paginator-own
+// coarse-pointer button size would ignore `data-touch="off"`.
+@Component({
+  selector: 'cngx-paginator-touch-host',
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorPrev, CngxPaginatorNext],
+  styleUrls: ['../../core/theming/layers.css', '../../core/theming/system-tokens.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div [attr.data-touch]="touch()">
+      <cngx-paginator aria-label="Pager" [total]="100" [pageIndex]="3" [pageSize]="10">
+        <cngx-pgn-prev />
+        <cngx-pgn-next />
+      </cngx-paginator>
+    </div>
+  `,
+})
+class PaginatorTouchHost {
+  readonly touch = signal<'on' | 'off'>('off');
+}
+
+function navButtonHeight(touch: 'on' | 'off'): number {
+  const fixture = TestBed.createComponent(PaginatorTouchHost);
+  fixture.componentInstance.touch.set(touch);
+  mountedRoot = fixture.nativeElement as HTMLElement;
+  document.body.appendChild(mountedRoot);
+  fixture.detectChanges();
+  const button = mountedRoot.querySelector<HTMLElement>('cngx-pgn-next button');
+  if (!button) {
+    throw new Error('cngx-pgn-next renders no button');
+  }
+  return button.getBoundingClientRect().height;
+}
+
+describe('CngxPaginator touch floor on a coarse pointer', () => {
+  afterEach(async () => {
+    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  });
+
+  async function emulateCoarse(): Promise<void> {
+    // setEmulatedMedia has no pointer feature; touch emulation flips both
+    // `pointer` and `any-pointer` to coarse, as DevTools device mode does.
+    await cdp().send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+    expect(matchMedia('(pointer: coarse)').matches).toBe(true);
+    expect(matchMedia('(any-pointer: coarse)').matches).toBe(true);
+  }
+
+  it('keeps the nav buttons at their normal size under data-touch="off"', async () => {
+    await emulateCoarse();
+    expect(navButtonHeight('off')).toBeCloseTo(36, 0);
+  });
+
+  it('lifts the nav buttons to the 44px floor under data-touch="on"', async () => {
+    await emulateCoarse();
+    expect(navButtonHeight('on')).toBeGreaterThanOrEqual(44 - 0.5);
   });
 });
