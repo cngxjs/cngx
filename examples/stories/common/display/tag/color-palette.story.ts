@@ -14,7 +14,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxTag'],
   viewProviders: [
-    "provideTagConfigAt(withTagColors({ 'my-brand': { bg: 'var(--cngx-color-primary, #4f46e5)', color: 'var(--cngx-color-on-primary, #ffffff)', border: 'transparent' } }))",
+    "provideTagConfigAt(withTagColors({ 'my-brand': { bg: 'var(--cngx-color-primary-strong, oklch(0.58 0.19 50))', color: 'var(--cngx-color-on-primary-strong, oklch(1 0 0))', border: 'transparent' } }))",
   ],
   template: `
   <div class="demo-tag-row">

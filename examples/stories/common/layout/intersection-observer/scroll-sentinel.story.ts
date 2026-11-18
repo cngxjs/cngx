@@ -73,8 +73,8 @@ export const STORY: DemoSpec = {
 }
 
 .demo-io-sentinel--visible {
-  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
-  color: var(--cngx-color-on-primary, #ffffff);
+  background: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+  color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
 }`,
   templateChrome: `<div class="event-grid" style="margin-top: 12px">
     <div class="event-row">

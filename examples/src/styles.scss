@@ -874,8 +874,8 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   padding: 0 5px;
   margin-inline-start: 6px;
   border-radius: 9px;
-  background: var(--cngx-color-danger, #b00020);
-  color: var(--cngx-color-on-danger, #ffffff);
+  background: var(--cngx-color-danger-strong, #b00020);
+  color: var(--cngx-color-on-danger-strong, #ffffff);
   font-size: 0.75em;
   line-height: 1;
 }
@@ -1594,11 +1594,11 @@ button.chip:is(:disabled, [aria-disabled='true']) {
 }
 // Consumer-defined `[data-color="my-brand"]` extension demonstrated by
 // the color-palette + provideTagConfig stories. Maps the open-string
-// key onto the cngx primary token so dark/light flips track the rest
+// key onto the strong primary pair so dark/light flips track the rest
 // of the page chrome.
 .cngx-tag[data-color='my-brand'] {
-  --cngx-tag-bg: var(--cngx-color-primary, oklch(0.55 0.21 280));
-  --cngx-tag-color: var(--cngx-color-on-primary, oklch(0.99 0 0));
+  --cngx-tag-bg: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+  --cngx-tag-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   --cngx-tag-border: 1px solid transparent;
 }
 
@@ -2315,8 +2315,8 @@ button.chip.demo-chip--copied {
   transition: background 0.3s;
 }
 .demo-io-sentinel--visible {
-  background: var(--cngx-color-primary, var(--cngx-ex-focus, #2563eb));
-  color: var(--cngx-color-on-primary, #ffffff);
+  background: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+  color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
 }
 
 // CngxResizeObserver demo helpers. The drag handle uses the native
@@ -2339,9 +2339,9 @@ button.chip.demo-chip--copied {
 // at a glance. The scroll list shows 20 ambient rows so a meaningful scroll
 // is available to lock against.
 .demo-scroll-lock-chip[aria-pressed='true'] {
-  background: var(--cngx-color-danger, #b00020);
-  color: var(--cngx-color-on-danger, #ffffff);
-  border-color: var(--cngx-color-danger, #b00020);
+  background: var(--cngx-color-danger-strong, #b00020);
+  color: var(--cngx-color-on-danger-strong, #ffffff);
+  border-color: var(--cngx-color-danger-strong, #b00020);
 }
 .demo-scroll-lock-hint {
   font-size: 0.875rem;
@@ -2930,8 +2930,8 @@ pre.code-block code {
   border: 1px solid var(--cngx-color-border, #cbd5e1);
 }
 .demo-mini-form-btn--primary {
-  background: var(--cngx-color-primary, #2563eb);
-  color: var(--cngx-color-on-primary, #fff);
+  background: var(--cngx-color-primary-strong, oklch(0.58 0.19 50));
+  color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
   border: 0;
 }
 .demo-mini-form-heading {
