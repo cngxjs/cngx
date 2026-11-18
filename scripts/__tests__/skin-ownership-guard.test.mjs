@@ -1,5 +1,13 @@
 // Skin and story ownership guard.
 //
+// S0  a skin (`projects/*/theming/components/*.css`) is switched on by a class,
+//     never by a directive attribute (`[cngxMenu]`): a host directive writes
+//     no attribute, so an attribute-keyed skin reaches only the templates that
+//     spell it out, and the organisms among them have to compensate. An
+//     attribute selector passes inside `:where()` (a zero-specificity UA reset
+//     every owner beats; the guard cannot tell a reset from paint, review
+//     can), with a top-level class in its compound or in a compound before it,
+//     or inside `@scope (<class>)`.
 // S1  a skin (`projects/*/theming/components/*.css`) or a ui component
 //     stylesheet (`projects/ui/**/*.css`) selects only its own classes and the
 //     classes of lower-level or imported entries. It fails on a class whose
@@ -14,8 +22,9 @@
 //     (`forms/field`) renders no value control either, so its stories may
 //     list a same-level entry that imports it (the input or select the field
 //     contract runs on).
-// S6  an exception lives only as a row of SKIN_OWNERSHIP_EXEMPT or
-//     STORY_OWNERSHIP_EXEMPT, with exact counts and a reason. A row whose
+// S6  an exception lives only as a row of SKIN_OPT_IN_EXEMPT,
+//     SKIN_OWNERSHIP_EXEMPT or STORY_OWNERSHIP_EXEMPT, with exact counts and a
+//     reason. A row whose
 //     hits are gone fails as stale, so the ratchet only shrinks.
 //
 // Class owner: the entry whose non-spec, comment-stripped TS/HTML writes the
@@ -72,6 +81,120 @@ const CONTEXT_AXIS = /^cngx-(density|text-scale|motion|contrast|touch)(-|$)/;
  * @type {{ file: string; selector: string; count: number; reason: string }[]}
  */
 const SKIN_OWNERSHIP_EXEMPT = [];
+
+const OPT_IN_PENDING =
+  'skin predates S0; moves to an opt-in class one skin per commit, the row goes with it';
+
+/**
+ * Skin selectors allowed to key on a directive attribute. Exact counts per
+ * (file, attribute); a new hit or a gone one fails.
+ *
+ * @type {{ file: string; selector: string; count: number; reason: string }[]}
+ */
+const SKIN_OPT_IN_EXEMPT = [
+  {
+    file: 'projects/common/theming/components/cngx-breadcrumb.css',
+    selector: '[cngxBreadcrumb]',
+    count: 2,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-breadcrumb.css',
+    selector: '[cngxBreadcrumbItem]',
+    count: 3,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-breadcrumb.css',
+    selector: '[cngxBreadcrumbSeparator]',
+    count: 1,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-dialog.css',
+    selector: '[cngxDialog]',
+    count: 2,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-dialog.css',
+    selector: '[cngxDialogDraggable]',
+    count: 1,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-listbox.css',
+    selector: '[cngxListbox]',
+    count: 2,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-listbox.css',
+    selector: '[cngxOption]',
+    count: 1,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenu]',
+    count: 2,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItem]',
+    count: 3,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItemCheckbox]',
+    count: 4,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItemRadio]',
+    count: 4,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuItemSubmenu]',
+    count: 3,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-menu.css',
+    selector: '[cngxMenuSeparator]',
+    count: 2,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-popover.css',
+    selector: '[cngxPopover]',
+    count: 1,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-slider.css',
+    selector: '[cngxSliderTrack]',
+    count: 15,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-slider.css',
+    selector: '[cngxRangeSliderTrack]',
+    count: 12,
+    reason: OPT_IN_PENDING,
+  },
+  {
+    file: 'projects/common/theming/components/cngx-slider.css',
+    selector: '[cngxSliderThumb]',
+    count: 3,
+    reason: OPT_IN_PENDING,
+  },
+];
 
 /**
  * Stories allowed to list a higher-level or sibling artifact in
@@ -307,34 +430,50 @@ const SKIPPED_AT_RULE =
 
 /**
  * Every rule prelude of a stylesheet with its offset: selector lists of style
- * rules plus the parenthesised parts of `@scope`. Declaration values never
- * reach a prelude.
+ * rules plus the parenthesised parts of `@scope` (`limit` marks the `to (...)`
+ * part). `scopes` holds the root selectors of the enclosing `@scope` rules.
+ * Declaration values never reach a prelude.
  */
 function preludes(css) {
   const out = [];
-  const re = /([^{};]+)\{/g;
+  const roots = [];
+  const re = /([^{};]*)([{};])/g;
   let m;
   while ((m = re.exec(css))) {
+    if (m[2] === '}') {
+      roots.pop();
+      continue;
+    }
+    if (m[2] === ';') {
+      continue;
+    }
     const raw = m[1];
     const lead = raw.length - raw.trimStart().length;
     const text = raw.trim();
     const at = m.index + lead;
+    const scopes = roots.filter(Boolean);
     if (
+      !text ||
       SKIPPED_AT_RULE.test(text) ||
       /^(from|to|\d+(\.\d+)?%)(\s*,\s*(from|to|\d+(\.\d+)?%))*$/.test(text)
     ) {
+      roots.push(null);
       continue;
     }
     if (text.startsWith('@scope')) {
-      for (const part of text.matchAll(/\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g)) {
-        out.push({ text: part[1], at: at + part.index + 1 });
-      }
+      const hasRoot = /^@scope\s*\(/.test(text);
+      const parts = [...text.matchAll(/\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g)];
+      parts.forEach((part, i) => {
+        out.push({ text: part[1], at: at + part.index + 1, scopes, limit: !hasRoot || i > 0 });
+      });
+      roots.push(hasRoot ? (parts[0]?.[1] ?? null) : null);
       continue;
     }
+    roots.push(null);
     if (text.startsWith('@')) {
       continue;
     }
-    out.push({ text, at });
+    out.push({ text, at, scopes, limit: false });
   }
   return out;
 }
@@ -431,6 +570,110 @@ export function scanSkinCss(file, css, index) {
         key: `.${c.cls}`,
         owner: foreign.map((f) => `${f.owner} (level ${f.level}, ${f.kind})`).join(', '),
         detail: `own ${[...own.entries].join(', ') || own.block} (level ${own.level})`,
+      });
+    }
+  }
+  return hits;
+}
+
+/**
+ * The directive attributes (`[cngxMenu]`) and classes of one selector list.
+ * `segment` numbers the comma-separated selectors, `compound` the top-level
+ * compounds, `fns` the enclosing functional pseudo-classes.
+ */
+function selectorTokens(selector) {
+  const attrs = [];
+  const classes = [];
+  const fns = [];
+  let segment = 0;
+  let compound = 0;
+  for (let i = 0; i < selector.length; i++) {
+    const ch = selector[i];
+    if (ch === '[') {
+      const close = selector.indexOf(']', i);
+      const end = close === -1 ? selector.length : close;
+      const m = /^\s*(cngx[A-Z][A-Za-z0-9]*)/.exec(selector.slice(i + 1, end));
+      if (m) {
+        attrs.push({ name: m[1], index: i, segment, compound, fns: [...fns] });
+      }
+      i = end;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      const close = selector.indexOf(ch, i + 1);
+      i = close === -1 ? selector.length : close;
+      continue;
+    }
+    if (ch === '(') {
+      fns.push(/:([a-z-]+)$/.exec(selector.slice(0, i))?.[1] ?? '');
+      continue;
+    }
+    if (ch === ')') {
+      fns.pop();
+      continue;
+    }
+    if (fns.length === 0 && ch === ',') {
+      segment++;
+      compound++;
+      continue;
+    }
+    if (fns.length === 0 && /[\s>+~]/.test(ch)) {
+      compound++;
+      continue;
+    }
+    if (ch === '.') {
+      const m = /^-?[_a-zA-Z][\w-]*/.exec(selector.slice(i + 1));
+      if (m) {
+        classes.push({ segment, compound, fns: [...fns] });
+        i += m[0].length;
+      }
+    }
+  }
+  return { attrs, classes, segments: segment + 1 };
+}
+
+/** A top-level class in the attribute's compound or in a compound before it. */
+function anchoredByClass(attr, classes) {
+  return classes.some(
+    (c) => c.fns.length === 0 && c.segment === attr.segment && c.compound <= attr.compound,
+  );
+}
+
+/** Every selector of an `@scope` root carries a top-level class. */
+function isClassScope(root) {
+  const { classes, segments } = selectorTokens(root);
+  return Array.from({ length: segments }, (_, s) => s).every((s) =>
+    classes.some((c) => c.fns.length === 0 && c.segment === s),
+  );
+}
+
+/**
+ * S0 hits of one skin: a directive attribute selector outside `:where()`,
+ * outside a class anchor in its own selector, and outside an `@scope (<class>)`.
+ * An `@scope` limit only excludes and is not read.
+ *
+ * @param {string} file repo-relative path
+ * @param {string} css stylesheet source
+ */
+export function scanSkinOptIn(file, css) {
+  const text = stripCssComments(css);
+  const hits = [];
+  for (const prelude of preludes(text)) {
+    if (prelude.limit || prelude.scopes.some(isClassScope)) {
+      continue;
+    }
+    const { attrs, classes } = selectorTokens(prelude.text);
+    for (const attr of attrs) {
+      if (attr.fns.includes('where') || anchoredByClass(attr, classes)) {
+        continue;
+      }
+      hits.push({
+        rule: 'S0',
+        file,
+        line: lineAt(text, prelude.at + attr.index),
+        key: `[${attr.name}]`,
+        owner: 'its directive',
+        detail: 'keyed outside :where(), an opt-in class and @scope (<class>)',
       });
     }
   }
@@ -590,7 +833,7 @@ export function isGuardedStylesheet(path) {
   );
 }
 
-/** Every S1 and S5 hit of the checkout at `root`. */
+/** Every S0, S1 and S5 hit of the checkout at `root`. */
 export function scanRepo(root = REPO_ROOT) {
   const paths = listFiles(root);
   const read = (path) => readFileSync(resolve(root, path), 'utf8');
@@ -608,7 +851,10 @@ export function scanRepo(root = REPO_ROOT) {
   const stories = paths
     .filter((path) => path.startsWith('examples/stories/') && path.endsWith('.story.ts'))
     .flatMap((path) => scanStory(path, read(path), index));
-  return { css, stories, index };
+  const optIn = paths
+    .filter((path) => /^projects\/[^/]+\/theming\/components\/[^/]+\.css$/.test(path))
+    .flatMap((path) => scanSkinOptIn(path, read(path)));
+  return { css, stories, optIn, index };
 }
 
 // A tiny repo: common/interactive imports common/a11y but not common/popover,
@@ -798,6 +1044,51 @@ describe('skin-ownership guard - S1 stylesheets', () => {
   });
 });
 
+describe('skin-ownership guard - S0 opt-in by class', () => {
+  const optIn = (body) => keys(scanSkinOptIn(SKIN, `/* [cngxNotRead] */\n${body}`));
+
+  it('fails a bare attribute, one before its class and one under :not()', () => {
+    expect(
+      optIn(
+        '[cngxListbox] { color: red; }\n[cngxListbox] .cngx-listbox__item {}\n:not(.cngx-a) [cngxOption] {}',
+      ),
+    ).toEqual(['2 [cngxListbox]', '3 [cngxListbox]', '4 [cngxOption]']);
+  });
+
+  it('passes :where(), a class in the compound or before it, and @scope (<class>)', () => {
+    expect(
+      optIn(
+        [
+          ':where([cngxListbox]) { margin: 0; }',
+          '.cngx-listbox[cngxListbox] {}',
+          '[cngxOption].cngx-listbox__option {}',
+          '.cngx-listbox [cngxOption] {}',
+          '.cngx-listbox > [cngxOption] {}',
+          '@scope (.cngx-listbox) { [cngxOption] { color: red; } }',
+          '@scope (.cngx-listbox) to ([cngxOption]) { :scope {} }',
+        ].join('\n'),
+      ),
+    ).toEqual([]);
+  });
+
+  it('judges each selector of a list, and an @scope root by every selector in it', () => {
+    expect(
+      optIn(
+        [
+          '.cngx-listbox [cngxOption], [cngxOption] {}',
+          '@scope (.cngx-listbox, [cngxListbox]) { [cngxOption] {} }',
+        ].join('\n'),
+      ),
+    ).toEqual(['2 [cngxOption]', '3 [cngxListbox]', '3 [cngxOption]']);
+  });
+
+  it('never reads a declaration value or an attribute that is no directive', () => {
+    expect(
+      optIn(".cngx-listbox { --x: '[cngxOption]'; }\n[data-cngx-open] {}\n[cngx-x] {}"),
+    ).toEqual([]);
+  });
+});
+
 describe('skin-ownership guard - S5 stories', () => {
   const story = (file, list) =>
     scanStory(file, `export const S = { apiComponents: [${list}] };`, fixtureIndex());
@@ -899,6 +1190,13 @@ describe('skin-ownership guard - projects/** and examples/stories/**', () => {
   let result;
   beforeAll(() => {
     result = scanRepo();
+  });
+
+  it('S0: no skin keys on a directive attribute outside an opt-in class or the exemptions', () => {
+    expect(
+      exemptionProblems(result.optIn, SKIN_OPT_IN_EXEMPT),
+      'Switch the skin on by a class (.cngx-x) and let the directive or the consumer write it; a UA reset may stay at :where([cngxX]).',
+    ).toEqual([]);
   });
 
   it('S1: no skin or ui stylesheet selects a higher-level or independent-sibling class outside the exemptions', () => {
