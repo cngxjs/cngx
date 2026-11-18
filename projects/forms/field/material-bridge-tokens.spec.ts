@@ -58,6 +58,7 @@ describe('field Material bridge', () => {
     '--cngx-field-hint-font-size',
     '--cngx-field-label-color',
     '--cngx-field-padding-block',
+    '--cngx-field-padding-inline',
     '--cngx-field-placeholder-color',
     '--cngx-field-required-color',
     '--cngx-field-ring-color',
@@ -128,7 +129,7 @@ describe('field Material bridge', () => {
   it('brings the outlined control and the subscript line onto the M3 metrics (M3)', () => {
     const css = compiledCss('v1');
     expect(css).toMatch(
-      /:where\(cngx-form-field :is\(input[^{]*\{[^}]*padding-block: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*border-radius: 4px;/,
+      /:where\(cngx-form-field :is\(input[^{]*\{[^}]*padding-block: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*padding-inline: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*border-radius: 4px;/,
     );
     expect(css).toMatch(
       /:where\(cngx-form-field :is\(input[^{]*\{[^}]*letter-spacing: var\(--mat-sys-body-large-tracking\)/,

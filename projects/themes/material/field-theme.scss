@@ -92,11 +92,13 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count
 // The lone control takes its padding, edge and radius from cngx.base, so a
 // zero-specificity rule in cngx.components wins over it; the fill and bare
 // skins SET their own padding and radius in an `@scope` (0,1,0) and keep them.
-// The block padding is the md rung minus the edge, so density re-scales the
-// field like the select trigger next to it (56 / 40 / 64).
+// Both paddings are the md rung minus the edge, so the value starts 16px in
+// like the M3 input and density re-scales the field like the select trigger
+// next to it (56 / 40 / 64).
 @mixin -metrics($theme) {
   @include bridge.on('cngx-form-field :is(#{$-controls})') {
     padding-block: calc(var(--cngx-space-md, 16px) - 1px);
+    padding-inline: calc(var(--cngx-space-md, 16px) - 1px);
     border-radius: 4px; // var(--mat-sys-corner-extra-small)
   }
   // The error list and the char-count hosts are display: contents, so the
@@ -117,6 +119,9 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count
     :is(input, textarea, select)[data-skin='fill'],
     .cngx-field-box:is([data-skin='fill'], [data-skin='outline']) {
       --cngx-field-padding-block: calc(
+        var(--cngx-space-md, 16px) - var(--cngx-field-border-width, 1px)
+      );
+      --cngx-field-padding-inline: calc(
         var(--cngx-space-md, 16px) - var(--cngx-field-border-width, 1px)
       );
     }

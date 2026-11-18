@@ -868,4 +868,32 @@ cngx-icon {
     expect(await height(page, '#box')).toBe(56);
     expect(await height(page, '#fill')).toBe(56);
   });
+
+  // The M3 input starts 16px from the text-field edge; the cngx edge sits
+  // inside the box, so the inline padding gives it back as well.
+  const textStart = (page: Page, host: string, control: string) =>
+    page.evaluate(
+      ([h, c]) => {
+        const el = document.querySelector(c)!;
+        const cs = getComputedStyle(el);
+        const left =
+          el.getBoundingClientRect().left +
+          parseFloat(cs.paddingLeft) +
+          parseFloat(cs.borderLeftWidth);
+        return left - document.querySelector(h)!.getBoundingClientRect().left;
+      },
+      [host, control] as const,
+    );
+
+  test('the value starts 16px in from the edge', async ({ page }) => {
+    expect(await textStart(page, '#lone', '#lone')).toBe(16);
+    expect(await textStart(page, '#box', '#box-input')).toBe(16);
+    expect(await textStart(page, '#fill', '#fill')).toBe(16);
+  });
+
+  test('box and fill keep the 16px start under a wider field edge', async ({ page }) => {
+    await page.addStyleTag({ content: ':root { --cngx-field-border-width: 2px; }' });
+    expect(await textStart(page, '#box', '#box-input')).toBe(16);
+    expect(await textStart(page, '#fill', '#fill')).toBe(16);
+  });
 });
