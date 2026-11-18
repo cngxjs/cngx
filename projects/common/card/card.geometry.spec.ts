@@ -95,6 +95,9 @@ const EMBER = 'oklch(0.66 0.19 50)';
     >
       <cngx-card as="button" [selectable]="true" [selected]="true">Dark</cngx-card>
     </div>
+    <div class="achromatic" style="--cngx-color-primary: oklch(0.5 0 0)">
+      <cngx-card as="button" [selectable]="true" [selected]="true">Grey</cngx-card>
+    </div>
   `,
 })
 class PrimaryCardHost {}
@@ -190,6 +193,8 @@ describe('CngxCard primary tokens', () => {
     expect(surface('.branded')).toEqual(rasterise('oklch(0.96 0.04 250)'));
     expect(surface('.default')).toEqual(rasterise('oklch(0.96 0.04 50)'));
     expect(surface('.branded-dark')).toEqual(rasterise('oklch(0.36 0.06 250)'));
+    // An achromatic primary has no hue to borrow; the tint stays neutral.
+    expect(surface('.achromatic')).toEqual(rasterise('oklch(0.96 0 0)'));
   });
 
   it('paints the focus ring with the primary in scope', () => {

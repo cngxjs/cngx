@@ -205,7 +205,8 @@
   /**
    * Background of the selected state. Unset by default, so the card
    * paints a pale tint in the hue of the `--cngx-color-primary` in
-   * scope; the scheme blocks set its lightness and chroma.
+   * scope; the scheme blocks set its lightness and chroma cap, and an
+   * achromatic primary keeps the tint neutral.
    * @group State / Selected
    * @see [[--cngx-color-primary]]
    */
@@ -703,7 +704,7 @@
         --cngx-card-selected-bg,
         oklch(
           from var(--cngx-color-primary, oklch(0.66 0.19 50))
-            var(--_cngx-card-selected-l, 0.96) var(--_cngx-card-selected-c, 0.04) h
+            var(--_cngx-card-selected-l, 0.96) min(c, var(--_cngx-card-selected-c, 0.04)) h
         )
       );
     }
