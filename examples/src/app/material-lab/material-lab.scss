@@ -171,7 +171,11 @@ $m2-dark: mat.m2-define-dark-theme((color: $m2-color));
   block-size: 280px;
 }
 
+// The examples app colours its text itself; Material widgets that carry no
+// colour of their own (mat-hint) inherit it, so the lab paints the Material
+// role, as a Material page body would.
 .lab {
+  color: var(--mat-sys-on-surface);
   display: flex;
   flex-wrap: wrap;
   gap: 48px 32px;
