@@ -296,17 +296,19 @@ describe('CngxSidenav', () => {
     expect(host.leftCollapsed()).toBe(false);
   });
 
-  it('content never applies margins (flex handles layout)', () => {
-    const { fixture, content, host } = setupDual();
+  it('content writes no inline margins (flex handles layout, consumer CSS wins)', () => {
+    const { fixture, host } = setupDual();
+    const contentEl = fixture.nativeElement.querySelector('cngx-sidenav-content') as HTMLElement;
     host.mode.set('side');
     host.leftOpen.set(true);
     fixture.detectChanges();
-    expect(content.marginStart).toBe('0');
-    expect(content.marginEnd).toBe('0');
+    expect(contentEl.style.marginInlineStart).toBe('');
+    expect(contentEl.style.marginInlineEnd).toBe('');
 
     host.mode.set('over');
     fixture.detectChanges();
-    expect(content.marginStart).toBe('0');
+    expect(contentEl.style.marginInlineStart).toBe('');
+    expect(contentEl.style.marginInlineEnd).toBe('');
   });
 
   it('adds position classes', () => {

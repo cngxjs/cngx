@@ -23,7 +23,6 @@ export { CngxSidenavContent } from './sidenav-content';
 export type { CngxSidenavConfig, CngxSidenavLabels } from './config/sidenav.config';
 export {
   CNGX_SIDENAV_CONFIG,
-  CNGX_SIDENAV_DEFAULTS,
   CNGX_SIDENAV_STORAGE,
 } from './config/sidenav.config.defaults';
 export {
