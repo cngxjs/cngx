@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxRipple } from '@cngx/common/interactive';
 import {
   CngxPaginator,
+  CngxPaginatorLast,
   CngxPaginatorLoadMore,
   CngxPaginatorNext,
   CngxPaginatorPrev,
@@ -17,7 +18,14 @@ import {
 @Component({
   selector: 'cngx-paginator-ripple-geometry-host',
   standalone: true,
-  imports: [CngxPaginator, CngxPaginatorPrev, CngxPaginatorNext, CngxPaginatorLoadMore, CngxRipple],
+  imports: [
+    CngxPaginator,
+    CngxPaginatorPrev,
+    CngxPaginatorNext,
+    CngxPaginatorLast,
+    CngxPaginatorLoadMore,
+    CngxRipple,
+  ],
   // The ripple layer styles ship in the themes bundle, not with the directive.
   styleUrls: ['../../core/theming/layers.css', '../../common/theming/components/cngx-ripple.css'],
   encapsulation: ViewEncapsulation.None,
@@ -28,7 +36,9 @@ import {
       <cngx-pgn-load-more cngxRipple />
     </cngx-paginator>
     <cngx-paginator class="bar" skin="bar" [total]="100" [pageIndex]="3">
+      <cngx-pgn-prev />
       <cngx-pgn-next cngxRipple [rippleCentered]="true" />
+      <cngx-pgn-last cngxRipple [rippleCentered]="true" />
     </cngx-paginator>
   `,
 })
@@ -89,9 +99,12 @@ describe('paginator segment co-hosting cngxRipple', () => {
     });
   }
 
-  it('keeps the wave square in the bar skin cell', () => {
+  it('keeps the wave square in an inner bar cell and rounds it at the bar end', () => {
     const root = mount();
-    const layer = press(root.querySelector<HTMLElement>('.bar cngx-pgn-next')!);
-    expect(getComputedStyle(layer).borderTopLeftRadius).toBe('0px');
+    const inner = press(root.querySelector<HTMLElement>('.bar cngx-pgn-next')!);
+    expect(getComputedStyle(inner).borderTopRightRadius).toBe('0px');
+    const end = press(root.querySelector<HTMLElement>('.bar cngx-pgn-last')!);
+    expect(getComputedStyle(end).borderTopLeftRadius).toBe('0px');
+    expect(getComputedStyle(end).borderTopRightRadius).not.toBe('0px');
   });
 });

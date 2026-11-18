@@ -870,6 +870,26 @@
       border-radius: 0;
     }
 
+    /* The cells at both bar ends trace its rounded corners (bar radius minus
+       its border), so a focus ring, hover / current fill or ripple there
+       follows the corner instead of cutting it square. `of` skips the shell's
+       own trailing nodes (live region, progress). */
+    :scope
+      > .cngx-paginator__segment:nth-child(1 of .cngx-paginator__segment)
+      .cngx-paginator__button:first-of-type,
+    :scope > .cngx-paginator__segment.cngx-ripple:nth-child(1 of .cngx-paginator__segment) {
+      border-start-start-radius: max(0px, var(--cngx-paginator-bar-radius, 0.375rem) - 1px);
+      border-end-start-radius: max(0px, var(--cngx-paginator-bar-radius, 0.375rem) - 1px);
+    }
+
+    :scope
+      > .cngx-paginator__segment:nth-last-child(1 of .cngx-paginator__segment)
+      .cngx-paginator__button:last-of-type,
+    :scope > .cngx-paginator__segment.cngx-ripple:nth-last-child(1 of .cngx-paginator__segment) {
+      border-start-end-radius: max(0px, var(--cngx-paginator-bar-radius, 0.375rem) - 1px);
+      border-end-end-radius: max(0px, var(--cngx-paginator-bar-radius, 0.375rem) - 1px);
+    }
+
     /* Static readouts (no background): padded, vertically-centred cells. Kept as
        inline text (not flex) so the whitespace inside the formatter output - e.g.
        between the bold range and " of N" - is preserved. */
