@@ -132,8 +132,11 @@ describe('field Material bridge', () => {
       /:where\(cngx-form-field :is\(input[^{]*\{[^}]*letter-spacing: var\(--mat-sys-body-large-tracking\)/,
     );
     expect(css).toMatch(
-      /:where\(cngx-form-field :is\(\.cngx-hint, \.cngx-error, cngx-field-errors > p, \.cngx-char-count__readout\)\)\s*\{\s*padding-inline: var\(--cngx-space-md, 16px\)/,
+      /:where\(cngx-form-field :is\(\.cngx-hint, \.cngx-field-error, cngx-field-errors > p, \.cngx-char-count__readout\)\)\s*\{\s*padding-inline: var\(--cngx-space-md, 16px\)/,
     );
+    // `.cngx-error` is the state hook CngxErrorState and CngxErrorAggregator set
+    // on any container; the manual error container is `.cngx-field-error`.
+    expect(css).not.toContain('.cngx-error');
     expect(css).toMatch(
       /:where\(cngx-form-field :is\(\.cngx-hint, cngx-field-errors[^{]*\{[^}]*line-height: var\(--mat-sys-body-small-line-height\);\s*letter-spacing: var\(--mat-sys-body-small-tracking\)/,
     );

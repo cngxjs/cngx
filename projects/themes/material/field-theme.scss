@@ -80,7 +80,7 @@
 
 // Text-like controls, the same list cngx.base paints with the outline edge.
 $-controls: 'input:is(:not([type]), [type="text"], [type="search"], [type="email"], [type="url"], [type="tel"], [type="password"], [type="number"], [type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]), textarea, select';
-$-subscript: '.cngx-hint, cngx-field-errors, .cngx-error, .cngx-char-count';
+$-subscript: '.cngx-hint, cngx-field-errors, .cngx-field-error, .cngx-char-count';
 
 // Metrics of mat-form-field appearance="outline", density 0: a 56px control
 // (the body-large line box plus 16px each side, the 1px edge inside it, as
@@ -102,7 +102,7 @@ $-subscript: '.cngx-hint, cngx-field-errors, .cngx-error, .cngx-char-count';
   // The error list and the char-count hosts are display: contents, so the
   // inset sits on the error lines and the readout.
   @include bridge.on(
-    'cngx-form-field :is(.cngx-hint, .cngx-error, cngx-field-errors > p, .cngx-char-count__readout)'
+    'cngx-form-field :is(.cngx-hint, .cngx-field-error, cngx-field-errors > p, .cngx-char-count__readout)'
   ) {
     padding-inline: var(--cngx-space-md, 16px);
   }
