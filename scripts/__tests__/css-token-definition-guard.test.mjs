@@ -59,6 +59,17 @@ import { describe, expect, it } from 'vitest';
  * computationally independent. The opaque `var(--cngx-color-primary,
  * oklch(0.66 0.19 50))` fallback passes. Rule F has no allowlist rows.
  *
+ * Rule G - an Ember initial on a token cngx never assigns. The registration-side
+ * twin of Rule B: an `@property` whose `initial-value` holds the Ember primary
+ * (`oklch(0.66 0.19 50)`, `oklch(0.72 0.18 50)`, opaque or with alpha, alone or
+ * inside a shorthand such as `2px solid oklch(...)`) always resolves to that
+ * literal, so every use-site `var(--cngx-color-primary, ...)` fallback is dead
+ * and the surface stays orange under any brand primary. Unless a scanned
+ * stylesheet assigns the property (`--p: ...` outside comments, strings and
+ * `@container` / `@supports` conditions), the registration is a hit. A Material
+ * bridge assignment in `projects/themes/**` does not count: the default theme
+ * must not depend on a bridge. Rule G has no allowlist rows.
+ *
  * The allowlist is an exact-set ratchet: a new offender fails, and a row that
  * no longer matches fails as stale, so every closed defect removes its row.
  */
@@ -305,7 +316,10 @@ export function strictColours(source) {
   ];
 }
 
-const TRANSLUCENT_PRIMARY = /oklch\(\s*0\.(?:66\s+0\.19|72\s+0\.18)\s+50\s*\/[^)]*\)/gi;
+/** The Ember primary up to its hue: light `oklch(0.66 0.19 50` and dark `oklch(0.72 0.18 50`. */
+const EMBER_PRIMARY_CORE = String.raw`oklch\(\s*0\.(?:66\s+0\.19|72\s+0\.18)\s+50`;
+const TRANSLUCENT_PRIMARY = new RegExp(`${EMBER_PRIMARY_CORE}\\s*\\/[^)]*\\)`, 'gi');
+const EMBER_PRIMARY = new RegExp(`${EMBER_PRIMARY_CORE}(?![\\d.])`, 'i');
 
 /**
  * Rule F: every translucent Ember primary literal that is not the value of an
@@ -314,6 +328,16 @@ const TRANSLUCENT_PRIMARY = /oklch\(\s*0\.(?:66\s+0\.19|72\s+0\.18)\s+50\s*\/[^)
 export function translucentPrimaryLiterals(source) {
   const rest = source.replace(/initial-value\s*:[^;}]*/gi, ' ');
   return [...rest.matchAll(TRANSLUCENT_PRIMARY)].map((m) => m[0].replace(/\s+/g, ' '));
+}
+
+/**
+ * Every custom property assigned by a `--p:` declaration in `source`. Quoted
+ * strings and the conditions of `@container` and `@supports` are removed first:
+ * `@container style(--p: none)` tests the property, it does not assign it.
+ */
+export function assignedProperties(source) {
+  const declarations = withoutStrings(source).replace(/@(?:container|supports)\b[^{;]*/gi, ' ');
+  return new Set([...declarations.matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]));
 }
 
 /** Every custom property registered by an `@property` rule in `source`. */
@@ -327,9 +351,7 @@ export function registeredProperties(source) {
  * nor an `@property` registration defines.
  */
 export function undefinedReadsWithoutFallback(source, defined, registered = new Set()) {
-  const local = new Set(
-    [...withoutStrings(source).matchAll(/(?<![\w-])(--[\w-]+)\s*:/g)].map((m) => m[1]),
-  );
+  const local = assignedProperties(source);
   const found = new Set();
   for (const body of varBodies(source)) {
     const { name, fallback } = splitVarBody(body);
@@ -404,14 +426,29 @@ function read(full) {
   return { rel, source: scannedSource(rel, readFileSync(full, 'utf8')) };
 }
 
-const ALL_CSS = walkCss(PROJECTS).map(read);
-const SCANNED = ALL_CSS.filter(
-  ({ rel }) =>
+/** A component stylesheet the guard reads: no theme bridge, example, spec host or fixture. */
+function isScanned({ rel }) {
+  return (
     !rel.startsWith('projects/themes/') &&
     !rel.includes('.spec-host.') &&
     !rel.includes('/examples/') &&
-    !rel.includes('/testing/fixtures/'),
-);
+    !rel.includes('/testing/fixtures/')
+  );
+}
+
+const ALL_CSS = walkCss(PROJECTS).map(read);
+const SCANNED = ALL_CSS.filter(isScanned);
+
+/** Every custom property a scanned stylesheet among `files` assigns. */
+export function assignedAcross(files) {
+  const names = new Set();
+  for (const file of files.filter(isScanned)) {
+    for (const name of assignedProperties(file.source)) {
+      names.add(name);
+    }
+  }
+  return names;
+}
 
 const DEFINED = new Set();
 for (const full of walkCss(THEMING)) {
@@ -452,7 +489,7 @@ for (const { rel, source } of ALL_CSS) {
   }
 }
 
-function repoOffenders(files = SCANNED) {
+function repoOffenders(files = SCANNED, assigned = assignedAcross(files)) {
   const rows = [];
   for (const { rel, source } of files) {
     for (const token of undefinedPaletteReads(source, DEFINED, FAMILIES)) {
@@ -475,6 +512,12 @@ function repoOffenders(files = SCANNED) {
     }
     for (const token of translucentPrimaryLiterals(source)) {
       rows.push({ rule: 'F', token, file: rel });
+    }
+    for (const [token, initials] of registrations(source)) {
+      const emberInitial = [...initials].some((initial) => EMBER_PRIMARY.test(initial));
+      if (emberInitial && !assigned.has(token)) {
+        rows.push({ rule: 'G', token, file: rel });
+      }
     }
   }
   return rows;
@@ -876,6 +919,75 @@ describe('Rule F - translucent primary literals', () => {
   });
 });
 
+describe('Rule G - Ember initial on an unassigned token', () => {
+  const register = (name, initial) =>
+    `@property ${name} { syntax: '*'; inherits: true; initial-value: ${initial}; }`;
+  const rel = 'projects/ui/x/g.css';
+
+  it('flags an exact Ember colour initial', () => {
+    const source = register('--cngx-g-bg', 'oklch(0.66 0.19 50)');
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`G --cngx-g-bg ${rel}`]);
+  });
+
+  it('flags the literal inside a shorthand initial', () => {
+    const source = register('--cngx-g-outline', '2px solid oklch(0.66  0.19 50)');
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`G --cngx-g-outline ${rel}`]);
+  });
+
+  it('flags a translucent Ember initial', () => {
+    const source = register('--cngx-g-tint', 'oklch(0.66 0.19 50 / 0.1)');
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`G --cngx-g-tint ${rel}`]);
+  });
+
+  it('flags the dark-twin literal', () => {
+    const source = register('--cngx-g-ink', 'oklch(0.72 0.18 50)');
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`G --cngx-g-ink ${rel}`]);
+  });
+
+  it('passes a token a component sheet assigns', () => {
+    const source = register('--cngx-g-bg', 'oklch(0.66 0.19 50)');
+    const assigning = {
+      rel: 'projects/ui/y/y.css',
+      source: '.y { --cngx-g-bg: var(--cngx-color-primary, oklch(0.66 0.19 50)); }',
+    };
+    expect(repoOffenders([{ rel, source }, assigning]).map(key)).toEqual([]);
+  });
+
+  it('still flags a token only a theme bridge assigns', () => {
+    const registering = { rel, source: register('--cngx-g-bg', 'oklch(0.66 0.19 50)') };
+    const bridge = { rel: 'projects/themes/x/bridge.css', source: ':root { --cngx-g-bg: red; }' };
+    expect(repoOffenders([registering], assignedAcross([registering, bridge])).map(key)).toEqual([
+      `G --cngx-g-bg ${rel}`,
+    ]);
+  });
+
+  it('still flags a token only a container style query or @supports condition names', () => {
+    const raw = [
+      register('--cngx-g-bg', 'oklch(0.66 0.19 50)'),
+      '@container not style(--cngx-g-bg: none) { .a { display: none; } }',
+      '@supports (--cngx-g-bg: 0) { .b { display: none; } }',
+    ].join('\n');
+    expect(assignedProperties(raw).has('--cngx-g-bg')).toBe(false);
+    expect(repoOffenders([{ rel, source: raw }]).map(key)).toEqual([`G --cngx-g-bg ${rel}`]);
+  });
+
+  it('still flags a token assigned only inside a comment', () => {
+    const raw = `${register('--cngx-g-bg', 'oklch(0.66 0.19 50)')} /* .a { --cngx-g-bg: red; } */`;
+    expect(repoOffenders([{ rel, source: scannedSource(rel, raw) }]).map(key)).toEqual([
+      `G --cngx-g-bg ${rel}`,
+    ]);
+  });
+
+  it('passes a non-Ember initial', () => {
+    const source = [
+      register('--cngx-g-knob', 'oklch(1 0 0)'),
+      register('--cngx-g-tint', 'oklch(0.96 0.04 50)'),
+      register('--cngx-g-hue', 'oklch(0.66 0.19 500)'),
+    ].join('\n');
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([]);
+  });
+});
+
 describe('repo-wide token definition ratchet', () => {
   const offenders = repoOffenders().map(key).sort();
   const allowed = ALLOWLIST.map(key).sort();
@@ -900,5 +1012,10 @@ describe('repo-wide token definition ratchet', () => {
   it('no translucent primary literal outside an initial-value (Rule F, no allowlist)', () => {
     expect(offenders.filter((row) => row.startsWith('F '))).toEqual([]);
     expect(ALLOWLIST.filter((row) => row.rule === 'F')).toEqual([]);
+  });
+
+  it('no Ember initial on an unassigned token (Rule G, no allowlist)', () => {
+    expect(offenders.filter((row) => row.startsWith('G '))).toEqual([]);
+    expect(ALLOWLIST.filter((row) => row.rule === 'G')).toEqual([]);
   });
 });
