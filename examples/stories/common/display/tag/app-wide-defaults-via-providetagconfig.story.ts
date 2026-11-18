@@ -21,7 +21,7 @@ export const STORY: DemoSpec = {
 provideTagConfigAt(
   withTagDefaults({ variant: 'subtle', size: 'sm' }),
   withTagColors({
-    'my-brand': { bg: 'var(--cngx-color-primary)', color: 'var(--cngx-color-on-primary)', border: 'transparent' },
+    'my-brand': { bg: 'var(--cngx-color-primary-strong)', color: 'var(--cngx-color-on-primary-strong)', border: 'transparent' },
   }),
 )
 */`,

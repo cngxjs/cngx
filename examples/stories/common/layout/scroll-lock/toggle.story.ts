@@ -41,10 +41,10 @@ export const STORY: DemoSpec = {
       }
     </div>
   </div>`,
-  css: `.demo-scroll-lock-chip[aria-pressed='true'] {
-  background: var(--cngx-color-danger, #b00020);
-  color: var(--cngx-color-on-danger, #ffffff);
-  border-color: var(--cngx-color-danger, #b00020);
+  css: `button.chip.demo-scroll-lock-chip[aria-pressed='true'] {
+  background: var(--cngx-color-danger-strong, #b00020);
+  color: var(--cngx-color-on-danger-strong, #ffffff);
+  border-color: var(--cngx-color-danger-strong, #b00020);
 }
 
 .demo-scroll-lock-hint {
