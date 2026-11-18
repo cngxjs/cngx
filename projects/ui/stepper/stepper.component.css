@@ -1075,7 +1075,7 @@
       white-space: normal;
     }
 
-    /* Wizard signals pending via the orange rail + pulsing indicator;
+    /* Wizard signals pending via the primary rail + pulsing indicator;
        the dedicated spinner element would compete with both. Drop it
        in this scope - `aria-busy='true'` on the host still carries the
        AT announcement. */
@@ -1083,7 +1083,7 @@
       display: none;
     }
 
-    /* Pending target step: white glyph on the orange disc + subtle pulse
+    /* Pending target step: white glyph on the primary disc + subtle pulse
        so the in-flight target reads at a glance without an explicit
        spinner. `aria-busy='true'` is the truth source. */
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
@@ -1180,7 +1180,7 @@
       background-color: var(--cngx-step-connector-completed-color);
     }
 
-    /* Target step pending (commit in flight) -> leading rail orange. cngx
+    /* Target step pending (commit in flight) -> leading rail primary. cngx
        surfaces commit-in-flight via `aria-busy='true'` on the target step;
        `data-state` stays at its terminal value (idle/success/error). */
     .cngx-stepper__step + .cngx-stepper__step[aria-busy='true']::before {

@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Opt the classic skin into the canonical wizard look via <code>[connectors]="true"</code>: disc on top, label stacked below, full-width rail between adjacent disc centers. Per-segment color cascades from the preceding step\'s <code>[data-state]</code> - 100% CSS, no derivation. Works horizontally and vertically; AsyncState (success/error/pending) colors flow through automatically.',
   description:
-    'Toggle <strong>orientation</strong> to flip the strip between horizontal (stacked labels under discs) and vertical (labels beside discs, rail runs down). Toggle <strong>commit outcome</strong> to switch the Next-step action between an immediate success, a 1500&nbsp;ms pending (orange rail) leading to success, or a 1500&nbsp;ms pending leading to error (red rail). The disc and the trailing rail both honor the same <code>[data-state]</code>; no per-state TS derivation.',
+    'Toggle <strong>orientation</strong> to flip the strip between horizontal (stacked labels under discs) and vertical (labels beside discs, rail runs down). Toggle <strong>commit outcome</strong> to switch the Next-step action between an immediate success, a 1500&nbsp;ms pending (primary-coloured rail) leading to success, or a 1500&nbsp;ms pending leading to error (red rail). The disc and the trailing rail both honor the same <code>[data-state]</code>; no per-state TS derivation.',
   level: 'organism',
   audience: ['dev', 'design'],
   artifact: 'standalone',
