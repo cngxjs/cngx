@@ -319,6 +319,20 @@
   }
 
   /**
+   * Minimum hit area of the close and add buttons on a mouse (WCAG 2.5.8).
+   * A transparent `::before` grows the hit box around the
+   * `--cngx-tab-affordance-size` button, so the visual size, the hover
+   * circle and the tab padding do not change. On touch the larger
+   * `--cngx-target-min` wins.
+   * @group Layout
+   */
+  @property --cngx-tab-affordance-target-min {
+    syntax: '*';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /**
    * Corner radius of the close / add affordance buttons. The default
    * pill radius draws a circle on the square glyph buttons and a pill
    * when the add button grows around a projected text label.
@@ -562,6 +576,25 @@
     cursor: pointer;
   }
 
+  /*
+   * Hit area, not layout: the pseudo-element reaches past the 20px box to
+   * the 24px floor (44px on touch). Inline padding of the add button is
+   * part of its box, so the reach is computed from the affordance size.
+   */
+  .cngx-tabs__close::before,
+  .cngx-tabs__add::before {
+    content: '';
+    position: absolute;
+    inset: calc(
+      -0.5 *
+        max(
+          0px,
+          max(var(--cngx-tab-affordance-target-min, 24px), var(--cngx-target-min, 0px)) -
+            var(--cngx-tab-affordance-size, 1.25rem)
+        )
+    );
+  }
+
   /* Inside the tab, pinned to its trailing edge and vertically centred. */
   .cngx-tabs__close {
     position: absolute;
@@ -576,6 +609,7 @@
    * (`*cngxTabAddIcon`) widens the button instead of spilling over it.
    */
   .cngx-tabs__add {
+    position: relative;
     width: auto;
     min-width: var(--cngx-tab-affordance-size, 1.25rem);
     padding-inline: calc(var(--cngx-tab-gap, 0.5rem) / 2);

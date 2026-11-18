@@ -148,3 +148,42 @@ describe('CngxTabGroup affordance glyphs', () => {
     });
   }
 });
+
+// WCAG 2.5.8 on a mouse: `--cngx-target-min` is 0px on a fine pointer, so
+// the close and add buttons reach 24px through their own hit-area token. The
+// points sit 11px from the centre, 1px past the 20px box on each side.
+describe('CngxTabGroup affordance hit area on a fine pointer', () => {
+  afterEach(() => {
+    mountedRoot?.remove();
+    mountedRoot = null;
+  });
+
+  for (const [name, selector] of [
+    ['close', '.cngx-tabs__close'],
+    ['add', '.cngx-tabs__add'],
+  ] as const) {
+    it(`gives the ${name} button a 24px hit area around its 20px box`, () => {
+      const fixture = TestBed.createComponent(AffordanceGlyphHost);
+      mountedRoot = fixture.nativeElement as HTMLElement;
+      // Keeps the trailing add button off the viewport edge.
+      mountedRoot.style.cssText = 'display: block; padding: 40px';
+      document.body.appendChild(mountedRoot);
+      fixture.detectChanges();
+      const button = mountedRoot.querySelector<HTMLElement>(selector)!;
+      const box = button.getBoundingClientRect();
+      expect(Math.round(box.width)).toBe(20);
+      expect(Math.round(box.height)).toBe(20);
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
+      for (const [x, y] of [
+        [cx - 11, cy],
+        [cx + 11, cy],
+        [cx, cy - 11],
+        [cx, cy + 11],
+      ]) {
+        expect(document.elementFromPoint(x, y)?.closest(selector)).toBe(button);
+      }
+      expect(document.elementFromPoint(cx + 13, cy)?.closest(selector) ?? null).toBeNull();
+    });
+  }
+});

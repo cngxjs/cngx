@@ -279,3 +279,112 @@ for (const atom of ATOMS) {
     }
   });
 }
+
+// WCAG 2.5.8 (AA) on a mouse. `--cngx-target-min` stays 0px on a fine
+// pointer (its readers treat a non-zero value as touch), so these hosts reach
+// 24px through their own token: a hit area for a lone target, a 24px centre
+// pitch for a dot row. Measured with `elementFromPoint`, so a clipped or
+// covered hit zone fails even when the computed size looks right.
+const FINE_FLOOR = 24;
+
+async function openFine(
+  browser: Browser,
+  route: string,
+  viewport: { width: number; height: number } = { width: 1280, height: 800 },
+): Promise<{ close: () => Promise<void>; page: Page }> {
+  const context = await browser.newContext({ viewport });
+  const page = await context.newPage();
+  await page.goto(route);
+  return { page, close: () => context.close() };
+}
+
+// Probes 1px past each side of a 22px-reach box around the target centre.
+async function hitsAround(page: Page, selector: string, reach: number): Promise<boolean[]> {
+  await expect(page.locator(selector).first()).toBeVisible();
+  return page.evaluate(
+    ({ selector, reach }) => {
+      const target = document.querySelector(selector)!;
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      return [
+        [cx - reach, cy],
+        [cx + reach, cy],
+        [cx, cy - reach],
+        [cx, cy + reach],
+      ].map(([x, y]) => document.elementFromPoint(x, y)?.closest(selector) === target);
+    },
+    { selector, reach },
+  );
+}
+
+async function dotPitch(page: Page, selector: string): Promise<number> {
+  await expect(page.locator(selector).first()).toBeVisible();
+  return page.evaluate((selector) => {
+    const [a, b] = Array.from(document.querySelectorAll(selector)).map((el) => {
+      const rect = el.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    });
+    // Both centres must hit their own dot, or the pitch measures a covered row.
+    const own = [a, b].every(
+      (p, i) =>
+        document.elementFromPoint(p.x, p.y)?.closest(selector) ===
+        document.querySelectorAll(selector)[i],
+    );
+    return own ? b.x - a.x : 0;
+  }, selector);
+}
+
+test('fine-floor: tab close button hits 24px around its 20px box', async ({ browser }) => {
+  const { page, close } = await openFine(
+    browser,
+    '/#/ui/tabs/tab-dismissable/dismissable-and-addable',
+  );
+  try {
+    expect(await hitsAround(page, '.cngx-tabs__close', FINE_FLOOR / 2 - 1)).toEqual([
+      true,
+      true,
+      true,
+      true,
+    ]);
+  } finally {
+    await close();
+  }
+});
+
+test('fine-floor: paginator dots sit 24px apart', async ({ browser }) => {
+  const { page, close } = await openFine(browser, '/#/ui/paginator/paginator-parts/dots/dots');
+  try {
+    expect(await dotPitch(page, '.cngx-paginator__dot')).toBeGreaterThanOrEqual(FINE_FLOOR);
+  } finally {
+    await close();
+  }
+});
+
+test('fine-floor: stepper mobile dots sit 24px apart', async ({ browser }) => {
+  // Narrow enough that the stepper collapses below its 30rem container rung.
+  const { page, close } = await openFine(
+    browser,
+    '/#/ui/stepper/stepper-mobile-collapse/dots-collapse',
+    {
+      width: 400,
+      height: 800,
+    },
+  );
+  try {
+    expect(await dotPitch(page, '.cngx-stepper__mobile-dot')).toBeGreaterThanOrEqual(FINE_FLOOR);
+  } finally {
+    await close();
+  }
+});
+
+test('fine-floor: sidenav resize handle hits 24px across the rail edge', async ({ browser }) => {
+  const { page, close } = await openFine(browser, '/#/ui/sidenav/full-navigation-sidebar');
+  try {
+    const hits = await hitsAround(page, '.cngx-sidenav__resize-handle', FINE_FLOOR / 2 - 1);
+    // Inline axis only: the handle spans the rail height.
+    expect(hits.slice(0, 2)).toEqual([true, true]);
+  } finally {
+    await close();
+  }
+});

@@ -51,6 +51,20 @@
 
 @layer cngx.tokens {
   /**
+   * Centre-to-centre pitch of the mobile-collapse dots on a mouse (WCAG
+   * 2.5.8). Each dot grows a transparent margin until slot plus
+   * `--cngx-dot-step-gap` reaches this value; the painted dot keeps
+   * `--cngx-dot-step-size`. On touch the larger `--cngx-target-min` sizes
+   * the slot itself.
+   * @group Layout
+   */
+  @property --cngx-dot-step-target-min {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /**
    * Default text color inherited by step labels.
    * @group Surface
    */
@@ -2061,6 +2075,23 @@
 }
 
 .cngx-stepper__mobile-dots {
+  /* Target floor (WCAG 2.5.5/2.5.8). Adjacent 24px hit boxes would overlap at
+     the 10px dot + 8px gap layout, so the row grows instead: on a mouse the
+     slot plus the gap reaches --cngx-dot-step-target-min, on touch the slot
+     reaches --cngx-target-min. Margin, not padding, so every fill, ring and
+     outline below keeps painting the dot box. */
+  --_cngx-dot-step-pad: max(
+    (
+        max(
+            var(--cngx-target-min, 0px),
+            var(--cngx-dot-step-target-min, 24px) - var(--cngx-dot-step-gap, 0.5rem)
+          ) -
+          var(--cngx-dot-step-size, 0.625rem)
+      ) /
+      2,
+    0px
+  );
+  --_cngx-dot-step-slot: calc(var(--cngx-dot-step-size, 0.625rem) + 2 * var(--_cngx-dot-step-pad));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2081,7 +2112,10 @@
 
 .cngx-stepper__mobile-dot {
   position: relative;
-  display: inline-block;
+  /* Grid, so a projected *cngxDotStepperDot body centres in the dot instead
+     of hanging off an inline line box. */
+  display: inline-grid;
+  place-items: center;
   width: var(--cngx-dot-step-size, 0.625rem);
   height: var(--cngx-dot-step-size, 0.625rem);
   padding: 0;
@@ -2092,6 +2126,33 @@
   transition:
     background var(--cngx-duration-fast, 150ms) ease-out,
     transform var(--cngx-duration-fast, 150ms) ease-out;
+  margin-inline: var(--_cngx-dot-step-pad);
+  margin-block: max((var(--cngx-target-min, 0px) - var(--cngx-dot-step-size, 0.625rem)) / 2, 0px);
+}
+
+/* The aria-hidden wrapper around a projected dot body: a grid of its own so
+   the body sizes the box, with no line box below it. */
+.cngx-stepper__mobile-dot > span {
+  display: grid;
+  place-items: center;
+}
+
+/* Hit area, centred on the dot and slot-sized, so a marked (larger) dot keeps
+   the same pitch. The counter-scale holds the active dot's hit box at the slot
+   while its paint grows. */
+.cngx-stepper__mobile-dot::before {
+  content: '';
+  position: absolute;
+  /* Physical on purpose: centring is the same in both directions. */
+  left: 50%;
+  top: 50%;
+  width: var(--_cngx-dot-step-slot);
+  height: max(var(--_cngx-dot-step-slot), var(--cngx-target-min, 0px));
+  translate: -50% -50%;
+}
+
+.cngx-stepper__mobile-dot--active::before {
+  scale: 0.8;
 }
 
 /* A disabled dot is a hollow ring in the disabled field colour: the inset

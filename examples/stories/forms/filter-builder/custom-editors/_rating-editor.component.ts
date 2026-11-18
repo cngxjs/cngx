@@ -17,6 +17,7 @@ import type {
   selector: 'demo-rating-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { style: 'display: flex; align-items: center;' },
   template: `
     <span
       role="radiogroup"
@@ -31,7 +32,7 @@ import type {
           [attr.aria-label]="star === 1 ? '1 star' : star + ' stars'"
           [disabled]="disabled()"
           (click)="value.set(star)"
-          style="border: 0; background: transparent; cursor: pointer; font-size: 1.125rem; padding: 0.125rem;"
+          style="display: inline-flex; align-items: center; justify-content: center; min-inline-size: 1.5rem; min-block-size: 1.5rem; border: 0; background: transparent; cursor: pointer; font-size: 1.125rem; padding: 0.125rem;"
         >
           <span aria-hidden="true">{{ (value() ?? 0) >= star ? '★' : '☆' }}</span>
         </button>
