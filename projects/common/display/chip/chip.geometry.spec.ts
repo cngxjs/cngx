@@ -47,9 +47,9 @@ class ChipTintHost {}
   standalone: true,
   imports: [CngxChip],
   template: `
-    <cngx-chip class="chip-default" [removable]="true">Default</cngx-chip>
+    <cngx-chip class="chip-default" tabindex="0" [removable]="true">Default</cngx-chip>
     <div style="--cngx-color-primary: oklch(0.55 0.15 250)">
-      <cngx-chip class="chip-branded" [removable]="true">Branded</cngx-chip>
+      <cngx-chip class="chip-branded" tabindex="0" [removable]="true">Branded</cngx-chip>
     </div>
   `,
 })
@@ -211,6 +211,23 @@ describe('CngxChip geometry', () => {
   // The remove focus ring falls back to the primary at the use site; a
   // registered initial-value would shadow that fallback and paint Ember under
   // any brand.
+  it('paints the chip focus ring with the primary in scope', () => {
+    const fixture = TestBed.createComponent(RemovableChipsHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const ring = (selector: string): string => {
+      const chip = query(
+        mountedRoot as HTMLElement,
+        `${selector}.cngx-chip, ${selector} .cngx-chip`,
+      );
+      chip.focus();
+      return computedValue(chip, 'outline-color');
+    };
+    expect(rasterise(ring('.chip-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
+    expect(rasterise(ring('.chip-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
+  });
+
   it('paints the remove focus ring with the primary in scope', () => {
     const fixture = TestBed.createComponent(RemovableChipsHost);
     mountedRoot = fixture.nativeElement as HTMLElement;

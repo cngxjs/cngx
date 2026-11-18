@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxRadio } from './radio.component';
@@ -34,6 +34,22 @@ let mountedRoot: HTMLElement | null = null;
 class RadioHost {
   orientation: 'horizontal' | 'vertical' = 'vertical';
 }
+
+@Component({
+  standalone: true,
+  imports: [CngxRadioGroup, CngxRadio],
+  template: `
+    <cngx-radio-group class="default">
+      <cngx-radio [value]="'a'">A</cngx-radio>
+    </cngx-radio-group>
+    <div style="--cngx-color-primary: oklch(0.55 0.15 250)">
+      <cngx-radio-group class="branded">
+        <cngx-radio [value]="'a'">A</cngx-radio>
+      </cngx-radio-group>
+    </div>
+  `,
+})
+class PrimaryRadioHost {}
 
 function mount(orientation: 'horizontal' | 'vertical' = 'vertical'): {
   group: HTMLElement;
@@ -85,5 +101,28 @@ describe('CngxRadio geometry', () => {
     radio.style.setProperty('--cngx-target-min', '44px');
     expect(computedValue(radio, 'min-block-size')).toBe('44px');
     expect(computedValue(radio, 'min-inline-size')).toBe('44px');
+  });
+});
+
+// The focus ring falls back to the primary at the use site; a registered
+// initial-value would shadow that fallback and paint Ember under any brand.
+describe('CngxRadio focus ring', () => {
+  it('paints the focus ring with the primary in scope', () => {
+    const fixture = TestBed.createComponent(PrimaryRadioHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const ring = (scope: string): string => {
+      const radio = (mountedRoot as HTMLElement).querySelector<HTMLElement>(
+        `.${scope} .cngx-radio`,
+      );
+      if (!radio) {
+        throw new Error(`${scope} radio did not render`);
+      }
+      radio.focus();
+      return computedValue(radio, 'outline-color');
+    };
+    expect(rasterise(ring('branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
+    expect(rasterise(ring('default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
   });
 });
