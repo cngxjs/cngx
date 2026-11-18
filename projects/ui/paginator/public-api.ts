@@ -16,6 +16,11 @@ export {
 export { CNGX_PAGINATOR_HOST, type CngxPaginatorHost } from './paginator-host.token';
 export { CngxPaginatorLoading } from './paginator-loading.directive';
 export {
+  CngxPaginatorRipple,
+  CNGX_PAGINATOR_RIPPLE,
+  type CngxPaginatorRippleState,
+} from './paginator-ripple.directive';
+export {
   CngxPaginatorFirst,
   CngxPaginatorPrev,
   CngxPaginatorNext,

@@ -19,6 +19,7 @@ import {
   CngxPaginatorPrev,
   CngxPaginatorRail,
   CngxPaginatorRange,
+  CngxPaginatorRipple,
   CngxPaginatorStatus,
 } from '@cngx/ui/paginator';
 
@@ -82,10 +83,11 @@ import {
     CngxPaginatorRail,
     CngxPaginatorDots,
     CngxPaginatorPageSize,
+    CngxPaginatorRipple,
   ],
   styleUrl: './skins-coverage.component.scss',
   template: `
-    <div class="coverage">
+    <div class="coverage" cngxPaginatorRipple>
       <section>
         <h3>numbered</h3>
         <cngx-paginator

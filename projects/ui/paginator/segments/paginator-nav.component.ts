@@ -17,6 +17,7 @@ import {
 
 import { injectPaginatorAriaLabels, type CngxPaginatorAriaLabels } from '../paginator-config';
 import { injectPaginatorHost, type CngxPaginatorHost } from '../paginator-host.token';
+import { injectPaginatorRippleEnabled } from '../paginator-ripple.directive';
 
 /** Config keys the four nav segments label their button with. */
 type NavAriaKey = keyof Pick<CngxPaginatorAriaLabels, 'first' | 'previous' | 'next' | 'last'>;
@@ -35,6 +36,8 @@ interface NavCoreOptions {
 interface NavCore {
   readonly disabled: Signal<boolean>;
   readonly ariaLabel: Signal<string>;
+  /** `true` while no `cngxPaginatorRipple` switches the wave on. */
+  readonly rippleOff: () => boolean;
   activate(): void;
 }
 
@@ -48,9 +51,11 @@ function createPaginatorNavCore(options: NavCoreOptions): NavCore {
   const labels = injectPaginatorAriaLabels();
   const disabled = computed(() => host.isBusy() || options.atBound(host));
   const ariaLabel = computed(() => labels()[options.ariaKey]);
+  const rippleOn = injectPaginatorRippleEnabled();
   return {
     disabled,
     ariaLabel,
+    rippleOff: () => !rippleOn(),
     activate: () => {
       if (disabled()) {
         return;
@@ -71,6 +76,7 @@ const NAV_TEMPLATE = `
     type="button"
     class="cngx-paginator__button cngx-paginator__nav"
     cngxRipple
+    [rippleDisabled]="core.rippleOff()"
     [attr.aria-disabled]="core.disabled() ? 'true' : null"
     (click)="core.activate()"
   >

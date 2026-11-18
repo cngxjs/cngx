@@ -4,6 +4,7 @@ import { CngxRipple } from '@cngx/common/interactive';
 
 import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
 import { injectPaginatorHost } from '../paginator-host.token';
+import { injectPaginatorRippleEnabled } from '../paginator-ripple.directive';
 
 /**
  * Load-more segment: an append-don't-replace trigger over the same brain. \
@@ -36,6 +37,7 @@ import { injectPaginatorHost } from '../paginator-host.token';
       type="button"
       class="cngx-paginator__button cngx-paginator__load-more"
       cngxRipple
+      [rippleDisabled]="!rippleOn()"
       [attr.aria-label]="ariaLabel()"
       [attr.aria-disabled]="disabled() ? 'true' : null"
       (click)="handleClick()"
@@ -54,6 +56,8 @@ export class CngxPaginatorLoadMore {
   protected readonly host = injectPaginatorHost('cngx-pgn-load-more');
   private readonly ariaLabels = injectPaginatorAriaLabels();
   private readonly formats = injectPaginatorFormats();
+  /** Ripple wave only under a `cngxPaginatorRipple` ancestor. */
+  protected readonly rippleOn = injectPaginatorRippleEnabled();
 
   /**
    * Accessible name from the config cascade. On the last page the actionable

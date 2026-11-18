@@ -17,6 +17,7 @@ import {
   CngxPaginatorPages,
   CngxPaginatorPrev,
   CngxPaginatorRange,
+  CngxPaginatorRipple,
 } from '@cngx/ui/paginator';
 
 interface Row {
@@ -53,6 +54,7 @@ const NAMES = [
     CngxPaginatorPages,
     CngxPaginatorNext,
     CngxPaginatorLast,
+    CngxPaginatorRipple,
   ],
   styleUrl: './data-table.component.scss',
   template: `
@@ -80,6 +82,7 @@ const NAMES = [
 
       <cngx-paginator
         class="grid-footer"
+        cngxPaginatorRipple
         skin="bar"
         [total]="rows.length"
         [pageIndex]="pageIndex()"
