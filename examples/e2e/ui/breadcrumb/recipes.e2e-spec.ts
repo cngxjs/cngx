@@ -42,3 +42,33 @@ test.describe('ui/breadcrumb/recipes/mobile-parent-only', () => {
     await expect(visibleCrumbs(page)).toHaveCount(5);
   });
 });
+
+test.describe('ui/breadcrumb/recipes/truncated-labels', () => {
+  const ROUTE = 'ui/breadcrumb/recipes/truncated-labels';
+
+  test('describes only clamped crumbs with their tooltip', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 720 });
+    await gotoDemo(page, ROUTE);
+
+    const home = crumbs(page).filter({ hasText: 'Home' });
+    const clamped = crumbs(page).filter({ hasText: 'Enterprise Resource Planning' });
+    await expect(clamped).toHaveAttribute('aria-describedby', /.+/);
+    await expect(home).not.toHaveAttribute('aria-describedby', /.+/);
+
+    await clamped.focus();
+    const id = (await clamped.getAttribute('aria-describedby')) ?? '';
+    await expect(page.locator(`[id="${id}"]`)).toBeVisible();
+    await expect(page.locator(`[id="${id}"]`)).toHaveText('Enterprise Resource Planning');
+  });
+
+  test('never clamps the current page', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 720 });
+    await gotoDemo(page, ROUTE);
+
+    const current = page.locator('nav a[aria-current="page"]');
+    await expect(current).toHaveText('Purchase Order #48213-B');
+    const clipped = await current.evaluate((el) => el.scrollHeight > el.clientHeight);
+    expect(clipped).toBe(false);
+    await expect(current).not.toHaveAttribute('aria-describedby', /.+/);
+  });
+});
