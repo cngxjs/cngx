@@ -1,0 +1,27 @@
+// Test-only entry for sidenav-scheme-island.geometry.spec.ts: the working-tree
+// sidenav bridge under an M3 theme, scoped to `.bridge-probe` so it reaches
+// only the bridged case. Not shipped.
+@use '@angular/material' as mat;
+@use '../../themes/material/sidenav-theme' as sidenav;
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+    ),
+  )
+);
+
+.bridge-probe {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  @include sidenav.theme($theme);
+}

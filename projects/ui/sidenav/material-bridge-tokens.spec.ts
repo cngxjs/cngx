@@ -176,6 +176,22 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $primary))
     expect(css).not.toContain('.cngx-sidenav__body');
   });
 
+  it('reads the M2 rail ink from the theme foreground, so a dark theme stays readable', () => {
+    const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/sidenav-theme' as sidenav;
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$theme: mat.m2-define-dark-theme((color: (primary: $primary, accent: $primary)));
+@include sidenav.theme($theme);
+`);
+    expect(css).toContain('--cngx-sidenav-color:');
+    expect(css).not.toContain('--cngx-sidenav-color: rgba(0, 0, 0, 0.87)');
+    expect(css).not.toContain('--cngx-sidenav-border-color: rgba(0, 0, 0, 0.12)');
+    // the row ink inherits the rail ink (currentColor); a fixed M2 row colour
+    // would stay dark on the dark surface
+    expect(css).not.toMatch(/--cngx-nav-link-(hover-)?color:/);
+  });
+
   it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {
     const css = compiledTheme();
     const navLink = css.match(/:where\(\.cngx-nav-link, \[cngxNavGroup\]\)\s*\{[^}]*\}/);
