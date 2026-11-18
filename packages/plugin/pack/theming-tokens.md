@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3111 tokens across 168 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3228 tokens across 164 components.
 
 ## CngxA11yPanel
 
@@ -15,7 +15,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-accordion-header-padding`|`0.75rem 1rem`|Header|Header button padding. The pixel `initial-value` is only the un-set fallback; the standalone `[cngxAccordion]` host SETs this from `--cngx-space-*` (below) so a global `[data-density]` re-scales a bare `@cngx/common` accordion, and the `@cngx/ui/accordion` organism SETs the same tokens at its group default. Never put `var()` in the `initial-value` (it is invalid, and a registered initial-value defeats any `var()` fallback - reference_property_color_initial_defeats_fallback); derive via a host SET.|
+|`--cngx-accordion-header-padding`|`0.75rem 1rem`|Header|Header button padding. The pixel `initial-value` is only the un-set fallback; the standalone `.cngx-accordion` host SETs this from `--cngx-space-*` (below) so a global `[data-density]` re-scales a bare `@cngx/common` accordion, and the `@cngx/ui/accordion` organism SETs the same tokens at its group default. Never put `var()` in the `initial-value` (it is invalid, and a registered initial-value defeats any `var()` fallback - reference_property_color_initial_defeats_fallback); derive via a host SET.|
 |`--cngx-accordion-region-padding`|`0.75rem 1rem`|Region|Region (content) padding.|
 |`--cngx-accordion-border-color`|`oklch(0.88 0.005 250)`|Header|Divider colour between rows.|
 |`--cngx-accordion-twisty-display`|`block`|Header|Display of the CSS twisty. `block` shows it, `none` hides it. A skin that ships its own chevron (e.g. the @cngx/ui accordion organism) sets this to `none` on the header instead of a blanket `::after` reset. `inherits: true` so a value set on the header button reaches the `::after` pseudo.|
@@ -51,17 +51,11 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-accordion-band-bg-hover`|`color-mix(in oklab, var(--cngx-color-text, #f2f4fa) 79%, var(--cngx-color-surface, #13151d))`|Skin|Background of the section-bands heading band on hover.|
 |`--cngx-accordion-spine-color`|`var(--cngx-color-danger, #dc2626)`|Skin|Colour of the severity-spine column on an expanded item.|
 
-## CngxAccordionItem
-
-|Token|Default|Group|Description|
-|-|-|-|-|
-|`--cngx-accordion-twisty-display`|`none`|Layout|Display of the Track-B skin's `::after` twisty on the item header. Set to `none` because the item renders its own chevron.|
-
 ## CngxAccordionPanel
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-accordion-header-padding`|`0.75rem 1rem`|Header|Header button padding. The pixel `initial-value` is only the un-set fallback; the standalone `[cngxAccordion]` host SETs this from `--cngx-space-*` (below) so a global `[data-density]` re-scales a bare `@cngx/common` accordion, and the `@cngx/ui/accordion` organism SETs the same tokens at its group default. Never put `var()` in the `initial-value` (it is invalid, and a registered initial-value defeats any `var()` fallback - reference_property_color_initial_defeats_fallback); derive via a host SET.|
+|`--cngx-accordion-header-padding`|`0.75rem 1rem`|Header|Header button padding. The pixel `initial-value` is only the un-set fallback; the standalone `.cngx-accordion` host SETs this from `--cngx-space-*` (below) so a global `[data-density]` re-scales a bare `@cngx/common` accordion, and the `@cngx/ui/accordion` organism SETs the same tokens at its group default. Never put `var()` in the `initial-value` (it is invalid, and a registered initial-value defeats any `var()` fallback - reference_property_color_initial_defeats_fallback); derive via a host SET.|
 |`--cngx-accordion-region-padding`|`0.75rem 1rem`|Region|Region (content) padding.|
 |`--cngx-accordion-border-color`|`oklch(0.88 0.005 250)`|Header|Divider colour between rows.|
 |`--cngx-accordion-twisty-display`|`block`|Header|Display of the CSS twisty. `block` shows it, `none` hides it. A skin that ships its own chevron (e.g. the @cngx/ui accordion organism) sets this to `none` on the header instead of a blanket `::after` reset. `inherits: true` so a value set on the header button reaches the `::after` pseudo.|
@@ -83,17 +77,21 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
@@ -115,7 +113,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -189,7 +187,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-action-multi-select-bg`|`var(--cngx-combobox-bg, var(--cngx-select-bg, transparent))`|Surface|Background of the trigger. Falls back to `--cngx-combobox-bg`, then `--cngx-select-bg`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-action-multi-select-color`|`var(--cngx-combobox-color, var(--cngx-select-color, inherit))`|Surface|Text color of the trigger. Falls back to `--cngx-combobox-color`, then `--cngx-select-color`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-action-multi-select-min-height`|`var(--cngx-combobox-min-height, var(--cngx-select-min-height, 2.125rem))`|Layout|Minimum block size of the trigger. Falls back to `--cngx-combobox-min-height`, then `--cngx-select-min-height`; see {@link --cngx-select-min-height} for why no `initial-value` is declared. The touch floor still lifts the trigger to `--cngx-target-min`.|
-|`--cngx-action-multi-select-focus-outline`|`var(--cngx-combobox-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary)))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-combobox-focus-outline`, then `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
+|`--cngx-action-multi-select-focus-outline`|`var(--cngx-combobox-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary))))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-combobox-focus-outline`, then `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-action-multi-select-input-flex-basis`|`var(--cngx-combobox-input-flex-basis, 4rem)`|Layout|Flex basis of the inline input. Falls back to `--cngx-combobox-input-flex-basis`; see {@link --cngx-combobox-input-flex-basis} for why no `initial-value` is declared.|
 |`--cngx-action-multi-select-input-min-width`|`var(--cngx-combobox-input-min-width, 4rem)`|Layout|Minimum inline size of the inline input. Falls back to `--cngx-combobox-input-min-width`; see {@link --cngx-combobox-input-min-width} for why no `initial-value` is declared.|
 
@@ -211,7 +209,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -426,13 +424,13 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-async-transition`|`0.2s ease`|Motion|Transition shorthand for the background-color / color / border-color / opacity changes between async states. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
-|`--cngx-async-pending-opacity`|`0.7`|State / Pending|Opacity applied while `cngxAsyncClick` reports `pending`. Combined with `cursor: wait` on the same state. Not applied to `.cngx-button` hosts, which show their own busy treatment.|
-|`--cngx-async-success-bg`|``|State / Success|Background tint after a successful async commit. Unset by default: 12% `--cngx-color-success`. Not read on `.cngx-button` hosts.|
-|`--cngx-async-success-color`|``|State / Success|Text color after a successful async commit. Unset by default: `--cngx-color-success` mixed 75% toward `--cngx-color-text`, so it reads as text in both schemes. Not read on `.cngx-button` hosts.|
-|`--cngx-async-success-border`|``|State / Success|Border color after a successful async commit. Unset by default: `--cngx-color-success`. Not read on `.cngx-button` hosts.|
-|`--cngx-async-error-bg`|``|State / Error|Background tint after a failed async commit. Unset by default: 12% `--cngx-color-danger`. Not read on `.cngx-button` hosts.|
-|`--cngx-async-error-color`|``|State / Error|Text color after a failed async commit. Unset by default: `--cngx-color-danger-text`. Not read on `.cngx-button` hosts.|
-|`--cngx-async-error-border`|``|State / Error|Border color after a failed async commit. Unset by default: `--cngx-color-danger`. Not read on `.cngx-button` hosts.|
+|`--cngx-async-pending-opacity`|`0.7`|State / Pending|Opacity applied while `cngxAsyncClick` reports `pending`. Combined with `cursor: wait` on the same state. A host with its own busy treatment sets it to `1`.|
+|`--cngx-async-success-bg`|``|State / Success|Background tint after a successful async commit. Unset by default: 12% `--cngx-color-success`.|
+|`--cngx-async-success-color`|``|State / Success|Text color after a successful async commit. Unset by default: `--cngx-color-success` mixed 75% toward `--cngx-color-text`, so it reads as text in both schemes.|
+|`--cngx-async-success-border`|``|State / Success|Border color after a successful async commit. Unset by default: `--cngx-color-success`.|
+|`--cngx-async-error-bg`|``|State / Error|Background tint after a failed async commit. Unset by default: 12% `--cngx-color-danger`.|
+|`--cngx-async-error-color`|``|State / Error|Text color after a failed async commit. Unset by default: `--cngx-color-danger-text`.|
+|`--cngx-async-error-border`|``|State / Error|Border color after a failed async commit. Unset by default: `--cngx-color-danger`.|
 
 ## CngxAsyncContainer
 
@@ -495,7 +493,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-badge-font-size`|`0.6875rem`|Typography|Font-size of the badge text.|
 |`--cngx-badge-font-weight`|`600`|Typography|Font-weight of the badge text.|
 |`--cngx-badge-border`|`0`|Surface|Ring around the badge. Defaults to `0` so the indicator reads as a solid pill that sits flush on its host (the dot variant in particular would shrink to a single visible pixel under a 2px ring). Set a non-zero border at consumer level when the badge needs to cut out from a busy host surface - e.g. `--cngx-badge-border: 2px solid var(--mat-sys-surface)`. Only applied in the corner variants (`above-*` / `below-*`); the `inline` variant is borderless either way. `inherits: true` so a single `:root` override reaches every indicator span at once.|
-|`--cngx-badge-primary-bg`|`oklch(0.66 0.19 50)`|Variant / Primary|Background of the primary variant. Falls back to `--cngx-color-primary`.|
+|`--cngx-badge-primary-bg`|``|Variant / Primary|Background of the primary variant. Falls back to `--cngx-color-primary`.|
 |`--cngx-badge-primary-color`|`oklch(1 0 0)`|Variant / Primary|Text color of the primary variant.|
 |`--cngx-badge-error-bg`|`oklch(0.62 0.22 25)`|Variant / Error|Background of the error variant. Falls back to `--cngx-color-danger`.|
 |`--cngx-badge-error-color`|`oklch(1 0 0)`|Variant / Error|Text color of the error variant.|
@@ -624,16 +622,16 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-pill-color`|`oklch(0.5 0.01 250)`|Skin|Resting segment label colour under the `pill` skin.|
 |`--cngx-breadcrumb-pill-hover-bg`|`oklch(0.95 0.03 50)`|Skin|Hover segment fill under the `pill` skin.|
 |`--cngx-breadcrumb-pill-hover-color`|`oklch(0.2 0.01 250)`|Skin|Hover segment label colour under the `pill` skin.|
-|`--cngx-breadcrumb-pill-active-bg`|`oklch(0.66 0.19 50)`|Skin|Active-segment fill under the `pill` skin.|
-|`--cngx-breadcrumb-pill-active-color`|`oklch(0.2 0.01 250)`|Skin|Active-segment label colour under the `pill` skin.|
+|`--cngx-breadcrumb-pill-active-bg`|`oklch(0.58 0.19 50)`|Skin|Active-segment fill under the `pill` skin.|
+|`--cngx-breadcrumb-pill-active-color`|`oklch(1 0 0)`|Skin|Active-segment label colour under the `pill` skin.|
 |`--cngx-breadcrumb-pill-font-size`|`0.875rem`|Skin|Segment font size under the `pill` skin.|
 |`--cngx-breadcrumb-link-decoration`|`var(--cngx-breadcrumb-plain-link-decoration, none)`|Typography|Text decoration of the crumb links. The `plain` skin sets it from `--cngx-breadcrumb-plain-link-decoration`.|
 |`--cngx-breadcrumb-ribbon-bg`|`oklch(0.97 0.005 250)`|Skin|Ribbon skin: resting fill of each chevron segment.|
 |`--cngx-breadcrumb-ribbon-color`|`oklch(0.5 0.01 250)`|Skin|Ribbon skin: resting label colour of the segments.|
 |`--cngx-breadcrumb-ribbon-hover-bg`|`oklch(0.95 0.03 50)`|Skin|Ribbon skin: segment fill on hover.|
 |`--cngx-breadcrumb-ribbon-hover-color`|`oklch(0.2 0.01 250)`|Skin|Ribbon skin: segment label colour on hover.|
-|`--cngx-breadcrumb-ribbon-active-bg`|`oklch(0.66 0.19 50)`|Skin|Ribbon skin: fill of the current-page segment.|
-|`--cngx-breadcrumb-ribbon-active-color`|`oklch(0.2 0.01 250)`|Skin|Ribbon skin: label colour of the current-page segment.|
+|`--cngx-breadcrumb-ribbon-active-bg`|`oklch(0.58 0.19 50)`|Skin|Ribbon skin: fill of the current-page segment.|
+|`--cngx-breadcrumb-ribbon-active-color`|`oklch(1 0 0)`|Skin|Ribbon skin: label colour of the current-page segment.|
 |`--cngx-breadcrumb-ribbon-font-size`|`0.875rem`|Skin|Ribbon skin: font size of the segment labels.|
 |`--cngx-breadcrumb-ribbon-radius`|`4px`|Skin|Ribbon skin: corner radius of the flat outer edge of the first segment.|
 |`--cngx-breadcrumb-ribbon-notch`|`12px`|Skin|Ribbon skin: depth of the chevron arrow cut into each segment. The RTL mirror reads the same value.|
@@ -694,8 +692,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-icononly-color`|`oklch(0.5 0.01 250)`|Skin|Icononly skin: resting colour of the icon squares.|
 |`--cngx-breadcrumb-icononly-hover-bg`|`oklch(0.97 0.005 250)`|Skin|Icononly skin: icon square background on hover.|
 |`--cngx-breadcrumb-icononly-hover-color`|`oklch(0.2 0.01 250)`|Skin|Icononly skin: icon square colour on hover.|
-|`--cngx-breadcrumb-icononly-active-bg`|`oklch(0.66 0.19 50)`|Skin|Icononly skin: fill of the current-page icon square.|
-|`--cngx-breadcrumb-icononly-active-color`|`oklch(0.2 0.01 250)`|Skin|Icononly skin: icon colour of the current-page square.|
+|`--cngx-breadcrumb-icononly-active-bg`|`oklch(0.58 0.19 50)`|Skin|Icononly skin: fill of the current-page icon square.|
+|`--cngx-breadcrumb-icononly-active-color`|`oklch(1 0 0)`|Skin|Icononly skin: icon colour of the current-page square.|
 |`--cngx-breadcrumb-icononly-tip-bg`|`oklch(0.2 0.01 250)`|Skin|Icononly skin: background of the label tooltip shown on hover and focus.|
 |`--cngx-breadcrumb-icononly-tip-color`|`oklch(1 0 0)`|Skin|Icononly skin: text colour of the label tooltip.|
 |`--cngx-breadcrumb-icononly-radius`|`4px`|Skin|Icononly skin: corner radius of the icon squares and the tooltip.|
@@ -703,7 +701,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-breadcrumb-shell-color`|`oklch(0.5 0.01 250)`|Skin|Shell skin: resting link colour.|
 |`--cngx-breadcrumb-shell-hover-bg`|`oklch(0.97 0.005 250)`|Skin|Shell skin: link background on hover.|
 |`--cngx-breadcrumb-shell-text`|`oklch(0.2 0.01 250)`|Skin|Shell skin: link colour on hover, on the current page and on the root product crumb.|
-|`--cngx-breadcrumb-shell-mark-bg`|`oklch(0.66 0.19 50)`|Skin|Shell skin: fill of the root product mark.|
+|`--cngx-breadcrumb-shell-mark-bg`|`oklch(0.58 0.19 50)`|Skin|Shell skin: fill of the root product mark.|
 |`--cngx-breadcrumb-shell-mark-color`|`oklch(1 0 0)`|Skin|Shell skin: text colour of the root product mark.|
 |`--cngx-breadcrumb-shell-font-size`|`0.875rem`|Skin|Shell skin: font size of the links and the chevron separator.|
 |`--cngx-breadcrumb-shell-radius`|`4px`|Skin|Shell skin: corner radius of the links.|
@@ -778,17 +776,21 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
@@ -835,9 +837,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-card-active-opacity`|`0.88`|State / Active|Opacity multiplier applied on touch-active. Only fires under `(hover: none)` so it doesn't compete with the hover shadow.|
 |`--cngx-card-focus-width`|`2px`|State / Focus|Focus-ring width.|
 |`--cngx-card-focus-offset`|`2px`|State / Focus|Outline offset of the focus ring.|
-|`--cngx-card-focus-color`|`oklch(0.66 0.19 50)`|State / Focus|Focus-ring color. Falls back to `--cngx-color-primary`.|
-|`--cngx-card-selected-border`|`oklch(0.66 0.19 50)`|State / Selected|Border color of the selected state and the inset selection bar. Falls back to `--cngx-color-primary`.|
-|`--cngx-card-selected-bg`|`oklch(0.96 0.04 50)`|State / Selected|Background of the selected state. The runtime fallback uses `color-mix()` against `--cngx-color-primary`, so this static default only matters when a theme pins the token explicitly.|
+|`--cngx-card-focus-color`|``|State / Focus|Focus-ring color. Falls back to `--cngx-color-primary`.|
+|`--cngx-card-selected-border`|``|State / Selected|Border color of the selected state and the inset selection bar. Falls back to `--cngx-color-primary`.|
+|`--cngx-card-selected-bg`|``|State / Selected|Background of the selected state. Unset by default, so the card paints a pale tint in the hue of the `--cngx-color-primary` in scope; the scheme blocks set its lightness and chroma cap, and an achromatic primary keeps the tint neutral.|
 |`--cngx-card-selected-bar-width`|`3px`|State / Selected|Width of the inset selection bar drawn via `::before` - provides a non-color-only selection signal (WCAG 1.4.1).|
 |`--cngx-card-loading-shimmer`|`oklch(1 0 0 / 0.4)`|State / Loading|Shimmer band color for the loading overlay gradient.|
 |`--cngx-card-loading-overlay`|`oklch(1 0 0 / 0.3)`|State / Loading|Static overlay shown when `prefers-reduced-motion` suppresses the shimmer animation.|
@@ -864,7 +866,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-card-badge-font-size-lg`|`0.8125rem`|Sizing|Font-size at the `lg` size.|
 |`--cngx-card-badge-radius`|`999px`|Sizing|Corner radius. Defaults to the pill radius via `--cngx-radius-pill` so the surface reads as a round indicator across all three sizes.|
 |`--cngx-card-badge-border`|`2px solid oklch(1 0 0)`|Surface|Ring around the badge - contrasts the pill against the card surface so the corner anchor reads as a separate element. The `:root` dark-mode override swaps the colour; `inherits: true` so the swap reaches the host element through the cascade.|
-|`--cngx-card-badge-primary-bg`|`oklch(0.66 0.19 50)`|Variant / Primary|Background of the `primary` intent. Falls back through `--cngx-badge-primary-bg` then `--cngx-color-primary`.|
+|`--cngx-card-badge-primary-bg`|``|Variant / Primary|Background of the `primary` intent. Falls back through `--cngx-badge-primary-bg` then `--cngx-color-primary`.|
 |`--cngx-card-badge-primary-color`|`oklch(1 0 0)`|Variant / Primary|Text colour of the `primary` intent.|
 |`--cngx-card-badge-danger-bg`|`oklch(0.62 0.22 25)`|Variant / Danger|Background of the `danger` intent. Falls back through `--cngx-badge-error-bg` then `--cngx-color-danger`.|
 |`--cngx-card-badge-danger-color`|`oklch(1 0 0)`|Variant / Danger|Text colour of the `danger` intent.|
@@ -906,9 +908,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-field-char-count-font-size`|`0.75rem`|Typography|Font-size of the counter text. Falls back through `--cngx-font-size-sm`. `syntax: '*'` because `@property`'s `<length>` initial-value forbids `rem`.|
-|`--cngx-field-char-count-color`|`oklch(0.45 0 0)`|Surface|Text color while under the limit. Falls back through `--cngx-field-hint-color`.|
-|`--cngx-field-char-count-over-color`|`oklch(0.6 0.18 25)`|State / Over|Text color once the count exceeds the limit. Falls back through `--cngx-field-error-color` and then `--cngx-color-danger`.|
+|`--cngx-field-char-count-font-size`|`0.75rem`|Typography|Font-size of the counter text, `0.75rem` by default. `syntax: '*'` because `@property`'s `<length>` initial-value forbids `rem`.|
+|`--cngx-field-char-count-color`|`oklch(0.45 0 0)`|Surface|Text color while under the limit, `oklch(0.45 0 0)` by default; the dark schemes lift it below.|
+|`--cngx-field-char-count-over-color`|`oklch(0.6 0.18 25)`|State / Over|Text color once the count exceeds the limit. The `:root` rule below points it at `--cngx-color-danger`; the initial value is the default where that token is not set.|
 
 ## CngxChart
 
@@ -974,18 +976,18 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-chip-padding-block`|`2px`|Layout|Block-axis padding of the pill.|
 |`--cngx-chip-padding-inline`|`8px`|Layout|Inline-axis padding of the pill.|
 |`--cngx-chip-radius`|`999px`|Layout|Corner radius. Defaults to a full pill via `--cngx-radius-pill`.|
-|`--cngx-chip-bg`|`oklch(0.66 0.19 50 / 0.12)`|Surface|Background of the default (unkeyed) chip. Primary-tinted at low alpha so the chip reads as accented without competing with stronger surfaces.|
+|`--cngx-chip-bg`|`oklch(0.66 0.19 50 / 0.12)`|Surface|Background of the default (unkeyed) chip: the primary mixed with `transparent` at 12%, assigned on `:root` and the scheme islands. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
 |`--cngx-chip-color`|`currentColor`|Surface|Text color. Defaults to `currentColor` so the chip inherits the container's text color.|
 |`--cngx-chip-border`|`0 solid transparent`|Surface|Border shorthand. Zero-width by default - pillows fill the box.|
 |`--cngx-chip-font-size`|``|Typography|Font-size of the chip label.|
 |`--cngx-chip-transition`|`background-color 150ms ease,
       color 150ms ease,
       border-color 150ms ease`|Motion|Transition shorthand for background / color / border-color changes on hover, selected, and disabled states. Derives from the `--cngx-duration-fast` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
-|`--cngx-chip-hover-bg`|`oklch(0.66 0.19 50 / 0.2)`|State / Hover|Background of the hover state for interactive chips (`[role=button]`, `[tabindex]`, or a chip with a remove button).|
+|`--cngx-chip-hover-bg`|`oklch(0.66 0.19 50 / 0.2)`|State / Hover|Background of the hover state for interactive chips (`[role=button]`, `[tabindex]`, or a chip with a remove button): the primary mixed with `transparent` at 20%, assigned like `--cngx-chip-bg`.|
 |`--cngx-chip-hover-color`|`currentColor`|State / Hover|Text color of the hover state.|
-|`--cngx-chip-focus-outline`|`2px solid oklch(0.66 0.19 50)`|State / Focus|Focus-ring shorthand applied via `outline` on `:focus-visible`. Defaults to the brand primary so the ring contrasts with the chip's own tinted fill (selected or unkeyed) instead of inheriting `currentColor`, which would render the ring in the text color and read as a generic dark border on top of the orange fill.|
+|`--cngx-chip-focus-outline`|``|State / Focus|Focus-ring shorthand applied via `outline` on `:focus-visible`. Defaults to the brand primary so the ring contrasts with the chip's own tinted fill (selected or unkeyed) instead of inheriting `currentColor`, which would render the ring in the text color and read as a generic dark border on top of the orange fill.|
 |`--cngx-chip-focus-outline-offset`|`2px`|State / Focus|Outline offset of the focus ring.|
-|`--cngx-chip-selected-bg`|`oklch(0.66 0.19 50 / 0.32)`|State / Selected|Background of the selected state (`[aria-selected=true]` / `[aria-pressed=true]`).|
+|`--cngx-chip-selected-bg`|`oklch(0.66 0.19 50 / 0.32)`|State / Selected|Background of the selected state (`[aria-selected=true]` / `[aria-pressed=true]`): the primary mixed with `transparent` at 32%, assigned like `--cngx-chip-bg`.|
 |`--cngx-chip-selected-color`|`currentColor`|State / Selected|Text color of the selected state.|
 |`--cngx-chip-info-bg`|`oklch(0.65 0.12 240 / 0.16)`|Variant / Info|Background of the `[data-color=info]` variant.|
 |`--cngx-chip-info-color`|`oklch(0.45 0.12 240)`|Variant / Info|Text color of the `[data-color=info]` variant.|
@@ -997,7 +999,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-chip-danger-color`|`oklch(0.5 0.2 25)`|Variant / Danger|Text color of the `[data-color=danger]` variant.|
 |`--cngx-chip-remove-radius`|`999px`|State / Remove|Corner radius of the inline remove button. Fully round by default, so the hover tint and focus ring circle the X inside the pill.|
 |`--cngx-chip-remove-focus-width`|`2px`|State / Remove|Focus-ring width of the inline remove button.|
-|`--cngx-chip-remove-focus-color`|`oklch(0.66 0.19 50)`|State / Remove|Focus-ring color of the inline remove button. Falls back to `--cngx-color-primary`.|
+|`--cngx-chip-remove-focus-color`|``|State / Remove|Focus-ring color of the inline remove button. Falls back to `--cngx-color-primary`.|
 |`--cngx-chip-remove-focus-offset`|`-3px`|State / Remove|Focus-ring offset of the inline remove button. Negative by default: the button keeps its 24px hit area, and the ring circles the X inside it instead of tracing the whole target.|
 
 ## CngxChipGroup
@@ -1010,6 +1012,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
+|`--cngx-close-button-color`|`currentColor`|Surface|Resting glyph colour of a neutral close button. Defaults to `--cngx-color-text-muted` (set below); hover and focus lift the glyph to the tone text colour.|
+|`--cngx-close-button-size`|``|Layout|Edge length of the square box. Unset by default, so the box follows the icon-button row of the `size` input (density and text scale included).|
+|`--cngx-close-button-icon-size`|``|Layout|Edge length of an `svg` or `img` glyph, projected or drawn by a `provideButtonCloseIcon` component. Unset by default (`1.25em` of the button font). Inherits so a value set on the button reaches the glyph.|
+|`--cngx-close-button-radius`|``|Layout|Corner radius. Defaults to `--cngx-radius-sm`.|
+|`--cngx-close-button-hover-bg`|``|State / Hover|Hover background. Unset by default, so the ghost variant's tone wash paints.|
+|`--cngx-close-button-pressed-bg`|``|State / Pressed|Pressed background. Unset by default, so the ghost variant's pressed tone wash paints.|
 |`--cngx-button-padding-block`|`0.5rem`|Layout|Block padding. SET per size from `--cngx-space-*`.|
 |`--cngx-button-padding-inline`|`1rem`|Layout|Inline padding. SET per size from `--cngx-space-*`.|
 |`--cngx-button-gap`|`0.5rem`|Layout|Gap between the slots and the label.|
@@ -1023,25 +1031,23 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
-|`--cngx-close-button-color`|`currentColor`|Surface|Resting glyph colour of a neutral close button. Defaults to `--cngx-color-text-muted` (set below); hover and focus lift the glyph to the tone text colour.|
-|`--cngx-close-button-size`|``|Layout|Edge length of the square box. Unset by default, so the box follows the icon-button row of the `size` input (density and text scale included).|
-|`--cngx-close-button-icon-size`|``|Layout|Edge length of an `svg` or `img` glyph, projected or drawn by a `provideButtonCloseIcon` component. Unset by default (`1.25em` of the button font). Inherits so a value set on the button reaches the glyph.|
-|`--cngx-close-button-radius`|``|Layout|Corner radius. Defaults to `--cngx-radius-sm`.|
-|`--cngx-close-button-hover-bg`|``|State / Hover|Hover background. Unset by default, so the ghost variant's tone wash paints.|
-|`--cngx-close-button-pressed-bg`|``|State / Pressed|Pressed background. Unset by default, so the ghost variant's pressed tone wash paints.|
 
 ## CngxCombobox
 
@@ -1061,7 +1067,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -1135,7 +1141,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-combobox-bg`|`var(--cngx-select-bg, transparent)`|Surface|Background of the trigger. Falls back to `--cngx-select-bg`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-combobox-color`|`var(--cngx-select-color, inherit)`|Surface|Text color of the trigger. Falls back to `--cngx-select-color`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-combobox-min-height`|`var(--cngx-select-min-height, 2.125rem)`|Layout|Minimum block size of the trigger - fits a single row of chips. Falls back to `--cngx-select-min-height`; see {@link --cngx-select-min-height} for why no `initial-value` is declared. The touch floor still lifts the trigger to `--cngx-target-min`.|
-|`--cngx-combobox-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
+|`--cngx-combobox-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary)))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-combobox-input-flex-basis`|`4rem`|Layout|Flex basis of the inline input - sets the preferred starting width before the input grows or shrinks. No `initial-value`, like {@link --cngx-select-bg}: the use-site fallback survives, and a value set on the host or an ancestor reaches the input.|
 |`--cngx-combobox-input-min-width`|`4rem`|Layout|Minimum inline size of the inline input - keeps the input tappable even when chips dominate the trigger row. No `initial-value`, like {@link --cngx-select-bg}: the use-site fallback survives, and a value set on the host or an ancestor reaches the input.|
 
@@ -1244,12 +1250,6 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-dga-edge-fade-size`|`24px`|Grid|Width of the inline edge fade shown while columns are hidden sideways. Also sets how far the inline scroll padding keeps a focused cell away from the edge. The fade is a default look keyed on the public `data-scroll-inline-start` / `data-scroll-inline-end` host attributes.|
 |`--cngx-dga-edge-fade-min`|`0.35`|Grid|Mask opacity at the very edge of the inline fade. The fade never reaches full transparency, so overlay scrollbars and edge content stay visible.|
 
-## CngxDataGridRow
-
-|Token|Default|Group|Description|
-|-|-|-|-|
-|`--cngx-accordion-twisty-display`|`none`|Layout|Display of the Track-B accordion skin's `::after` twisty on the row summary. Set to `none` because the row renders its own chevron.|
-
 ## CngxDelta
 
 |Token|Default|Group|Description|
@@ -1258,7 +1258,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-delta-size`|`0.8125rem`|Typography|Font-size of the delta label.|
 |`--cngx-delta-weight`|`500`|Typography|Font-weight of the delta label.|
 |`--cngx-delta-neutral-color`|`oklch(0.36 0.02 290)`|Variant / Neutral|Colour of the `.cngx-delta--neutral` modifier - flat or polarity-disabled.|
-|`--cngx-delta-positive-color`|`oklch(0.65 0.18 145)`|Variant / Positive|Colour of the `.cngx-delta--positive` modifier. Falls back to `--cngx-color-success`.|
+|`--cngx-delta-positive-color`|`oklch(0.46 0.15 145)`|Variant / Positive|Colour of the `.cngx-delta--positive` modifier. Reads `--cngx-color-success-text`.|
 |`--cngx-delta-negative-color`|`oklch(0.65 0.22 25)`|Variant / Negative|Colour of the `.cngx-delta--negative` modifier. Falls back to `--cngx-color-danger`.|
 
 ## CngxDeviationBar
@@ -1359,7 +1359,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-step-refused-color`|``|State / Refused|Fill of a refused-commit marker (the commit action answered `false`). A refusal is no error, so it wears the rejection amber; a failed commit keeps `--cngx-step-errored-color`. Registered without an initial value, so the amber fallback applies until a theme sets it.|
+|`--cngx-step-refused-color`|``|State / Refused|Fill of a refused-commit marker (the commit action answered `false`). A refusal is no error, so it wears the rejection amber; a failed commit keeps the strong danger fill. Registered without an initial value, so the amber fallback applies until a theme sets it.|
 |`--cngx-step-refused-text-color`|``|State / Refused|Text color of the aggregate line when every marked step is a refused commit. Defaults to the surrounding text colour: amber text would fall under the 4.5:1 text contrast.|
 |`--cngx-dot-step-size`|`0.625rem`|Layout|Diameter of each dot.|
 |`--cngx-dot-step-marked-size`|`1rem`|Layout|Diameter of a dot that carries an error or refused mark. Larger than `--cngx-dot-step-size`, so the mark inside stays legible.|
@@ -1399,6 +1399,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-field-border-width`|`1px`|Sizing|Border width of the field box on every side, in every skin (transparent where a skin paints none). The box height and the touch floor of the controls inside it are derived from it, so changing it keeps the box on its formula.|
 |`--cngx-field-ring-width`|`2px`|Sizing|Width of the focus ring an outline or bare box draws around its main control.|
 |`--cngx-field-ring-offset`|`3px`|Sizing|Distance between the box edge and its focus ring.|
+|`--cngx-field-ring-color`|`var(--cngx-color-primary)`|Color|Colour of the focus ring around an outline or bare field and of the select-family trigger ring. Unset by default: the ring follows `--cngx-color-primary` where it is drawn, so a primary override on a subtree reaches it. Fill shows focus as an underline instead (`--cngx-field-underline-focus-color`).|
 |`--cngx-field-affix-gap`|`8px`|Layout|Gap between the prefix, control, and suffix in an affix row.|
 |`--cngx-field-affix-divider`|`0px`|Layout|Width of an optional divider between an affix and the control: the inline-end edge of a prefix, the inline-start edge of a suffix. `0px` draws none. Any width also pads the affix by `--cngx-space-sm` so the divider does not touch the affix content. Set it on the box.|
 
@@ -1477,13 +1478,6 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-filter-builder-empty-row-opacity`|`0.85`|State / Empty|Opacity multiplier applied to the empty row variant - fades the placeholder slot without removing it from the layout.|
 |`--cngx-filter-builder-action-padding-compact`|`var(--cngx-space-sm)`|Variant / Remove|Padding of the remove button at the end of the row capsule.|
 
-## CngxFormErrors
-
-|Token|Default|Group|Description|
-|-|-|-|-|
-|`--cngx-form-errors-font-size`|`0.875rem`|Typography|Font-size of the error list. Falls back through `--cngx-font-size-sm`. `syntax: '*'` allows `rem`.|
-|`--cngx-form-errors-color`|`oklch(0.6 0.18 25)`|Surface|Text color of the error list. Falls back through `--cngx-field-error-color` and then `--cngx-color-danger`.|
-
 ## CngxGoal
 
 |Token|Default|Group|Description|
@@ -1534,17 +1528,21 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
@@ -1552,6 +1550,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
+|`--cngx-icon-size`|`1em`|Layout|Caret size, relative to the button font.|
 |`--cngx-button-padding-block`|`0.5rem`|Layout|Block padding. SET per size from `--cngx-space-*`.|
 |`--cngx-button-padding-inline`|`1rem`|Layout|Inline padding. SET per size from `--cngx-space-*`.|
 |`--cngx-button-gap`|`0.5rem`|Layout|Gap between the slots and the label.|
@@ -1565,20 +1564,23 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
-|`--cngx-icon-size`|`1em`|Layout|Caret size, relative to the button font.|
 
 ## CngxIncrementalList
 
@@ -1594,7 +1596,6 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-field-required-color`|`oklch(0.6 0.18 25)`|State / Required|Color of the required-marker glyph next to the label. Falls back through `--cngx-field-error-color` and then `--cngx-color-danger`.|
 |`--cngx-field-label-font-size`|`0.8125rem`|Typography|Font size of the field label.|
 |`--cngx-field-label-weight`|`500`|Typography|Font weight of the field label.|
 |`--cngx-field-hint-font-size`|`0.8125rem`|Typography|Font size of the hint and of the error list.|
@@ -1608,8 +1609,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-listbox-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outline of the listbox container when it takes keyboard focus. The container uses `aria-activedescendant`, so it carries focus while the highlighted option is signalled separately by the highlight bg.|
 |`--cngx-listbox-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-listbox-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
-|`--cngx-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted option. Low-alpha primary so the highlight reads as an accent without competing with selected-state visuals.|
-|`--cngx-option-selected-bg`|`oklch(0.66 0.19 50 / 0.18)`|State / Selected|Background of a selected option. Slightly higher alpha than the highlight tint so selection reads as committed state rather than transient cursor position.|
+|`--cngx-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted option: the primary mixed with `transparent` at 10% (18% dark), assigned on `:root`. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
+|`--cngx-option-selected-bg`|`oklch(0.66 0.19 50 / 0.18)`|State / Selected|Background of a selected option: the primary mixed with `transparent` at 18% (28% dark), a step above the highlight so selection reads as committed state. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
 |`--cngx-listbox-padding`|`4px`|Layout|Padding shorthand inside the listbox container.|
 |`--cngx-option-padding`|`6px 10px`|Layout|Padding shorthand on each option.|
 |`--cngx-option-radius`|`4px`|Layout|Corner radius of each option.|
@@ -1627,8 +1628,6 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-spin-easing`|`linear`|Motion|Spinner easing curve.|
 |`--cngx-bar-duration`|`1.5s`|Motion|Bar sweep duration.|
 |`--cngx-bar-easing`|`ease-in-out`|Motion|Bar sweep easing curve.|
-|`--cngx-pulse-duration`|`2s`|Motion|Opacity-pulse duration used as the reduced-motion fallback.|
-|`--cngx-pulse-easing`|`ease-in-out`|Motion|Opacity-pulse easing curve.|
 
 ## CngxLoadingOverlay
 
@@ -1648,6 +1647,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-menu-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-menu-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
 |`--cngx-menu-item-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted item. Resolved at `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%, transparent)` so the tint tracks whichever primary the theme (cngx default, Material bridge, brand override) feeds. The `@property` initial-value below is the literal fallback used when neither the foundation token nor the `:root` declaration resolves.|
+|`--cngx-menu-bg`|``|Surface|Background of the menu container. Unset by default, so the container paints `--cngx-color-surface`. A host that paints its own surface around the menu sets it to `transparent` on its menu.|
+|`--cngx-menu-border`|``|Surface|Border shorthand of the menu container. Unset by default, so the container draws a 1px `--cngx-color-border` line.|
+|`--cngx-menu-radius`|``|Surface|Corner radius of the menu container. Unset by default, so it follows `--cngx-radius-md`.|
+|`--cngx-menu-shadow`|``|Surface|Elevation of the menu container. Unset by default, so it follows `--cngx-shadow-md`.|
 |`--cngx-menu-padding`|`4px`|Layout|Padding shorthand inside the menu container.|
 |`--cngx-menu-item-padding`|`6px 10px`|Layout|Padding shorthand on each menu item.|
 |`--cngx-menu-item-gap`|`8px`|Layout|Inline gap between an item's slots (icon / label / suffix / kbd).|
@@ -1662,6 +1665,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
+|`--cngx-icon-size`|`1em`|Layout|Caret size, relative to the button font.|
 |`--cngx-button-padding-block`|`0.5rem`|Layout|Block padding. SET per size from `--cngx-space-*`.|
 |`--cngx-button-padding-inline`|`1rem`|Layout|Inline padding. SET per size from `--cngx-space-*`.|
 |`--cngx-button-gap`|`0.5rem`|Layout|Gap between the slots and the label.|
@@ -1675,20 +1679,23 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
-|`--cngx-icon-size`|`1em`|Layout|Caret size, relative to the button font.|
 
 ## CngxMenuItem
 
@@ -1698,6 +1705,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-menu-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-menu-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
 |`--cngx-menu-item-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted item. Resolved at `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%, transparent)` so the tint tracks whichever primary the theme (cngx default, Material bridge, brand override) feeds. The `@property` initial-value below is the literal fallback used when neither the foundation token nor the `:root` declaration resolves.|
+|`--cngx-menu-bg`|``|Surface|Background of the menu container. Unset by default, so the container paints `--cngx-color-surface`. A host that paints its own surface around the menu sets it to `transparent` on its menu.|
+|`--cngx-menu-border`|``|Surface|Border shorthand of the menu container. Unset by default, so the container draws a 1px `--cngx-color-border` line.|
+|`--cngx-menu-radius`|``|Surface|Corner radius of the menu container. Unset by default, so it follows `--cngx-radius-md`.|
+|`--cngx-menu-shadow`|``|Surface|Elevation of the menu container. Unset by default, so it follows `--cngx-shadow-md`.|
 |`--cngx-menu-padding`|`4px`|Layout|Padding shorthand inside the menu container.|
 |`--cngx-menu-item-padding`|`6px 10px`|Layout|Padding shorthand on each menu item.|
 |`--cngx-menu-item-gap`|`8px`|Layout|Inline gap between an item's slots (icon / label / suffix / kbd).|
@@ -1716,6 +1727,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-menu-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-menu-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
 |`--cngx-menu-item-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted item. Resolved at `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%, transparent)` so the tint tracks whichever primary the theme (cngx default, Material bridge, brand override) feeds. The `@property` initial-value below is the literal fallback used when neither the foundation token nor the `:root` declaration resolves.|
+|`--cngx-menu-bg`|``|Surface|Background of the menu container. Unset by default, so the container paints `--cngx-color-surface`. A host that paints its own surface around the menu sets it to `transparent` on its menu.|
+|`--cngx-menu-border`|``|Surface|Border shorthand of the menu container. Unset by default, so the container draws a 1px `--cngx-color-border` line.|
+|`--cngx-menu-radius`|``|Surface|Corner radius of the menu container. Unset by default, so it follows `--cngx-radius-md`.|
+|`--cngx-menu-shadow`|``|Surface|Elevation of the menu container. Unset by default, so it follows `--cngx-shadow-md`.|
 |`--cngx-menu-padding`|`4px`|Layout|Padding shorthand inside the menu container.|
 |`--cngx-menu-item-padding`|`6px 10px`|Layout|Padding shorthand on each menu item.|
 |`--cngx-menu-item-gap`|`8px`|Layout|Inline gap between an item's slots (icon / label / suffix / kbd).|
@@ -1734,6 +1749,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-menu-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-menu-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
 |`--cngx-menu-item-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted item. Resolved at `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%, transparent)` so the tint tracks whichever primary the theme (cngx default, Material bridge, brand override) feeds. The `@property` initial-value below is the literal fallback used when neither the foundation token nor the `:root` declaration resolves.|
+|`--cngx-menu-bg`|``|Surface|Background of the menu container. Unset by default, so the container paints `--cngx-color-surface`. A host that paints its own surface around the menu sets it to `transparent` on its menu.|
+|`--cngx-menu-border`|``|Surface|Border shorthand of the menu container. Unset by default, so the container draws a 1px `--cngx-color-border` line.|
+|`--cngx-menu-radius`|``|Surface|Corner radius of the menu container. Unset by default, so it follows `--cngx-radius-md`.|
+|`--cngx-menu-shadow`|``|Surface|Elevation of the menu container. Unset by default, so it follows `--cngx-shadow-md`.|
 |`--cngx-menu-padding`|`4px`|Layout|Padding shorthand inside the menu container.|
 |`--cngx-menu-item-padding`|`6px 10px`|Layout|Padding shorthand on each menu item.|
 |`--cngx-menu-item-gap`|`8px`|Layout|Inline gap between an item's slots (icon / label / suffix / kbd).|
@@ -1752,6 +1771,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-menu-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-menu-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
 |`--cngx-menu-item-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted item. Resolved at `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%, transparent)` so the tint tracks whichever primary the theme (cngx default, Material bridge, brand override) feeds. The `@property` initial-value below is the literal fallback used when neither the foundation token nor the `:root` declaration resolves.|
+|`--cngx-menu-bg`|``|Surface|Background of the menu container. Unset by default, so the container paints `--cngx-color-surface`. A host that paints its own surface around the menu sets it to `transparent` on its menu.|
+|`--cngx-menu-border`|``|Surface|Border shorthand of the menu container. Unset by default, so the container draws a 1px `--cngx-color-border` line.|
+|`--cngx-menu-radius`|``|Surface|Corner radius of the menu container. Unset by default, so it follows `--cngx-radius-md`.|
+|`--cngx-menu-shadow`|``|Surface|Elevation of the menu container. Unset by default, so it follows `--cngx-shadow-md`.|
 |`--cngx-menu-padding`|`4px`|Layout|Padding shorthand inside the menu container.|
 |`--cngx-menu-item-padding`|`6px 10px`|Layout|Padding shorthand on each menu item.|
 |`--cngx-menu-item-gap`|`8px`|Layout|Inline gap between an item's slots (icon / label / suffix / kbd).|
@@ -1770,6 +1793,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-menu-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-menu-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
 |`--cngx-menu-item-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted item. Resolved at `:root` as `color-mix(in oklch, var(--cngx-color-primary) 10%, transparent)` so the tint tracks whichever primary the theme (cngx default, Material bridge, brand override) feeds. The `@property` initial-value below is the literal fallback used when neither the foundation token nor the `:root` declaration resolves.|
+|`--cngx-menu-bg`|``|Surface|Background of the menu container. Unset by default, so the container paints `--cngx-color-surface`. A host that paints its own surface around the menu sets it to `transparent` on its menu.|
+|`--cngx-menu-border`|``|Surface|Border shorthand of the menu container. Unset by default, so the container draws a 1px `--cngx-color-border` line.|
+|`--cngx-menu-radius`|``|Surface|Corner radius of the menu container. Unset by default, so it follows `--cngx-radius-md`.|
+|`--cngx-menu-shadow`|``|Surface|Elevation of the menu container. Unset by default, so it follows `--cngx-shadow-md`.|
 |`--cngx-menu-padding`|`4px`|Layout|Padding shorthand inside the menu container.|
 |`--cngx-menu-item-padding`|`6px 10px`|Layout|Padding shorthand on each menu item.|
 |`--cngx-menu-item-gap`|`8px`|Layout|Inline gap between an item's slots (icon / label / suffix / kbd).|
@@ -1858,7 +1885,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -1932,7 +1959,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-multi-select-bg`|`var(--cngx-select-bg, transparent)`|Surface|Background of the trigger. Falls back to `--cngx-select-bg`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-multi-select-color`|`var(--cngx-select-color, inherit)`|Surface|Text color of the trigger. Falls back to `--cngx-select-color`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-multi-select-min-height`|`var(--cngx-select-min-height, 2.125rem)`|Layout|Minimum block size of the trigger - fits a single row of chips. Falls back to `--cngx-select-min-height`; see {@link --cngx-select-min-height} for why no `initial-value` is declared. The touch floor still lifts the trigger to `--cngx-target-min`.|
-|`--cngx-multi-select-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
+|`--cngx-multi-select-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary)))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 
 ## CngxNavBadge
 
@@ -1941,6 +1968,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -1960,8 +1990,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -1981,12 +2013,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavFooter
 
@@ -1995,6 +2027,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2014,8 +2049,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2035,12 +2072,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavGroup
 
@@ -2049,6 +2086,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2068,8 +2108,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2089,12 +2131,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavGroupContent
 
@@ -2103,6 +2145,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2122,8 +2167,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2143,12 +2190,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavHeader
 
@@ -2157,6 +2204,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2176,8 +2226,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2197,12 +2249,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavIcon
 
@@ -2211,6 +2263,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2230,8 +2285,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2251,12 +2308,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavLabel
 
@@ -2265,6 +2322,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2284,8 +2344,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2305,12 +2367,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavLink
 
@@ -2319,6 +2381,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2338,8 +2403,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2359,12 +2426,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavMark
 
@@ -2373,6 +2440,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2392,8 +2462,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2413,12 +2485,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavName
 
@@ -2427,6 +2499,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-padding`|``|Layout|Padding shorthand of each nav link.|
 |`--cngx-nav-link-padding-inline`|``|Layout|Inline padding of a nav row, and the inline offset of the header, footer and section label past the row inset. One value, so a mark and a label stay at the row icon x and label x. The default row padding reads it; a container that SETs the `--cngx-nav-link-padding` shorthand builds it from this token to keep the slots aligned.|
 |`--cngx-nav-link-font-size`|`0.875rem`|Typography|Font-size of each nav link.|
+|`--cngx-nav-link-line-height`|``|Typography|Line-height of each nav link. Unset by default (the row inherits it); a theme SETs it on the row together with the size, weight and tracking of its type role.|
+|`--cngx-nav-link-letter-spacing`|``|Typography|Letter-spacing of each nav link. Unset by default (the row inherits it).|
+|`--cngx-nav-link-font-weight`|``|Typography|Font-weight of a nav link at rest. Unset by default (the row inherits it); the active row reads `--cngx-nav-link-active-font-weight`.|
 |`--cngx-nav-link-color`|`currentColor`|Surface|Text color of a resting nav link.|
 |`--cngx-nav-link-inset`|`4px`|Layout|Inline inset of each nav row from the container edges. SET from `--cngx-space-xs` at the root; a container may SET its own.|
 |`--cngx-nav-link-radius`|`4px`|Layout|Corner radius of each nav link.|
@@ -2446,8 +2521,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-link-focus-outline-offset`|`-2px`|State / Focus|Distance from the link edge to the focus ring. Negative offsets pull the ring inside the link bounds so a fully-padded link doesn't shove its neighbours when focused.|
 |`--cngx-nav-link-initial-size`|`0.875rem`|Typography|Font-size of the first-letter fallback drawn in the icon box of a row without `[cngxNavIcon]`.|
 |`--cngx-nav-icon-size`|``|Layout|Inline and block size of the icon box at the start of every row. Unset by default (falls back to `1.25rem`).|
+|`--cngx-nav-railed-size`|``|Layout|Rail width at which the icon box sits centred, border not included: `2 * (inset + inline padding) + icon size`. SET on every `[data-nav-railed]` host from that host's row tokens; read it, do not SET it. A container sizes its rail from it plus its own border.|
 |`--cngx-nav-icon-gap`|``|Layout|Gap between the icon box and the row label. Unset by default (falls back to `--cngx-space-sm`, so it follows `[data-density]`).|
 |`--cngx-nav-link-ink`|``|Surface|Ink of the icon and of the letter fallback, independent of the label text colour. Unset by default (falls back to `currentColor`).|
+|`--cngx-nav-mark-font-size`|``|Typography|Font size of the initials of a `cngx-avatar` used as header or footer mark. Unset by default (falls back to `0.625rem`, which fits the default 1.25rem icon box).|
 |`--cngx-nav-header-padding-block`|``|Layout|Block padding of the header. Unset by default (falls back to `--cngx-space-md`). The inline padding is derived from the row geometry, so the mark lines up with the row icons.|
 |`--cngx-nav-header-bg`|`transparent`|Surface|Background of the header.|
 |`--cngx-nav-header-border-color`|`oklch(0.89 0 0)`|Surface|Colour of the divider under the header.|
@@ -2467,23 +2544,26 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-nav-flyout-bg`|``|State / Flyout|Background of a nav group flyout on a collapsed rail. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-color`|``|State / Flyout|Text colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-border-color`|``|State / Flyout|Border colour of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
+|`--cngx-nav-flyout-border-width`|``|State / Flyout|Border width of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback (`1px`) applies.|
 |`--cngx-nav-flyout-shadow`|``|State / Flyout|Elevation of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-radius`|``|Layout|Corner radius of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-padding`|``|Layout|Inner padding of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-min-inline-size`|``|Layout|Minimum inline size of a nav group flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
 |`--cngx-nav-flyout-offset`|``|Layout|Gap between a group head and its flyout. Read on the open flyout; no initial value, so the use-site fallback follows the foundation.|
-|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxNavRail
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-nav-rail-size`|``|Layout|Width of an icon-only rail (`labelPlacement="end"`). Unset, it derives from the row tokens so the icon box sits centred: `2 * (inset + inline padding) + icon size`.|
+|`--cngx-nav-rail-size`|``|Layout|Width of an icon-only rail (`labelPlacement="end"`). Unset, it derives from the row tokens so the icon box sits centred: `2 * (inset + inline padding) + icon size + border width`.|
 |`--cngx-nav-rail-below-size`|``|Layout|Width of a rail with labels below the icons (`labelPlacement="below"`).|
 |`--cngx-nav-rail-below-font-size`|``|Typography|Font size of the label under the icon (`labelPlacement="below"`).|
 |`--cngx-nav-rail-bg`|``|Surface|Background of the rail.|
-|`--cngx-nav-rail-border-color`|``|Surface|Colour of the rail's inline-end border.|
-|`--cngx-nav-rail-border-width`|``|Surface|Width of the rail's inline-end border. The group flyout clears it.|
+|`--cngx-nav-rail-border-color`|``|Surface|Colour of the border on the rail's inner edge (inline end for `side="start"`, inline start for `side="end"`).|
+|`--cngx-nav-rail-color`|``|Surface|Text colour of the rail: rows, header and footer inherit it. Unset by default, so the rail falls back to `--cngx-color-text` on itself and a `[data-color-scheme]` island writes its own ink.|
+|`--cngx-nav-rail-row-gap`|``|Layout|Block gap between the body rows. Unset by default: the body falls back to half of `--cngx-space-xs`, so density reaches it. The sidenav counterpart is `--cngx-sidenav-row-gap`.|
+|`--cngx-nav-rail-border-width`|``|Surface|Width of the border on the rail's inner edge (inline end for `side="start"`, inline start for `side="end"`). The group flyout clears it.|
+|`--cngx-nav-tooltip-offset`|``|Layout|Gap between a railed row and its label tooltip. Read on the tooltip, which `cngx-nav.css` places; no initial value, so the use-site fallback follows the foundation.|
 
 ## CngxOption
 
@@ -2492,8 +2572,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-listbox-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Focus|Outline of the listbox container when it takes keyboard focus. The container uses `aria-activedescendant`, so it carries focus while the highlighted option is signalled separately by the highlight bg.|
 |`--cngx-listbox-focus-outline-width`|`2px`|State / Focus|Stroke width of the container focus ring.|
 |`--cngx-listbox-focus-outline-offset`|`2px`|State / Focus|Distance from the container edge to the focus ring.|
-|`--cngx-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted option. Low-alpha primary so the highlight reads as an accent without competing with selected-state visuals.|
-|`--cngx-option-selected-bg`|`oklch(0.66 0.19 50 / 0.18)`|State / Selected|Background of a selected option. Slightly higher alpha than the highlight tint so selection reads as committed state rather than transient cursor position.|
+|`--cngx-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background tint of the keyboard-highlighted option: the primary mixed with `transparent` at 10% (18% dark), assigned on `:root`. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
+|`--cngx-option-selected-bg`|`oklch(0.66 0.19 50 / 0.18)`|State / Selected|Background of a selected option: the primary mixed with `transparent` at 18% (28% dark), a step above the highlight so selection reads as committed state. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
 |`--cngx-listbox-padding`|`4px`|Layout|Padding shorthand inside the listbox container.|
 |`--cngx-option-padding`|`6px 10px`|Layout|Padding shorthand on each option.|
 |`--cngx-option-radius`|`4px`|Layout|Corner radius of each option.|
@@ -2511,9 +2591,16 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-paginator-load-more-gap`|`var(--cngx-space-sm)`|Layout|Gap between the label and the count in the load-more trigger.|
 |`--cngx-paginator-infinite-padding`|`var(--cngx-space-md)`|Layout|Padding of the infinite-scroll trigger row.|
 |`--cngx-paginator-dot-pad`|`max(
-      (var(--cngx-target-min, 0px) - var(--cngx-paginator-dot-size, 0.5rem)) / 2,
+      (
+          max(
+              var(--cngx-target-min, 0px),
+              var(--cngx-paginator-dot-target-min, 24px) - var(--cngx-paginator-dot-gap, 0.5rem)
+            ) -
+            var(--cngx-paginator-dot-size, 0.5rem)
+        ) /
+        2,
       0px
-    )`|Layout|Hit padding around each dot, derived so the dot button reaches `--cngx-target-min`. `0px` while no touch-target floor is active.|
+    )`|Layout|Hit padding around each dot, derived so the slot plus the gap reaches `--cngx-paginator-dot-target-min` on a mouse and the slot alone reaches `--cngx-target-min` on touch.|
 |`--cngx-paginator-dot-slot`|`calc(
       var(--cngx-paginator-dot-size, 0.5rem) + 2 * var(--cngx-paginator-dot-pad)
     )`|Layout|Layout size of one dot button (dot size plus hit padding). The windowed viewport clip and the track translate derive from it.|
@@ -2526,10 +2613,10 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-paginator-button-bg`|`transparent`|Surface|Resting button background.|
 |`--cngx-paginator-button-hover-bg`|`color-mix(in oklch, currentColor 10%, transparent)`|Surface|Hover background of a button.|
 |`--cngx-paginator-button-border-color`|`transparent`|Surface|Border colour of a resting button.|
-|`--cngx-paginator-current-bg`|`oklch(0.66 0.19 50)`|State / Active|Background of the active page button. Delegates to `--cngx-color-primary`.|
-|`--cngx-paginator-current-color`|`oklch(1 0 0)`|State / Active|Text colour of the active page button (reads against the primary fill).|
-|`--cngx-paginator-current-border-color`|`transparent`|State / Active|Border colour of the active page button.|
-|`--cngx-paginator-focus-ring`|`2px solid currentColor`|State / Focus|Focus-ring outline shorthand.|
+|`--cngx-paginator-current-bg`|``|State / Active|Background of the active page button. Delegates to `--cngx-color-primary-strong`.|
+|`--cngx-paginator-current-color`|``|State / Active|Text colour of the active page button (reads against the strong primary fill). Delegates to `--cngx-color-on-primary-strong`.|
+|`--cngx-paginator-current-border-color`|``|State / Active|Border colour of the active page button.|
+|`--cngx-paginator-focus-ring`|``|State / Focus|Focus-ring outline shorthand.|
 |`--cngx-paginator-track-bg`|`oklch(0.96 0 0)`|Skin|Muted track the page row sits in under the `segmented` skin. Derived from surface + border so it tracks the foundation light / dark scheme.|
 |`--cngx-paginator-active-shadow`|`0 1px 2px oklch(0 0 0 / 0.06)`|Skin|Drop shadow that raises the active page off the track under the `segmented` skin.|
 |`--cngx-paginator-indicator-thickness`|`2px`|Skin|Thickness of the `numbered` skin's active-page underline bar.|
@@ -2537,7 +2624,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-paginator-rail-thickness`|`2px`|Skin|Thickness of the old `rail` skin's underline + position marker.|
 |`--cngx-paginator-rail-knob-size`|`14px`|Skin|Diameter of the `rail` skin's position knob (the dot riding the fill edge).|
 |`--cngx-paginator-rail-knob-bg`|`oklch(1 0 0)`|Skin|Fill of the `rail` skin's position knob. Defaults to the foundation surface.|
-|`--cngx-paginator-rail-knob-border-color`|`oklch(0.66 0.19 50)`|Skin|Ring colour of the `rail` skin's position knob. Defaults to the primary.|
+|`--cngx-paginator-rail-knob-border-color`|``|Skin|Ring colour of the `rail` skin's position knob. Defaults to the primary.|
 |`--cngx-paginator-bar-border-color`|`oklch(0.88 0.005 250)`|Skin|Border + divider colour of the enclosed `bar` skin.|
 |`--cngx-paginator-bar-radius`|`6px`|Skin|Corner radius of the enclosed `bar` skin's outer box.|
 |`--cngx-paginator-hover-scale`|`1`|Motion|Scale a button grows to on hover. Defaults to `1` (no grow) - the resting hover is the background tint; opt into a grow by raising this. Flattened to `1` under reduced motion.|
@@ -2545,11 +2632,12 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-paginator-motion-duration`|`200ms`|Motion|Duration of the hover / press / focus transitions. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
 |`--cngx-paginator-fade-duration`|`250ms`|Motion|Duration of the page-row crossfade while the host reports busy. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
 |`--cngx-paginator-busy-opacity`|`0.6`|State / Busy|Opacity the page row fades to while the host reports busy.|
-|`--cngx-paginator-focus-halo`|`0 0 0 4px color-mix(in oklch, currentColor 18%, transparent)`|State / Focus|Soft halo painted behind the focus-visible outline.|
+|`--cngx-paginator-focus-halo`|``|State / Focus|Soft halo painted behind the focus-visible outline.|
 |`--cngx-paginator-dot-size`|`8px`|Skin|Diameter of a resting (full-size) dot in the `dots` indicator.|
 |`--cngx-paginator-dot-gap`|`8px`|Skin|Gap between adjacent dots.|
+|`--cngx-paginator-dot-target-min`|`24px`|Layout|Centre-to-centre pitch of the dots on a mouse (WCAG 2.5.8). The hit padding grows each dot slot until slot plus `--cngx-paginator-dot-gap` reaches this value; the visual dot size does not change. On touch the larger `--cngx-target-min` sizes the slot itself.|
 |`--cngx-paginator-dot-color`|`oklch(0.7 0 0 / 0.35)`|Skin|Fill of an inactive dot.|
-|`--cngx-paginator-dot-current-color`|`oklch(0.66 0.19 50)`|Skin|Fill of the active dot. Delegates to `--cngx-color-primary`.|
+|`--cngx-paginator-dot-current-color`|``|Skin|Fill of the active dot. Delegates to `--cngx-color-primary`.|
 |`--cngx-paginator-panel-bg`|`Canvas`|Popover|Surface of the popover panel shared by the items-per-page / page-of-pages listbox segments and the ellipsis overflow menu.|
 |`--cngx-paginator-panel-color`|`currentColor`|Popover|Text colour inside the popover panel.|
 |`--cngx-paginator-panel-border-color`|`color-mix(in oklch, currentColor 20%, transparent)`|Popover|Border colour of the popover panel.|
@@ -2578,9 +2666,16 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-paginator-load-more-gap`|`var(--cngx-space-sm)`|Layout|Gap between the label and the count in the load-more trigger.|
 |`--cngx-paginator-infinite-padding`|`var(--cngx-space-md)`|Layout|Padding of the infinite-scroll trigger row.|
 |`--cngx-paginator-dot-pad`|`max(
-      (var(--cngx-target-min, 0px) - var(--cngx-paginator-dot-size, 0.5rem)) / 2,
+      (
+          max(
+              var(--cngx-target-min, 0px),
+              var(--cngx-paginator-dot-target-min, 24px) - var(--cngx-paginator-dot-gap, 0.5rem)
+            ) -
+            var(--cngx-paginator-dot-size, 0.5rem)
+        ) /
+        2,
       0px
-    )`|Layout|Hit padding around each dot, derived so the dot button reaches `--cngx-target-min`. `0px` while no touch-target floor is active.|
+    )`|Layout|Hit padding around each dot, derived so the slot plus the gap reaches `--cngx-paginator-dot-target-min` on a mouse and the slot alone reaches `--cngx-target-min` on touch.|
 |`--cngx-paginator-dot-slot`|`calc(
       var(--cngx-paginator-dot-size, 0.5rem) + 2 * var(--cngx-paginator-dot-pad)
     )`|Layout|Layout size of one dot button (dot size plus hit padding). The windowed viewport clip and the track translate derive from it.|
@@ -2602,17 +2697,21 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
@@ -2645,17 +2744,21 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
@@ -2676,17 +2779,21 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-button-tone-fill`|``|Tone|Solid fill colour. Set by the primary and danger tones to the strong palette rung their on-colour clears 4.5:1 against; unset, the solid fill falls back to `--cngx-button-tone`. Outline, secondary, ghost and link keep painting from `--cngx-button-tone`. Registered without an initial value so the fallback stays live.|
 |`--cngx-button-spinner-size`|`1em`|Busy|Diameter of the busy spinner ring, and the box of a bare `svg` or `img` drawn by a `provideButtonSpinner` component.|
 |`--cngx-button-spinner-thickness`|`2px`|Busy|Stroke width of the busy spinner ring. Inherits so a value set on the button reaches the ring inside the busy layer.|
-|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill darkens without a second tone token.|
+|`--cngx-button-hover-shade`|`oklch(0 0 0)`|Tone|Colour a solid button's tone mixes towards on hover and press (by `--cngx-button-hover-layer` / `--cngx-button-pressed-layer`), so the fill shifts without a second tone token. By default it is the opposite of `--cngx-button-on-tone` (black under white ink, white under dark ink), so the shaded fill keeps its label contrast; black is only the registered initial.|
 |`--cngx-button-link-hover-thickness`|`2px`|Tone|Underline thickness of a `link` button on hover; at rest it keeps the font's own underline.|
 |`--cngx-button-icon-size`|`1.25em`|Layout|Edge length of an `svg` or `img` in a start or end slot. Same rung as `--cngx-icon-size-md`, so a projected `cngx-icon` and a bare `svg` match. Inherits so a value set on the button reaches the slot glyph.|
-|`--cngx-button-neutral-tint`|`5%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
-|`--cngx-button-neutral-tint-hover`|`9%`|Tone|Hover tint strength of a neutral `secondary` fill.|
+|`--cngx-button-neutral-tint`|`10%`|Tone|Tint strength of a neutral `secondary` fill and its hover. Light text on a dark surface reads a small tint as almost nothing, so the dark scheme steps both up.|
+|`--cngx-button-neutral-tint-hover`|`14%`|Tone|Hover tint strength of a neutral `secondary` fill.|
 |`--cngx-button-hover-layer`|`12%`|State / Hover|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill on hover, a state layer. A theme maps it to its hover state-layer opacity (the Material bridge: `--mat-sys-hover-state-layer-opacity`).|
 |`--cngx-button-pressed-layer`|`20%`|State / Pressed|Share of `--cngx-button-hover-shade` laid over a solid primary or danger fill while pressed, one step above `--cngx-button-hover-layer`. A theme maps it to its pressed state-layer opacity (the Material bridge: `--mat-sys-pressed-state-layer-opacity`).|
 |`--cngx-button-pressed-wash`|`12%`|State / Pressed|Tone wash of a pressed `outline` or `ghost` button (hover takes 8%).|
-|`--cngx-button-neutral-tint-pressed`|`13%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-tint-pressed`|`18%`|State / Pressed|Pressed tint strength of a neutral `secondary` fill, one step above `--cngx-button-neutral-tint-hover`; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid`|`18%`|Tone|Fill strength of a neutral `solid` button, the tone mixed into the surface. One rung above `--cngx-button-neutral-tint`, so solid stays the stronger neutral fill; the dark scheme steps it up.|
+|`--cngx-button-neutral-solid-hover`|`23%`|State / Hover|Hover fill strength of a neutral `solid` button.|
+|`--cngx-button-neutral-solid-pressed`|`28%`|State / Pressed|Pressed fill strength of a neutral `solid` button, one step above `--cngx-button-neutral-solid-hover`.|
+|`--cngx-button-secondary-text-shift`|`-0.07`|Tone|Lightness offset of a primary or danger `secondary` label from the tone text rung, so the label holds 4.5:1 on the stronger wash: darker in the light scheme, lighter in the dark one.|
 |`--cngx-button-secondary-bg-pressed`|``|State / Pressed|Pressed fill of a `secondary` button. Unset by default, so the pressed tone mix paints; a theme sets it next to `--cngx-button-secondary-bg-hover`.|
-|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 12% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
+|`--cngx-button-secondary-bg`|``|Tone|Fill of a `secondary` button. Unset by default, so the fill is the tone mixed into transparency (the neutral tint for `neutral`, 20% otherwise). A theme sets it to paint a container colour instead (the Material bridge maps it to the `*-container` roles).|
 |`--cngx-button-secondary-bg-hover`|``|Tone|Hover fill of a `secondary` button. Unset by default, so hover steps the tone mix up.|
 |`--cngx-button-secondary-color`|``|Tone|Text colour of a `secondary` button. Unset by default, so the tone text colour paints.|
 
@@ -2764,6 +2871,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-field-border-width`|`1px`|Sizing|Border width of the field box on every side, in every skin (transparent where a skin paints none). The box height and the touch floor of the controls inside it are derived from it, so changing it keeps the box on its formula.|
 |`--cngx-field-ring-width`|`2px`|Sizing|Width of the focus ring an outline or bare box draws around its main control.|
 |`--cngx-field-ring-offset`|`3px`|Sizing|Distance between the box edge and its focus ring.|
+|`--cngx-field-ring-color`|`var(--cngx-color-primary)`|Color|Colour of the focus ring around an outline or bare field and of the select-family trigger ring. Unset by default: the ring follows `--cngx-color-primary` where it is drawn, so a primary override on a subtree reaches it. Fill shows focus as an underline instead (`--cngx-field-underline-focus-color`).|
 |`--cngx-field-affix-gap`|`8px`|Layout|Gap between the prefix, control, and suffix in an affix row.|
 |`--cngx-field-affix-divider`|`0px`|Layout|Width of an optional divider between an affix and the control: the inline-end edge of a prefix, the inline-start edge of a suffix. `0px` draws none. Any width also pads the affix by `--cngx-space-sm` so the divider does not touch the affix content. Set it on the box.|
 
@@ -2799,7 +2907,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |-|-|-|-|
 |`--cngx-radio-gap`|`0.5rem`|Layout|Gap between the indicator and the label slot.|
 |`--cngx-radio-color`|`currentColor`|Surface|Text color of the host shell. Defaults to `currentColor`.|
-|`--cngx-radio-focus-outline`|`2px solid oklch(0.66 0.19 50)`|State / Focus|Focus-ring outline shorthand. Matches the foundation reset's `:focus-visible` accent so the radio reads consistently with every other focusable atom in the library.|
+|`--cngx-radio-focus-outline`|``|State / Focus|Focus-ring outline shorthand. Matches the foundation reset's `:focus-visible` accent so the radio reads consistently with every other focusable atom in the library.|
 |`--cngx-radio-focus-offset`|`3px`|State / Focus|Outline offset of the focus ring. Matches the foundation reset's `:focus-visible` offset so the ring breathes the same against the indicator + label as it does against any other atom.|
 |`--cngx-radio-focus-radius`|`0.25rem`|State / Focus|Corner radius applied while focused.|
 
@@ -2890,7 +2998,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -2964,13 +3072,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-reorderable-multi-select-bg`|`var(--cngx-multi-select-bg, var(--cngx-select-bg, transparent))`|Surface|Background of the trigger. Falls back to `--cngx-multi-select-bg`, then `--cngx-select-bg`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-reorderable-multi-select-color`|`var(--cngx-multi-select-color, var(--cngx-select-color, inherit))`|Surface|Text color of the trigger. Falls back to `--cngx-multi-select-color`, then `--cngx-select-color`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-reorderable-multi-select-min-height`|`var(--cngx-multi-select-min-height, var(--cngx-select-min-height, 2.125rem))`|Layout|Minimum block size of the trigger. Falls back to `--cngx-multi-select-min-height`, then `--cngx-select-min-height`; see {@link --cngx-select-min-height} for why no `initial-value` is declared. The touch floor still lifts the trigger to `--cngx-target-min`.|
-|`--cngx-reorderable-multi-select-focus-outline`|`var(--cngx-multi-select-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary)))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-multi-select-focus-outline`, then `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
-
-## CngxRequired
-
-|Token|Default|Group|Description|
-|-|-|-|-|
-|`--cngx-field-required-color`|`oklch(0.6 0.18 25)`|State / Required|Color of the required-marker glyph. Falls back through `--cngx-field-error-color` and then `--cngx-color-danger`.|
+|`--cngx-reorderable-multi-select-focus-outline`|`var(--cngx-multi-select-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary))))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-multi-select-focus-outline`, then `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 
 ## CngxRipple
 
@@ -3004,7 +3106,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -3078,7 +3180,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-radius`|`var(--cngx-radius-md, 8px)`|Layout|Corner radius of the trigger, and the family fallback every variant's radius token resolves through. No `initial-value`, like {@link --cngx-select-bg}: the use-site fallback survives, and a value set on the host or an ancestor reaches the trigger.|
 |`--cngx-select-bg`|`transparent`|Surface|Background of the trigger, and the family fallback every variant's background token resolves through. No `initial-value`: the universal syntax keeps the property guaranteed-invalid until set, so the use-site `var()` fallback to `transparent` survives. `inherits: true`, so a value set on an ancestor (or by the Material bridge on `html`) reaches the trigger.|
 |`--cngx-select-color`|`inherit`|Surface|Text color of the trigger, and the family fallback every variant's color token resolves through. No `initial-value`, like {@link --cngx-select-bg}, so the use-site fallback to `inherit` survives and a value set on an ancestor reaches the trigger.|
-|`--cngx-select-focus-outline`|`2px solid var(--cngx-color-primary)`|State / Focus|Focus-ring outline shorthand of the trigger, and the family fallback every variant's focus token resolves through. No `initial-value`, like {@link --cngx-select-bg}: the use-site fallback `2px solid var(--cngx-color-primary)` resolves on the trigger, and a value set on an ancestor reaches the trigger.|
+|`--cngx-select-focus-outline`|`2px solid var(--cngx-field-ring-color, var(--cngx-color-primary))`|State / Focus|Focus-ring outline shorthand of the trigger, and the family fallback every variant's focus token resolves through. No `initial-value`, like {@link --cngx-select-bg}: the use-site fallback `2px solid var(--cngx-color-primary)` resolves on the trigger, and a value set on an ancestor reaches the trigger.|
 |`--cngx-select-focus-offset`|`2px`|State / Focus|Outline offset of the focus ring, read by every variant's trigger and inner rings. No `initial-value`, like {@link --cngx-select-bg}: the use-site `var()` fallback to `2px` survives, and `inherits: true` lets a value set on an ancestor (or by the Material bridge on `html`) reach the trigger.|
 
 ## CngxSelectDivider
@@ -3125,7 +3227,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -3199,7 +3301,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-shell-radius`|`var(--cngx-select-radius, var(--cngx-radius-md, 8px))`|Layout|Corner radius of the trigger. Falls back to `--cngx-select-radius`; see {@link --cngx-select-radius} for why no `initial-value` is declared.|
 |`--cngx-select-shell-bg`|`var(--cngx-select-bg, transparent)`|Surface|Background of the trigger. Falls back to `--cngx-select-bg`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-select-shell-color`|`var(--cngx-select-color, inherit)`|Surface|Text color of the trigger. Falls back to `--cngx-select-color`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
-|`--cngx-select-shell-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
+|`--cngx-select-shell-focus-outline`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary)))`|State / Focus|Focus-ring outline shorthand of the trigger. Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-select-shell-focus-ring`|`oklch(0.66 0.19 50)`|State / Focus|Focus-ring color used on the clear button's focus state.|
 |`--cngx-select-shell-label-gap`|`var(--cngx-space-xs)`|Layout|Gap inside the label slot (between glyph and text). No `initial-value`, like {@link --cngx-select-bg}: the use-site fallback to the spacing scale survives, so a root `[data-density]` compacts it, and a value set on the host or an ancestor reaches the label.|
 
@@ -3208,22 +3310,24 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |Token|Default|Group|Description|
 |-|-|-|-|
 |`--cngx-sidenav-width`|`280px`|Layout|Default open-width of the rail.|
-|`--cngx-sidenav-bg`|`oklch(0.97 0.005 250)`|Surface|Background of the rail surface.|
-|`--cngx-sidenav-color`|`currentColor`|Surface|Text color of the rail. Defaults to `currentColor` so it inherits from the page.|
+|`--cngx-sidenav-bg`|``|Surface|Background of the rail surface. Unset by default: the reading rules fall back to `--cngx-color-surface` on the rail itself, so a `[data-color-scheme]` island around the rail paints its own surface.|
+|`--cngx-sidenav-color`|``|Surface|Text color of the rail. Unset by default: the rail falls back to `--cngx-color-text` on itself, so a `[data-color-scheme]` island around the rail writes its own text colour; without the foundation tokens it inherits from the page.|
 |`--cngx-sidenav-transition-duration`|`0.25s`|Motion|Duration of the open / close / rail-peek transitions. Derives from the `--cngx-duration-base` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
 |`--cngx-sidenav-transition-easing`|`ease`|Motion|Easing curve of the open / close / rail-peek transitions.|
-|`--cngx-sidenav-mini-width`|`56px`|Variant / Mini|Width of the collapsed rail (icon rail).|
-|`--cngx-sidenav-expanded-shadow`|`4px 0 12px oklch(0 0 0 / 0.1)`|Variant / Mini|Drop-shadow applied while the collapsed rail peeks over content.|
+|`--cngx-sidenav-mini-width`|`56px`|Variant / Mini|Width of the collapsed rail (icon rail). Unset, the host takes `--cngx-nav-railed-size` (the nav's rail width from the row tokens, so the icon box sits centred) plus `--cngx-sidenav-border-width`. `[miniWidth]` writes it inline and wins.|
+|`--cngx-sidenav-expanded-shadow`|``|Variant / Mini|Drop-shadow applied while the collapsed rail peeks over content. Unset by default: the rail casts a 12px shadow toward the content, deeper in a dark scheme or island.|
 |`--cngx-sidenav-border-width`|`1px`|Surface|Stroke width of the rail edge border.|
-|`--cngx-sidenav-border-color`|`oklch(0.89 0 0)`|Surface|Stroke color of the rail edge border. Falls back through `--cngx-color-border`.|
+|`--cngx-sidenav-border-color`|``|Surface|Stroke color of the rail edge border. Unset by default: the reading rules fall back to `--cngx-color-border` on the rail itself, so a `[data-color-scheme]` island around the rail draws its own border.|
 |`--cngx-sidenav-padding`|`16px`|Layout|Block padding of the projected nav header and footer; the host SETs `--cngx-nav-header-padding-block` / `--cngx-nav-footer-padding-block` from it.|
+|`--cngx-sidenav-row-gap`|``|Layout|Block gap between the body rows. A collapsed rail keeps it as a margin before a group whose content became a popover, so no row moves between rail and expanded sidenav. Unset by default: the readers fall back to half of `--cngx-space-xs`, so density reaches it; the Material 3 bridge sets it to `0` (mat-nav-list rows touch).|
 |`--cngx-sidenav-resize-handle-width`|`4px`|Layout|Width of the drag-to-resize handle on the rail's edge.|
+|`--cngx-sidenav-resize-handle-target-min`|`24px`|Layout|Minimum width of the resize handle's pointer hit zone on a mouse (WCAG 2.5.8). The visual bar keeps `--cngx-sidenav-resize-handle-width`; on touch the larger `--cngx-target-min` wins. `inherits: true` so an override on `cngx-sidenav-layout` or any ancestor reaches the handle.|
 |`--cngx-sidenav-resize-handle-color`|`oklch(0.66 0.19 50)`|State / Resize|Color of the resize handle on hover / drag. Falls back to `--cngx-color-primary`.|
 |`--cngx-sidenav-resize-handle-focus-outline-width`|`2px`|State / Resize|Width of the focus ring on the keyboard-focused resize separator.|
 |`--cngx-sidenav-resize-handle-focus-outline-color`|`oklch(0.66 0.19 50)`|State / Resize|Color of the focus ring on the keyboard-focused resize separator. Falls back to `--cngx-color-primary`, like the hover tint.|
 |`--cngx-sidenav-resize-handle-focus-outline-offset`|`2px`|State / Resize|Outward offset of the resize separator's focus ring.|
 |`--cngx-sidenav-backdrop-bg`|`oklch(0 0 0)`|State / Over|Background of the mobile backdrop scrim.|
-|`--cngx-sidenav-overlay-shadow`|`4px 0 12px oklch(0 0 0 / 0.1)`|State / Over|Drop-shadow of an open overlay rail (the `compact` drawer and the full nav over the `medium` rail), so it reads as a layer over the content rather than a third column. Defaults to `--cngx-sidenav-expanded-shadow`.|
+|`--cngx-sidenav-overlay-shadow`|``|State / Over|Drop-shadow of an open overlay rail (the `compact` drawer and the full nav over the `medium` rail), so it reads as a layer over the content rather than a third column. Unset by default: falls back to `--cngx-sidenav-expanded-shadow`, then to the rail's own shadow.|
 |`--cngx-sidenav-backdrop-opacity`|`0.5`|State / Over|Opacity of the mobile backdrop scrim.|
 
 ## CngxSidenavLayout
@@ -3354,7 +3458,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-padding`|`0.5rem 0.75rem`|Layout|Padding shorthand of an individual step button.|
 |`--cngx-step-padding-inline`|`0.75rem`|Layout|Inline-axis padding of the step button - used by vertical orientation to combine with the group indent.|
 |`--cngx-step-padding-compact`|`0.375rem 0.5rem`|Layout|Tightened panel padding for container-query collapse. Applied when `<cngx-stepper>` is rendered inside a container narrower than `48rem` (sidebar / card / dialog) regardless of viewport.|
-|`--cngx-step-focus-ring`|`2px solid oklch(0.66 0.19 50)`|State / Focus|Focus-ring outline shorthand. Matches the cngx focus convention from `@cngx/core/theming/reset.css` - 2px solid primary ember.|
+|`--cngx-step-focus-ring`|``|State / Focus|Focus-ring outline shorthand. Unset by default, so the ring is 2px solid in the `--cngx-color-primary` in scope, the cngx focus convention from `@cngx/core/theming/reset.css`.|
 |`--cngx-step-focus-offset`|`3px`|State / Focus|Outline offset of the focus ring. Set to 3px so the ring sits outside the indicator disc rather than on its edge - keeps the ring readable against the filled active / completed / errored disc backgrounds.|
 |`--cngx-step-indicator-size`|`1.75rem`|Layout|Diameter of the indicator disc.|
 |`--cngx-step-group-font-weight`|`600`|Typography|Font-weight of the group header.|
@@ -3377,6 +3481,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-stepper-group-chip-line-height`|`1.25`|Group chip|Line-height of a group-header chip; drives the chip's height together with the padding.|
 |`--cngx-step-pill-vertical-padding-block`|`var(--cngx-space-md)`|Skin / pill-segment|Block padding of each step in the vertical pill-segment skin.|
 |`--cngx-stepper-collapse`|`0`|Layout|Collapse flag read by the component from `.cngx-stepper::after`. `1` swaps to the configured compact variant, `0` keeps the classic strip. Set to `1` by the container query below `30rem`; override it on the same pseudo-element to move the breakpoint.|
+|`--cngx-dot-step-target-min`|`24px`|Layout|Centre-to-centre pitch of the mobile-collapse dots on a mouse (WCAG 2.5.8). Each dot grows a transparent margin until slot plus `--cngx-dot-step-gap` reaches this value; the painted dot keeps `--cngx-dot-step-size`. On touch the larger `--cngx-target-min` sizes the slot itself.|
 |`--cngx-step-color`|`currentColor`|Surface|Default text color inherited by step labels.|
 |`--cngx-step-bg`|`transparent`|Surface|Default background of the stepper root.|
 |`--cngx-step-indicator-bg`|`color-mix(in srgb, currentColor 10%, transparent)`|State / Resting|Background of the indicator disc at rest - soft tint of the inherited text color via `color-mix`.|
@@ -3387,9 +3492,11 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-indicator-disabled-bg`|`color-mix(in srgb, currentColor 5%, transparent)`|State / Disabled|Background of the disabled indicator disc.|
 |`--cngx-step-completed-color`|`oklch(0.5 0.15 145)`|State / Completed|Background of the completed indicator disc. Falls back to `--cngx-color-success`.|
 |`--cngx-step-errored-color`|`oklch(0.45 0.15 25)`|State / Error|Background of the errored indicator disc. Falls back to `--cngx-color-danger`.|
-|`--cngx-step-refused-color`|``|State / Refused|Fill of a refused-commit marker (the commit action answered `false`) on the dots and the aggregate error line. A refusal is no error, so it wears the rejection amber; a failed commit keeps `--cngx-step-errored-color`. Registered without an initial value, so the amber fallback applies until a theme sets it.|
+|`--cngx-step-refused-color`|``|State / Refused|Fill of a refused-commit marker (the commit action answered `false`) on the dots and the aggregate error line. A refusal is no error, so it wears the rejection amber; a failed commit keeps the danger red (the strong danger fill on the dots, `--cngx-step-errored-color` on the line). Registered without an initial value, so the amber fallback applies until a theme sets it.|
 |`--cngx-step-refused-text-color`|``|State / Refused|Text color of the aggregate line when every marked step is a refused commit. Defaults to the surrounding text colour: amber text would fall under the 4.5:1 text contrast.|
-|`--cngx-step-active-fill`|`oklch(0.66 0.19 50)`|State / Active|Resolved fill of the active indicator disc. Defaults to the cngx ember primary (matching `--cngx-color-primary`). Consumers override via `--cngx-step-active-fill` directly, or upstream via `--cngx-step-active-color` (the consuming rule's `var()` chain threads through both). Baked-in fallback matches the cngx primary so the un-themed disc fits the foundation palette.|
+|`--cngx-step-active-color`|``|State / Active|Background of the active indicator disc. Material consumers override this upstream; un-themed consumers leave it unset so the downstream `--cngx-step-active-fill` cascade lands on `--cngx-color-primary` (or the baked-in primary blue). Not registered as `@property` on purpose - the previous `initial-value: currentColor` defeated the fallback chain by always returning `currentColor` from `var(--cngx-step-active-color, fallback)`.|
+|`--cngx-step-active-fill`|``|State / Active|Resolved fill of the active indicator disc. Unset by default, so the disc paints the `--cngx-color-primary` in scope. Consumers override via `--cngx-step-active-fill` directly, or upstream via `--cngx-step-active-color` (the consuming rule's `var()` chain threads through both).|
+|`--cngx-step-pending-color`|``|State / Pending|Background of the pending indicator disc - same cascade as `--cngx-step-active-fill`. Not registered as `@property` for the same fallback-cascade reason; consumer overrides still work via the standard custom-property cascade.|
 |`--cngx-step-hover-bg`|`color-mix(in srgb, currentColor 8%, transparent)`|State / Hover|Background tint applied on hover of an enabled step.|
 |`--cngx-step-busy-spinner-size`|`0.875rem`|State / Pending|Diameter of the busy spinner ring next to the active step.|
 |`--cngx-step-busy-spinner-color`|`currentColor`|State / Pending|Stroke color of the busy spinner ring.|
@@ -3399,14 +3506,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-stepper-group-chip-active-border`|`var(--cngx-color-primary)`|Group chip|Border color of the active-branch chip (the group owning the current step). No `initial-value`: the universal syntax keeps the property guaranteed-invalid until set, so the CSS `var()` fallback chain to `--cngx-color-primary` survives - the same knob that colours the active step. The Material bridge maps it to `--mat-sys-primary`.|
 |`--cngx-stepper-group-chip-active-bg`|`color-mix(in srgb, var(--cngx-color-primary) 14%, transparent)`|Group chip|Background of the active-branch chip. See {@link --cngx-stepper-group-chip-active-border} for why no `initial-value` is declared.|
 |`--cngx-stepper-group-chip-active-color`|`var(--cngx-color-text)`|Group chip|Label color of the active-branch chip. Neutral text by default: the primary accent lives on the chip border and tint (primary as text misses 4.5:1 on the light tint), like the tab and nav-link active labels. The Material bridge maps it to `--mat-sys-primary`.|
-|`--cngx-step-linear-dot-fill`|`oklch(0.66 0.19 50)`|Skin / linear-minimal|Fill of the active dot in the linear-minimal skin. Falls back to the canonical active-fill so Material consumers inherit primary tones without per-skin overrides.|
+|`--cngx-step-linear-dot-fill`|``|Skin / linear-minimal|Fill of the active dot in the linear-minimal skin. Falls back to the canonical active-fill so Material consumers inherit primary tones without per-skin overrides.|
 |`--cngx-step-status-pill-bg-upcoming`|`color-mix(in srgb, currentColor 6%, transparent)`|Skin / stripe-status-rich|Background of the status pill on the `stripe-status-rich` skin when the step is upcoming. Soft-neutral surface tone.|
-|`--cngx-step-status-pill-bg-in-progress`|`oklch(0.66 0.19 50)`|Skin / stripe-status-rich|Background of the status pill while the step is active / in-progress.|
+|`--cngx-step-status-pill-bg-in-progress`|``|Skin / stripe-status-rich|Background of the status pill while the step is active / in-progress.|
 |`--cngx-step-status-pill-bg-done`|`oklch(0.5 0.15 145)`|Skin / stripe-status-rich|Background of the status pill once the step is completed.|
 |`--cngx-step-status-pill-bg-errored`|`oklch(0.45 0.15 25)`|Skin / stripe-status-rich|Background of the status pill when the step is errored.|
 |`--cngx-step-status-pill-color`|`oklch(1 0 0)`|Skin / stripe-status-rich|Text color of the status pill on the active / completed / errored states. Hits the filled pill background.|
 |`--cngx-step-status-pill-padding`|`0.125rem 0.5rem`|Skin / stripe-status-rich|Padding shorthand of the status pill. Derived from the global scale at the unskinned `cngx-stepper` host (stepper-base.css) so a root `[data-density]` re-scales the pill; `inherits: true` lets that host SET reach this skin-scoped element. The 2px block keeps the pill compact, so it is half `--cngx-space-xs` rather than snapped to a rung.|
-|`--cngx-step-chevron-tile-active`|`oklch(0.66 0.19 50)`|Skin / path-chevron|Fill of the chevron tile while the step is active on the `path-chevron` skin.|
+|`--cngx-step-chevron-tile-active`|``|Skin / path-chevron|Fill of the chevron tile while the step is active on the `path-chevron` skin.|
 |`--cngx-step-chevron-tile-completed`|`color-mix(in srgb, oklch(0.5 0.15 145) 80%, transparent)`|Skin / path-chevron|Fill of the chevron tile once the step is completed.|
 |`--cngx-step-chevron-tile-errored`|`oklch(0.45 0.15 25)`|Skin / path-chevron|Fill of the chevron tile when the step is errored.|
 |`--cngx-step-chevron-tile-upcoming-bg`|`color-mix(in srgb, currentColor 12%, transparent)`|Skin / path-chevron|Fill of the upcoming chevron tile - soft surface tint so the chevron silhouette stays visible without competing with the active state.|
@@ -3420,7 +3527,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-connector-color`|`color-mix(in srgb, currentColor 35%, transparent)`|Skin / classic|Muted color of an upcoming connector segment on the classic skin with `[connectors]` opted-in. Inherits so host-set overrides cascade to the `::before` segment painter.|
 |`--cngx-step-connector-completed-color`|`oklch(0.5 0.15 145)`|Skin / classic|Accent color of a completed connector segment on the classic skin with `[connectors]` opted-in. Falls back to the canonical completed color so Material consumers inherit success tones without per-skin overrides.|
 |`--cngx-step-connector-errored-color`|`oklch(0.55 0.18 25)`|Skin / classic|Errored color of a connector segment whose preceding step is in `data-state='error'`. Mirrors `--cngx-step-errored-color`.|
-|`--cngx-step-connector-pending-color`|`oklch(0.66 0.19 50)`|Skin / classic|In-flight color of a connector segment whose preceding step is in `data-state='pending'`. Mirrors the active-state color so the rail reads as "progressing".|
+|`--cngx-step-connector-pending-color`|``|Skin / classic|In-flight color of a connector segment whose preceding step is in `data-state='pending'`. Mirrors the active-state color so the rail reads as "progressing".|
 |`--cngx-step-connector-inset`|`6px`|Skin / classic|Symmetric breathing room between each disc edge and the connector rail end on the classic skin with `[connectors]` opted-in. Inherits so host-set overrides cascade.|
 |`--cngx-step-connector-width`|`2px`|Skin / classic|Thickness of the connector segment on the classic skin with `[connectors]` opted-in. Inherits so host-set overrides cascade.|
 |`--cngx-step-chips-gap`|`0.5rem`|Skin / chips|Gap between the standalone pills of the `chips` skin.|
@@ -3431,7 +3538,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-chips-color`|`color-mix(in srgb, currentColor 65%, transparent)`|Skin / chips|Inactive pill label colour in the `chips` skin - muted vs the active fill. Inherits so the host-set value reaches the step descendant.|
 |`--cngx-step-chips-color-active`|`oklch(1 0 0)`|Skin / chips|Active pill label colour in the `chips` skin - the contrast tone on the filled accent. Inherits so the host-set value reaches the step descendant. The fill itself follows `--cngx-color-primary`.|
 |`--cngx-step-chips-bg-completed`|`color-mix(in srgb, oklch(0.5 0.15 145) 12%, transparent)`|Skin / chips|Completed chip surface in the `chips` skin - a soft success tint. Inherits so the host-set value reaches the step descendant.|
-|`--cngx-step-chips-color-completed`|`oklch(0.5 0.15 145)`|Skin / chips|Completed chip label + check colour in the `chips` skin. Inherits so the host-set value reaches the step descendant.|
+|`--cngx-step-chips-color-completed`|`oklch(0.46 0.15 145)`|Skin / chips|Completed chip label + check colour in the `chips` skin. Inherits so the host-set value reaches the step descendant. Defaults to `--cngx-color-success-text`.|
 |`--cngx-step-breadcrumb-gap`|`0.5rem`|Skin / breadcrumb|Gap between breadcrumb items (and the chevron separator inset) in the `breadcrumb` skin.|
 |`--cngx-step-breadcrumb-radius`|`6px`|Skin / breadcrumb|Corner radius of the active-item pill in the `breadcrumb` skin.|
 |`--cngx-step-breadcrumb-color`|`color-mix(in srgb, currentColor 48%, transparent)`|Skin / breadcrumb|Upcoming-item label colour in the `breadcrumb` skin - muted vs the active / completed items. Inherits so the host value reaches the step descendant.|
@@ -3463,6 +3570,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-field-border-width`|`1px`|Sizing|Border width of the field box on every side, in every skin (transparent where a skin paints none). The box height and the touch floor of the controls inside it are derived from it, so changing it keeps the box on its formula.|
 |`--cngx-field-ring-width`|`2px`|Sizing|Width of the focus ring an outline or bare box draws around its main control.|
 |`--cngx-field-ring-offset`|`3px`|Sizing|Distance between the box edge and its focus ring.|
+|`--cngx-field-ring-color`|`var(--cngx-color-primary)`|Color|Colour of the focus ring around an outline or bare field and of the select-family trigger ring. Unset by default: the ring follows `--cngx-color-primary` where it is drawn, so a primary override on a subtree reaches it. Fill shows focus as an underline instead (`--cngx-field-underline-focus-color`).|
 |`--cngx-field-affix-gap`|`8px`|Layout|Gap between the prefix, control, and suffix in an affix row.|
 |`--cngx-field-affix-divider`|`0px`|Layout|Width of an optional divider between an affix and the control: the inline-end edge of a prefix, the inline-start edge of a suffix. `0px` draws none. Any width also pads the affix by `--cngx-space-sm` so the divider does not touch the affix content. Set it on the box.|
 
@@ -3492,6 +3600,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-refused-color`|``|State / Refused|Colour of a refused tab (the commit action answered `false`): its slashed-circle icon and the base of its tinted surface. A refusal is no error, so it wears amber; a failed switch takes `--cngx-tab-rejection-icon-color`. Registered without an initial value, so the fallback applies until a theme sets it: `--cngx-color-warning` mixed 70% toward `--cngx-color-text`, which keeps the icon at 3:1 on the light page (the raw warning amber reads 2.5:1 there).|
 |`--cngx-tab-refused-text-color`|``|State / Refused|Label colour of a refused tab under the colour-only `line` skin. Registered without an initial value, so the fallback applies until a theme sets it: `--cngx-color-warning` mixed 55% toward `--cngx-color-text`, 4.5:1 on the page in both schemes.|
 |`--cngx-tab-affordance-size`|`1.25rem`|State / Dismissable|Hit-target size of a tab's close button and the add-tab button.|
+|`--cngx-tab-affordance-target-min`|`24px`|Layout|Minimum hit area of the close and add buttons on a mouse (WCAG 2.5.8). A transparent `::before` grows the hit box around the `--cngx-tab-affordance-size` button, so the visual size, the hover circle and the tab padding do not change. On touch the larger `--cngx-target-min` wins.|
 |`--cngx-tab-affordance-radius`|`9999px`|State / Dismissable|Corner radius of the close / add affordance buttons. The default pill radius draws a circle on the square glyph buttons and a pill when the add button grows around a projected text label.|
 |`--cngx-tab-affordance-hover-bg`|`color-mix(in oklch, currentColor 14%, transparent)`|State / Dismissable|Hover/focus fill of the close / add affordance buttons. Defaults to a translucent tint of the current text colour, so it adapts to any surface and either colour scheme without a 4-block.|
 |`--cngx-tab-label-line-height`|`1.4`|Layout|Line height of the primary label line. Also drives the leading height the row-layout icon aligns to, so a stacked sub-label grows downward while the icon stays beside the primary label.|
@@ -3504,7 +3613,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-hover-color`|`currentColor`|State / Hover|Text color of the hover state.|
 |`--cngx-tab-badge-size`|`1.15em`|State / Error|Rendered size of the validation-error alert icon after the tab label, in `em` of the label font. The universal syntax keeps the `em` unresolved until the icon reads it, and it inherits so a host override reaches the glyph.|
 |`--cngx-tab-radius`|`0.5rem`|Skin|Corner radius of the contained / pill skin surfaces. Ignored by the `line` skin. `inherits: true` so a host-level override cascades onto the tab buttons and panel.|
-|`--cngx-tab-active-bg`|`oklch(1 0 0)`|Skin|Surface that the active tab fuses with under the `contained` skin (the panel surface) and the active-pill fill under the `pill` skin. Set from `--cngx-color-surface` / `--cngx-color-primary` via the per-skin `:scope` assignment.|
+|`--cngx-tab-active-bg`|`oklch(1 0 0)`|Skin|Surface that the active tab fuses with under the `contained` skin (the panel surface) and the active-pill fill under the `pill` skin. Set from `--cngx-color-surface` / `--cngx-color-primary-strong` via the per-skin `:scope` assignment.|
 |`--cngx-tab-inactive-bg`|`oklch(0.97 0 0)`|Skin|Resting-tab surface under the `contained` skin - kept visibly set back from the active tab so tabs read as controls, not headings.|
 |`--cngx-tab-surface-border-color`|`oklch(0.87 0 0)`|Skin|Border color of the contained skin's tab + panel box.|
 |`--cngx-tab-surface-border-width`|`1px`|Skin|Border width of the contained skin's tab + panel box. Drives both the border and the negative overlap that fuses adjacent tabs and the active tab with the panel (via `calc(... * -1)`), so a thicker border keeps the seams aligned.|
@@ -3549,6 +3658,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-refused-color`|``|State / Refused|Colour of a refused tab (the commit action answered `false`): its slashed-circle icon and the base of its tinted surface. A refusal is no error, so it wears amber; a failed switch takes `--cngx-tab-rejection-icon-color`. Registered without an initial value, so the fallback applies until a theme sets it: `--cngx-color-warning` mixed 70% toward `--cngx-color-text`, which keeps the icon at 3:1 on the light page (the raw warning amber reads 2.5:1 there).|
 |`--cngx-tab-refused-text-color`|``|State / Refused|Label colour of a refused tab under the colour-only `line` skin. Registered without an initial value, so the fallback applies until a theme sets it: `--cngx-color-warning` mixed 55% toward `--cngx-color-text`, 4.5:1 on the page in both schemes.|
 |`--cngx-tab-affordance-size`|`1.25rem`|State / Dismissable|Hit-target size of a tab's close button and the add-tab button.|
+|`--cngx-tab-affordance-target-min`|`24px`|Layout|Minimum hit area of the close and add buttons on a mouse (WCAG 2.5.8). A transparent `::before` grows the hit box around the `--cngx-tab-affordance-size` button, so the visual size, the hover circle and the tab padding do not change. On touch the larger `--cngx-target-min` wins.|
 |`--cngx-tab-affordance-radius`|`9999px`|State / Dismissable|Corner radius of the close / add affordance buttons. The default pill radius draws a circle on the square glyph buttons and a pill when the add button grows around a projected text label.|
 |`--cngx-tab-affordance-hover-bg`|`color-mix(in oklch, currentColor 14%, transparent)`|State / Dismissable|Hover/focus fill of the close / add affordance buttons. Defaults to a translucent tint of the current text colour, so it adapts to any surface and either colour scheme without a 4-block.|
 |`--cngx-tab-label-line-height`|`1.4`|Layout|Line height of the primary label line. Also drives the leading height the row-layout icon aligns to, so a stacked sub-label grows downward while the icon stays beside the primary label.|
@@ -3556,8 +3666,11 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-sublabel-color`|`color-mix(in oklab, currentColor 65%, transparent)`|Surface|Text color of a tab's optional secondary label line. Defaults to a translucent tint of the tab's own text colour so it reads as a muted second line on any surface and in either colour scheme.|
 |`--cngx-tab-vertical-gap`|`var(--cngx-space-md)`|Layout|Gutter between the strip and the panel in vertical orientation.|
 |`--cngx-tab-affordance-gap`|`var(--cngx-space-xs)`|Layout|Gap between the items inside a tab link.|
-|`--cngx-tab-active-bg`|`var(--cngx-color-primary, oklch(0.66 0.19 50))`|Skin|Surface that the active tab fuses with under the `contained` skin (the panel surface) and the active-pill fill under the `pill` skin. Set from `--cngx-color-surface` / `--cngx-color-primary` via the per-skin `:scope` assignment.|
-|`--cngx-tab-pill-active-color`|`var(--cngx-color-on-primary, oklch(1 0 0))`|Skin|Text color of the active pill (paints against `--cngx-tab-active-bg`).|
+|`--cngx-tab-active-bg`|`var(
+        --cngx-color-primary-strong,
+        oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+      )`|Skin|Surface that the active tab fuses with under the `contained` skin (the panel surface) and the active-pill fill under the `pill` skin. Set from `--cngx-color-surface` / `--cngx-color-primary-strong` via the per-skin `:scope` assignment.|
+|`--cngx-tab-pill-active-color`|`var(--cngx-color-on-primary-strong, oklch(1 0 0))`|Skin|Text color of the active pill (paints against `--cngx-tab-active-bg`).|
 |`--cngx-tab-pill-hover-bg`|`color-mix(
         in oklch,
         var(--cngx-color-primary, oklch(0.66 0.19 50)) 8%,
@@ -3598,6 +3711,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tab-overflow-popover-min-width`|`12rem`|Layout|Minimum inline size of the popover panel.|
 |`--cngx-tab-overflow-popover-max-height`|`16rem`|Layout|Maximum block size of the popover panel before vertical scrolling.|
 |`--cngx-tab-overflow-popover-bg`|`oklch(1 0 0)`|Surface|Background of the popover panel. Falls back through `--cngx-color-surface`.|
+|`--cngx-tab-overflow-popover-color`|`oklch(0.2 0.01 250)`|Surface|Text colour of the popover panel. Falls back through `--cngx-color-text`.|
 |`--cngx-tab-overflow-popover-border`|`1px solid currentColor`|Surface|Border shorthand of the popover panel.|
 |`--cngx-tab-overflow-popover-radius`|`0.25rem`|Layout|Corner radius of the popover panel.|
 |`--cngx-tab-overflow-popover-padding`|`0.25rem 0`|Layout|Padding shorthand of the popover panel.|
@@ -3848,7 +3962,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-toggle-track-height`|`1.25rem`|Layout|Height of the track pill.|
 |`--cngx-toggle-track-radius`|`9999px`|Layout|Corner radius of the track. Defaults to a full pill.|
 |`--cngx-toggle-track-bg-off`|`oklch(0 0 0 / 0.25)`|State / Off|Background of the off-state track - neutral muted by default. `inherits: true` so the :root dark-mode override reaches the track inside the toggle host.|
-|`--cngx-toggle-track-bg-on`|`oklch(0.66 0.19 50)`|State / On|Background of the on-state track. Falls back to `--cngx-color-primary`.|
+|`--cngx-toggle-track-bg-on`|``|State / On|Background of the on-state track. Unset by default, so the track paints the `--cngx-color-primary` in scope.|
 |`--cngx-toggle-thumb-inset`|`0.125rem`|Layout|Inset of the thumb inside the track (resting position).|
 |`--cngx-toggle-thumb-size`|`1rem`|Layout|Diameter of the circular thumb.|
 |`--cngx-toggle-thumb-travel`|`1rem`|State / On|Horizontal translation applied to the thumb when checked.|
@@ -3891,7 +4005,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
@@ -3964,7 +4078,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-tree-select-trigger-border`|`var(--cngx-select-border, 1px solid var(--cngx-color-border-strong))`|Surface|Border shorthand of the trigger. Falls back to `--cngx-select-border`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-tree-select-trigger-radius`|`var(--cngx-select-radius, var(--cngx-radius-md, 8px))`|Layout|Corner radius of the trigger. Falls back to `--cngx-select-radius`; see {@link --cngx-select-radius} for why no `initial-value` is declared.|
 |`--cngx-tree-select-trigger-bg`|`var(--cngx-select-bg, transparent)`|Surface|Background of the trigger. Falls back to `--cngx-select-bg`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
-|`--cngx-tree-select-focus-ring`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-color-primary))`|State / Focus|Focus-ring outline shorthand of the trigger (opaque, same ring as the sibling selects). Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
+|`--cngx-tree-select-focus-ring`|`var(--cngx-select-focus-outline, 2px solid var(--cngx-field-ring-color, var(--cngx-color-primary)))`|State / Focus|Focus-ring outline shorthand of the trigger (opaque, same ring as the sibling selects). Falls back to `--cngx-select-focus-outline`; see {@link --cngx-select-bg} for why no `initial-value` is declared.|
 |`--cngx-tree-select-clear-size`|`1.25rem`|State / Clear|Hit-target diameter of the clear-all button; the touch floor enlarges its hit area to `--cngx-target-min` (see `select-base.css`). No `initial-value`, like {@link --cngx-tree-select-trigger-bg}: the use-site fallback survives, and a value set on the host or an ancestor reaches the button.|
 |`--cngx-tree-select-panel-min-inline-size`|`16rem`|Layout|Minimum inline size of the anchored tree panel. The panel is at least as wide as the trigger and never narrower than this, so indented rows keep room for their labels. Tree-only: the flat selects keep the anchor width. The sheet presentation owns its own width. Stands alone (no family fallback): `--cngx-select-panel-min-width` is the anchor width the panel also honours.|
 |`--cngx-tree-select-panel-max-block-size`|`20rem`|Layout|Height cap of the anchored tree panel before it scrolls. Stands alone: the family `--cngx-select-panel-max-height` registers an `initial-value`, so a chain to it would never reach this default. The sheet presentation owns its own height.|
@@ -4021,7 +4135,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-trend-size`|`0.8125rem`|Typography|Font-size of the trend label.|
 |`--cngx-trend-weight`|`500`|Typography|Font-weight of the trend label.|
 |`--cngx-trend-color`|`oklch(0.36 0.02 290)`|Surface|Neutral text color applied when no direction modifier is set.|
-|`--cngx-trend-up-color`|`oklch(0.65 0.18 145)`|Variant / Up|Color of the `.cngx-trend--up` modifier. Falls back to `--cngx-color-success`.|
+|`--cngx-trend-up-color`|`oklch(0.46 0.15 145)`|Variant / Up|Color of the `.cngx-trend--up` modifier. Reads `--cngx-color-success-text`.|
 |`--cngx-trend-down-color`|`oklch(0.65 0.22 25)`|Variant / Down|Color of the `.cngx-trend--down` modifier. Falls back to `--cngx-color-danger`.|
 
 ## CngxTypeahead
@@ -4042,7 +4156,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-select-option-min-height`|`0px`|Layout|Minimum height of an option row - defaults to `0px` (content-driven, so dense rows stay compact) and composes into the touch-target floor via `max()`. A `0px` rather than `auto` default is deliberate: `auto` cannot be an argument to `max()`, and the floor needs to compose the row height against `--cngx-target-min`.|
 |`--cngx-select-option-radius`|`0.125rem`|Layout|Corner radius of an option row.|
 |`--cngx-select-option-highlight-bg`|`oklch(0.66 0.19 50 / 0.1)`|State / Highlighted|Background of the keyboard-highlighted option row. Defaults to a low-alpha tint of `--cngx-color-primary` so the highlight reads as brand-accented without competing with selection state.|
-|`--cngx-select-option-active-indicator`|`oklch(0.5 0.2 275)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1. Delegates to the primary colour below, so it follows the scheme and a re-theme.|
+|`--cngx-select-option-active-indicator`|`oklch(0.58 0.19 50)`|State|Colour of the inline-start indicator bar on the keyboard-active row. The background tint alone is ~1.1:1 against the panel; this opaque bar carries the active affordance at >= 3:1 against the row tint it borders, which the regular primary misses in light. Delegates to the strong primary below, so it follows the scheme and a re-theme.|
 |`--cngx-select-option-multi-selected-bg`|`transparent`|State / Selected|Background of a selected row in a multi-value panel whose selection indicator renders. Transparent by default: the checkbox carries the selection, so a mostly-selected panel does not turn into a solid block. Assign a colour to opt the fill back in. Single-value panels and rows with the indicator hidden keep `--cngx-option-selected-bg`.|
 |`--cngx-select-check-color`|`oklch(0.66 0.19 50)`|State / Selected|Color of the selected-option checkmark glyph. Falls back through `--cngx-color-primary`.|
 |`--cngx-select-placeholder-color`|`oklch(0 0 0 / 0.5)`|Surface|Color of the placeholder text shown when no value is selected.|
