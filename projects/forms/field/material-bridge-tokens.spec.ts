@@ -46,6 +46,8 @@ describe('field Material bridge', () => {
   // every name is consumed by the forms field/input/form-errors CSS
   const CONSUMED = [
     '--cngx-field-affix-color',
+    '--cngx-field-affix-icon-size',
+    '--cngx-field-affix-target',
     '--cngx-field-char-count-color',
     '--cngx-field-char-count-font-size',
     '--cngx-field-char-count-over-color',
@@ -144,6 +146,19 @@ describe('field Material bridge', () => {
     // mat-hint bottom-aligns its 16px line, so its text already sits one cngx
     // hint gap below the edge: the gap stays on the cngx scale.
     expect(css).not.toContain('--cngx-field-hint-gap');
+  });
+
+  it('sizes the box affixes like matIconPrefix and a matIconButton suffix', () => {
+    const css = compiledCss('v1');
+    expect(css).toMatch(
+      /\.cngx-field-box\.cngx-field-box:is\(\[data-skin=["']?fill["']?\], \[data-skin=["']?outline["']?\]\)\s*\{\s*--cngx-field-affix-icon-size: 1\.5em;\s*--cngx-field-affix-target: 2\.5rem;/,
+    );
+    expect(css).toMatch(
+      /:has\(> \.cngx-field-suffix\.cngx-field-affix--interactive:last-child\)\s*\{\s*padding-inline-end: 0;/,
+    );
+    expect(css).toMatch(
+      /> \.cngx-field-suffix\.cngx-field-affix--interactive:last-child\s*\{[^}]*border-radius: var\(--mat-sys-corner-full, 9999px\)/,
+    );
   });
 
   // mat-hint and the counter end hint carry no colour and inherit the page

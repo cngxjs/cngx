@@ -758,7 +758,21 @@ test.describe('material-bridge rendered values: field metrics', () => {
     <input id="box-input" data-skin="bare" value="Ada" />
   </span>
 </cngx-form-field>
-<cngx-form-field><input id="fill" data-skin="fill" value="Ada" /></cngx-form-field>`;
+<cngx-form-field><input id="fill" data-skin="fill" value="Ada" /></cngx-form-field>
+<cngx-form-field>
+  <span id="pre-box" class="cngx-field-box" data-skin="outline">
+    <span class="cngx-field-prefix"><cngx-icon id="pre-icon"></cngx-icon></span>
+    <input id="pre-input" data-skin="bare" value="Ada" />
+  </span>
+</cngx-form-field>
+<cngx-form-field>
+  <span id="suf-box" class="cngx-field-box" data-skin="outline">
+    <input data-skin="bare" value="Ada" />
+    <button id="suf" type="button" class="cngx-field-suffix cngx-field-affix--interactive">
+      <cngx-icon id="suf-icon"></cngx-icon>
+    </button>
+  </span>
+</cngx-form-field>`;
 
   // body-large is the control's type role; the line box decides the height.
   const TYPE_STANDINS = `:root {
@@ -767,6 +781,11 @@ test.describe('material-bridge rendered values: field metrics', () => {
   --mat-sys-body-large-weight: 400;
   --mat-sys-body-large-line-height: 24px;
   --mat-sys-body-large-tracking: 0.5px;
+}
+cngx-icon {
+  display: block;
+  inline-size: var(--cngx-icon-size);
+  block-size: var(--cngx-icon-size);
 }`;
 
   // No `html { }` wrapper around the include: the scoped skin rules must lose
@@ -799,6 +818,51 @@ test.describe('material-bridge rendered values: field metrics', () => {
 
   // The box formula is line + 2 * padding + 2 * edge, so the padding has to
   // give back the edge the box actually draws, not a fixed 1px.
+  // Offsets from the box's border edge, as matIconPrefix and a matIconButton
+  // suffix sit in the mat-form-field text-field wrapper.
+  const edges = (page: Page, box: string, part: string) =>
+    page.evaluate(
+      ([b, p]) => {
+        const outer = document.querySelector(b)!.getBoundingClientRect();
+        const inner = document.querySelector(p)!.getBoundingClientRect();
+        return {
+          start: inner.left - outer.left,
+          end: outer.right - inner.right,
+          width: inner.width,
+        };
+      },
+      [box, part] as const,
+    );
+
+  test('a leading icon prefix sits like matIconPrefix', async ({ page }) => {
+    const icon = await edges(page, '#pre-box', '#pre-icon');
+    expect(icon.width).toBe(24);
+    expect(icon.start).toBe(12);
+    expect((await edges(page, '#pre-box', '#pre-input')).start).toBe(52);
+    expect(await height(page, '#pre-box')).toBe(56);
+  });
+
+  test('a trailing icon button sits like a matIconButton suffix', async ({ page }) => {
+    const button = await edges(page, '#suf-box', '#suf');
+    expect(button.width).toBe(40);
+    expect(button.end).toBe(0);
+    const icon = await edges(page, '#suf-box', '#suf-icon');
+    expect(icon.width).toBe(24);
+    expect(icon.end).toBe(8);
+    expect(await computedValue(page, '#suf', 'border-top-left-radius')).toBe('9999px');
+    expect(await height(page, '#suf-box')).toBe(56);
+  });
+
+  test('the enabled icon button takes the affix colour', async ({ page }) => {
+    const affix = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--cngx-field-affix-color)';
+      document.querySelector('#suf-box')!.append(probe);
+      return getComputedStyle(probe).color;
+    });
+    expect(await computedValue(page, '#suf', 'color')).toBe(affix);
+  });
+
   test('box and fill keep 56px under a wider field edge', async ({ page }) => {
     await page.addStyleTag({ content: ':root { --cngx-field-border-width: 2px; }' });
     expect(await height(page, '#box')).toBe(56);
