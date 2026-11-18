@@ -89,7 +89,7 @@ const SKIN_OWNERSHIP_EXEMPT = [];
 // Which library templates write the attribute and what the skin does there.
 const OPT_IN_REASON = {
   breadcrumb:
-    'CngxBreadcrumbBar writes the attributes; the link font-size reaching it is under review',
+    'CngxBreadcrumbBar writes the attributes and keeps the skin crumb size (the --cngx-font-size-sm every bar skin reads), inline-flex crumb and touch floor',
   dialog:
     'the dialog outlet is the owner; the command palette sets the max-width hook and its own scrollbar-gutter',
   listbox: 'the select panels want this skin; paginator and multi-select neutralise parts of it',
