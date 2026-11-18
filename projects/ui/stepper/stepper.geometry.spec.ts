@@ -53,6 +53,25 @@ class ChevronStepperHost {}
 })
 class VerticalChevronStepperHost {}
 
+@Component({
+  selector: 'cngx-stepper-vertical-rail-host',
+  standalone: true,
+  imports: [CngxStepper, CngxStep],
+  template: `
+    <cngx-stepper
+      aria-label="Wizard"
+      skin="classic"
+      orientation="vertical"
+      [connectors]="true"
+      style="--cngx-space-sm: 0.5rem"
+    >
+      <div cngxStep label="A">Panel A</div>
+      <div cngxStep label="B">Panel B</div>
+    </cngx-stepper>
+  `,
+})
+class VerticalRailStepperHost {}
+
 type PrimarySkin = 'classic' | 'linear-minimal' | 'stripe-status-rich' | 'path-chevron';
 
 @Component({
@@ -283,5 +302,26 @@ describe('CngxStepper primary tokens', () => {
   it('fills the path-chevron active tile with the primary in scope', () => {
     const root = mountSkin('path-chevron');
     expectPrimary((scope) => computedValue(one(root, `${scope} ${ACTIVE}`), 'background-color'));
+  });
+});
+
+describe('CngxStepper vertical connector rail', () => {
+  // The rail offset has to read the same inline padding the step paints;
+  // a fixed 0.75rem drifts off the disc axis once the density SET moves it.
+  it('centres the rail on the disc axis', () => {
+    const fixture = TestBed.createComponent(VerticalRailStepperHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const step = mountedRoot.querySelectorAll<HTMLElement>('.cngx-stepper__step')[1];
+    const disc = step.querySelector<HTMLElement>('.cngx-stepper__indicator');
+    if (!disc) {
+      throw new Error('cngx-stepper did not render an indicator');
+    }
+    const rail = getComputedStyle(step, '::before');
+    const stepBox = step.getBoundingClientRect();
+    const discBox = disc.getBoundingClientRect();
+    const railAxis = stepBox.left + parseFloat(rail.left) + parseFloat(rail.width) / 2;
+    expect(railAxis).toBeCloseTo(discBox.left + discBox.width / 2, 1);
   });
 });

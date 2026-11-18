@@ -1232,7 +1232,7 @@
 
     .cngx-stepper__step + .cngx-stepper__step::before {
       inset-inline-start: calc(
-        0.75rem + var(--cngx-step-indicator-size, 1.75rem) / 2 -
+        var(--cngx-step-padding-inline, 0.75rem) + var(--cngx-step-indicator-size, 1.75rem) / 2 -
           var(--cngx-step-connector-width, 2px) / 2
       );
       width: var(--cngx-step-connector-width, 2px);
