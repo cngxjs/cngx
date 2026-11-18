@@ -1,7 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, ViewEncapsulation } from '@angular/core';
 
-import { CngxRipple } from '@cngx/common/interactive';
-
 import { injectPaginatorAriaLabels, injectPaginatorFormats } from '../paginator-config';
 import { injectPaginatorHost } from '../paginator-host.token';
 
@@ -30,12 +28,10 @@ import { injectPaginatorHost } from '../paginator-host.token';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [CngxRipple],
   template: `
     <button
       type="button"
       class="cngx-paginator__button cngx-paginator__load-more"
-      cngxRipple
       [attr.aria-label]="ariaLabel()"
       [attr.aria-disabled]="disabled() ? 'true' : null"
       (click)="handleClick()"

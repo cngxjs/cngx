@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxStepper: custom dot body in the dots collapse',
   subtitle:
-    "A <code>*cngxDotStepperDot</code> template projected into <code>&lt;cngx-stepper&gt;</code> replaces the body of each dot once the strip collapses to dots. The frame is narrower than 30rem, so the dot row is on screen from the start.",
+    "A <code>*cngxDotStepperDot</code> template projected into <code>&lt;cngx-stepper&gt;</code> replaces the body of each dot once the strip collapses to dots. The frame is narrower than 30rem, so the dot row is on screen from the start; drag the dashed frame's corner past 30rem to see the classic strip return.",
   description:
     "The dot slot resolves the same cascade on both dot hosts: a projected <code>*cngxDotStepperDot</code> wins over <code>withDotStepperDotTemplate(...)</code>, and without either the dot keeps its empty body. The context carries <code>index</code>, <code>active</code>, <code>completed</code> and the step <code>node</code>. The dot button stays library-owned - its <code>aria-label</code>, <code>aria-current</code> and roving tabindex do not change - so the template is decoration: the stepper renders it inside an <code>aria-hidden</code> wrapper.",
   level: 'organism',
@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   protected handlePrev(): void {
     this.active.update(i => Math.max(i - 1, 0));
   }`,
-  template: `  <div style="width: 20rem; max-width: 100%;">
+  template: `  <div style="resize: horizontal; overflow: hidden; min-width: 16rem; max-width: 100%; width: 20rem; padding: 8px; border: 1px dashed var(--cngx-color-border, #d1d5db);">
     <cngx-stepper [(activeStepIndex)]="active" aria-label="Checkout">
       <ng-template cngxDotStepperDot let-active="active" let-completed="completed">
         @if (active) {

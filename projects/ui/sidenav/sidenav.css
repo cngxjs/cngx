@@ -253,6 +253,27 @@
   }
 
   /**
+   * Minimum width of the resize handle's pointer hit zone on a mouse (WCAG
+   * 2.5.8). The visual bar keeps `--cngx-sidenav-resize-handle-width`; on
+   * touch the larger `--cngx-target-min` wins. `inherits: true` so an
+   * override on `cngx-sidenav-layout` or any ancestor reaches the handle.
+   * @group Layout
+   */
+  @property --cngx-sidenav-resize-handle-target-min {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 24px;
+  }
+
+  /* Private: half the handle hit zone, computed to a length for
+     overflow-clip-margin. */
+  @property --_cngx-sidenav-handle-reach {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /**
    * Color of the resize handle on hover / drag. Falls back to
    * `--cngx-color-primary`.
    * @group State / Resize
@@ -712,11 +733,29 @@
     touch-action: none; /* prevent scroll on drag */
   }
 
-  /* Pointer hit zone floored to the pointer-derived target size (inert 0px on
-     a fine pointer): the visual bar stays 4px, but a coarse pointer gets a
-     grabbable strip. A pseudo-element participates in hit testing for its
-     host, so no extra DOM. Physical left+translate centering is symmetric,
-     hence RTL-safe. */
+  /* The rail clips its content, which also cut the handle and its hit zone
+     at the edge. A resizable rail clips instead of hiding (no scroll
+     container) and lets half the hit zone reach past the edge; the body
+     still clips its own rows (overflow-x: hidden). */
+  cngx-sidenav.cngx-sidenav--resizable {
+    --_cngx-sidenav-handle-reach: calc(
+      max(
+          var(--cngx-sidenav-resize-handle-width, 4px),
+          var(--cngx-sidenav-resize-handle-target-min, 24px),
+          var(--cngx-target-min, 0px)
+        ) /
+        2
+    );
+    overflow: clip;
+    /* overflow-clip-margin takes no calc(); the registered <length> above
+       hands it a computed length. */
+    overflow-clip-margin: var(--_cngx-sidenav-handle-reach);
+  }
+
+  /* Pointer hit zone: the visual bar stays 4px, the strip is 24px on a mouse
+     (WCAG 2.5.8) and the touch floor on a coarse pointer. A pseudo-element
+     participates in hit testing for its host, so no extra DOM. Physical
+     left+translate centering is symmetric, hence RTL-safe. */
   .cngx-sidenav__resize-handle::before {
     content: '';
     position: absolute;
@@ -724,7 +763,11 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: max(var(--cngx-sidenav-resize-handle-width, 4px), var(--cngx-target-min, 0px));
+    width: max(
+      var(--cngx-sidenav-resize-handle-width, 4px),
+      var(--cngx-sidenav-resize-handle-target-min, 24px),
+      var(--cngx-target-min, 0px)
+    );
   }
 
   /* Position: on the border edge */

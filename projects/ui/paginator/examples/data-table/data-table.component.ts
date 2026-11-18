@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 
+import { CngxRipple } from '@cngx/common/interactive';
 import {
   CngxPaginator,
   CngxPaginatorFirst,
@@ -53,6 +54,7 @@ const NAMES = [
     CngxPaginatorPages,
     CngxPaginatorNext,
     CngxPaginatorLast,
+    CngxRipple,
   ],
   styleUrl: './data-table.component.scss',
   template: `
@@ -80,6 +82,7 @@ const NAMES = [
 
       <cngx-paginator
         class="grid-footer"
+       
         skin="bar"
         [total]="rows.length"
         [pageIndex]="pageIndex()"
@@ -90,11 +93,11 @@ const NAMES = [
         <span class="grid-footer__label" aria-hidden="true">Rows per page:</span>
         <cngx-pgn-page-size [options]="sizes" />
         <cngx-pgn-range />
-        <cngx-pgn-first />
-        <cngx-pgn-prev />
+        <cngx-pgn-first cngxRipple [rippleCentered]="true" />
+        <cngx-pgn-prev cngxRipple [rippleCentered]="true" />
         <cngx-pgn-pages />
-        <cngx-pgn-next />
-        <cngx-pgn-last />
+        <cngx-pgn-next cngxRipple [rippleCentered]="true" />
+        <cngx-pgn-last cngxRipple [rippleCentered]="true" />
       </cngx-paginator>
     </div>
   `,

@@ -151,6 +151,40 @@ describe('CngxPaginator geometry', () => {
   });
 });
 
+// ── Status as the only readout (minimal / rail compositions) ─────────────────
+
+@Component({
+  selector: 'cngx-paginator-status-only-host',
+  standalone: true,
+  imports: [CngxPaginator, CngxPaginatorPrev, CngxPaginatorStatus, CngxPaginatorNext],
+  template: `
+    <cngx-paginator skin="minimal" aria-label="Pager" [total]="100" [pageIndex]="3" [pageSize]="10">
+      <cngx-pgn-prev />
+      <cngx-pgn-status />
+      <cngx-pgn-next />
+    </cngx-paginator>
+  `,
+})
+class PaginatorStatusOnlyHost {}
+
+describe('CngxPaginator status without a number row', () => {
+  it('shows the status at every width when no cngx-pgn-pages carries the current page', () => {
+    const fixture = TestBed.createComponent(PaginatorStatusOnlyHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const host = mountedRoot.querySelector<HTMLElement>('cngx-paginator');
+    if (!host) {
+      throw new Error('cngx-paginator did not render');
+    }
+
+    host.style.inlineSize = '800px';
+    expect(segmentDisplay(host, 'cngx-pgn-status')).not.toBe('none');
+    host.style.inlineSize = '430px';
+    expect(segmentDisplay(host, 'cngx-pgn-status')).not.toBe('none');
+  });
+});
+
 // ── RTL bidi isolation of the numeric readouts (paginator-base.css) ──────────
 
 @Component({

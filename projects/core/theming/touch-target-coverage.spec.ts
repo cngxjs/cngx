@@ -125,6 +125,7 @@ const SIZE_FLOOR_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   },
   // @cngx/ui - stepper base
   { file: 'projects/ui/stepper/styles/stepper-base.css', note: 'stepper step header' },
+  { file: 'projects/ui/stepper/stepper.component.css', note: 'mobile step dots' },
   // @cngx/ui - a11y panel
   { file: 'projects/ui/a11y/a11y-panel.component.css', note: 'accessibility-panel reset button' },
   // @cngx/ui - command palette
@@ -173,10 +174,6 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
     note: 'slider directive skin; thumb is a visual gauge, not a tap target',
   },
   {
-    file: 'projects/ui/stepper/stepper.component.css',
-    note: 'interactive step already floored by stepper-base.css; the skin min-heights are 52/72px, already >= 44px',
-  },
-  {
     file: 'projects/data-display/treetable/examples/app/app.component.css',
     note: 'demo scaffold inside the lib, not shipped component CSS',
   },
@@ -196,6 +193,45 @@ const ADJACENT_GAP_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
     note: 'multi-chip group row gap',
   },
   { file: 'projects/common/theming/components/cngx-menu.css', note: 'menu adjacent-item spacing' },
+];
+
+// Small targets that reach the WCAG 2.5.8 24px floor on a mouse through their
+// own component token: `max(<host>-target-min, var(--cngx-target-min, 0px))`
+// with a 24px fallback. `--cngx-target-min` must not carry the fine floor: its
+// readers treat a non-zero value as "touch active" (createTouchFloorSignal,
+// the field affix reach, the Material menu row), and the attempt that set it
+// was reverted in 6382e6e84. Chip remove names its token `-target`.
+const FINE_FLOOR_HOSTS: ReadonlyArray<{ file: string; fallback: string; note: string }> = [
+  {
+    file: 'projects/common/display/chip/chip.component.css',
+    fallback: '--cngx-chip-remove-target, 1.5rem)',
+    note: 'chip remove button',
+  },
+  {
+    file: 'projects/forms/select/shared/select-base.css',
+    fallback: '--cngx-select-clear-target-min, 24px)',
+    note: 'select clear button',
+  },
+  {
+    file: 'projects/common/tabs/styles/tabs-base.css',
+    fallback: '--cngx-tab-affordance-target-min, 24px)',
+    note: 'tab close and add buttons',
+  },
+  {
+    file: 'projects/common/data/paginate/styles/paginator-base.css',
+    fallback: '--cngx-paginator-dot-target-min, 24px)',
+    note: 'paginator dot pitch',
+  },
+  {
+    file: 'projects/ui/stepper/stepper.component.css',
+    fallback: '--cngx-dot-step-target-min, 24px)',
+    note: 'mobile step dot pitch',
+  },
+  {
+    file: 'projects/ui/sidenav/sidenav.css',
+    fallback: '--cngx-sidenav-resize-handle-target-min, 24px)',
+    note: 'sidenav resize handle hit zone',
+  },
 ];
 
 // Recursively collect every `.css` under a repo-relative directory, returning
@@ -230,7 +266,7 @@ describe('touch-target size-floor coverage manifest', () => {
     // The registry itself (system-tokens.css) declares the token and is not a
     // consumer, so it is excluded by construction. This count is the coarse net
     // alongside the per-file assertions and the source scan below.
-    expect(SIZE_FLOOR_HOSTS.length).toBe(55);
+    expect(SIZE_FLOOR_HOSTS.length).toBe(56);
   });
 });
 
@@ -252,6 +288,26 @@ describe('touch-target size-floor completeness (source scan)', () => {
         `var(--cngx-target-min, 0px) and enroll it, or add it to EXCLUDED_HOSTS ` +
         `with a one-clause reason.`,
     ).toBe(true);
+  });
+});
+
+describe('fine-pointer 24px floor (WCAG 2.5.8)', () => {
+  it.each(FINE_FLOOR_HOSTS)('$file floors its own token with a 24px fallback ($note)', ({ file, fallback }) => {
+    const css = readRepoCss(file);
+    expect(css).toContain(fallback);
+    expect(css).toContain('var(--cngx-target-min, 0px)');
+  });
+
+  it('keeps every non-zero --cngx-target-min in the coarse-pointer and data-touch="on" blocks', () => {
+    const css = readRepoCss('projects/core/theming/system-tokens.css').replace(/\/\*[^]*?\*\//g, '');
+    const nonZero = [...css.matchAll(/--cngx-target-min:\s*([^;]+);/g)].filter(
+      ([, value]) => value.trim() !== '0px',
+    );
+    const coarse = css.match(/@media \(any-pointer: coarse\)\s*{[^]*?}\s*}/)?.[0] ?? '';
+    const on = css.match(/\[data-touch='on'],\s*\.cngx-touch-on\s*{[^}]+}/)?.[0] ?? '';
+    expect(nonZero).toHaveLength(2);
+    expect(coarse).toContain('--cngx-target-min: 44px');
+    expect(on).toContain('--cngx-target-min: 44px');
   });
 });
 

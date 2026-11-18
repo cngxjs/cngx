@@ -25,7 +25,7 @@ export const STORY: DemoSpec = {
   ] as const;`,
   template: `  <div cngxAccordion class="cngx-accordion" #acc="cngxAccordion" style="max-width:480px">
     @for (item of items; track item.key) {
-      <button cngxAccordionPanel [panelId]="item.key" [controls]="'region-' + item.key">
+      <button cngxAccordionPanel class="cngx-accordion__header" [panelId]="item.key" [controls]="'region-' + item.key">
         {{ item.label }}
       </button>
       <div

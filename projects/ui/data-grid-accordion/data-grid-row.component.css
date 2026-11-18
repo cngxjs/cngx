@@ -30,17 +30,6 @@
    inside it. Still a `subgrid` so the chevron sits in the leading track (track 1); the
    remaining tracks stay empty here and are painted by the cells layer above. */
 .cngx-dga-row__summary {
-  /* The summary carries `cngxAccordionPanel`, so the headless Track-B accordion
-     skin (@cngx/themes cngx.css) would paint its own ::after twisty here. This
-     organism ships its own chevron slot, so suppress the inherited one through
-     the token the Track-B skin exposes for exactly this (accordion-item
-     precedent) - not a blanket ::after reset. */
-  /**
-   * Display of the Track-B accordion skin's `::after` twisty on the row summary. Set to `none` because the row renders its own chevron.
-   * @type <string>
-   * @group Layout
-   */
-  --cngx-accordion-twisty-display: none;
   /* Span every column on grid row 1, painted beneath the cells layer (`z-index: 0`),
      so the trigger is the full-width click target. */
   grid-row: 1;
@@ -48,16 +37,11 @@
   z-index: 0;
   display: grid;
   grid-template-columns: subgrid;
-  /* Match the inner grid's column gap explicitly: the Track-B accordion skin sets its
-     own `column-gap` on the `cngxAccordionPanel` button, which would otherwise shift
-     the subgrid tracks off the header / footer (they inherit the grid gap). */
-  column-gap: var(--cngx-dga-col-gap, 0.5rem);
   align-items: center;
   inline-size: 100%;
   /* Only block padding on the subgrid summary; the inline edges are the chevron track
-     + last-cell padding. Inline padding is forced to 0: the summary carries
-     `cngxAccordionPanel`, and the Track-B accordion skin would otherwise paint its own
-     header-button inline padding here and push the chevron off the leading track. */
+     + last-cell padding. Inline padding is forced to 0 so the button's UA padding does
+     not push the chevron off the leading track. */
   padding-block: var(--cngx-dga-row-py, 0.5rem);
   padding-inline: 0;
   /* Floor the clickable summary-row height to the pointer-derived target on a
