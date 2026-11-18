@@ -162,10 +162,8 @@ const FORCED_COLORS_HARDENED_HOSTS: readonly string[] = [
   // self-heals via its outline, so only the selection state carries a block.
   'projects/data-display/treetable/treetable.component.css',
   // @cngx/ui/command-palette - the keyboard-active command row signals only with
-  // a background tint (re-signalled with Highlight); the palette's elevation
-  // box-shadow drops under WHCM and its border is pinned to CanvasText.
+  // a background tint (re-signalled with Highlight).
   'projects/ui/command-palette/panel/command-panel.component.css',
-  'projects/ui/command-palette/palette/command-palette.component.css',
   // @cngx/ui/context-menu - the popup's elevation box-shadow drops under WHCM but
   // its 1px border self-heals; the forced-colors block re-draws the
   // background-drawn divider hairline that would otherwise collapse to Canvas.
@@ -219,6 +217,10 @@ const EXCLUDED_HOSTS: ReadonlyArray<{ file: string; note: string }> = [
   {
     file: 'projects/ui/feedback/toast/toast-outlet.css',
     note: 'the box-shadow is decorative elevation only; the toast keeps a real 1px border that self-heals, so the shadow loss leaves a visible edge',
+  },
+  {
+    file: 'projects/ui/command-palette/palette/command-palette.component.css',
+    note: 'the box-shadow is decorative elevation only; the palette keeps a real 1px border that self-heals (the dialog skin draws it as ButtonBorder)',
   },
   // @cngx/forms/select (Phase C) - each select variant paints a focus-time glow
   // halo on the invalid trigger with `box-shadow`, forced to `none` under WHCM.
@@ -336,7 +338,7 @@ describe('forced-colors hardened-hosts manifest', () => {
   });
 
   it('fixes the manifest size so a bulk edit dropping several hosts is caught', () => {
-    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(54);
+    expect(FORCED_COLORS_HARDENED_HOSTS.length).toBe(53);
   });
 });
 

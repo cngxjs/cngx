@@ -34,11 +34,15 @@
    * @group Layout
    */
   --cngx-command-state-pad: var(--cngx-space-lg, 1.5rem);
+  /* The dialog skin's 560px cap and both-edges gutter reach this
+     <dialog cngxDialog>; the palette sizes itself through --cngx-command-width. */
+  --cngx-dialog-max-width: 100%;
 
   padding: 0;
   inline-size: var(--cngx-command-width, min(40rem, calc(100vw - 2rem)));
   max-block-size: var(--cngx-command-max-h, min(32rem, calc(100vh - 6rem)));
   overflow: hidden;
+  scrollbar-gutter: auto;
   border: var(--cngx-command-border-width, 1px) solid
     var(--cngx-command-border, var(--cngx-color-border, #e5e7eb));
   border-radius: var(--cngx-command-radius, var(--cngx-radius-lg, 0.75rem));
@@ -58,15 +62,6 @@
 
 .cngx-command-palette::backdrop {
   background: var(--cngx-command-backdrop, rgb(0 0 0 / 0.4));
-}
-
-@media (forced-colors: active) {
-  /* The elevation box-shadow that separates the modal from the page is dropped
-     under WHCM; the solid border carries the separation, so pin it to a system
-     color and keep the retry button's edge visible. */
-  .cngx-command-palette {
-    border-color: CanvasText;
-  }
 }
 
 /* Async-state chrome (skeleton / empty / error). */
