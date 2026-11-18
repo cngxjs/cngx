@@ -172,7 +172,8 @@ entry's `navigateKeysSpoken`, English `'Up and Down arrows'`) is what they hear.
 - Groups render as `role="group"` with `aria-labelledby` pointing at minted,
   panel-unique DOM ids - never raw consumer strings.
 - Forced-colors mode re-signals the active row with the system Highlight pair
-  and keeps the dialog skin's 1px `ButtonBorder` edge on the modal.
+  and keeps a visible 1px edge on the modal (its border self-heals; the dialog
+  skin draws it as `ButtonBorder`).
 
 ## CSS custom properties
 
