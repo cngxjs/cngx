@@ -105,8 +105,9 @@ export interface CngxSelectSheetWiring extends CngxSelectSheetScope {
   /** A pessimistic commit is pending. */
   readonly closeBlocked: Signal<boolean>;
   /**
-   * Bound to `[closeOnEscape]`: off under `dismissOn: 'outside'`, and the
-   * modal sheet blocks Escape while a pessimistic commit is pending.
+   * Bound to `[closeOnEscape]`: off under `dismissOn: 'outside'`, off while
+   * the variant's dismiss guard blocks, and the modal sheet blocks Escape
+   * while a pessimistic commit is pending.
    */
   readonly escapeEnabled: Signal<boolean>;
   /** Bound to `cngxClickOutside [enabled]`: outside a sheet the atom owns the outside tap. */
@@ -218,8 +219,14 @@ export function createSelectSheetWiring(opts: CngxSelectSheetWiringOptions): Cng
     opts.popoverRef()?.hide();
   };
 
+  // The variant's capture listener turns Escape into cancel() only while
+  // focus is inside the host; with focus elsewhere the popover's document
+  // listener would close a guarded panel.
   const escapeEnabled = computed(
-    () => opts.dismissOn !== 'outside' && !(sheetModal() && closeBlocked()),
+    () =>
+      opts.dismissOn !== 'outside' &&
+      !(sheetModal() && closeBlocked()) &&
+      !opts.shouldBlockDismiss?.(),
   );
 
   const escapeClose = (): void => {

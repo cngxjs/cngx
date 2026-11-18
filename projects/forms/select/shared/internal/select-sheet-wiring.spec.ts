@@ -1,4 +1,4 @@
-import { computed, signal } from '@angular/core';
+import { computed, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { CngxListbox } from '@cngx/common/interactive';
 import type {
@@ -15,7 +15,11 @@ import type { CngxSelectCore } from './select-core';
 import { createSelectSheetWiring, type CngxSelectSheetWiring } from './select-sheet-wiring';
 
 function setup(
-  options: { dismiss?: DismissHandler; dismissOn?: 'outside' | 'escape' | 'both' } = {},
+  options: {
+    dismiss?: DismissHandler;
+    dismissOn?: 'outside' | 'escape' | 'both';
+    shouldBlockDismiss?: Signal<boolean>;
+  } = {},
 ) {
   if (options.dismiss) {
     const dismiss = options.dismiss;
@@ -68,6 +72,7 @@ function setup(
       label: signal('Colour'),
       close,
       popupRole: 'listbox',
+      shouldBlockDismiss: options.shouldBlockDismiss,
     }),
   );
   const pend = () => {
@@ -149,6 +154,14 @@ describe('createSelectSheetWiring', () => {
     pend();
     expect(wiring.escapeEnabled()).toBe(true);
     presentation.set('sheet');
+    expect(wiring.escapeEnabled()).toBe(false);
+  });
+
+  it('turns Escape off while the dismiss guard blocks', () => {
+    const blocked = signal(false);
+    const { wiring } = setup({ shouldBlockDismiss: blocked });
+    expect(wiring.escapeEnabled()).toBe(true);
+    blocked.set(true);
     expect(wiring.escapeEnabled()).toBe(false);
   });
 
