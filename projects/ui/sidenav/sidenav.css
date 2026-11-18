@@ -125,13 +125,15 @@
   }
 
   /**
-   * Background of the rail surface.
+   * Background of the rail surface. Unset by default: the reading rules fall
+   * back to `--cngx-color-surface` on the rail itself, so a
+   * `[data-color-scheme]` island around the rail paints its own surface.
    * @group Surface
+   * @see [[--cngx-color-surface]]
    */
   @property --cngx-sidenav-bg {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.97 0.005 250);
   }
 
   /**
@@ -218,14 +220,15 @@
   }
 
   /**
-   * Stroke color of the rail edge border. Falls back through
-   * `--cngx-color-border`.
+   * Stroke color of the rail edge border. Unset by default: the reading rules
+   * fall back to `--cngx-color-border` on the rail itself, so a
+   * `[data-color-scheme]` island around the rail draws its own border.
    * @group Surface
+   * @see [[--cngx-color-border]]
    */
   @property --cngx-sidenav-border-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.89 0 0);
   }
 
   /**
@@ -350,18 +353,15 @@
   }
 
   /*
-   * Default-theme palette pass. The @property `initial-value` shadows
-   * any `var(…)` fallback inside component CSS, so we must explicitly
-   * paint the resolved value at :root for each color-flavoured token.
-   * Rail surface + border delegate to the foundation tokens; the
-   * expanded shadow flips per scheme below. The nav-link tokens are not
-   * here: they are SET on the cngx-sidenav host, so a host-scoped accent
-   * reaches them, and their primary tints follow the scheme through the
-   * surface they composite over, with no per-scheme hook.
+   * Default-theme palette pass for the shadows: the expanded shadow flips per
+   * scheme below. Surface and border are not SET here: a :root SET resolves
+   * the foundation token once at the root and a scheme island would inherit
+   * it; the reading rules fall back on the rail instead. The nav-link tokens
+   * are SET on the cngx-sidenav host, so a host-scoped accent reaches them,
+   * and their primary tints follow the scheme through the surface they
+   * composite over, with no per-scheme hook.
    */
   :root {
-    --cngx-sidenav-bg: var(--cngx-color-surface, oklch(0.97 0.005 250));
-    --cngx-sidenav-border-color: var(--cngx-color-border, oklch(0.89 0 0));
     --cngx-sidenav-expanded-shadow: 4px 0 12px oklch(0 0 0 / 0.1);
     --cngx-sidenav-overlay-shadow: var(--cngx-sidenav-expanded-shadow);
   }
@@ -451,7 +451,10 @@
       transparent
     );
     --cngx-nav-link-focus-outline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
-    --cngx-nav-link-focus-inner-color: var(--cngx-sidenav-bg, oklch(0.97 0.005 250));
+    --cngx-nav-link-focus-inner-color: var(
+      --cngx-sidenav-bg,
+      var(--cngx-color-surface, oklch(0.97 0.005 250))
+    );
     --cngx-nav-link-active-indicator-color: var(
       --cngx-color-primary-text,
       oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.54 c h)
@@ -467,7 +470,7 @@
     overflow: hidden;
     z-index: 2;
     width: var(--cngx-sidenav-width, 280px);
-    background: var(--cngx-sidenav-bg, oklch(0.97 0.005 250));
+    background: var(--cngx-sidenav-bg, var(--cngx-color-surface, oklch(0.97 0.005 250)));
     color: var(--cngx-sidenav-color, inherit);
     transition:
       width var(--cngx-sidenav-transition-duration, 0.25s)
