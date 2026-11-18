@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, ViewEncapsulation, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -96,5 +96,42 @@ describe('CngxAccordionItem chevron direction', () => {
 
     document.documentElement.dir = 'rtl';
     expect(computedValue(expanded, 'transform')).toBe(ROTATE_NEG_225);
+  });
+});
+
+// The common accordion skin is class opt-in. The item header carries
+// `cngxAccordionPanel` but not `.cngx-accordion__header`, so with the skin loaded
+// it gets no `::after` twisty; a class-opted probe in the same sheet does.
+@Component({
+  selector: 'cngx-accordion-skin-opt-in-host',
+  standalone: true,
+  imports: [CngxAccordionGroup, CngxAccordionItem, CngxAccordionItemTitle],
+  styleUrls: ['../../common/theming/components/cngx-accordion.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <button type="button" class="cngx-accordion__header probe-opted-in">Probe</button>
+    <cngx-accordion-group>
+      <cngx-accordion-item panelId="a">
+        <span cngxAccordionItemTitle>A</span>
+        Body A
+      </cngx-accordion-item>
+    </cngx-accordion-group>
+  `,
+})
+class AccordionSkinOptInHost {}
+
+describe('CngxAccordionItem and the class opt-in accordion skin', () => {
+  it('paints no skin twisty on the item header, only on a class-opted header', () => {
+    const fixture = TestBed.createComponent(AccordionSkinOptInHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const probe = mountedRoot.querySelector('.probe-opted-in');
+    const header = mountedRoot.querySelector('.cngx-accordion-item__header');
+    if (!probe || !header) {
+      throw new Error('probe or item header missing');
+    }
+    expect(getComputedStyle(probe, '::after').content).toBe('""');
+    expect(getComputedStyle(header, '::after').content).toBe('none');
   });
 });
