@@ -18,6 +18,11 @@
 @use '../../../../projects/themes/material/bottom-sheet-theme.scss' as bottom-sheet;
 @use '../../../../projects/themes/material/sidenav-theme.scss' as sidenav;
 @use '../../../../projects/themes/material/nav-rail-theme.scss' as nav-rail;
+@use '../../../../projects/themes/material/paginator-theme.scss' as paginator;
+@use '../../../../projects/themes/material/stepper-theme.scss' as stepper;
+@use '../../../../projects/themes/material/tabs-theme.scss' as tabs;
+@use '../../../../projects/themes/material/breadcrumb-theme.scss' as breadcrumb;
+@use '../../../../projects/themes/material/data-grid-accordion-theme.scss' as dga;
 @use '../../../../projects/themes/material/density-bridge.scss' as cngx-density;
 
 $palette: (
@@ -77,6 +82,12 @@ html {
   // rail adds its surface, flyout and metrics, as in the aggregate theme.
   @include sidenav.theme($theme);
   @include nav-rail.surface($theme);
+  @include paginator.theme($theme);
+  @include stepper.theme($theme);
+  @include tabs.theme($theme);
+  @include breadcrumb.theme($theme);
+  @include dga.theme($theme);
+  @include dga.skins($theme);
 }
 
 // M2 field pairs: the cngx fill field next to mat-form-field appearance="fill",
@@ -177,6 +188,13 @@ $m2-dark: mat.m2-define-dark-theme((color: $m2-color));
 
 .lab section.lab-wide {
   width: auto;
+}
+
+// Container-query organisms (stepper, paginator, breadcrumb, tabs, data grid)
+// have no intrinsic width: a shrink-to-fit section collapses them to their
+// mobile layout. These rows take the full lab width instead.
+.lab section.lab-full {
+  width: 100%;
 }
 
 .lab-row {

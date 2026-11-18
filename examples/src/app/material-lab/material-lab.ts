@@ -26,6 +26,10 @@ import { MatListModule } from '@angular/material/list';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatBottomSheet, type MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatSnackBar, MatSnackBarModule, type MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatTabsModule } from '@angular/material/tabs';
+import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 
 import {
   CngxButton,
@@ -95,6 +99,23 @@ import {
   CngxInputClear,
   CngxAutosize,
 } from '@cngx/forms/input';
+import { CngxStep, CngxStepContent } from '@cngx/common/stepper';
+import { CngxTab, CngxTabContent } from '@cngx/common/tabs';
+import { CngxBreadcrumbBar } from '@cngx/ui/breadcrumb';
+import {
+  CngxDataGridAccordion,
+  CngxDataGridHeader,
+  CngxDataGridRow,
+  CngxDgCell,
+} from '@cngx/ui/data-grid-accordion';
+import {
+  CngxPaginator,
+  CngxPaginatorNext,
+  CngxPaginatorPages,
+  CngxPaginatorPrev,
+} from '@cngx/ui/paginator';
+import { CngxDotStepper, CngxStepper } from '@cngx/ui/stepper';
+import { CngxTabGroup } from '@cngx/ui/tabs';
 import type { CngxTreeNode } from '@cngx/utils';
 
 /**
@@ -155,7 +176,9 @@ interface FieldModel {
   encapsulation: ViewEncapsulation.None,
   // Component-scoped banner stack so the dismissible banner renders inside the
   // lab section (its own outlet) instead of the app-level outlet at the top.
-  providers: [CngxBanner],
+  // showError makes mat-stepper paint the errored step, the twin of the cngx
+  // error chip.
+  providers: [CngxBanner, { provide: STEPPER_GLOBAL_OPTIONS, useValue: { showError: true } }],
   viewProviders: [provideButtonCaretIcon(MaterialLabCaret)],
   imports: [
     FormsModule,
@@ -206,6 +229,25 @@ interface FieldModel {
     CngxAccordionGroup,
     CngxAccordionItem,
     CngxAccordionItemTitle,
+    MatPaginatorModule,
+    MatStepperModule,
+    MatTabsModule,
+    CngxPaginator,
+    CngxPaginatorPrev,
+    CngxPaginatorPages,
+    CngxPaginatorNext,
+    CngxStepper,
+    CngxDotStepper,
+    CngxStep,
+    CngxStepContent,
+    CngxTabGroup,
+    CngxTab,
+    CngxTabContent,
+    CngxBreadcrumbBar,
+    CngxDataGridAccordion,
+    CngxDataGridHeader,
+    CngxDataGridRow,
+    CngxDgCell,
     CngxSelect,
     CngxMultiSelect,
     CngxCombobox,
@@ -646,6 +688,129 @@ interface FieldModel {
             Two-year limited warranty.
           </mat-expansion-panel>
         </mat-accordion>
+      </section>
+
+      <section class="lab-full">
+        <h3>paginator (current page)</h3>
+        <cngx-paginator
+          class="probe-cngx"
+          aria-label="cngx paginator"
+          [total]="120"
+          [pageSize]="10"
+          [pageIndex]="labPage()"
+          (pageIndexChange)="labPage.set($event)"
+        >
+          <cngx-pgn-prev />
+          <cngx-pgn-pages />
+          <cngx-pgn-next />
+        </cngx-paginator>
+
+        <mat-paginator
+          class="probe-mat"
+          aria-label="Material paginator"
+          [length]="120"
+          [pageSize]="10"
+          [hidePageSize]="true"
+          [pageIndex]="labPage()"
+          (page)="labPage.set($event.pageIndex)"
+        />
+      </section>
+
+      <section class="lab-full">
+        <h3>stepper (errored step)</h3>
+        <cngx-stepper class="probe-cngx" aria-label="cngx stepper" [(activeStepIndex)]="labStep">
+          <div cngxStep label="Address">
+            <ng-template cngxStepContent><p>Address panel.</p></ng-template>
+          </div>
+          <div cngxStep label="Payment" error="Card declined">
+            <ng-template cngxStepContent><p>Payment panel.</p></ng-template>
+          </div>
+          <div cngxStep label="Review">
+            <ng-template cngxStepContent><p>Review panel.</p></ng-template>
+          </div>
+        </cngx-stepper>
+        <cngx-stepper skin="chips" aria-label="cngx stepper chips" [(activeStepIndex)]="labStep">
+          <div cngxStep label="Address">
+            <ng-template cngxStepContent><p>Address panel.</p></ng-template>
+          </div>
+          <div cngxStep label="Payment" error="Card declined">
+            <ng-template cngxStepContent><p>Payment panel.</p></ng-template>
+          </div>
+          <div cngxStep label="Review">
+            <ng-template cngxStepContent><p>Review panel.</p></ng-template>
+          </div>
+        </cngx-stepper>
+
+        <mat-stepper class="probe-mat" [selectedIndex]="labStep()" (selectionChange)="labStep.set($event.selectedIndex)">
+          <mat-step label="Address"><p>Address panel.</p></mat-step>
+          <mat-step label="Payment" [hasError]="true" errorMessage="Card declined">
+            <p>Payment panel.</p>
+          </mat-step>
+          <mat-step label="Review"><p>Review panel.</p></mat-step>
+        </mat-stepper>
+      </section>
+
+      <section class="lab-full">
+        <h3>dot stepper (error dot, cngx only)</h3>
+        <cngx-dot-stepper [(activeStepIndex)]="labDot" aria-label="cngx dot stepper">
+          <div cngxStep label="Slide 1"></div>
+          <div cngxStep label="Slide 2"></div>
+          <div cngxStep label="Slide 3" error="This slide is unavailable"></div>
+          <div cngxStep label="Slide 4"></div>
+        </cngx-dot-stepper>
+      </section>
+
+      <section class="lab-full">
+        <h3>tabs (active pill)</h3>
+        <cngx-tab-group class="probe-cngx" skin="pill" aria-label="cngx tabs" [(activeIndex)]="labTab">
+          <div cngxTab [label]="'Overview'">
+            <ng-template cngxTabContent><p>Overview content.</p></ng-template>
+          </div>
+          <div cngxTab [label]="'Activity'">
+            <ng-template cngxTabContent><p>Activity content.</p></ng-template>
+          </div>
+          <div cngxTab [label]="'Settings'">
+            <ng-template cngxTabContent><p>Settings content.</p></ng-template>
+          </div>
+        </cngx-tab-group>
+
+        <mat-tab-group class="probe-mat" [selectedIndex]="labTab()" (selectedIndexChange)="labTab.set($event)">
+          <mat-tab label="Overview"><p>Overview content.</p></mat-tab>
+          <mat-tab label="Activity"><p>Activity content.</p></mat-tab>
+          <mat-tab label="Settings"><p>Settings content.</p></mat-tab>
+        </mat-tab-group>
+      </section>
+
+      <section class="lab-full">
+        <h3>breadcrumb (current crumb, cngx only)</h3>
+        <cngx-breadcrumb [items]="labCrumbs" skin="pill" label="Pill breadcrumb" />
+        <cngx-breadcrumb [items]="labCrumbs" skin="ribbon" label="Ribbon breadcrumb" />
+      </section>
+
+      <section class="lab-full">
+        <h3>data-grid-accordion spreadsheet (open row, cngx only)</h3>
+        <cngx-data-grid-accordion
+          [skin]="'spreadsheet'"
+          columns="28px 1fr 11ch"
+          [multi]="true"
+          [headingLevel]="4"
+          [(openIds)]="labDgaOpen"
+        >
+          <cngx-dga-header>
+            <span cngxDgaCell>Item</span>
+            <span cngxDgaCell align="end">Stock</span>
+          </cngx-dga-header>
+          <cngx-dga-row panelId="lab-row-1">
+            <span cngxDgaCell primary>Aluminium profile 40x40</span>
+            <span cngxDgaCell align="end">1,240</span>
+            Framework contract with volume pricing.
+          </cngx-dga-row>
+          <cngx-dga-row panelId="lab-row-2">
+            <span cngxDgaCell primary>Linear guide HGR-15</span>
+            <span cngxDgaCell align="end">86</span>
+            Below minimum stock, order in transit.
+          </cngx-dga-row>
+        </cngx-data-grid-accordion>
       </section>
 
       <section>
@@ -1108,6 +1273,16 @@ export class MaterialLab {
   protected readonly singleValue = signal<string | undefined>(undefined);
   protected readonly sliderValue = signal<number>(40);
   protected readonly rangeValue = signal<[number, number]>([200, 800]);
+  protected readonly labPage = signal(3);
+  protected readonly labStep = signal(2);
+  protected readonly labDot = signal(0);
+  protected readonly labTab = signal(1);
+  protected readonly labCrumbs = [
+    { label: 'Home', href: '#/' },
+    { label: 'Catalog', href: '#/material-lab' },
+    { label: 'The Hobbit' },
+  ];
+  protected readonly labDgaOpen = signal<ReadonlySet<string>>(new Set(['lab-row-2']));
   protected readonly multiValues = signal<string[]>(['red', 'green']);
   protected readonly typeaheadValue = signal<string | undefined>(undefined);
   protected readonly comboboxValues = signal<string[]>([]);
