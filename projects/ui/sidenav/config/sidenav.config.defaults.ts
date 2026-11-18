@@ -34,8 +34,8 @@ export const CNGX_SIDENAV_DEFAULTS: CngxSidenavConfig = {
     enterDelay: 120,
     leaveDelay: 0,
   },
-  // Empty so an un-configured consumer keeps the `'nav'` literal the directive
-  // resolves at its use-site - byte-identical to no config.
+  // Empty so an un-configured consumer keeps the `'nav'` / `'nav-end'` literals
+  // the directive resolves per position - byte-identical to no config.
   routerSync: {},
 };
 

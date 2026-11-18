@@ -58,11 +58,12 @@ export interface CngxSidenavConfig {
    * URL query-param sync defaults for `[cngxSidenavRouterSync]`. A one-level
    * nested sub-tree (spread-merged per key in the config reducer). Wired via
    * `withSidenavRouterSync(...)`; the directive resolves `param` as
-   * `[param] ?? routerSync.param ?? 'nav'`, so an un-configured consumer keeps
-   * the `'nav'` literal.
+   * `[param] ?? routerSync.param ?? 'nav'` (`'nav-end'` on a `position="end"`
+   * rail), so an un-configured consumer keeps the literals. A param set here
+   * applies to every rail; a two-rail layout binds `[param]` on one of them.
    */
   readonly routerSync?: {
-    /** Query-param key the sidenav's `opened` state syncs to. Defaults to `'nav'`. */
+    /** Query-param key the sidenav's `opened` state syncs to. Defaults to `'nav'`, `'nav-end'` on an end rail. */
     readonly param?: string;
   };
 

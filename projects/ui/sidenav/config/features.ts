@@ -62,7 +62,8 @@ export function withSidenavHoverDwell(
 /**
  * Set the app-wide default query-param key for `[cngxSidenavRouterSync]` - the
  * param the sidenav's `opened` state deep-links to. Per-instance `[param]`
- * still wins; the `'nav'` literal applies when neither is set.
+ * still wins; when neither is set, a start rail uses `'nav'` and an end rail
+ * `'nav-end'`.
  *
  * ```ts
  * provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }));
