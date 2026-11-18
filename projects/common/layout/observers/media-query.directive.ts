@@ -30,6 +30,7 @@ import { observeMediaQuery } from '@cngx/core/utils';
  * @since 0.1.0
  * @relatedTo CngxResizeObserver, CngxIntersectionObserver
  * <example-url>/#/common/layout/media-query/viewport-breakpoints</example-url>
+ * <example-url>/#/ui/breadcrumb/recipes/mobile-parent-only</example-url>
  * @axis level atom
  */
 @Directive({
