@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue, contrastRatio, parkPointer } from '@cngx/testing/geometry';
+import { computedValue, contrastRatio, parkPointer, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
@@ -115,6 +115,21 @@ describe('CngxDrawer scrim geometry (Track-B)', () => {
 })
 class BadgeHost {}
 
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./cngx-badge.css'],
+  template: `
+    <div class="badges">
+      <span class="cngx-badge-indicator cngx-badge-indicator--primary badge-default">1</span>
+      <div style="--cngx-color-primary: oklch(0.55 0.15 250)">
+        <span class="cngx-badge-indicator cngx-badge-indicator--primary badge-branded">2</span>
+      </div>
+    </div>
+  `,
+})
+class PrimaryBadgeHost {}
+
 describe('CngxBadge geometry (Track-B)', () => {
   it('centres the count in a corner-anchored pill', () => {
     const host = mount(BadgeHost, '.cngx-badge-indicator');
@@ -135,6 +150,17 @@ describe('CngxBadge geometry (Track-B)', () => {
     // Single self-contained count (`"99+"`); isolate fences the bidi boundary
     // without forcing a direction, so RTL-locale digits keep their own order.
     expect(computedValue(host, 'unicode-bidi')).toBe('isolate');
+  });
+
+  // The primary variant falls back to the primary at the use site; a
+  // registered initial-value would shadow that fallback and paint Ember under
+  // any brand.
+  it('paints the primary variant with the primary in scope', () => {
+    const root = mount(PrimaryBadgeHost, '.badges');
+    const fill = (selector: string): string =>
+      computedValue(root.querySelector(selector) as HTMLElement, 'background-color');
+    expect(rasterise(fill('.badge-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
+    expect(rasterise(fill('.badge-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
   });
 });
 

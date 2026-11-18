@@ -214,7 +214,6 @@
   @property --cngx-chip-focus-outline {
     syntax: '*';
     inherits: false;
-    initial-value: 2px solid oklch(0.66 0.19 50);
   }
 
   /**
@@ -361,9 +360,8 @@
    * @group State / Remove
    */
   @property --cngx-chip-remove-focus-color {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.66 0.19 50);
   }
 
   /**

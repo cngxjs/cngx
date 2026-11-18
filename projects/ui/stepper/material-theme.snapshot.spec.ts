@@ -236,3 +236,27 @@ $theme: mat.define-theme((
     });
   });
 });
+
+describe('stepper Material bridge density', () => {
+  // The step pads with the shorthand, the vertical connector rail and the
+  // group indent read the inline token: both have to carry the same inline
+  // value at every scale.
+  for (const scale of [0, -2, -4]) {
+    it(`sets the inline padding token to the shorthand's inline value at scale ${scale}`, () => {
+      const css = compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/stepper-theme' as stepper;
+
+$theme: mat.define-theme((density: (scale: ${scale})));
+
+.cngx-stepper-test {
+  @include stepper.density($theme);
+}
+`);
+      const declarations = parseCustomPropertyDeclarations(css);
+      const inline = declarations['--cngx-step-padding'].split(' ')[1];
+      expect(inline).toBeTruthy();
+      expect(declarations['--cngx-step-padding-inline']).toBe(inline);
+    });
+  }
+});
