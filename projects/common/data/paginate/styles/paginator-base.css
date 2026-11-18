@@ -409,6 +409,8 @@
    * column count and cell size are tokens so a consumer can widen the grid.
    */
   .cngx-paginator__overflow-panel {
+    /* The highlighted cell is the grid's focus indicator. */
+    --cngx-listbox-focus-outline-width: 0;
     margin: 0;
     padding: var(--cngx-paginator-panel-padding, 0.25rem);
     list-style: none;
@@ -434,17 +436,6 @@
     justify-content: center;
     min-block-size: max(var(--cngx-paginator-overflow-cell-size, 2rem), var(--cngx-target-min, 0px));
     padding: var(--cngx-paginator-overflow-cell-padding, 0);
-  }
-
-  /*
-   * The grid panel is the roving focus host (tabindex=0); the visible focus
-   * indicator is the highlighted cell (`.cngx-menu-item--highlighted`), so the
-   * container's own UA outline is suppressed - otherwise it frames the whole
-   * popover.
-   */
-  .cngx-paginator__overflow-panel:focus,
-  .cngx-paginator__overflow-panel:focus-visible {
-    outline: none;
   }
 
   /*
