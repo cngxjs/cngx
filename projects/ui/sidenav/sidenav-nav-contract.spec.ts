@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CngxNavBadge, CngxNavGroup, CngxNavLabel, CngxNavLink } from '@cngx/common/interactive';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -24,6 +24,19 @@ import { CngxSidenav } from './sidenav';
   imports: [CngxSidenav, CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge],
 })
 class ContractHost {}
+
+@Component({
+  template: `
+    <cngx-sidenav mode="side" [role]="role()" [ariaLabel]="label()">
+      <a cngxNavLink href="#dashboard">Dashboard</a>
+    </cngx-sidenav>
+  `,
+  imports: [CngxSidenav, CngxNavLink],
+})
+class LandmarkHost {
+  readonly role = signal<string | null | undefined>(undefined);
+  readonly label = signal<string | undefined>(undefined);
+}
 
 describe('CngxSidenav nav-class contract', () => {
   afterEach(() => vi.restoreAllMocks());
@@ -69,5 +82,43 @@ describe('CngxSidenav nav-class contract', () => {
     const badge = host.querySelector('[cngxNavBadge]') as HTMLElement;
     expect(badge).not.toBeNull();
     expect(badge.classList.contains('cngx-nav-badge')).toBe(true);
+  });
+});
+
+describe('CngxSidenav landmark', () => {
+  function setup() {
+    const fixture = TestBed.createComponent(LandmarkHost);
+    fixture.detectChanges();
+    const rail = (fixture.nativeElement as HTMLElement).querySelector(
+      'cngx-sidenav',
+    ) as HTMLElement;
+    const set = (fn: (host: LandmarkHost) => void) => {
+      fn(fixture.componentInstance);
+      fixture.detectChanges();
+    };
+    return { rail, set };
+  }
+
+  it('is one navigation landmark named by position, without a nested nav element', () => {
+    const { rail } = setup();
+    expect(rail.getAttribute('role')).toBe('navigation');
+    expect(rail.getAttribute('aria-label')).toBe('Navigation');
+    expect(rail.querySelectorAll('nav, [role="navigation"]').length).toBe(0);
+  });
+
+  it('keeps a bound aria-label on the navigation landmark', () => {
+    const { rail, set } = setup();
+    set((h) => h.label.set('Main'));
+    expect(rail.getAttribute('role')).toBe('navigation');
+    expect(rail.getAttribute('aria-label')).toBe('Main');
+  });
+
+  it('lets a consumer role win and drops it again when unbound', () => {
+    const { rail, set } = setup();
+    set((h) => h.role.set('complementary'));
+    expect(rail.getAttribute('role')).toBe('complementary');
+    expect(rail.getAttribute('aria-label')).toBe('Navigation');
+    set((h) => h.role.set(undefined));
+    expect(rail.getAttribute('role')).toBe('navigation');
   });
 });

@@ -2,6 +2,7 @@ import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { escapeOwnedAbove } from '../drawer/escape-layer';
 import { provideLayoutI18n, withLayoutI18nLabels } from '../i18n/layout-i18n';
 import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
 import {
@@ -22,10 +23,12 @@ import {
       [collapsedAs]="collapsedAs()"
       [expandOnHover]="expandOnHover()"
       [label]="label()"
+      [role]="role()"
       [side]="side()"
       [expandDelay]="50"
     >
       <a href="#a" class="inside">Inbox</a>
+      <div popover="manual" class="menu"><button type="button" class="menu-item">Item</button></div>
     </aside>
     <button type="button" class="outside">Outside</button>
   `,
@@ -36,6 +39,7 @@ class Host {
   readonly collapsedAs = signal<CngxSidebarCollapsedAs>('rail');
   readonly expandOnHover = signal(true);
   readonly label = signal<string | undefined>(undefined);
+  readonly role = signal<string | null | undefined>(undefined);
   readonly side = signal<CngxSidebarSide>('start');
 }
 
@@ -80,6 +84,17 @@ describe('CngxSidebar', () => {
         provideLayoutI18n(withLayoutI18nLabels({ sidebarRegion: 'Seitenleiste' })),
       ]);
       expect(el.getAttribute('aria-label')).toBe('Seitenleiste');
+    });
+
+    it('drops the i18n name off complementary, a bound label stays', () => {
+      const { el, sidebar, set } = setup();
+      expect(sidebar.role()).toBe('complementary');
+      set((h) => h.role.set('navigation'));
+      expect(el.getAttribute('role')).toBe('navigation');
+      expect(el.hasAttribute('aria-label')).toBe(false);
+      expect(sidebar.label()).toBeUndefined();
+      set((h) => h.label.set('Filters'));
+      expect(el.getAttribute('aria-label')).toBe('Filters');
     });
 
     it('keeps a static id and drops the role for null', () => {
@@ -289,6 +304,23 @@ describe('CngxSidebar', () => {
       expect(sidebar.peeked()).toBe(false);
     });
 
+    it('leaves the first Escape to an open popover inside the peek', () => {
+      const { q, sidebar, set } = setup();
+      set((h) => h.collapsed.set(true));
+      sidebar.peek();
+      const open = vi
+        .spyOn(q('.menu'), 'matches')
+        .mockImplementation((selector) => selector === ':popover-open');
+      q('.menu-item').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(sidebar.peeked()).toBe(true);
+
+      open.mockReturnValue(false);
+      const second = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+      q('.inside').dispatchEvent(second);
+      expect(sidebar.peeked()).toBe(false);
+      expect(escapeOwnedAbove(second, document.body)).toBe(true);
+    });
+
     it('ends a hover peek on Escape while focus sits outside the host', () => {
       const { el, q, sidebar, set, fixture } = setup();
       set((h) => h.collapsed.set(true));
@@ -462,6 +494,18 @@ describe('CngxSidebar driver', () => {
     expect(el.getAttribute('data-sidebar-state')).toBe('expanded');
     expect(el.hasAttribute('inert')).toBe(true);
     expect(el.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('leaves the Escape of a driven peek unclaimed for the composer', () => {
+    const { el, driver, sidebar, flush } = setupDriven();
+    driver.forcedCollapsed.set(true);
+    driver.forcedPeek.set(true);
+    flush();
+    expect(sidebar.peeked()).toBe(true);
+    const escape = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+    el.dispatchEvent(escape);
+    expect(escapeOwnedAbove(escape, document.body)).toBe(false);
+    expect(sidebar.peeked()).toBe(true);
   });
 
   it('names the region with the driven label', () => {

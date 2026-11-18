@@ -64,7 +64,8 @@ export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_S
 
 /**
  * Storage backend of `withSidenavPersistence()`. Defaults to the browser
- * `localStorage`, `null` on the server (nothing is persisted). Override it to
+ * `localStorage`, `null` on the server or where the browser blocks storage
+ * (nothing is persisted). Override it to
  * persist elsewhere (`sessionStorage`, a server-backed `Storage` shim):
  *
  * ```ts
@@ -77,5 +78,14 @@ export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_S
  */
 export const CNGX_SIDENAV_STORAGE = new InjectionToken<Storage | null>('CNGX_SIDENAV_STORAGE', {
   providedIn: 'root',
-  factory: () => inject(DOCUMENT).defaultView?.localStorage ?? null,
+  factory: () => {
+    // A blocked localStorage (privacy mode, a sandboxed iframe) throws a
+    // SecurityError on access; persistence then turns off instead of
+    // failing the rail's construction.
+    try {
+      return inject(DOCUMENT).defaultView?.localStorage ?? null;
+    } catch {
+      return null;
+    }
+  },
 });

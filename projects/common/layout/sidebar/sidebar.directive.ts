@@ -22,6 +22,7 @@ import {
 } from '@cngx/common/interactive';
 import { nextUid } from '@cngx/core/utils';
 
+import { claimEscape, escapeOwnedAbove } from '../drawer/escape-layer';
 import { injectLayoutI18n } from '../i18n/layout-i18n';
 import {
   CNGX_PANEL_TARGET,
@@ -72,6 +73,8 @@ export interface CngxSidebarDriver {
   readonly sidebarConcealed?: Signal<boolean>;
   /** Accessible name; wins over `[label]` and the i18n fallback. */
   readonly sidebarLabel?: Signal<string>;
+  /** Landmark role the sidebar renders while no `[role]` is bound. */
+  readonly sidebarRole?: Signal<string | null>;
 }
 
 /** @internal See {@link CngxSidebarDriver}. */
@@ -143,7 +146,7 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
   host: {
     '[attr.id]': 'id()',
     '[attr.role]': 'role()',
-    '[attr.aria-label]': 'label()',
+    '[attr.aria-label]': 'label() ?? null',
     '[attr.inert]': "concealed() ? '' : null",
     '[attr.aria-hidden]': "concealed() ? 'true' : null",
     '[attr.data-sidebar-state]': 'state()',
@@ -152,7 +155,7 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
     '[style.margin-inline-end]': "side() === 'start' ? peekOffset() : null",
     '[style.margin-inline-start]': "side() === 'end' ? peekOffset() : null",
     '[style.z-index]': "peeked() ? 'var(--cngx-sidebar-peek-z-index, 2)' : null",
-    '(keydown.escape)': 'handleEscape()',
+    '(keydown.escape)': 'handleEscape($event)',
     '(focusout)': 'handleFocusOut($event)',
   },
 })
@@ -186,8 +189,11 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
    * Landmark role. Defaults to `complementary`; pass `navigation` for a nav
    * sidebar, or `null` on a `<nav>` / `<aside>` host to keep its implicit role.
    */
-  readonly role = input<string | null>('complementary');
-  /** Accessible name of the region. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`. */
+  readonly roleInput = input<string | null | undefined>(undefined, { alias: 'role' });
+  /**
+   * Accessible name of the region. Falls back to `CNGX_LAYOUT_I18N.sidebarRegion`
+   * while the role is `complementary`.
+   */
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
   private readonly hover = inject(CngxHoverIntent, { self: true });
@@ -256,22 +262,36 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
     return this.peeked() ? 'peek' : this.restAs();
   });
 
+  /**
+   * The rendered landmark role: the bound `role` (`null` keeps the host's
+   * implicit role), else the composer's, else `complementary`.
+   */
+  readonly role = computed(() => {
+    const bound = this.roleInput();
+    if (bound !== undefined) {
+      return bound;
+    }
+    return this.driver()?.sidebarRole?.() ?? 'complementary';
+  });
+
   protected readonly concealed = computed(
     () => this.state() === 'hidden' || (this.driver()?.sidebarConcealed?.() ?? false),
   );
   /**
    * {@link CngxPanelTarget}: the region's resolved accessible name, the bound
-   * `label` or `CNGX_LAYOUT_I18N.sidebarRegion`. An icon-only trigger takes
-   * it as its name.
+   * `label`, else `CNGX_LAYOUT_I18N.sidebarRegion` while the role is
+   * `complementary` (a `navigation` landmark announces its role already). An
+   * icon-only trigger takes it as its name.
    */
-  readonly label = computed(() => {
+  readonly label = computed<string | undefined>(() => {
     // A composer that names the region itself wins outright; its own
     // cascade already resolved input, config and copy.
     const driven = this.driver()?.sidebarLabel;
     if (driven) {
       return driven();
     }
-    return this.labelInput() ?? this.i18n().sidebarRegion;
+    const fallback = this.role() === 'complementary' ? this.i18n().sidebarRegion : undefined;
+    return this.labelInput() ?? fallback;
   });
 
   protected readonly inlineSize = computed(() => {
@@ -383,10 +403,18 @@ export class CngxSidebar implements CngxPanelTarget, CngxHoverIntentDriver {
     return ids.includes(this.id());
   }
 
-  protected handleEscape(): void {
-    if (this.peeked()) {
-      this.unpeek();
+  // One Escape dismisses one layer: an open popover inside the host or an
+  // inner surface goes first. A driven peek is the composer's to dismiss, so
+  // its Escape stays unclaimed for the composer's own surface.
+  protected handleEscape(event: Event): void {
+    if (!this.peeked() || escapeOwnedAbove(event, this.host)) {
+      return;
     }
+    if (this.driver()?.sidebarPeek?.()) {
+      return;
+    }
+    claimEscape(event);
+    this.unpeek();
   }
 
   protected handleFocusOut(event: FocusEvent): void {

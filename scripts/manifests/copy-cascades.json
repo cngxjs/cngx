@@ -283,22 +283,6 @@
       ]
     },
     {
-      "class": "CngxSidebar",
-      "file": "projects/common/layout/sidebar/sidebar.directive.ts",
-      "line": 274,
-      "member": "label",
-      "enclosing": "computed",
-      "tiers": [
-        { "kind": "input", "field": "labelInput" },
-        {
-          "kind": "bundle",
-          "field": "i18n",
-          "path": ["sidebarRegion"],
-          "token": "CNGX_LAYOUT_I18N"
-        }
-      ]
-    },
-    {
       "class": "CngxExpandableText",
       "file": "projects/common/layout/text/expandable-text.ts",
       "line": 152,
@@ -1038,7 +1022,7 @@
     {
       "class": "CngxSidenav",
       "file": "projects/ui/sidenav/sidenav.ts",
-      "line": 319,
+      "line": 321,
       "member": "resolvedResizeLabel",
       "enclosing": "computed",
       "tiers": [
