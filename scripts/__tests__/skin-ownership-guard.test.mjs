@@ -4,10 +4,12 @@
 //     never by a directive attribute (`[cngxMenu]`): a host directive writes
 //     no attribute, so an attribute-keyed skin reaches only the templates that
 //     spell it out, and the organisms among them have to compensate. An
-//     attribute selector passes inside `:where()` (a zero-specificity UA reset
-//     every owner beats; the guard cannot tell a reset from paint, review
-//     can), with a top-level class in its compound or in a compound before it,
-//     or inside `@scope (<class>)`.
+//     attribute selector passes in a compound with a top-level cngx class
+//     (the element itself opted in) or inside `:where()` (a zero-specificity
+//     UA reset every owner beats; the guard cannot tell a reset from paint,
+//     review can). A class on an ancestor or an `@scope (<class>)` root does
+//     not opt the element in: an organism inside the opted-in container
+//     still carries the attribute.
 // S1  a skin (`projects/*/theming/components/*.css`) or a ui component
 //     stylesheet (`projects/ui/**/*.css`) selects only its own classes and the
 //     classes of lower-level or imported entries. It fails on a class whose
@@ -24,8 +26,8 @@
 //     contract runs on).
 // S6  an exception lives only as a row of SKIN_OPT_IN_EXEMPT,
 //     SKIN_OWNERSHIP_EXEMPT or STORY_OWNERSHIP_EXEMPT, with exact counts and a
-//     reason. A row whose
-//     hits are gone fails as stale, so the ratchet only shrinks.
+//     reason. A row whose hits are gone fails as stale, so the ratchet only
+//     shrinks.
 //
 // Class owner: the entry whose non-spec, comment-stripped TS/HTML writes the
 // class literal (`host` class, `[class.x]`, `classList.*(...)` args, template
@@ -48,9 +50,11 @@
 // to (...)` preludes are.
 //
 // Known limits: nesting (`&`) is not resolved against the parent rule, so a
-// foreign class nested under an own class is judged on its own. A class built
-// at runtime from a template string (`'cngx-' + x`) has no literal writer and
-// reads as unowned when a stylesheet selects it.
+// foreign class nested under an own class is judged on its own (S1), and a
+// nested `&[cngxX]` under a class rule fails although `&` puts the class in
+// its compound (S0). A class inside `:is()` does not opt an attribute in. A class
+// built at runtime from a template string (`'cngx-' + x`) has no literal
+// writer and reads as unowned when a stylesheet selects it.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -82,8 +86,7 @@ const CONTEXT_AXIS = /^cngx-(density|text-scale|motion|contrast|touch)(-|$)/;
  */
 const SKIN_OWNERSHIP_EXEMPT = [];
 
-// Reasons from the 2026-11-18 leak check: which library templates write the
-// attribute and what the skin does there.
+// Which library templates write the attribute and what the skin does there.
 const OPT_IN_REASON = {
   breadcrumb:
     'CngxBreadcrumbBar writes the attributes; the link font-size reaching it is under review',
@@ -440,69 +443,61 @@ const SKIPPED_AT_RULE =
 
 /**
  * Every rule prelude of a stylesheet with its offset: selector lists of style
- * rules plus the parenthesised parts of `@scope` (`limit` marks the `to (...)`
- * part). `scopes` holds the root selectors of the enclosing `@scope` rules.
- * Declaration values never reach a prelude.
+ * rules plus the parenthesised parts of `@scope`. Declaration values never
+ * reach a prelude.
  */
 function preludes(css) {
   const out = [];
-  const roots = [];
-  const re = /([^{};]*)([{};])/g;
+  const re = /([^{};]+)\{/g;
   let m;
   while ((m = re.exec(css))) {
-    if (m[2] === '}') {
-      roots.pop();
-      continue;
-    }
-    if (m[2] === ';') {
-      continue;
-    }
     const raw = m[1];
     const lead = raw.length - raw.trimStart().length;
     const text = raw.trim();
     const at = m.index + lead;
-    const scopes = roots.filter(Boolean);
     if (
-      !text ||
       SKIPPED_AT_RULE.test(text) ||
       /^(from|to|\d+(\.\d+)?%)(\s*,\s*(from|to|\d+(\.\d+)?%))*$/.test(text)
     ) {
-      roots.push(null);
       continue;
     }
     if (text.startsWith('@scope')) {
-      const hasRoot = /^@scope\s*\(/.test(text);
-      const parts = [...text.matchAll(/\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g)];
-      parts.forEach((part, i) => {
-        out.push({ text: part[1], at: at + part.index + 1, scopes, limit: !hasRoot || i > 0 });
-      });
-      roots.push(hasRoot ? (parts[0]?.[1] ?? null) : null);
+      for (const part of text.matchAll(/\(([^()]*(?:\([^()]*\)[^()]*)*)\)/g)) {
+        out.push({ text: part[1], at: at + part.index + 1 });
+      }
       continue;
     }
-    roots.push(null);
     if (text.startsWith('@')) {
       continue;
     }
-    out.push({ text, at, scopes, limit: false });
+    out.push({ text, at });
   }
   return out;
 }
 
 /**
- * The classes of one selector list: `{ cls, index, compound, positive }`.
- * `positive` = at the top level of its compound, not inside a functional
- * pseudo-class; `compound` groups the top-level simple selectors joined
- * without a combinator.
+ * The cngx classes and directive attributes of one selector list. A class is
+ * `{ cls, index, compound, positive }`, an attribute `{ name, index, compound,
+ * fns }`. `positive` = at the top level of its compound, not inside a
+ * functional pseudo-class; `compound` groups the top-level simple selectors
+ * joined without a combinator; `fns` names the enclosing functional
+ * pseudo-classes. HTML attribute names are case-insensitive, so is the match.
  */
-function selectorClasses(selector) {
-  const out = [];
-  let depth = 0;
+function selectorParts(selector) {
+  const classes = [];
+  const attrs = [];
+  const fns = [];
   let compound = 0;
   for (let i = 0; i < selector.length; i++) {
     const ch = selector[i];
     if (ch === '[') {
       const close = selector.indexOf(']', i);
-      i = close === -1 ? selector.length : close;
+      const end = close === -1 ? selector.length : close;
+      const m = /^\s*(cngx[a-z][a-z0-9]*)/i.exec(selector.slice(i + 1, end));
+      if (m) {
+        attrs.push({ name: m[1], index: i, compound, fns: [...fns] });
+      }
+      i = end;
       continue;
     }
     if (ch === '"' || ch === "'") {
@@ -511,26 +506,26 @@ function selectorClasses(selector) {
       continue;
     }
     if (ch === '(') {
-      depth++;
+      fns.push(/:([a-z-]+)$/.exec(selector.slice(0, i))?.[1] ?? '');
       continue;
     }
     if (ch === ')') {
-      depth--;
+      fns.pop();
       continue;
     }
-    if (depth === 0 && /[\s>+~,]/.test(ch)) {
+    if (fns.length === 0 && /[\s>+~,]/.test(ch)) {
       compound++;
       continue;
     }
     if (ch === '.') {
       const m = /^cngx-[a-z0-9_-]+/.exec(selector.slice(i + 1));
       if (m) {
-        out.push({ cls: m[0], index: i + 1, compound, positive: depth === 0 });
+        classes.push({ cls: m[0], index: i + 1, compound, positive: fns.length === 0 });
         i += m[0].length;
       }
     }
   }
-  return out;
+  return { classes, attrs };
 }
 
 /**
@@ -545,7 +540,7 @@ export function scanSkinCss(file, css, index) {
   const text = stripCssComments(css);
   const hits = [];
   for (const prelude of preludes(text)) {
-    const classes = selectorClasses(prelude.text);
+    const { classes } = selectorParts(prelude.text);
     const ownCompounds = new Set(
       classes.filter((c) => c.positive && isOwnClass(c.cls, own, index)).map((c) => c.compound),
     );
@@ -587,80 +582,8 @@ export function scanSkinCss(file, css, index) {
 }
 
 /**
- * The directive attributes (`[cngxMenu]`) and classes of one selector list.
- * `segment` numbers the comma-separated selectors, `compound` the top-level
- * compounds, `fns` the enclosing functional pseudo-classes.
- */
-function selectorTokens(selector) {
-  const attrs = [];
-  const classes = [];
-  const fns = [];
-  let segment = 0;
-  let compound = 0;
-  for (let i = 0; i < selector.length; i++) {
-    const ch = selector[i];
-    if (ch === '[') {
-      const close = selector.indexOf(']', i);
-      const end = close === -1 ? selector.length : close;
-      const m = /^\s*(cngx[A-Z][A-Za-z0-9]*)/.exec(selector.slice(i + 1, end));
-      if (m) {
-        attrs.push({ name: m[1], index: i, segment, compound, fns: [...fns] });
-      }
-      i = end;
-      continue;
-    }
-    if (ch === '"' || ch === "'") {
-      const close = selector.indexOf(ch, i + 1);
-      i = close === -1 ? selector.length : close;
-      continue;
-    }
-    if (ch === '(') {
-      fns.push(/:([a-z-]+)$/.exec(selector.slice(0, i))?.[1] ?? '');
-      continue;
-    }
-    if (ch === ')') {
-      fns.pop();
-      continue;
-    }
-    if (fns.length === 0 && ch === ',') {
-      segment++;
-      compound++;
-      continue;
-    }
-    if (fns.length === 0 && /[\s>+~]/.test(ch)) {
-      compound++;
-      continue;
-    }
-    if (ch === '.') {
-      const m = /^-?[_a-zA-Z][\w-]*/.exec(selector.slice(i + 1));
-      if (m) {
-        classes.push({ segment, compound, fns: [...fns] });
-        i += m[0].length;
-      }
-    }
-  }
-  return { attrs, classes, segments: segment + 1 };
-}
-
-/** A top-level class in the attribute's compound or in a compound before it. */
-function anchoredByClass(attr, classes) {
-  return classes.some(
-    (c) => c.fns.length === 0 && c.segment === attr.segment && c.compound <= attr.compound,
-  );
-}
-
-/** Every selector of an `@scope` root carries a top-level class. */
-function isClassScope(root) {
-  const { classes, segments } = selectorTokens(root);
-  return Array.from({ length: segments }, (_, s) => s).every((s) =>
-    classes.some((c) => c.fns.length === 0 && c.segment === s),
-  );
-}
-
-/**
- * S0 hits of one skin: a directive attribute selector outside `:where()`,
- * outside a class anchor in its own selector, and outside an `@scope (<class>)`.
- * An `@scope` limit only excludes and is not read.
+ * S0 hits of one skin: a directive attribute selector outside `:where()` whose
+ * compound carries no top-level cngx class.
  *
  * @param {string} file repo-relative path
  * @param {string} css stylesheet source
@@ -669,12 +592,10 @@ export function scanSkinOptIn(file, css) {
   const text = stripCssComments(css);
   const hits = [];
   for (const prelude of preludes(text)) {
-    if (prelude.limit || prelude.scopes.some(isClassScope)) {
-      continue;
-    }
-    const { attrs, classes } = selectorTokens(prelude.text);
+    const { classes, attrs } = selectorParts(prelude.text);
     for (const attr of attrs) {
-      if (attr.fns.includes('where') || anchoredByClass(attr, classes)) {
+      const optedIn = classes.some((c) => c.positive && c.compound === attr.compound);
+      if (optedIn || attr.fns.includes('where')) {
         continue;
       }
       hits.push({
@@ -683,7 +604,7 @@ export function scanSkinOptIn(file, css) {
         line: lineAt(text, prelude.at + attr.index),
         key: `[${attr.name}]`,
         owner: 'its directive',
-        detail: 'keyed outside :where(), an opt-in class and @scope (<class>)',
+        detail: 'keyed outside :where() and outside a compound with a class',
       });
     }
   }
@@ -1057,39 +978,55 @@ describe('skin-ownership guard - S1 stylesheets', () => {
 describe('skin-ownership guard - S0 opt-in by class', () => {
   const optIn = (body) => keys(scanSkinOptIn(SKIN, `/* [cngxNotRead] */\n${body}`));
 
-  it('fails a bare attribute, one before its class and one under :not()', () => {
+  it('fails a bare attribute, one under an ancestor class, one before a class and a lowercase one', () => {
     expect(
       optIn(
-        '[cngxListbox] { color: red; }\n[cngxListbox] .cngx-listbox__item {}\n:not(.cngx-a) [cngxOption] {}',
+        [
+          '[cngxListbox] { color: red; }',
+          '.cngx-listbox [cngxOption] {}',
+          '.cngx-listbox > [cngxOption] {}',
+          '[cngxListbox] .cngx-listbox__item {}',
+          ':not(.cngx-a)[cngxOption] {}',
+          '[cngxoption] {}',
+        ].join('\n'),
       ),
-    ).toEqual(['2 [cngxListbox]', '3 [cngxListbox]', '4 [cngxOption]']);
+    ).toEqual([
+      '2 [cngxListbox]',
+      '3 [cngxOption]',
+      '4 [cngxOption]',
+      '5 [cngxListbox]',
+      '6 [cngxOption]',
+      '7 [cngxoption]',
+    ]);
   });
 
-  it('passes :where(), a class in the compound or before it, and @scope (<class>)', () => {
+  it('fails an attribute inside @scope (<class>) and in an @scope root or limit', () => {
+    expect(
+      optIn(
+        [
+          '@scope (.cngx-listbox) { [cngxOption] { color: red; } }',
+          '@scope ([cngxListbox]) to ([cngxOption]) { :scope {} }',
+        ].join('\n'),
+      ),
+    ).toEqual(['2 [cngxOption]', '3 [cngxListbox]', '3 [cngxOption]']);
+  });
+
+  it('passes a class in the compound, either side, and :where()', () => {
     expect(
       optIn(
         [
           ':where([cngxListbox]) { margin: 0; }',
-          '.cngx-listbox[cngxListbox] {}',
+          '.cngx-listbox[cngxListbox]:focus-visible {}',
           '[cngxOption].cngx-listbox__option {}',
-          '.cngx-listbox [cngxOption] {}',
-          '.cngx-listbox > [cngxOption] {}',
-          '@scope (.cngx-listbox) { [cngxOption] { color: red; } }',
-          '@scope (.cngx-listbox) to ([cngxOption]) { :scope {} }',
+          '.cngx-listbox .cngx-listbox__option[cngxOption] {}',
+          ':is([cngxSliderTrack], [cngxRangeSliderTrack]).cngx-slider {}',
         ].join('\n'),
       ),
     ).toEqual([]);
   });
 
-  it('judges each selector of a list, and an @scope root by every selector in it', () => {
-    expect(
-      optIn(
-        [
-          '.cngx-listbox [cngxOption], [cngxOption] {}',
-          '@scope (.cngx-listbox, [cngxListbox]) { [cngxOption] {} }',
-        ].join('\n'),
-      ),
-    ).toEqual(['2 [cngxOption]', '3 [cngxListbox]', '3 [cngxOption]']);
+  it('judges each selector of a list on its own', () => {
+    expect(optIn('.cngx-listbox[cngxOption], [cngxOption] {}')).toEqual(['2 [cngxOption]']);
   });
 
   it('never reads a declaration value or an attribute that is no directive', () => {
