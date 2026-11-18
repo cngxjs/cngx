@@ -46,7 +46,7 @@ $primary: mat.m2-define-palette(mat.$m2-indigo-palette);
 $accent: mat.m2-define-palette(mat.$m2-pink-palette);
 $warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-$theme: mat.m2-define-light-theme((
+$theme: mat.m2-define-${opts.variant}-theme((
   color: (
     primary: $primary,
     accent: $accent,
@@ -90,6 +90,20 @@ describe('Material nav-rail-theme bridge baseline', () => {
     expect(
       compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' }),
     ).toMatchSnapshot();
+  });
+
+  it('v0 dark: rail and flyout ink and borders come from the theme foreground', () => {
+    const light = compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' });
+    const dark = compileAndExtract({ themeVersion: 'v0', variant: 'dark', mixin: 'theme' });
+    for (const token of [
+      '--cngx-nav-rail-color',
+      '--cngx-nav-rail-border-color',
+      '--cngx-nav-flyout-color',
+      '--cngx-nav-flyout-border-color',
+    ]) {
+      expect(dark[token], token).toBeDefined();
+      expect(dark[token], token).not.toBe(light[token]);
+    }
   });
 
   it('surface() bridges the rail, the flyout and the rail metrics, the row colours stay with sidenav.theme', () => {

@@ -17,10 +17,12 @@
 @mixin rail-color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-nav-rail-bg: var(--mat-sys-surface);
+    --cngx-nav-rail-color: var(--mat-sys-on-surface);
     --cngx-nav-rail-border-color: var(--mat-sys-outline-variant);
   } @else {
     --cngx-nav-rail-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-nav-rail-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-nav-rail-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-nav-rail-border-color: #{mat.get-theme-color($theme, foreground, divider)};
   }
 }
 
@@ -39,8 +41,8 @@
     );
   } @else {
     --cngx-nav-flyout-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-nav-flyout-color: rgba(0, 0, 0, 0.87);
-    --cngx-nav-flyout-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-nav-flyout-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-nav-flyout-border-color: #{mat.get-theme-color($theme, foreground, divider)};
   }
 }
 

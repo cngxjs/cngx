@@ -20,6 +20,7 @@ exports[`Material nav-rail-theme bridge baseline > v0 light: resolved --cngx-* d
   "--cngx-nav-link-radius": "8px",
   "--cngx-nav-rail-bg": "white",
   "--cngx-nav-rail-border-color": "rgba(0, 0, 0, 0.12)",
+  "--cngx-nav-rail-color": "rgba(0, 0, 0, 0.87)",
 }
 `;
 
@@ -59,6 +60,7 @@ exports[`Material nav-rail-theme bridge baseline > v1 dark: resolved --cngx-* de
   "--cngx-nav-rail-bg": "var(--mat-sys-surface)",
   "--cngx-nav-rail-border-color": "var(--mat-sys-outline-variant)",
   "--cngx-nav-rail-border-width": "0px",
+  "--cngx-nav-rail-color": "var(--mat-sys-on-surface)",
 }
 `;
 
@@ -98,5 +100,6 @@ exports[`Material nav-rail-theme bridge baseline > v1 light: resolved --cngx-* d
   "--cngx-nav-rail-bg": "var(--mat-sys-surface)",
   "--cngx-nav-rail-border-color": "var(--mat-sys-outline-variant)",
   "--cngx-nav-rail-border-width": "0px",
+  "--cngx-nav-rail-color": "var(--mat-sys-on-surface)",
 }
 `;
