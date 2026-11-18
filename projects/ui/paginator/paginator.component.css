@@ -1012,8 +1012,12 @@
    * The swap is GATED on the negated style query rather than undone by a later
    * rule: restoring a `display` the author never set would mean guessing the
    * segment's base value.
+   *
+   * Only a composition with a number row hides the status: without
+   * `cngx-pgn-pages` (minimal, rail) the status is the sole current-page
+   * readout and shows at every width.
    */
-  .cngx-paginator cngx-pgn-status {
+  .cngx-paginator:has(cngx-pgn-pages) cngx-pgn-status {
     display: none;
   }
 
@@ -1026,7 +1030,7 @@
       .cngx-paginator cngx-pgn-pages {
         display: none;
       }
-      .cngx-paginator cngx-pgn-status {
+      .cngx-paginator:has(cngx-pgn-pages) cngx-pgn-status {
         display: inline-flex;
       }
     }
