@@ -728,7 +728,7 @@ describe('rail as a crop of the expanded sidenav', () => {
     }
   });
 
-  it('stacks the peek from the sidebar peek token, with no own z-index', async () => {
+  it('stacks the peek from the sidebar peek token', async () => {
     const { fixture, el, settle } = mountCrop();
     fixture.componentInstance.collapsed.set(true);
     settle();

@@ -1,6 +1,11 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxNavGroup, CngxNavIcon, CngxNavLink } from '@cngx/common/interactive';
+import {
+  CngxNavGroup,
+  CngxNavGroupContent,
+  CngxNavIcon,
+  CngxNavLink,
+} from '@cngx/common/interactive';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -32,7 +37,7 @@ const CNGX_DENSITIES = [
 @Component({
   selector: 'cngx-sidenav-material-metrics-host',
   standalone: true,
-  imports: [CngxSidenav, CngxNavLink, CngxNavGroup, CngxNavIcon],
+  imports: [CngxSidenav, CngxNavLink, CngxNavGroup, CngxNavGroupContent, CngxNavIcon],
   styleUrls: [
     '../../core/theming/layers.css',
     '../../core/theming/system-tokens.css',
@@ -53,6 +58,15 @@ const CNGX_DENSITIES = [
         </cngx-sidenav>
       </div>
     }
+    <cngx-sidenav mode="side" [collapsed]="true" [expandOnHover]="false" ariaLabel="Material rail">
+      <a cngxNavLink href="#inbox">Inbox</a>
+      <button type="button" cngxNavGroup #railGroup="cngxNavGroup" class="rail-group">
+        Settings
+      </button>
+      <div [cngxNavGroupContent]="railGroup" class="rail-group-content">
+        <a cngxNavLink href="#general" [depth]="1">General</a>
+      </div>
+    </cngx-sidenav>
     <span class="probe-on-surface" style="color: var(--mat-sys-on-surface)"></span>
     <span class="probe-on-surface-variant" style="color: var(--mat-sys-on-surface-variant)"></span>
     @for (density of cngxDensities; track density[0]) {
@@ -115,6 +129,15 @@ describe('sidenav rows under the M3 bridge', () => {
       expect(height(root, `.row-${density}`)).toBe(rowHeight);
     });
   }
+
+  it('keeps no gap before a popover group on the collapsed rail (rows touch, as in mat-nav-list)', () => {
+    const root = mount();
+    expect(one(root, '.rail-group-content').hasAttribute('popover')).toBe(true);
+    expect(getComputedStyle(one(root, '.rail-group')).marginBlockEnd).toBe('0px');
+    // the margin reads the row-gap token, so 0 is the bridge, not a missing rule
+    one(root, '[aria-label="Material rail"]').style.setProperty('--cngx-sidenav-row-gap', '3px');
+    expect(getComputedStyle(one(root, '.rail-group')).marginBlockEnd).toBe('3px');
+  });
 
   it('draws the row as a full pill', () => {
     const row = one(mount(), '.row-m0');

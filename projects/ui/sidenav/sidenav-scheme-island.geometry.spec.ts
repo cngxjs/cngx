@@ -58,6 +58,9 @@ import { CngxSidenavLayout } from './sidenav-layout';
         </cngx-sidenav>
         <cngx-sidenav-content>Main</cngx-sidenav-content>
       </cngx-sidenav-layout>
+      <cngx-sidenav class="bare-bridged-rail" mode="side" [opened]="true" ariaLabel="Bare">
+        Inbox
+      </cngx-sidenav>
       <span
         class="bridge-surface"
         style="background-color: var(--mat-sys-surface-container)"
@@ -164,6 +167,13 @@ describe('CngxSidenav scheme island', () => {
     expect(peekShadow(root, '.island-end').x).toBe('-4px');
     expect(peekShadow(root, '.rtl-rail').x).toBe('-4px');
     expect(peekShadow(root, '.rtl-end').x).toBe('4px');
+  });
+
+  it('gives a bare rail without a layout the Material surface', () => {
+    const root = mount();
+    expect(getComputedStyle(el(root, '.bare-bridged-rail')).backgroundColor).toBe(
+      getComputedStyle(el(root, '.bridge-surface')).backgroundColor,
+    );
   });
 
   it('keeps the Material surface on a rail inside a bridged layout', () => {
