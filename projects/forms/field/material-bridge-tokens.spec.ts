@@ -415,6 +415,13 @@ html { @include bridge.theme($theme); }
     expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
   });
 
+  // mat-input paints the M2 foreground text as is: black 0.87 light, plain
+  // white dark. A second alpha dimmed every dark text and its 38% disabled rung.
+  it('maps the text rung to the M2 foreground text without an own alpha', () => {
+    expect(systemCss('v0', 'light')).toContain('--cngx-color-text: rgba(0, 0, 0, 0.87);');
+    expect(systemCss('v0', 'dark')).toMatch(/--cngx-color-text: (white|#fff|#ffffff);/);
+  });
+
   // mat-form-field draws its resting outlined frame in the M2 system
   // outline-variant: black or white at 0.38 per theme type.
   it('maps the strong border rung to the M2 outlined frame colour per theme type', () => {
