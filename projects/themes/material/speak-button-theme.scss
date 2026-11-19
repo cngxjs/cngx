@@ -68,8 +68,11 @@
   --cngx-speak-btn-icon-size: #{map.get($icon-sizes, $scale)};
 }
 
+// The surface, metric and motion tokens are registered `inherits: false` and
+// read on the inner `.cngx-speak-button__btn`, so the block broadcasts onto
+// the host and every descendant; a host-only assignment never reaches them.
 @mixin theme($theme) {
-  @include bridge.on(cngx-speak-button) {
+  @include bridge.on(bridge.broadcast(cngx-speak-button)) {
     @include base();
     @include color($theme);
     @include density($theme);

@@ -1,0 +1,21 @@
+// Test-only entry for speak-button-material-bridge.geometry.spec.ts:
+// compiles the working-tree speak button bridge the way `material/theme`
+// aggregates it. The two system tokens are fixed so the spec can compare.
+// Not shipped.
+@use '@angular/material' as mat;
+@use '../../themes/material/speak-button-theme' as speak;
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+    ),
+  )
+);
+
+html {
+  --mat-sys-surface-container-low: rgb(10, 20, 30);
+  --mat-sys-primary: rgb(40, 50, 60);
+  @include speak.theme($theme);
+}
