@@ -63,9 +63,29 @@
 // fire), so Material density reaches it through density-bridge.scss - no
 // per-component density() map here anymore.
 
+// The cngx default reads --cngx-radius-lg, which the system bridge maps to
+// corner-large (16px); M3 cards use corner-medium (12px), M2 cards 4px.
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-card-radius: var(--mat-sys-corner-medium, 12px);
+  } @else {
+    --cngx-card-radius: 4px;
+  }
+}
+
 @mixin theme($theme) {
   @include bridge.on(cngx-card, cngx-card-grid, cngx-metric, cngx-trend, cngx-card-timestamp) {
     @include color($theme);
     @include typography($theme);
+  }
+  // Raw rule instead of on(): the radius is registered `inherits: false` and
+  // SET on the card, its selection bar (::before) and its media, so the
+  // assignment has to land on each read site, and a pseudo-element cannot
+  // sit inside :where().
+  @layer cngx.components {
+    :where(.cngx-card, .cngx-card__media),
+    :where(.cngx-card)::before {
+      @include base($theme);
+    }
   }
 }
