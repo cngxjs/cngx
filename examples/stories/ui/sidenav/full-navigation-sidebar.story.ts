@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxSidenav: Full app navigation',
   subtitle: 'The sidenav as a complete app navigation, with every nav atom inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. The library paints the row states; Material theming via <code>sidenav-theme.scss</code> maps them onto M3 roles.',
-  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. No <code>mode</code> is bound, so the rail follows the width class of its layout: docked beside the content from 64rem (<code>expanded</code>), where the toggle button and <code>shortcut="mod+b"</code> collapse it to an icon rail that peeks on hover; an icon rail with the full nav as an overlay from 48rem (<code>medium</code>); an overlay drawer below that (<code>compact</code>). The toggle is a <code>[cngxPanelTrigger]</code>, so its <code>aria-expanded</code> states the resting state and ignores a hover peek.',
+  description: 'Full nav surface: section labels, active-state links with numeric and dot badges, two collapsible nav groups, and a footer. No <code>mode</code> is bound, so the rail follows the width class of its layout: docked beside the content from 64rem (<code>expanded</code>), where the toggle button and <code>shortcut="mod+."</code> (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>.</kbd>, letter-free so it never swallows bold in a text field) collapse it to an icon rail that peeks on hover; an icon rail with the full nav as an overlay from 48rem (<code>medium</code>); an overlay drawer below that (<code>compact</code>). The toggle is a <code>[cngxPanelTrigger]</code>, so its <code>aria-expanded</code> states the resting state and ignores a hover peek. Drag the edge handle to resize; the handle name field sets <code>[resizeLabel]</code>, which wins over the <code>resizeHandle</code> label of the sidenav config.',
   level: 'organism',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
@@ -25,14 +25,16 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavHeader', 'CngxNavFooter', 'CngxNavMark', 'CngxNavName', 'CngxAvatar', 'CngxNavLink', 'CngxNavLabel', 'CngxNavGroup', 'CngxNavGroupContent', 'CngxNavBadge', 'CngxPanelTrigger'],
   setup: `protected readonly navOpen = signal(true);
+  protected readonly resizeLabel = signal('Resize navigation');
   protected readonly navCollapsed = signal(false);
   protected readonly activeLink = signal('/dashboard');
   protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];`,
-  templateChromeBefore: `<button class="sort-btn" type="button" [cngxPanelTrigger]="nav.panelTarget">Toggle navigation</button>`,
+  templateChromeBefore: `<button class="sort-btn" type="button" [cngxPanelTrigger]="nav.panelTarget">Toggle navigation</button>
+  <label>Handle name <input type="text" [value]="resizeLabel()" (input)="resizeLabel.set($any($event.target).value)" /></label>`,
   template: `
   <cngx-sidenav-layout>
     <cngx-sidenav #nav="cngxSidenav" position="start" [(opened)]="navOpen" [(collapsed)]="navCollapsed"
-                  width="240px" [resizable]="true" shortcut="mod+b">
+                  width="240px" [resizable]="true" [resizeLabel]="resizeLabel() || undefined" shortcut="mod+.">
       <cngx-nav-header>
         <cngx-avatar cngxNavMark initials="W" shape="square" />
         <span cngxNavName>Workspace</span>
