@@ -124,34 +124,32 @@ to remember on the consumer side.
 
 | Hook | Behaviour |
 |-|-|
-| `writeValue(v)` | Stamps `lastSeen`, then writes `control.value.set(v)`. The change-listener effect short-circuits via `Object.is(value, lastSeen)` so the round-trip never echoes back into `onChange`. |
-| `registerOnChange(fn)` | Subscribes to the atom's `value` model, so every write through `set` (typing, a click) reaches the control synchronously: a form submitted with Enter right after a keystroke reads it. An `effect()` over `control.value()` covers changes that bypass `set` (a parent `[value]` binding); its first observation is the post-mount baseline (CVA contract). Both paths forward through `untracked(() => fn(value))` and share the `lastSeen` guard, so a value forwards once. |
+| `writeValue(v)` | Writes `control.value.set(v)` and drops the model's synchronous echo of exactly that value, so the round-trip never reaches `onChange`. A different value written re-entrantly (a `(valueChange)` handler normalising it) still forwards. |
+| `registerOnChange(fn)` | Subscribes to the atom's `value` model, so every write through `set` (typing, a click) reaches the control synchronously: a form submitted with Enter right after a keystroke reads it. A parent `[value]` binding next to `[formControl]` updates the atom without emitting, so it never reaches the control: the control stays pristine (CVA contract, `onChange` reports user changes only). |
 | `registerOnTouched(fn)` | Stored. Fired from the host's `(focusout)` listener. |
 | `setDisabledState(b)` | `untracked(() => control.disabled.set(b))`. |
 
-### `untracked()` partition - why all four hooks wrap
+### What runs untracked
 
-The load-bearing case is `registerOnChange`: the effect's body reads
-`control.value()` (tracked) and invokes the consumer-supplied `fn(value)`
-inside `untracked(() => fn(value))`. Without that wrap, any signal `fn`
-touches would feed back into the bridge effect's dependency set -
-producing an infinite loop the moment Angular Forms migrates an
-internal `_pendingValue` / dirty-state field to a signal.
+The load-bearing case is the change listener: an atom may write its model
+inside a reactive context (an effect), and the model emits synchronously,
+so `fn(value)` runs inside that call. Angular's output emit calls every
+listener with no active consumer, so a signal `fn` touches never becomes a
+dependency of that context. The bridge relies on that guarantee instead of
+its own wrap; a spec writes the model from an effect and fails if it stops
+holding.
 
-The other three hooks (`writeValue`, `registerOnTouched` callback fire,
-`setDisabledState`) wrap defensively. Angular Forms calls them
-imperatively today, so the wrap is a no-op - but it future-proofs
-against the Forms internals migrating to a signal-effect-based control
-update path. Same defensive pattern Phase 6b uses for the
-`errorScope.showErrors` / strategy callback in
-`CngxFormFieldPresenter`.
+`writeValue`, the touched callback and `setDisabledState` run inside
+`untracked()`. Angular Forms calls them imperatively today, so the wrap is
+a no-op, but it keeps them safe if Forms moves to a signal-effect-based
+update path.
 
 ### Initial-fire skip
 
 `registerOnChange(fn)` registers a listener for *future* changes. The
-initial value is delivered via `writeValue`. The bridge's effect skips
-its first observation - `fn(initialValue)` is never called, matching
-Angular Forms' `DefaultValueAccessor` semantics.
+initial value is delivered via `writeValue`, whose echo through the
+model is dropped - `fn(initialValue)` is never
+called, matching Angular Forms' `DefaultValueAccessor` semantics.
 
 ### Selector list does not include `[ngModel]`
 

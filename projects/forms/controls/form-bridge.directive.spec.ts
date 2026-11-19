@@ -1,4 +1,4 @@
-import { Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, Injector, signal, ViewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   FormControl,
@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  CngxCheckbox,
   CngxCheckboxGroup,
   CngxMultiChipGroup,
   CngxRadioGroup,
@@ -283,66 +284,193 @@ describe('CngxFormBridge', () => {
       expect(host.ctrl.dirty).toBe(true);
     });
 
-    it('does NOT re-fire fn when writeValue lands the same value (lastSeen guard)', () => {
+    it('does NOT re-fire fn when writeValue lands a value (echo guard)', () => {
       TestBed.configureTestingModule({ imports: [ToggleHost] });
       const fixture = TestBed.createComponent(ToggleHost);
       fixture.detectChanges();
-      TestBed.flushEffects();
       const host = fixture.componentInstance;
 
       const fn = vi.fn<(v: boolean) => void>();
       host.bridge.registerOnChange(fn);
-      TestBed.flushEffects();
 
       // RF -> view roundtrip (value identical to current).
       host.bridge.writeValue(false);
-      TestBed.flushEffects();
       expect(fn).not.toHaveBeenCalled();
 
-      // RF -> view, fresh value.
+      // RF -> view, fresh value: the model's synchronous echo stays out of onChange.
       host.bridge.writeValue(true);
-      TestBed.flushEffects();
-      // The lastSeen stamp prevented the change-listener effect from
-      // re-routing the writeValue back into onChange.
       expect(fn).not.toHaveBeenCalled();
 
       // User-driven write - must fire.
       host.toggle.value.set(false);
-      TestBed.flushEffects();
       expect(fn).toHaveBeenCalledTimes(1);
       expect(fn).toHaveBeenLastCalledWith(false);
     });
 
-    it('untracked() wrap on the change callback isolates fn-internal signal reads (cascade witness)', () => {
-      // Cascade probe: fn reads an external signal. If the
-      // `untracked(() => callback(value))` wrap is removed, that read
-      // becomes a tracked dependency of the bridge effect, and any
-      // future write to the external signal would re-fire the effect
-      // (and therefore re-fire fn). The wrap holds when this spec
-      // observes fn's call count NOT increasing on the external write.
+    it('keeps fn-internal signal reads out of an effect that writes the model (cascade canary)', () => {
+      // An atom may write its model inside an effect (input-mask clears on a
+      // mask change), and the model emits synchronously, so fn runs inside
+      // that effect. The bridge relies on Angular's output emit calling
+      // listeners with no active consumer; if that ever changes, fn's read of
+      // externalProbe becomes a dependency and an externalProbe write re-runs the effect.
       TestBed.configureTestingModule({ imports: [ToggleHost] });
       const fixture = TestBed.createComponent(ToggleHost);
       fixture.detectChanges();
-      TestBed.flushEffects();
       const host = fixture.componentInstance;
 
       const externalProbe = signal('a');
       const fn = vi.fn<(v: boolean) => void>().mockImplementation(() => {
-        externalProbe(); // read inside the consumer callback
+        externalProbe();
       });
       host.bridge.registerOnChange(fn);
-      TestBed.flushEffects();
 
-      host.toggle.value.set(true);
+      const trigger = signal(false);
+      let runs = 0;
+      effect(
+        () => {
+          runs++;
+          host.toggle.value.set(trigger());
+        },
+        { injector: TestBed.inject(Injector) },
+      );
+      TestBed.flushEffects();
+      trigger.set(true);
       TestBed.flushEffects();
       expect(fn).toHaveBeenCalledTimes(1);
+      expect(runs).toBe(2);
 
-      // External signal mutation. Without the untracked() wrap, the
-      // bridge effect would have tracked externalProbe via fn's read
-      // and would re-fire here, calling fn again.
       externalProbe.set('b');
       TestBed.flushEffects();
-      expect(fn).toHaveBeenCalledTimes(1); // wrap held - no cascade
+      expect(runs).toBe(2);
+    });
+  });
+
+  // ── Re-entrant model write during writeValue ─────────────────────────
+
+  describe('model write re-entering during writeValue', () => {
+    @Component({
+      template: `<cngx-toggle [formControl]="ctrl" (valueChange)="refuseOn($event)" #host>label</cngx-toggle>`,
+      imports: [CngxToggle, ReactiveFormsModule, CngxFormBridge],
+    })
+    class RefusingHost {
+      readonly ctrl = new FormControl<boolean>(false, { nonNullable: true });
+      @ViewChild('host', { read: CngxToggle }) toggle!: CngxToggle;
+
+      refuseOn(value: boolean): void {
+        if (value) {
+          this.toggle.value.set(false);
+        }
+      }
+    }
+
+    it('forwards a (valueChange) normalisation made while the control writes the atom', () => {
+      TestBed.configureTestingModule({ imports: [RefusingHost] });
+      const fixture = TestBed.createComponent(RefusingHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+
+      host.ctrl.setValue(true);
+
+      expect(host.toggle.value()).toBe(false);
+      expect(host.ctrl.value).toBe(false);
+      expect(host.ctrl.dirty).toBe(true);
+    });
+  });
+
+  // ── Parent [value] binding next to [formControl] ─────────────────────
+
+  describe('parent [value] binding next to [formControl]', () => {
+    @Component({
+      template: `<cngx-checkbox [formControl]="ctrl" [(value)]="mirror" #host>label</cngx-checkbox>`,
+      imports: [CngxCheckbox, ReactiveFormsModule, CngxFormBridge],
+    })
+    class MirrorHost {
+      ctrl = new FormControl<boolean>(false, { nonNullable: true });
+      readonly mirror = signal(false);
+      @ViewChild('host', { read: ElementRef }) hostEl!: ElementRef<HTMLElement>;
+    }
+
+    function setup(ctrl?: FormControl<boolean>) {
+      TestBed.configureTestingModule({ imports: [MirrorHost] });
+      const fixture = TestBed.createComponent(MirrorHost);
+      if (ctrl) {
+        fixture.componentInstance.ctrl = ctrl;
+      }
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      const setValue = vi.spyOn(host.ctrl, 'setValue');
+      return { fixture, host, setValue };
+    }
+
+    it('a programmatic parent write leaves the control pristine and calls no setValue', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.mirror.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(host.ctrl.value).toBe(false);
+      expect(host.ctrl.dirty).toBe(false);
+      expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('a click back to the control value after a parent write still dirties the control', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.mirror.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      host.hostEl.nativeElement.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.mirror()).toBe(false);
+      expect(host.ctrl.value).toBe(false);
+      expect(host.ctrl.dirty).toBe(true);
+      expect(setValue).toHaveBeenCalledTimes(1);
+    });
+
+    it('a click dirties the control with exactly one setValue', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.hostEl.nativeElement.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
+      expect(setValue).toHaveBeenCalledTimes(1);
+      expect(host.mirror()).toBe(true);
+    });
+
+    it('Space dirties the control with exactly one setValue', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.hostEl.nativeElement.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true }),
+      );
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
+      expect(setValue).toHaveBeenCalledTimes(1);
+    });
+
+    it("updateOn: 'blur' holds the click until focus leaves", () => {
+      const { fixture, host } = setup(new FormControl(false, { nonNullable: true, updateOn: 'blur' }));
+
+      host.hostEl.nativeElement.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.ctrl.value).toBe(false);
+
+      host.hostEl.nativeElement.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
     });
   });
 
