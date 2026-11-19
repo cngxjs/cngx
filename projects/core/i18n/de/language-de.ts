@@ -59,6 +59,10 @@ export const CNGX_LANGUAGE_DE = {
     deselected: 'Abgewählt',
     loading: 'Wird geladen',
     timestamp: '{prefix} {date}',
+    accentDanger: 'Kritisch',
+    accentWarning: 'Warnung',
+    accentSuccess: 'Erfolg',
+    accentInfo: 'Info',
   },
   chart: {
     summary: '{trend}. Minimum {min}, Maximum {max}, aktuell {current}. {thresholds}',

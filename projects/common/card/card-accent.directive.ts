@@ -1,16 +1,22 @@
 import { Directive, input } from '@angular/core';
 
+/** Severity a {@link CngxCardAccent} paints. `neutral` means no status. */
+export type CngxCardAccentSeverity = 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+
 /**
- * Adds a color-coded severity accent to a card.
+ * Marks a card with a severity, for dashboards where one tile has to stand
+ * out among many.
  *
- * Renders as a colored top border + tinted background to communicate
- * status visually. Differentiates by both color and border width
- * (not just color - WCAG 1.4.1).
+ * Paints the feedback family's severity recipe (alert, banner, toast): a
+ * pale tint and a pastel border. `neutral` (the default) is no status and
+ * paints a plain card. Colour alone carries no meaning (WCAG 1.4.1): put a
+ * {@link CngxCardAccentIcon} in the title for a shape + text cue, or let the
+ * card content say it.
  *
  * ```html
  * <cngx-card cngxCardAccent="warning">
  *   <header cngxCardHeader>
- *     <h3 cngxCardTitle>Blutzucker</h3>
+ *     <h3 cngxCardTitle><cngx-card-accent-icon />Blutzucker</h3>
  *   </header>
  * </cngx-card>
  * ```
@@ -18,7 +24,7 @@ import { Directive, input } from '@angular/core';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-accent.directive.ts
  * @since 0.1.0
- * @relatedTo CngxCard, CngxCardBadge, CngxCardHeader
+ * @relatedTo CngxCard, CngxCardAccentIcon, CngxCardBadge, CngxCardHeader
  * <example-url>/#/common/card/severity-accent</example-url>
  * @axis level organism
  */
@@ -35,8 +41,8 @@ import { Directive, input } from '@angular/core';
   },
 })
 export class CngxCardAccent {
-  /** Severity level controlling the accent color. */
-  readonly severity = input<'info' | 'success' | 'warning' | 'danger' | 'neutral'>('neutral', {
+  /** Severity level controlling the accent colour. */
+  readonly severity = input<CngxCardAccentSeverity>('neutral', {
     alias: 'cngxCardAccent',
   });
 }

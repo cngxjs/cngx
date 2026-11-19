@@ -3,8 +3,9 @@ import type {} from '@cngx/core/i18n';
 
 /**
  * The card section of a {@link CngxLanguagePack}. Same keys as
- * {@link CngxCardI18n}: the phrases a selectable card announces and the
- * order of a {@link CngxCardTimestamp} prefix and its date.
+ * {@link CngxCardI18n}: the phrases a selectable card announces, the
+ * order of a {@link CngxCardTimestamp} prefix and its date, and the severity
+ * words a {@link CngxCardAccentIcon} reads out.
  *
  * @since 0.1.0
  * @relatedTo CngxCard, CngxCardTimestamp
@@ -25,6 +26,14 @@ export interface CngxCardLanguageSection {
    * function value cannot place them.
    */
   readonly timestamp: string;
+  /** Screen-reader prefix a {@link CngxCardAccentIcon} reads before the title of a danger card. */
+  readonly accentDanger: string;
+  /** Screen-reader prefix for a warning card. */
+  readonly accentWarning: string;
+  /** Screen-reader prefix for a success card. */
+  readonly accentSuccess: string;
+  /** Screen-reader prefix for an info card. */
+  readonly accentInfo: string;
 }
 
 /**
@@ -39,6 +48,10 @@ export const CNGX_CARD_LANGUAGE_EN: CngxCardLanguageSection = {
   deselected: 'Deselected',
   loading: 'Loading',
   timestamp: '{prefix} {date}',
+  accentDanger: 'Critical',
+  accentWarning: 'Warning',
+  accentSuccess: 'Success',
+  accentInfo: 'Info',
 };
 
 declare module '@cngx/core/i18n' {

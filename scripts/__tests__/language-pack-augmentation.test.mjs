@@ -62,7 +62,7 @@ function compile(source, options = {}) {
   }));
 }
 
-const COMPLETE_CARD = `{ selected: 'Selected', deselected: 'Deselected', loading: 'Loading', timestamp: '{prefix} {date}' }`;
+const COMPLETE_CARD = `{ selected: 'Selected', deselected: 'Deselected', loading: 'Loading', timestamp: '{prefix} {date}', accentDanger: 'Critical', accentWarning: 'Warning', accentSuccess: 'Success', accentInfo: 'Info' }`;
 
 beforeAll(() => {
   const missing = ['core', 'common', 'ui'].filter(
@@ -98,7 +98,7 @@ describe('language-pack augmentation against dist/', () => {
       import type { CngxLanguagePack } from '@cngx/core/i18n';
       import type { CngxCardLanguageSection } from '@cngx/common/card';
       export type Section = CngxCardLanguageSection;
-      export const pack: CngxLanguagePack = { card: { deselected: 'Deselected', loading: 'Loading', timestamp: '{prefix} {date}' } };
+      export const pack: CngxLanguagePack = { card: { deselected: 'Deselected', loading: 'Loading', timestamp: '{prefix} {date}', accentDanger: 'Critical', accentWarning: 'Warning', accentSuccess: 'Success', accentInfo: 'Info' } };
     `);
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0].code).toBe(2741);
