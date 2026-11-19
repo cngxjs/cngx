@@ -531,13 +531,23 @@ export class CngxSidenav
   }
 
   private readonly doc = inject(DOCUMENT);
-  private readonly layoutCoordinator = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
+  private readonly layoutAncestor = inject(CNGX_SIDENAV_LAYOUT, { optional: true });
+
+  /**
+   * The layout this rail is a direct rail of. Any ancestor layout is not
+   * enough: its width-class rule and its one-overlay rule cover its own rails
+   * only, so a rail nested in its content stands alone.
+   */
+  private readonly layoutCoordinator = computed(() => {
+    const layout = this.layoutAncestor;
+    return layout?.owns(this) ? layout : null;
+  });
 
   /** An `auto` rail inside a layout whose container rule has not written the width class yet. */
   private readonly widthClassPending = computed(
     () =>
       this.mode() === 'auto' &&
-      this.layoutCoordinator !== null &&
+      this.layoutCoordinator() !== null &&
       this.rawWidthClass().trim() === '',
   );
   private readonly announcer = inject(CNGX_SIDENAV_ANNOUNCER_FACTORY)();
@@ -606,7 +616,7 @@ export class CngxSidenav
         typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
         this.mode() === 'auto' &&
-        !this.container
+        (!this.container || (this.layoutAncestor !== null && this.layoutCoordinator() === null))
       ) {
         cngxDevWarn(
           'CNGX3010',
@@ -665,10 +675,14 @@ export class CngxSidenav
     // to a docked presentation always closes: the rail stays visible there,
     // and an open trap always holds focus inside, so the exception would leave
     // opened (and a synced ?nav=open) true on a docked rail.
+    // A docked rail never keeps opened, edge or not: neither the first settled
+    // presentation nor a pinned side produces one, and an initial [opened],
+    // a ?nav=open hydration or a later write would otherwise stay.
     effect(() => {
       const current = this.presentationTransition.current();
       const previous = this.presentationTransition.previous();
-      if (previous === null || current === previous) {
+      const dockedOpen = !this.isOverlay() && this.opened();
+      if (!dockedOpen && (previous === null || current === previous)) {
         return;
       }
       untracked(() => {
@@ -743,7 +757,7 @@ export class CngxSidenav
   // in the same gesture, before this one engages its surface.
   private openOverlay(): void {
     if (!this.opened() && this.isOverlay()) {
-      this.layoutCoordinator?.overlayOpening(this);
+      this.layoutCoordinator()?.overlayOpening(this);
     }
     this.opened.set(true);
   }

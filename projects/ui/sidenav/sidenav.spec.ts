@@ -129,6 +129,14 @@ class EndResizableHost {
 }
 
 @Component({
+  template: `<cngx-sidenav mode="side" [(opened)]="open">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class DockedOpenHost {
+  open = signal(true);
+}
+
+@Component({
   template: `<cngx-sidenav [shortcut]="shortcut()" [mode]="mode()" [(opened)]="open"
     >Nav</cngx-sidenav
   >`,
@@ -1161,6 +1169,15 @@ describe('CngxSidenav auto mode', () => {
     expect(nav.opened()).toBe(false);
     expect(fixture.componentInstance.open()).toBe(false);
   });
+  it('drops an initial opened on a pinned side rail', () => {
+    const { fixture, nav } = mount(DockedOpenHost);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(nav.opened()).toBe(false);
+    expect(fixture.componentInstance.open()).toBe(false);
+    const host = nav.elementRef.nativeElement as HTMLElement;
+    expect(host.classList.contains('cngx-sidenav--open')).toBe(false);
+  });
 });
 
 describe('CngxSidenav width clamp', () => {
@@ -1392,19 +1409,18 @@ describe('CngxSidenav resize math and shortcut', () => {
   it('routes the shortcut through toggle(): on a docked rail it flips collapsed, not opened', () => {
     const fixture = TestBed.createComponent(ShortcutHost);
     fixture.componentInstance.mode.set('side');
-    fixture.componentInstance.open.set(true);
     fixture.detectChanges();
     TestBed.flushEffects();
     const host = fixture.componentInstance;
 
-    // A raw opened flip would set the model false while the docked rail stays
-    // visible (and a router sync would write ?nav=closed).
+    // A raw opened flip would set the model true while the docked rail stays
+    // visible (and a router sync would write ?nav=open).
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     document.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'b', ctrlKey: true, metaKey: true }),
     );
     fixture.detectChanges();
-    expect(host.open()).toBe(true);
+    expect(host.open()).toBe(false);
     expect(nav.expanded()).toBe(false);
   });
 });
