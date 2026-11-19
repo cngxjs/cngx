@@ -228,8 +228,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * Appends `expression` as the last child of the group at `path` (`[]` is the root). It has
    * no nesting cap, unlike `addGroup`, and a `path` that does not resolve to a group throws
    * ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
+   * No-op while disabled.
    */
   addExpression(path: readonly number[], expression: FilterExpression): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.addExpression(path, expression);
   }
 
@@ -238,8 +242,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * `maxNestingDepth`: a group appended at `path` sits at depth
    * `path.length + 1` (root is depth 0), and the config cap applies to
    * programmatic writes exactly like to the add-group UI.
+   * No-op while disabled.
    */
   addGroup(path: readonly number[], group: FilterGroup): void {
+    if (this.disabled()) {
+      return;
+    }
     if (path.length >= this.config.maxNestingDepth) {
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
         cngxDevWarn(
@@ -259,8 +267,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * is restored after the next render: to the sibling that slid into the
    * removed index, else the previous sibling, else the parent group
    * container - instead of dropping to `<body>`.
+   * No-op while disabled.
    */
   removeNode(path: readonly number[]): void {
+    if (this.disabled()) {
+      return;
+    }
     const restoreFocus = this.shouldRestoreFocusAfterRemove(path);
     this.core.removeNode(path);
     if (restoreFocus) {
@@ -272,16 +284,24 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * Sets the logic of the group at `path` and emits one mutation event only when the logic
    * differs. An expression node at `path` is left unchanged, and a `path` that does not
    * resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
+   * No-op while disabled.
    */
   setLogic(path: readonly number[], logic: FilterLogic): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.setLogic(path, logic);
   }
 
   /**
    * Flips `negated` on the group at `path`. An expression node at `path` is left unchanged,
    * and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
+   * No-op while disabled.
    */
   toggleNegated(path: readonly number[]): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.toggleNegated(path);
   }
 
@@ -290,8 +310,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * are kept even when they no longer fit the new field. A group node at `path` is left
    * unchanged, and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)); the expression
    * row uses `applyFieldChange` instead.
+   * No-op while disabled.
    */
   setField(path: readonly number[], fieldKey: string): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.setField(path, fieldKey);
   }
 
@@ -299,8 +323,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * Sets the operator key of the expression at `path`. A group node at `path` is left
    * unchanged, the value is kept, and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md),
    * [`CNGX2011`](/error-codes/cngx2011.md)).
+   * No-op while disabled.
    */
   setOperator(path: readonly number[], operator: string): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.setOperator(path, operator);
   }
 
@@ -309,8 +337,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * mutation event, so it is announced once. The operator is replaced by `plan.operator` and
    * the value cleared only when `plan.resetValue` is set. A group node at `path` is left
    * unchanged, and a `path` that does not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
+   * No-op while disabled.
    */
   applyFieldChange(path: readonly number[], plan: CngxFilterRowFieldChangePlan): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.applyFieldChange(path, plan);
   }
 
@@ -318,8 +350,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * Sets the value of the expression at `path`. Writing a value equal under `Object.is`, or
    * targeting a group node, changes nothing and emits no mutation event. A `path` that does
    * not resolve throws ([`CNGX2010`](/error-codes/cngx2010.md), [`CNGX2011`](/error-codes/cngx2011.md)).
+   * No-op while disabled.
    */
   setValue(path: readonly number[], value: unknown): void {
+    if (this.disabled()) {
+      return;
+    }
     this.core.setValue(path, value);
   }
 

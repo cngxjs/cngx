@@ -443,7 +443,13 @@ describe('CngxFilterBuilderPresenter - dev-mode guards', () => {
 
 describe('CngxFilterBuilderPresenter - unknown logic through value (CNGX2013)', () => {
   const legacy = (filters: FilterGroup['filters']): FilterGroup =>
-    ({ type: 'group', id: 'legacy', logic: 'AND', negated: false, filters }) as unknown as FilterGroup;
+    ({
+      type: 'group',
+      id: 'legacy',
+      logic: 'AND',
+      negated: false,
+      filters,
+    }) as unknown as FilterGroup;
 
   it('accepts an empty group with logic "AND" or no logic and matches every item', () => {
     const { logic: _logic, ...missing } = legacy([]);
@@ -611,5 +617,78 @@ describe('CngxFilterBuilderPresenter - atomic field change', () => {
     const node = directive.tree().filters[0];
     expect(node).toMatchObject({ field: 'age', operator: 'gte' });
     expect(stripBidiIsolates(directive.announcement())).toBe('Field changed to Age');
+  });
+});
+
+describe('CngxFilterBuilderPresenter - disabled write guard', () => {
+  const SEED: FilterGroup = {
+    type: 'group',
+    id: 'r',
+    logic: 'and',
+    negated: false,
+    filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'x' }],
+  };
+
+  const MUTATORS: readonly [string, (d: CngxFilterBuilderPresenter) => void][] = [
+    [
+      'addExpression',
+      (d) =>
+        d.addExpression([], {
+          type: 'expression',
+          id: 'e2',
+          field: 'age',
+          operator: 'gt',
+          value: 1,
+        }),
+    ],
+    [
+      'addGroup',
+      (d) => d.addGroup([], { type: 'group', id: 'g2', logic: 'or', negated: false, filters: [] }),
+    ],
+    ['removeNode', (d) => d.removeNode([0])],
+    ['setLogic', (d) => d.setLogic([], 'or')],
+    ['toggleNegated', (d) => d.toggleNegated([])],
+    ['setField', (d) => d.setField([0], 'age')],
+    ['setOperator', (d) => d.setOperator([0], 'eq')],
+    [
+      'applyFieldChange',
+      (d) => d.applyFieldChange([0], { field: 'age', operator: 'gte', resetValue: true }),
+    ],
+    ['setValue', (d) => d.setValue([0], 'y')],
+  ];
+
+  it.each(MUTATORS)('%s is a no-op while disabled and writes once enabled', (_name, call) => {
+    const stub = provideFormFieldStub({ disabled: true });
+    const { fixture, directive } = setup();
+    directive.value.set(SEED);
+    TestBed.flushEffects();
+    const before = directive.value();
+    const mutationBefore = directive.lastMutation();
+    const emitted: FilterGroup[] = [];
+    directive.value.subscribe((v) => emitted.push(v));
+
+    call(directive);
+    TestBed.flushEffects();
+
+    expect(directive.value()).toBe(before);
+    expect(directive.lastMutation()).toBe(mutationBefore);
+    expect(emitted).toEqual([]);
+
+    stub.disabled.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    call(directive);
+    TestBed.flushEffects();
+
+    expect(directive.value()).not.toBe(before);
+    expect(emitted.length).toBe(1);
+  });
+
+  it('a direct value.set() while disabled still lands', () => {
+    provideFormFieldStub({ disabled: true });
+    const { directive } = setup();
+    directive.value.set(SEED);
+    TestBed.flushEffects();
+    expect(directive.tree()).toEqual(SEED);
   });
 });
