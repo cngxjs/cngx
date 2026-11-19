@@ -161,6 +161,14 @@
     inherits: false;
     initial-value: oklch(0.72 0.18 70);
   }
+
+  /* The surfaces are inherits:false, so the derivation sits on the button
+   * that reads them. Layer cngx.tokens keeps a Material bridge winning. */
+  :where(.cngx-speak-button__btn) {
+    --cngx-speak-btn-bg: var(--cngx-color-surface);
+    --cngx-speak-btn-hover-bg: var(--cngx-speak-btn-bg);
+    --cngx-speak-btn-speaking-bg: var(--cngx-speak-btn-active-color);
+  }
 }
 
 @layer cngx.components {
@@ -182,7 +190,7 @@
       border: var(--cngx-speak-btn-border-width, 1px) solid
         var(--cngx-color-border, oklch(0.87 0 0));
       border-radius: var(--cngx-speak-btn-radius, 8px);
-      background: var(--cngx-speak-btn-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      background: var(--cngx-speak-btn-bg);
       color: var(--cngx-speak-btn-color, oklch(0.45 0 0));
       cursor: pointer;
       transition:
@@ -195,22 +203,13 @@
     .cngx-speak-button__btn:hover {
       color: var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70));
       border-color: var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70));
-      background: var(
-        --cngx-speak-btn-hover-bg,
-        var(--cngx-speak-btn-bg, var(--cngx-color-surface, oklch(1 0 0)))
-      );
+      background: var(--cngx-speak-btn-hover-bg);
     }
 
     :scope.cngx-speak-button--speaking .cngx-speak-button__btn {
       color: var(--cngx-speak-btn-speaking-color, oklch(1 0 0));
-      background: var(
-        --cngx-speak-btn-speaking-bg,
-        var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70))
-      );
-      border-color: var(
-        --cngx-speak-btn-speaking-bg,
-        var(--cngx-speak-btn-active-color, oklch(0.72 0.18 70))
-      );
+      background: var(--cngx-speak-btn-speaking-bg);
+      border-color: var(--cngx-speak-btn-speaking-bg);
     }
 
     .cngx-speak-button__icon {

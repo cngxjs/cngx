@@ -166,7 +166,7 @@
 }
 
 .cngx-dot-stepper__dot--completed {
-  background: var(--cngx-dot-step-completed-fill, var(--cngx-color-success, oklch(0.5 0.15 145)));
+  background: var(--cngx-dot-step-completed-fill);
 }
 
 .cngx-dot-stepper__dot--active {

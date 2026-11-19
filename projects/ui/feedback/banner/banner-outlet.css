@@ -653,7 +653,7 @@
     .cngx-banner__error {
       display: block;
       font-size: var(--cngx-banner-error-font-size, 0.875rem);
-      color: var(--cngx-banner-error-color, var(--cngx-color-danger-text, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)));
+      color: var(--cngx-banner-error-color);
       margin-top: 2px;
     }
 

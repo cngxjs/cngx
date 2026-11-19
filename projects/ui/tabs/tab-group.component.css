@@ -337,7 +337,7 @@
     }
 
     .cngx-tabs__strip {
-      border-bottom: var(--cngx-tab-strip-border, 1px solid currentColor);
+      border-bottom: var(--cngx-tab-strip-border);
       gap: 0;
       padding: 0;
     }
@@ -395,7 +395,7 @@
        token falls back to `currentColor`, which would drop it to the
        inherited text colour). */
     .cngx-tabs__tab:hover:not([aria-disabled='true']):not([aria-selected='true']) {
-      color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color));
+      color: var(--cngx-tab-hover-color);
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
@@ -411,7 +411,7 @@
 
     :scope[data-orientation='vertical'] .cngx-tabs__strip {
       border-bottom: 0;
-      border-inline-end: var(--cngx-tab-strip-border, 1px solid currentColor);
+      border-inline-end: var(--cngx-tab-strip-border);
       padding: 0;
     }
 
@@ -664,7 +664,7 @@
       background: color-mix(
         in oklch,
         var(--cngx-tab-inactive-bg, oklch(0.97 0 0)) 60%,
-        var(--cngx-tab-active-bg, oklch(1 0 0))
+        var(--cngx-tab-active-bg)
       );
     }
 
@@ -676,7 +676,7 @@
       /* Fuse with the panel: same surface, drop the ink-bar. The panel's
          top border is pulled up under the strip and covered by this
          opaque tab, so no negative margin is needed. */
-      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      background: var(--cngx-tab-active-bg);
       color: var(--cngx-tab-active-color, currentColor);
       box-shadow: none;
       margin-bottom: 0;
@@ -696,7 +696,7 @@
         var(--cngx-tab-surface-border-color, oklch(0.87 0 0));
       border-radius: 0;
       margin-block-start: calc(var(--cngx-tab-surface-border-width, 1px) * -1);
-      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      background: var(--cngx-tab-active-bg);
     }
   }
 
@@ -858,8 +858,8 @@
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
-      background: var(--cngx-tab-active-bg, oklch(0.66 0.19 50));
-      color: var(--cngx-tab-pill-active-color, oklch(1 0 0));
+      background: var(--cngx-tab-active-bg);
+      color: var(--cngx-tab-pill-active-color);
       /* Pill carries the active state as a fill; the tab has no border, so
          suppressing the base box-shadow ink-bar is all that's needed. */
       box-shadow: none;
@@ -1038,7 +1038,7 @@
     }
 
     .cngx-tabs__tab[aria-selected='true'] {
-      background: var(--cngx-tab-active-bg, oklch(1 0 0));
+      background: var(--cngx-tab-active-bg);
       color: var(--cngx-tab-active-color, currentColor);
       box-shadow: var(--cngx-tab-segmented-active-shadow, 0 1px 2px oklch(0 0 0 / 0.06));
     }

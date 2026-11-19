@@ -24,22 +24,35 @@
 }
 
 @mixin color($theme) {
+  @include _color-surfaces($theme);
+  @include _color-inks($theme);
+}
+
+// Surfaces: registered `inherits: false`, read on the inner button.
+@mixin _color-surfaces($theme) {
   @if mat.get-theme-version($theme) == 1 {
     // M3 - use Material sys tokens
     --cngx-speak-btn-bg: var(--mat-sys-surface-container-low);
     --cngx-speak-btn-hover-bg: var(--mat-sys-surface-container);
-    --cngx-speak-btn-color: var(--mat-sys-on-surface-variant);
-    --cngx-speak-btn-active-color: var(--mat-sys-primary);
     --cngx-speak-btn-speaking-bg: var(--mat-sys-primary);
-    --cngx-speak-btn-speaking-color: var(--mat-sys-on-primary);
-    --cngx-border: var(--mat-sys-outline-variant);
   } @else {
     // M2 - derive from palette
     --cngx-speak-btn-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-speak-btn-hover-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-speak-btn-speaking-bg: #{mat.get-theme-color($theme, primary)};
+  }
+}
+
+// Inks and the border: inheriting, so they stay on the host.
+@mixin _color-inks($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-speak-btn-color: var(--mat-sys-on-surface-variant);
+    --cngx-speak-btn-active-color: var(--mat-sys-primary);
+    --cngx-speak-btn-speaking-color: var(--mat-sys-on-primary);
+    --cngx-border: var(--mat-sys-outline-variant);
+  } @else {
     --cngx-speak-btn-color: rgba(0, 0, 0, 0.54);
     --cngx-speak-btn-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-speak-btn-speaking-bg: #{mat.get-theme-color($theme, primary)};
     --cngx-speak-btn-speaking-color: #fff;
     --cngx-border: rgba(0, 0, 0, 0.12);
   }
@@ -68,10 +81,18 @@
   --cngx-speak-btn-icon-size: #{map.get($icon-sizes, $scale)};
 }
 
+// The surface, metric and motion tokens are registered `inherits: false` and
+// read on the inner `.cngx-speak-button__btn`, so they broadcast onto the host
+// and every descendant; a host-only assignment never reaches them. The
+// inheriting inks stay on the host only, so a consumer override on the host
+// still reaches the button instead of losing to a broadcast copy.
 @mixin theme($theme) {
-  @include bridge.on(cngx-speak-button) {
+  @include bridge.on(bridge.broadcast(cngx-speak-button)) {
     @include base();
-    @include color($theme);
+    @include _color-surfaces($theme);
     @include density($theme);
+  }
+  @include bridge.on(cngx-speak-button) {
+    @include _color-inks($theme);
   }
 }

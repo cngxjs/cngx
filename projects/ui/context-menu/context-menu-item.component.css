@@ -125,7 +125,7 @@
   /* Submenu caret in the suffix slot - muted secondary ink next to the label. */
   cngx-context-menu-item .cngx-menu-item__suffix,
   button[cngxContextMenuItem] .cngx-menu-item__suffix {
-    color: var(--cngx-context-menu-item-caret-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+    color: var(--cngx-context-menu-item-caret-color);
   }
 
   /* The box lands on 12px at the 16px default and at any smaller font (the
@@ -168,7 +168,7 @@
     flex: none;
     align-self: stretch;
     inline-size: 1.25rem;
-    color: var(--cngx-context-menu-item-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+    color: var(--cngx-context-menu-item-check-color);
   }
 
   :is(

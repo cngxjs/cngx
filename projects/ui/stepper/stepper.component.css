@@ -38,7 +38,7 @@
  * **Inheritance**
  *
  * - `--cngx-step-completed-color` -> `--cngx-color-success`
- * - `--cngx-step-errored-color` -> `--cngx-color-danger`
+ * - `--cngx-step-errored-color` -> `--cngx-color-danger-text`
  * - error dots and the errored chip -> `--cngx-color-danger-strong` /
  *   `--cngx-color-on-danger-strong`
  * - `--cngx-step-pending-color` -> `--cngx-step-active-color`
@@ -149,8 +149,8 @@
   }
 
   /**
-   * Background of the completed indicator disc. Falls back to
-   * `--cngx-color-success`.
+   * Background of the completed indicator disc. Derives from
+   * `--cngx-color-success` (host SET below).
    * @group State / Completed
    * @see [[--cngx-color-success]]
    */
@@ -161,15 +161,16 @@
   }
 
   /**
-   * Background of the errored indicator disc. Falls back to
-   * `--cngx-color-danger`.
+   * Errored step colour: the indicator disc and the error label text.
+   * Derives from `--cngx-color-danger-text` (host SET below), so the text
+   * keeps its contrast in both schemes.
    * @group State / Error
-   * @see [[--cngx-color-danger]]
+   * @see [[--cngx-color-danger-text]]
    */
   @property --cngx-step-errored-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.45 0.15 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
@@ -335,6 +336,14 @@
     syntax: '*';
     inherits: true;
   }
+
+  /* The registered initial-values cannot hold var(), so the status hues are
+   * assigned on the host, where they resolve against the host's own scheme.
+   * Zero specificity keeps a bridge or consumer host value on top. */
+  :where(.cngx-stepper) {
+    --cngx-step-completed-color: var(--cngx-color-success);
+    --cngx-step-errored-color: var(--cngx-color-danger-text);
+  }
 }
 
 @layer cngx.components {
@@ -354,7 +363,7 @@
     }
 
     .cngx-stepper__indicator[data-state='success'] {
-      background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
+      background: var(--cngx-step-completed-color);
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
@@ -398,9 +407,9 @@
 
     .cngx-stepper__indicator[data-state='error'] {
       background: transparent;
-      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      color: var(--cngx-step-errored-color);
       box-shadow: inset 0 0 0 2px
-        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+        var(--cngx-step-errored-color);
     }
 
     .cngx-stepper__indicator[data-state='disabled'] {
@@ -416,6 +425,19 @@
         var(--cngx-step-active-fill, var(--cngx-color-primary, oklch(0.66 0.19 50)))
       );
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
+    }
+
+    /* Errored active step: the error wins over the active fill, as in the
+       chips and dot skins. The strong danger pair keeps the disc readable in
+       both schemes (a danger-text ring on the primary fill vanishes in dark);
+       the alert badge after the label stays the non-colour cue. */
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator[data-state='error'] {
+      background: var(
+        --cngx-color-danger-strong,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+      );
+      color: var(--cngx-color-on-danger-strong, oklch(1 0 0));
+      box-shadow: none;
     }
 
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
@@ -457,7 +479,7 @@
       margin: 0;
       font-size: var(--cngx-step-error-font-size, 0.85rem);
       line-height: var(--cngx-step-error-line-height, 1.4);
-      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      color: var(--cngx-step-errored-color);
       overflow-wrap: anywhere;
     }
 
@@ -864,6 +886,11 @@
    * scheme. Zero specificity keeps a consumer host value on top. */
   :where(.cngx-stepper[data-skin='chips']) {
     --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
+    --cngx-step-chips-bg-completed: color-mix(
+      in srgb,
+      var(--cngx-color-success, oklch(0.5 0.15 145)) 12%,
+      transparent
+    );
   }
 
   /**
@@ -935,13 +962,20 @@
 
   /**
    * Completed-item check colour in the `breadcrumb` skin. Inherits so
-   * the host value reaches the step descendant.
+   * the host value reaches the step descendant. Defaults to
+   * `--cngx-color-success-text`.
    * @group Skin / breadcrumb
+   * @see [[--cngx-color-success-text]]
    */
   @property --cngx-step-breadcrumb-check-color {
     syntax: '*';
     inherits: true;
-    initial-value: oklch(0.5 0.15 145);
+    initial-value: oklch(0.46 0.15 145);
+  }
+
+  /* Text rung assigned on the breadcrumb host, as for the chips label. */
+  :where(.cngx-stepper[data-skin='breadcrumb']) {
+    --cngx-step-breadcrumb-check-color: var(--cngx-color-success-text, oklch(0.46 0.15 145));
   }
 }
 
@@ -983,11 +1017,8 @@
        illegible, so the green fill carries "done" - mirroring the
        filled-primary active dot and filled-danger error dot. */
     .cngx-stepper__indicator[data-state='success'] {
-      background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.5 0.15 145)));
-      border-color: var(
-        --cngx-step-completed-color,
-        var(--cngx-color-success, oklch(0.5 0.15 145))
-      );
+      background: var(--cngx-step-completed-color);
+      border-color: var(--cngx-step-completed-color);
     }
 
     .cngx-stepper__indicator-check {
@@ -996,9 +1027,10 @@
 
     /* Errored step: filled danger dot. The alert icon after the label is
        the non-colour cue (WCAG 1.4.1). */
-    .cngx-stepper__indicator[data-state='error'] {
-      background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
-      border-color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    .cngx-stepper__indicator[data-state='error'],
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator[data-state='error'] {
+      background: var(--cngx-step-errored-color);
+      border-color: var(--cngx-step-errored-color);
       box-shadow: none;
     }
 
@@ -1687,6 +1719,16 @@
       );
     }
 
+    /* Errored active step: the error wins over the active disc, as in the
+       default skin. */
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator[data-state='error'] {
+      background: var(
+        --cngx-color-danger-strong,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+      );
+      color: var(--cngx-color-on-danger-strong, oklch(1 0 0));
+    }
+
     /* Completed segment stays flat - the green check disc carries the
        "done" cue, no segment tint by default. Text lifts toward full
        strength so done reads as more present than upcoming. The
@@ -1702,7 +1744,7 @@
     }
 
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
-      color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+      color: var(--cngx-step-errored-color);
     }
 
     /* Rejected segment: the reason tint replaces the segment background;
@@ -1815,11 +1857,8 @@
     .cngx-stepper__step:not([aria-current='step']):has(
         .cngx-stepper__indicator[data-state='success']
       ) {
-      background: var(
-        --cngx-step-chips-bg-completed,
-        color-mix(in srgb, var(--cngx-color-success, oklch(0.5 0.15 145)) 12%, transparent)
-      );
-      color: var(--cngx-step-chips-color-completed, var(--cngx-color-success, oklch(0.5 0.15 145)));
+      background: var(--cngx-step-chips-bg-completed);
+      color: var(--cngx-step-chips-color-completed);
     }
 
     .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__done-icon {
@@ -1954,10 +1993,7 @@
 
     .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__done-icon {
       display: inline-flex;
-      color: var(
-        --cngx-step-breadcrumb-check-color,
-        var(--cngx-color-success, oklch(0.5 0.15 145))
-      );
+      color: var(--cngx-step-breadcrumb-check-color);
     }
 
     /* Active item: a soft pill behind the label (tight, not the whole
@@ -1988,7 +2024,7 @@
     .cngx-stepper__step:has(.cngx-stepper__indicator[data-state='error']) {
       color: var(
         --cngx-step-breadcrumb-color-errored,
-        var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+        var(--cngx-step-errored-color)
       );
       font-weight: 600;
     }
@@ -2088,7 +2124,7 @@
    (currentColor resolves at the dot). */
 @layer cngx.tokens {
   :where(.cngx-stepper) {
-    --cngx-dot-step-completed-fill: var(--cngx-step-completed-color, currentColor);
+    --cngx-dot-step-completed-fill: var(--cngx-step-completed-color);
     --cngx-dot-step-active-fill: var(
       --cngx-step-active-fill,
       var(--cngx-color-primary, oklch(0.66 0.19 50))
@@ -2219,7 +2255,7 @@
 }
 
 .cngx-stepper__mobile-dot--completed {
-  background: var(--cngx-dot-step-completed-fill, var(--cngx-step-completed-color, currentColor));
+  background: var(--cngx-dot-step-completed-fill, var(--cngx-step-completed-color));
 }
 
 .cngx-stepper__mobile-dot--active {
@@ -2285,7 +2321,7 @@
   gap: var(--cngx-step-mobile-error-gap, 0.375rem);
   margin-block-start: var(--cngx-step-mobile-error-margin-top, 0.25rem);
   font-size: var(--cngx-step-mobile-error-font-size, 0.8125rem);
-  color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+  color: var(--cngx-step-errored-color);
 }
 
 .cngx-stepper__mobile-error-glyph {
@@ -2435,11 +2471,11 @@
    structural default deterministically (same rationale as the
    reduced-motion / dark-mode blocks above). */
 .cngx-stepper__group-summary--status[data-state='success'] {
-  background: var(--cngx-step-completed-color, var(--cngx-color-success, oklch(0.55 0.13 150)));
+  background: var(--cngx-step-completed-color);
 }
 
 .cngx-stepper__group-summary--status[data-state='error'] {
-  background: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.55 0.18 25)));
+  background: var(--cngx-step-errored-color);
 }
 
 .cngx-stepper__group-summary--status[data-state='pending'] {

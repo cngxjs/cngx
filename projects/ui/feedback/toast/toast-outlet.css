@@ -350,6 +350,12 @@
     initial-value: 0.875rem;
   }
 
+  /* The title follows the body size unless set on its own. inherits:false,
+   * so the derivation sits on the title that reads it. */
+  :where(.cngx-toast__title) {
+    --cngx-toast-title-font-size: var(--cngx-toast-font-size);
+  }
+
   /**
    * Color of the title slot.
    * @group Typography
@@ -714,7 +720,7 @@
     .cngx-toast__title {
       display: block;
       font-weight: var(--cngx-toast-title-font-weight, 600);
-      font-size: var(--cngx-toast-title-font-size, var(--cngx-toast-font-size, 0.875rem));
+      font-size: var(--cngx-toast-title-font-size);
       color: var(--cngx-toast-title-color, inherit);
       line-height: var(--cngx-toast-line-height, 1.5);
     }

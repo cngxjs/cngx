@@ -213,6 +213,11 @@
     --cngx-tab-overflow-popover-bg: var(--cngx-color-surface);
     --cngx-tab-overflow-popover-color: var(--cngx-color-text);
   }
+
+  /* inherits:false, so the derivation sits on the element that reads it. */
+  :where(.cngx-tab-overflow__item--active) {
+    --cngx-tab-overflow-item-active-bg: var(--cngx-tab-overflow-item-hover-bg);
+  }
 }
 
 @layer cngx.components {
@@ -268,8 +273,8 @@
     .cngx-tab-overflow__panel {
       min-width: var(--cngx-tab-overflow-popover-min-width, 12rem);
       max-height: var(--cngx-tab-overflow-popover-max-height, 16rem);
-      background: var(--cngx-tab-overflow-popover-bg, var(--cngx-color-surface, oklch(1 0 0)));
-      color: var(--cngx-tab-overflow-popover-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+      background: var(--cngx-tab-overflow-popover-bg);
+      color: var(--cngx-tab-overflow-popover-color);
       border: var(--cngx-tab-overflow-popover-border, 1px solid currentColor);
       border-radius: var(--cngx-tab-overflow-popover-radius, 0.25rem);
       overflow: auto;
@@ -295,7 +300,7 @@
     }
 
     .cngx-tab-overflow__item:hover {
-      background: var(--cngx-tab-overflow-item-hover-bg, oklch(0 0 0 / 0.05));
+      background: var(--cngx-tab-overflow-item-hover-bg);
     }
 
     /*
@@ -304,10 +309,7 @@
      * pattern requires visible indication of the highlighted option.
      */
     .cngx-tab-overflow__item--active {
-      background: var(
-        --cngx-tab-overflow-item-active-bg,
-        var(--cngx-tab-overflow-item-hover-bg, oklch(0 0 0 / 0.08))
-      );
+      background: var(--cngx-tab-overflow-item-active-bg);
       outline: var(--cngx-tab-overflow-item-active-outline, 2px solid currentColor);
       outline-offset: var(--cngx-tab-overflow-item-active-outline-offset, -2px);
     }

@@ -632,7 +632,7 @@
     flex: 0 0 auto;
     color: var(
       --cngx-step-error-badge-color,
-      var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+      var(--cngx-step-errored-color, oklch(0.46 0.18 25))
     );
   }
 
@@ -641,10 +641,7 @@
      shape their steps re-apply the tint in their own layer; linear-minimal
      and breadcrumb swap it for a line or the label colour. */
   .cngx-stepper__step--rejected {
-    --_cngx-step-rejection-color: var(
-      --cngx-step-errored-color,
-      var(--cngx-color-danger, oklch(0.45 0.15 25))
-    );
+    --_cngx-step-rejection-color: var(--cngx-step-errored-color, oklch(0.46 0.18 25));
     background: color-mix(
       in oklab,
       var(--_cngx-step-rejection-color, oklch(0.45 0.15 25)) var(--cngx-step-rejection-tint, 18%),
@@ -671,7 +668,7 @@
     display: inline-flex;
     align-items: center;
     flex: 0 0 auto;
-    color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    color: var(--cngx-step-errored-color, oklch(0.46 0.18 25));
   }
 
   .cngx-stepper__rejection-icon[data-reason='refused'] {
@@ -708,7 +705,7 @@
      indicator, vertical indents the whole row. */
   cngx-stepper[data-orientation='horizontal'] .cngx-stepper__step[data-step-depth='1'],
   cngx-stepper[data-orientation='horizontal'] .cngx-stepper__group-header[data-step-depth='1'] {
-    margin-inline-start: var(--cngx-step-group-indent, 1.5rem);
+    margin-inline-start: var(--cngx-step-group-indent);
   }
 
   cngx-stepper[data-orientation='vertical'] .cngx-stepper__strip {
@@ -728,7 +725,7 @@
   cngx-stepper[data-orientation='vertical'] .cngx-stepper__step[data-step-depth='1'],
   cngx-stepper[data-orientation='vertical'] .cngx-stepper__group-header[data-step-depth='1'] {
     padding-inline-start: calc(
-      var(--cngx-step-padding-inline, 0.75rem) + var(--cngx-step-group-indent, 1.5rem)
+      var(--cngx-step-padding-inline, 0.75rem) + var(--cngx-step-group-indent)
     );
   }
 

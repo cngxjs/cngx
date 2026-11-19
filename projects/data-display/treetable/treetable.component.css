@@ -601,7 +601,7 @@
       display: table-row;
       background: var(--cngx-treetable-header-bg, oklch(0.98 0.005 250));
       border-bottom: var(--cngx-treetable-header-border-width, 2px) solid
-        var(--cngx-treetable-header-border, var(--cngx-color-border, oklch(0.92 0.005 250)));
+        var(--cngx-treetable-header-border);
     }
 
     cdk-header-cell {
@@ -609,7 +609,7 @@
       padding: var(--cngx-treetable-cell-padding-block, 0.6rem)
         var(--cngx-treetable-cell-padding-inline, 1rem);
       font-weight: var(--cngx-treetable-header-font-weight, 600);
-      color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
+      color: var(--cngx-treetable-header-color);
       text-align: start;
       white-space: nowrap;
     }
@@ -623,7 +623,7 @@
     cdk-row {
       display: table-row;
       border-bottom: var(--cngx-treetable-row-border-width, 1px) solid
-        var(--cngx-treetable-row-border, var(--cngx-color-border, oklch(0.96 0.005 250)));
+        var(--cngx-treetable-row-border);
       cursor: pointer;
       transition: background var(--cngx-treetable-row-transition-duration, 120ms) ease;
     }
@@ -642,7 +642,7 @@
 
     cdk-row.cngx-treetable__row--focused {
       outline: var(--cngx-treetable-focus-ring-width, 2px) solid
-        var(--cngx-treetable-focus-ring, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+        var(--cngx-treetable-focus-ring);
       outline-offset: calc(-1 * var(--cngx-treetable-focus-ring-width, 2px));
     }
 
@@ -729,7 +729,7 @@
 
     .cngx-treetable__first-data-cell {
       padding-inline-start: calc(
-        var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem) +
+        var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size) +
           var(--cngx-treetable-cell-padding-inline, 1rem)
       );
     }
@@ -738,7 +738,7 @@
       display: table-cell;
       padding: var(--cngx-treetable-cell-padding-block, 0.6rem)
         var(--cngx-treetable-cell-padding-inline, 1rem);
-      color: var(--cngx-treetable-cell-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
+      color: var(--cngx-treetable-cell-color);
       vertical-align: middle;
       /* A data cell renders arbitrary consumer values - dates (`2024-06-01`),
          codes (`PROJ-100-2`), numbers - that reorder on their neutral
@@ -757,7 +757,7 @@
       width: 1px;
       padding-inline-end: var(--cngx-treetable-narrow-cell-padding-inline, 0.25rem);
       padding-inline-start: calc(
-        var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.5rem) +
+        var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size) +
           var(--cngx-treetable-narrow-cell-padding-inline, 0.25rem)
       );
     }
@@ -791,11 +791,8 @@
     }
 
     .cngx-treetable__toggle:hover {
-      background: var(
-        --cngx-treetable-header-border,
-        var(--cngx-color-border, oklch(0.92 0.005 250))
-      );
-      color: var(--cngx-treetable-header-color, var(--cngx-color-text, oklch(0.34 0.015 250)));
+      background: var(--cngx-treetable-header-border);
+      color: var(--cngx-treetable-header-color);
     }
 
     /* The collapsed twisty `▸` is directional: mirror it inline under RTL so it
@@ -836,7 +833,7 @@
       cdk-cell.cngx-treetable__expand-cell {
         padding-inline-end: var(--cngx-treetable-narrow-utility-padding-inline, 0.125rem);
         padding-inline-start: calc(
-          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem) +
+          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size) +
             var(--cngx-treetable-narrow-utility-padding-inline, 0.125rem)
         );
       }
@@ -847,7 +844,7 @@
 
       .cngx-treetable__first-data-cell {
         padding-inline-start: calc(
-          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size, 1.25rem) +
+          var(--cngx-row-depth, 0) * var(--cngx-treetable-indent-size) +
             var(--cngx-treetable-narrow-utility-padding-inline-large, 0.875rem)
         );
       }
