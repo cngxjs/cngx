@@ -164,8 +164,19 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
       untracked(() => {
         const diverged = known !== null && !Object.is(known.value, value);
         known = { value };
-        if (diverged) {
-          this.warnParentBound();
+        if (!diverged || parentBoundWarned.has(this)) {
+          return;
+        }
+        parentBoundWarned.add(this);
+        if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+          const host = this.host.nativeElement;
+          cngxDevWarn(
+            'CNGX2033',
+            `[${host.localName}] the value is bound by a parent [value] binding next to ` +
+              '[formControl], so the atom shows a value the form control never receives. ' +
+              'Write the form control instead (setValue / patchValue) and drop the value binding.',
+            host,
+          );
         }
       });
     });
@@ -174,22 +185,6 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
         known = { value };
       },
     };
-  }
-
-  private warnParentBound(): void {
-    if (parentBoundWarned.has(this)) {
-      return;
-    }
-    parentBoundWarned.add(this);
-    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      cngxDevWarn(
-        'CNGX2033',
-        `[${this.host.nativeElement.localName}] the value is bound by a parent [value] binding ` +
-          'next to [formControl], so the atom shows a value the form control never receives. ' +
-          'Write the form control instead (setValue / patchValue) and drop the value binding.',
-        this.host.nativeElement,
-      );
-    }
   }
 
   registerOnTouched(fn: () => void): void {
