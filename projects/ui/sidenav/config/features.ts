@@ -81,7 +81,7 @@ export function withSidenavRouterSync(
  * Override the app-wide sidenav copy. Unset keys read the `sidenav` section of
  * the language pack (English without one); pass a `Signal` of a partial bundle
  * to switch languages at runtime. A per-instance `[resizeLabel]` still wins
- * over `resizeHandle`. A later call replaces the whole bundle.
+ * over `resizeHandle`. A later call merges per key over the earlier one.
  *
  * ```ts
  * provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }));
@@ -101,8 +101,8 @@ export function withSidenavLabels(
  * `collapsed` only means something on the docked rail of the `expanded` width
  * class, so one value per rail is stored, and it survives a pass through
  * `medium` and `compact`. The stored value seeds an unbound `collapsed` at
- * construction. A bound `[(collapsed)]` is the consumer's source and is never
- * overwritten; persist it yourself. The position is read from the static
+ * construction. A bound `[(collapsed)]` is persisted too; on load the bound
+ * value wins over the stored one. The position is read from the static
  * `position` attribute (`start` when absent).
  *
  * ```ts

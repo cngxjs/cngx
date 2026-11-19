@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     'CngxPopoverSheetHandle',
   ],
   moduleImports: [
-    "import { CngxPopover, CngxPopoverAction, CngxPopoverSheet, CngxPopoverSheetHandle, CngxPopoverSheetHeader, CngxPopoverSheetTitle, CngxPopoverTrigger } from '@cngx/common/popover';",
+    "import { CngxPopover, CngxPopoverAction, CngxPopoverSheet, CngxPopoverSheetHandle, CngxPopoverSheetHeader, CngxPopoverSheetTitle, CngxPopoverTrigger, type CngxPopoverSheetCloseReason } from '@cngx/common/popover';",
     "import { CngxCloseButton } from '@cngx/common/button';",
     "import { CngxFailed, CngxPending, CngxSwipeDismiss } from '@cngx/common/interactive';",
   ],
@@ -41,8 +41,19 @@ export const STORY: DemoSpec = {
     'Madrid', 'Oslo', 'Paris', 'Prague', 'Rome', 'Stockholm', 'Vienna', 'Warsaw',
   ];
   protected saveFavourite = () =>
-    new Promise<void>((_, reject) => setTimeout(() => reject('Could not save, you are offline'), 1500));`,
-  template: `<div class="demo-inline-actions" [attr.dir]="dir()">
+    new Promise<void>((_, reject) => setTimeout(() => reject('Could not save, you are offline'), 1500));
+
+  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
+  protected readonly blockClose = signal(false);
+  protected readonly escapeCloses = signal(true);
+  protected readonly lastRequest = signal<string | undefined>(undefined);
+  protected handleCloseRequested(reason: CngxPopoverSheetCloseReason, sheet: CngxPopoverSheet): void {
+    this.lastRequest.set(reason);
+    if (this.blockClose()) {
+      sheet.announce('Closing is blocked', 'assertive');
+    }
+  }`,
+  template: `<div class="demo-inline-actions">
     <button type="button" [cngxPopoverTrigger]="pop" (click)="pop.show()">
       {{ city() ?? 'Choose a city' }}
     </button>
@@ -123,17 +134,28 @@ export const STORY: DemoSpec = {
     this.destroyRef.onDestroy(() => observer.disconnect());
   });
 
-  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
-  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
-  protected readonly blockClose = signal(false);
-  protected readonly escapeCloses = signal(true);
-  protected readonly lastRequest = signal<string | undefined>(undefined);
-  protected handleCloseRequested(reason: string, sheet: { announce(m: string, p?: 'polite' | 'assertive'): void }): void {
-    this.lastRequest.set(reason);
-    if (this.blockClose()) {
-      sheet.announce('Closing is blocked', 'assertive');
+  // The popover places itself from the document direction, so the RTL radio
+  // flips <html dir>. It starts from the page's direction and, once used, puts
+  // the page's own value back on destroy.
+  private readonly root = this.hostEl.nativeElement.ownerDocument.documentElement;
+  private readonly rootDir = this.root.getAttribute('dir');
+  private dirTouched = false;
+  protected readonly dir = signal<'ltr' | 'rtl'>(this.rootDir === 'rtl' ? 'rtl' : 'ltr');
+  protected setDir(value: 'ltr' | 'rtl'): void {
+    this.dirTouched = true;
+    this.dir.set(value);
+    this.root.setAttribute('dir', value);
+  }
+  private readonly restoreDir = this.destroyRef.onDestroy(() => {
+    if (!this.dirTouched) {
+      return;
     }
-  }`,
+    if (this.rootDir === null) {
+      this.root.removeAttribute('dir');
+    } else {
+      this.root.setAttribute('dir', this.rootDir);
+    }
+  });`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
       <label>
@@ -146,11 +168,11 @@ export const STORY: DemoSpec = {
   </div>
   <div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
-      <input type="radio" name="sheet-dir" value="ltr" [checked]="dir() === 'ltr'" (change)="dir.set('ltr')" />
+      <input type="radio" name="sheet-dir" value="ltr" [checked]="dir() === 'ltr'" (change)="setDir('ltr')" />
       LTR
     </label>
     <label>
-      <input type="radio" name="sheet-dir" value="rtl" [checked]="dir() === 'rtl'" (change)="dir.set('rtl')" />
+      <input type="radio" name="sheet-dir" value="rtl" [checked]="dir() === 'rtl'" (change)="setDir('rtl')" />
       RTL
     </label>
   </div>

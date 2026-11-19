@@ -1,0 +1,108 @@
+@use '@angular/material' as mat;
+@use '../../../../projects/themes/material/system-bridge.scss' as cngx-system;
+
+// Shared base of every material-lab page sheet. Only mixins and variables: a
+// page sheet places each include where its emit order needs it, so the lab's
+// own bundle compiles to the same CSS it did before the split.
+
+$palette: (
+  theme-type: color-scheme,
+  primary: mat.$azure-palette,
+  tertiary: mat.$blue-palette,
+);
+$theme: mat.define-theme(
+  (
+    color: $palette,
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+// The examples app pins `:root { font-size: 14px }`, but Material (and the
+// real StackBlitz playground) assume a 16px root. Restore 16px here so rem-based
+// cngx sizes are measured on the same basis as Material - otherwise every cngx
+// rem renders at 0.875x and looks falsely "too small".
+@mixin root() {
+  :root {
+    font-size: 16px;
+    // examples app pins system-ui at :root (higher specificity than html); the
+    // playground has no such rule, so restore Roboto here for a faithful compare.
+    font-family: Roboto, sans-serif;
+  }
+}
+
+// The Material theme plus the cngx system bridge, for the page's `html` block.
+// No per-component mat.*-theme($theme) includes: the Material widgets read
+// the system tokens mat.theme() emits. On a color-scheme theme those mixins
+// write the light values as literals, so the Material widgets stayed light
+// in a dark OS while the cngx widgets followed it.
+@mixin material() {
+  @include mat.theme(
+    (
+      color: $palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
+  @include cngx-system.theme($theme);
+}
+
+// The examples app colours its text itself; Material widgets that carry no
+// colour of their own (mat-hint) inherit it, so the lab paints the Material
+// role, as a Material page body would.
+@mixin chrome() {
+  .lab {
+    color: var(--mat-sys-on-surface);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 48px 32px;
+    align-items: flex-start;
+    padding: 32px;
+  }
+
+  .lab section {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    width: 280px;
+  }
+
+  .lab section.lab-wide {
+    width: auto;
+  }
+
+  // Container-query organisms (stepper, paginator, breadcrumb, tabs, data grid)
+  // have no intrinsic width: a shrink-to-fit section collapses them to their
+  // mobile layout. These rows take the full lab width instead.
+  .lab section.lab-full {
+    width: 100%;
+  }
+
+  .lab-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lab h3 {
+    margin: 0;
+    font: var(--mat-sys-title-small);
+  }
+
+  // The page row every lab page shows first.
+  .lab-pages {
+    inline-size: 100%;
+    font: var(--mat-sys-label-large);
+  }
+
+  .lab-pages a {
+    color: var(--mat-sys-primary);
+  }
+
+  .lab-pages a.lab-page-active {
+    color: inherit;
+    text-decoration: none;
+  }
+}

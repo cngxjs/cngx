@@ -22,23 +22,23 @@ export const STORY: DemoSpec = {
   template: `
   <div class="demo-inline-actions">
     <button cngxMenuButton="outline" [menu]="sortMenu" [popover]="sortPop">Sort</button>
+    <div cngxPopover placement="bottom-start" #sortPop="cngxPopover">
+      <ul cngxMenu [label]="'Sort by'" tabindex="0" #sortMenu="cngxMenu">
+        <li cngxMenuItem value="name">Name</li>
+        <li cngxMenuItem value="date">Date modified</li>
+      </ul>
+    </div>
     <button cngxMenuButton="outline" [menu]="viewMenu" [popover]="viewPop">
       View
       <cngx-icon cngxButtonEnd>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
       </cngx-icon>
     </button>
-  </div>
-  <div cngxPopover placement="bottom-start" #sortPop="cngxPopover">
-    <ul cngxMenu [label]="'Sort by'" tabindex="0" #sortMenu="cngxMenu">
-      <li cngxMenuItem value="name">Name</li>
-      <li cngxMenuItem value="date">Date modified</li>
-    </ul>
-  </div>
-  <div cngxPopover placement="bottom-start" #viewPop="cngxPopover">
-    <ul cngxMenu [label]="'View'" tabindex="0" #viewMenu="cngxMenu">
-      <li cngxMenuItem value="list">List</li>
-      <li cngxMenuItem value="grid">Grid</li>
-    </ul>
+    <div cngxPopover placement="bottom-start" #viewPop="cngxPopover">
+      <ul cngxMenu [label]="'View'" tabindex="0" #viewMenu="cngxMenu">
+        <li cngxMenuItem value="list">List</li>
+        <li cngxMenuItem value="grid">Grid</li>
+      </ul>
+    </div>
   </div>`,
 };

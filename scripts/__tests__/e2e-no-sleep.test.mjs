@@ -61,6 +61,10 @@ const SLEEP_EXEMPT = [
 function specFiles(dir) {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
+    // Throwaway probe specs an independent review writes and deletes.
+    if (name.startsWith('__review-probe')) {
+      return [];
+    }
     if (statSync(path).isDirectory()) {
       return specFiles(path);
     }

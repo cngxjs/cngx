@@ -17,6 +17,10 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   setup: `protected readonly active = signal(0);
+  protected readonly orientationOptions = ['horizontal', 'vertical'] as const;
+  protected readonly orientation = signal<typeof this.orientationOptions[number]>('horizontal');
+  protected readonly outcomeOptions = ['success', 'pending', 'error'] as const;
+  protected readonly outcome = signal<typeof this.outcomeOptions[number]>('success');
   protected readonly commitAction = (target: number) => {
     if (this.outcome() === 'success') {
       return true;
@@ -31,10 +35,6 @@ export const STORY: DemoSpec = {
       }, 1500);
     });
   };`,
-  setupChrome: `  protected readonly orientationOptions = ['horizontal', 'vertical'] as const;
-  protected readonly orientation = signal<typeof this.orientationOptions[number]>('horizontal');
-  protected readonly outcomeOptions = ['success', 'pending', 'error'] as const;
-  protected readonly outcome = signal<typeof this.outcomeOptions[number]>('success');`,
   template: `  <cngx-stepper
     #stepper="cngxStepper"
     [(activeStepIndex)]="active"

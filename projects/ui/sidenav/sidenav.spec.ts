@@ -1845,6 +1845,13 @@ describe('CngxSidenav panel target', () => {
 });
 
 describe('CngxSidenav persistence', () => {
+  // The width-class cases spy getComputedStyle and stub ResizeObserver; restore
+  // both even when an assertion fails first.
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   function memoryStorage(
     seed: Record<string, string> = {},
   ): Storage & { data: Map<string, string> } {
@@ -1968,8 +1975,6 @@ describe('CngxSidenav persistence', () => {
     TestBed.flushEffects();
     expect(fixture.componentInstance.open()).toBe(true);
     expect(storage.data.size).toBe(0);
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
   });
 
   it('reads and writes the browser localStorage through the default token factory', () => {

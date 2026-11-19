@@ -6,16 +6,20 @@ import {
   type Signal,
 } from '@angular/core';
 
+import { createOverrideMerge } from '@cngx/core/utils';
+
 import type { CngxSidenavConfig, CngxSidenavLabels } from './sidenav.config';
 import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './sidenav.config.defaults';
+
+const NO_LABELS: Partial<CngxSidenavLabels> = {};
 
 /**
  * Discriminated-union shape returned by the six sidenav config features -
  * `withSidenavDimensions`, `withSidenavShortcut`, `withSidenavHoverDwell`,
  * `withSidenavRouterSync`, `withSidenavLabels` and `withSidenavPersistence`.
  * The reducer in `provideSidenavConfig` / `provideSidenavConfigAt` matches on
- * `kind`: `dimensions`, `hover` and `routerSync` merge per key, `shortcut`,
- * `labels` and `persistence` replace. Mirrors `CngxBreadcrumbConfigFeature` from
+ * `kind`: `dimensions`, `hover`, `routerSync` and `labels` merge per key,
+ * `shortcut` and `persistence` replace. Mirrors `CngxBreadcrumbConfigFeature` from
  * `@cngx/ui/breadcrumb` (nested-sub-tree style; the stepper family uses flat
  * scalar keys instead).
  *
@@ -80,7 +84,7 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
         out.shortcut = f.payload.shortcut;
         break;
       case 'labels':
-        out.labels = f.payload.labels;
+        out.labels = createOverrideMerge(out.labels ?? NO_LABELS, f.payload.labels);
         break;
       case 'persistence':
         out.persistence = f.payload;
@@ -92,8 +96,9 @@ function reduceFeatures(features: readonly CngxSidenavConfigFeature[]): Partial<
 
 /**
  * Two-level merge: `dimensions`, `hover` and `routerSync` are spread-merged per
- * key; `shortcut`, `labels` and `persistence` take the partial when present,
- * else the base. Inner objects are flat (one level),
+ * key, `labels` merges per key through `createOverrideMerge` (it may be a
+ * `Signal`); `shortcut` and `persistence` take the partial when present, else
+ * the base. Inner objects are flat (one level),
  * so a single spread per key suffices. Invariant: a config key nested more than
  * one level deep would shallow-merge silently here - if the config ever grows a
  * deeper sub-tree, add a dedicated spread for it rather than relying on this
@@ -110,7 +115,7 @@ function mergeConfig(
     hover: { ...base.hover, ...partial.hover },
     routerSync: { ...base.routerSync, ...partial.routerSync },
     shortcut: partial.shortcut ?? base.shortcut,
-    labels: partial.labels ?? base.labels,
+    labels: createOverrideMerge(base.labels ?? NO_LABELS, partial.labels),
     persistence: partial.persistence ?? base.persistence,
   };
 }
@@ -124,10 +129,10 @@ function mergeConfig(
  *   1. Per-instance Input binding.
  *   2. `provideSidenavConfigAt(...)` in a parent component's `viewProviders`.
  *   3. `provideSidenavConfig(...)` at the application root.
- *   4. Library defaults (`CNGX_SIDENAV_DEFAULTS`).
+ *   4. Library defaults.
  *
- * `dimensions`, `hover` and `routerSync` merge per key with the library
- * defaults; `shortcut`, `labels` and `persistence` replace them.
+ * `dimensions`, `hover`, `routerSync` and `labels` merge per key with the
+ * library defaults; `shortcut` and `persistence` replace them.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -170,8 +175,8 @@ export function provideSidenavConfig(
  * the parent injector's `CNGX_SIDENAV_CONFIG` value (resolves through the
  * priority chain - root provider, library defaults, or another
  * `provideSidenavConfigAt` further up) and applies the supplied features on
- * top: `dimensions`, `hover` and `routerSync` merge per key, `shortcut`,
- * `labels` and `persistence` replace. Descendant sidenav instances see the
+ * top: `dimensions`, `hover`, `routerSync` and `labels` merge per key,
+ * `shortcut` and `persistence` replace. Descendant sidenav instances see the
  * result; sibling sub-trees keep the inherited value untouched. Pass only the
  * keys you set: an explicit `undefined` inside a merged sub-tree overrides
  * the parent.

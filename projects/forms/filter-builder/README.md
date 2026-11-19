@@ -222,6 +222,8 @@ export class FormFieldDriven {
 
 Listeners stay on the directive, not on the presenter - consumers without the form-field bridge pay no event-listener cost. 
 For Reactive Forms, wrap the `FormControl` with `adaptFormControl()` from `@cngx/forms/field` and pass the returned accessor as `[field]`.
+That accessor carries the field state (disabled, touched, errors), not the value: the builder has no `ControlValueAccessor`, so `[formControl]` on it fails with Angular's missing value accessor error (`NG01203`).
+Bind the value yourself with `[value]="value()"` and `(valueChange)="control.setValue($event)"`, where `value = toSignal(control.valueChanges, { initialValue: control.value })`.
 
 ## Operator semantics
 

@@ -52,6 +52,8 @@ Variant, tone, size, `disabled` with a reason and the busy layer work as on `cng
 
 The idle content and the status labels sit stacked in one cell. Only the active one is visible
 and names the button, so the button is as wide as its widest label and never jumps after a run.
+A `cngxFailed` template that renders the error text is the exception: that text is unknown until
+the run fails, so the button grows when it shows.
 
 1. Click: the action starts, and `aria-busy`, `aria-disabled` and the click guard are set.
 2. After `showDelay` (120 ms by default) the pending label replaces the idle label. Without

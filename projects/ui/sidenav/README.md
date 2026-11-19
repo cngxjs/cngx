@@ -183,8 +183,8 @@ Read the resolved config in an injection context with `injectSidenavConfig()`. S
 
 | Key | Combines with the level above |
 |-|-|
-| `dimensions`, `hover`, `routerSync` | Merge per key |
-| `shortcut`, `labels`, `persistence` | Replace |
+| `dimensions`, `hover`, `routerSync`, `labels` | Merge per key |
+| `shortcut`, `persistence` | Replace |
 
 Pass only the keys you set: an explicit `undefined` inside a merged key overrides the parent.
 
@@ -262,19 +262,17 @@ Resolution order for the key: per-instance `[param]` beats `withSidenavRouterSyn
 
 ## Material Theme
 
-Include the theme SCSS files in your global stylesheet:
+Include the theme SCSS file in your global stylesheet. It includes the nav-link bridge for the rows, header and footer, so no separate import is needed:
 
 ```scss
 @use '@angular/material' as mat;
 @use '@cngx/themes/material/sidenav-theme' as sidenav;
-@use '@cngx/themes/material/nav-link-theme' as nav-link;
 
 $theme: mat.define-theme((...));
 
 html {
   @include mat.all-component-themes($theme);
   @include sidenav.theme($theme);
-  @include nav-link.theme($theme);
 }
 ```
 
@@ -285,3 +283,34 @@ The theme mixin provides:
 - Material 2 palette color mappings
 - Backdrop, header, and footer styling
 - Support for both M3 and M2 themes (auto-detected)
+
+### Brand rail under the bridge
+
+A rail that sets its own `--cngx-sidenav-bg` and `--cngx-sidenav-color` gets that surface, ink and focus ring, but its rows, header and footer keep their Material roles. The bridge SETs those tokens on the rows (`.cngx-nav-link`, `[cngxNavGroup]`) and on `.cngx-nav-header` / `.cngx-nav-footer` themselves, so a value on the `cngx-sidenav` host does not reach them. Set them on the same elements, scoped to the rail:
+
+```css
+cngx-sidenav.brand {
+  --cngx-sidenav-bg: #1e293b;
+  --cngx-sidenav-color: #f8fafc;
+}
+
+cngx-sidenav.brand :is(.cngx-nav-link, [cngxNavGroup]) {
+  --cngx-nav-link-color: #f8fafc;
+  --cngx-nav-link-hover-color: #f8fafc;
+  --cngx-nav-link-ink: #cbd5e1;
+  --cngx-nav-link-hover-bg: rgb(248 250 252 / 0.08);
+  --cngx-nav-link-pressed-bg: rgb(248 250 252 / 0.12);
+  --cngx-nav-link-active-color: #0f172a;
+  --cngx-nav-link-active-bg: #bae6fd;
+  --cngx-nav-link-active-hover-bg: #7dd3fc;
+}
+
+cngx-sidenav.brand :is(.cngx-nav-header, .cngx-nav-footer) {
+  --cngx-nav-header-bg: transparent;
+  --cngx-nav-footer-bg: transparent;
+  --cngx-nav-header-border-color: rgb(248 250 252 / 0.16);
+  --cngx-nav-footer-border-color: rgb(248 250 252 / 0.16);
+}
+```
+
+That is the M3 set. Under an M2 theme the bridge leaves the rest text to the rail ink and sets `--cngx-nav-link-hover-bg`, `--cngx-nav-link-pressed-bg`, `--cngx-nav-link-active-color`, `--cngx-nav-link-active-bg`, `--cngx-nav-link-active-hover-bg` and `--cngx-nav-link-active-indicator-color` on the rows, plus the same four slot tokens. Without the bridge none of this is needed: the rail host derives the row fills from `--cngx-color-primary` and the rows inherit the rail ink.
