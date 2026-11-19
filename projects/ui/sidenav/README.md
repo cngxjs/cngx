@@ -183,8 +183,8 @@ Read the resolved config in an injection context with `injectSidenavConfig()`. S
 
 | Key | Combines with the level above |
 |-|-|
-| `dimensions`, `hover`, `routerSync` | Merge per key |
-| `shortcut`, `labels`, `persistence` | Replace |
+| `dimensions`, `hover`, `routerSync`, `labels` | Merge per key |
+| `shortcut`, `persistence` | Replace |
 
 Pass only the keys you set: an explicit `undefined` inside a merged key overrides the parent.
 

@@ -12,8 +12,8 @@ import type { Signal } from '@angular/core';
  *   4. Library defaults (merged in via `CNGX_SIDENAV_DEFAULTS`).
  *
  * Every key is optional, so consumers declare only the keys they want to
- * override. `dimensions`, `hover` and `routerSync` merge per key with the
- * level above; `shortcut`, `labels` and `persistence` replace it whole.
+ * override. `dimensions`, `hover`, `routerSync` and `labels` merge per key
+ * with the level above; `shortcut` and `persistence` replace it whole.
  *
  * The cascaded keys are the dimension inputs, the rail hover dwell, the
  * `shortcut` default, the router-sync `param`, the copy and the `collapsed`
@@ -87,7 +87,7 @@ export interface CngxSidenavConfig {
    * App-wide sidenav copy overrides. Reactive from birth: pass a partial
    * bundle or a `Signal` of one; unset keys read the `sidenav` section of the
    * language pack (English without one). Override via `withSidenavLabels(...)`.
-   * A later feature replaces the whole bundle.
+   * A later feature merges per key over the earlier one.
    */
   readonly labels?: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>;
 }
