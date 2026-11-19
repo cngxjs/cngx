@@ -122,6 +122,18 @@ afterEach(() => {
 });
 
 describe('CngxPopover main-axis offset geometry', () => {
+  it.each(['bottom', 'right'] as const)(
+    'writes the offset as one length beside the margin shorthand (%s)',
+    async (placement) => {
+      const f = mount({ placement, top: 200, left: 400 });
+      f.componentInstance.popover().show();
+      f.detectChanges();
+      await nextFrame();
+      const panel = (f.nativeElement as HTMLElement).querySelector<HTMLElement>('.panel')!;
+      expect(panel.style.getPropertyValue('--cngx-popover-anchor-offset')).toBe(`${GAP}px`);
+    },
+  );
+
   it('bottom-start: flush start edge, gap below', async () => {
     const { anchor, panel } = await openAndMeasure({
       placement: 'bottom-start',

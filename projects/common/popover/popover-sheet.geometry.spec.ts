@@ -8,6 +8,7 @@ import { cdp } from 'vitest/browser';
 
 import { ANCHOR_AREA_PROPERTY } from './anchor-positioning';
 import { CngxPopover } from './popover.directive';
+import type { PopoverPositionTryFallback } from './popover.types';
 import type { CngxPopoverPresentationRequest } from './popover-sheet.directive';
 import { CngxPopoverSheet } from './popover-sheet.directive';
 import {
@@ -44,10 +45,17 @@ const HARNESS_STYLES = [
   encapsulation: ViewEncapsulation.None,
   template: `
     <div [attr.dir]="dir()" [attr.data-color-scheme]="scheme()">
-      <button type="button" class="trigger" [cngxPopoverTrigger]="pop" style="margin: 40px">
+      <button type="button" class="trigger" [cngxPopoverTrigger]="pop" [style]="triggerStyle()">
         Open
       </button>
-      <div cngxPopover #pop="cngxPopover" class="panel" [cngxPopoverSheet]="request()">
+      <div
+        cngxPopover
+        #pop="cngxPopover"
+        class="panel"
+        [cngxPopoverSheet]="request()"
+        [offset]="offset()"
+        [positionTryFallbacks]="fallbacks()"
+      >
         <header class="header" cngxPopoverSheetHeader>
           <span cngxPopoverSheetHandle></span>
           <h2 cngxPopoverSheetTitle style="margin: 0; font-size: 1rem">Cities</h2>
@@ -65,6 +73,9 @@ class SheetGeometryHost {
   readonly request = signal<CngxPopoverPresentationRequest>('sheet');
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
   readonly scheme = signal<'light' | 'dark' | null>(null);
+  readonly triggerStyle = signal('margin: 40px');
+  readonly offset = signal(8);
+  readonly fallbacks = signal<readonly PopoverPositionTryFallback[] | undefined>(undefined);
   readonly rows = signal<readonly number[]>(Array.from({ length: 3 }, (_, i) => i));
   readonly popover = viewChild.required(CngxPopover);
 }
@@ -264,6 +275,55 @@ describe('CngxPopoverSheet geometry', () => {
     expect(rect.width).toBeLessThan(viewport().width / 2);
     expect(rect.top).toBeGreaterThanOrEqual(trigger.getBoundingClientRect().bottom - 1);
     expect(panel.getAttribute('role')).toBeNull();
+  });
+
+  describe('anchored presentation', () => {
+    const tall = (h: SheetGeometryHost) => {
+      h.request.set('anchored');
+      h.rows.set(Array.from({ length: 60 }, (_, i) => i));
+    };
+
+    it('caps the block size at the anchor area minus the far margin', async () => {
+      const { panel } = await open(tall);
+      const content = panel.querySelector<HTMLElement>('.content')!;
+      const header = panel.querySelector<HTMLElement>('.header')!;
+      expect(panel.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight - 8 + 1);
+      expect(computedValue(header, 'display')).toBe('flex');
+      expect(content.scrollHeight).toBeGreaterThan(content.clientHeight);
+      const headerTop = header.offsetTop;
+      content.scrollTop = 200;
+      await frames(1);
+      expect(content.scrollTop).toBeGreaterThan(0);
+      expect(header.offsetTop).toBe(headerTop);
+    });
+
+    it('opens above a trigger near the bottom edge', async () => {
+      const { panel } = await open((h) => {
+        tall(h);
+        h.fallbacks.set(['flip-block']);
+        h.triggerStyle.set('position: fixed; inset-block-end: 40px; inset-inline-start: 40px');
+      });
+      const trigger = mountedRoot!.querySelector<HTMLElement>('.trigger')!;
+      const rect = panel.getBoundingClientRect();
+      expect(rect.bottom).toBeLessThanOrEqual(trigger.getBoundingClientRect().top + 1);
+      expect(rect.top).toBeGreaterThanOrEqual(8 - 1);
+    });
+
+    it('lets the cap track the anchor margin', async () => {
+      const { panel } = await open((h) => {
+        tall(h);
+        h.offset.set(0);
+      });
+      expect(
+        Math.abs(panel.getBoundingClientRect().bottom - window.innerHeight),
+      ).toBeLessThanOrEqual(1);
+    });
+
+    it('runs on the CSS anchor path', async () => {
+      const { panel } = await open(tall);
+      expect(computedValue(panel, ANCHOR_AREA_PROPERTY)).not.toBe('normal');
+      expect(panel.style.getPropertyValue(ANCHOR_AREA_PROPERTY)).not.toBe('');
+    });
   });
 
   it('holds the panel transparent at the slide start while settling, then releases it', async () => {

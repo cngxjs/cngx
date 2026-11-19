@@ -15,7 +15,12 @@
     --cngx-select-sheet-header-gap: var(--cngx-space-sm);
   }
 
-  .cngx-popover-sheet:not([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+  /* Prefixed with the panel class so it outranks the sheet skin's header row,
+     which reaches the anchored presentation too. */
+  .cngx-select__panel.cngx-popover-sheet:not(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen']
+    )
     > .cngx-select-sheet-header {
     display: none;
   }

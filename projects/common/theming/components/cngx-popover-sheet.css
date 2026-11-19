@@ -18,12 +18,14 @@
  * - `sheet` - bottom-flush, full inline size, content-sized up to
  *   `--cngx-popover-sheet-max-block-size`, dimmed `::backdrop`
  * - `fullscreen` - fills the dynamic viewport (`100dvh`)
- * - `anchored` - untouched; the popover keeps its anchored layout
+ * - `anchored` - keeps the popover's position and inline size, capped at
+ *   the space next to the anchor minus the anchor offset on both edges
  *
- * In both non-anchored presentations the host is a non-scrolling flex
- * column: the `cngxPopoverSheetHeader` part stays put and every other
- * direct child scrolls. A swipe region inside a scrolling panel never
- * fires, so only the content below the header may scroll.
+ * In every presentation the host is a non-scrolling flex column: the
+ * `cngxPopoverSheetHeader` part stays put as a row and every other direct
+ * child scrolls. A swipe region inside a scrolling panel never fires, so
+ * only the content below the header may scroll. A footer that must stay
+ * pinned sets `flex: none`.
  *
  * **Settling**
  *
@@ -304,9 +306,24 @@
    * `[popover]:not(:popover-open) { display: none }` and keep it rendered. */
   .cngx-popover-sheet:is(
       [data-cngx-presentation='sheet'],
-      [data-cngx-presentation='fullscreen']
+      [data-cngx-presentation='fullscreen'],
+      [data-cngx-presentation='anchored']
     ):popover-open {
     display: flex;
+  }
+
+  /* Anchored keeps the popover's position and inline size; it gets the
+   * column model and a cap at the space next to the anchor. Under
+   * `position-area` the containing block is the area cell and the margin box
+   * (the anchor offset on both block edges) must fit inside it. The offset
+   * comes as one length: the margin property is a shorthand `calc()` cannot
+   * multiply. Without anchor positioning `100%` resolves against the
+   * viewport. */
+  .cngx-popover-sheet[data-cngx-presentation='anchored'] {
+    flex-direction: column;
+    overflow: hidden;
+    max-block-size: calc(100% - 2 * var(--cngx-popover-anchor-offset, 0px));
+    position-try-order: most-block-size;
   }
 
   .cngx-popover-sheet[data-cngx-presentation='fullscreen'] {
@@ -346,7 +363,11 @@
 
   /* Only the content below the header scrolls: a swipe region inside a
    * scrolling panel never fires. */
-  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+  .cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen'],
+      [data-cngx-presentation='anchored']
+    )
     > * {
     flex: 1 1 auto;
     min-block-size: 0;
@@ -355,7 +376,11 @@
   }
 
   /* Handle on its own row, title and controls on the next one. */
-  .cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])
+  .cngx-popover-sheet:is(
+      [data-cngx-presentation='sheet'],
+      [data-cngx-presentation='fullscreen'],
+      [data-cngx-presentation='anchored']
+    )
     > .cngx-popover-sheet-header {
     flex: none;
     overflow: visible;

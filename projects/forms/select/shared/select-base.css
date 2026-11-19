@@ -1269,6 +1269,27 @@
     overflow-anchor: none;
   }
 
+  /* Anchored, the sheet skin lays a sheet host out as a capped flex column
+     that scrolls its children. The select keeps its own contract there: the
+     panel caps at the select max height, scrolls itself (windowed lists rely
+     on the panel scrollport), keeps the declared flip order and stays a
+     block. One class above the skin's rules, so load order cannot flip it. */
+  .cngx-select__panel.cngx-popover-sheet[data-cngx-presentation='anchored'] {
+    max-block-size: var(--cngx-select-panel-max-height, 16rem);
+    overflow: visible auto;
+    position-try-order: normal;
+  }
+
+  .cngx-select__panel.cngx-popover-sheet[data-cngx-presentation='anchored']:popover-open {
+    display: block;
+  }
+
+  .cngx-select__panel.cngx-popover-sheet[data-cngx-presentation='anchored'] > * {
+    flex: initial;
+    min-block-size: auto;
+    overflow: visible;
+  }
+
   /* Mobile sheet: the sheet caps the height (its max-block-size outranks the
      anchored max-height above) and owns the inline size, and only the
      panel shell around the listbox scrolls (cngx-popover-sheet.css). Lift the
