@@ -305,39 +305,6 @@ describe('field atom value sync - R1 atom without a value binding', () => {
   });
 });
 
-describe('field atom value sync - R2 hand value binding', () => {
-  @Component({
-    template: `
-      <cngx-form-field [field]="f.check">
-        <cngx-checkbox [(value)]="f.check().value">Check</cngx-checkbox>
-      </cngx-form-field>
-    `,
-    imports: [CngxFormField, CngxCheckbox],
-  })
-  class HandBoundHost {
-    readonly model = signal({ check: false });
-    readonly f = form(this.model);
-  }
-
-  it('the hand binding writes once, the presenter sees equal values and stays out', () => {
-    const fixture = TestBed.createComponent(HandBoundHost);
-    document.body.appendChild(fixture.nativeElement);
-    fixture.detectChanges();
-    flush(fixture);
-    const host = fixture.componentInstance;
-    const box = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('cngx-checkbox')!;
-
-    box.click();
-    flush(fixture);
-    flush(fixture);
-
-    expect(host.model().check).toBe(true);
-    expect(box.getAttribute('aria-checked')).toBe('true');
-    // value.set is programmatic: the field stays pristine.
-    expect(host.f.check().dirty()).toBe(false);
-  });
-});
-
 describe('field atom value sync - R3 Reactive Forms on the atom', () => {
   @Component({
     template: `
@@ -574,14 +541,19 @@ describe('field atom value sync - CNGX2032 hand value binding warning', () => {
     readonly f = form(this.model);
   }
 
-  it('warns once per field when an atom is also bound by hand', () => {
+  it('R2: the hand binding writes the model, the field stays pristine and warns once', () => {
     const warnings = collectWarnings();
-    const { fixture, el } = mountHost(HandBoundHost);
+    const { fixture, host, el } = mountHost(HandBoundHost);
     expect(warnings()).toEqual([]);
 
     const box = el.querySelector<HTMLElement>('cngx-checkbox')!;
     box.click();
     flush(fixture);
+    expect(host.model().check).toBe(true);
+    expect(box.getAttribute('aria-checked')).toBe('true');
+    // value.set is programmatic: the field stays pristine.
+    expect(host.f.check().dirty()).toBe(false);
+
     box.click();
     flush(fixture);
     el.querySelector<HTMLElement>('cngx-radio:nth-of-type(2)')!.click();
