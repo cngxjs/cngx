@@ -499,3 +499,69 @@ describe('CngxSidenav surface before the width class resolves', () => {
     expect(content.hasAttribute('inert')).toBe(true);
   });
 });
+
+@Component({
+  template: `
+    <cngx-sidenav-layout>
+      <cngx-sidenav mode="over" [(opened)]="outerOpen">Outer</cngx-sidenav>
+      <cngx-sidenav-content>
+        <cngx-sidenav class="inner" [(opened)]="innerOpen">
+          <button class="inner-first" type="button">Inner</button>
+        </cngx-sidenav>
+      </cngx-sidenav-content>
+    </cngx-sidenav-layout>
+  `,
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent],
+})
+class NestedAutoHost {
+  outerOpen = signal(true);
+  innerOpen = signal(false);
+}
+
+// The layout's width-class rule targets its direct rails only, so a nested
+// auto rail never gets a class: it is no member of the outer layout.
+describe('CngxSidenav nested in another layout', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    document.body.replaceChildren();
+  });
+
+  function setup() {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [NestedAutoHost] });
+    const fixture = TestBed.createComponent(NestedAutoHost);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const [outer, inner] = fixture.debugElement
+      .queryAll(By.directive(CngxSidenav))
+      .map((de: DebugElement) => de.injector.get(CngxSidenav));
+    return { fixture, outer, inner, warn };
+  }
+
+  it('engages the surface when the nested auto rail opens', () => {
+    const { fixture, inner } = setup();
+    inner.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(inner.surfaceActive()).toBe(true);
+  });
+
+  it('leaves the outer rail open when the nested auto rail opens', () => {
+    const { fixture, outer, inner } = setup();
+    inner.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(outer.opened()).toBe(true);
+    expect(fixture.componentInstance.outerOpen()).toBe(true);
+  });
+
+  it('warns CNGX3010 for the nested auto rail', () => {
+    const { warn } = setup();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^CNGX3010: \[cngx-sidenav\] auto mode needs a <cngx-sidenav-layout> ancestor;/,
+      ),
+    );
+  });
+});

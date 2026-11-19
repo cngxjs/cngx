@@ -142,6 +142,11 @@ export class CngxSidenavLayout implements CngxSidenavLayoutCoordinator {
     }
   }
 
+  /** @internal Whether `rail` is one of this layout's direct rails. */
+  owns(rail: CngxSidenavContract): boolean {
+    return this.sidenavs().includes(rail);
+  }
+
   /** @internal One open overlay per layout: called from a rail's open path. */
   overlayOpening(rail: CngxSidenavContract): void {
     for (const nav of this.sidenavs()) {

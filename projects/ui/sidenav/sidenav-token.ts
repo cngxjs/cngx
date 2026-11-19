@@ -45,6 +45,11 @@ export const CNGX_SIDENAV = new InjectionToken<CngxSidenavContract>('CNGX_SIDENA
 export interface CngxSidenavLayoutCoordinator {
   /** Closes every other open overlay of the layout before `rail` opens. */
   overlayOpening(rail: CngxSidenavContract): void;
+  /**
+   * Whether `rail` is a direct rail of the layout. Only those get the width
+   * class; a rail nested deeper (inside the content) is no member.
+   */
+  owns(rail: CngxSidenavContract): boolean;
 }
 
 /** @internal Provided by `CngxSidenavLayout`; see {@link CngxSidenavLayoutCoordinator}. */
