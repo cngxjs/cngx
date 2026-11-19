@@ -55,3 +55,13 @@ describe('CngxButtonToggleGroup geometry', () => {
     expect(computedValue(host, 'flex-direction')).toBe('column');
   });
 });
+
+// The group radius is registered with a fixed initial, so a use-site fallback
+// never paints: the theme reaches it only through the SET.
+describe('CngxButtonToggleGroup theme-derived radius', () => {
+  it('derives the group radius from the md radius', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-md', '5px');
+    expect(computedValue(host, 'border-top-left-radius')).toBe('5px');
+  });
+});

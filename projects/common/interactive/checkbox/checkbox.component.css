@@ -60,6 +60,7 @@
 
   /**
    * Focus-ring outline shorthand applied via `outline` on the host.
+   * Defaults to a 2px primary ring, as on the radio.
    * @group State / Focus
    */
   @property --cngx-checkbox-focus-outline {
@@ -88,6 +89,14 @@
     inherits: false;
     initial-value: 0.25rem;
   }
+
+  /* Derive the focus ring and radius from the theme: the registered initial
+   * defeats a use-site fallback, so the default lives in a SET. Kept in this
+   * layer so a Material bridge and a consumer override still win. */
+  .cngx-checkbox {
+    --cngx-checkbox-focus-radius: var(--cngx-radius-sm, 0.25rem);
+    --cngx-checkbox-focus-outline: 2px solid var(--cngx-color-primary);
+  }
 }
 
 @layer cngx.components {
@@ -97,11 +106,11 @@
          the control (SET-from-scale rule; the registered pixel initial defeats
          the use-site fallback). gap 0.5rem -> sm; sibling-gap 1rem -> md (read on
          the adjacent .cngx-checkbox, itself a :scope root, so the SET reaches it). */
-      --cngx-checkbox-gap: var(--cngx-space-sm);
+      --cngx-checkbox-gap: var(--cngx-space-sm, 0.5rem);
       --cngx-checkbox-sibling-gap: var(--cngx-space-md);
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-checkbox-gap, var(--cngx-space-sm, 0.5rem));
+      gap: var(--cngx-checkbox-gap);
       cursor: pointer;
       user-select: none;
       outline: none;
@@ -135,7 +144,7 @@
     :scope:focus-visible {
       outline: var(--cngx-checkbox-focus-outline, 2px solid currentColor);
       outline-offset: var(--cngx-checkbox-focus-offset, 2px);
-      border-radius: var(--cngx-checkbox-focus-radius, var(--cngx-radius-sm, 0.25rem));
+      border-radius: var(--cngx-checkbox-focus-radius);
     }
 
     .cngx-checkbox__label {

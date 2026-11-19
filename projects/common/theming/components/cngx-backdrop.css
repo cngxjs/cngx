@@ -72,7 +72,7 @@
 
       /* Themable - token-driven, three-tier overridable */
       background: var(--cngx-backdrop-bg, oklch(0 0 0 / 0.5));
-      transition: opacity var(--cngx-backdrop-transition-duration, var(--cngx-duration-base, 200ms));
+      transition: opacity var(--cngx-backdrop-transition-duration);
     }
 
     /* Visible state - class is toggled by the directive. `:scope` form

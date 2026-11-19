@@ -121,7 +121,7 @@
       block-size: 100%;
       inline-size: var(--cngx-goal-fill, 0%);
       border-radius: inherit;
-      background: var(--cngx-goal-fill-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+      background: var(--cngx-goal-fill-color);
     }
   }
 }

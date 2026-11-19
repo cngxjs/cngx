@@ -248,6 +248,19 @@
   .light {
     --cngx-badge-border: var(--cngx-badge-border-light, var(--cngx-badge-border, 0));
   }
+
+  /* Derive the radius and the error and warning fills from the theme: the
+   * registered initial defeats a use-site fallback, so the default lives in a
+   * SET. The fills inherit and SET on the badge host; the radius does not and
+   * SETs on the indicator. Kept in this layer so a Material bridge and a
+   * consumer override still win. */
+  .cngx-badge-host {
+    --cngx-badge-error-bg: var(--cngx-color-danger);
+    --cngx-badge-warning-bg: var(--cngx-color-warning);
+  }
+  .cngx-badge-indicator {
+    --cngx-badge-radius: var(--cngx-radius-pill);
+  }
 }
 
 @layer cngx.components {
@@ -275,7 +288,7 @@
       min-width: var(--cngx-badge-size, 16px);
       height: var(--cngx-badge-size, 16px);
       padding: 0 var(--cngx-badge-padding-inline, 3px);
-      border-radius: var(--cngx-badge-radius, var(--cngx-radius-pill, 999px));
+      border-radius: var(--cngx-badge-radius);
       font-size: var(--cngx-badge-font-size, 0.6875rem);
       font-weight: var(--cngx-badge-font-weight, 600);
       line-height: 1;
@@ -303,11 +316,11 @@
       color: var(--cngx-badge-primary-color, oklch(1 0 0));
     }
     :scope.cngx-badge-indicator--error {
-      background: var(--cngx-badge-error-bg, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+      background: var(--cngx-badge-error-bg);
       color: var(--cngx-badge-error-color, oklch(1 0 0));
     }
     :scope.cngx-badge-indicator--warning {
-      background: var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.65 0.2 70)));
+      background: var(--cngx-badge-warning-bg);
       color: var(--cngx-badge-warning-color, oklch(0.2 0.01 250));
     }
     :scope.cngx-badge-indicator--neutral {

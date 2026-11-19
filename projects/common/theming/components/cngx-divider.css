@@ -9,7 +9,7 @@
  *
  * - default - horizontal hairline, `margin-block` breathing room
  * - `--vertical` - inline-block column, `margin-inline` breathing room,
- *   `align-self: stretch` so it fills its flex parent
+ *   `align-self: stretch` so it fills its flex parent (1em floor outside one)
  * - `--inset` - drops the line in from the start/end edge to align
  *   with indented list content; stacks with `--vertical`
  *
@@ -109,6 +109,13 @@
   .dark {
     --cngx-divider-color: oklch(0.45 0.005 250);
   }
+
+  /* Derive the spacing from the density scale: the registered initial defeats
+   * a use-site fallback, so the default lives in a SET. Kept in this layer so
+   * a Material bridge and a consumer override still win. */
+  .cngx-divider {
+    --cngx-divider-spacing: var(--cngx-space-sm);
+  }
 }
 
 @layer cngx.components {
@@ -123,29 +130,32 @@
       box-sizing: border-box;
       width: 100%;
       height: var(--cngx-divider-thickness, 1px);
-      margin-block: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-block: var(--cngx-divider-spacing);
       margin-inline: 0;
       border: 0;
-      background: var(--cngx-divider-color, var(--cngx-color-border, oklch(0.9 0.01 250)));
+      background: var(--cngx-divider-color);
     }
 
     /* Vertical variant - thin column, horizontal breathing room. */
     :scope.cngx-divider--vertical {
       display: inline-block;
       width: var(--cngx-divider-thickness, 1px);
-      height: 1em;
+      /* Auto height so align-self: stretch fills a flex row; the 1em floor
+         keeps the line visible outside a flex parent. */
+      height: auto;
+      min-block-size: 1em;
       margin-block: 0;
-      margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-inline: var(--cngx-divider-spacing);
       align-self: stretch;
     }
 
     /* Inset variant - drops the line in from the start/end edge. */
     :scope.cngx-divider--inset {
-      margin-inline: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
+      margin-inline: var(--cngx-divider-inset-amount);
     }
     :scope.cngx-divider--vertical.cngx-divider--inset {
-      margin-block: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
-      margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-block: var(--cngx-divider-inset-amount);
+      margin-inline: var(--cngx-divider-spacing);
     }
   }
 }

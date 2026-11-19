@@ -302,7 +302,7 @@
       max-width: var(--cngx-dialog-max-width, 560px);
       max-height: var(--cngx-dialog-max-height, 80vh);
       width: 100%;
-      background: var(--cngx-dialog-bg, var(--cngx-color-surface, oklch(1 0 0)));
+      background: var(--cngx-dialog-bg);
       color: var(--cngx-dialog-color, inherit);
       box-shadow: var(--cngx-dialog-shadow, 0 8px 32px oklch(0 0 0 / 0.12));
       overflow: auto;

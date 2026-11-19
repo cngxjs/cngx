@@ -130,7 +130,7 @@
     .cngx-metric__value {
       font-size: var(--cngx-metric-value-size, 1.75rem);
       font-weight: var(--cngx-metric-value-weight, 600);
-      color: var(--cngx-metric-value-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      color: var(--cngx-metric-value-color);
       line-height: 1.2;
       /* The value is a single Intl.NumberFormat run (sign/grouping/decimal all
          from Intl); isolate fences its bidi boundary against surrounding RTL

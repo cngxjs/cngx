@@ -156,9 +156,11 @@
    * __circle and __dot descendants and is inherits:false. Layer
    * cngx.tokens keeps a Material bridge winning. 120ms -> fast. */
   :where(.cngx-radio-indicator, .cngx-radio-indicator *) {
-    --cngx-radio-indicator-transition: fill var(--cngx-duration-fast) ease,
-      stroke var(--cngx-duration-fast) ease, transform var(--cngx-duration-fast) ease,
-      opacity var(--cngx-duration-fast) ease;
+    --cngx-radio-indicator-transition:
+      fill var(--cngx-duration-fast, 120ms) ease,
+      stroke var(--cngx-duration-fast, 120ms) ease,
+      transform var(--cngx-duration-fast, 120ms) ease,
+      opacity var(--cngx-duration-fast, 120ms) ease;
   }
 
   /* Not registered as @property: unitless and inherited, so an override on

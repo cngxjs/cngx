@@ -468,26 +468,28 @@
    * theme that re-sets these tokens reaches both. */
   @scope (.cngx-button, .cngx-button-group__addon) {
     :scope {
-      /* md: the form-control row (8/16 -> sm/md). */
-      --cngx-button-padding-block: var(--cngx-space-sm);
+      /* md: the form-control row (8/16 -> sm/md). The padding-block literal
+         keeps the icon-button size calc valid without the core theme: a '*'
+         token set to a missing scale token turns invalid, not initial. */
+      --cngx-button-padding-block: var(--cngx-space-sm, 8px);
       --cngx-button-padding-inline: var(--cngx-space-md);
       --cngx-button-font-size: var(--cngx-font-size-control, 1rem);
     }
     :scope[data-size='xs'] {
       /* Half the xs rung: tight, but still re-scaled by [data-density]. */
-      --cngx-button-padding-block: calc(var(--cngx-space-xs) / 2);
+      --cngx-button-padding-block: calc(var(--cngx-space-xs, 4px) / 2);
       --cngx-button-padding-inline: var(--cngx-space-sm);
       --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
     }
     :scope[data-size='sm'] {
-      --cngx-button-padding-block: var(--cngx-space-xs);
+      --cngx-button-padding-block: var(--cngx-space-xs, 4px);
       --cngx-button-padding-inline: var(--cngx-space-sm);
       --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
     }
     :scope[data-size='lg'] {
       /* One and a half sm rungs: a step above md about as large as sm to md,
          not a full rung jump. */
-      --cngx-button-padding-block: calc(var(--cngx-space-sm) * 1.5);
+      --cngx-button-padding-block: calc(var(--cngx-space-sm, 8px) * 1.5);
       --cngx-button-padding-inline: var(--cngx-space-lg);
       --cngx-button-font-size: var(--cngx-font-size-lg, 1.0625rem);
     }
@@ -511,12 +513,12 @@
       box-sizing: border-box;
       /* Touch-target floor: inert at 0px on a fine pointer, 44px on coarse. */
       min-block-size: var(--cngx-target-min, 0px);
-      padding-block: var(--cngx-button-padding-block, 0.5rem);
+      padding-block: var(--cngx-button-padding-block);
       padding-inline: var(--cngx-button-padding-inline, 1rem);
       border: var(--cngx-button-border-width, 1px) solid transparent;
       border-radius: var(--cngx-button-radius, 0.5rem);
       background: transparent;
-      color: var(--cngx-button-tone-text, currentColor);
+      color: var(--cngx-button-tone-text);
       font: inherit;
       font-size: var(--cngx-button-font-size, 1rem);
       font-weight: var(--cngx-button-font-weight, 500);
@@ -602,7 +604,7 @@
         var(--cngx-color-surface, Canvas)
       );
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
-      color: var(--cngx-button-tone-text, currentColor);
+      color: var(--cngx-button-tone-text);
     }
     :scope[data-variant='solid'][data-tone='neutral']:hover:not([aria-disabled='true']) {
       background: color-mix(
@@ -619,7 +621,7 @@
         --cngx-button-secondary-bg,
         color-mix(in oklch, var(--cngx-button-tone, currentColor) 20%, transparent)
       );
-      color: var(--cngx-button-secondary-color, var(--cngx-button-tone-text, currentColor));
+      color: var(--cngx-button-secondary-color, var(--cngx-button-tone-text));
     }
     /* A primary or danger label sits on a stronger wash than the surface the
        tone text rung is tuned for, so it shifts one step further from it. */
@@ -627,8 +629,8 @@
       color: var(
         --cngx-button-secondary-color,
         oklch(
-          from var(--cngx-button-tone-text, currentColor)
-            calc(l + var(--cngx-button-secondary-text-shift, -0.07)) c h
+          from var(--cngx-button-tone-text) calc(l + var(--cngx-button-secondary-text-shift, -0.07))
+            c h
         )
       );
     }
@@ -666,7 +668,7 @@
       border-color: var(--cngx-color-border-strong, oklch(0.62 0.005 250));
     }
     :scope[data-variant='outline']:not([data-tone='neutral']) {
-      border-color: var(--cngx-button-tone-text, var(--cngx-button-tone, currentColor));
+      border-color: var(--cngx-button-tone-text);
     }
     :scope:is([data-variant='outline'], [data-variant='ghost']):hover:not([aria-disabled='true']) {
       background: color-mix(in oklch, var(--cngx-button-tone, currentColor) 8%, transparent);
@@ -830,7 +832,7 @@
        tone text, ghost buttons gain a border. */
     [data-contrast='more']
       :scope:is([data-variant='outline'], [data-variant='solid'][data-tone='neutral']) {
-      border-color: var(--cngx-button-tone-text, currentColor);
+      border-color: var(--cngx-button-tone-text);
     }
     [data-contrast='more'] :scope[data-variant='ghost'] {
       border-color: var(--cngx-color-border, oklch(0.88 0.005 250));
@@ -943,8 +945,7 @@
   @scope (.cngx-icon-button) {
     :scope.cngx-button {
       --cngx-icon-button-size: calc(
-        var(--cngx-line-height-base, 1.5) * 1em + 2 *
-          var(--cngx-button-padding-block, var(--cngx-space-sm, 8px)) + 2 *
+        var(--cngx-line-height-base, 1.5) * 1em + 2 * var(--cngx-button-padding-block) + 2 *
           var(--cngx-button-border-width, 1px)
       );
       inline-size: max(var(--cngx-icon-button-size), var(--cngx-target-min, 0px));

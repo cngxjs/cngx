@@ -200,7 +200,7 @@
     flex-direction: column;
     inline-size: max-content;
     min-inline-size: var(--cngx-slider-thumb-size, 16px);
-    block-size: var(--cngx-slider-length, 9rem);
+    block-size: var(--cngx-slider-length);
     min-block-size: 0;
   }
 

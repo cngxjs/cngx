@@ -67,3 +67,29 @@ describe('CngxCheckbox geometry', () => {
     expect(computedValue(second, 'margin-inline-start')).toBe('24px');
   });
 });
+
+// The focus radius is registered with a fixed initial, so a use-site fallback
+// never paints: the theme reaches it only through the SET.
+describe('CngxCheckbox theme-derived focus radius', () => {
+  it('derives the focus radius from the sm radius', () => {
+    const [box] = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
+    expect(computedValue(box, '--cngx-checkbox-focus-radius')).toBe('5px');
+  });
+
+  // A '*' token SET to a missing scale token turns invalid instead of falling
+  // back to its initial, so the SET carries the initial as its literal.
+  it('keeps the initial gap and focus radius without the scale tokens', () => {
+    const [box] = mount();
+    mountedRoot!.style.setProperty('--cngx-space-sm', 'initial');
+    mountedRoot!.style.setProperty('--cngx-radius-sm', 'initial');
+    expect(computedValue(box, 'column-gap')).toBe('8px');
+    expect(computedValue(box, '--cngx-checkbox-focus-radius')).toBe('0.25rem');
+  });
+
+  it('paints the focus ring with the primary in scope', () => {
+    const [box] = mount();
+    mountedRoot!.style.setProperty('--cngx-color-primary', 'rgb(0, 0, 200)');
+    expect(computedValue(box, '--cngx-checkbox-focus-outline')).toBe('2px solid rgb(0, 0, 200)');
+  });
+});

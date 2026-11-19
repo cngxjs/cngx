@@ -126,3 +126,13 @@ describe('CngxRadio focus ring', () => {
     expect(rasterise(ring('default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
   });
 });
+
+// The focus radius is registered with a fixed initial, so a use-site fallback
+// never paints: the theme reaches it only through the SET.
+describe('CngxRadio theme-derived focus radius', () => {
+  it('derives the focus radius from the sm radius', () => {
+    const { radio } = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
+    expect(computedValue(radio, '--cngx-radio-focus-radius')).toBe('5px');
+  });
+});

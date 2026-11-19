@@ -88,16 +88,23 @@
     inherits: false;
     initial-value: 0.25rem;
   }
+
+  /* Derive the focus radius from the theme: the registered initial defeats a
+   * use-site fallback, so the default lives in a SET. Kept in this layer so a
+   * Material bridge and a consumer override still win. */
+  .cngx-radio {
+    --cngx-radio-focus-radius: var(--cngx-radius-sm, 0.25rem);
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-radio) {
     :scope {
       /* Derive the gap from the global scale (SET-from-scale rule). 0.5rem -> sm. */
-      --cngx-radio-gap: var(--cngx-space-sm);
+      --cngx-radio-gap: var(--cngx-space-sm, 0.5rem);
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-radio-gap, var(--cngx-space-sm, 0.5rem));
+      gap: var(--cngx-radio-gap);
       cursor: pointer;
       user-select: none;
       outline: none;
@@ -126,7 +133,7 @@
         2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
       );
       outline-offset: var(--cngx-radio-focus-offset, 3px);
-      border-radius: var(--cngx-radio-focus-radius, var(--cngx-radius-sm, 0.25rem));
+      border-radius: var(--cngx-radio-focus-radius);
     }
 
     .cngx-radio__label {
