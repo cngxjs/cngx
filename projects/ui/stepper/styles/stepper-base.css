@@ -632,7 +632,7 @@
     flex: 0 0 auto;
     color: var(
       --cngx-step-error-badge-color,
-      var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)))
+      var(--cngx-step-errored-color, oklch(0.46 0.18 25))
     );
   }
 
@@ -641,10 +641,7 @@
      shape their steps re-apply the tint in their own layer; linear-minimal
      and breadcrumb swap it for a line or the label colour. */
   .cngx-stepper__step--rejected {
-    --_cngx-step-rejection-color: var(
-      --cngx-step-errored-color,
-      var(--cngx-color-danger, oklch(0.45 0.15 25))
-    );
+    --_cngx-step-rejection-color: var(--cngx-step-errored-color, oklch(0.46 0.18 25));
     background: color-mix(
       in oklab,
       var(--_cngx-step-rejection-color, oklch(0.45 0.15 25)) var(--cngx-step-rejection-tint, 18%),
@@ -671,7 +668,7 @@
     display: inline-flex;
     align-items: center;
     flex: 0 0 auto;
-    color: var(--cngx-step-errored-color, var(--cngx-color-danger, oklch(0.45 0.15 25)));
+    color: var(--cngx-step-errored-color, oklch(0.46 0.18 25));
   }
 
   .cngx-stepper__rejection-icon[data-reason='refused'] {

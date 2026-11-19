@@ -213,6 +213,11 @@
     --cngx-tab-overflow-popover-bg: var(--cngx-color-surface);
     --cngx-tab-overflow-popover-color: var(--cngx-color-text);
   }
+
+  /* inherits:false, so the derivation sits on the element that reads it. */
+  :where(.cngx-tab-overflow__item--active) {
+    --cngx-tab-overflow-item-active-bg: var(--cngx-tab-overflow-item-hover-bg);
+  }
 }
 
 @layer cngx.components {
@@ -304,10 +309,7 @@
      * pattern requires visible indication of the highlighted option.
      */
     .cngx-tab-overflow__item--active {
-      background: var(
-        --cngx-tab-overflow-item-active-bg,
-        var(--cngx-tab-overflow-item-hover-bg)
-      );
+      background: var(--cngx-tab-overflow-item-active-bg);
       outline: var(--cngx-tab-overflow-item-active-outline, 2px solid currentColor);
       outline-offset: var(--cngx-tab-overflow-item-active-outline-offset, -2px);
     }
