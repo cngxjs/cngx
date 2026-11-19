@@ -21,12 +21,14 @@ import { describe, expect, it } from 'vitest';
  *
  * Rule B - dead fallback on a registered property. A property registered via
  * `@property` always resolves, so `var(--p, fallback)` never uses its fallback.
- * In `projects/core/**` every fallback that differs from the registered
- * `initial-value` is a hit (compared after folding case, whitespace and `0` vs
- * `0px`). Elsewhere only a sentinel registration (`transparent`, `none`, `0`,
- * `initial`) with a real fallback is a hit: there the author meant the fallback
- * but the sentinel paints (owner decision 2026-11-13 keeps the general form to
- * core). Static stand-in for "never set on an ancestor rule": the guard cannot
+ * A fallback that differs from the registered `initial-value` is a hit
+ * (compared after folding case, whitespace and `0` vs `0px`): in
+ * `projects/core/**` against every registration, elsewhere against the
+ * registrations of the same stylesheet. A registration in another sheet outside
+ * core is loaded only where that sheet is, so there the fallback is live and
+ * passes. Repo-wide, a sentinel registration (`transparent`, `none`, `0`,
+ * `initial`) with a real fallback is a hit too: the author meant the fallback
+ * but the sentinel paints. Static stand-in for "never set on an ancestor rule": the guard cannot
  * see the runtime cascade, so a row whose property IS set by an ancestor
  * component is allowlisted with that reason. A fallback equal to the initial or
  * `inherit` passes, and so does a sentinel fallback on a sentinel registration.
@@ -500,7 +502,13 @@ function repoOffenders(files = SCANNED, assigned = assignedAcross(files)) {
       rows.push({ rule: 'A', token, file: rel });
     }
     const anyInitial = rel.startsWith('projects/core/');
-    for (const token of deadFallbacks(source, REGISTERED, { anyInitial })) {
+    const deadFallbackTokens = new Set(deadFallbacks(source, REGISTERED, { anyInitial }));
+    if (!anyInitial) {
+      for (const token of deadFallbacks(source, registrations(source), { anyInitial: true })) {
+        deadFallbackTokens.add(token);
+      }
+    }
+    for (const token of deadFallbackTokens) {
       rows.push({ rule: 'B', token, file: rel });
     }
     for (const token of materialSystemReads(source)) {
@@ -744,6 +752,20 @@ describe('Rule B - dead fallback on a registered property', () => {
         { anyInitial: true },
       ),
     ).toEqual([]);
+  });
+
+  it('outside core flags a differing fallback on a same-file registration only', () => {
+    const own = `
+      @property --cngx-x-gap { syntax: '<length>'; inherits: false; initial-value: 4px; }
+      .a { gap: var(--cngx-x-gap, 8px); }
+    `;
+    const borrowed = '.b { gap: var(--cngx-x-gap, 8px); }';
+    expect(
+      repoOffenders([
+        { rel: 'projects/ui/x/x.css', source: own },
+        { rel: 'projects/ui/y/y.css', source: borrowed },
+      ]).map(key),
+    ).toEqual(['B --cngx-x-gap projects/ui/x/x.css']);
   });
 
   it('reads nested var() bodies with balanced parentheses', () => {
