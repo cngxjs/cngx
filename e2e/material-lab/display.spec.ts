@@ -6,7 +6,7 @@ import { computedValue } from '../support/material-bridge-page';
 // against the Material twin are pinned. Every other axis is a numbered row in
 // the material-fixes roadmap (items 11 to 16) and stays unpinned until fixed.
 // The unchecked toggle text also matches without its component bridge (system
-// bridge); its bridge reach is not proven here (roadmap item 12). The ripple
+// bridge); the group corner pin carries the button-toggle.theme proof. The ripple
 // wave follows currentColor by design: the directive sets the colour inline on
 // the wave, so the pin proves the M3 rule "state layer = content colour", not
 // ripple.theme (roadmap item 16).
@@ -60,6 +60,24 @@ for (const scheme of ['light', 'dark'] as const) {
       ]);
     });
 
+    test('button-toggle: the visible outer corner matches mat-button-toggle-group', async ({ page }) => {
+      // mat clips its segments with the group corner; cngx paints the outer
+      // corners on the first and last segment, the group itself paints nothing.
+      await expectSame(
+        page,
+        mat('button-toggle'),
+        cngx('button-toggle', 'button:first-child'),
+        ['border-top-left-radius', 'border-bottom-left-radius'],
+        ['border-top-left-radius', 'border-bottom-left-radius'],
+      );
+      await expectSame(
+        page,
+        mat('button-toggle'),
+        cngx('button-toggle', 'button:last-child'),
+        ['border-top-right-radius', 'border-bottom-right-radius'],
+      );
+    });
+
     test('button-toggle: the unchecked segment text matches mat-button-toggle', async ({ page }) => {
       await expectSame(
         page,
@@ -69,8 +87,8 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
-    test('card: the surface and body type match the raised mat-card', async ({ page }) => {
-      await expectSame(page, mat('card'), cngx('card'), ['background-color', 'color']);
+    test('card: the surface, corner and body type match the raised mat-card', async ({ page }) => {
+      await expectSame(page, mat('card'), cngx('card'), ['background-color', 'color', 'border-top-left-radius']);
       await expectSame(page, mat('card', '.mat-mdc-card-title'), cngx('card', '[cngxCardTitle]'), ['color']);
       await expectSame(page, mat('card', '.mat-mdc-card-content'), cngx('card', '[cngxCardBody]'), [
         'color',
@@ -80,13 +98,13 @@ for (const scheme of ['light', 'dark'] as const) {
       ]);
     });
 
-    test('divider: the rule paints the mat-divider colour at 1px', async ({ page }) => {
+    test('divider: the rule paints the mat-divider colour at 1px with no block margin', async ({ page }) => {
       await expectSame(
         page,
         mat('divider'),
         cngx('divider'),
-        ['background-color', 'height'],
-        ['border-top-color', 'border-top-width'],
+        ['background-color', 'height', 'margin-top', 'margin-bottom'],
+        ['border-top-color', 'border-top-width', 'margin-top', 'margin-bottom'],
       );
     });
 

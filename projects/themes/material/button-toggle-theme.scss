@@ -32,8 +32,12 @@
 // from --cngx-space-* at the toggle host, which density-bridge.scss
 // already maps onto the Material density scale - and a :where() density
 // fork here would lose to that :scope SET rule anyway (same layer, higher
-// specificity). Group gap (0) and radius (--cngx-radius-md) are neither
-// tone- nor density-specific.
+// specificity). The group gap (0) is neither tone- nor density-specific.
+// The shape is routed through the --cngx-radius-md knob for the same
+// reason as the colours: the visible corners are painted by the first and
+// last segment from that knob, and the group radius token derives from it
+// too (it is `inherits: false`, so the segments could not read it).
+// Material shapes the group with corner-extra-large (28px) in M3, 4px in M2.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/button-toggle-theme' as button-toggle;
@@ -59,6 +63,14 @@
   }
 }
 
+@mixin base($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-radius-md: var(--mat-sys-corner-extra-large, 28px);
+  } @else {
+    --cngx-radius-md: 4px;
+  }
+}
+
 @mixin theme($theme) {
   @include bridge.on(
     cngx-button-toggle-group,
@@ -66,5 +78,6 @@
     'button[cngxButtonToggle]'
   ) {
     @include color($theme);
+    @include base($theme);
   }
 }

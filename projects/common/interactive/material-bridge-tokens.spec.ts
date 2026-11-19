@@ -40,7 +40,7 @@ class AsyncClickHosts {
  * no test target.
  */
 
-function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
+function bridgeCss(bridge: string, themeVersion: 'v1' | 'v0'): string {
   const entry =
     themeVersion === 'v1'
       ? `
@@ -63,7 +63,11 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  return emittedTokenNames(compileThemeEntry(entry));
+  return compileThemeEntry(entry);
+}
+
+function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
+  return emittedTokenNames(bridgeCss(bridge, themeVersion));
 }
 
 describe('interactive-controls Material bridge', () => {
@@ -73,6 +77,7 @@ describe('interactive-controls Material bridge', () => {
     '--cngx-checkbox-border',
     '--cngx-checkbox-checked-bg',
     '--cngx-checkbox-checked-color',
+    '--cngx-checkbox-radius',
     '--cngx-radio-indicator-checked-color',
     '--cngx-radio-indicator-color',
     '--cngx-radio-indicator-mark-color',
@@ -83,6 +88,16 @@ describe('interactive-controls Material bridge', () => {
 
   it('emits only consumed token names (M3)', () => {
     expect(bridgeTokenNames('interactive-controls-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('maps the checkbox box onto the fixed 2px mat-checkbox corner (M3 and M2)', () => {
+    // The cngx default reads --cngx-radius-sm, which the system bridge maps
+    // to corner-extra-small (4px); mat-checkbox draws 2px in both versions.
+    for (const version of ['v1', 'v0'] as const) {
+      expect(bridgeCss('interactive-controls-theme', version), version).toContain(
+        '--cngx-checkbox-radius: 2px',
+      );
+    }
   });
 
   it('state-scopes the checked thumb to on-primary (M3)', () => {
@@ -284,7 +299,9 @@ describe('button-toggle Material bridge', () => {
   // knobs, so the bridge routes those (tabs-theme precedent): the primary
   // for the unchecked hover tint, the strong pair for the checked segment.
   // The spacing tokens are deliberately absent: SET from --cngx-space-* at
-  // the toggle host, density-bridge territory.
+  // the toggle host, density-bridge territory. The shape rides the
+  // --cngx-radius-md knob, read by the first and last segment corners and by
+  // the group radius derivation.
   const CONSUMED = [
     '--cngx-color-border',
     '--cngx-color-on-primary-strong',
@@ -292,6 +309,7 @@ describe('button-toggle Material bridge', () => {
     '--cngx-color-primary-strong',
     '--cngx-color-surface',
     '--cngx-color-text',
+    '--cngx-radius-md',
   ];
 
   it('emits only consumed token names (M3)', () => {
@@ -325,7 +343,39 @@ $theme: mat.define-theme((
     expect(block).not.toBeNull();
     expect(block![0]).toContain('--cngx-color-primary: var(--mat-sys-primary)');
     // no spacing fork - the padding tokens ride the SET-from-scale rule
-    expect(css).not.toContain('--cngx-button-toggle-');
+    expect(css).not.toContain('--cngx-button-toggle-padding');
+  });
+
+  it('routes the Material group corner through the radius knob on hosts and segments', () => {
+    // The segments paint the visible corners from --cngx-radius-md; the
+    // group radius token is inherits:false and never reaches them.
+    const hosts =
+      /:where\(cngx-button-toggle-group, cngx-button-multi-toggle-group, button\[cngxButtonToggle\]\)\s*\{[^}]*\}/;
+    expect(bridgeCss('button-toggle-theme', 'v1').match(hosts)![0]).toContain(
+      '--cngx-radius-md: var(--mat-sys-corner-extra-large, 28px)',
+    );
+    expect(bridgeCss('button-toggle-theme', 'v0').match(hosts)![0]).toContain('--cngx-radius-md: 4px');
+    expect(bridgeCss('button-toggle-theme', 'v1')).not.toContain('--cngx-button-toggle-group-radius');
+  });
+});
+
+describe('divider Material bridge', () => {
+  // every name is read by theming/components/cngx-divider.css on .cngx-divider
+  const CONSUMED = ['--cngx-divider-color', '--cngx-divider-spacing'];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('divider-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits the same names (M2)', () => {
+    expect(bridgeTokenNames('divider-theme', 'v0')).toEqual(CONSUMED);
+  });
+
+  it('drops the spacing to the zero margin of mat-divider (M3 and M2)', () => {
+    // The cngx default reads --cngx-space-sm (8px at density 0).
+    for (const version of ['v1', 'v0'] as const) {
+      expect(bridgeCss('divider-theme', version), version).toContain('--cngx-divider-spacing: 0');
+    }
   });
 });
 

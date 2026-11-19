@@ -127,6 +127,33 @@ test.describe('material-bridge rendered values: timeline', () => {
   });
 });
 
+test.describe('material-bridge rendered values: checkbox box corner', () => {
+  // The indicator SETs --cngx-checkbox-radius from --cngx-radius-sm in
+  // cngx.tokens; the stand-in below plays the system bridge, which maps
+  // radius-sm to corner-extra-small (4px). mat-checkbox draws a fixed 2px
+  // box corner, so the bridge has to win over the derived 4px.
+  const CHECKBOX_CSS = ['projects/common/display/checkbox-indicator/checkbox-indicator.component.css'] as const;
+  const SYSTEM_RADIUS = ':root { --cngx-radius-sm: 4px; }';
+  const CHECKBOX_HTML = `
+<cngx-checkbox-indicator class="cngx-checkbox-indicator cngx-checkbox-indicator--checkbox">
+  <span id="box" class="cngx-checkbox-indicator__box"></span>
+</cngx-checkbox-indicator>`;
+
+  test('the bridge paints the 2px mat-checkbox corner on the box', async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: CHECKBOX_CSS,
+      bridgeCss: compileBridge('interactive-controls-theme') + SYSTEM_RADIUS,
+      html: CHECKBOX_HTML,
+    });
+    expect(await computedValue(page, '#box', 'border-top-left-radius')).toBe('2px');
+  });
+
+  test('without the bridge the box follows the 4px radius scale', async ({ page }) => {
+    await renderFixture(page, { componentCss: CHECKBOX_CSS, bridgeCss: SYSTEM_RADIUS, html: CHECKBOX_HTML });
+    expect(await computedValue(page, '#box', 'border-top-left-radius')).toBe('4px');
+  });
+});
+
 test.describe('material-bridge rendered values: button-toggle', () => {
   const BUTTON_TOGGLE_CSS = [
     'projects/common/theming/components/cngx-button-toggle.css',
@@ -180,6 +207,13 @@ html { @include cngx-density.density($theme); }
     expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(
       matSys('primary'),
     );
+  });
+
+  test('the outer segment corners paint the Material group corner', async ({ page }) => {
+    // The bridge routes the shape through --cngx-radius-md on the segment;
+    // corner-extra-large has no stand-in, so the bridge fallback (28px) shows.
+    expect(await computedValue(page, '#toggle-checked', 'border-top-left-radius')).toBe('28px');
+    expect(await computedValue(page, '#toggle-idle', 'border-top-right-radius')).toBe('28px');
   });
 
   test('the inherits:false padding token lands ON the toggle element via the density chain', async ({

@@ -2,8 +2,9 @@
 @use './bridge' as bridge;
 
 // Material bridge for CngxDivider. Color follows the outline-variant
-// tone so a cngx divider next to <mat-divider> reads the same; sizes
-// stay where the consumer set them.
+// tone so a cngx divider next to <mat-divider> reads the same, and the
+// spacing drops to 0 because mat-divider carries no margin (M3 and M2);
+// the thickness stays where the consumer set it.
 //
 //   @use '@cngx/themes/material/divider-theme' as divider;
 //   html { @include divider.theme($theme); }
@@ -16,8 +17,13 @@
   }
 }
 
+@mixin base($theme) {
+  --cngx-divider-spacing: 0;
+}
+
 @mixin theme($theme) {
   @include bridge.on('[cngxDivider]', '.cngx-divider') {
     @include color($theme);
+    @include base($theme);
   }
 }
