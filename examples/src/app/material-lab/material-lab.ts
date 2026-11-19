@@ -1,8 +1,6 @@
-import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  DestroyRef,
   type TemplateRef,
   ViewEncapsulation,
   inject,
@@ -120,6 +118,8 @@ import {
 import { CngxDotStepper, CngxStepper } from '@cngx/ui/stepper';
 import { CngxTabGroup } from '@cngx/ui/tabs';
 import type { CngxTreeNode } from '@cngx/utils';
+
+import { injectLabSheet } from './inject-lab-sheet';
 
 /**
  * `provideButtonCaretIcon` for the lab: Material's `arrow_drop_down`, the glyph
@@ -1426,14 +1426,8 @@ export class MaterialLab {
     // The lab sheet (full Material theme + every bridge) outgrows the
     // examples-wide anyComponentStyle budget, so it ships as the non-injected
     // `material-lab-theme` global bundle with its own budget (angular.json). It is
-    // linked while the lab is mounted, so the 16px root and the Material
-    // theme leave with it, as they did as a component style.
-    const doc = inject(DOCUMENT);
-    const sheet = doc.createElement('link');
-    sheet.rel = 'stylesheet';
-    sheet.href = 'material-lab-theme.css';
-    doc.head.appendChild(sheet);
-    inject(DestroyRef).onDestroy(() => sheet.remove());
+    // linked while the lab is mounted.
+    injectLabSheet('material-lab-theme');
 
     // Pre-touch the required/invalid fields so their error styling is visible on
     // load — this is a fidelity harness, not an interaction demo.

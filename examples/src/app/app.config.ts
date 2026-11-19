@@ -155,9 +155,10 @@ export const appConfig: ApplicationConfig = {
       [
         // Local Material-bridge fidelity harness (hand-authored; survives the
         // generated app.routes.ts overwrite). Not part of the demo catalogue.
+        // Componentless parent: its children are sibling lab pages, each with
+        // its own theme bundle, so only one lab sheet is ever linked.
         {
           path: 'material-lab',
-          loadComponent: () => import('./material-lab/material-lab').then((m) => m.MaterialLab),
           // The harness renders cngx-form-field with required markers and
           // field-level error messages; both need an app-scoped config the
           // examples app does not otherwise provide.
@@ -169,6 +170,12 @@ export const appConfig: ApplicationConfig = {
                 email: () => 'Enter a valid email address',
               }),
             ),
+          ],
+          children: [
+            {
+              path: '',
+              loadComponent: () => import('./material-lab/material-lab').then((m) => m.MaterialLab),
+            },
           ],
         },
         ...routes,
