@@ -427,6 +427,19 @@
       color: var(--cngx-step-indicator-active-color, oklch(1 0 0));
     }
 
+    /* Errored active step: the error wins over the active fill, as in the
+       chips and dot skins. The strong danger pair keeps the disc readable in
+       both schemes (a danger-text ring on the primary fill vanishes in dark);
+       the alert badge after the label stays the non-colour cue. */
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator[data-state='error'] {
+      background: var(
+        --cngx-color-danger-strong,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+      );
+      color: var(--cngx-color-on-danger-strong, oklch(1 0 0));
+      box-shadow: none;
+    }
+
     .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
       background: var(
         --cngx-step-pending-color,
@@ -1014,7 +1027,8 @@
 
     /* Errored step: filled danger dot. The alert icon after the label is
        the non-colour cue (WCAG 1.4.1). */
-    .cngx-stepper__indicator[data-state='error'] {
+    .cngx-stepper__indicator[data-state='error'],
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator[data-state='error'] {
       background: var(--cngx-step-errored-color);
       border-color: var(--cngx-step-errored-color);
       box-shadow: none;
@@ -1703,6 +1717,16 @@
         --cngx-step-pill-segment-indicator-active-color,
         var(--cngx-step-indicator-active-color, oklch(1 0 0))
       );
+    }
+
+    /* Errored active step: the error wins over the active disc, as in the
+       default skin. */
+    .cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator[data-state='error'] {
+      background: var(
+        --cngx-color-danger-strong,
+        oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.48 c h)
+      );
+      color: var(--cngx-color-on-danger-strong, oklch(1 0 0));
     }
 
     /* Completed segment stays flat - the green check disc carries the

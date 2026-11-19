@@ -35,6 +35,22 @@ const SCHEMES = ['light', 'dark'] as const;
           <span class="cngx-stepper__indicator step-done" data-state="success"></span>
           <span class="cngx-stepper__indicator step-error" data-state="error"></span>
         </div>
+        <span class="probe-danger-strong" style="background: var(--cngx-color-danger-strong)"></span>
+        <div class="cngx-stepper">
+          <div class="cngx-stepper__step" aria-current="step">
+            <span class="cngx-stepper__indicator step-error-active" data-state="error"></span>
+          </div>
+        </div>
+        <div class="cngx-stepper" data-skin="pill-segment">
+          <div class="cngx-stepper__step" aria-current="step">
+            <span class="cngx-stepper__indicator pill-error-active" data-state="error"></span>
+          </div>
+        </div>
+        <div class="cngx-stepper" data-skin="linear-minimal">
+          <div class="cngx-stepper__step" aria-current="step">
+            <span class="cngx-stepper__indicator dot-error-active" data-state="error"></span>
+          </div>
+        </div>
         <div class="cngx-stepper" data-skin="breadcrumb">
           <div class="cngx-stepper__step">
             <span class="cngx-stepper__indicator" data-state="success"></span>
@@ -119,6 +135,24 @@ describe('ui theme-derived tokens', () => {
     for (const scheme of SCHEMES) {
       const at = (selector: string) => query(root, `.scheme-${scheme} ${selector}`);
       expect(computedValue(at('.step-error'), 'color')).toBe(
+        computedValue(at('.probe-danger-text'), 'color'),
+      );
+    }
+  });
+
+  it('fills the errored active step with the strong danger pair, no ring', () => {
+    const root = mount();
+    for (const scheme of SCHEMES) {
+      const at = (selector: string) => query(root, `.scheme-${scheme} ${selector}`);
+      const disc = at('.step-error-active');
+      expect(computedValue(disc, 'background-color')).toBe(
+        computedValue(at('.probe-danger-strong'), 'background-color'),
+      );
+      expect(computedValue(disc, 'box-shadow')).toBe('none');
+      expect(computedValue(at('.pill-error-active'), 'background-color')).toBe(
+        computedValue(at('.probe-danger-strong'), 'background-color'),
+      );
+      expect(computedValue(at('.dot-error-active'), 'background-color')).toBe(
         computedValue(at('.probe-danger-text'), 'color'),
       );
     }
