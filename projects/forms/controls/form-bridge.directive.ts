@@ -30,19 +30,20 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  * field, see `CngxBindField`.
  *
  * Behaviour:
- * - All four CVA hooks wrap their bodies in `untracked()`. Load-bearing on
- *   `registerOnChange`: the atom may write its model inside a reactive
- *   context, so `fn(value)` runs outside the dependency graph and any signal
- *   `fn` touches (today via RF internals, tomorrow via signal-based RF) is
- *   never tracked by that context.
+ * - `fn(value)` never joins a reactive context: the atom may write its model
+ *   inside an effect, but Angular's output emit calls listeners with no active
+ *   consumer, so a signal `fn` reads is never tracked (a spec pins this).
+ *   `writeValue`, `setDisabledState` and the touched callback run inside
+ *   `untracked()`.
  * - A write through the atom's `value` model (typing, a click, `value.set`)
  *   reaches the control synchronously via the model's `subscribe`, so a form
  *   submitted in the same task (Enter right after a keystroke) reads it.
  * - A parent `[value]` binding next to `[formControl]` is not a user change
  *   (CVA contract): it updates the atom but never the control, which stays
  *   pristine. The model's `subscribe` does not fire for an input binding.
- * - `writeValue` drops the model's synchronous echo, so the RF→atom→RF
- *   round-trip never re-emits.
+ * - `writeValue` drops the model's synchronous echo of the value it writes, so
+ *   the RF→atom→RF round-trip never re-emits; a re-entrant write of a different
+ *   value still forwards.
  *
  * ```html
  * <!-- No bridge directive to add: it auto-attaches via selector to each atom below. -->
