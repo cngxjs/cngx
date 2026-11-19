@@ -226,6 +226,31 @@ describe('CngxDivider density-derived spacing', () => {
   });
 });
 
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./cngx-divider.css'],
+  template: `
+    <div class="divider-row" style="display: flex; align-items: center; block-size: 40px">
+      <span>left</span>
+      <span class="cngx-divider cngx-divider--vertical divider-in-row"></span>
+      <span>right</span>
+    </div>
+    <span class="cngx-divider cngx-divider--vertical divider-bare"></span>
+  `,
+})
+class VerticalDividerHost {}
+
+describe('CngxDivider vertical stretch', () => {
+  it('fills a flex row and keeps a 1em floor outside one', () => {
+    const root = mount(VerticalDividerHost, '.divider-row');
+    const inRow = root.querySelector('.divider-in-row') as HTMLElement;
+    const bare = mountedRoot!.querySelector('.divider-bare') as HTMLElement;
+    expect(inRow.getBoundingClientRect().height).toBe(40);
+    expect(bare.getBoundingClientRect().height).toBe(parseFloat(computedValue(bare, 'font-size')));
+  });
+});
+
 // ── cngx-button-toggle.css ─────────────────────────────────────────────────
 
 @Component({

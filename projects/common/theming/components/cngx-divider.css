@@ -9,7 +9,7 @@
  *
  * - default - horizontal hairline, `margin-block` breathing room
  * - `--vertical` - inline-block column, `margin-inline` breathing room,
- *   `align-self: stretch` so it fills its flex parent
+ *   `align-self: stretch` so it fills its flex parent (1em floor outside one)
  * - `--inset` - drops the line in from the start/end edge to align
  *   with indented list content; stacks with `--vertical`
  *
@@ -140,7 +140,10 @@
     :scope.cngx-divider--vertical {
       display: inline-block;
       width: var(--cngx-divider-thickness, 1px);
-      height: 1em;
+      /* Auto height so align-self: stretch fills a flex row; the 1em floor
+         keeps the line visible outside a flex parent. */
+      height: auto;
+      min-block-size: 1em;
       margin-block: 0;
       margin-inline: var(--cngx-divider-spacing);
       align-self: stretch;
