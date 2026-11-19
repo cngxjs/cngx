@@ -129,7 +129,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 507,
+      "line": 521,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
@@ -145,7 +145,7 @@
     {
       "class": "CngxAsyncClick",
       "file": "projects/common/interactive/async-click/async-click.directive.ts",
-      "line": 510,
+      "line": 524,
       "member": "announcement",
       "enclosing": "untracked",
       "tiers": [
