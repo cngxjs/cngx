@@ -88,22 +88,26 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   private onChange: ((value: T) => void) | null = null;
   private onTouched: (() => void) | null = null;
 
-  /** True while `writeValue` writes the model, so its echo is not reported as a user change. */
-  private writing = false;
+  /**
+   * The value `writeValue` is writing, until the model echoes it once. Only that
+   * echo is dropped; a different value written re-entrantly (a `(valueChange)`
+   * handler normalising it) still forwards.
+   */
+  private echo: { readonly value: T } | null = null;
 
   private subscription: OutputRefSubscription | null = null;
 
   /**
    * RF → view. Writes the atom's model signal; the model emits synchronously
-   * inside `set`, and the `writing` flag keeps that echo out of `onChange`.
+   * inside `set`, and the one-shot `echo` keeps that emit out of `onChange`.
    */
   writeValue(value: T): void {
     untracked(() => {
-      this.writing = true;
+      this.echo = { value };
       try {
         this.control.value.set(value);
       } finally {
-        this.writing = false;
+        this.echo = null;
       }
     });
   }
@@ -120,14 +124,17 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
     if (this.subscription !== null) {
       return;
     }
-    const subscription = this.control.value.subscribe((value) => this.forward(value));
-    this.subscription = subscription;
-    this.destroyRef.onDestroy(() => subscription.unsubscribe());
+    this.subscription = this.control.value.subscribe((value) => this.forward(value));
+    this.destroyRef.onDestroy(() => this.subscription?.unsubscribe());
   }
 
   private forward(value: T): void {
+    if (this.echo !== null && Object.is(value, this.echo.value)) {
+      this.echo = null;
+      return;
+    }
     const callback = this.onChange;
-    if (this.writing || callback === null) {
+    if (callback === null) {
       return;
     }
     callback(value);

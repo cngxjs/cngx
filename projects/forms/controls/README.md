@@ -124,7 +124,7 @@ to remember on the consumer side.
 
 | Hook | Behaviour |
 |-|-|
-| `writeValue(v)` | Writes `control.value.set(v)` behind a `writing` flag, so the model's synchronous echo never reaches `onChange`. |
+| `writeValue(v)` | Writes `control.value.set(v)` and drops the model's synchronous echo of exactly that value, so the round-trip never reaches `onChange`. A different value written re-entrantly (a `(valueChange)` handler normalising it) still forwards. |
 | `registerOnChange(fn)` | Subscribes to the atom's `value` model, so every write through `set` (typing, a click) reaches the control synchronously: a form submitted with Enter right after a keystroke reads it. Forwards through `untracked(() => fn(value))`. A parent `[value]` binding next to `[formControl]` updates the atom without emitting, so it never reaches the control: the control stays pristine (CVA contract, `onChange` reports user changes only). |
 | `registerOnTouched(fn)` | Stored. Fired from the host's `(focusout)` listener. |
 | `setDisabledState(b)` | `untracked(() => control.disabled.set(b))`. |

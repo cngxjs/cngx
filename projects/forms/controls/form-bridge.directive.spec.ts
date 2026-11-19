@@ -345,6 +345,37 @@ describe('CngxFormBridge', () => {
     });
   });
 
+  // ── Re-entrant model write during writeValue ─────────────────────────
+
+  describe('model write re-entering during writeValue', () => {
+    @Component({
+      template: `<cngx-toggle [formControl]="ctrl" (valueChange)="refuseOn($event)" #host>label</cngx-toggle>`,
+      imports: [CngxToggle, ReactiveFormsModule, CngxFormBridge],
+    })
+    class RefusingHost {
+      readonly ctrl = new FormControl<boolean>(false, { nonNullable: true });
+      @ViewChild('host', { read: CngxToggle }) toggle!: CngxToggle;
+
+      refuseOn(value: boolean): void {
+        if (value) {
+          this.toggle.value.set(false);
+        }
+      }
+    }
+
+    it('forwards a (valueChange) normalisation made while the control writes the atom', () => {
+      TestBed.configureTestingModule({ imports: [RefusingHost] });
+      const fixture = TestBed.createComponent(RefusingHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+
+      host.ctrl.setValue(true);
+
+      expect(host.toggle.value()).toBe(false);
+      expect(host.ctrl.value).toBe(false);
+    });
+  });
+
   // ── Parent [value] binding next to [formControl] ─────────────────────
 
   describe('parent [value] binding next to [formControl]', () => {
