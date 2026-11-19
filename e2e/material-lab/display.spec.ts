@@ -5,9 +5,11 @@ import { computedValue } from '../support/material-bridge-page';
 // Display pairs of /material-lab/display: only the axes that measure equal
 // against the Material twin are pinned. Every other axis is a numbered row in
 // the material-fixes roadmap (items 11 to 16) and stays unpinned until fixed.
-// The ripple and the unchecked toggle text also match without their component
-// bridge (lab text colour, system bridge); their bridge reach is not proven
-// here (roadmap items 12 and 16).
+// The unchecked toggle text also matches without its component bridge (system
+// bridge); its bridge reach is not proven here (roadmap item 12). The ripple
+// wave follows currentColor by design: the directive sets the colour inline on
+// the wave, so the pin proves the M3 rule "state layer = content colour", not
+// ripple.theme (roadmap item 16).
 
 const mat = (pair: string, part = ''): string => `[data-pair=${pair}] .probe-mat ${part}`.trim();
 const cngx = (pair: string, part = ''): string => `[data-pair=${pair}] .probe-cngx ${part}`.trim();
