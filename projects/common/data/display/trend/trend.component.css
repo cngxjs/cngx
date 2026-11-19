@@ -148,11 +148,11 @@
     }
 
     :scope.cngx-trend--up {
-      color: var(--cngx-trend-up-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+      color: var(--cngx-trend-up-color);
     }
 
     :scope.cngx-trend--down {
-      color: var(--cngx-trend-down-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+      color: var(--cngx-trend-down-color);
     }
   }
 }

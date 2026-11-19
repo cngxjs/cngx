@@ -148,11 +148,11 @@
     }
 
     :scope.cngx-delta--positive {
-      color: var(--cngx-delta-positive-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+      color: var(--cngx-delta-positive-color);
     }
 
     :scope.cngx-delta--negative {
-      color: var(--cngx-delta-negative-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+      color: var(--cngx-delta-negative-color);
     }
 
     :scope.cngx-delta--neutral {

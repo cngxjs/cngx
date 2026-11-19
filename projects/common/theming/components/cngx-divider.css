@@ -126,7 +126,7 @@
       margin-block: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
       margin-inline: 0;
       border: 0;
-      background: var(--cngx-divider-color, var(--cngx-color-border, oklch(0.9 0.01 250)));
+      background: var(--cngx-divider-color);
     }
 
     /* Vertical variant - thin column, horizontal breathing room. */
@@ -141,10 +141,10 @@
 
     /* Inset variant - drops the line in from the start/end edge. */
     :scope.cngx-divider--inset {
-      margin-inline: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
+      margin-inline: var(--cngx-divider-inset-amount);
     }
     :scope.cngx-divider--vertical.cngx-divider--inset {
-      margin-block: var(--cngx-divider-inset-amount, var(--cngx-space-md, 16px));
+      margin-block: var(--cngx-divider-inset-amount);
       margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
     }
   }

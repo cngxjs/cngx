@@ -188,7 +188,7 @@
       --cngx-copy-block-btn-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: flex;
       align-items: flex-start;
-      gap: var(--cngx-copy-block-gap, var(--cngx-space-sm, 8px));
+      gap: var(--cngx-copy-block-gap);
     }
 
     .cngx-copy-block__content {
@@ -226,10 +226,7 @@
         --cngx-copy-block-btn-copied-border,
         var(--cngx-color-success, oklch(0.5 0.12 145))
       );
-      color: var(
-        --cngx-copy-block-btn-copied-color,
-        var(--cngx-color-success, oklch(0.5 0.12 145))
-      );
+      color: var(--cngx-copy-block-btn-copied-color);
     }
 
     .cngx-sr-only {

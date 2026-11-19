@@ -281,7 +281,7 @@
       );
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-toggle-gap, var(--cngx-space-sm, 0.5rem));
+      gap: var(--cngx-toggle-gap);
       cursor: pointer;
       user-select: none;
       outline: none;

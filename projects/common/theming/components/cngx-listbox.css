@@ -258,17 +258,11 @@
   }
 
   .cngx-option--highlighted {
-    background: var(
-      --cngx-option-highlight-bg,
-      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
-    );
+    background: var(--cngx-option-highlight-bg);
   }
 
   .cngx-option--selected {
-    background: var(
-      --cngx-option-selected-bg,
-      color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 18%, transparent)
-    );
+    background: var(--cngx-option-selected-bg);
   }
 
   /* Disabled by colour, never opacity (the field recipe). */

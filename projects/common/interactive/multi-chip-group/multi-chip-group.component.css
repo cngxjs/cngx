@@ -44,10 +44,7 @@
          least the pointer-derived gap so small, closely-packed chips stay
          distinguishable as separate tap targets. Inert at 0px on a fine
          pointer, so the natural density gap is unchanged. */
-      gap: max(
-        var(--cngx-multi-chip-group-gap, var(--cngx-chip-group-gap, var(--cngx-space-sm, 0.5rem))),
-        var(--cngx-target-gap, 0px)
-      );
+      gap: max(var(--cngx-multi-chip-group-gap), var(--cngx-target-gap, 0px));
     }
 
     :scope.cngx-multi-chip-group--horizontal {

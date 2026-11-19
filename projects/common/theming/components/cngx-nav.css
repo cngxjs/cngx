@@ -891,7 +891,7 @@
     inset-block: var(--cngx-nav-link-active-indicator-inset, 8px);
     inline-size: var(--cngx-nav-link-active-indicator-size, 3px);
     border-radius: var(--cngx-nav-link-active-indicator-size, 3px);
-    background: var(--cngx-nav-link-active-indicator-color, currentColor);
+    background: var(--cngx-nav-link-active-indicator-color);
   }
 
   /*
@@ -904,7 +904,7 @@
   .cngx-nav-link:focus-visible,
   .cngx-nav-group:focus-visible {
     outline: var(--cngx-nav-link-focus-outline-width, 2px) solid
-      var(--cngx-nav-link-focus-outline-color, oklch(0.2 0.01 250));
+      var(--cngx-nav-link-focus-outline-color);
     outline-offset: var(--cngx-nav-link-focus-outline-offset, -2px);
     box-shadow: inset 0 0 0 calc(2 * var(--cngx-nav-link-focus-outline-width, 2px))
       var(--cngx-nav-link-focus-inner-color, oklch(0.97 0.005 250));

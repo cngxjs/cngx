@@ -101,7 +101,7 @@
       --cngx-checkbox-sibling-gap: var(--cngx-space-md);
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-checkbox-gap, var(--cngx-space-sm, 0.5rem));
+      gap: var(--cngx-checkbox-gap);
       cursor: pointer;
       user-select: none;
       outline: none;

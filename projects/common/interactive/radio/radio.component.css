@@ -97,7 +97,7 @@
       --cngx-radio-gap: var(--cngx-space-sm);
       display: inline-flex;
       align-items: center;
-      gap: var(--cngx-radio-gap, var(--cngx-space-sm, 0.5rem));
+      gap: var(--cngx-radio-gap);
       cursor: pointer;
       user-select: none;
       outline: none;
