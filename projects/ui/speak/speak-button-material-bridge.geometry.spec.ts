@@ -28,6 +28,12 @@ import { afterEach, describe, expect, it } from 'vitest';
     <cngx-speak-button class="cngx-speak-button cngx-speak-button--speaking">
       <button type="button" class="cngx-speak-button__btn speaking"></button>
     </cngx-speak-button>
+    <cngx-speak-button
+      class="cngx-speak-button"
+      style="--cngx-speak-btn-active-color: rgb(200, 10, 10)"
+    >
+      <button type="button" class="cngx-speak-button__btn host-override"></button>
+    </cngx-speak-button>
   `,
 })
 class SpeakBridgeHost {}
@@ -59,6 +65,12 @@ describe('speak button under the Material bridge', () => {
   it('puts the button on the bridged surface container', () => {
     const root = mount();
     expect(computedValue(query(root, '.resting'), 'background-color')).toBe('rgb(10, 20, 30)');
+  });
+
+  it('lets a host override of an inheriting token reach the button', () => {
+    const root = mount();
+    const button = query(root, '.host-override');
+    expect(computedValue(button, '--cngx-speak-btn-active-color')).toBe('rgb(200, 10, 10)');
   });
 
   it('fills the speaking button with the bridged primary', () => {
