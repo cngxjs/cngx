@@ -1157,6 +1157,30 @@ class ModalUnmountHost {
   readonly action: AsyncAction = () => Promise.resolve();
 }
 
+@Directive({
+  selector: '[testThrowingAnnouncement]',
+  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useExisting: TestThrowingAnnouncement }],
+})
+class TestThrowingAnnouncement {
+  readonly disabled = computed(() => false);
+  readonly announcement = (): string => {
+    throw new Error('announcement');
+  };
+}
+
+@Component({
+  template: `@if (shown()) {
+    <button testThrowingAnnouncement [cngxAsyncClick]="action" (settled)="shown.set(false)">
+      Go
+    </button>
+  }`,
+  imports: [CngxAsyncClick, TestThrowingAnnouncement],
+})
+class ThrowingUnmountHost {
+  readonly shown = signal(true);
+  readonly action: AsyncAction = () => Promise.resolve();
+}
+
 describe('CngxAsyncClick host destroyed by its own settle (A13)', () => {
   function spyAnnounce() {
     return vi
@@ -1223,5 +1247,25 @@ describe('CngxAsyncClick host destroyed by its own settle (A13)', () => {
     // the scope no longer finds its modal and the text goes to the body
     // regions (announcer debt: body-routed sources outside a modal).
     expect(scopes).toEqual([{ connected: false, inModal: false }]);
+  });
+  it('hands a throwing host announcement to the ErrorHandler and finishes the teardown', async () => {
+    const handleError = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [{ provide: ErrorHandler, useValue: { handleError } }],
+    });
+    const announce = spyAnnounce();
+    const fixture = TestBed.createComponent(ThrowingUnmountHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    });
+
+    expect(handleError).toHaveBeenCalledWith(new Error('announcement'));
+    expect(announce).not.toHaveBeenCalled();
+    // The region is removed by a later destroy hook of the same directive.
+    expect(fixture.nativeElement.querySelector('[aria-live]')).toBeNull();
   });
 });

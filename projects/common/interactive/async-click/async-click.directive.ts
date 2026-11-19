@@ -6,6 +6,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  ErrorHandler,
   inject,
   Injector,
   input,
@@ -180,6 +181,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     optional: true,
   });
   private readonly announcer = inject(CngxLiveAnnouncer);
+  private readonly errorHandler = inject(ErrorHandler);
 
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>({ alias: 'cngxAsyncClick' });
@@ -308,9 +310,8 @@ export class CngxAsyncClick implements CngxAsyncRunState {
       // own settle would never speak it.
       const read = this.pendingSettle;
       this.pendingSettle = null;
-      const text = read?.() ?? '';
-      if (text !== '') {
-        this.announcer.announce(text, 'polite', this.el.nativeElement);
+      if (read) {
+        this.speakOnDestroy(read);
       }
     });
 
@@ -406,7 +407,8 @@ export class CngxAsyncClick implements CngxAsyncRunState {
    * region empty and hands a non-empty text to `CngxLiveAnnouncer`, scoped
    * to the host, because a reader never speaks a region in a hidden subtree.
    * A host destroyed before that render (removed by its own `(settled)`)
-   * hands the pending text to `CngxLiveAnnouncer` from its destroy hook.
+   * hands the pending text to `CngxLiveAnnouncer` from its destroy hook; with
+   * several settles pending it speaks only the latest.
    */
   private speak(read: () => string): void {
     if (!untracked(this.autoAnnounce)) {
@@ -423,6 +425,11 @@ export class CngxAsyncClick implements CngxAsyncRunState {
         // The visibility probe reads style, so it runs before the write.
         earlyRead: () => this.hostRendered(),
         write: (rendered) => {
+          // A destroy between the read and write phases of one pass already
+          // spoke this text from the destroy hook.
+          if (this.destroyed) {
+            return;
+          }
           if (this.pendingSettle === read) {
             this.pendingSettle = null;
           }
@@ -440,6 +447,23 @@ export class CngxAsyncClick implements CngxAsyncRunState {
       },
       { injector: this.injector },
     );
+  }
+
+  /**
+   * Runs inside view teardown, so a throwing host announcement goes to the
+   * `ErrorHandler` instead of aborting the remaining destroy hooks.
+   */
+  private speakOnDestroy(read: () => string): void {
+    let text: string;
+    try {
+      text = read();
+    } catch (err: unknown) {
+      this.errorHandler.handleError(err);
+      return;
+    }
+    if (text !== '') {
+      this.announcer.announce(text, 'polite', this.el.nativeElement);
+    }
   }
 
   /**
