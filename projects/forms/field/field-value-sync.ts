@@ -87,14 +87,22 @@ export function bindFieldValue<V>(
   effect(() => {
     const control = target();
     if (!control) {
-      resumed = seededTarget !== undefined;
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        resumed = seededTarget !== undefined;
+      }
       return;
     }
     const next = control();
     const mode: FieldWriteMode = seededTarget === control ? 'user' : 'seed';
     seededTarget = control;
-    const rejoined = resumed;
-    resumed = false;
+    let rejoined = false;
+    let echo: { readonly value: V } | null = null;
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      rejoined = resumed;
+      resumed = false;
+      echo = pushed;
+      pushed = null;
+    }
     untracked(() => {
       const fieldRef = fieldState();
       const raw = fieldRef.value();
@@ -107,8 +115,6 @@ export function bindFieldValue<V>(
       const pending = controlValueOf(fieldRef);
       const held =
         mode === 'user' && typeof pending === 'function' ? (pending as () => unknown)() : raw;
-      const echo = pushed;
-      pushed = null;
       if (options.valueEquals(options.coerceFromField(held), next)) {
         if (typeof ngDevMode !== 'undefined' && ngDevMode && mode === 'user') {
           // A hand binding hands the control's own value to the field: same
