@@ -22,8 +22,8 @@ import {
 import { coerceSignal, createKeyedRegistry, nextUid } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 import { CNGX_CONTROL_VALUE } from '@cngx/common/interactive';
-import type { CngxErrorFieldState, CngxFieldAccessor, CngxFieldRef } from './models';
-import { bindFieldValue } from './field-value-sync';
+import type { CngxFieldAccessor, CngxFieldRef } from './models';
+import { bindFieldValue, isFormFieldOwned } from './field-value-sync';
 import { injectFormFieldI18n } from './i18n/form-field-i18n';
 import { CNGX_FIELD_AFFIX } from './field-box.token';
 import { registerFieldControl, registerFieldLabel } from './field-control-registry';
@@ -304,8 +304,7 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     if (!entry || this.reactiveFormsValues().includes(entry)) {
       return undefined;
     }
-    const bindings = (this.fieldState() as Partial<CngxErrorFieldState>).formFieldBindings?.();
-    return bindings && bindings.length > 0 ? undefined : entry.value;
+    return isFormFieldOwned(this.fieldState()) ? undefined : entry.value;
   });
 
   /**

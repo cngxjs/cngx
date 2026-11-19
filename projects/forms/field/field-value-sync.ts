@@ -153,8 +153,7 @@ function warnIfHandBound(fieldRef: CngxFieldRef, explained: boolean): void {
   if (explained || handBoundWarned.has(fieldRef)) {
     return;
   }
-  const bindings = (fieldRef as Partial<CngxErrorFieldState>).formFieldBindings?.();
-  if (bindings && bindings.length > 0) {
+  if (isFormFieldOwned(fieldRef)) {
     return;
   }
   handBoundWarned.add(fieldRef);
@@ -166,6 +165,19 @@ function warnIfHandBound(fieldRef: CngxFieldRef, explained: boolean): void {
         'debounce() is skipped. Remove the [(value)] binding; the field syncs the control.',
     );
   }
+}
+
+/**
+ * Whether a `[formField]` directive binds the field. Signal Forms then owns the
+ * value (it writes through `controlValue` and dirties), so the field's own sync
+ * stays out and a second writer is expected. `false` for refs without a binding
+ * list (Reactive Forms adapters, test mocks).
+ *
+ * @internal
+ */
+export function isFormFieldOwned(fieldRef: CngxFieldRef): boolean {
+  const bindings = (fieldRef as Partial<CngxErrorFieldState>).formFieldBindings?.();
+  return bindings !== undefined && bindings.length > 0;
 }
 
 /**

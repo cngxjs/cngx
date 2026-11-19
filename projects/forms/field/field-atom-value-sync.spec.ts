@@ -26,6 +26,7 @@ import { CngxFormBridge } from '@cngx/forms/controls';
 import { CngxInput, CngxNumericInput, CngxRating } from '@cngx/forms/input';
 import { CngxSelect } from '@cngx/forms/select';
 
+import { isFormFieldOwned } from './field-value-sync';
 import { adaptFormControl } from './form-control-adapter';
 import { CngxFormField } from './form-field.component';
 import { CngxSliderFieldBridge } from './slider-field-bridge.directive';
@@ -891,3 +892,35 @@ describe('field atom value sync - CNGX2032 hand value binding warning', () => {
   });
 });
 
+describe('isFormFieldOwned', () => {
+  @Component({
+    template: `
+      @if (bound()) {
+        <input type="checkbox" [formField]="f.check" />
+      }
+    `,
+    imports: [FormField],
+  })
+  class OwnerHost {
+    readonly bound = signal(true);
+    readonly f = form(signal({ check: false }));
+  }
+
+  it('is true while a [formField] binds the field, false otherwise', () => {
+    const fixture = TestBed.createComponent(OwnerHost);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    expect(isFormFieldOwned(host.f.check())).toBe(true);
+
+    host.bound.set(false);
+    fixture.detectChanges();
+    expect(isFormFieldOwned(host.f.check())).toBe(false);
+  });
+
+  it('is false for a ref without a binding list (Reactive Forms adapter)', () => {
+    const field = TestBed.runInInjectionContext(() =>
+      adaptFormControl(new FormControl(false), 'check', inject(DestroyRef)),
+    );
+    expect(isFormFieldOwned(field())).toBe(false);
+  });
+});
