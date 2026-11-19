@@ -641,12 +641,17 @@
 
     /* The primary text rung drops under 4.5:1 on the 20% tint, so the
        hovered label switches to the text colour. */
-    .cngx-filter-builder__logic-joiner:hover {
+    .cngx-filter-builder__logic-joiner:not([disabled]):hover {
       color: var(--cngx-color-text, oklch(0.2 0.01 250));
       background: var(
         --cngx-filter-builder-joiner-hover-bg,
         color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent)
       );
+    }
+
+    .cngx-filter-builder__logic-joiner[disabled] {
+      cursor: not-allowed;
+      opacity: var(--cngx-filter-builder-action-disabled-opacity, 0.5);
     }
 
     .cngx-filter-builder__logic-joiner:focus-visible {

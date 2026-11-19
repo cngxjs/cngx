@@ -174,8 +174,8 @@
       min-block-size: max(2rem, var(--cngx-target-min, 0px));
     }
 
-    .cngx-filter-builder__action-button--remove:hover,
-    .cngx-filter-builder__action-button--remove:focus-visible {
+    .cngx-filter-builder__action-button--remove:not([disabled]):hover,
+    .cngx-filter-builder__action-button--remove:not([disabled]):focus-visible {
       color: var(
         --cngx-filter-builder-action-remove-fg,
         var(
