@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { computedValue } from '@cngx/testing/geometry';
+import { computedValue, rasterise } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxAvatar } from './avatar.component';
@@ -67,5 +67,47 @@ describe('CngxAvatar geometry', () => {
       throw new Error('status dot did not render');
     }
     expect(computedValue(dot, 'position')).toBe('absolute');
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [CngxAvatar],
+  template: `
+    <div
+      style="--cngx-radius-pill: 7px; --cngx-color-success: rgb(10, 150, 10);
+        --cngx-color-danger: rgb(200, 10, 10); --cngx-color-warning: rgb(200, 150, 10)"
+    >
+      <cngx-avatar class="online" [initials]="'ON'" [status]="'online'" />
+      <cngx-avatar class="busy" [initials]="'BU'" [status]="'busy'" />
+      <cngx-avatar class="away" [initials]="'AW'" [status]="'away'" />
+    </div>
+  `,
+})
+class ThemedAvatarHost {}
+
+// The circle radius and status hues are registered with a fixed initial, so a
+// use-site fallback never paints: the theme reaches them only through the SET.
+describe('CngxAvatar theme-derived tokens', () => {
+  function mountThemed(): HTMLElement {
+    const fixture = TestBed.createComponent(ThemedAvatarHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+  const dot = (root: HTMLElement, status: string): string =>
+    computedValue(
+      root.querySelector(`.${status} .cngx-avatar__status`) as HTMLElement,
+      'background-color',
+    );
+
+  it('derives the status hues and the circle radius from the theme', () => {
+    const root = mountThemed();
+    expect(rasterise(dot(root, 'online'))).toEqual(rasterise('rgb(10, 150, 10)'));
+    expect(rasterise(dot(root, 'busy'))).toEqual(rasterise('rgb(200, 10, 10)'));
+    expect(rasterise(dot(root, 'away'))).toEqual(rasterise('rgb(200, 150, 10)'));
+    const host = root.querySelector('.online.cngx-avatar') as HTMLElement;
+    expect(computedValue(host, 'border-top-left-radius')).toBe('7px');
   });
 });

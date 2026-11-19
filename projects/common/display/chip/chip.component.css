@@ -420,6 +420,16 @@
     --cngx-chip-hover-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 20%, transparent);
     --cngx-chip-selected-bg: color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 32%, transparent);
   }
+
+  /* Derive the radii from the theme: the registered initial defeats a use-site
+   * fallback. Both do not inherit, so each SETs on the element that reads it.
+   * Kept in this layer so a Material bridge and a consumer override still win. */
+  .cngx-chip {
+    --cngx-chip-radius: var(--cngx-radius-pill);
+  }
+  .cngx-chip__remove {
+    --cngx-chip-remove-radius: var(--cngx-radius-pill);
+  }
 }
 
 @layer cngx.components {
@@ -443,7 +453,7 @@
       gap: var(--cngx-chip-inner-gap);
       padding-block: var(--cngx-chip-padding-block, 2px);
       padding-inline: var(--cngx-chip-padding-inline);
-      border-radius: var(--cngx-chip-radius, var(--cngx-radius-pill, 999px));
+      border-radius: var(--cngx-chip-radius);
       background: var(--cngx-chip-bg);
       color: var(--cngx-chip-color, inherit);
       border: var(--cngx-chip-border, 0 solid transparent);
@@ -546,7 +556,7 @@
       /* Quieter than the label at rest, keeping the chip's hue (a variant
        * chip keeps its colour family). */
       color: color-mix(in oklab, currentColor 70%, transparent);
-      border-radius: var(--cngx-chip-remove-radius, var(--cngx-radius-pill, 999px));
+      border-radius: var(--cngx-chip-remove-radius);
 
       /* Touch-target floor - the remove button is its own tap target,
          nested inside the chip (and, in a multi select, inside the combobox

@@ -33,7 +33,7 @@ const STATES = ['online', 'offline', 'away', 'busy'] as const;
     <span class="plain" style="color: rgb(200, 0, 0)">plain</span>
     <span
       class="probe-online"
-      style="color: var(--cngx-avatar-status-online, var(--cngx-color-success, oklch(0.68 0.18 145)))"
+      style="color: var(--cngx-color-success)"
     ></span>
     <span class="probe-canvastext" style="color: CanvasText"></span>
     <span class="probe-canvas" style="color: Canvas"></span>

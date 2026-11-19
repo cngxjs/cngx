@@ -473,12 +473,19 @@
     --cngx-tag-info-color: oklch(0.4 0.15 250);
     --cngx-tag-info-subtle-bg: oklch(0.97 0.025 240);
   }
+
+  /* Derive the radius from the theme: the registered initial defeats a use-site
+   * fallback. It does not inherit, so the SET sits on the tag itself. Kept in
+   * this layer so a Material bridge and a consumer override still win. */
+  .cngx-tag {
+    --cngx-tag-radius: var(--cngx-radius-sm);
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-tag) {
     :scope {
-      border-radius: var(--cngx-tag-radius, var(--cngx-radius-sm, 4px));
+      border-radius: var(--cngx-tag-radius);
       font-weight: var(--cngx-tag-font-weight, 500);
       background: var(--cngx-tag-bg, transparent);
       color: var(--cngx-tag-color, inherit);

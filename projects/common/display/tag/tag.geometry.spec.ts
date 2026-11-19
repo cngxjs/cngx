@@ -55,3 +55,13 @@ describe('CngxTag geometry (shared tag-base)', () => {
     expect(computedValue(host, 'gap')).toBe('6px');
   });
 });
+
+// The tag radius is registered with a fixed initial, so a use-site fallback
+// never paints: the theme reaches it only through the SET.
+describe('CngxTag theme-derived radius', () => {
+  it('derives the corner radius from the radius scale', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '3px');
+    expect(computedValue(host, 'border-top-left-radius')).toBe('3px');
+  });
+});
