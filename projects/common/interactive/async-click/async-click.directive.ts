@@ -289,6 +289,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
   private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+  private pendingSettle: (() => string) | null = null;
   private generation = 0;
   private readonly injector = inject(Injector);
   private regionSpan: HTMLSpanElement | null = null;
@@ -301,6 +302,14 @@ export class CngxAsyncClick implements CngxAsyncRunState {
         clearTimeout(this.feedbackTimer);
       }
       this.abortController.abort();
+      // Destroy cancels the afterNextRender write, so a host removed by its
+      // own settle would never speak it.
+      const read = this.pendingSettle;
+      this.pendingSettle = null;
+      const text = read?.() ?? '';
+      if (text !== '') {
+        this.announcer.announce(text, 'polite', this.el.nativeElement);
+      }
     });
 
     // Arm the feedback-reset window when the run has settled AND the busy
@@ -394,6 +403,8 @@ export class CngxAsyncClick implements CngxAsyncRunState {
    * `visibility: hidden` ancestor, an `inert` popover fading out) leaves the
    * region empty and hands a non-empty text to `CngxLiveAnnouncer`, scoped
    * to the host, because a reader never speaks a region in a hidden subtree.
+   * A host destroyed before that render (removed by its own `(settled)`)
+   * hands the pending text to `CngxLiveAnnouncer` from its destroy hook.
    */
   private speak(read: () => string): void {
     if (!untracked(this.autoAnnounce)) {
@@ -404,13 +415,14 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     if (this.regionSpan) {
       this.regionSpan.textContent = '';
     }
+    this.pendingSettle = read;
     afterNextRender(
       {
         // The visibility probe reads style, so it runs before the write.
         earlyRead: () => this.hostRendered(),
         write: (rendered) => {
-          if (this.destroyed) {
-            return;
+          if (this.pendingSettle === read) {
+            this.pendingSettle = null;
           }
           const text = read();
           if (rendered) {
