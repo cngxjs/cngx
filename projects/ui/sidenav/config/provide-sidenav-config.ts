@@ -129,7 +129,7 @@ function mergeConfig(
  *   1. Per-instance Input binding.
  *   2. `provideSidenavConfigAt(...)` in a parent component's `viewProviders`.
  *   3. `provideSidenavConfig(...)` at the application root.
- *   4. Library defaults (`CNGX_SIDENAV_DEFAULTS`).
+ *   4. Library defaults.
  *
  * `dimensions`, `hover`, `routerSync` and `labels` merge per key with the
  * library defaults; `shortcut` and `persistence` replace them.

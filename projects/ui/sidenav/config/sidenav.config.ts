@@ -9,7 +9,7 @@ import type { Signal } from '@angular/core';
  *   2. `provideSidenavConfigAt(...)` in a parent component's `viewProviders`
  *      (component-scoped override).
  *   3. `provideSidenavConfig(...)` at the application root.
- *   4. Library defaults (merged in via `CNGX_SIDENAV_DEFAULTS`).
+ *   4. Library defaults.
  *
  * Every key is optional, so consumers declare only the keys they want to
  * override. `dimensions`, `hover`, `routerSync` and `labels` merge per key

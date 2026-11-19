@@ -17,8 +17,8 @@ import type { CngxSidenavConfig } from './sidenav.config';
  * `withSidenavHoverDwell(...)`, not silently changed - the breadcrumb
  * "un-configured consumer sees no change" principle.
  *
- * Exported for intra-lib consumers (`provideSidenavConfig` deep-merges with
- * this base) but **NOT** re-exported from `public-api.ts` - downstream
+ * Exported for intra-lib consumers (`provideSidenavConfig` merges its features
+ * over this base) but **NOT** re-exported from `public-api.ts` - downstream
  * consumers reach the defaults via `inject(CNGX_SIDENAV_CONFIG)` so
  * `provideSidenavConfig` / `provideSidenavConfigAt` overrides take precedence.
  *
