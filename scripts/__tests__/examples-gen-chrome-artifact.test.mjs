@@ -28,6 +28,71 @@ function selectorMap() {
   return map;
 }
 
+// Story paths of the button family plus the stories its reviews flagged. The
+// rest of the catalogue is not clean yet; widen this list as areas get fixed.
+const SELF_CONTAINED_PANEL_SCOPE = [
+  'common/button/',
+  'common/menu-button/',
+  'common/interactive/async-click/',
+  'common/popover/',
+  'ui/action-button/',
+  'ui/stepper/stepper-footer/complete-finish-button',
+  'ui/stepper/stepper-connectors/wizard-rail',
+];
+
+const NOT_MEMBERS = new Set(['if', 'for', 'while', 'switch', 'return', 'catch', 'constructor', 'super']);
+
+/** Names of class members declared at brace depth 0 of a `setup` / `setupChrome` body. */
+function classMembers(body = '') {
+  const names = new Set();
+  let depth = 0;
+  for (const line of body.split('\n')) {
+    const code = line
+      .replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g, "''")
+      .replace(/\/\/.*$/, '');
+    if (depth === 0) {
+      const decl = code.match(
+        /^\s*(?:(?:public|protected|private|readonly|static|override|async|get|set)\s+)*#?([A-Za-z_$][\w$]*)\s*[!?]?\s*[=:(<]/,
+      );
+      if (decl && !NOT_MEMBERS.has(decl[1])) {
+        names.add(decl[1]);
+      }
+    }
+    for (const ch of code) {
+      if ('{(['.includes(ch)) {
+        depth++;
+      } else if ('})]'.includes(ch)) {
+        depth--;
+      }
+    }
+  }
+  return names;
+}
+
+/** Interpolations, bound attribute values and control-flow headers of a template. */
+function templateExpressions(template = '') {
+  return [
+    ...[...template.matchAll(/\{\{([\s\S]*?)\}\}/g)].map((m) => m[1]),
+    ...[...template.matchAll(/[[(*][^\s=]*\s*=\s*"([^"]*)"/g)].map((m) => m[1]),
+    ...[...template.matchAll(/@(?:if|else if|for|switch|case|let|defer)\b([^{\n]*)/g)].map((m) => m[1]),
+  ].join('\n');
+}
+
+/** Members only `setupChrome` declares that the displayed `setup` or `template` still reads. */
+function chromeOnlyReads(story) {
+  const own = classMembers(story.setup);
+  const expressions = templateExpressions(story.template);
+  return [...classMembers(story.setupChrome)]
+    .filter((name) => !own.has(name))
+    .filter((name) => {
+      const id = name.replace(/\$/g, '\\$');
+      return (
+        new RegExp(`(?<![.\\w$])${id}\\b`).test(expressions) ||
+        new RegExp(`this\\.${id}\\b`).test(story.setup ?? '')
+      );
+    });
+}
+
 describe('examples chrome divs', () => {
   const stories = filesUnder(STORIES, (f) => f.endsWith('.story.ts')).map((file) => {
     const route = relative(STORIES, file).replace(/\.story\.ts$/, '');
@@ -50,5 +115,24 @@ describe('examples chrome divs', () => {
       .filter(([, classes]) => classes.length > 0)
       .map(([route, classes]) => `${route}: ${classes.join(', ')}`);
     expect(hits).toEqual([]);
+  });
+
+  it('no displayed setup or template reads a member declared only in setupChrome', () => {
+    const hits = stories
+      .filter((s) => s.story?.setupChrome)
+      .filter(({ route }) => SELF_CONTAINED_PANEL_SCOPE.some((p) => route.startsWith(p)))
+      .map(({ route, story }) => [route, chromeOnlyReads(story)])
+      .filter(([, names]) => names.length > 0)
+      .map(([route, names]) => `${route}: ${names.join(', ')}`);
+    expect(hits).toEqual([]);
+  });
+
+  it('flags a template binding, a setup read and a control-flow read of a chrome-only member', () => {
+    const story = {
+      setup: 'protected readonly run = () => (this.failNext ? 1 : 0);',
+      setupChrome: 'protected failNext = false;\nprotected readonly mode = signal(1);\nprotected readonly log = signal([]);\nprotected readonly local = 1;',
+      template: '<p [attr.mode]="1" title="log">{{ local }}</p>@if (mode()) {<b>log</b>}',
+    };
+    expect(chromeOnlyReads(story).sort()).toEqual(['failNext', 'local', 'mode']);
   });
 });
