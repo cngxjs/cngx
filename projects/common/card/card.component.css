@@ -17,14 +17,14 @@
  *
  * **Accent variants**
  *
- * Top stripe + tinted surface, one class per semantic intent:
+ * The feedback family's severity recipe (alert, banner, toast): pale
+ * tint + pastel border, one class per semantic intent:
  *
- * - `--accent` - neutral stripe, no tint
- * - `--accent-info` - info stripe, info-tinted background
- * - `--accent-success` - success stripe, success-tinted background
- * - `--accent-warning` - warning stripe, warning-tinted background
- * - `--accent-danger` - danger stripe, danger-tinted background
- * - `--accent-neutral` - neutral stripe, foundation border colour
+ * - `--accent` - base class, carried with one of the variants below
+ * - `--accent-info` / `--accent-success` / `--accent-warning` /
+ *   `--accent-danger` - severity tint + border
+ * - `--accent-neutral` - no status, a plain card
+
  *
  * **Badge slot**
  *
@@ -321,18 +321,20 @@
   }
 
   /**
-   * Width of the top accent stripe applied by `.cngx-card--accent`.
+   * Border width of an accented card (`.cngx-card--accent-*` other
+   * than `neutral`).
    * @group Variant / Accent
    */
   @property --cngx-card-accent-width {
     syntax: '<length>';
     inherits: false;
-    initial-value: 3px;
+    initial-value: 1px;
   }
 
   /**
-   * Color of the top accent stripe. Per-variant rules set it to the
-   * matching foundation semantic color.
+   * Severity colour of an accented card. Per-variant rules set it to the
+   * matching foundation semantic colour; the status icon mixes it 90%
+   * into the text colour.
    * @group Variant / Accent
    */
   @property --cngx-card-accent-color {
@@ -342,15 +344,16 @@
   }
 
   /**
-   * Tinted background for `.cngx-card--accent-info`. The runtime
-   * fallback uses `color-mix()` against `--cngx-color-info`; this
-   * static default only matters when a theme pins the token directly.
+   * Tinted background for `.cngx-card--accent-info`. Defaults to
+   * `--cngx-feedback-info-bg` when the feedback styles are loaded, else
+   * to the same recipe: `--cngx-color-info` at a pale lightness and
+   * chroma, per scheme.
    * @group Variant / Accent
    */
   @property --cngx-card-accent-info-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.97 0.03 250);
+    initial-value: oklch(0.96 0.025 240);
   }
 
   /**
@@ -360,7 +363,7 @@
   @property --cngx-card-accent-success-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.97 0.04 145);
+    initial-value: oklch(0.96 0.04 145);
   }
 
   /**
@@ -380,7 +383,7 @@
   @property --cngx-card-accent-danger-bg {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.97 0.03 25);
+    initial-value: oklch(0.96 0.025 25);
   }
 
   /**
@@ -625,14 +628,49 @@
   /* Dark-mode swap - mirrors `core/theming/system-tokens.css`.
    * Foundation-delegated tokens (bg / text / border / divider /
    * title) ride the foundation cascade via `var()`. Component-
-   * specific tokens (subtitle, selected tint, four accent tints)
-   * carry their own light/dark pair across three blocks. */
+   * specific tokens (subtitle, selected tint, four accent tints and
+   * borders) carry their own light/dark pair across the blocks. The
+   * accent pairs read the feedback family's `--cngx-feedback-*` severity
+   * tokens first and fall back to the same relative-colour recipe, so a
+   * danger card and a danger alert share one hue. */
   :root {
     --cngx-card-bg: var(--cngx-color-surface);
     --cngx-card-color: var(--cngx-color-text);
     --cngx-card-border: 1px solid var(--cngx-color-border);
     --cngx-card-divider: var(--cngx-color-border);
     --cngx-card-title-color: var(--cngx-color-text);
+    --cngx-card-accent-info-bg: var(
+      --cngx-feedback-info-bg,
+      oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h)
+    );
+    --_cngx-card-accent-info-border: var(
+      --cngx-feedback-info-border,
+      oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h)
+    );
+    --cngx-card-accent-success-bg: var(
+      --cngx-feedback-success-bg,
+      oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h)
+    );
+    --_cngx-card-accent-success-border: var(
+      --cngx-feedback-success-border,
+      oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h)
+    );
+    --cngx-card-accent-warning-bg: var(
+      --cngx-feedback-warning-bg,
+      oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h)
+    );
+    --_cngx-card-accent-warning-border: var(
+      --cngx-feedback-warning-border,
+      oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h)
+    );
+    --cngx-card-accent-danger-bg: var(
+      --cngx-feedback-error-bg,
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h)
+    );
+    --_cngx-card-accent-danger-border: var(
+      --cngx-feedback-error-border,
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h)
+    );
   }
 
   @media (prefers-color-scheme: dark) {
@@ -640,10 +678,38 @@
       --cngx-card-subtitle-color: oklch(0.72 0.02 290);
       --_cngx-card-selected-l: 0.36;
       --_cngx-card-selected-c: 0.06;
-      --cngx-card-accent-info-bg: oklch(0.32 0.05 250);
-      --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
-      --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
-      --cngx-card-accent-danger-bg: oklch(0.32 0.05 25);
+      --cngx-card-accent-info-bg: var(
+        --cngx-feedback-info-bg,
+        oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.3 0.05 h)
+      );
+      --_cngx-card-accent-info-border: var(
+        --cngx-feedback-info-border,
+        oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.5 0.08 h)
+      );
+      --cngx-card-accent-success-bg: var(
+        --cngx-feedback-success-bg,
+        oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.3 0.06 h)
+      );
+      --_cngx-card-accent-success-border: var(
+        --cngx-feedback-success-border,
+        oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.5 0.1 h)
+      );
+      --cngx-card-accent-warning-bg: var(
+        --cngx-feedback-warning-bg,
+        oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.32 0.06 h)
+      );
+      --_cngx-card-accent-warning-border: var(
+        --cngx-feedback-warning-border,
+        oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.55 0.1 h)
+      );
+      --cngx-card-accent-danger-bg: var(
+        --cngx-feedback-error-bg,
+        oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.3 0.05 h)
+      );
+      --_cngx-card-accent-danger-border: var(
+        --cngx-feedback-error-border,
+        oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.5 0.1 h)
+      );
       --cngx-card-badge-border: 2px solid oklch(0.2 0.01 250);
     }
   }
@@ -653,10 +719,38 @@
     --cngx-card-subtitle-color: oklch(0.72 0.02 290);
     --_cngx-card-selected-l: 0.36;
     --_cngx-card-selected-c: 0.06;
-    --cngx-card-accent-info-bg: oklch(0.32 0.05 250);
-    --cngx-card-accent-success-bg: oklch(0.32 0.06 145);
-    --cngx-card-accent-warning-bg: oklch(0.32 0.06 75);
-    --cngx-card-accent-danger-bg: oklch(0.32 0.05 25);
+    --cngx-card-accent-info-bg: var(
+      --cngx-feedback-info-bg,
+      oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.3 0.05 h)
+    );
+    --_cngx-card-accent-info-border: var(
+      --cngx-feedback-info-border,
+      oklch(from var(--cngx-color-info, oklch(0.72 0.11 240)) 0.5 0.08 h)
+    );
+    --cngx-card-accent-success-bg: var(
+      --cngx-feedback-success-bg,
+      oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.3 0.06 h)
+    );
+    --_cngx-card-accent-success-border: var(
+      --cngx-feedback-success-border,
+      oklch(from var(--cngx-color-success, oklch(0.68 0.14 145)) 0.5 0.1 h)
+    );
+    --cngx-card-accent-warning-bg: var(
+      --cngx-feedback-warning-bg,
+      oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.32 0.06 h)
+    );
+    --_cngx-card-accent-warning-border: var(
+      --cngx-feedback-warning-border,
+      oklch(from var(--cngx-color-warning, oklch(0.78 0.14 75)) 0.55 0.1 h)
+    );
+    --cngx-card-accent-danger-bg: var(
+      --cngx-feedback-error-bg,
+      oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.3 0.05 h)
+    );
+    --_cngx-card-accent-danger-border: var(
+      --cngx-feedback-error-border,
+      oklch(from var(--cngx-color-danger, oklch(0.68 0.17 25)) 0.5 0.1 h)
+    );
     --cngx-card-badge-border: 2px solid oklch(0.2 0.01 250);
   }
 
@@ -665,10 +759,38 @@
     --cngx-card-subtitle-color: oklch(0.36 0.02 290);
     --_cngx-card-selected-l: 0.96;
     --_cngx-card-selected-c: 0.04;
-    --cngx-card-accent-info-bg: oklch(0.97 0.03 250);
-    --cngx-card-accent-success-bg: oklch(0.97 0.04 145);
-    --cngx-card-accent-warning-bg: oklch(0.97 0.04 75);
-    --cngx-card-accent-danger-bg: oklch(0.97 0.03 25);
+    --cngx-card-accent-info-bg: var(
+      --cngx-feedback-info-bg,
+      oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.96 0.025 h)
+    );
+    --_cngx-card-accent-info-border: var(
+      --cngx-feedback-info-border,
+      oklch(from var(--cngx-color-info, oklch(0.65 0.12 240)) 0.85 0.07 h)
+    );
+    --cngx-card-accent-success-bg: var(
+      --cngx-feedback-success-bg,
+      oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.96 0.04 h)
+    );
+    --_cngx-card-accent-success-border: var(
+      --cngx-feedback-success-border,
+      oklch(from var(--cngx-color-success, oklch(0.6 0.15 145)) 0.85 0.1 h)
+    );
+    --cngx-card-accent-warning-bg: var(
+      --cngx-feedback-warning-bg,
+      oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.97 0.04 h)
+    );
+    --_cngx-card-accent-warning-border: var(
+      --cngx-feedback-warning-border,
+      oklch(from var(--cngx-color-warning, oklch(0.72 0.15 75)) 0.86 0.1 h)
+    );
+    --cngx-card-accent-danger-bg: var(
+      --cngx-feedback-error-bg,
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.96 0.025 h)
+    );
+    --_cngx-card-accent-danger-border: var(
+      --cngx-feedback-error-border,
+      oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h)
+    );
     --cngx-card-badge-border: 2px solid oklch(1 0 0);
   }
 }
@@ -843,62 +965,72 @@
       justify-content: flex-end;
     }
 
-    /* Accent variants - top border + tinted surface. The accent
-     * classes sit ON the card element itself (the @scope root), so
-     * each rule needs `:scope.cngx-card--accent…`; the unscoped
-     * `.cngx-card--accent…` form would only target descendants. */
-    :scope.cngx-card--accent {
-      border-top: var(--cngx-card-accent-width, 3px) solid
-        var(--cngx-card-accent-color, transparent);
-    }
-
+    /* Accent variants - the feedback family's severity recipe (alert,
+     * banner, toast): flat pale tint, pastel border, glyph mixed 90% into
+     * the text colour. `neutral` is no status and paints a plain card. A
+     * selected card keeps its primary border. The accent classes sit ON
+     * the card element itself (the @scope root), so each rule needs
+     * `:scope.cngx-card--accent…`. */
     :scope.cngx-card--accent-info {
       --cngx-card-accent-color: var(--cngx-color-info, oklch(0.65 0.12 240));
-      background: var(
-        --cngx-card-accent-info-bg,
+      --_cngx-card-accent-tint: var(--cngx-card-accent-info-bg);
+      --_cngx-card-accent-border: var(--_cngx-card-accent-info-border);
+      --_cngx-card-accent-ink: var(
+        --cngx-feedback-info-icon,
         color-mix(
-          in oklch,
-          var(--cngx-color-info, oklch(0.65 0.12 240)) 6%,
-          var(--cngx-card-bg, oklch(1 0 0))
+          in oklab,
+          var(--cngx-card-accent-color) 90%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
         )
       );
     }
     :scope.cngx-card--accent-success {
       --cngx-card-accent-color: var(--cngx-color-success, oklch(0.6 0.15 145));
-      background: var(
-        --cngx-card-accent-success-bg,
+      --_cngx-card-accent-tint: var(--cngx-card-accent-success-bg);
+      --_cngx-card-accent-border: var(--_cngx-card-accent-success-border);
+      --_cngx-card-accent-ink: var(
+        --cngx-feedback-success-icon,
         color-mix(
-          in oklch,
-          var(--cngx-color-success, oklch(0.6 0.15 145)) 6%,
-          var(--cngx-card-bg, oklch(1 0 0))
+          in oklab,
+          var(--cngx-card-accent-color) 90%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
         )
       );
     }
     :scope.cngx-card--accent-warning {
       --cngx-card-accent-color: var(--cngx-color-warning, oklch(0.72 0.15 75));
-      background: var(
-        --cngx-card-accent-warning-bg,
+      --_cngx-card-accent-tint: var(--cngx-card-accent-warning-bg);
+      --_cngx-card-accent-border: var(--_cngx-card-accent-warning-border);
+      --_cngx-card-accent-ink: var(
+        --cngx-feedback-warning-icon,
         color-mix(
-          in oklch,
-          var(--cngx-color-warning, oklch(0.72 0.15 75)) 8%,
-          var(--cngx-card-bg, oklch(1 0 0))
+          in oklab,
+          var(--cngx-card-accent-color) 90%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
         )
       );
     }
     :scope.cngx-card--accent-danger {
       --cngx-card-accent-color: var(--cngx-color-danger, oklch(0.6 0.18 25));
-      background: var(
-        --cngx-card-accent-danger-bg,
+      --_cngx-card-accent-tint: var(--cngx-card-accent-danger-bg);
+      --_cngx-card-accent-border: var(--_cngx-card-accent-danger-border);
+      --_cngx-card-accent-ink: var(
+        --cngx-feedback-error-icon,
         color-mix(
-          in oklch,
-          var(--cngx-color-danger, oklch(0.6 0.18 25)) 8%,
-          var(--cngx-card-bg, oklch(1 0 0))
+          in oklab,
+          var(--cngx-card-accent-color) 90%,
+          var(--cngx-color-text, oklch(0.2 0.01 250))
         )
       );
     }
-    :scope.cngx-card--accent-neutral {
-      --cngx-card-accent-color: var(--cngx-color-border, oklch(0.81 0.005 250));
+    :scope.cngx-card--accent:not(.cngx-card--accent-neutral) {
+      border-width: var(--cngx-card-accent-width, 1px);
+      background: var(--_cngx-card-accent-tint);
     }
+    :scope.cngx-card--accent:not(.cngx-card--accent-neutral):not(.cngx-card--selected) {
+      border-color: var(--_cngx-card-accent-border);
+    }
+
 
     /* Badge placement - absolute, four corner variants */
     .cngx-card__badge {
