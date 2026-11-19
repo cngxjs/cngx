@@ -2,7 +2,6 @@ import { effect, untracked, type Signal, type WritableSignal } from '@angular/co
 import { cngxDevWarn } from '@cngx/utils';
 import type { CngxErrorFieldState, CngxFieldRef } from './models';
 
-// Field refs that already warned CNGX2032.
 const handBoundWarned = new WeakSet<object>();
 
 /**
@@ -54,9 +53,10 @@ export function bindFieldValue<V>(
 ): void {
   const toField = options.toFieldValue ?? ((v: V) => v as unknown);
   const skip = options.shouldSkipFieldValue;
-  // Dev only: the value the field -> control run last wrote into the control,
-  // so the control -> field run can tell its own echo from a second writer.
-  let pushed: { readonly value: V } | null = null;
+  const probe =
+    typeof ngDevMode !== 'undefined' && ngDevMode
+      ? createHandBindingProbe<V>(options.valueEquals)
+      : null;
 
   effect(() => {
     const control = target();
@@ -70,9 +70,7 @@ export function bindFieldValue<V>(
     const fieldValue = options.coerceFromField(raw);
     untracked(() => {
       if (!options.valueEquals(control(), fieldValue)) {
-        if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-          pushed = { value: fieldValue };
-        }
+        probe?.pushed(fieldValue);
         control.set(fieldValue);
       }
     });
@@ -81,28 +79,16 @@ export function bindFieldValue<V>(
   // The first run per target is the mount seed; every later run is a user
   // change. The flag is consumed even when that first run writes nothing.
   let seededTarget: WritableSignal<V> | undefined;
-  // Dev only: the target was gone (another owner took the value) and its first
-  // run after the gap re-syncs, so it is no evidence of a second writer.
-  let resumed = false;
   effect(() => {
     const control = target();
     if (!control) {
-      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-        resumed = seededTarget !== undefined;
-      }
+      probe?.gone();
       return;
     }
     const next = control();
     const mode: FieldWriteMode = seededTarget === control ? 'user' : 'seed';
     seededTarget = control;
-    let rejoined = false;
-    let echo: { readonly value: V } | null = null;
-    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      rejoined = resumed;
-      resumed = false;
-      echo = pushed;
-      pushed = null;
-    }
+    const explained = probe?.take(next) ?? true;
     untracked(() => {
       const fieldRef = fieldState();
       const raw = fieldRef.value();
@@ -119,15 +105,44 @@ export function bindFieldValue<V>(
         if (typeof ngDevMode !== 'undefined' && ngDevMode && mode === 'user') {
           // A hand binding hands the control's own value to the field: same
           // identity. An equal value under `compareWith` is a re-pick, not a writer.
-          const handed = Object.is(held, next);
-          const echoed = echo !== null && options.valueEquals(echo.value, next);
-          warnIfHandBound(fieldRef, rejoined || !handed || echoed);
+          warnIfHandBound(fieldRef, explained || !Object.is(held, next));
         }
         return;
       }
       writeFieldValue(fieldRef, toField(next), mode);
     });
   });
+}
+
+// Dev-mode memory of the field -> control run, read by the control -> field
+// run. A change the field pushed itself (its echo) or the first run of a target
+// that returns after another owner held the value is no evidence of a second
+// writer. `take` consumes both, every run.
+interface HandBindingProbe<V> {
+  pushed(value: V): void;
+  gone(): void;
+  take(next: V): boolean;
+}
+
+function createHandBindingProbe<V>(equals: (a: V, b: V) => boolean): HandBindingProbe<V> {
+  let echo: { readonly value: V } | null = null;
+  let seen = false;
+  let resumed = false;
+  return {
+    pushed: (value) => {
+      echo = { value };
+    },
+    gone: () => {
+      resumed = seen;
+    },
+    take: (next) => {
+      const explained = resumed || (echo !== null && equals(echo.value, next));
+      echo = null;
+      resumed = false;
+      seen = true;
+      return explained;
+    },
+  };
 }
 
 // The field already holds a user change it did not receive from this sync:

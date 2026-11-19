@@ -858,5 +858,36 @@ describe('field atom value sync - CNGX2032 hand value binding warning', () => {
 
     expect(warnings()).toEqual([]);
   });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.check">
+        @if (owned()) {
+          <input type="checkbox" style="display: none" [formField]="f.check" />
+        }
+        <cngx-checkbox [(value)]="f.check().value">Check</cngx-checkbox>
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxCheckbox, FormField],
+  })
+  class HandBoundAfterOwnerHost {
+    readonly owned = signal(true);
+    readonly model = signal({ check: false });
+    readonly f = form(this.model);
+  }
+
+  it('still warns on the first hand-bound click after a [formField] owner left', () => {
+    const warnings = collectWarnings();
+    const { fixture, host, el } = mountHost(HandBoundAfterOwnerHost);
+    host.owned.set(false);
+    flush(fixture);
+    expect(warnings()).toEqual([]);
+
+    el.querySelector<HTMLElement>('cngx-checkbox')!.click();
+    flush(fixture);
+
+    expect(host.model().check).toBe(true);
+    expect(warnings()).toHaveLength(1);
+  });
 });
 
