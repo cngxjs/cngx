@@ -21,6 +21,7 @@ const SCHEMES = ['light', 'dark'] as const;
     './speak/speak-button.css',
     './tabs/tab-overflow.component.css',
     './feedback/toast/toast-outlet.css',
+    './feedback/loading/progress.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -43,6 +44,11 @@ const SCHEMES = ['light', 'dark'] as const;
         <div class="cngx-speak-button">
           <button type="button" class="cngx-speak-button__btn speak-btn"></button>
         </div>
+        <span
+          class="probe-track"
+          style="background: color-mix(in oklab, var(--cngx-color-text) 20%, transparent)"
+        ></span>
+        <div class="cngx-progress"><span class="cngx-progress__track progress-track"></span></div>
       </div>
     }
     <div class="cngx-speak-button" style="--cngx-speak-btn-active-color: oklch(0.5 0.2 300)">
@@ -155,6 +161,16 @@ describe('ui theme-derived tokens', () => {
     expect(computedValue(query(root, '.overflow-active'), 'background-color')).toBe(
       computedValue(query(root, '.probe-active'), 'background-color'),
     );
+  });
+
+  it('mixes the progress track from the text colour of the scheme', () => {
+    const root = mount();
+    for (const scheme of SCHEMES) {
+      const at = (selector: string) => query(root, `.scheme-${scheme} ${selector}`);
+      expect(computedValue(at('.progress-track'), 'background-color')).toBe(
+        computedValue(at('.probe-track'), 'background-color'),
+      );
+    }
   });
 
   it('sizes the toast title with the toast font size', () => {

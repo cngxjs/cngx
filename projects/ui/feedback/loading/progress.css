@@ -60,8 +60,10 @@
   }
 
   /**
-   * Track color (the unfilled portion).
+   * Track color (the unfilled portion). Derives from `--cngx-color-text` at
+   * 20%, so the lane follows the scheme and stays visible on a tinted page.
    * @group Surface
+   * @see [[--cngx-color-text]]
    */
   @property --cngx-progress-track-color {
     syntax: '<color>';
@@ -113,6 +115,10 @@
    * literal. */
   :where(.cngx-progress, .cngx-progress *) {
     --cngx-progress-transition-duration: var(--cngx-duration-slow);
+    /* A fixed black tint vanishes on a dark or grey page: mix the scheme's
+     * text colour instead (cngx-slider track precedent), read on __track and
+     * the circle track. */
+    --cngx-progress-track-color: color-mix(in oklab, var(--cngx-color-text) 20%, transparent);
   }
 
   /**
@@ -206,7 +212,7 @@
     .cngx-progress__track {
       flex: 1;
       height: var(--cngx-progress-height, 4px);
-      background: var(--cngx-progress-track-color, oklch(0 0 0 / 0.1));
+      background: var(--cngx-progress-track-color);
       border-radius: var(--cngx-progress-border-radius, 2px);
       overflow: hidden;
     }
@@ -252,7 +258,7 @@
     }
 
     .cngx-progress__circle-track {
-      stroke: var(--cngx-progress-track-color, oklch(0 0 0 / 0.1));
+      stroke: var(--cngx-progress-track-color);
     }
 
     .cngx-progress__circle-fill {
