@@ -34,7 +34,7 @@ for (const scheme of ['light', 'dark'] as const) {
       // The page links its bundle at runtime: read nothing before it is
       // parsed, then let the transitions it starts settle.
       await page.waitForFunction(() =>
-        [...document.styleSheets].some((sheet) => sheet.href?.endsWith('/material-lab-display-theme.css')),
+        Array.from(document.styleSheets).some((sheet) => sheet.href?.endsWith('/material-lab-display-theme.css')),
       );
       await page.evaluate(() =>
         Promise.all(
@@ -138,7 +138,7 @@ for (const scheme of ['light', 'dark'] as const) {
 test('the display page links its own lab bundle and swaps it back on the lab', async ({ page }) => {
   const labLinks = (): Promise<string[]> =>
     page.evaluate(() =>
-      [...document.querySelectorAll('link[rel=stylesheet]')]
+      Array.from(document.querySelectorAll('link[rel=stylesheet]'))
         .map((l) => l.getAttribute('href') ?? '')
         .filter((href) => href.includes('material-lab')),
     );
