@@ -976,6 +976,26 @@ describe('CngxPopoverSheet', () => {
       anchors[1].focus();
       expect(document.activeElement).toBe(ctx.q('.close'));
     });
+
+    it('drops the sentinels and aria-modal together when the close fade starts', () => {
+      vi.useFakeTimers();
+      const ctx = setup();
+      openFromOpener(ctx);
+      const anchors = () =>
+        Array.from(
+          ctx.panel.parentElement!.querySelectorAll<HTMLElement>('.cdk-focus-trap-anchor'),
+        );
+      expect(anchors().every((a) => a.getAttribute('tabindex') === '0')).toBe(true);
+      expect(ctx.panel.getAttribute('aria-modal')).toBe('true');
+
+      stubTransition('0.2s');
+      ctx.host.popover().hide();
+      ctx.flush();
+      expect(ctx.host.popover().state()).toBe('closing');
+      expect(anchors().some((a) => a.getAttribute('tabindex') === '0')).toBe(false);
+      expect(ctx.panel.hasAttribute('aria-modal')).toBe(false);
+      vi.useRealTimers();
+    });
   });
 
   describe('nested sheets', () => {
@@ -1206,6 +1226,39 @@ describe('CngxPopoverSheet', () => {
       vi.advanceTimersByTime(600);
       item.click();
       expect(clicked).toHaveBeenCalledTimes(2);
+    });
+
+    it('prevents the mousedown of an outside-tap close and no mousedown after the disarm', () => {
+      const ctx = setup();
+      openFromOpener(ctx);
+      const check = ctx.q<HTMLInputElement>('.page-check');
+      check.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      const armed = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      check.dispatchEvent(armed);
+      expect(armed.defaultPrevented).toBe(true);
+
+      check.click();
+      const later = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      check.dispatchEvent(later);
+      expect(later.defaultPrevented).toBe(false);
+    });
+
+    it('never prevents a mousedown inside the open sheet', () => {
+      const ctx = setup((h) => h.closeOnRequest.set(false));
+      openFromOpener(ctx);
+      const item = ctx.q<HTMLButtonElement>('.item');
+      const tapInside = (): MouseEvent => {
+        item.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+        const down = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+        item.dispatchEvent(down);
+        return down;
+      };
+      expect(tapInside().defaultPrevented).toBe(false);
+
+      // An outside tap that does not close still arms the swallow.
+      ctx.root.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      expect(ctx.host.popover().state()).not.toBe('closed');
+      expect(tapInside().defaultPrevented).toBe(false);
     });
 
     it('detaches the listener after close and never listens while anchored', () => {

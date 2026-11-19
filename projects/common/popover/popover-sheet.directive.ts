@@ -260,8 +260,20 @@ export class CngxPopoverSheet
   /** `true` in the sheet and fullscreen presentations. */
   readonly modal = computed(() => this.presentation() !== 'anchored');
 
-  /** @internal Drives the composed `CngxFocusTrap`: Tab stays inside while modal and visible. */
-  readonly focusTrapEnabled = computed(() => this.modal() && this.popover.isVisible());
+  private readonly showing = computed(() => {
+    const state = this.popover.state();
+    return state === 'opening' || state === 'open';
+  });
+  // A closing sheet has handed focus back and is no longer modal to a
+  // reader or to Tab; the trap and aria-modal both read this one signal.
+  private readonly modalShowing = computed(() => this.modal() && this.showing());
+
+  /**
+   * @internal Drives the composed `CngxFocusTrap`: Tab stays inside while
+   * modal and opening or open, so the trap anchors leave the Tab order when
+   * the close starts.
+   */
+  readonly focusTrapEnabled = this.modalShowing;
   /** @internal The sheet moves focus itself, inside `show()`. */
   readonly focusTrapAutoFocus = false;
 
@@ -273,12 +285,9 @@ export class CngxPopoverSheet
   });
 
   protected readonly roleAttr = computed(() => (this.modal() ? 'dialog' : this.staticRole));
-  // Only an opening or open sheet is modal to a reader: a closing or closed
-  // one would pull CngxLiveAnnouncer's scoped messages into a hidden panel.
-  protected readonly ariaModal = computed(() => {
-    const state = this.popover.state();
-    return this.modal() && (state === 'opening' || state === 'open') ? 'true' : null;
-  });
+  // A closing or closed sheet marked modal would pull CngxLiveAnnouncer's
+  // scoped messages into a hidden panel.
+  protected readonly ariaModal = computed(() => (this.modalShowing() ? 'true' : null));
   protected readonly ariaLabelledBy = computed(() =>
     this.modal()
       ? (this.labelledBy() ?? this.titleRegistry.current()?.id() ?? null)
@@ -323,10 +332,12 @@ export class CngxPopoverSheet
     this.requestClose('backdrop');
   };
 
-  // Closing on pointerdown releases inert before the gesture's click lands,
-  // so that click would hit the page element under the tap. Swallow the
-  // one click that belongs to this gesture; the next pointerdown or a short
-  // timeout disarms it, so a later tap is never eaten.
+  // Closing on pointerdown releases inert before the gesture's mousedown and
+  // click land, so they would hit the page element under the tap: the
+  // mousedown would take focus from the restored opener, the click would
+  // activate the element. Swallow both for this gesture; the next
+  // pointerdown or a short timeout disarms them, so a later tap is never
+  // eaten.
   private clickSwallowTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Chromium also turns an unhandled Escape keydown into a CloseWatcher close
@@ -349,6 +360,10 @@ export class CngxPopoverSheet
     event.preventDefault();
     event.stopPropagation();
     this.disarmClickSwallow();
+  };
+  // Default only: the mousedown still propagates.
+  private readonly swallowMouseDown = (event: MouseEvent): void => {
+    event.preventDefault();
   };
 
   constructor() {
@@ -405,8 +420,7 @@ export class CngxPopoverSheet
    * is on.
    */
   requestClose(reason: CngxPopoverSheetCloseReason): void {
-    const state = this.popover.state();
-    if (state !== 'open' && state !== 'opening') {
+    if (!untracked(() => this.showing())) {
       return;
     }
     this.closeRequested.emit(reason);
@@ -625,11 +639,13 @@ export class CngxPopoverSheet
   }
 
   private armClickSwallow(): void {
+    this.doc.addEventListener('mousedown', this.swallowMouseDown, true);
     this.doc.addEventListener('click', this.swallowClick, true);
     this.clickSwallowTimer = setTimeout(() => this.disarmClickSwallow(), CLICK_SWALLOW_MS);
   }
 
   private disarmClickSwallow(): void {
+    this.doc.removeEventListener('mousedown', this.swallowMouseDown, true);
     this.doc.removeEventListener('click', this.swallowClick, true);
     if (this.clickSwallowTimer !== null) {
       clearTimeout(this.clickSwallowTimer);

@@ -188,6 +188,52 @@ test.describe('common/popover/popover-panel', () => {
     ).toHaveCount(0);
   });
 
+  // The close fade makes the panel inert while the confirm still holds focus;
+  // the trigger must take focus before that, or the fade parks it on body.
+  test('close-on-success: focus never drops to body between the settle and the close', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/popover/popover-panel/close-on-success');
+    const trigger = page.locator('.cngx-ex-artifact button.chip', { hasText: 'Archive project' });
+    const panel = page.locator('cngx-popover-panel', { hasText: 'Archive "Atlas"?' });
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+    const confirm = panel.locator('button.cngx-popover-action');
+    await confirm.focus();
+
+    await page.evaluate(() => {
+      const w = window as unknown as { __focusSamples: string[]; __sampling: boolean };
+      w.__focusSamples = [];
+      w.__sampling = true;
+      const sample = (): void => {
+        w.__focusSamples.push(document.activeElement?.tagName ?? 'NULL');
+        if (w.__sampling) {
+          requestAnimationFrame(sample);
+        }
+      };
+      requestAnimationFrame(sample);
+    });
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+    const samples = await page.evaluate(
+      () =>
+        new Promise<string[]>((resolve) =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              const w = window as unknown as { __focusSamples: string[]; __sampling: boolean };
+              w.__sampling = false;
+              resolve(w.__focusSamples);
+            }),
+          ),
+        ),
+    );
+    expect(samples.length).toBeGreaterThan(0);
+    expect(samples).not.toContain('BODY');
+  });
+
   // Regression: the arrow ornament must track the trigger horizontally even
   // when the browser shifts the panel for viewport-fit recovery. The `info`
   // chip in the variants story sits close to the viewport's left edge so a

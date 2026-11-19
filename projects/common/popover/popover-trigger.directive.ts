@@ -165,7 +165,9 @@ export class CngxPopoverTrigger {
 
   /**
    * Close-time focus return, called synchronously by the popover at the end
-   * of every close with its pre-open focus origin. The decision is read
+   * of every close with its pre-open focus origin, and once more at the
+   * start of a fading close, before the panel turns `inert`. Whichever call
+   * finds focus lost restores it; the other is a no-op. The decision is read
    * here, not sampled on open: a close in a sheet presentation resolves
    * `restoreFocus()` to `false` by itself.
    */
