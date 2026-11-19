@@ -80,6 +80,18 @@ const CONSUMED = [
   '--cngx-icon-size',
 ];
 
+// Scheme knobs the M2 branch sets from the theme type (M3 leaves them to the
+// sheet's scheme blocks).
+const M2_SCHEME_KNOBS = [
+  '--cngx-button-neutral-solid',
+  '--cngx-button-neutral-solid-hover',
+  '--cngx-button-neutral-solid-pressed',
+  '--cngx-button-neutral-tint',
+  '--cngx-button-neutral-tint-hover',
+  '--cngx-button-neutral-tint-pressed',
+  '--cngx-button-secondary-text-shift',
+];
+
 const READERS = [
   'projects/common/button/close-button.component.css',
   'projects/common/theming/components/cngx-button.css',
@@ -110,15 +122,31 @@ describe('button Material bridge', () => {
     const names = emittedTokenNames(compileThemeEntry(M2_ENTRY));
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
-      expect(CONSUMED).toContain(name);
+      expect([...CONSUMED, ...M2_SCHEME_KNOBS]).toContain(name);
     }
+  });
+
+  it('sets the scheme knobs from the theme type (M2)', () => {
+    const light = block(compileThemeEntry(M2_ENTRY), '.cngx-button');
+    const dark = block(
+      compileThemeEntry(M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme')),
+      '.cngx-button',
+    );
+    for (const name of M2_SCHEME_KNOBS) {
+      expect(light).toContain(`${name}:`);
+      expect(dark).toContain(`${name}:`);
+    }
+    expect(light).toContain('--cngx-button-neutral-tint: 10%');
+    expect(light).toContain('--cngx-button-secondary-text-shift: -0.07');
+    expect(dark).toContain('--cngx-button-neutral-tint: 16%');
+    expect(dark).toContain('--cngx-button-secondary-text-shift: 0.06');
   });
 
   it('assigns only button-family tokens a button-family sheet reads', () => {
     const sheets = READERS.map((path) =>
       readFileSync(fileURLToPath(new URL('../../../' + path, import.meta.url)), 'utf-8'),
     ).join('\n');
-    const owned = CONSUMED.filter(
+    const owned = [...CONSUMED, ...M2_SCHEME_KNOBS].filter(
       (name) => !name.startsWith('--cngx-color-'),
     );
     for (const name of owned) {
@@ -200,7 +228,15 @@ describe('button Material bridge', () => {
     expect(flat(css)).toContain(
       '--cngx-close-button-pressed-bg: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), transparent)',
     );
-    expect(compileThemeEntry(M2_ENTRY)).not.toContain('pressed');
+    const m2 = compileThemeEntry(M2_ENTRY);
+    for (const name of [
+      '--cngx-button-pressed-layer',
+      '--cngx-button-pressed-wash',
+      '--cngx-button-secondary-bg-pressed',
+      '--cngx-close-button-pressed-bg',
+    ]) {
+      expect(m2).not.toContain(name);
+    }
   });
 
   it('rounds the family to corner-full in M3 only', () => {

@@ -121,6 +121,31 @@
   --cngx-button-secondary-color: var(--mat-sys-#{$on-container});
 }
 
+// The neutral washes and the secondary label shift follow the scheme cngx
+// detects (OS or data-color-scheme), which an M2 theme typed light or dark
+// does not; these are the sheet's literals of that scheme (cngx-button.css,
+// the :root and dark blocks). A color-scheme theme gets none: it follows the
+// OS like the sheet does (system-bridge `_scheme-rungs` shape).
+@mixin _scheme-knobs($type) {
+  @if $type == dark {
+    --cngx-button-neutral-tint: 16%;
+    --cngx-button-neutral-tint-hover: 21%;
+    --cngx-button-neutral-tint-pressed: 26%;
+    --cngx-button-neutral-solid: 26%;
+    --cngx-button-neutral-solid-hover: 31%;
+    --cngx-button-neutral-solid-pressed: 36%;
+    --cngx-button-secondary-text-shift: 0.06;
+  } @else if $type == light {
+    --cngx-button-neutral-tint: 10%;
+    --cngx-button-neutral-tint-hover: 14%;
+    --cngx-button-neutral-tint-pressed: 18%;
+    --cngx-button-neutral-solid: 18%;
+    --cngx-button-neutral-solid-hover: 23%;
+    --cngx-button-neutral-solid-pressed: 28%;
+    --cngx-button-secondary-text-shift: -0.07;
+  }
+}
+
 // A split button is a group of segments, never a group of groups.
 $_split: '.cngx-split-button.cngx-button-group:not(:has(> .cngx-button-group))';
 $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
@@ -206,8 +231,9 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
   } @else {
     // M2 has no container roles and no state-layer tokens: the secondary
     // hooks stay unset, so the tone mix paints, and hover and pressed keep
-    // the default shade and wash.
+    // the default shade and wash. The scheme knobs follow the theme type.
     @include bridge.on('.cngx-button') {
+      @include _scheme-knobs(mat.get-theme-type($theme));
       --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
       --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
       --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};

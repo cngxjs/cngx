@@ -14,6 +14,14 @@ import { CngxButton } from './button.component';
 
 const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
 
+// M2 themes typed dark and light, each under both schemes
+// (button-contrast-m2.spec-host.scss compiles the bridge for both types).
+const M2_TONES = ['primary', 'danger'] as const;
+const M2_MISMATCHES = [
+  { theme: 'dark', scheme: 'light' },
+  { theme: 'light', scheme: 'dark' },
+] as const;
+
 @Component({
   selector: 'cngx-button-contrast-geometry-host',
   standalone: true,
@@ -24,9 +32,27 @@ const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../theming/components/cngx-button.css',
+    './button-contrast-m2.spec-host.scss',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
+    @for (theme of schemes; track theme) {
+      @for (scheme of schemes; track scheme) {
+        <div [attr.data-color-scheme]="scheme">
+          <p class="m2-{{ theme }} m2-{{ theme }}-{{ scheme }}" style="padding: 8px">
+            @for (tone of m2Tones; track tone) {
+              <button
+                cngxButton="secondary"
+                [tone]="tone"
+                class="m2-{{ tone }}-{{ theme }}-{{ scheme }}"
+              >
+                Archive
+              </button>
+            }
+          </p>
+        </div>
+      }
+    }
     @for (scheme of schemes; track scheme) {
       <p [attr.data-color-scheme]="scheme" style="--cngx-button-transition: 0s">
         <button cngxButton tone="primary" class="b-primary-{{ scheme }}">Save</button>
@@ -59,6 +85,7 @@ class ContrastHost {
   protected readonly schemes = ['light', 'dark'] as const;
   protected readonly textVariants = TEXT_VARIANTS;
   protected readonly tones = ['neutral', 'primary', 'danger'] as const;
+  protected readonly m2Tones = M2_TONES;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -266,6 +293,66 @@ describe('secondary button label contrast at rest, hover and press (default pale
       4.5,
     );
   });
+});
+
+// A typed M2 theme pins its scheme knobs, so the secondary label shifts the
+// way the theme's own scheme does, whatever the OS or data-color-scheme says.
+async function m2Secondary(
+  tone: (typeof M2_TONES)[number],
+  theme: 'light' | 'dark',
+  scheme: 'light' | 'dark',
+  state: 'rest' | 'hover' | 'pressed',
+): Promise<{ color: string; ratio: number }> {
+  const root = mount();
+  const page = computedValue(query(root, `.m2-${theme}-${scheme}`), 'background-color');
+  const button = query(root, `.m2-${tone}-${theme}-${scheme}`);
+  button.style.transition = 'none';
+  if (state === 'hover') {
+    await userEvent.hover(button);
+  }
+  if (state === 'pressed') {
+    button.classList.add('cngx-pressed');
+  }
+  const color = computedValue(button, 'color');
+  const ratio = contrastRatio(color, flatten(computedValue(button, 'background-color'), page));
+  button.classList.remove('cngx-pressed');
+  await parkPointer();
+  mountedRoot?.remove();
+  mountedRoot = null;
+  return { color, ratio };
+}
+
+describe('secondary button label on a mismatched M2 theme', () => {
+  // Danger on M2 light sits below 4.5:1 on hover and press in its own scheme
+  // too (4.48 / 4.29, tracked separately), so those rows pin that the label
+  // follows the theme type instead of the 4.5:1 floor.
+  const followsType = (tone: string, theme: string, state: string): boolean =>
+    tone === 'danger' && theme === 'light' && state !== 'rest';
+
+  const cases = M2_MISMATCHES.flatMap(({ theme, scheme }) =>
+    M2_TONES.flatMap((tone) =>
+      (['rest', 'hover', 'pressed'] as const).map((state) => [tone, theme, scheme, state] as const),
+    ),
+  );
+
+  it.each(cases.filter(([tone, theme, , state]) => !followsType(tone, theme, state)))(
+    'secondary %s on M2 %s under a %s scheme clears 4.5:1 at %s',
+    async (tone, theme, scheme, state) => {
+      const { ratio } = await m2Secondary(tone, theme, scheme, state);
+      expect(ratio, `${tone} / M2 ${theme} / ${state}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    },
+  );
+
+  it.each(cases.filter(([tone, theme, , state]) => followsType(tone, theme, state)))(
+    'secondary %s on M2 %s under a %s scheme paints its own scheme label at %s',
+    async (tone, theme, scheme, state) => {
+      const mismatched = await m2Secondary(tone, theme, scheme, state);
+      const matched = await m2Secondary(tone, theme, theme, state);
+      expect(mismatched.color).toBe(matched.color);
+    },
+  );
 });
 
 // The secondary wash has to read as a fill, not as the page: flattened over

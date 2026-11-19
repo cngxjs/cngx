@@ -1,0 +1,23 @@
+// Test-only entry for button-contrast.geometry.spec.ts: compiles the
+// working-tree button bridge for an M2 indigo theme typed dark and one typed
+// light, each scoped to a wrapper that paints the M2 page background.
+// Not shipped.
+@use '@angular/material' as mat;
+@use '../../themes/material/button-theme' as button;
+
+$color: (
+  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+  accent: mat.m2-define-palette(mat.$m2-pink-palette),
+);
+$dark: mat.m2-define-dark-theme((color: $color));
+$light: mat.m2-define-light-theme((color: $color));
+
+.m2-dark {
+  background: mat.get-theme-color($dark, background, background);
+  @include button.theme($dark);
+}
+
+.m2-light {
+  background: mat.get-theme-color($light, background, background);
+  @include button.theme($light);
+}
