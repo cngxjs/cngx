@@ -4,9 +4,9 @@ Click, gesture, navigation, speech, and async action directives.
 
 ## CngxAsyncClick
 
-Async click handler with loading state, auto-disable, and success/error feedback.
+Async click handler with loading state, `aria-disabled` while pending, and success/error feedback.
 Place on any clickable element. Executes the provided async action on click,
-tracks pending/succeeded/failed state, auto-disables during execution, and resets
+tracks pending/succeeded/failed state, sets `aria-disabled` during execution, and resets
 feedback after a configurable duration.
 
 ```html

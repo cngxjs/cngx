@@ -77,7 +77,7 @@ export interface CngxAsyncSettle {
 }
 
 /**
- * Async action handler with loading state, auto-disable, and success/error feedback.
+ * Async action handler with loading state, `aria-disabled` while pending, and success/error feedback.
  *
  * Place on any clickable element (button, link, div). Executes the provided
  * async action on click, tracks the full lifecycle as a state machine, and
@@ -106,7 +106,9 @@ export interface CngxAsyncSettle {
  * `(settled)` is emitted, nothing is spoken and the feedback timer is
  * cleared. The `AbortSignal` handed to the action aborts, so an action that
  * forwards it (and `createRetry`, which stops its backoff loop on it) can
- * end early. A run that resolves {@link CNGX_ASYNC_CANCELLED} returns to
+ * end early. The runner itself keeps an Observable action subscribed after
+ * the abort until it emits or completes; `createRetry` unsubscribes its
+ * attempt on the abort. A run that resolves {@link CNGX_ASYNC_CANCELLED} returns to
  * `idle` silently.
  *
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
