@@ -41,8 +41,8 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  * - A parent `[value]` binding next to `[formControl]` is not a user change
  *   (CVA contract): it updates the atom but never the control, which stays
  *   pristine. The model's `subscribe` does not fire for an input binding.
- * - `writeValue` stamps `lastSeen`; the change-listener short-circuits on
- *   `Object.is` so the RF→atom→RF round-trip never re-emits.
+ * - `writeValue` drops the model's synchronous echo, so the RF→atom→RF
+ *   round-trip never re-emits.
  *
  * ```html
  * <!-- No bridge directive to add: it auto-attaches via selector to each atom below. -->
@@ -88,21 +88,23 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   private onChange: ((value: T) => void) | null = null;
   private onTouched: (() => void) | null = null;
 
-  /** Sentinel for "no value observed yet". */
-  private static readonly UNSET: unique symbol = Symbol('cngx-form-bridge-unset');
-  private lastSeen: T | typeof CngxFormBridge.UNSET = CngxFormBridge.UNSET;
+  /** True while `writeValue` writes the model, so its echo is not reported as a user change. */
+  private writing = false;
 
   private subscription: OutputRefSubscription | null = null;
 
   /**
-   * RF → view. Stamps `lastSeen` then writes the atom's model signal; the
-   * change-listener short-circuits on `Object.is` and never routes the
-   * value back through `onChange`.
+   * RF → view. Writes the atom's model signal; the model emits synchronously
+   * inside `set`, and the `writing` flag keeps that echo out of `onChange`.
    */
   writeValue(value: T): void {
     untracked(() => {
-      this.lastSeen = value;
-      this.control.value.set(value);
+      this.writing = true;
+      try {
+        this.control.value.set(value);
+      } finally {
+        this.writing = false;
+      }
     });
   }
 
@@ -110,8 +112,8 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
    * Forwards every atom write through the `value` model's `set` into
    * `fn(value)`, synchronously. Only the atom's own writes reach this path:
    * a parent `[value]` binding updates the model without emitting, so it never
-   * dirties the control. The initial value arrives via `writeValue`, which
-   * stamps `lastSeen`, so its echo through the model never forwards.
+   * dirties the control. The model emits only on a real change, and the
+   * `writeValue` echo is dropped, so every forward is one user change.
    */
   registerOnChange(fn: (value: T) => void): void {
     this.onChange = fn;
@@ -124,12 +126,8 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   }
 
   private forward(value: T): void {
-    if (Object.is(value, this.lastSeen)) {
-      return;
-    }
-    this.lastSeen = value;
     const callback = this.onChange;
-    if (callback === null) {
+    if (this.writing || callback === null) {
       return;
     }
     untracked(() => callback(value));

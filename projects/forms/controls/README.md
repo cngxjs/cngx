@@ -124,7 +124,7 @@ to remember on the consumer side.
 
 | Hook | Behaviour |
 |-|-|
-| `writeValue(v)` | Stamps `lastSeen`, then writes `control.value.set(v)`. The change listener short-circuits via `Object.is(value, lastSeen)` so the round-trip never echoes back into `onChange`. |
+| `writeValue(v)` | Writes `control.value.set(v)` behind a `writing` flag, so the model's synchronous echo never reaches `onChange`. |
 | `registerOnChange(fn)` | Subscribes to the atom's `value` model, so every write through `set` (typing, a click) reaches the control synchronously: a form submitted with Enter right after a keystroke reads it. Forwards through `untracked(() => fn(value))`. A parent `[value]` binding next to `[formControl]` updates the atom without emitting, so it never reaches the control: the control stays pristine (CVA contract, `onChange` reports user changes only). |
 | `registerOnTouched(fn)` | Stored. Fired from the host's `(focusout)` listener. |
 | `setDisabledState(b)` | `untracked(() => control.disabled.set(b))`. |
@@ -149,8 +149,8 @@ update path. Same defensive pattern Phase 6b uses for the
 ### Initial-fire skip
 
 `registerOnChange(fn)` registers a listener for *future* changes. The
-initial value is delivered via `writeValue`, which stamps `lastSeen`, so
-its echo through the model is dropped - `fn(initialValue)` is never
+initial value is delivered via `writeValue`, whose echo through the
+model is dropped - `fn(initialValue)` is never
 called, matching Angular Forms' `DefaultValueAccessor` semantics.
 
 ### Selector list does not include `[ngModel]`

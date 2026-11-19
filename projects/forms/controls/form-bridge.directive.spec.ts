@@ -284,7 +284,7 @@ describe('CngxFormBridge', () => {
       expect(host.ctrl.dirty).toBe(true);
     });
 
-    it('does NOT re-fire fn when writeValue lands the same value (lastSeen guard)', () => {
+    it('does NOT re-fire fn when writeValue lands a value (echo guard)', () => {
       TestBed.configureTestingModule({ imports: [ToggleHost] });
       const fixture = TestBed.createComponent(ToggleHost);
       fixture.detectChanges();
@@ -303,7 +303,7 @@ describe('CngxFormBridge', () => {
       // RF -> view, fresh value.
       host.bridge.writeValue(true);
       TestBed.flushEffects();
-      // The lastSeen stamp prevented the change-listener effect from
+      // The writing flag kept the model's synchronous echo from
       // re-routing the writeValue back into onChange.
       expect(fn).not.toHaveBeenCalled();
 
@@ -384,6 +384,23 @@ describe('CngxFormBridge', () => {
       expect(host.ctrl.value).toBe(false);
       expect(host.ctrl.dirty).toBe(false);
       expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('a click back to the control value after a parent write still dirties the control', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.mirror.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      host.hostEl.nativeElement.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.mirror()).toBe(false);
+      expect(host.ctrl.value).toBe(false);
+      expect(host.ctrl.dirty).toBe(true);
+      expect(setValue).toHaveBeenCalledTimes(1);
     });
 
     it('a click dirties the control with exactly one setValue', () => {
