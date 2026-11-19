@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -18,6 +17,7 @@ import { CngxBadge, CngxDivider, CngxTag } from '@cngx/common/display';
 import { CngxButtonToggle, CngxButtonToggleGroup, CngxRipple } from '@cngx/common/interactive';
 
 import { injectLabSheet } from '../inject-lab-sheet';
+import { LabPages } from '../lab-pages';
 
 /**
  * Display pairs of the Material bridge fidelity harness: badge, button-toggle,
@@ -31,8 +31,7 @@ import { injectLabSheet } from '../inject-lab-sheet';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   imports: [
-    RouterLink,
-    RouterLinkActive,
+    LabPages,
     MatBadgeModule,
     MatButtonToggleModule,
     MatCardModule,
@@ -53,10 +52,7 @@ import { injectLabSheet } from '../inject-lab-sheet';
   ],
   template: `
     <div class="lab mat-app-background mat-typography">
-      <nav class="lab-row lab-pages" aria-label="Material lab pages">
-        <a routerLink="/material-lab" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="lab-page-active">Forms and overlays</a>
-        <a routerLink="/material-lab/display" ariaCurrentWhenActive="page" routerLinkActive="lab-page-active">Display</a>
-      </nav>
+      <nav appLabPages></nav>
 
       <section class="lab-wide" data-pair="badge">
         <h3>badge (Material left, cngx right)</h3>
