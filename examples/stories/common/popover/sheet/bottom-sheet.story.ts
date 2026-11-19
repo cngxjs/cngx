@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     'CngxPopoverSheetHandle',
   ],
   moduleImports: [
-    "import { CngxPopover, CngxPopoverAction, CngxPopoverSheet, CngxPopoverSheetHandle, CngxPopoverSheetHeader, CngxPopoverSheetTitle, CngxPopoverTrigger } from '@cngx/common/popover';",
+    "import { CngxPopover, CngxPopoverAction, CngxPopoverSheet, CngxPopoverSheetHandle, CngxPopoverSheetHeader, CngxPopoverSheetTitle, CngxPopoverTrigger, type CngxPopoverSheetCloseReason } from '@cngx/common/popover';",
     "import { CngxCloseButton } from '@cngx/common/button';",
     "import { CngxFailed, CngxPending, CngxSwipeDismiss } from '@cngx/common/interactive';",
   ],
@@ -47,7 +47,7 @@ export const STORY: DemoSpec = {
   protected readonly blockClose = signal(false);
   protected readonly escapeCloses = signal(true);
   protected readonly lastRequest = signal<string | undefined>(undefined);
-  protected handleCloseRequested(reason: string, sheet: { announce(m: string, p?: 'polite' | 'assertive'): void }): void {
+  protected handleCloseRequested(reason: CngxPopoverSheetCloseReason, sheet: CngxPopoverSheet): void {
     this.lastRequest.set(reason);
     if (this.blockClose()) {
       sheet.announce('Closing is blocked', 'assertive');
@@ -135,14 +135,27 @@ export const STORY: DemoSpec = {
   });
 
   // The popover places itself from the document direction, so the RTL radio
-  // flips <html dir> and puts the page's own value back on destroy.
-  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
+  // flips <html dir>. It starts from the page's direction and, once used, puts
+  // the page's own value back on destroy.
   private readonly root = this.hostEl.nativeElement.ownerDocument.documentElement;
   private readonly rootDir = this.root.getAttribute('dir');
-  private readonly applyDir = effect(() => this.root.setAttribute('dir', this.dir()));
-  private readonly restoreDir = this.destroyRef.onDestroy(() =>
-    this.rootDir === null ? this.root.removeAttribute('dir') : this.root.setAttribute('dir', this.rootDir),
-  );`,
+  private dirTouched = false;
+  protected readonly dir = signal<'ltr' | 'rtl'>(this.rootDir === 'rtl' ? 'rtl' : 'ltr');
+  protected setDir(value: 'ltr' | 'rtl'): void {
+    this.dirTouched = true;
+    this.dir.set(value);
+    this.root.setAttribute('dir', value);
+  }
+  private readonly restoreDir = this.destroyRef.onDestroy(() => {
+    if (!this.dirTouched) {
+      return;
+    }
+    if (this.rootDir === null) {
+      this.root.removeAttribute('dir');
+    } else {
+      this.root.setAttribute('dir', this.rootDir);
+    }
+  });`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
       <label>
@@ -155,11 +168,11 @@ export const STORY: DemoSpec = {
   </div>
   <div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
-      <input type="radio" name="sheet-dir" value="ltr" [checked]="dir() === 'ltr'" (change)="dir.set('ltr')" />
+      <input type="radio" name="sheet-dir" value="ltr" [checked]="dir() === 'ltr'" (change)="setDir('ltr')" />
       LTR
     </label>
     <label>
-      <input type="radio" name="sheet-dir" value="rtl" [checked]="dir() === 'rtl'" (change)="dir.set('rtl')" />
+      <input type="radio" name="sheet-dir" value="rtl" [checked]="dir() === 'rtl'" (change)="setDir('rtl')" />
       RTL
     </label>
   </div>
