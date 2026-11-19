@@ -210,6 +210,7 @@
    * read as a generic dark border on top of the orange fill.
    * @group State / Focus
    * @see [[--cngx-color-primary]]
+   * @default 2px solid var(--cngx-color-primary)
    */
   @property --cngx-chip-focus-outline {
     syntax: '*';
@@ -358,6 +359,7 @@
    * Focus-ring color of the inline remove button. Falls back to
    * `--cngx-color-primary`.
    * @group State / Remove
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-chip-remove-focus-color {
     syntax: '*';

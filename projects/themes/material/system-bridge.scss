@@ -114,7 +114,9 @@
   $divider: mat.get-theme-color($theme, foreground, divider);
 
   --cngx-color-surface: #{$surface};
-  --cngx-color-text: #{rgba($on-surface, 0.87)};
+  // M2 text already carries its alpha per theme type: black 0.87 light,
+  // white 1.0 dark, as mat-input paints it.
+  --cngx-color-text: #{$on-surface};
   --cngx-color-text-muted: #{mat.get-theme-color($theme, foreground, secondary-text)};
   --cngx-color-border: #{rgba($divider, 0.12)};
   // Mirrors the M2 resting outlined form-field frame: the M2 system

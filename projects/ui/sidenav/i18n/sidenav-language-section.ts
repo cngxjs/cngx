@@ -26,6 +26,8 @@ export interface CngxSidenavLanguageSection {
   readonly collapsedAnnouncement: string;
   /** Spoken when the toggle hotkey shows the full nav. */
   readonly expandedAnnouncement: string;
+  /** Description of the toggle shortcut in the hotkey help list. */
+  readonly toggleShortcut: string;
 }
 
 /**
@@ -42,6 +44,7 @@ export const CNGX_SIDENAV_LANGUAGE_EN: CngxSidenavLanguageSection = {
   resizeValueText: '{value}',
   collapsedAnnouncement: 'Navigation collapsed',
   expandedAnnouncement: 'Navigation expanded',
+  toggleShortcut: 'Toggle navigation',
 };
 
 declare module '@cngx/core/i18n' {

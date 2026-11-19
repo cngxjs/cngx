@@ -223,8 +223,10 @@ $-single: ':not(:is([aria-multiselectable="true"] *))';
           transparent
         );
       }
-      #{$scope} #{$-rows}.cngx-option--selected#{$-single} {
-        --cngx-checkbox-color: var(--mat-sys-on-secondary-container);
+      // On the check itself: the broadcast sets the family value on every
+      // descendant, so a row-level value would not reach it.
+      #{$scope} #{$-rows}.cngx-option--selected#{$-single} .cngx-select__check {
+        --cngx-select-check-color: var(--mat-sys-on-secondary-container);
       }
       #{$scope}
         #{$-rows}.cngx-option--selected#{$-single}:not(

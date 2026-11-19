@@ -57,7 +57,7 @@ export const STORY: DemoSpec = {
       [closeOnEscape]="escapeCloses()"
       (closeRequested)="handleCloseRequested($event, sheet)"
     >
-      <header cngxPopoverSheetHeader cngxSwipeDismiss="down" style="display: flex; flex-wrap: wrap; align-items: center; gap: var(--cngx-popover-sheet-header-gap, 8px)">
+      <header cngxPopoverSheetHeader cngxSwipeDismiss="down">
         <span cngxPopoverSheetHandle></span>
         <h2 cngxPopoverSheetTitle style="margin: 0; font-size: 1rem; flex: 1">City</h2>
         <button cngxCloseButton aria-label="Close" (click)="sheet.requestClose('close')"></button>

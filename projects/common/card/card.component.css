@@ -187,6 +187,7 @@
    * Focus-ring color. Falls back to `--cngx-color-primary`.
    * @group State / Focus
    * @see [[--cngx-color-primary]]
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-card-focus-color {
     syntax: '*';
@@ -198,6 +199,7 @@
    * Falls back to `--cngx-color-primary`.
    * @group State / Selected
    * @see [[--cngx-color-primary]]
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-card-selected-border {
     syntax: '*';
@@ -211,6 +213,7 @@
    * achromatic primary keeps the tint neutral.
    * @group State / Selected
    * @see [[--cngx-color-primary]]
+   * @default oklch(from var(--cngx-color-primary) 0.96 min(c, 0.04) h)
    */
   @property --cngx-card-selected-bg {
     syntax: '*';
@@ -495,6 +498,7 @@
    * `--cngx-badge-primary-bg` then `--cngx-color-primary`.
    * @group Variant / Primary
    * @see [[--cngx-color-primary]]
+   * @default var(--cngx-badge-primary-bg)
    */
   @property --cngx-card-badge-primary-bg {
     syntax: '*';

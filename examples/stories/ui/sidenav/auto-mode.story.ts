@@ -12,7 +12,7 @@ export const STORY: DemoSpec = {
   focus: ['behavior', 'composition', 'a11y-pattern'],
   apiComponents: ['CngxSidenav', 'CngxSidenavLayout', 'CngxSidenavContent'],
   moduleImports: [
-    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from '@cngx/ui';",
+    "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from '@cngx/ui/sidenav';",
     "import { CngxNavLink } from '@cngx/common';",
     "import { CngxPanelTrigger } from '@cngx/common/layout';",
   ],

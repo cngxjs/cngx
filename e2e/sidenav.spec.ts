@@ -40,7 +40,7 @@ test.describe('CngxSidenav layout regressions', () => {
     await nav.hover();
     await expect(nav).toHaveAttribute('data-sidebar-state', 'peek', { timeout: 2000 });
 
-    // The rail actually grows past the 56px rail width (the state flips at
+    // The rail actually grows past the 61px rail width (the state flips at
     // the start of the width transition, so wait for the box)...
     await expect.poll(async () => (await nav.boundingBox())!.width).toBeGreaterThan(100);
     const contentLeftAfter = (await content.boundingBox())!.x;

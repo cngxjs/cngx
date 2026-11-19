@@ -758,7 +758,21 @@ test.describe('material-bridge rendered values: field metrics', () => {
     <input id="box-input" data-skin="bare" value="Ada" />
   </span>
 </cngx-form-field>
-<cngx-form-field><input id="fill" data-skin="fill" value="Ada" /></cngx-form-field>`;
+<cngx-form-field><input id="fill" data-skin="fill" value="Ada" /></cngx-form-field>
+<cngx-form-field>
+  <span id="pre-box" class="cngx-field-box" data-skin="outline">
+    <span class="cngx-field-prefix"><cngx-icon id="pre-icon"></cngx-icon></span>
+    <input id="pre-input" data-skin="bare" value="Ada" />
+  </span>
+</cngx-form-field>
+<cngx-form-field>
+  <span id="suf-box" class="cngx-field-box" data-skin="outline">
+    <input data-skin="bare" value="Ada" />
+    <button id="suf" type="button" class="cngx-field-suffix cngx-field-affix--interactive">
+      <cngx-icon id="suf-icon"></cngx-icon>
+    </button>
+  </span>
+</cngx-form-field>`;
 
   // body-large is the control's type role; the line box decides the height.
   const TYPE_STANDINS = `:root {
@@ -767,6 +781,11 @@ test.describe('material-bridge rendered values: field metrics', () => {
   --mat-sys-body-large-weight: 400;
   --mat-sys-body-large-line-height: 24px;
   --mat-sys-body-large-tracking: 0.5px;
+}
+cngx-icon {
+  display: block;
+  inline-size: var(--cngx-icon-size);
+  block-size: var(--cngx-icon-size);
 }`;
 
   // No `html { }` wrapper around the include: the scoped skin rules must lose
@@ -799,9 +818,139 @@ test.describe('material-bridge rendered values: field metrics', () => {
 
   // The box formula is line + 2 * padding + 2 * edge, so the padding has to
   // give back the edge the box actually draws, not a fixed 1px.
+  // Offsets from the box's border edge, as matIconPrefix and a matIconButton
+  // suffix sit in the mat-form-field text-field wrapper.
+  const edges = (page: Page, box: string, part: string) =>
+    page.evaluate(
+      ([b, p]) => {
+        const outer = document.querySelector(b)!.getBoundingClientRect();
+        const inner = document.querySelector(p)!.getBoundingClientRect();
+        return {
+          start: inner.left - outer.left,
+          end: outer.right - inner.right,
+          width: inner.width,
+        };
+      },
+      [box, part] as const,
+    );
+
+  test('a leading icon prefix sits like matIconPrefix', async ({ page }) => {
+    const icon = await edges(page, '#pre-box', '#pre-icon');
+    expect(icon.width).toBe(24);
+    expect(icon.start).toBe(12);
+    expect((await edges(page, '#pre-box', '#pre-input')).start).toBe(52);
+    expect(await height(page, '#pre-box')).toBe(56);
+  });
+
+  test('a trailing icon button sits like a matIconButton suffix', async ({ page }) => {
+    const button = await edges(page, '#suf-box', '#suf');
+    expect(button.width).toBe(40);
+    expect(button.end).toBe(0);
+    const icon = await edges(page, '#suf-box', '#suf-icon');
+    expect(icon.width).toBe(24);
+    expect(icon.end).toBe(8);
+    expect(await computedValue(page, '#suf', 'border-top-left-radius')).toBe('9999px');
+    expect(await height(page, '#suf-box')).toBe(56);
+  });
+
+  test('the enabled icon button takes the affix colour', async ({ page }) => {
+    const affix = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--cngx-field-affix-color)';
+      document.querySelector('#suf-box')!.append(probe);
+      return getComputedStyle(probe).color;
+    });
+    expect(await computedValue(page, '#suf', 'color')).toBe(affix);
+  });
+
   test('box and fill keep 56px under a wider field edge', async ({ page }) => {
     await page.addStyleTag({ content: ':root { --cngx-field-border-width: 2px; }' });
     expect(await height(page, '#box')).toBe(56);
     expect(await height(page, '#fill')).toBe(56);
+  });
+
+  // The M3 input starts 16px from the text-field edge; the cngx edge sits
+  // inside the box, so the inline padding gives it back as well.
+  const textStart = (page: Page, host: string, control: string) =>
+    page.evaluate(
+      ([h, c]) => {
+        const el = document.querySelector(c)!;
+        const cs = getComputedStyle(el);
+        const left =
+          el.getBoundingClientRect().left +
+          parseFloat(cs.paddingLeft) +
+          parseFloat(cs.borderLeftWidth);
+        return left - document.querySelector(h)!.getBoundingClientRect().left;
+      },
+      [host, control] as const,
+    );
+
+  test('the value starts 16px in from the edge', async ({ page }) => {
+    expect(await textStart(page, '#lone', '#lone')).toBe(16);
+    expect(await textStart(page, '#box', '#box-input')).toBe(16);
+    expect(await textStart(page, '#fill', '#fill')).toBe(16);
+  });
+
+  test('box and fill keep the 16px start under a wider field edge', async ({ page }) => {
+    await page.addStyleTag({ content: ':root { --cngx-field-border-width: 2px; }' });
+    expect(await textStart(page, '#box', '#box-input')).toBe(16);
+    expect(await textStart(page, '#fill', '#fill')).toBe(16);
+  });
+});
+
+test.describe('material-bridge rendered values: M2 dark text', () => {
+  // mat-input paints the M2 dark foreground text as plain white, its disabled
+  // text at 38% and the disabled fill at 4%. Both cngx rungs derive from the
+  // text token, so a second alpha on it dimmed all three.
+  const FIELD_CSS = [
+    'projects/core/theming/system-tokens.css',
+    'projects/core/theming/density-tokens.css',
+    'projects/core/theming/reset.css',
+    'projects/core/theming/base.css',
+    'projects/forms/theming/components/cngx-field-skin.css',
+  ] as const;
+
+  const BRIDGE_CSS = compileEntry(`
+@use '@angular/material' as mat;
+@use 'material/system-bridge' as cngx-system;
+@use 'material/field-theme' as field;
+
+$theme: mat.m2-define-dark-theme((color: (
+  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
+  accent: mat.m2-define-palette(mat.$m2-pink-palette),
+)));
+
+html {
+  @include cngx-system.theme($theme);
+}
+@include field.theme($theme);
+`);
+
+  const HTML = `
+<cngx-form-field><input id="live" data-skin="fill" value="Ada" /></cngx-form-field>
+<cngx-form-field><input id="off" data-skin="fill" value="Ada" disabled /></cngx-form-field>`;
+
+  // Alpha of a computed colour: `rgb(...)` is opaque, `oklab(... / a)` and
+  // `rgba(..., a)` carry it last.
+  const alpha = async (page: Page, id: string, prop: 'color' | 'background-color') => {
+    const value = await computedValue(page, id, prop);
+    const slash = /\/\s*([\d.]+)\)$/.exec(value);
+    const comma = /^rgba\(.*,\s*([\d.]+)\)$/.exec(value);
+    const a = slash?.[1] ?? comma?.[1];
+    return a === undefined ? 1 : Math.round(Number(a) * 1000) / 1000;
+  };
+
+  test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await renderFixture(page, { componentCss: FIELD_CSS, bridgeCss: BRIDGE_CSS, html: HTML });
+  });
+
+  test('the value paints plain white', async ({ page }) => {
+    expect(await computedValue(page, '#live', 'color')).toBe('rgb(255, 255, 255)');
+  });
+
+  test('the disabled value paints white at 38%, the disabled fill at 4%', async ({ page }) => {
+    expect(await alpha(page, '#off', 'color')).toBe(0.38);
+    expect(await alpha(page, '#off', 'background-color')).toBe(0.04);
   });
 });

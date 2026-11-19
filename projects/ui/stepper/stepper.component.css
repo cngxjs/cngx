@@ -206,7 +206,7 @@
    * `initial-value: currentColor` defeated the fallback chain by
    * always returning `currentColor` from `var(--cngx-step-active-color,
    * fallback)`.
-   * @cssprop {<color>} --cngx-step-active-color
+   * @cssprop {<color>} [--cngx-step-active-color=var(--cngx-step-active-fill)]
    * @group State / Active
    */
 
@@ -218,6 +218,7 @@
    * chain threads through both).
    * @group State / Active
    * @see [[--cngx-step-active-color]]
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-step-active-fill {
     syntax: '*';
@@ -229,7 +230,7 @@
    * `--cngx-step-active-fill`. Not registered as `@property` for the
    * same fallback-cascade reason; consumer overrides still work via
    * the standard custom-property cascade.
-   * @cssprop {<color>} --cngx-step-pending-color
+   * @cssprop {<color>} [--cngx-step-pending-color=var(--cngx-step-active-color)]
    * @group State / Pending
    */
 
@@ -500,6 +501,7 @@
    * the canonical active-fill so Material consumers inherit primary
    * tones without per-skin overrides.
    * @group Skin / linear-minimal
+   * @default var(--cngx-step-active-fill)
    */
   @property --cngx-step-linear-dot-fill {
     syntax: '*';
@@ -521,6 +523,7 @@
    * Background of the status pill while the step is active /
    * in-progress.
    * @group Skin / stripe-status-rich
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-step-status-pill-bg-in-progress {
     syntax: '*';
@@ -576,6 +579,7 @@
    * Fill of the chevron tile while the step is active on the
    * `path-chevron` skin.
    * @group Skin / path-chevron
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-step-chevron-tile-active {
     syntax: '*';
@@ -727,6 +731,7 @@
    * `data-state='pending'`. Mirrors the active-state color so the rail
    * reads as "progressing".
    * @group Skin / classic
+   * @default var(--cngx-step-pending-color)
    */
   @property --cngx-step-connector-pending-color {
     syntax: '*';

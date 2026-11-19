@@ -60,6 +60,7 @@
    * `:focus-visible` accent so the radio reads consistently with
    * every other focusable atom in the library.
    * @group State / Focus
+   * @default 2px solid var(--cngx-color-primary)
    */
   @property --cngx-radio-focus-outline {
     syntax: '*';

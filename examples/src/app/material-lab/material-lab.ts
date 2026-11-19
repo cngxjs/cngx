@@ -93,6 +93,7 @@ import {
   CngxFormErrors,
   CngxFieldBox,
   CngxSuffix,
+  CngxPrefix,
 } from '@cngx/forms/field';
 import {
   CngxInput,
@@ -141,6 +142,7 @@ interface FieldModel {
   about: string;
   clearable: string;
   search: string;
+  prefixed: string;
   reqName: string;
   errEmail: string;
   locked: string;
@@ -269,6 +271,7 @@ interface FieldModel {
     CngxFormErrors,
     CngxFieldBox,
     CngxSuffix,
+    CngxPrefix,
     CngxInput,
     CngxPasswordToggle,
     CngxCharCount,
@@ -1085,6 +1088,25 @@ interface FieldModel {
       </section>
 
       <section>
+        <h3>input: affix (search prefix)</h3>
+        <cngx-form-field [field]="fieldForm.prefixed">
+          <label cngxLabel>Find</label>
+          <span cngxFieldBox class="probe-cngx">
+            <span cngxPrefix><cngx-icon><mat-icon>search</mat-icon></cngx-icon></span>
+            <input cngxInput type="search" [formField]="fieldForm.prefixed" placeholder="Name" />
+          </span>
+          <span cngxHint>Decorative leading icon</span>
+        </cngx-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Find</mat-label>
+          <mat-icon matIconPrefix>search</mat-icon>
+          <input matInput class="probe-mat" type="search" [(ngModel)]="matPrefixed" placeholder="Name" />
+          <mat-hint>Decorative leading icon</mat-hint>
+        </mat-form-field>
+      </section>
+
+      <section>
         <h3>input: affix (clear button)</h3>
         <cngx-form-field [field]="fieldForm.search">
           <label cngxLabel>Search</label>
@@ -1350,6 +1372,7 @@ export class MaterialLab {
     about: '',
     clearable: '',
     search: '',
+    prefixed: '',
     reqName: '',
     errEmail: 'not-an-email',
     locked: 'ACC-100425',
@@ -1387,6 +1410,7 @@ export class MaterialLab {
   protected matName = '';
   protected matPassword = '';
   protected matSearch = '';
+  protected matPrefixed = '';
   protected matBio = '';
   protected matReqName = '';
   protected matErrEmail = 'not-an-email';

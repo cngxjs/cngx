@@ -46,6 +46,8 @@ describe('field Material bridge', () => {
   // every name is consumed by the forms field/input/form-errors CSS
   const CONSUMED = [
     '--cngx-field-affix-color',
+    '--cngx-field-affix-icon-size',
+    '--cngx-field-affix-target',
     '--cngx-field-char-count-color',
     '--cngx-field-char-count-font-size',
     '--cngx-field-char-count-over-color',
@@ -56,6 +58,7 @@ describe('field Material bridge', () => {
     '--cngx-field-hint-font-size',
     '--cngx-field-label-color',
     '--cngx-field-padding-block',
+    '--cngx-field-padding-inline',
     '--cngx-field-placeholder-color',
     '--cngx-field-required-color',
     '--cngx-field-ring-color',
@@ -126,7 +129,7 @@ describe('field Material bridge', () => {
   it('brings the outlined control and the subscript line onto the M3 metrics (M3)', () => {
     const css = compiledCss('v1');
     expect(css).toMatch(
-      /:where\(cngx-form-field :is\(input[^{]*\{[^}]*padding-block: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*border-radius: 4px;/,
+      /:where\(cngx-form-field :is\(input[^{]*\{[^}]*padding-block: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*padding-inline: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*border-radius: 4px;/,
     );
     expect(css).toMatch(
       /:where\(cngx-form-field :is\(input[^{]*\{[^}]*letter-spacing: var\(--mat-sys-body-large-tracking\)/,
@@ -144,6 +147,19 @@ describe('field Material bridge', () => {
     // mat-hint bottom-aligns its 16px line, so its text already sits one cngx
     // hint gap below the edge: the gap stays on the cngx scale.
     expect(css).not.toContain('--cngx-field-hint-gap');
+  });
+
+  it('sizes the box affixes like matIconPrefix and a matIconButton suffix', () => {
+    const css = compiledCss('v1');
+    expect(css).toMatch(
+      /\.cngx-field-box\.cngx-field-box:is\(\[data-skin=["']?fill["']?\], \[data-skin=["']?outline["']?\]\)\s*\{\s*--cngx-field-affix-icon-size: 1\.5em;\s*--cngx-field-affix-target: 2\.5rem;/,
+    );
+    expect(css).toMatch(
+      /:has\(> \.cngx-field-suffix\.cngx-field-affix--interactive:last-child\)\s*\{\s*padding-inline-end: 0;/,
+    );
+    expect(css).toMatch(
+      /> \.cngx-field-suffix\.cngx-field-affix--interactive:last-child\s*\{[^}]*border-radius: var\(--mat-sys-corner-full, 9999px\)/,
+    );
   });
 
   // mat-hint and the counter end hint carry no colour and inherit the page
@@ -397,6 +413,13 @@ html { @include bridge.theme($theme); }
     expect(css).toContain('--cngx-color-border-strong: rgba(0, 0, 0, 0.38)');
     expect(css).toMatch(/--cngx-color-primary-text: #[0-9a-f]{3,6}/);
     expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
+  });
+
+  // mat-input paints the M2 foreground text as is: black 0.87 light, plain
+  // white dark. A second alpha dimmed every dark text and its 38% disabled rung.
+  it('maps the text rung to the M2 foreground text without an own alpha', () => {
+    expect(systemCss('v0', 'light')).toContain('--cngx-color-text: rgba(0, 0, 0, 0.87);');
+    expect(systemCss('v0', 'dark')).toMatch(/--cngx-color-text: (white|#fff|#ffffff);/);
   });
 
   // mat-form-field draws its resting outlined frame in the M2 system
