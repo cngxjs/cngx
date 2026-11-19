@@ -1,0 +1,53 @@
+// Working-tree bridges (relative, not the published package) so the harness
+// reflects the current bridge source.
+@use '../../../../../projects/themes/material/badge-theme.scss' as badge;
+@use '../../../../../projects/themes/material/button-toggle-theme.scss' as button-toggle;
+@use '../../../../../projects/themes/material/card-theme.scss' as card;
+@use '../../../../../projects/themes/material/divider-theme.scss' as divider;
+@use '../../../../../projects/themes/material/chip-theme.scss' as chip;
+@use '../../../../../projects/themes/material/ripple-theme.scss' as ripple;
+@use '../lab-base' as base;
+
+$theme: base.$theme;
+
+@include base.root();
+
+html {
+  @include base.material();
+  @include badge.theme($theme);
+  @include button-toggle.theme($theme);
+  @include card.theme($theme);
+  @include divider.theme($theme);
+  @include chip.theme($theme);
+  @include ripple.theme($theme);
+}
+
+@include base.chrome();
+
+.lab-pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.lab-card {
+  inline-size: 280px;
+}
+
+// mat-badge overhangs its host above the end edge; room so it is not clipped.
+.lab-badge-row {
+  gap: 48px;
+  padding-block-start: 12px;
+}
+
+.lab-ripple-box {
+  display: grid;
+  place-items: center;
+  inline-size: 120px;
+  block-size: 64px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  user-select: none;
+  cursor: pointer;
+}

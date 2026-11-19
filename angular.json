@@ -329,6 +329,11 @@
                 "input": "examples/src/app/material-lab/material-lab.scss",
                 "bundleName": "material-lab-theme",
                 "inject": false
+              },
+              {
+                "input": "examples/src/app/material-lab/display/lab-display.scss",
+                "bundleName": "material-lab-display-theme",
+                "inject": false
               }
             ]
           },
@@ -348,8 +353,14 @@
                 {
                   "type": "bundle",
                   "name": "material-lab-theme",
-                  "maximumWarning": "88kB",
+                  "maximumWarning": "92kB",
                   "maximumError": "96kB"
+                },
+                {
+                  "type": "bundle",
+                  "name": "material-lab-display-theme",
+                  "maximumWarning": "24kB",
+                  "maximumError": "32kB"
                 }
               ],
               "outputHashing": "all"
