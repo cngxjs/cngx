@@ -15,7 +15,7 @@ export const STORY: DemoSpec = {
     'import { Injector } from \'@angular/core\';',
     'import { CngxAsyncClick, type CngxAsyncSettle } from \'@cngx/common/interactive\';',
     'import { delay, of } from \'rxjs\';',
-    'import { failDemoActionWhen } from \'../../../../fixtures\';',
+    'import { failDemoActionWhen, mirrorScreenReader } from \'../../../../fixtures\';',
   ],
   imports: ['CngxAsyncClick'],
   references: [
@@ -43,54 +43,10 @@ export const STORY: DemoSpec = {
     () => new Error('save failed'),
   );
 
-  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly destroyRef = inject(DestroyRef);
-  protected readonly heard = signal<readonly { n: number; text: string }[]>([]);
-  protected readonly ariaBusy = signal('-');
-
-  // Logs the real DOM writes into the live region next to each async button.
-  private readonly srMirror = afterNextRender(() => {
-    const host = this.hostEl.nativeElement;
-    const lastText = new WeakMap<Element, string>();
-    let count = 0;
-    const readBusy = (): void => {
-      const buttons = Array.from(host.querySelectorAll('button')).filter(
-        (b) => b.nextElementSibling?.hasAttribute('aria-live') ?? false,
-      );
-      this.ariaBusy.set(
-        buttons.map((b) => (b.getAttribute('aria-busy') ?? '-')).join(', ') || '-',
-      );
-    };
-    const observer = new MutationObserver((records) => {
-      for (const record of records) {
-        const el = record.target instanceof Element ? record.target : record.target.parentElement;
-        const region = el?.closest('[aria-live]');
-        if (!region || !host.contains(region) || region.previousElementSibling?.tagName !== 'BUTTON') {
-          continue;
-        }
-        const text = region.textContent?.trim() ?? '';
-        if (text === lastText.get(region)) {
-          continue;
-        }
-        lastText.set(region, text);
-        if (text !== '') {
-          count += 1;
-          const entry = { n: count, text: '"' + text + '"' };
-          this.heard.update((list) => [...list, entry].slice(-5));
-        }
-      }
-      readBusy();
-    });
-    observer.observe(host, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['aria-busy'],
-    });
-    readBusy();
-    this.destroyRef.onDestroy(() => observer.disconnect());
-  });`,
+  // Mirrors the busy state and the live region writes into the box below.
+  protected readonly sr = mirrorScreenReader([
+    { label: 'button', selector: 'button:has(+ [aria-live])' },
+  ]);`,
   template: `
   <button type="button"
     [cngxAsyncClick]="saveAction"
@@ -123,9 +79,11 @@ export const STORY: DemoSpec = {
   <div class="cngx-ex-sr-output">
     <p class="cngx-ex-sr-output__title">Screen reader hears</p>
     <dl class="cngx-ex-sr-output__list">
-      <dt>aria-busy</dt>
-      <dd>{{ ariaBusy() }}</dd>
-      @for (entry of heard(); track entry.n) {
+      @for (row of sr.rows(); track row.label) {
+        <dt>{{ row.label }} aria-busy</dt>
+        <dd>{{ row.busy }}</dd>
+      }
+      @for (entry of sr.heard(); track entry.n) {
         <dt>#{{ entry.n }}</dt>
         <dd>{{ entry.text }}</dd>
       } @empty {

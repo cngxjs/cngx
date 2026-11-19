@@ -317,6 +317,8 @@ module.exports = tseslint.config(
             'playwright.config.ts', 'e2e/', 'sheriff.config.ts', 'projects/**/examples/**',
             // examples/** stays out (generated features, stories, app source),
             // but examples/e2e is gated in CI now, so it is linted.
+            // Throwaway probe specs an independent review writes and deletes.
+            'examples/e2e/**/__review-probe*',
             'examples/src/**', 'examples/stories/**', 'examples/fixtures/**',
             'examples/dev-tools/**', 'examples/*.ts',
             // Fixture apps for schematic specs: consumer code, not cngx source.
