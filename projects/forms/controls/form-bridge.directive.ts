@@ -118,7 +118,9 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
    * `fn(value)`, synchronously. Only the atom's own writes reach this path:
    * a parent `[value]` binding updates the model without emitting, so it never
    * dirties the control. The model emits only on a real change, and the
-   * `writeValue` echo is dropped, so every forward is one user change.
+   * `writeValue` echo is dropped, so every forward is a write the atom or its
+   * consumer made: a user change, or a `(valueChange)` handler normalising a
+   * written value, which dirties the control like any view change.
    */
   registerOnChange(fn: (value: T) => void): void {
     this.onChange = fn;

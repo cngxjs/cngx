@@ -373,6 +373,7 @@ describe('CngxFormBridge', () => {
 
       expect(host.toggle.value()).toBe(false);
       expect(host.ctrl.value).toBe(false);
+      expect(host.ctrl.dirty).toBe(true);
     });
   });
 
