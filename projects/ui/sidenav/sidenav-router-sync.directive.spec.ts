@@ -3,6 +3,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createResizeObserverMock } from '@cngx/testing';
 
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavContent } from './sidenav-content';
@@ -251,6 +252,52 @@ describe('CngxSidenavRouterSync', () => {
 
     expect(sidenav.opened()).toBe(false);
     expect(router.parseUrl(router.url).queryParamMap.has('nav')).toBe(false);
+  });
+
+  it('drops an initial ?nav=open once an auto rail settles docked', async () => {
+    @Component({
+      template: `
+        <cngx-sidenav-layout>
+          <cngx-sidenav cngxSidenavRouterSync>x</cngx-sidenav>
+          <cngx-sidenav-content>Main</cngx-sidenav-content>
+        </cngx-sidenav-layout>
+      `,
+      imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavRouterSync],
+    })
+    class AutoHost {}
+
+    const roMock = createResizeObserverMock();
+    roMock.install(window);
+    // jsdom resolves no container rule: stub the expanded width class.
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      () => ({ getPropertyValue: () => 'expanded' }) as unknown as CSSStyleDeclaration,
+    );
+    try {
+      TestBed.configureTestingModule({ providers: [provideRouter([])] });
+      const router = TestBed.inject(Router);
+      await router.navigate([], { queryParams: { nav: 'open' } });
+
+      const fixture = TestBed.createComponent(AutoHost);
+      fixture.detectChanges();
+      await flush();
+      const sidenav = fixture.debugElement.query(By.directive(CngxSidenav))
+        .componentInstance as CngxSidenav;
+      expect(sidenav.opened()).toBe(true);
+
+      roMock.triggerResize({
+        borderBoxSize: [{ inlineSize: 1200, blockSize: 800 }],
+      } as unknown as ResizeObserverEntry);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(sidenav.effectiveMode()).toBe('side');
+      expect(sidenav.opened()).toBe(false);
+      expect(router.parseUrl(router.url).queryParamMap.has('nav')).toBe(false);
+    } finally {
+      roMock.restore(window);
+    }
   });
 
   it('warns CNGX1031 once and no-ops without provideRouter(...)', async () => {

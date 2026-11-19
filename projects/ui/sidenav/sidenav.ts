@@ -675,10 +675,14 @@ export class CngxSidenav
     // to a docked presentation always closes: the rail stays visible there,
     // and an open trap always holds focus inside, so the exception would leave
     // opened (and a synced ?nav=open) true on a docked rail.
+    // A docked rail never keeps opened, edge or not: neither the first settled
+    // presentation nor a pinned side produces one, and an initial [opened],
+    // a ?nav=open hydration or a later write would otherwise stay.
     effect(() => {
       const current = this.presentationTransition.current();
       const previous = this.presentationTransition.previous();
-      if (previous === null || current === previous) {
+      const dockedOpen = !this.isOverlay() && this.opened();
+      if (!dockedOpen && (previous === null || current === previous)) {
         return;
       }
       untracked(() => {
