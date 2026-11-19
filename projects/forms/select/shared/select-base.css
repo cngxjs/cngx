@@ -1010,7 +1010,7 @@
   @property --cngx-select-commit-error-hint-color {
     syntax: '<color>';
     inherits: true;
-    initial-value: oklch(0.5 0.2 25);
+    initial-value: oklch(0.46 0.18 25);
   }
 
   /**
