@@ -146,6 +146,7 @@
    * `--cngx-color-primary`.
    * @group Variant / Primary
    * @see [[--cngx-color-primary]]
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-badge-primary-bg {
     syntax: '*';

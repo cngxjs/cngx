@@ -1464,8 +1464,15 @@
     cursor: progress;
   }
   .cngx-select__check {
-    color: var(--cngx-select-check-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
     font-weight: 700;
+  }
+  /* The indicator's scoped host colour beats this class, so the bare
+     checkmark takes the select colour through the indicator's own token. */
+  .cngx-select__check.cngx-checkbox-indicator--checkmark {
+    --cngx-checkbox-color: var(
+      --cngx-select-check-color,
+      var(--cngx-color-primary, oklch(0.66 0.19 50))
+    );
   }
   /* An 'after' indicator sits at the row end, not right behind the label. */
   .cngx-select__option--indicator-after > .cngx-select__check {

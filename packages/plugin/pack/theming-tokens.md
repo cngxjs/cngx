@@ -1,6 +1,6 @@
 # cngx theming tokens
 
-Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3231 tokens across 166 components.
+Every cngx component themes through `--cngx-*` CSS custom properties with literal fallbacks. Set any token in your own stylesheet to override it; leave it unset to keep the default below. 3233 tokens across 166 components.
 
 ## CngxA11yPanel
 
@@ -493,7 +493,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-badge-font-size`|`0.6875rem`|Typography|Font-size of the badge text.|
 |`--cngx-badge-font-weight`|`600`|Typography|Font-weight of the badge text.|
 |`--cngx-badge-border`|`0`|Surface|Ring around the badge. Defaults to `0` so the indicator reads as a solid pill that sits flush on its host (the dot variant in particular would shrink to a single visible pixel under a 2px ring). Set a non-zero border at consumer level when the badge needs to cut out from a busy host surface - e.g. `--cngx-badge-border: 2px solid var(--mat-sys-surface)`. Only applied in the corner variants (`above-*` / `below-*`); the `inline` variant is borderless either way. `inherits: true` so a single `:root` override reaches every indicator span at once.|
-|`--cngx-badge-primary-bg`|``|Variant / Primary|Background of the primary variant. Falls back to `--cngx-color-primary`.|
+|`--cngx-badge-primary-bg`|`var(--cngx-color-primary)`|Variant / Primary|Background of the primary variant. Falls back to `--cngx-color-primary`.|
 |`--cngx-badge-primary-color`|`oklch(1 0 0)`|Variant / Primary|Text color of the primary variant.|
 |`--cngx-badge-error-bg`|`oklch(0.62 0.22 25)`|Variant / Error|Background of the error variant. Falls back to `--cngx-color-danger`.|
 |`--cngx-badge-error-color`|`oklch(1 0 0)`|Variant / Error|Text color of the error variant.|
@@ -837,9 +837,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-card-active-opacity`|`0.88`|State / Active|Opacity multiplier applied on touch-active. Only fires under `(hover: none)` so it doesn't compete with the hover shadow.|
 |`--cngx-card-focus-width`|`2px`|State / Focus|Focus-ring width.|
 |`--cngx-card-focus-offset`|`2px`|State / Focus|Outline offset of the focus ring.|
-|`--cngx-card-focus-color`|``|State / Focus|Focus-ring color. Falls back to `--cngx-color-primary`.|
-|`--cngx-card-selected-border`|``|State / Selected|Border color of the selected state and the inset selection bar. Falls back to `--cngx-color-primary`.|
-|`--cngx-card-selected-bg`|``|State / Selected|Background of the selected state. Unset by default, so the card paints a pale tint in the hue of the `--cngx-color-primary` in scope; the scheme blocks set its lightness and chroma cap, and an achromatic primary keeps the tint neutral.|
+|`--cngx-card-focus-color`|`var(--cngx-color-primary)`|State / Focus|Focus-ring color. Falls back to `--cngx-color-primary`.|
+|`--cngx-card-selected-border`|`var(--cngx-color-primary)`|State / Selected|Border color of the selected state and the inset selection bar. Falls back to `--cngx-color-primary`.|
+|`--cngx-card-selected-bg`|`oklch(from var(--cngx-color-primary) 0.96 min(c, 0.04) h)`|State / Selected|Background of the selected state. Unset by default, so the card paints a pale tint in the hue of the `--cngx-color-primary` in scope; the scheme blocks set its lightness and chroma cap, and an achromatic primary keeps the tint neutral.|
 |`--cngx-card-selected-bar-width`|`3px`|State / Selected|Width of the inset selection bar drawn via `::before` - provides a non-color-only selection signal (WCAG 1.4.1).|
 |`--cngx-card-loading-shimmer`|`oklch(1 0 0 / 0.4)`|State / Loading|Shimmer band color for the loading overlay gradient.|
 |`--cngx-card-loading-overlay`|`oklch(1 0 0 / 0.3)`|State / Loading|Static overlay shown when `prefers-reduced-motion` suppresses the shimmer animation.|
@@ -866,7 +866,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-card-badge-font-size-lg`|`0.8125rem`|Sizing|Font-size at the `lg` size.|
 |`--cngx-card-badge-radius`|`999px`|Sizing|Corner radius. Defaults to the pill radius via `--cngx-radius-pill` so the surface reads as a round indicator across all three sizes.|
 |`--cngx-card-badge-border`|`2px solid oklch(1 0 0)`|Surface|Ring around the badge - contrasts the pill against the card surface so the corner anchor reads as a separate element. The `:root` dark-mode override swaps the colour; `inherits: true` so the swap reaches the host element through the cascade.|
-|`--cngx-card-badge-primary-bg`|``|Variant / Primary|Background of the `primary` intent. Falls back through `--cngx-badge-primary-bg` then `--cngx-color-primary`.|
+|`--cngx-card-badge-primary-bg`|`var(--cngx-badge-primary-bg)`|Variant / Primary|Background of the `primary` intent. Falls back through `--cngx-badge-primary-bg` then `--cngx-color-primary`.|
 |`--cngx-card-badge-primary-color`|`oklch(1 0 0)`|Variant / Primary|Text colour of the `primary` intent.|
 |`--cngx-card-badge-danger-bg`|`oklch(0.62 0.22 25)`|Variant / Danger|Background of the `danger` intent. Falls back through `--cngx-badge-error-bg` then `--cngx-color-danger`.|
 |`--cngx-card-badge-danger-color`|`oklch(1 0 0)`|Variant / Danger|Text colour of the `danger` intent.|
@@ -985,7 +985,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
       border-color 150ms ease`|Motion|Transition shorthand for background / color / border-color changes on hover, selected, and disabled states. Derives from the `--cngx-duration-fast` rung of the motion scale; a `--cngx-duration-*` brand override re-times it library-wide.|
 |`--cngx-chip-hover-bg`|`oklch(0.66 0.19 50 / 0.2)`|State / Hover|Background of the hover state for interactive chips (`[role=button]`, `[tabindex]`, or a chip with a remove button): the primary mixed with `transparent` at 20%, assigned like `--cngx-chip-bg`.|
 |`--cngx-chip-hover-color`|`currentColor`|State / Hover|Text color of the hover state.|
-|`--cngx-chip-focus-outline`|``|State / Focus|Focus-ring shorthand applied via `outline` on `:focus-visible`. Defaults to the brand primary so the ring contrasts with the chip's own tinted fill (selected or unkeyed) instead of inheriting `currentColor`, which would render the ring in the text color and read as a generic dark border on top of the orange fill.|
+|`--cngx-chip-focus-outline`|`2px solid var(--cngx-color-primary)`|State / Focus|Focus-ring shorthand applied via `outline` on `:focus-visible`. Defaults to the brand primary so the ring contrasts with the chip's own tinted fill (selected or unkeyed) instead of inheriting `currentColor`, which would render the ring in the text color and read as a generic dark border on top of the orange fill.|
 |`--cngx-chip-focus-outline-offset`|`2px`|State / Focus|Outline offset of the focus ring.|
 |`--cngx-chip-selected-bg`|`oklch(0.66 0.19 50 / 0.32)`|State / Selected|Background of the selected state (`[aria-selected=true]` / `[aria-pressed=true]`): the primary mixed with `transparent` at 32%, assigned like `--cngx-chip-bg`.|
 |`--cngx-chip-selected-color`|`currentColor`|State / Selected|Text color of the selected state.|
@@ -999,7 +999,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-chip-danger-color`|`oklch(0.5 0.2 25)`|Variant / Danger|Text color of the `[data-color=danger]` variant.|
 |`--cngx-chip-remove-radius`|`999px`|State / Remove|Corner radius of the inline remove button. Fully round by default, so the hover tint and focus ring circle the X inside the pill.|
 |`--cngx-chip-remove-focus-width`|`2px`|State / Remove|Focus-ring width of the inline remove button.|
-|`--cngx-chip-remove-focus-color`|``|State / Remove|Focus-ring color of the inline remove button. Falls back to `--cngx-color-primary`.|
+|`--cngx-chip-remove-focus-color`|`var(--cngx-color-primary)`|State / Remove|Focus-ring color of the inline remove button. Falls back to `--cngx-color-primary`.|
 |`--cngx-chip-remove-focus-offset`|`-3px`|State / Remove|Focus-ring offset of the inline remove button. Negative by default: the button keeps its 24px hit area, and the ring circles the X inside it instead of tracing the whole target.|
 
 ## CngxChipGroup
@@ -1482,8 +1482,8 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-form-errors-font-size`|``|Typography|Font size of the error summary list. Unset by default, so the list matches the field-level error lines via `--cngx-field-hint-font-size`.|
-|`--cngx-form-errors-color`|``|State / Error|Text colour of the error summary list and its links. Unset by default, so the list follows `--cngx-field-error-color`, then the `--cngx-color-danger-text` rung of the scheme in scope.|
+|`--cngx-form-errors-font-size`|`var(--cngx-field-hint-font-size)`|Typography|Font size of the error summary list. Unset by default, so the list matches the field-level error lines via `--cngx-field-hint-font-size`.|
+|`--cngx-form-errors-color`|`var(--cngx-field-error-color)`|State / Error|Text colour of the error summary list and its links. Unset by default, so the list follows `--cngx-field-error-color`, then the `--cngx-color-danger-text` rung of the scheme in scope.|
 
 ## CngxGoal
 
@@ -1620,6 +1620,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-option-selected-bg`|`oklch(0.66 0.19 50 / 0.18)`|State / Selected|Background of a selected option: the primary mixed with `transparent` at 18% (28% dark), a step above the highlight so selection reads as committed state. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
 |`--cngx-listbox-padding`|`4px`|Layout|Padding shorthand inside the listbox container.|
 |`--cngx-option-padding`|`6px 10px`|Layout|Padding shorthand on each option.|
+|`--cngx-option-min-height`|`0px`|Layout|Minimum block size of each option row. The option floors it against `--cngx-target-min`, so a coarse pointer keeps its tap target.|
 |`--cngx-option-radius`|`4px`|Layout|Corner radius of each option.|
 
 ## CngxLoadingIndicator
@@ -2583,6 +2584,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-option-selected-bg`|`oklch(0.66 0.19 50 / 0.18)`|State / Selected|Background of a selected option: the primary mixed with `transparent` at 18% (28% dark), a step above the highlight so selection reads as committed state. The initial is the light default. A subtree that re-themes `--cngx-color-primary` re-declares this tint too.|
 |`--cngx-listbox-padding`|`4px`|Layout|Padding shorthand inside the listbox container.|
 |`--cngx-option-padding`|`6px 10px`|Layout|Padding shorthand on each option.|
+|`--cngx-option-min-height`|`0px`|Layout|Minimum block size of each option row. The option floors it against `--cngx-target-min`, so a coarse pointer keeps its tap target.|
 |`--cngx-option-radius`|`4px`|Layout|Corner radius of each option.|
 
 ## CngxPaginator
@@ -2631,7 +2633,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-paginator-rail-thickness`|`2px`|Skin|Thickness of the old `rail` skin's underline + position marker.|
 |`--cngx-paginator-rail-knob-size`|`14px`|Skin|Diameter of the `rail` skin's position knob (the dot riding the fill edge).|
 |`--cngx-paginator-rail-knob-bg`|`oklch(1 0 0)`|Skin|Fill of the `rail` skin's position knob. Defaults to the foundation surface.|
-|`--cngx-paginator-rail-knob-border-color`|``|Skin|Ring colour of the `rail` skin's position knob. Defaults to the primary.|
+|`--cngx-paginator-rail-knob-border-color`|`var(--cngx-color-primary)`|Skin|Ring colour of the `rail` skin's position knob. Defaults to the primary.|
 |`--cngx-paginator-bar-border-color`|`oklch(0.88 0.005 250)`|Skin|Border + divider colour of the enclosed `bar` skin.|
 |`--cngx-paginator-bar-radius`|`6px`|Skin|Corner radius of the enclosed `bar` skin's outer box.|
 |`--cngx-paginator-hover-scale`|`1`|Motion|Scale a button grows to on hover. Defaults to `1` (no grow) - the resting hover is the background tint; opt into a grow by raising this. Flattened to `1` under reduced motion.|
@@ -2914,7 +2916,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |-|-|-|-|
 |`--cngx-radio-gap`|`0.5rem`|Layout|Gap between the indicator and the label slot.|
 |`--cngx-radio-color`|`currentColor`|Surface|Text color of the host shell. Defaults to `currentColor`.|
-|`--cngx-radio-focus-outline`|``|State / Focus|Focus-ring outline shorthand. Matches the foundation reset's `:focus-visible` accent so the radio reads consistently with every other focusable atom in the library.|
+|`--cngx-radio-focus-outline`|`2px solid var(--cngx-color-primary)`|State / Focus|Focus-ring outline shorthand. Matches the foundation reset's `:focus-visible` accent so the radio reads consistently with every other focusable atom in the library.|
 |`--cngx-radio-focus-offset`|`3px`|State / Focus|Outline offset of the focus ring. Matches the foundation reset's `:focus-visible` offset so the ring breathes the same against the indicator + label as it does against any other atom.|
 |`--cngx-radio-focus-radius`|`0.25rem`|State / Focus|Corner radius applied while focused.|
 
@@ -3085,7 +3087,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 
 |Token|Default|Group|Description|
 |-|-|-|-|
-|`--cngx-field-required-color`|``|State / Error|Colour of the required marker glyph, shared with `CngxLabel`. Unset by default, so the marker follows `--cngx-field-error-color`, then the `--cngx-color-danger-text` rung of the scheme in scope.|
+|`--cngx-field-required-color`|`var(--cngx-field-error-color)`|State / Error|Colour of the required marker glyph, shared with `CngxLabel`. Unset by default, so the marker follows `--cngx-field-error-color`, then the `--cngx-color-danger-text` rung of the scheme in scope.|
 
 ## CngxRipple
 
@@ -3471,7 +3473,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-padding`|`0.5rem 0.75rem`|Layout|Padding shorthand of an individual step button.|
 |`--cngx-step-padding-inline`|`0.75rem`|Layout|Inline-axis padding of the step button - used by vertical orientation to combine with the group indent.|
 |`--cngx-step-padding-compact`|`0.375rem 0.5rem`|Layout|Tightened panel padding for container-query collapse. Applied when `<cngx-stepper>` is rendered inside a container narrower than `48rem` (sidebar / card / dialog) regardless of viewport.|
-|`--cngx-step-focus-ring`|``|State / Focus|Focus-ring outline shorthand. Unset by default, so the ring is 2px solid in the `--cngx-color-primary` in scope, the cngx focus convention from `@cngx/core/theming/reset.css`.|
+|`--cngx-step-focus-ring`|`2px solid var(--cngx-color-primary)`|State / Focus|Focus-ring outline shorthand. Unset by default, so the ring is 2px solid in the `--cngx-color-primary` in scope, the cngx focus convention from `@cngx/core/theming/reset.css`.|
 |`--cngx-step-focus-offset`|`3px`|State / Focus|Outline offset of the focus ring. Set to 3px so the ring sits outside the indicator disc rather than on its edge - keeps the ring readable against the filled active / completed / errored disc backgrounds.|
 |`--cngx-step-indicator-size`|`1.75rem`|Layout|Diameter of the indicator disc.|
 |`--cngx-step-group-font-weight`|`600`|Typography|Font-weight of the group header.|
@@ -3507,9 +3509,9 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-errored-color`|`oklch(0.45 0.15 25)`|State / Error|Background of the errored indicator disc. Falls back to `--cngx-color-danger`.|
 |`--cngx-step-refused-color`|``|State / Refused|Fill of a refused-commit marker (the commit action answered `false`) on the dots and the aggregate error line. A refusal is no error, so it wears the rejection amber; a failed commit keeps the danger red (the strong danger fill on the dots, `--cngx-step-errored-color` on the line). Registered without an initial value, so the amber fallback applies until a theme sets it.|
 |`--cngx-step-refused-text-color`|``|State / Refused|Text color of the aggregate line when every marked step is a refused commit. Defaults to the surrounding text colour: amber text would fall under the 4.5:1 text contrast.|
-|`--cngx-step-active-color`|``|State / Active|Background of the active indicator disc. Material consumers override this upstream; un-themed consumers leave it unset so the downstream `--cngx-step-active-fill` cascade lands on `--cngx-color-primary` (or the baked-in primary blue). Not registered as `@property` on purpose - the previous `initial-value: currentColor` defeated the fallback chain by always returning `currentColor` from `var(--cngx-step-active-color, fallback)`.|
-|`--cngx-step-active-fill`|``|State / Active|Resolved fill of the active indicator disc. Unset by default, so the disc paints the `--cngx-color-primary` in scope. Consumers override via `--cngx-step-active-fill` directly, or upstream via `--cngx-step-active-color` (the consuming rule's `var()` chain threads through both).|
-|`--cngx-step-pending-color`|``|State / Pending|Background of the pending indicator disc - same cascade as `--cngx-step-active-fill`. Not registered as `@property` for the same fallback-cascade reason; consumer overrides still work via the standard custom-property cascade.|
+|`--cngx-step-active-color`|`var(--cngx-step-active-fill)`|State / Active|Background of the active indicator disc. Material consumers override this upstream; un-themed consumers leave it unset so the downstream `--cngx-step-active-fill` cascade lands on `--cngx-color-primary` (or the baked-in primary blue). Not registered as `@property` on purpose - the previous `initial-value: currentColor` defeated the fallback chain by always returning `currentColor` from `var(--cngx-step-active-color, fallback)`.|
+|`--cngx-step-active-fill`|`var(--cngx-color-primary)`|State / Active|Resolved fill of the active indicator disc. Unset by default, so the disc paints the `--cngx-color-primary` in scope. Consumers override via `--cngx-step-active-fill` directly, or upstream via `--cngx-step-active-color` (the consuming rule's `var()` chain threads through both).|
+|`--cngx-step-pending-color`|`var(--cngx-step-active-color)`|State / Pending|Background of the pending indicator disc - same cascade as `--cngx-step-active-fill`. Not registered as `@property` for the same fallback-cascade reason; consumer overrides still work via the standard custom-property cascade.|
 |`--cngx-step-hover-bg`|`color-mix(in srgb, currentColor 8%, transparent)`|State / Hover|Background tint applied on hover of an enabled step.|
 |`--cngx-step-busy-spinner-size`|`0.875rem`|State / Pending|Diameter of the busy spinner ring next to the active step.|
 |`--cngx-step-busy-spinner-color`|`currentColor`|State / Pending|Stroke color of the busy spinner ring.|
@@ -3519,14 +3521,14 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-stepper-group-chip-active-border`|`var(--cngx-color-primary)`|Group chip|Border color of the active-branch chip (the group owning the current step). No `initial-value`: the universal syntax keeps the property guaranteed-invalid until set, so the CSS `var()` fallback chain to `--cngx-color-primary` survives - the same knob that colours the active step. The Material bridge maps it to `--mat-sys-primary`.|
 |`--cngx-stepper-group-chip-active-bg`|`color-mix(in srgb, var(--cngx-color-primary) 14%, transparent)`|Group chip|Background of the active-branch chip. See {@link --cngx-stepper-group-chip-active-border} for why no `initial-value` is declared.|
 |`--cngx-stepper-group-chip-active-color`|`var(--cngx-color-text)`|Group chip|Label color of the active-branch chip. Neutral text by default: the primary accent lives on the chip border and tint (primary as text misses 4.5:1 on the light tint), like the tab and nav-link active labels. The Material bridge maps it to `--mat-sys-primary`.|
-|`--cngx-step-linear-dot-fill`|``|Skin / linear-minimal|Fill of the active dot in the linear-minimal skin. Falls back to the canonical active-fill so Material consumers inherit primary tones without per-skin overrides.|
+|`--cngx-step-linear-dot-fill`|`var(--cngx-step-active-fill)`|Skin / linear-minimal|Fill of the active dot in the linear-minimal skin. Falls back to the canonical active-fill so Material consumers inherit primary tones without per-skin overrides.|
 |`--cngx-step-status-pill-bg-upcoming`|`color-mix(in srgb, currentColor 6%, transparent)`|Skin / stripe-status-rich|Background of the status pill on the `stripe-status-rich` skin when the step is upcoming. Soft-neutral surface tone.|
-|`--cngx-step-status-pill-bg-in-progress`|``|Skin / stripe-status-rich|Background of the status pill while the step is active / in-progress.|
+|`--cngx-step-status-pill-bg-in-progress`|`var(--cngx-color-primary)`|Skin / stripe-status-rich|Background of the status pill while the step is active / in-progress.|
 |`--cngx-step-status-pill-bg-done`|`oklch(0.5 0.15 145)`|Skin / stripe-status-rich|Background of the status pill once the step is completed.|
 |`--cngx-step-status-pill-bg-errored`|`oklch(0.45 0.15 25)`|Skin / stripe-status-rich|Background of the status pill when the step is errored.|
 |`--cngx-step-status-pill-color`|`oklch(1 0 0)`|Skin / stripe-status-rich|Text color of the status pill on the active / completed / errored states. Hits the filled pill background.|
 |`--cngx-step-status-pill-padding`|`0.125rem 0.5rem`|Skin / stripe-status-rich|Padding shorthand of the status pill. Derived from the global scale at the unskinned `cngx-stepper` host (stepper-base.css) so a root `[data-density]` re-scales the pill; `inherits: true` lets that host SET reach this skin-scoped element. The 2px block keeps the pill compact, so it is half `--cngx-space-xs` rather than snapped to a rung.|
-|`--cngx-step-chevron-tile-active`|``|Skin / path-chevron|Fill of the chevron tile while the step is active on the `path-chevron` skin.|
+|`--cngx-step-chevron-tile-active`|`var(--cngx-color-primary)`|Skin / path-chevron|Fill of the chevron tile while the step is active on the `path-chevron` skin.|
 |`--cngx-step-chevron-tile-completed`|`color-mix(in srgb, oklch(0.5 0.15 145) 80%, transparent)`|Skin / path-chevron|Fill of the chevron tile once the step is completed.|
 |`--cngx-step-chevron-tile-errored`|`oklch(0.45 0.15 25)`|Skin / path-chevron|Fill of the chevron tile when the step is errored.|
 |`--cngx-step-chevron-tile-upcoming-bg`|`color-mix(in srgb, currentColor 12%, transparent)`|Skin / path-chevron|Fill of the upcoming chevron tile - soft surface tint so the chevron silhouette stays visible without competing with the active state.|
@@ -3540,7 +3542,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-step-connector-color`|`color-mix(in srgb, currentColor 35%, transparent)`|Skin / classic|Muted color of an upcoming connector segment on the classic skin with `[connectors]` opted-in. Inherits so host-set overrides cascade to the `::before` segment painter.|
 |`--cngx-step-connector-completed-color`|`oklch(0.5 0.15 145)`|Skin / classic|Accent color of a completed connector segment on the classic skin with `[connectors]` opted-in. Falls back to the canonical completed color so Material consumers inherit success tones without per-skin overrides.|
 |`--cngx-step-connector-errored-color`|`oklch(0.55 0.18 25)`|Skin / classic|Errored color of a connector segment whose preceding step is in `data-state='error'`. Mirrors `--cngx-step-errored-color`.|
-|`--cngx-step-connector-pending-color`|``|Skin / classic|In-flight color of a connector segment whose preceding step is in `data-state='pending'`. Mirrors the active-state color so the rail reads as "progressing".|
+|`--cngx-step-connector-pending-color`|`var(--cngx-step-pending-color)`|Skin / classic|In-flight color of a connector segment whose preceding step is in `data-state='pending'`. Mirrors the active-state color so the rail reads as "progressing".|
 |`--cngx-step-connector-inset`|`6px`|Skin / classic|Symmetric breathing room between each disc edge and the connector rail end on the classic skin with `[connectors]` opted-in. Inherits so host-set overrides cascade.|
 |`--cngx-step-connector-width`|`2px`|Skin / classic|Thickness of the connector segment on the classic skin with `[connectors]` opted-in. Inherits so host-set overrides cascade.|
 |`--cngx-step-chips-gap`|`0.5rem`|Skin / chips|Gap between the standalone pills of the `chips` skin.|
@@ -3975,7 +3977,7 @@ Every cngx component themes through `--cngx-*` CSS custom properties with litera
 |`--cngx-toggle-track-height`|`1.25rem`|Layout|Height of the track pill.|
 |`--cngx-toggle-track-radius`|`9999px`|Layout|Corner radius of the track. Defaults to a full pill.|
 |`--cngx-toggle-track-bg-off`|`oklch(0 0 0 / 0.25)`|State / Off|Background of the off-state track - neutral muted by default. `inherits: true` so the :root dark-mode override reaches the track inside the toggle host.|
-|`--cngx-toggle-track-bg-on`|``|State / On|Background of the on-state track. Unset by default, so the track paints the `--cngx-color-primary` in scope.|
+|`--cngx-toggle-track-bg-on`|`var(--cngx-color-primary)`|State / On|Background of the on-state track. Unset by default, so the track paints the `--cngx-color-primary` in scope.|
 |`--cngx-toggle-thumb-inset`|`0.125rem`|Layout|Inset of the thumb inside the track (resting position).|
 |`--cngx-toggle-thumb-size`|`1rem`|Layout|Diameter of the circular thumb.|
 |`--cngx-toggle-thumb-travel`|`1rem`|State / On|Horizontal translation applied to the thumb when checked.|

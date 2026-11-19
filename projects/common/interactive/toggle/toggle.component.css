@@ -187,6 +187,7 @@
    * paints the `--cngx-color-primary` in scope.
    * @group State / On
    * @see [[--cngx-color-primary]]
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-toggle-track-bg-on {
     syntax: '*';

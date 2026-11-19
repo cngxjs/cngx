@@ -251,6 +251,7 @@
    * Ring colour of the `rail` skin's position knob. Defaults to the primary.
    * @group Skin
    * @see [[--cngx-color-primary]]
+   * @default var(--cngx-color-primary)
    */
   @property --cngx-paginator-rail-knob-border-color {
     syntax: '*';
