@@ -209,6 +209,13 @@ html { @include cngx-density.density($theme); }
     );
   });
 
+  test('the outer segment corners paint the Material group corner', async ({ page }) => {
+    // The bridge routes the shape through --cngx-radius-md on the segment;
+    // corner-extra-large has no stand-in, so the bridge fallback (28px) shows.
+    expect(await computedValue(page, '#toggle-checked', 'border-top-left-radius')).toBe('28px');
+    expect(await computedValue(page, '#toggle-idle', 'border-top-right-radius')).toBe('28px');
+  });
+
   test('the inherits:false padding token lands ON the toggle element via the density chain', async ({
     page,
   }) => {

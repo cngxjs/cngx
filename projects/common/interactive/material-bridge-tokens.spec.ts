@@ -299,7 +299,9 @@ describe('button-toggle Material bridge', () => {
   // knobs, so the bridge routes those (tabs-theme precedent): the primary
   // for the unchecked hover tint, the strong pair for the checked segment.
   // The spacing tokens are deliberately absent: SET from --cngx-space-* at
-  // the toggle host, density-bridge territory.
+  // the toggle host, density-bridge territory. The shape rides the
+  // --cngx-radius-md knob, read by the first and last segment corners and by
+  // the group radius derivation.
   const CONSUMED = [
     '--cngx-color-border',
     '--cngx-color-on-primary-strong',
@@ -307,6 +309,7 @@ describe('button-toggle Material bridge', () => {
     '--cngx-color-primary-strong',
     '--cngx-color-surface',
     '--cngx-color-text',
+    '--cngx-radius-md',
   ];
 
   it('emits only consumed token names (M3)', () => {
@@ -340,9 +343,22 @@ $theme: mat.define-theme((
     expect(block).not.toBeNull();
     expect(block![0]).toContain('--cngx-color-primary: var(--mat-sys-primary)');
     // no spacing fork - the padding tokens ride the SET-from-scale rule
-    expect(css).not.toContain('--cngx-button-toggle-');
+    expect(css).not.toContain('--cngx-button-toggle-padding');
+  });
+
+  it('routes the Material group corner through the radius knob on hosts and segments', () => {
+    // The segments paint the visible corners from --cngx-radius-md; the
+    // group radius token is inherits:false and never reaches them.
+    const hosts =
+      /:where\(cngx-button-toggle-group, cngx-button-multi-toggle-group, button\[cngxButtonToggle\]\)\s*\{[^}]*\}/;
+    expect(bridgeCss('button-toggle-theme', 'v1').match(hosts)![0]).toContain(
+      '--cngx-radius-md: var(--mat-sys-corner-extra-large, 28px)',
+    );
+    expect(bridgeCss('button-toggle-theme', 'v0').match(hosts)![0]).toContain('--cngx-radius-md: 4px');
+    expect(bridgeCss('button-toggle-theme', 'v1')).not.toContain('--cngx-button-toggle-group-radius');
   });
 });
+
 
 describe('async-click Material bridge', () => {
   // every name is consumed by theming/components/cngx-async.css on the
