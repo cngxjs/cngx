@@ -210,7 +210,10 @@ providers: [
 The labels are the `menuButton` section of the [language pack](../../../core-concepts/i18n.md):
 `splitToggle` names the split caret and `splitMainBusy` describes it while the main action runs.
 `provideMenuButtonI18n(withMenuButtonI18nLabels({ ... }))` overrides single keys on a subtree,
-and a `Signal` passed to `withMenuButtonI18nLabels` follows a runtime language switch.
+and a `Signal` passed to `withMenuButtonI18nLabels` follows a runtime language switch. A nested
+provider starts again from the language pack instead of merging onto the outer one, so it repeats
+every outer override it still needs; a runtime language switch reaches the menu buttons below it
+only through that nested provider.
 
 ## Material
 
