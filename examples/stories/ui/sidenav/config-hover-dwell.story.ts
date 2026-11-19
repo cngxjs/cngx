@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   focus: ['behavior', 'composition'],
   apiComponents: ['CngxSidenav'],
   moduleImports: [
-    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, provideSidenavConfigAt, withSidenavHoverDwell } from \'@cngx/ui\';',
+    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, provideSidenavConfigAt, withSidenavHoverDwell } from \'@cngx/ui/sidenav\';',
     'import { CngxNavHeader, CngxNavMark, CngxNavName } from \'@cngx/common/interactive\';',
     'import { CngxAvatar } from \'@cngx/common/display\';',
     'import { CngxStack } from \'@cngx/ui/layout\';',

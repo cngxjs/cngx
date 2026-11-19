@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     'CngxSidenavContent',
   ],
   moduleImports: [
-    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from \'@cngx/ui\';',
+    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from \'@cngx/ui/sidenav\';',
     'import { CngxNavLink } from \'@cngx/common\';',
   ],
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavLink'],
