@@ -499,3 +499,39 @@ describe('CngxInput - unbound field warning (CNGX2031)', () => {
     expect(mountCollecting(AffixHost).warnings()).toEqual([]);
   });
 });
+
+describe('CngxInput - template disabled without a field presenter', () => {
+  @Component({
+    template: `<input cngxInput [disabled]="off()" />`,
+    imports: [CngxInput],
+  })
+  class TemplateDisabledHost {
+    readonly off = signal(true);
+  }
+
+  function setupTemplateDisabled() {
+    TestBed.configureTestingModule({ imports: [TemplateDisabledHost] });
+    const fixture = TestBed.createComponent(TemplateDisabledHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inputEl = fixture.debugElement.query(By.directive(CngxInput))
+      .nativeElement as HTMLInputElement;
+    return { fixture, inputEl };
+  }
+
+  it('keeps a template [disabled] from the first frame', () => {
+    const { inputEl } = setupTemplateDisabled();
+    expect(inputEl.disabled).toBe(true);
+  });
+
+  it('follows later template [disabled] flips', () => {
+    const { fixture, inputEl } = setupTemplateDisabled();
+    fixture.componentInstance.off.set(false);
+    fixture.detectChanges();
+    expect(inputEl.disabled).toBe(false);
+
+    fixture.componentInstance.off.set(true);
+    fixture.detectChanges();
+    expect(inputEl.disabled).toBe(true);
+  });
+});

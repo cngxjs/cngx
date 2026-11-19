@@ -26,9 +26,9 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  * the sink and a written-back value never re-pushes.
  *
  * `disabled` sourcing: projected from the mounting surface's disabled
- * state. The shipped rows currently expose no row-level disabled state
- * and mount editors enabled; declare the input to stay forward-compatible
- * with disabled-aware hosts.
+ * state. The builder's expression row projects the builder disabled state
+ * (and the row's `setValue` sink is a no-op meanwhile); the standalone
+ * `CngxFilterRow` has no disabled state and mounts editors enabled.
  */
 export interface CngxFilterEditorComponent<TValue> {
   readonly value: ModelSignal<TValue | null>;

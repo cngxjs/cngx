@@ -126,6 +126,7 @@ describe('filter-builder slot directives', () => {
       fieldDef: { key: 'name', label: 'Name', editorType: 'string' },
       setValue: () => undefined,
       expression: { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'foo' },
+      disabled: false,
     };
     expect(context.value).toBe('foo');
     expect(context.fieldDef.key).toBe('name');
@@ -133,7 +134,11 @@ describe('filter-builder slot directives', () => {
   });
 
   it('context interfaces are structurally well-formed', () => {
-    const empty: CngxFilterBuilderEmptyContext = { addFilter: () => undefined, addGroup: () => undefined };
+    const empty: CngxFilterBuilderEmptyContext = {
+      addFilter: () => undefined,
+      addGroup: () => undefined,
+      disabled: false,
+    };
     const expression: CngxFilterBuilderExpressionTemplateContext = {
       expression: { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' },
       fieldDef: { key: 'name', label: 'Name', editorType: 'string' },
@@ -143,6 +148,7 @@ describe('filter-builder slot directives', () => {
       setOperator: () => undefined,
       setValue: () => undefined,
       remove: () => undefined,
+      disabled: false,
     };
     const group: CngxFilterBuilderGroupTemplateContext = {
       group: { type: 'group', id: 'g1', logic: 'and', negated: false, filters: [] },
@@ -153,6 +159,7 @@ describe('filter-builder slot directives', () => {
       addFilter: () => undefined,
       addGroup: () => undefined,
       remove: () => undefined,
+      disabled: false,
     };
     const addFilter: CngxFilterBuilderAddFilterButtonContext = {
       add: () => undefined,
@@ -167,11 +174,13 @@ describe('filter-builder slot directives', () => {
     const remove: CngxFilterBuilderRemoveButtonContext = {
       remove: () => undefined,
       label: 'Remove',
+      disabled: false,
     };
     const logicToggle: CngxFilterBuilderLogicToggleContext = {
       logic: 'and',
       options: ['and', 'or'],
       setLogic: () => undefined,
+      disabled: false,
     };
     expect([empty, expression, group, addFilter, addGroup, remove, logicToggle]).toHaveLength(7);
   });

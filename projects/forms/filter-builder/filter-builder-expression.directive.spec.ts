@@ -50,6 +50,7 @@ function buildMockHost(
     fieldMap,
     isEmpty,
     lastMutation,
+    disabled: signal(false),
     addExpression: () => undefined,
     addGroup: () => undefined,
     removeNode: () => undefined,

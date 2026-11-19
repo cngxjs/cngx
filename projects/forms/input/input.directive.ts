@@ -2,11 +2,13 @@ import {
   afterRenderEffect,
   computed,
   Directive,
+  effect,
   ElementRef,
   HostAttributeToken,
   inject,
   input,
   linkedSignal,
+  Renderer2,
   signal,
 } from '@angular/core';
 import {
@@ -82,7 +84,6 @@ function isEmptyValue(value: unknown): boolean {
     '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-errormessage]': 'ariaErrorMessage()',
     '[attr.aria-readonly]': 'ariaReadonly()',
-    '[attr.disabled]': 'isDisabled()',
     '[attr.autocomplete]': 'resolvedAutocomplete()',
     '[attr.spellcheck]': 'resolvedSpellcheck()',
     '[class.cngx-input--error]': 'errorState()',
@@ -122,6 +123,21 @@ export class CngxInput implements CngxFormFieldControl {
   );
 
   constructor() {
+    // `disabled` belongs to the input only while a field presenter drives it. A host
+    // binding would write `null` on the first frame and clear a template `[disabled]`
+    // on a standalone or detached input (filter-builder rows).
+    if (this.presenter) {
+      const presenter = this.presenter;
+      const renderer = inject(Renderer2);
+      effect(() => {
+        const el = this.el.nativeElement;
+        if (presenter.disabled()) {
+          renderer.setAttribute(el, 'disabled', 'true');
+        } else {
+          renderer.removeAttribute(el, 'disabled');
+        }
+      });
+    }
     if (typeof ngDevMode !== 'undefined' && ngDevMode && this.presenter) {
       const presenter = this.presenter;
       afterRenderEffect(() => {
@@ -181,8 +197,6 @@ export class CngxInput implements CngxFormFieldControl {
   protected readonly ariaErrorMessage = computed(() =>
     this.presenter?.showError() ? this.presenter.errorId() : null,
   );
-  /** @internal */
-  protected readonly isDisabled = computed(() => (this.presenter?.disabled() ? true : null));
 
   /**
    * Explicit autocomplete value. When not set, inferred from the field name

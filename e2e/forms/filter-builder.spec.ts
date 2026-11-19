@@ -259,17 +259,41 @@ test.describe('CngxFilterBuilder — form-field bridge browser flow', () => {
     await expect(badges.filter({ hasText: 'disabled: false' })).toHaveCount(1);
   });
 
-  test('Reactive Forms — toggle disabled propagates to presenter.disabled', async ({ page }) => {
+  test('Reactive Forms - toggle disabled disables every control and blocks writes', async ({
+    page,
+  }) => {
     await page.goto(FORM_FIELD_ROUTE);
     const section = card(page, 'Reactive Forms');
     const badges = section.locator('.status-badge');
+    const builder = section.locator('cngx-filter-builder');
+    const rows = builder.locator('cngx-filter-expression-row');
+    const addFilter = builder.getByRole('button', { name: /add filter/i }).first();
 
     await expect(badges.filter({ hasText: 'control.disabled: false' })).toHaveCount(1);
     await expect(badges.filter({ hasText: 'presenter.disabled: false' })).toHaveCount(1);
+    await addFilter.click();
+    await expect(rows).toHaveCount(1);
 
     await section.getByRole('button', { name: 'Toggle disabled' }).click();
     await expect(badges.filter({ hasText: 'control.disabled: true' })).toHaveCount(1);
     await expect(badges.filter({ hasText: 'presenter.disabled: true' })).toHaveCount(1);
+
+    // Visible only: the closed select sheets carry their own close buttons.
+    const buttons = builder.locator('button:visible');
+    const count = await buttons.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      await expect(buttons.nth(i)).toBeDisabled();
+    }
+    const triggers = builder.locator('.cngx-select__trigger');
+    await expect(triggers).toHaveCount(2);
+    for (let i = 0; i < 2; i++) {
+      await expect(triggers.nth(i)).toHaveAttribute('aria-disabled', 'true');
+    }
+
+    await addFilter.click({ force: true });
+    await expect(rows).toHaveCount(1);
+    await expect(badges.filter({ hasText: 'control.disabled: true' })).toHaveCount(1);
   });
 });
 

@@ -11,6 +11,7 @@
       class="cngx-filter-builder__field-select"
       [options]="fieldOptions()"
       [value]="expression.field"
+      [disabled]="disabled()"
       (valueChange)="handleFieldChange($event)"
     ></cngx-select>
 
@@ -18,6 +19,7 @@
       class="cngx-filter-builder__operator-select"
       [options]="operatorOptions()"
       [value]="expression.operator"
+      [disabled]="disabled()"
       (valueChange)="handleOperatorChange($event)"
     ></cngx-select>
 
@@ -32,6 +34,7 @@
         type="text"
         [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
+        [disabled]="disabled()"
         (input)="handleStringValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:number') {
@@ -40,6 +43,7 @@
         type="number"
         [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
+        [disabled]="disabled()"
         (input)="handleNumberValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:date') {
@@ -48,6 +52,7 @@
         type="date"
         [attr.aria-label]="editorLabel"
         [value]="expression.value ?? ''"
+        [disabled]="disabled()"
         (input)="handleDateValueInput($event)"
         (change)="handleDateValueInput($event)"
       />
@@ -55,6 +60,7 @@
       <cngx-toggle
         [attr.aria-label]="editorLabel"
         [value]="expression.value === true"
+        [disabled]="disabled()"
         (valueChange)="handleBooleanValueChange($event)"
       ></cngx-toggle>
     } @else if (resolvedEditor && !isNativeEditor(resolvedEditor) && valueEditorContext(); as ctx) {
@@ -64,6 +70,7 @@
         [fieldDef]="ctx.fieldDef"
         [expression]="ctx.expression"
         [setValue]="ctx.setValue"
+        [disabled]="disabled()"
       ></ng-container>
     }
 
@@ -74,6 +81,7 @@
         type="button"
         class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
         [attr.aria-label]="i18n().removeFilter"
+        [disabled]="disabled()"
         (click)="handleRemove()"
       >
         <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>

@@ -38,6 +38,7 @@ function buildMockHost(initial: FilterGroup): CngxFilterBuilderHost {
     fieldMap,
     isEmpty,
     lastMutation,
+    disabled: signal(false),
     addExpression: () => undefined,
     addGroup: () => undefined,
     removeNode: () => undefined,

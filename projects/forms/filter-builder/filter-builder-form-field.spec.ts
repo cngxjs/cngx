@@ -407,3 +407,117 @@ describe('CngxFilterBuilderFormFieldControl placement (CNGX2019)', () => {
     expect(() => setupSignalFormsHost()).not.toThrow();
   });
 });
+
+const ALL_EDITOR_FIELDS: readonly FilterFieldDef[] = [
+  { key: 'name', label: 'Name', editorType: 'string' },
+  { key: 'age', label: 'Age', editorType: 'number' },
+  { key: 'born', label: 'Born', editorType: 'date' },
+  { key: 'active', label: 'Active', editorType: 'boolean' },
+];
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-filter-builder cngxFilterBuilderFormFieldControl [fields]="fields" [(value)]="value" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl],
+})
+class AllEditorsHost {
+  readonly fields = ALL_EDITOR_FIELDS;
+  readonly _tree: FilterGroup = createFilterGroup('and', [
+    createFilterExpression('name', 'contains', 'a'),
+    createFilterExpression('age', 'gt', 3),
+    createFilterExpression('born', 'eq', '2020-01-01'),
+    createFilterExpression('active', 'eq', true),
+    createFilterGroup('or', [createFilterExpression('name', 'eq', 'b')]),
+  ]);
+  value: FilterGroup = this._tree;
+  readonly _mock = createMockField<FilterGroup>({ name: 'filter', value: this._tree });
+  readonly field: CngxFieldAccessor<FilterGroup> = this._mock.accessor;
+  readonly ref: MockFieldRef<FilterGroup> = this._mock.ref;
+  readonly builder = viewChild.required(CngxFilterBuilder);
+}
+
+// Controls inside a closed select popover (sheet close button) are not reachable.
+function enabledControls(root: HTMLElement): HTMLElement[] {
+  return Array.from(
+    root.querySelectorAll<HTMLButtonElement | HTMLInputElement>('button, input'),
+  ).filter((el) => !el.disabled && !el.closest('[popover]'));
+}
+
+describe('CngxFilterBuilder - disabled field disables every control', () => {
+  function setupAllEditors(initiallyDisabled: boolean) {
+    TestBed.configureTestingModule({ imports: [AllEditorsHost] });
+    const fixture = TestBed.createComponent(AllEditorsHost);
+    fixture.componentInstance.ref.disabled.set(initiallyDisabled);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const builderEl = fixture.debugElement.query(By.directive(CngxFilterBuilder))
+      .nativeElement as HTMLElement;
+    return { fixture, builderEl, ref: fixture.componentInstance.ref };
+  }
+
+  function expectInoperable(builderEl: HTMLElement): void {
+    expect(builderEl.querySelectorAll('input').length).toBeGreaterThanOrEqual(4);
+    expect(enabledControls(builderEl)).toEqual([]);
+    const triggers = builderEl.querySelectorAll('.cngx-select__trigger');
+    expect(triggers.length).toBe(10);
+    for (const trigger of Array.from(triggers)) {
+      expect(trigger.getAttribute('aria-disabled')).toBe('true');
+      expect(trigger.getAttribute('tabindex')).toBe('-1');
+    }
+    const toggle = builderEl.querySelector('cngx-toggle') as HTMLElement;
+    expect(toggle.getAttribute('aria-disabled')).toBe('true');
+    expect(toggle.getAttribute('tabindex')).toBe('-1');
+  }
+
+  it('field disabled after render: no enabled button or input, pickers and toggle leave the tab order', () => {
+    const { fixture, builderEl, ref } = setupAllEditors(false);
+    expect(enabledControls(builderEl).length).toBeGreaterThan(0);
+
+    ref.disabled.set(true);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expectInoperable(builderEl);
+  });
+
+  it('field disabled from the first frame: every row input is disabled', () => {
+    const { builderEl } = setupAllEditors(true);
+    expectInoperable(builderEl);
+  });
+
+  it('a dispatched click on "Add filter" while disabled leaves value() unchanged', () => {
+    const { fixture, builderEl, ref } = setupAllEditors(false);
+    ref.disabled.set(true);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const presenter = fixture.debugElement
+      .query(By.directive(CngxFilterBuilderFormFieldControl))
+      .injector.get(CngxFilterBuilderPresenter);
+    const before = presenter.value();
+
+    const addFilter = builderEl.querySelector(
+      '.cngx-filter-builder__action-button--add-filter',
+    ) as HTMLButtonElement;
+    addFilter.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(presenter.value()).toBe(before);
+  });
+
+  it('re-enabling the field makes every control operable again', () => {
+    const { fixture, builderEl, ref } = setupAllEditors(true);
+    ref.disabled.set(false);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(builderEl.querySelectorAll('input:disabled, button:disabled').length).toBe(0);
+    for (const trigger of Array.from(builderEl.querySelectorAll('.cngx-select__trigger'))) {
+      expect(trigger.getAttribute('aria-disabled')).toBeNull();
+    }
+  });
+});

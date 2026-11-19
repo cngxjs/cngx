@@ -40,6 +40,7 @@ const FIELD_CUSTOM: FilterFieldDef = {
 };
 
 interface MockHost extends CngxFilterBuilderHost {
+  readonly disabled: ReturnType<typeof signal<boolean>>;
   setValueSpy: ReturnType<typeof vi.fn>;
 }
 
@@ -90,6 +91,7 @@ function buildHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[]): 
     fieldMap,
     isEmpty,
     lastMutation,
+    disabled: signal(false),
     addExpression: () => undefined,
     addGroup: () => undefined,
     removeNode: () => undefined,
@@ -133,6 +135,17 @@ class ProjectedTagEditor implements CngxFilterEditorComponent<string> {
   readonly value = model<string | null>(null);
   readonly fieldDef = input<FilterFieldDef | undefined>(undefined);
   readonly expression = input<FilterExpression | undefined>(undefined);
+}
+
+@Component({
+  selector: 'cngx-test-disabled-aware-editor',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `<span data-test="disabled-aware">{{ disabled() }}</span>`,
+})
+class DisabledAwareEditor implements CngxFilterEditorComponent<string> {
+  readonly value = model<string | null>(null);
+  readonly disabled = input(false);
 }
 
 @Component({
@@ -345,5 +358,29 @@ describe('CngxFilterExpressionRow - editor wiring matrix', () => {
     expect(editor.value()).toBe('seeded');
     expect(editor.fieldDef()).toEqual(FIELD_CUSTOM);
     expect(editor.expression()?.id).toBe('e-custom-full');
+  });
+});
+
+describe('CngxFilterExpressionRow - custom editor disabled projection', () => {
+  it('a registered editor receives the builder disabled state', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-custom',
+      field: 'tag',
+      operator: 'eq',
+      value: 'x',
+    };
+    const { fixture, host } = setup(expression, undefined, {
+      'tag-picker': DisabledAwareEditor as Type<CngxFilterEditorComponent<unknown>>,
+    });
+    const read = (): string =>
+      (fixture.nativeElement as HTMLElement).querySelector('[data-test="disabled-aware"]')!
+        .textContent!;
+    expect(read()).toBe('false');
+
+    host.disabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(read()).toBe('true');
   });
 });
