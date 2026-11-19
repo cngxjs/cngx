@@ -80,9 +80,9 @@ const CONSUMED = [
   '--cngx-icon-size',
 ];
 
-// Scheme knobs the M2 branch sets from the theme type (M3 leaves them to the
-// sheet's scheme blocks).
-const M2_SCHEME_KNOBS = [
+// Scheme knobs a theme typed light or dark sets from its type; a color-scheme
+// theme leaves them to the sheet's scheme blocks.
+const SCHEME_KNOBS = [
   '--cngx-button-neutral-solid',
   '--cngx-button-neutral-solid-hover',
   '--cngx-button-neutral-solid-pressed',
@@ -117,18 +117,27 @@ function flat(css: string): string {
 
 describe('button Material bridge', () => {
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames(compileThemeEntry(M3_ENTRY))).toEqual(CONSUMED);
+    expect(emittedTokenNames(compileThemeEntry(M3_ENTRY))).toEqual(
+      [...CONSUMED, ...SCHEME_KNOBS].sort(),
+    );
+  });
+
+  it('leaves the scheme knobs to the sheet on a color-scheme theme (M3)', () => {
+    const names = emittedTokenNames(
+      compileThemeEntry(M3_ENTRY.replace('theme-type: light', 'theme-type: color-scheme')),
+    );
+    expect(names).toEqual(CONSUMED);
   });
 
   it('emits a consumed-name subset (M2)', () => {
     const names = emittedTokenNames(compileThemeEntry(M2_ENTRY));
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) {
-      expect([...CONSUMED, ...M2_SCHEME_KNOBS]).toContain(name);
+      expect([...CONSUMED, ...SCHEME_KNOBS]).toContain(name);
     }
   });
 
-  it('sets the scheme knobs from the theme type to the sheet literals (M2)', () => {
+  it('sets the scheme knobs from the theme type to the sheet literals (M2, M3)', () => {
     // The bridge copies the sheet's scheme blocks; read both from the sheet so
     // a rung change there fails here instead of leaving the bridge stale.
     const sheet = readFileSync(
@@ -144,17 +153,17 @@ describe('button Material bridge', () => {
     };
     const literal = (css: string, name: string): string | undefined =>
       css.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1].trim();
+    const light = sheetBlock("[data-color-scheme='light'],");
+    const dark = sheetBlock("[data-color-scheme='dark'],");
     const types = [
-      ['light', M2_ENTRY, sheetBlock("[data-color-scheme='light'],")],
-      [
-        'dark',
-        M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'),
-        sheetBlock("[data-color-scheme='dark'],"),
-      ],
+      ['M2 light', M2_ENTRY, light],
+      ['M2 dark', M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'), dark],
+      ['M3 light', M3_ENTRY, light],
+      ['M3 dark', M3_ENTRY.replace('theme-type: light', 'theme-type: dark'), dark],
     ] as const;
     for (const [type, entry, scheme] of types) {
       const host = block(compileThemeEntry(entry), '.cngx-button');
-      for (const name of M2_SCHEME_KNOBS) {
+      for (const name of SCHEME_KNOBS) {
         const expected = literal(scheme, name);
         expect(expected, `${name} missing from the sheet's ${type} block`).toBeDefined();
         expect(literal(host, name), `${type} ${name}`).toBe(expected);
@@ -166,7 +175,7 @@ describe('button Material bridge', () => {
     const sheets = READERS.map((path) =>
       readFileSync(fileURLToPath(new URL('../../../' + path, import.meta.url)), 'utf-8'),
     ).join('\n');
-    const owned = [...CONSUMED, ...M2_SCHEME_KNOBS].filter(
+    const owned = [...CONSUMED, ...SCHEME_KNOBS].filter(
       (name) => !name.startsWith('--cngx-color-'),
     );
     for (const name of owned) {

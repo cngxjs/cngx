@@ -43,7 +43,7 @@
 //
 // A directly-set knob beats an inherited one regardless of layer, so a
 // consumer's :root-level --cngx-color-* override does not reach the buttons
-// while this bridge is included (nor, under an M2 theme typed light or dark,
+// while this bridge is included (nor, under a theme typed light or dark,
 // an ancestor-level --cngx-button-neutral-* or
 // --cngx-button-secondary-text-shift override); re-skin on the button host
 // instead, where any consumer selector beats the `:where()` below. In the theme.scss
@@ -124,8 +124,8 @@
 }
 
 // The neutral washes and the secondary label shift follow the scheme cngx
-// detects (OS or data-color-scheme), which an M2 theme typed light or dark
-// does not; these are the sheet's literals of that scheme (cngx-button.css,
+// detects (OS or data-color-scheme), which a theme typed light or dark does
+// not; these are the sheet's literals of that scheme (cngx-button.css,
 // the :root and dark blocks). A color-scheme theme gets none: it follows the
 // OS like the sheet does (system-bridge `_scheme-rungs` shape).
 @mixin _scheme-knobs($type) {
@@ -155,6 +155,7 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     @include bridge.on('.cngx-button') {
+      @include _scheme-knobs(mat.get-theme-type($theme));
       --cngx-color-text: var(--mat-sys-on-surface);
       --cngx-color-surface: var(--mat-sys-surface);
       --cngx-color-border: var(--mat-sys-outline-variant);

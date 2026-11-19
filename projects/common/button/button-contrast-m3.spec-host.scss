@@ -1,0 +1,21 @@
+// Test-only entry for button-contrast.geometry.spec.ts: compiles the
+// working-tree button bridge for an M3 azure theme typed light and one typed
+// dark, each scoped to a wrapper that carries its system tokens and paints
+// the M3 surface. Not shipped.
+@use '@angular/material' as mat;
+@use '../../themes/material/button-theme' as button;
+
+$light: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
+$dark: mat.define-theme((color: (theme-type: dark, primary: mat.$azure-palette)));
+
+.m3-light {
+  @include mat.theme((color: (theme-type: light, primary: mat.$azure-palette)));
+  background: var(--mat-sys-surface);
+  @include button.theme($light);
+}
+
+.m3-dark {
+  @include mat.theme((color: (theme-type: dark, primary: mat.$azure-palette)));
+  background: var(--mat-sys-surface);
+  @include button.theme($dark);
+}

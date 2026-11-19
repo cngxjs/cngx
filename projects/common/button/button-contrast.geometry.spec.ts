@@ -14,10 +14,10 @@ import { CngxButton } from './button.component';
 
 const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
 
-// M2 themes typed dark and light, each under both schemes
-// (button-contrast-m2.spec-host.scss compiles the bridge for both types).
+// M2 and M3 themes typed dark and light, each under both schemes
+// (button-contrast-m2 / -m3.spec-host.scss compile the bridge for both types).
 const M2_TONES = ['primary', 'danger'] as const;
-const M2_MISMATCHES = [
+const SCHEME_MISMATCHES = [
   { theme: 'dark', scheme: 'light' },
   { theme: 'light', scheme: 'dark' },
 ] as const;
@@ -33,11 +33,17 @@ const M2_MISMATCHES = [
     '../../core/theming/base.css',
     '../theming/components/cngx-button.css',
     './button-contrast-m2.spec-host.scss',
+    './button-contrast-m3.spec-host.scss',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
     @for (theme of schemes; track theme) {
       @for (scheme of schemes; track scheme) {
+        <div [attr.data-color-scheme]="scheme">
+          <p class="m3-{{ theme }} m3-{{ theme }}-{{ scheme }}" style="padding: 8px">
+            <button cngxButton class="m3-neutral-{{ theme }}-{{ scheme }}">Close</button>
+          </p>
+        </div>
         <div [attr.data-color-scheme]="scheme">
           <p class="m2-{{ theme }} m2-{{ theme }}-{{ scheme }}" style="padding: 8px">
             @for (tone of m2Tones; track tone) {
@@ -329,7 +335,7 @@ describe('secondary button label on a mismatched M2 theme', () => {
   const followsType = (tone: string, theme: string, state: string): boolean =>
     tone === 'danger' && theme === 'light' && state !== 'rest';
 
-  const cases = M2_MISMATCHES.flatMap(({ theme, scheme }) =>
+  const cases = SCHEME_MISMATCHES.flatMap(({ theme, scheme }) =>
     M2_TONES.flatMap((tone) =>
       (['rest', 'hover', 'pressed'] as const).map((state) => [tone, theme, scheme, state] as const),
     ),
@@ -351,6 +357,45 @@ describe('secondary button label on a mismatched M2 theme', () => {
       const mismatched = await m2Secondary(tone, theme, scheme, state);
       const matched = await m2Secondary(tone, theme, theme, state);
       expect(mismatched.color).toBe(matched.color);
+    },
+  );
+});
+
+// A typed M3 theme pins its scheme knobs too: the neutral solid fill is the
+// one of the theme's own scheme, whatever the OS or data-color-scheme says.
+async function m3NeutralFill(
+  theme: 'light' | 'dark',
+  scheme: 'light' | 'dark',
+  state: 'rest' | 'hover' | 'pressed',
+): Promise<string> {
+  const root = mount();
+  const button = query(root, `.m3-neutral-${theme}-${scheme}`);
+  button.style.transition = 'none';
+  if (state === 'hover') {
+    await userEvent.hover(button);
+  }
+  if (state === 'pressed') {
+    button.classList.add('cngx-pressed');
+  }
+  const fill = computedValue(button, 'background-color');
+  button.classList.remove('cngx-pressed');
+  await parkPointer();
+  mountedRoot?.remove();
+  mountedRoot = null;
+  return fill;
+}
+
+describe('neutral solid fill on a mismatched M3 theme', () => {
+  const cases = SCHEME_MISMATCHES.flatMap(({ theme, scheme }) =>
+    (['rest', 'hover', 'pressed'] as const).map((state) => [theme, scheme, state] as const),
+  );
+
+  it.each(cases)(
+    'neutral solid on M3 %s under a %s scheme paints its own scheme fill at %s',
+    async (theme, scheme, state) => {
+      const mismatched = await m3NeutralFill(theme, scheme, state);
+      const matched = await m3NeutralFill(theme, theme, state);
+      expect(mismatched).toBe(matched);
     },
   );
 });
