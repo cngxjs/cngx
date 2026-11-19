@@ -2285,6 +2285,23 @@
       ]
     },
     {
+      "code": "CNGX2033",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "A Reactive Forms atom also bound by a parent value",
+      "page": "core-concepts/error-codes/cngx2033.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2033.html",
+      "status": "active",
+      "files": ["projects/forms/controls/form-bridge.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/controls/form-bridge.directive.ts",
+          "text": "[${...}] the value is bound by a parent [value] binding next to [formControl], so the atom shows a value the form control never receives. Write the form control instead (setValue / patchValue) and drop the value binding."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

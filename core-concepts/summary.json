@@ -710,6 +710,11 @@
                 "file": "error-codes/cngx2032.md"
             },
             {
+                "title": "CNGX2033",
+                "label": "CNGX2033: A Reactive Forms atom also bound by a parent value",
+                "file": "error-codes/cngx2033.md"
+            },
+            {
                 "title": "CNGX3001",
                 "label": "CNGX3001: Router not set up for a router-sync directive",
                 "file": "error-codes/cngx3001.md"

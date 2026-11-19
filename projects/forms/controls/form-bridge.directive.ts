@@ -1,6 +1,7 @@
 import {
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   forwardRef,
   inject,
@@ -9,6 +10,9 @@ import {
 } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interactive';
+import { cngxDevWarn } from '@cngx/utils';
+
+const parentBoundWarned = new WeakSet<object>();
 
 /**
  * Lets cngx's value-bearing form atoms take part in Angular Reactive Forms exactly like
@@ -40,7 +44,9 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *   submitted in the same task (Enter right after a keystroke) reads it.
  * - A parent `[value]` binding next to `[formControl]` is not a user change
  *   (CVA contract): it updates the atom but never the control, which stays
- *   pristine. The model's `subscribe` does not fire for an input binding.
+ *   pristine. The model's `subscribe` does not fire for an input binding. In
+ *   dev mode a model change that never emitted warns
+ *   [`CNGX2033`](/error-codes/cngx2033.md) once per atom.
  * - `writeValue` drops the model's synchronous echo of the value it writes, so
  *   the RF→atom→RF round-trip never re-emits; a re-entrant write of a different
  *   value still forwards.
@@ -98,6 +104,9 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
 
   private subscription: OutputRefSubscription | null = null;
 
+  private readonly probe =
+    typeof ngDevMode !== 'undefined' && ngDevMode ? this.createParentBindingProbe() : null;
+
   /**
    * RF → view. Writes the atom's model signal; the model emits synchronously
    * inside `set`, and the one-shot `echo` keeps that emit out of `onChange`.
@@ -132,6 +141,7 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   }
 
   private forward(value: T): void {
+    this.probe?.emitted(value);
     if (this.echo !== null && Object.is(value, this.echo.value)) {
       this.echo = null;
       return;
@@ -141,6 +151,40 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
       return;
     }
     callback(value);
+  }
+
+  // Dev mode only. Every write the model makes itself emits through `subscribe`
+  // (`forward`), `writeValue` included; an input binding is the one path that
+  // changes the model without emitting. A value the model holds but never
+  // emitted therefore came from a parent binding. The first run is the baseline.
+  private createParentBindingProbe(): { emitted(value: T): void } {
+    let known: { readonly value: T } | null = null;
+    effect(() => {
+      const value = this.control.value();
+      untracked(() => {
+        const diverged = known !== null && !Object.is(known.value, value);
+        known = { value };
+        if (!diverged || parentBoundWarned.has(this)) {
+          return;
+        }
+        parentBoundWarned.add(this);
+        if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+          const host = this.host.nativeElement;
+          cngxDevWarn(
+            'CNGX2033',
+            `[${host.localName}] the value is bound by a parent [value] binding next to ` +
+              '[formControl], so the atom shows a value the form control never receives. ' +
+              'Write the form control instead (setValue / patchValue) and drop the value binding.',
+            host,
+          );
+        }
+      });
+    });
+    return {
+      emitted: (value) => {
+        known = { value };
+      },
+    };
   }
 
   registerOnTouched(fn: () => void): void {
