@@ -62,6 +62,7 @@ export class CngxFilterExpressionRow {
   protected readonly editors = injectFilterEditors();
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;
+  protected readonly disabled = this.host.disabled;
 
   /**
    * Index path of the expression node the row edits in the presenter tree. The path is
@@ -129,8 +130,16 @@ export class CngxFilterExpressionRow {
   protected readonly removeButtonTemplate = this.row.removeButtonTemplate;
   protected readonly valueEditorTemplate = this.row.valueEditorTemplate;
 
-  protected readonly valueEditorContext = this.row.valueEditorContext;
-  protected readonly removeButtonContext = this.row.removeButtonContext;
+  // The shared row brain has no disabled concept (the standalone row has
+  // none); the builder row stamps the presenter's state onto both contexts.
+  protected readonly valueEditorContext = computed(() => {
+    const ctx = this.row.valueEditorContext();
+    return ctx && { ...ctx, disabled: this.disabled() };
+  });
+  protected readonly removeButtonContext = computed(() => ({
+    ...this.row.removeButtonContext(),
+    disabled: this.disabled(),
+  }));
 
   protected handleFieldChange(next: string | undefined): void {
     this.row.handleFieldChange(next);

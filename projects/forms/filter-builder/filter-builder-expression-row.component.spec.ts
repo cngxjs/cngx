@@ -22,6 +22,7 @@ const FIELD_ACTIVE: FilterFieldDef = { key: 'active', label: 'Active', editorTyp
 
 interface MockHost extends CngxFilterBuilderHost {
   readonly tree: ReturnType<typeof signal<FilterGroup>>;
+  readonly disabled: ReturnType<typeof signal<boolean>>;
   setFieldSpy: ReturnType<typeof vi.fn>;
   setOperatorSpy: ReturnType<typeof vi.fn>;
   setValueSpy: ReturnType<typeof vi.fn>;
@@ -65,6 +66,7 @@ function buildHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[]): 
     fieldMap,
     isEmpty,
     lastMutation,
+    disabled: signal(false),
     addExpression: () => undefined,
     addGroup: () => undefined,
     removeNode: removeNodeSpy,
@@ -514,5 +516,75 @@ describe('CngxFilterExpressionRow placement (CNGX2014)', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
     }).not.toThrow();
+  });
+});
+
+describe('CngxFilterExpressionRow - builder disabled', () => {
+  function expr(field: string, operator: string, value: unknown): FilterExpression {
+    return { type: 'expression', id: `e-${field}`, field, operator, value };
+  }
+
+  function disable(fixture: ReturnType<typeof setup>['fixture'], host: MockHost): HTMLElement {
+    host.disabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('drops both select triggers out of the tab order with aria-disabled', () => {
+    const { fixture, host } = setup(expr('name', 'eq', 'a'));
+    const el = disable(fixture, host);
+    const triggers = Array.from(el.querySelectorAll('.cngx-select__trigger'));
+    expect(triggers).toHaveLength(2);
+    for (const trigger of triggers) {
+      expect(trigger.getAttribute('aria-disabled')).toBe('true');
+      expect(trigger.getAttribute('tabindex')).toBe('-1');
+    }
+  });
+
+  it.each([
+    ['text', 'name', 'eq', 'a'],
+    ['number', 'age', 'gt', 3],
+    ['date', 'birth', 'eq', '2020-01-01'],
+  ])('disables the native %s input', (type, field, operator, value) => {
+    const { fixture, host } = setup(expr(field, operator, value));
+    const el = disable(fixture, host);
+    const input = el.querySelector(`input[type="${type}"]`) as HTMLInputElement;
+    expect(input.disabled).toBe(true);
+
+    host.disabled.set(false);
+    fixture.detectChanges();
+    expect(input.disabled).toBe(false);
+  });
+
+  it('marks the boolean toggle aria-disabled', () => {
+    const { fixture, host } = setup(expr('active', 'eq', true));
+    const el = disable(fixture, host);
+    const toggle = el.querySelector('cngx-toggle') as HTMLElement;
+    expect(toggle.getAttribute('aria-disabled')).toBe('true');
+    expect(toggle.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('disables the default remove button', () => {
+    const { fixture, host } = setup(expr('name', 'eq', 'a'));
+    const el = disable(fixture, host);
+    const remove = el.querySelector(
+      '.cngx-filter-builder__action-button--remove',
+    ) as HTMLButtonElement;
+    expect(remove.disabled).toBe(true);
+  });
+
+  it('stamps the builder disabled state onto the value-editor and remove contexts', () => {
+    const { fixture, host } = setup(expr('name', 'eq', 'a'));
+    const internals = fixture.componentInstance.row() as unknown as {
+      valueEditorContext: () => { disabled: boolean } | null;
+      removeButtonContext: () => { disabled: boolean };
+    };
+    expect(internals.valueEditorContext()?.disabled).toBe(false);
+    expect(internals.removeButtonContext().disabled).toBe(false);
+
+    host.disabled.set(true);
+    expect(internals.valueEditorContext()?.disabled).toBe(true);
+    expect(internals.removeButtonContext().disabled).toBe(true);
   });
 });

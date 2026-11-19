@@ -224,6 +224,7 @@ Listeners stay on the directive, not on the presenter - consumers without the fo
 For Reactive Forms, wrap the `FormControl` with `adaptFormControl()` from `@cngx/forms/field` and pass the returned accessor as `[field]`.
 That accessor carries the field state (disabled, touched, errors), not the value: the builder has no `ControlValueAccessor`, so `[formControl]` on it fails with Angular's missing value accessor error (`NG01203`).
 Bind the value yourself with `[value]="value()"` and `(valueChange)="control.setValue($event)"`, where `value = toSignal(control.valueChanges, { initialValue: control.value })`.
+A disabled field disables every shipped control and turns the presenter mutators into no-ops, so no gesture writes the tree; a programmatic `[value]` or `control.setValue()` still lands.
 
 ## Operator semantics
 
@@ -258,17 +259,19 @@ Every visible region is overrideable. Each slot directive comes with a typed con
 
 | Directive | Context type |
 |-|-|
-| `cngxFilterBuilderEmpty` | `{ addFilter, addGroup }` |
+| `cngxFilterBuilderEmpty` | `{ addFilter, addGroup, disabled }` |
 | `cngxFilterBuilderAddFilterButton` | `{ add, label, disabled }` |
 | `cngxFilterBuilderAddGroupButton` | `{ add, label, disabled }` |
-| `cngxFilterBuilderRemoveButton` | `{ remove, label }` |
-| `cngxFilterBuilderLogicToggle` | `{ logic, options, setLogic }` |
-| `cngxFilterBuilderNegationToggle` | `{ negated, toggle, label }` |
-| `cngxFilterBuilderGroupTemplate` | `{ group, logic, isRoot, setLogic, toggleNegated, addFilter, addGroup, remove }` |
-| `cngxFilterBuilderExpressionTemplate` | `{ expression, fieldDef, availableOperators, value, setField, setOperator, setValue, remove }` |
-| `cngxFilterBuilderValueEditor` | `{ value, fieldDef, setValue, expression }` |
+| `cngxFilterBuilderRemoveButton` | `{ remove, label, disabled }` |
+| `cngxFilterBuilderLogicToggle` | `{ logic, options, setLogic, disabled }` |
+| `cngxFilterBuilderNegationToggle` | `{ negated, toggle, label, disabled }` |
+| `cngxFilterBuilderGroupTemplate` | `{ group, logic, isRoot, setLogic, toggleNegated, addFilter, addGroup, remove, disabled }` |
+| `cngxFilterBuilderExpressionTemplate` | `{ expression, fieldDef, availableOperators, value, setField, setOperator, setValue, remove, disabled }` |
+| `cngxFilterBuilderValueEditor` | `{ value, fieldDef, setValue, expression, disabled }` |
 
 Three-stage cascade: `contentChild` directive → `CNGX_FILTER_BUILDER_CONFIG.templates.<key>` → null (renders the default).
+
+`disabled` is `true` while the builder is disabled (add-group also at the max nesting depth). A custom template owns its disabled paint; its callbacks are no-ops meanwhile.
 
 ## ARIA model
 

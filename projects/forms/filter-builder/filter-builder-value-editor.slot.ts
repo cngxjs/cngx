@@ -18,12 +18,17 @@ export interface CngxFilterBuilderValueEditorContext<TValue> {
   readonly fieldDef: FilterFieldDef;
   readonly setValue: (v: TValue) => void;
   readonly expression: FilterExpression;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint;
+   * `setValue` is a no-op meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
  * Per-row value-editor slot - overrides just the value cell of an expression
  * row; the field and operator pickers stay. Context: `value`, `fieldDef`,
- * `setValue()`, `expression` (the full node, for editors that switch on the
+ * `setValue()`, `disabled`, `expression` (the full node, for editors that switch on the
  * operator, e.g. a range editor writing `[min, max]` for the builtin
  * opt-in `'between'` operator).
  *

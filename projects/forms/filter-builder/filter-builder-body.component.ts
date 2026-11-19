@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
@@ -93,10 +94,14 @@ export class CngxFilterBuilderBody {
 
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
 
-  protected readonly emptyContext: EmptyCtx = {
-    addFilter: () => this.addFilterAt(this.rootPath),
-    addGroup: () => this.addGroupAt(this.rootPath),
-  };
+  private readonly addRootFilter = (): void => this.addFilterAt(this.rootPath);
+  private readonly addRootGroup = (): void => this.addGroupAt(this.rootPath);
+
+  protected readonly emptyContext = computed<EmptyCtx>(() => ({
+    addFilter: this.addRootFilter,
+    addGroup: this.addRootGroup,
+    disabled: this.host.disabled(),
+  }));
 
   private readonly groupTemplateContextCache = new Map<string, GroupTemplateCtx>();
   private readonly expressionTemplateContextCache = new Map<string, ExpressionTemplateCtx>();
@@ -110,7 +115,7 @@ export class CngxFilterBuilderBody {
     return {
       add: () => this.addFilterAt(path),
       label: this.i18n().addFilter,
-      disabled: false,
+      disabled: this.host.disabled(),
     };
   }
 
@@ -118,7 +123,7 @@ export class CngxFilterBuilderBody {
     return {
       add: () => this.addGroupAt(path),
       label: this.i18n().addGroup,
-      disabled: !this.canAddGroupAt(path),
+      disabled: this.host.disabled() || !this.canAddGroupAt(path),
     };
   }
 
@@ -131,7 +136,7 @@ export class CngxFilterBuilderBody {
   }
 
   protected removeButtonContext(path: readonly number[], label: string): RemoveButtonCtx {
-    return { remove: () => this.host.removeNode(path), label };
+    return { remove: () => this.host.removeNode(path), label, disabled: this.host.disabled() };
   }
 
   protected logicToggleContext(group: FilterGroup, path: readonly number[]): LogicToggleCtx {
@@ -139,6 +144,7 @@ export class CngxFilterBuilderBody {
       logic: group.logic,
       options: this.config.logicOptions,
       setLogic: (logic) => this.host.setLogic(path, logic),
+      disabled: this.host.disabled(),
     };
   }
 
@@ -147,13 +153,15 @@ export class CngxFilterBuilderBody {
       negated: group.negated,
       toggle: () => this.host.toggleNegated(path),
       label: this.i18n().negate,
+      disabled: this.host.disabled(),
     };
   }
 
   protected groupTemplateContext(group: FilterGroup, path: readonly number[]): GroupTemplateCtx {
     const key = path.join('.');
+    const disabled = this.host.disabled();
     let ctx = this.groupTemplateContextCache.get(key);
-    if (ctx?.group !== group) {
+    if (ctx?.group !== group || ctx.disabled !== disabled) {
       ctx = {
         group,
         logic: group.logic,
@@ -163,6 +171,7 @@ export class CngxFilterBuilderBody {
         addFilter: () => this.addFilterAt(path),
         addGroup: () => this.addGroupAt(path),
         remove: () => this.host.removeNode(path),
+        disabled,
       };
       this.groupTemplateContextCache.set(key, ctx);
     }
@@ -174,8 +183,9 @@ export class CngxFilterBuilderBody {
     path: readonly number[],
   ): ExpressionTemplateCtx {
     const key = path.join('.');
+    const disabled = this.host.disabled();
     let ctx = this.expressionTemplateContextCache.get(key);
-    if (ctx?.expression !== expression) {
+    if (ctx?.expression !== expression || ctx.disabled !== disabled) {
       const fieldDef = this.host.fieldMap().get(expression.field);
       ctx = {
         expression,
@@ -186,6 +196,7 @@ export class CngxFilterBuilderBody {
         setOperator: (op) => this.host.setOperator(path, op),
         setValue: (v) => this.host.setValue(path, v),
         remove: () => this.host.removeNode(path),
+        disabled,
       };
       this.expressionTemplateContextCache.set(key, ctx);
     }

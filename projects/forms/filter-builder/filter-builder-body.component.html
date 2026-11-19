@@ -1,6 +1,6 @@
 @if (host.isEmpty()) {
   @if (templates().empty(); as emptyTpl) {
-    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext"></ng-container>
+    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext()"></ng-container>
   } @else {
     <p class="cngx-filter-builder__empty">{{ i18n().emptyState }}</p>
     <div class="cngx-filter-builder__actions">
@@ -25,6 +25,7 @@
     <button
       type="button"
       class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-filter"
+      [disabled]="host.disabled()"
       (click)="addFilterAt(path)"
     >
       <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addFilter }}</span>
@@ -40,7 +41,7 @@
     <button
       type="button"
       class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-group"
-      [disabled]="!canAddGroupAt(path)"
+      [disabled]="host.disabled() || !canAddGroupAt(path)"
       (click)="addGroupAt(path)"
     >
       <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addGroup }}</span>
@@ -56,6 +57,7 @@
     <button
       type="button"
       class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
+      [disabled]="host.disabled()"
       (click)="host.removeNode(path)"
     >
       <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>
@@ -71,6 +73,7 @@
     <button
       type="button"
       class="cngx-filter-builder__logic-joiner"
+      [disabled]="host.disabled()"
       [attr.aria-label]="i18n().logicLabel"
       (click)="cycleLogic(path, group.logic)"
     >
@@ -92,6 +95,7 @@
             <input
               type="checkbox"
               [checked]="group.negated"
+              [disabled]="host.disabled()"
               (change)="host.toggleNegated(path)"
             />
             <span aria-hidden="true">{{ glyphs.negate }}</span> {{ i18n().negate }}

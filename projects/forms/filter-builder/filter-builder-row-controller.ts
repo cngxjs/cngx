@@ -315,6 +315,7 @@ export function createFilterRowController(
           fieldDef,
           setValue: writeValue,
           expression,
+          disabled: false,
         };
       },
       {
@@ -332,6 +333,7 @@ export function createFilterRowController(
         path: path(),
         label: i18n().removeFilter,
         remove,
+        disabled: false,
       }),
       { equal: (a, b) => a.label === b.label && arrayEqual(a.path, b.path) },
     ),

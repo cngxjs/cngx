@@ -28,6 +28,8 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
   readonly isEmpty: Signal<boolean>;
   readonly lastMutation: Signal<FilterMutationEvent | null>;
+  /** Builder disabled state; every mutator below is a no-op while it is `true`. */
+  readonly disabled: Signal<boolean>;
 
   addExpression(path: readonly number[], expression: FilterExpression): void;
   addGroup(path: readonly number[], group: FilterGroup): void;

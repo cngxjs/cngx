@@ -27,6 +27,11 @@ import type {
 export interface CngxFilterBuilderEmptyContext {
   readonly addFilter: () => void;
   readonly addGroup: () => void;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint; the
+   * callbacks are no-ops meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
@@ -41,6 +46,11 @@ export interface CngxFilterBuilderExpressionTemplateContext {
   readonly setOperator: (operator: string) => void;
   readonly setValue: (value: unknown) => void;
   readonly remove: () => void;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint; the
+   * callbacks are no-ops meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
@@ -55,6 +65,11 @@ export interface CngxFilterBuilderGroupTemplateContext {
   readonly addFilter: () => void;
   readonly addGroup: () => void;
   readonly remove: () => void;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint; the
+   * callbacks are no-ops meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
@@ -63,6 +78,7 @@ export interface CngxFilterBuilderGroupTemplateContext {
 export interface CngxFilterBuilderAddFilterButtonContext {
   readonly add: () => void;
   readonly label: string;
+  /** `true` while the builder is disabled; `add()` is a no-op meanwhile. */
   readonly disabled: boolean;
 }
 
@@ -72,6 +88,7 @@ export interface CngxFilterBuilderAddFilterButtonContext {
 export interface CngxFilterBuilderAddGroupButtonContext {
   readonly add: () => void;
   readonly label: string;
+  /** `true` while the builder is disabled or the group sits at the max nesting depth. */
   readonly disabled: boolean;
 }
 
@@ -81,6 +98,11 @@ export interface CngxFilterBuilderAddGroupButtonContext {
 export interface CngxFilterBuilderRemoveButtonContext {
   readonly remove: () => void;
   readonly label: string;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint; the
+   * callbacks are no-ops meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
@@ -90,6 +112,11 @@ export interface CngxFilterBuilderLogicToggleContext {
   readonly logic: FilterLogic;
   readonly options: readonly FilterLogic[];
   readonly setLogic: (logic: FilterLogic) => void;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint; the
+   * callbacks are no-ops meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
@@ -99,11 +126,16 @@ export interface CngxFilterBuilderNegationToggleContext {
   readonly negated: boolean;
   readonly toggle: () => void;
   readonly label: string;
+  /**
+   * `true` while the builder is disabled. The template owns its disabled paint; the
+   * callbacks are no-ops meanwhile.
+   */
+  readonly disabled: boolean;
 }
 
 /**
  * Empty-state slot. Replaces the "no filters yet" placeholder shown when the
- * root group has no children. Context: `addFilter()`, `addGroup()`.
+ * root group has no children. Context: `addFilter()`, `addGroup()`, `disabled`.
  *
  * ```html
  * <cngx-filter-builder [fields]="fields" [(value)]="value">
@@ -139,7 +171,7 @@ export class CngxFilterBuilderEmpty {
  * Full expression-row override. Replaces the entire field / operator / value /
  * remove row for every leaf expression. Context: `expression`, `fieldDef`,
  * `availableOperators`, `value`, `setField()`, `setOperator()`, `setValue()`,
- * `remove()`.
+ * `remove()`, `disabled`.
  *
  * ```html
  * <ng-template cngxFilterBuilderExpressionTemplate let-e="expression" let-setValue="setValue">
@@ -175,7 +207,7 @@ export class CngxFilterBuilderExpressionTemplate {
  * Full group-shell override. Replaces the wrapper around a group (logic toggle,
  * negation, add / remove controls) while the builder still renders the nested
  * rows inside. Context: `group`, `logic`, `isRoot`, `setLogic()`,
- * `toggleNegated()`, `addFilter()`, `addGroup()`, `remove()`.
+ * `toggleNegated()`, `addFilter()`, `addGroup()`, `remove()`, `disabled`.
  *
  * ```html
  * <ng-template cngxFilterBuilderGroupTemplate let-logic="logic" let-setLogic="setLogic">
@@ -207,7 +239,8 @@ export class CngxFilterBuilderGroupTemplate {
 
 /**
  * Add-filter button slot. Replaces the default "add filter" control in every
- * group header. Context: `add()`, `label`, `disabled`.
+ * group header. Context: `add()`, `label`, `disabled` (set while the builder is
+ * disabled).
  *
  * ```html
  * <ng-template cngxFilterBuilderAddFilterButton let-add="add" let-label="label">
@@ -239,8 +272,8 @@ export class CngxFilterBuilderAddFilterButton {
 
 /**
  * Add-group button slot. Replaces the default "add nested group" control in
- * every group header. Context: `add()`, `label`, `disabled` (set at the max
- * nesting depth).
+ * every group header. Context: `add()`, `label`, `disabled` (set while the builder
+ * is disabled or at the max nesting depth).
  *
  * ```html
  * <ng-template cngxFilterBuilderAddGroupButton let-add="add" let-disabled="disabled">
@@ -272,7 +305,7 @@ export class CngxFilterBuilderAddGroupButton {
 
 /**
  * Remove-button slot, shared by expression rows and group headers. Replaces
- * the default delete control. Context: `remove()`, `label`.
+ * the default delete control. Context: `remove()`, `label`, `disabled`.
  *
  * ```html
  * <ng-template cngxFilterBuilderRemoveButton let-remove="remove" let-label="label">
@@ -305,7 +338,7 @@ export class CngxFilterBuilderRemoveButton {
 /**
  * Logic-toggle slot - the AND / OR / XOR picker on each group. Replaces the
  * default toggle. Context: `logic`, `options` (the configured `logicOptions`),
- * `setLogic()`.
+ * `setLogic()`, `disabled`.
  *
  * ```html
  * <ng-template cngxFilterBuilderLogicToggle let-logic="logic" let-options="options" let-setLogic="setLogic">
@@ -339,7 +372,7 @@ export class CngxFilterBuilderLogicToggle {
 /**
  * Negation-toggle slot - the per-group NOT switch. Only rendered when negation
  * is enabled via `withNegation(true)`. Replaces the default toggle. Context:
- * `negated`, `toggle()`, `label`.
+ * `negated`, `toggle()`, `label`, `disabled`.
  *
  * ```html
  * <ng-template cngxFilterBuilderNegationToggle let-negated="negated" let-toggle="toggle">
