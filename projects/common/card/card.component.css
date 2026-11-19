@@ -33,7 +33,7 @@
  * - Corner: `--top-end`, `--top-start`, `--bottom-end`, `--bottom-start`
  * - Size: `--size-sm`, `--size-md`, `--size-lg`
  * - Intent: `--intent-primary`, `--intent-danger`, `--intent-warning`,
- *   `--intent-success`, `--intent-neutral`
+ *   `--intent-success`, `--intent-info`, `--intent-neutral`
  *
  * Empty content collapses to the `sm` status-dot fallback regardless
  * of the `size` input.
@@ -580,6 +580,28 @@
   }
 
   /**
+   * Background of the `info` intent. No `CngxBadge` analogue -
+   * falls straight back to `--cngx-color-info`.
+   * @group Variant / Info
+   * @see [[--cngx-color-info]]
+   */
+  @property --cngx-card-badge-info-bg {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(0.65 0.12 240);
+  }
+
+  /**
+   * Text colour of the `info` intent.
+   * @group Variant / Info
+   */
+  @property --cngx-card-badge-info-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: oklch(1 0 0);
+  }
+
+  /**
    * Background of the `neutral` intent. Falls back through
    * `--cngx-badge-neutral-bg` then `--cngx-color-text-muted`.
    * @group Variant / Neutral
@@ -965,6 +987,10 @@
     .cngx-card__badge--intent-success {
       background: var(--cngx-card-badge-success-bg, var(--cngx-color-success, oklch(0.6 0.15 145)));
       color: var(--cngx-card-badge-success-color, oklch(1 0 0));
+    }
+    .cngx-card__badge--intent-info {
+      background: var(--cngx-card-badge-info-bg, var(--cngx-color-info, oklch(0.65 0.12 240)));
+      color: var(--cngx-card-badge-info-color, oklch(1 0 0));
     }
     .cngx-card__badge--intent-neutral {
       background: var(

@@ -36,6 +36,7 @@ import { Directive, input } from '@angular/core';
     '[class.cngx-card__badge--intent-danger]': 'intent() === "danger"',
     '[class.cngx-card__badge--intent-warning]': 'intent() === "warning"',
     '[class.cngx-card__badge--intent-success]': 'intent() === "success"',
+    '[class.cngx-card__badge--intent-info]': 'intent() === "info"',
     '[class.cngx-card__badge--intent-neutral]': 'intent() === "neutral"',
     '[class.cngx-card__badge--size-sm]': 'size() === "sm"',
     '[class.cngx-card__badge--size-md]': 'size() === "md"',
@@ -51,7 +52,9 @@ export class CngxCardBadge {
    * `--cngx-card-badge-<intent>-bg` / `-color`; cascades through
    * `--cngx-badge-<intent>-bg` then `--cngx-color-<system>`.
    */
-  readonly intent = input<'primary' | 'danger' | 'warning' | 'success' | 'neutral'>('primary');
+  readonly intent = input<'primary' | 'danger' | 'warning' | 'success' | 'info' | 'neutral'>(
+    'primary',
+  );
 
   /**
    * Pill diameter and font-size. Empty content always renders as a

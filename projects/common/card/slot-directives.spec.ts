@@ -20,6 +20,7 @@ import { CngxCardAccent } from './card-accent.directive';
     <div cngxCardActions [align]="'end'">Actions</div>
     <span cngxCardBadge data-testid="badge-default">P</span>
     <span cngxCardBadge position="top-start" intent="danger" size="sm" data-testid="badge-explicit">!</span>
+    <span cngxCardBadge intent="info" data-testid="badge-info"></span>
   `,
   imports: [
     CngxCardHeader,
@@ -113,6 +114,13 @@ describe('Card slot directives', () => {
     expect(badge.classList.contains('cngx-card__badge--size-sm')).toBe(true);
   });
 
+  it('CngxCardBadge projects the info intent', () => {
+    const { el } = setup();
+    const badge = el.querySelector('[data-testid="badge-info"]') as HTMLElement;
+    expect(badge.classList.contains('cngx-card__badge--intent-info')).toBe(true);
+    expect(badge.classList.contains('cngx-card__badge--intent-primary')).toBe(false);
+  });
+
   it('CngxCardBadge intent + size modifier classes are mutually exclusive', () => {
     const { el } = setup();
     const explicit = el.querySelector('[data-testid="badge-explicit"]') as HTMLElement;
@@ -121,6 +129,7 @@ describe('Card slot directives', () => {
     expect(explicit.classList.contains('cngx-card__badge--intent-primary')).toBe(false);
     expect(explicit.classList.contains('cngx-card__badge--intent-warning')).toBe(false);
     expect(explicit.classList.contains('cngx-card__badge--intent-success')).toBe(false);
+    expect(explicit.classList.contains('cngx-card__badge--intent-info')).toBe(false);
     expect(explicit.classList.contains('cngx-card__badge--intent-neutral')).toBe(false);
     expect(explicit.classList.contains('cngx-card__badge--size-md')).toBe(false);
     expect(explicit.classList.contains('cngx-card__badge--size-lg')).toBe(false);
