@@ -24,7 +24,9 @@
  * - `--accent-info` / `--accent-success` / `--accent-warning` /
  *   `--accent-danger` - severity tint + border
  * - `--accent-neutral` - no status, a plain card
-
+ *
+ * `.cngx-card__accent-icon` (from `<cngx-card-accent-icon>`) is the
+ * severity glyph in the title, coloured like the alert icon.
  *
  * **Badge slot**
  *
@@ -1031,6 +1033,19 @@
       border-color: var(--_cngx-card-accent-border);
     }
 
+    .cngx-card__accent-icon {
+      display: inline-flex;
+      vertical-align: -0.2em;
+      margin-inline-end: var(--cngx-space-sm, 8px);
+      color: var(--_cngx-card-accent-ink, currentColor);
+    }
+    .cngx-card__accent-icon:empty {
+      display: none;
+    }
+    .cngx-card__accent-icon-glyph {
+      width: 1.125em;
+      height: 1.125em;
+    }
 
     /* Badge placement - absolute, four corner variants */
     .cngx-card__badge {

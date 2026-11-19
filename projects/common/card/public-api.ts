@@ -23,6 +23,7 @@ export { CngxCardFooter } from './card-footer.directive';
 export { CngxCardActions } from './card-actions.directive';
 export { CngxCardBadge } from './card-badge.directive';
 export { CngxCardAccent, type CngxCardAccentSeverity } from './card-accent.directive';
+export { CngxCardAccentIcon } from './card-accent-icon.component';
 export { CngxCardSkeleton } from './card-skeleton.component';
 
 export { CngxCardGrid } from './card-grid.component';

@@ -42,6 +42,10 @@ describe('CNGX_CARD_I18N', () => {
       deselected: 'Deselected',
       loading: 'Loading',
       timestamp: '{prefix} {date}',
+      accentDanger: 'Critical',
+      accentWarning: 'Warning',
+      accentSuccess: 'Success',
+      accentInfo: 'Info',
     });
   });
 
@@ -60,6 +64,10 @@ describe('CNGX_CARD_I18N', () => {
       deselected: 'Deselected',
       loading: 'Lädt',
       timestamp: '{prefix} {date}',
+      accentDanger: 'Critical',
+      accentWarning: 'Warning',
+      accentSuccess: 'Success',
+      accentInfo: 'Info',
     });
 
     pack.set(undefined);
@@ -129,6 +137,10 @@ describe('CNGX_CARD_I18N', () => {
       deselected: 'Deselected',
       loading: 'Lädt',
       timestamp: '{prefix} {date}',
+      accentDanger: 'Critical',
+      accentWarning: 'Warning',
+      accentSuccess: 'Success',
+      accentInfo: 'Info',
     });
   });
 

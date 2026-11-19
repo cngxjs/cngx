@@ -63,6 +63,10 @@ export const CNGX_LANGUAGE_EN = {
     deselected: 'Deselected',
     loading: 'Loading',
     timestamp: '{prefix} {date}',
+    accentDanger: 'Critical',
+    accentWarning: 'Warning',
+    accentSuccess: 'Success',
+    accentInfo: 'Info',
   },
   chart: {
     summary: '{trend}. Min {min}, max {max}, current {current}. {thresholds}',
