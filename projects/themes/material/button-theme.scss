@@ -43,8 +43,10 @@
 //
 // A directly-set knob beats an inherited one regardless of layer, so a
 // consumer's :root-level --cngx-color-* override does not reach the buttons
-// while this bridge is included; re-skin on the button host instead, where
-// any consumer selector beats the `:where()` below. In the theme.scss
+// while this bridge is included (nor, under an M2 theme typed light or dark,
+// an ancestor-level --cngx-button-neutral-* or
+// --cngx-button-secondary-text-shift override); re-skin on the button host
+// instead, where any consumer selector beats the `:where()` below. In the theme.scss
 // aggregate the colour knobs overlap system-bridge on purpose: only the
 // on-colours, the variant mappings and the shape are net-new there; the
 // duplicate keeps a selective per-bridge include consistent.

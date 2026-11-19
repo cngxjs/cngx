@@ -92,9 +92,11 @@ const M2_SCHEME_KNOBS = [
   '--cngx-button-secondary-text-shift',
 ];
 
+const BUTTON_SHEET = 'projects/common/theming/components/cngx-button.css';
+
 const READERS = [
   'projects/common/button/close-button.component.css',
-  'projects/common/theming/components/cngx-button.css',
+  BUTTON_SHEET,
   'projects/common/display/icon/icon.component.css',
   'projects/common/theming/components/cngx-button-group.css',
 ];
@@ -126,20 +128,38 @@ describe('button Material bridge', () => {
     }
   });
 
-  it('sets the scheme knobs from the theme type (M2)', () => {
-    const light = block(compileThemeEntry(M2_ENTRY), '.cngx-button');
-    const dark = block(
-      compileThemeEntry(M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme')),
-      '.cngx-button',
+  it('sets the scheme knobs from the theme type to the sheet literals (M2)', () => {
+    // The bridge copies the sheet's scheme blocks; read both from the sheet so
+    // a rung change there fails here instead of leaving the bridge stale.
+    const sheet = readFileSync(
+      fileURLToPath(new URL('../../../' + BUTTON_SHEET, import.meta.url)),
+      'utf-8',
     );
-    for (const name of M2_SCHEME_KNOBS) {
-      expect(light).toContain(`${name}:`);
-      expect(dark).toContain(`${name}:`);
+    const sheetBlock = (selector: string): string => {
+      const start = sheet.indexOf(selector);
+      if (start < 0) {
+        throw new Error(`no ${selector} block in cngx-button.css`);
+      }
+      return sheet.slice(start, sheet.indexOf('}', start));
+    };
+    const literal = (css: string, name: string): string | undefined =>
+      css.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1].trim();
+    const types = [
+      ['light', M2_ENTRY, sheetBlock("[data-color-scheme='light'],")],
+      [
+        'dark',
+        M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'),
+        sheetBlock("[data-color-scheme='dark'],"),
+      ],
+    ] as const;
+    for (const [type, entry, scheme] of types) {
+      const host = block(compileThemeEntry(entry), '.cngx-button');
+      for (const name of M2_SCHEME_KNOBS) {
+        const expected = literal(scheme, name);
+        expect(expected, `${name} missing from the sheet's ${type} block`).toBeDefined();
+        expect(literal(host, name), `${type} ${name}`).toBe(expected);
+      }
     }
-    expect(light).toContain('--cngx-button-neutral-tint: 10%');
-    expect(light).toContain('--cngx-button-secondary-text-shift: -0.07');
-    expect(dark).toContain('--cngx-button-neutral-tint: 16%');
-    expect(dark).toContain('--cngx-button-secondary-text-shift: 0.06');
   });
 
   it('assigns only button-family tokens a button-family sheet reads', () => {
