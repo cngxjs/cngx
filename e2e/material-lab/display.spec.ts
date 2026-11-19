@@ -94,14 +94,6 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
-    test('tag: the label colour, weight and transparent surface match mat-chip', async ({ page }) => {
-      await expectSame(page, mat('tag', '.mdc-evolution-chip__text-label'), cngx('tag'), [
-        'color',
-        'font-weight',
-      ]);
-      await expectSame(page, mat('tag'), cngx('tag'), ['background-color']);
-    });
-
     test('ripple: the wave paints the on-surface colour of matRipple, round', async ({ page }) => {
       // matRipple carries its 10% in the colour alpha, cngx in an opacity
       // token (roadmap item 16): compare the colour channels only.

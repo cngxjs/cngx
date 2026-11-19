@@ -13,7 +13,7 @@ import {
   CngxCardSubtitle,
   CngxCardTitle,
 } from '@cngx/common/card';
-import { CngxBadge, CngxDivider, CngxTag } from '@cngx/common/display';
+import { CngxBadge, CngxChip, CngxDivider } from '@cngx/common/display';
 import { CngxButtonToggle, CngxButtonToggleGroup, CngxRipple } from '@cngx/common/interactive';
 
 import { injectLabSheet } from '../inject-lab-sheet';
@@ -21,7 +21,7 @@ import { LabPages } from '../lab-pages';
 
 /**
  * Display pairs of the Material bridge fidelity harness: badge, button-toggle,
- * card, divider, tag and ripple. Material left (`probe-mat`), cngx right
+ * card, chip, divider and ripple. Material left (`probe-mat`), cngx right
  * (`probe-cngx`), both under the `material-lab-display-theme` bundle.
  *
  * Route: `/#/material-lab/display`.
@@ -46,9 +46,9 @@ import { LabPages } from '../lab-pages';
     CngxCardHeader,
     CngxCardSubtitle,
     CngxCardTitle,
+    CngxChip,
     CngxDivider,
     CngxRipple,
-    CngxTag,
   ],
   template: `
     <div class="lab mat-app-background mat-typography">
@@ -111,13 +111,13 @@ import { LabPages } from '../lab-pages';
         <cngx-divider class="probe-cngx" />
       </section>
 
-      <section class="lab-wide" data-pair="tag">
-        <h3>tag (Material chip left, cngx outline tag right)</h3>
+      <section class="lab-wide" data-pair="chip">
+        <h3>chip (Material left, cngx right)</h3>
         <div class="lab-row">
-          <mat-chip-set aria-label="Material tags">
+          <mat-chip-set aria-label="Material chips">
             <mat-chip class="probe-mat">Design</mat-chip>
           </mat-chip-set>
-          <span class="probe-cngx" cngxTag variant="outline">Design</span>
+          <cngx-chip class="probe-cngx">Design</cngx-chip>
         </div>
       </section>
 

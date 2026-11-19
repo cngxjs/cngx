@@ -4,7 +4,7 @@
 @use '../../../../../projects/themes/material/button-toggle-theme.scss' as button-toggle;
 @use '../../../../../projects/themes/material/card-theme.scss' as card;
 @use '../../../../../projects/themes/material/divider-theme.scss' as divider;
-@use '../../../../../projects/themes/material/tag-theme.scss' as tag;
+@use '../../../../../projects/themes/material/chip-theme.scss' as chip;
 @use '../../../../../projects/themes/material/ripple-theme.scss' as ripple;
 @use '../lab-base' as base;
 
@@ -18,7 +18,7 @@ html {
   @include button-toggle.theme($theme);
   @include card.theme($theme);
   @include divider.theme($theme);
-  @include tag.theme($theme);
+  @include chip.theme($theme);
   @include ripple.theme($theme);
 }
 
