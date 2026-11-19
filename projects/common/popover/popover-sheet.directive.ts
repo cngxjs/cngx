@@ -260,8 +260,15 @@ export class CngxPopoverSheet
   /** `true` in the sheet and fullscreen presentations. */
   readonly modal = computed(() => this.presentation() !== 'anchored');
 
-  /** @internal Drives the composed `CngxFocusTrap`: Tab stays inside while modal and visible. */
-  readonly focusTrapEnabled = computed(() => this.modal() && this.popover.isVisible());
+  /**
+   * @internal Drives the composed `CngxFocusTrap`: Tab stays inside while
+   * modal and opening or open. A closing sheet has handed focus back, so its
+   * trap anchors leave the Tab order with the close.
+   */
+  readonly focusTrapEnabled = computed(() => {
+    const state = this.popover.state();
+    return this.modal() && (state === 'opening' || state === 'open');
+  });
   /** @internal The sheet moves focus itself, inside `show()`. */
   readonly focusTrapAutoFocus = false;
 

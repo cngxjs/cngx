@@ -987,7 +987,9 @@ export class CngxPopover {
    * @internal Install the listener `finalize()` calls synchronously at the
    * end of every close, with the {@link focusOrigin} captured before it is
    * cleared. Runs on every close path (`hide()`, light dismiss), so a close
-   * that lands before the next change detection pass still reaches it.
+   * that lands before the next change detection pass still reaches it. A
+   * fading close also calls it once at its start, in the `closing` state and
+   * before the panel turns `inert`, with the same origin.
    * Replacing a different live listener warns in dev mode (CNGX1081).
    */
   registerCloseListener(fn: (origin: HTMLElement | null) => void): void {
@@ -1185,6 +1187,9 @@ export class CngxPopover {
     }
     if (hasTransition(this.popoverElement)) {
       this.stateSignal.set('closing');
+      // Restore focus while the panel is still live: the fade inert would
+      // otherwise drop a focused descendant to body until finalize().
+      untracked(() => this.closeListenerSlot.current()?.(this.focusOriginState()));
       this.claimFadeInert();
       this.pendingClose = onTransitionDone(this.popoverElement, () => this.finalize());
     } else {
