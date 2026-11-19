@@ -156,8 +156,8 @@
     position: fixed;
     inset: unset;
     min-inline-size: max-content;
-    background: var(--cngx-context-menu-surface, var(--cngx-color-surface, oklch(1 0 0)));
-    color: var(--cngx-context-menu-color, var(--cngx-color-text, oklch(0.2 0.01 250)));
+    background: var(--cngx-context-menu-surface);
+    color: var(--cngx-context-menu-color);
     border: var(--cngx-context-menu-border, 1px solid oklch(0.88 0.005 250));
     border-radius: var(--cngx-context-menu-radius, 8px);
     box-shadow: var(--cngx-context-menu-shadow, 0 4px 16px oklch(0 0 0 / 0.12));
@@ -211,7 +211,7 @@
     border: 0;
     margin-block: var(--cngx-context-menu-separator-inset, 4px);
     margin-inline: var(--cngx-space-sm, 8px);
-    background: var(--cngx-context-menu-separator-color, var(--cngx-color-border, oklch(0.88 0.005 250)));
+    background: var(--cngx-context-menu-separator-color);
   }
 }
 

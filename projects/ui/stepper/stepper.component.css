@@ -1819,7 +1819,7 @@
         --cngx-step-chips-bg-completed,
         color-mix(in srgb, var(--cngx-color-success, oklch(0.5 0.15 145)) 12%, transparent)
       );
-      color: var(--cngx-step-chips-color-completed, var(--cngx-color-success, oklch(0.5 0.15 145)));
+      color: var(--cngx-step-chips-color-completed);
     }
 
     .cngx-stepper__step:not([aria-current='step']) .cngx-stepper__done-icon {

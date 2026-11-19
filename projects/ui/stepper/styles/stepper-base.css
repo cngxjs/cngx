@@ -708,7 +708,7 @@
      indicator, vertical indents the whole row. */
   cngx-stepper[data-orientation='horizontal'] .cngx-stepper__step[data-step-depth='1'],
   cngx-stepper[data-orientation='horizontal'] .cngx-stepper__group-header[data-step-depth='1'] {
-    margin-inline-start: var(--cngx-step-group-indent, 1.5rem);
+    margin-inline-start: var(--cngx-step-group-indent);
   }
 
   cngx-stepper[data-orientation='vertical'] .cngx-stepper__strip {
@@ -728,7 +728,7 @@
   cngx-stepper[data-orientation='vertical'] .cngx-stepper__step[data-step-depth='1'],
   cngx-stepper[data-orientation='vertical'] .cngx-stepper__group-header[data-step-depth='1'] {
     padding-inline-start: calc(
-      var(--cngx-step-padding-inline, 0.75rem) + var(--cngx-step-group-indent, 1.5rem)
+      var(--cngx-step-padding-inline, 0.75rem) + var(--cngx-step-group-indent)
     );
   }
 

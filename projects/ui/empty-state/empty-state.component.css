@@ -150,20 +150,20 @@
   @scope (.cngx-empty-state) {
     :scope {
       /* Derive gap + block padding from the global scale so a root
-         [data-density] compacts the empty state (SET-from-scale rule; the
-         registered pixel initial defeats the var(token, scale) fallback baked
-         into the shorthands below). Both read on the host, so inherits:false is
-         fine. gap 16 -> md; padding-block 48 -> xl (48 -> 32). The inline axis
-         already reads --cngx-space-md directly. */
-      --cngx-empty-gap: var(--cngx-space-md);
-      --cngx-empty-padding: var(--cngx-space-xl);
+         [data-density] compacts the empty state (SET-from-scale rule; a
+         registered initial would win over any read-site fallback). Both read on
+         the host, so inherits:false is fine. gap 16 -> md; padding-block
+         48 -> xl (48 -> 32). The inline axis already reads --cngx-space-md
+         directly. Universal syntax: the SET carries the initial as literal. */
+      --cngx-empty-gap: var(--cngx-space-md, 16px);
+      --cngx-empty-padding: var(--cngx-space-xl, 48px);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--cngx-empty-gap, var(--cngx-space-md, 16px));
-      padding: var(--cngx-empty-padding, var(--cngx-space-xl, 48px)) var(--cngx-space-md, 16px);
+      gap: var(--cngx-empty-gap);
+      padding: var(--cngx-empty-padding) var(--cngx-space-md, 16px);
       text-align: center;
-      color: var(--cngx-empty-color, var(--cngx-color-text, oklch(0.34 0.005 290)));
+      color: var(--cngx-empty-color);
     }
 
     /* The [state] auto-hide sets the hidden attribute, but the author-layer
@@ -192,7 +192,7 @@
       margin-block: calc(
         (var(--cngx-empty-icon-size, 48px) - round(nearest, var(--cngx-icon-svg-size, 1em), 1px)) / 2
       );
-      color: var(--cngx-empty-icon-color, var(--cngx-color-text-muted, oklch(0.5 0.01 250)));
+      color: var(--cngx-empty-icon-color);
     }
 
     .cngx-empty-state__icon-slot:empty {
@@ -203,7 +203,7 @@
       margin: 0;
       font-size: var(--cngx-empty-title-size, 1.125rem);
       font-weight: var(--cngx-empty-title-weight, 500);
-      color: var(--cngx-empty-title-color, var(--cngx-color-text, oklch(0.18 0.005 290)));
+      color: var(--cngx-empty-title-color);
     }
 
     .cngx-empty-state__description {

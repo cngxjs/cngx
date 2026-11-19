@@ -108,10 +108,7 @@
     }
 
     .cngx-tab-nav__link:focus-visible {
-      outline: var(
-        --cngx-tab-focus-ring,
-        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
-      );
+      outline: var(--cngx-tab-focus-ring, 2px solid currentColor);
       outline-offset: var(--cngx-tab-focus-offset);
     }
 

@@ -838,27 +838,18 @@
 
   .cngx-sidenav__resize-handle:hover,
   .cngx-sidenav--resizing .cngx-sidenav__resize-handle {
-    background: var(
-      --cngx-sidenav-resize-handle-color,
-      var(--cngx-color-primary, oklch(0.66 0.19 50))
-    );
+    background: var(--cngx-sidenav-resize-handle-color);
   }
 
   /* The separator is keyboard-operable: tint like hover plus a visible ring,
      or the focused 4px bar is invisible. Offset outward so the ring is not
-     swallowed by the rail edge the handle straddles. Same primary-link
-     fallback chain as the hover tint, so one --cngx-color-primary override
-     recolors bar and ring together. */
+     swallowed by the rail edge the handle straddles. Both tokens are SET from
+     the primary on the handle, so one --cngx-color-primary override recolors
+     bar and ring together. */
   .cngx-sidenav__resize-handle:focus-visible {
-    background: var(
-      --cngx-sidenav-resize-handle-color,
-      var(--cngx-color-primary, oklch(0.66 0.19 50))
-    );
+    background: var(--cngx-sidenav-resize-handle-color);
     outline: var(--cngx-sidenav-resize-handle-focus-outline-width, 2px) solid
-      var(
-        --cngx-sidenav-resize-handle-focus-outline-color,
-        var(--cngx-color-primary, oklch(0.66 0.19 50))
-      );
+      var(--cngx-sidenav-resize-handle-focus-outline-color);
     outline-offset: var(--cngx-sidenav-resize-handle-focus-outline-offset, 2px);
   }
 
