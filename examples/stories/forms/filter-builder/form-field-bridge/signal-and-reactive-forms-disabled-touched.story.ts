@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxFilterBuilder: the form-field bridge under Signal Forms and Reactive Forms',
   subtitle:
-    'Applying <code>cngxFilterBuilderFormFieldControl</code> registers the builder as the ambient <code>&lt;cngx-form-field&gt;</code> control, so <code>touched</code> / <code>errorState</code> / <code>focused</code> / <code>disabled</code> surface on <code>CngxFilterBuilderPresenter</code> with no manual wiring. The same directive provides <code>CNGX_SELECT_DISABLE_FIELD_SYNC</code>, which stops the builder’s inner logic <code>&lt;cngx-select&gt;</code> from syncing the ambient <code>FilterGroup</code> into its own scalar value (issue #98). Signal Forms binds through <code>form()</code>; Reactive Forms bridges a <code>FormControl</code> with <code>adaptFormControl</code>, and toggling the control’s disabled state propagates straight to <code>presenter.disabled</code>.',
+    'Applying <code>cngxFilterBuilderFormFieldControl</code> registers the builder as the ambient <code>&lt;cngx-form-field&gt;</code> control, so <code>touched</code> / <code>errorState</code> / <code>focused</code> / <code>disabled</code> surface on <code>CngxFilterBuilderPresenter</code> with no manual wiring. The same directive provides <code>CNGX_SELECT_DISABLE_FIELD_SYNC</code>, which stops the builder’s inner logic <code>&lt;cngx-select&gt;</code> from syncing the ambient <code>FilterGroup</code> into its own scalar value (issue #98). Signal Forms binds through <code>form()</code>; Reactive Forms bridges a <code>FormControl</code> with <code>adaptFormControl</code>, and toggling the control’s disabled state propagates straight to <code>presenter.disabled</code>. The builder has no <code>ControlValueAccessor</code>, so the Reactive Forms value goes through <code>[value]</code> / <code>(valueChange)</code>: the builder reads the control’s value as a signal and writes each new tree with <code>setValue</code>.',
   level: 'organism',
   audience: ['dev'],
   artifact: 'standalone',
@@ -11,6 +11,7 @@ export const STORY: DemoSpec = {
   framework: 'signal-forms',
   apiComponents: ['CngxFilterBuilder', 'CngxFilterBuilderFormFieldControl', 'CngxFilterBuilderPresenter'],
   moduleImports: [
+    "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { FormControl } from '@angular/forms';",
     "import { form } from '@angular/forms/signals';",
     "import { CngxFormField, adaptFormControl } from '@cngx/forms/field';",
@@ -27,11 +28,14 @@ export const STORY: DemoSpec = {
 
   // Reactive Forms: adaptFormControl bridges a FormControl into the same
   // [field] contract. Toggling control.disabled propagates to presenter.disabled.
+  // The builder has no CVA, so the value goes through [value] / (valueChange).
   protected readonly rfControl = new FormControl<FilterGroup>(createEmptyFilterRoot(), {
     nonNullable: true,
   });
   protected readonly rfField = adaptFormControl(this.rfControl, 'filter', inject(DestroyRef));
-  protected readonly rfModel = signal<FilterGroup>(createEmptyFilterRoot());
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, {
+    initialValue: this.rfControl.value,
+  });
 
   // Each builder hosts its own CngxFilterBuilderPresenter (a host directive);
   // read it off the element through a template ref.
@@ -61,12 +65,13 @@ export const STORY: DemoSpec = {
   <section aria-label="Reactive Forms" class="demo-form" style="margin-top:24px">
     <h2>Reactive Forms</h2>
     <cngx-form-field [field]="rfField">
-      <cngx-filter-builder #rfBuilder cngxFilterBuilderFormFieldControl [fields]="fields" [(value)]="rfModel" />
+      <cngx-filter-builder #rfBuilder cngxFilterBuilderFormFieldControl [fields]="fields" [value]="rfValue()" (valueChange)="rfControl.setValue($event)" />
     </cngx-form-field>
     <button type="button" (click)="toggleRfDisabled()">Toggle disabled</button>
     <div class="event-grid" style="margin-top:12px">
       <p class="status-badge">control.disabled: {{ rfControl.disabled }}</p>
       <p class="status-badge">presenter.disabled: {{ rfPresenter()?.disabled() ?? false }}</p>
+      <p class="status-badge">control.value filters: {{ rfValue().filters.length }}</p>
     </div>
   </section>`,
 };
