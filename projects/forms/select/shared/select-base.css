@@ -118,6 +118,7 @@
  * - `--cngx-select-option-spinner-color` -> `--cngx-color-primary`
  * - `--cngx-select-option-error-color` -> `--cngx-color-danger`
  * - `--cngx-select-error-color` -> `--cngx-color-danger`
+ * - `--cngx-select-commit-error-hint-color` -> `--cngx-color-danger-text`
  * - `--cngx-select-chip-remove-hover-color` -> `--cngx-color-danger`
  * - `--cngx-select-chip-drag-bg` -> `--cngx-color-primary-strong`
  * - `--cngx-select-chip-drag-color` -> `--cngx-color-on-primary-strong`
@@ -1048,6 +1049,7 @@
     --cngx-select-option-spinner-color: var(--cngx-color-primary);
     --cngx-select-option-error-color: var(--cngx-color-danger-text);
     --cngx-select-error-color: var(--cngx-color-danger-text);
+    --cngx-select-commit-error-hint-color: var(--cngx-color-danger-text);
     --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
     --cngx-select-chip-drag-bg: var(--cngx-color-primary-strong);
     --cngx-select-chip-drag-color: var(--cngx-color-on-primary-strong);
@@ -1103,6 +1105,7 @@
       --cngx-select-option-spinner-color: var(--cngx-color-primary);
       --cngx-select-option-error-color: var(--cngx-color-danger-text);
       --cngx-select-error-color: var(--cngx-color-danger-text);
+      --cngx-select-commit-error-hint-color: var(--cngx-color-danger-text);
       --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
       --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
       --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
@@ -1144,6 +1147,7 @@
     --cngx-select-option-spinner-color: var(--cngx-color-primary);
     --cngx-select-option-error-color: var(--cngx-color-danger-text);
     --cngx-select-error-color: var(--cngx-color-danger-text);
+    --cngx-select-commit-error-hint-color: var(--cngx-color-danger-text);
     --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
     --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
     --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
@@ -1181,6 +1185,7 @@
     --cngx-select-option-spinner-color: var(--cngx-color-primary);
     --cngx-select-option-error-color: var(--cngx-color-danger-text);
     --cngx-select-error-color: var(--cngx-color-danger-text);
+    --cngx-select-commit-error-hint-color: var(--cngx-color-danger-text);
     --cngx-select-chip-remove-hover-color: var(--cngx-color-danger);
     --cngx-select-chip-drop-bar-color: var(--cngx-color-primary);
     --cngx-select-trigger-invalid-border-color: var(--cngx-color-danger);
@@ -1800,7 +1805,7 @@
     padding: var(--cngx-select-chip-overflow-badge-padding, 0.125rem 0.5rem);
     font-size: var(--cngx-select-chip-overflow-badge-font-size, 0.75rem);
     line-height: 1;
-    border-radius: var(--cngx-select-chip-wrap-radius, 999px);
+    border-radius: var(--cngx-chip-radius, 999px);
     background: var(--cngx-select-chip-overflow-badge-bg, oklch(0 0 0 / 0.08));
     color: var(--cngx-select-chip-overflow-badge-color, oklch(0 0 0 / 0.6));
     /* The badge text comes from the `chipOverflowBadge` message, so it reads
@@ -2030,7 +2035,7 @@
   .cngx-select__commit-error-hint {
     --cngx-select-commit-error-hint-margin: var(--cngx-space-xs);
     margin-block-start: var(--cngx-select-commit-error-hint-margin, 0.25rem);
-    color: var(--cngx-select-commit-error-hint-color, var(--cngx-color-danger-text, oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)));
+    color: var(--cngx-select-commit-error-hint-color);
     font-size: var(--cngx-font-size-sm, 0.875rem);
   }
 
