@@ -187,7 +187,7 @@
   }
   .cngx-copy-block__button {
     --cngx-copy-block-btn-radius: var(--cngx-radius-sm);
-    --cngx-copy-block-btn-font-size: var(--cngx-font-size-sm);
+    --cngx-copy-block-btn-font-size: var(--cngx-font-size-sm, 0.75rem);
   }
 }
 

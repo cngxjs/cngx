@@ -37,7 +37,7 @@
   @scope (.cngx-multi-chip-group) {
     :scope {
       /* Derive the gap from the global scale (SET-from-scale rule). 0.5rem -> sm. */
-      --cngx-multi-chip-group-gap: var(--cngx-space-sm);
+      --cngx-multi-chip-group-gap: var(--cngx-space-sm, 0.5rem);
       display: inline-flex;
       flex-direction: column;
       /* Adjacent-target spacing floor (WCAG 2.5.8) - a dense chip row keeps at

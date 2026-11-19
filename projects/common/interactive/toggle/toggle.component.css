@@ -269,7 +269,7 @@
    * host. Kept in this layer so a Material bridge and a consumer override
    * still win. */
   .cngx-toggle {
-    --cngx-toggle-focus-radius: var(--cngx-radius-sm);
+    --cngx-toggle-focus-radius: var(--cngx-radius-sm, 0.25rem);
     --cngx-toggle-focus-outline: 2px solid var(--cngx-color-primary);
     --cngx-toggle-track-radius: var(--cngx-radius-pill);
   }
@@ -279,7 +279,7 @@
   @scope (.cngx-toggle) {
     :scope {
       /* gap 0.5rem -> sm (SET-from-scale, read on host). */
-      --cngx-toggle-gap: var(--cngx-space-sm);
+      --cngx-toggle-gap: var(--cngx-space-sm, 0.5rem);
       /* The thumb inset is the GEOMETRIC centring inset, not a spacing rung -
          it must equal (track-height - thumb-size) / 2 so the thumb sits centred
          in the track (and, at rest, inset equally from every edge; the travel

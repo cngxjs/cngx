@@ -46,7 +46,7 @@
    * Material bridge and a consumer override still win. */
   .cngx-button-toggle-group,
   .cngx-button-multi-toggle-group {
-    --cngx-button-toggle-group-radius: var(--cngx-radius-md);
+    --cngx-button-toggle-group-radius: var(--cngx-radius-md, 0.375rem);
   }
 }
 

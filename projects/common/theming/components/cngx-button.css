@@ -468,26 +468,28 @@
    * theme that re-sets these tokens reaches both. */
   @scope (.cngx-button, .cngx-button-group__addon) {
     :scope {
-      /* md: the form-control row (8/16 -> sm/md). */
-      --cngx-button-padding-block: var(--cngx-space-sm);
+      /* md: the form-control row (8/16 -> sm/md). The padding-block literal
+         keeps the icon-button size calc valid without the core theme: a '*'
+         token set to a missing scale token turns invalid, not initial. */
+      --cngx-button-padding-block: var(--cngx-space-sm, 8px);
       --cngx-button-padding-inline: var(--cngx-space-md);
       --cngx-button-font-size: var(--cngx-font-size-control, 1rem);
     }
     :scope[data-size='xs'] {
       /* Half the xs rung: tight, but still re-scaled by [data-density]. */
-      --cngx-button-padding-block: calc(var(--cngx-space-xs) / 2);
+      --cngx-button-padding-block: calc(var(--cngx-space-xs, 4px) / 2);
       --cngx-button-padding-inline: var(--cngx-space-sm);
       --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
     }
     :scope[data-size='sm'] {
-      --cngx-button-padding-block: var(--cngx-space-xs);
+      --cngx-button-padding-block: var(--cngx-space-xs, 4px);
       --cngx-button-padding-inline: var(--cngx-space-sm);
       --cngx-button-font-size: var(--cngx-font-size-sm, 0.8125rem);
     }
     :scope[data-size='lg'] {
       /* One and a half sm rungs: a step above md about as large as sm to md,
          not a full rung jump. */
-      --cngx-button-padding-block: calc(var(--cngx-space-sm) * 1.5);
+      --cngx-button-padding-block: calc(var(--cngx-space-sm, 8px) * 1.5);
       --cngx-button-padding-inline: var(--cngx-space-lg);
       --cngx-button-font-size: var(--cngx-font-size-lg, 1.0625rem);
     }

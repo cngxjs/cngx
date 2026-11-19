@@ -77,6 +77,16 @@ describe('CngxCheckbox theme-derived focus radius', () => {
     expect(computedValue(box, '--cngx-checkbox-focus-radius')).toBe('5px');
   });
 
+  // A '*' token SET to a missing scale token turns invalid instead of falling
+  // back to its initial, so the SET carries the initial as its literal.
+  it('keeps the initial gap and focus radius without the scale tokens', () => {
+    const [box] = mount();
+    mountedRoot!.style.setProperty('--cngx-space-sm', 'initial');
+    mountedRoot!.style.setProperty('--cngx-radius-sm', 'initial');
+    expect(computedValue(box, 'column-gap')).toBe('8px');
+    expect(computedValue(box, '--cngx-checkbox-focus-radius')).toBe('0.25rem');
+  });
+
   it('paints the focus ring with the primary in scope', () => {
     const [box] = mount();
     mountedRoot!.style.setProperty('--cngx-color-primary', 'rgb(0, 0, 200)');
