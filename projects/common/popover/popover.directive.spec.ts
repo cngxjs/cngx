@@ -21,6 +21,7 @@ import {
   type CngxPopoverPresentation,
   type CngxPopoverPresentationSeam,
 } from './popover-presentation';
+import { CngxPopoverTrigger } from './popover-trigger.directive';
 import type { PopoverPositionTryFallback } from './popover.types';
 
 // Test helpers
@@ -79,6 +80,21 @@ class NoEscapeHost {
   imports: [CngxPopover],
 })
 class AutoModeHost {
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
+  template: `
+    <button type="button" [cngxPopoverTrigger]="pop" [restoreFocus]="true" id="trigger">
+      Open
+    </button>
+    <div cngxPopover #pop="cngxPopover">
+      <button type="button" class="inner">Inner</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverTrigger],
+})
+class FadeTriggerHost {
   readonly popover = viewChild.required(CngxPopover);
 }
 
@@ -357,6 +373,34 @@ describe('CngxPopover', () => {
       expect(popoverEl.contains(document.activeElement)).toBe(false);
 
       inner.remove();
+    });
+
+    it('returns focus to the trigger once, at the start of a fading close', () => {
+      vi.useFakeTimers();
+      const { fixture, popoverEl } = setup(FadeTriggerHost);
+      const popover = (fixture.componentInstance as FadeTriggerHost).popover();
+      const trigger = fixture.nativeElement.querySelector('#trigger') as HTMLButtonElement;
+      const inner = popoverEl.querySelector('.inner') as HTMLButtonElement;
+      trigger.focus();
+      popover.show();
+      inner.focus();
+      vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
+        transitionDuration: '0.2s',
+        transitionProperty: 'opacity',
+        transitionDelay: '0s',
+      } as unknown as CSSStyleDeclaration);
+      const focusSpy = vi.spyOn(trigger, 'focus');
+
+      popover.hide();
+      expect(popover.state()).toBe('closing');
+      expect(popoverEl.hasAttribute('inert')).toBe(true);
+      expect(document.activeElement).toBe(trigger);
+
+      vi.advanceTimersByTime(1000);
+      expect(popover.state()).toBe('closed');
+      expect(document.activeElement).toBe(trigger);
+      expect(focusSpy).toHaveBeenCalledTimes(1);
+      vi.useRealTimers();
     });
   });
 

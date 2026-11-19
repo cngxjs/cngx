@@ -93,6 +93,64 @@ test.describe('common/popover/sheet on a phone', () => {
     ).toHaveText('backdrop');
   });
 
+  test('a tap above the sheet leaves focus on the opener', async ({ page }) => {
+    await addPageProbe(page);
+    await opener(page).tap();
+    await expect(page.getByRole('dialog')).toBeVisible();
+
+    // Sampled in the page, timed from the tap's own pointerdown.
+    await opener(page).evaluate((el) => el.setAttribute('data-e2e-opener', ''));
+    await page.evaluate(() => {
+      const w = window as unknown as { __focusSamples: string[] };
+      w.__focusSamples = [];
+      const record = (): void => {
+        const active = document.activeElement;
+        w.__focusSamples.push(
+          active?.hasAttribute('data-e2e-opener') ? 'opener' : (active?.tagName ?? 'NULL'),
+        );
+      };
+      document.addEventListener(
+        'pointerdown',
+        () => {
+          setTimeout(record, 50);
+          setTimeout(record, 500);
+        },
+        { capture: true, once: true },
+      );
+    });
+    await page.touchscreen.tap(36, 36);
+    await expect(sheet(page)).toBeHidden();
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as unknown as { __focusSamples: string[] }).__focusSamples),
+      )
+      .toHaveLength(2);
+    const samples = await page.evaluate(
+      () => (window as unknown as { __focusSamples: string[] }).__focusSamples,
+    );
+    expect(samples).toEqual(['opener', 'opener']);
+  });
+
+  test('Tab during the close slide does not reach the focus trap anchors', async ({ page }) => {
+    await opener(page).tap();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    // A long slide keeps the closing state open for the keypress.
+    await sheet(page).evaluate((el: HTMLElement) =>
+      el.style.setProperty('--cngx-popover-sheet-duration', '3s'),
+    );
+
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).tap();
+    await expect(sheet(page)).toHaveClass(/cngx-popover--closing/);
+    await expect(opener(page)).toBeFocused();
+    await page.keyboard.press('Tab');
+    const landed = await page.evaluate(() => ({
+      anchor: document.activeElement?.classList.contains('cdk-focus-trap-anchor') ?? false,
+      inSheet: !!document.activeElement?.closest('.cngx-popover-sheet'),
+    }));
+    expect(landed).toEqual({ anchor: false, inSheet: false });
+    await expect(sheet(page)).toHaveClass(/cngx-popover--closing/);
+  });
+
   test('locks and pins the page while open and restores the scroll position', async ({
     page,
   }) => {
