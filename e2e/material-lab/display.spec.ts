@@ -5,6 +5,9 @@ import { computedValue } from '../support/material-bridge-page';
 // Display pairs of /material-lab/display: only the axes that measure equal
 // against the Material twin are pinned. Every other axis is a numbered row in
 // the material-fixes roadmap (items 11 to 16) and stays unpinned until fixed.
+// The ripple and the unchecked toggle text also match without their component
+// bridge (lab text colour, system bridge); their bridge reach is not proven
+// here (roadmap items 12 and 16).
 
 const mat = (pair: string, part = ''): string => `[data-pair=${pair}] .probe-mat ${part}`.trim();
 const cngx = (pair: string, part = ''): string => `[data-pair=${pair}] .probe-cngx ${part}`.trim();
@@ -28,7 +31,11 @@ for (const scheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: scheme });
       await page.goto('/#/material-lab/display');
       await expect(page.locator(cngx('badge', '.cngx-badge-indicator'))).toBeVisible();
-      // Surface transitions run once the sheet lands; read the settled values.
+      // The page links its bundle at runtime: read nothing before it is
+      // parsed, then let the transitions it starts settle.
+      await page.waitForFunction(() =>
+        [...document.styleSheets].some((sheet) => sheet.href?.endsWith('/material-lab-display-theme.css')),
+      );
       await page.evaluate(() =>
         Promise.all(
           document
