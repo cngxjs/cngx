@@ -21,6 +21,18 @@ class Host {
   param = signal<string | undefined>(undefined);
 }
 
+@Component({
+  template: `
+    <cngx-sidenav cngxSidenavRouterSync [mode]="'over'" (syncError)="errors.push($event)"
+      >x</cngx-sidenav
+    >
+  `,
+  imports: [CngxSidenav, CngxSidenavRouterSync],
+})
+class ErrorHost {
+  readonly errors: unknown[] = [];
+}
+
 async function flush(rounds = 5): Promise<void> {
   for (let i = 0; i < rounds; i++) {
     await Promise.resolve();
@@ -93,6 +105,23 @@ describe('CngxSidenavRouterSync', () => {
     const query = router.parseUrl(router.url).queryParamMap;
     expect(query.get('menu')).toBe('open');
     expect(query.has('nav')).toBe(false);
+  });
+
+  it('emits (syncError) when the navigation rejects', async () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const failure = new Error('navigation cancelled');
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockRejectedValue(failure);
+
+    const fixture = TestBed.createComponent(ErrorHost);
+    fixture.detectChanges();
+    await flush();
+    expect(fixture.componentInstance.errors).toEqual([]);
+
+    fixture.debugElement.query(By.directive(CngxSidenav)).componentInstance.open();
+    fixture.detectChanges();
+    await flush();
+
+    expect(fixture.componentInstance.errors).toEqual([failure]);
   });
 
   it('removes the param when the sidenav closes', async () => {

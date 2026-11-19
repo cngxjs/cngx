@@ -168,6 +168,16 @@ class RailDwellHost {
 })
 class RailUnboundHost {}
 
+@Component({
+  template: `<cngx-sidenav mode="side" [resizable]="true" [resizeLabel]="resizeLabel()"
+    >Nav</cngx-sidenav
+  >`,
+  imports: [CngxSidenav],
+})
+class ResizeLabelHost {
+  resizeLabel = signal<string | undefined>('Resize menu');
+}
+
 describe('CngxSidenav', () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -763,6 +773,22 @@ describe('CngxSidenav resizable', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('300');
     expect(handle.getAttribute('aria-valuemax')).toBe('600');
     expect(stripBidiIsolates(handle.getAttribute('aria-valuetext'))).toBe('38%');
+  });
+
+  it('lets a bound [resizeLabel] win over the labels bundle', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }))],
+    });
+    const fixture = TestBed.createComponent(ResizeLabelHost);
+    fixture.detectChanges();
+    const handle = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.cngx-sidenav__resize-handle',
+    )!;
+    expect(handle.getAttribute('aria-label')).toBe('Resize menu');
+
+    fixture.componentInstance.resizeLabel.set(undefined);
+    fixture.detectChanges();
+    expect(handle.getAttribute('aria-label')).toBe('Navigation anpassen');
   });
 
   it('names the resize handle from the sidenav labels bundle', () => {
@@ -1868,6 +1894,89 @@ describe('CngxSidenav persistence', () => {
     expect(rail.getAttribute('data-sidebar-state')).toBe('rail');
   });
 
+  it('lets a bound [(collapsed)] win over storage and writes its changes', () => {
+    const storage = memoryStorage({ 'cngx-sidenav:start': 'true' });
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(withSidenavPersistence()),
+        { provide: CNGX_SIDENAV_STORAGE, useValue: storage },
+      ],
+    });
+    const fixture = TestBed.createComponent(BoundPersistHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const navDe = fixture.debugElement.query(By.directive(CngxSidenav));
+    const rail = navDe.nativeElement as HTMLElement;
+    expect(rail.getAttribute('data-sidebar-state')).toBe('expanded');
+    expect(fixture.componentInstance.collapsed()).toBe(false);
+
+    navDe.injector.get(CngxSidenav).toggle();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(fixture.componentInstance.collapsed()).toBe(true);
+    expect(storage.data.get('cngx-sidenav:start')).toBe('true');
+
+    fixture.componentInstance.collapsed.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(storage.data.get('cngx-sidenav:start')).toBe('false');
+  });
+
+  // medium rests as a rail and compact is a drawer: toggle() opens the
+  // overlay there and never touches collapsed, so nothing is written.
+  it.each(['medium', 'compact'])('leaves storage alone when toggled in %s', (widthClass) => {
+    const roMock = createResizeObserverMock();
+    roMock.install(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      () => ({ getPropertyValue: () => widthClass }) as unknown as CSSStyleDeclaration,
+    );
+    const storage = memoryStorage();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(withSidenavPersistence()),
+        { provide: CNGX_SIDENAV_STORAGE, useValue: storage },
+      ],
+    });
+    const fixture = TestBed.createComponent(AutoModeHost);
+    fixture.detectChanges();
+    roMock.triggerResize({
+      borderBoxSize: [{ inlineSize: 900, blockSize: 800 }],
+    } as unknown as ResizeObserverEntry);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    expect(nav.widthClass()).toBe(widthClass);
+
+    nav.toggle();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(fixture.componentInstance.open()).toBe(true);
+    expect(storage.data.size).toBe(0);
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('reads and writes the browser localStorage through the default token factory', () => {
+    localStorage.setItem('cngx-sidenav:start', 'true');
+    try {
+      TestBed.configureTestingModule({
+        providers: [provideSidenavConfig(withSidenavPersistence())],
+      });
+      const fixture = TestBed.createComponent(RailUnboundPersistHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const navDe = fixture.debugElement.query(By.directive(CngxSidenav));
+      expect((navDe.nativeElement as HTMLElement).getAttribute('data-sidebar-state')).toBe('rail');
+
+      navDe.injector.get(CngxSidenav).toggle();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(localStorage.getItem('cngx-sidenav:start')).toBe('false');
+    } finally {
+      localStorage.removeItem('cngx-sidenav:start');
+    }
+  });
+
   it('survives a storage that throws and a missing storage', () => {
     const throwing = memoryStorage();
     throwing.getItem = () => {
@@ -1900,6 +2009,14 @@ class RailUnboundPersistHost {}
   imports: [CngxSidenav],
 })
 class EndPersistHost {}
+
+@Component({
+  template: `<cngx-sidenav mode="side" [(collapsed)]="collapsed">Nav</cngx-sidenav>`,
+  imports: [CngxSidenav],
+})
+class BoundPersistHost {
+  collapsed = signal(false);
+}
 
 @Component({
   // No layout: it projects only a sidenav with a static position attribute,
