@@ -1,4 +1,4 @@
-import { Component, ElementRef, signal, ViewChild } from '@angular/core';
+import { Component, effect, ElementRef, Injector, signal, ViewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   FormControl,
@@ -288,62 +288,60 @@ describe('CngxFormBridge', () => {
       TestBed.configureTestingModule({ imports: [ToggleHost] });
       const fixture = TestBed.createComponent(ToggleHost);
       fixture.detectChanges();
-      TestBed.flushEffects();
       const host = fixture.componentInstance;
 
       const fn = vi.fn<(v: boolean) => void>();
       host.bridge.registerOnChange(fn);
-      TestBed.flushEffects();
 
       // RF -> view roundtrip (value identical to current).
       host.bridge.writeValue(false);
-      TestBed.flushEffects();
       expect(fn).not.toHaveBeenCalled();
 
-      // RF -> view, fresh value.
+      // RF -> view, fresh value: the model's synchronous echo stays out of onChange.
       host.bridge.writeValue(true);
-      TestBed.flushEffects();
-      // The writing flag kept the model's synchronous echo from
-      // re-routing the writeValue back into onChange.
       expect(fn).not.toHaveBeenCalled();
 
       // User-driven write - must fire.
       host.toggle.value.set(false);
-      TestBed.flushEffects();
       expect(fn).toHaveBeenCalledTimes(1);
       expect(fn).toHaveBeenLastCalledWith(false);
     });
 
-    it('untracked() wrap on the change callback isolates fn-internal signal reads (cascade witness)', () => {
-      // Cascade probe: fn reads an external signal. If the
-      // `untracked(() => callback(value))` wrap is removed, that read
-      // becomes a tracked dependency of the bridge effect, and any
-      // future write to the external signal would re-fire the effect
-      // (and therefore re-fire fn). The wrap holds when this spec
-      // observes fn's call count NOT increasing on the external write.
+    it('keeps fn-internal signal reads out of an effect that writes the model (cascade canary)', () => {
+      // An atom may write its model inside an effect (input-mask clears on a
+      // mask change), and the model emits synchronously, so fn runs inside
+      // that effect. The bridge relies on Angular's output emit calling
+      // listeners with no active consumer; if that ever changes, fn's read of
+      // externalProbe becomes a dependency and an externalProbe write re-runs the effect.
       TestBed.configureTestingModule({ imports: [ToggleHost] });
       const fixture = TestBed.createComponent(ToggleHost);
       fixture.detectChanges();
-      TestBed.flushEffects();
       const host = fixture.componentInstance;
 
       const externalProbe = signal('a');
       const fn = vi.fn<(v: boolean) => void>().mockImplementation(() => {
-        externalProbe(); // read inside the consumer callback
+        externalProbe();
       });
       host.bridge.registerOnChange(fn);
-      TestBed.flushEffects();
 
-      host.toggle.value.set(true);
+      const trigger = signal(false);
+      let runs = 0;
+      effect(
+        () => {
+          runs++;
+          host.toggle.value.set(trigger());
+        },
+        { injector: TestBed.inject(Injector) },
+      );
+      TestBed.flushEffects();
+      trigger.set(true);
       TestBed.flushEffects();
       expect(fn).toHaveBeenCalledTimes(1);
+      expect(runs).toBe(2);
 
-      // External signal mutation. Without the untracked() wrap, the
-      // bridge effect would have tracked externalProbe via fn's read
-      // and would re-fire here, calling fn again.
       externalProbe.set('b');
       TestBed.flushEffects();
-      expect(fn).toHaveBeenCalledTimes(1); // wrap held - no cascade
+      expect(runs).toBe(2);
     });
   });
 

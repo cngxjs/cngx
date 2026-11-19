@@ -130,7 +130,7 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
     if (this.writing || callback === null) {
       return;
     }
-    untracked(() => callback(value));
+    callback(value);
   }
 
   registerOnTouched(fn: () => void): void {
