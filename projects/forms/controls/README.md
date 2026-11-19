@@ -129,6 +129,26 @@ to remember on the consumer side.
 | `registerOnTouched(fn)` | Stored. Fired from the host's `(focusout)` listener. |
 | `setDisabledState(b)` | `untracked(() => control.disabled.set(b))`. |
 
+### Do not bind the value next to `[formControl]`
+
+The form control owns the value. A parent binding on the atom's value
+(`[value]` / `[(value)]`, `[selected]` on a chip group or
+`cngxChipInteraction`, `[selectedValues]` on the multi groups) next to
+`[formControl]` / `formControlName` updates the atom but never the
+control: the atom shows one value, `form.value` keeps another. Write the
+control instead (`setValue`, `patchValue`, `reset`) and read it from
+`valueChanges` or the form. In dev mode the bridge warns
+[`CNGX2033`](../../../core-concepts/error-codes/cngx2033.md) once per atom
+when a parent binding changes the value.
+
+```html
+<!-- WARNING: the click reaches ctrl, a write to mirror never does. -->
+<cngx-checkbox [formControl]="ctrl" [(value)]="mirror">Terms</cngx-checkbox>
+
+<!-- Fix: one owner. -->
+<cngx-checkbox [formControl]="ctrl">Terms</cngx-checkbox>
+```
+
 ### What runs untracked
 
 The load-bearing case is the change listener: an atom may write its model
