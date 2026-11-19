@@ -87,7 +87,7 @@
  *   -> `--cngx-sidenav-padding` -> `--cngx-space-md`
  * - `--cngx-sidenav-resize-handle-color` -> `--cngx-color-primary`
  * - `--cngx-sidenav-resize-handle-focus-outline-color` -> `--cngx-color-primary`
- * - `--cngx-nav-link-focus-outline-color` -> `--cngx-color-text`
+ * - `--cngx-nav-link-focus-outline-color` -> `--cngx-sidenav-color`
  * - `--cngx-nav-link-focus-inner-color` -> `--cngx-sidenav-bg`
  * - `--cngx-nav-link-hover-bg` / `-pressed-bg` / `-active-bg` /
  *   `-active-hover-bg` -> `--cngx-color-primary` at 6 / 12 / 16 / 22 %
@@ -472,7 +472,10 @@
       var(--cngx-color-primary, oklch(0.66 0.19 50)) 22%,
       transparent
     );
-    --cngx-nav-link-focus-outline-color: var(--cngx-color-text, oklch(0.2 0.01 250));
+    --cngx-nav-link-focus-outline-color: var(
+      --cngx-sidenav-color,
+      var(--cngx-color-text, oklch(0.2 0.01 250))
+    );
     --cngx-nav-link-focus-inner-color: var(
       --cngx-sidenav-bg,
       var(--cngx-color-surface, oklch(0.97 0.005 250))
@@ -483,6 +486,14 @@
     );
     --cngx-nav-link-active-indicator-size: calc(var(--cngx-space-xs) * 0.75);
     --cngx-nav-link-active-indicator-inset: var(--cngx-space-sm);
+    /* Re-SET the :root label and badge colours so a [data-color-scheme]
+       island around the rail resolves them against its own palette. */
+    --cngx-nav-label-color: var(--cngx-color-text-muted, oklch(0.5 0.01 250));
+    --cngx-nav-badge-bg: var(
+      --cngx-color-primary-strong,
+      oklch(from var(--cngx-color-primary, oklch(0.66 0.19 50)) 0.58 c h)
+    );
+    --cngx-nav-badge-color: var(--cngx-color-on-primary-strong, oklch(1 0 0));
     display: flex;
     flex-direction: column;
     /* The width and the derived rail width include the edge border, as on
