@@ -238,6 +238,20 @@ describe('CngxCard primary tokens', () => {
 // Radius and badge fills are registered with a fixed initial, so a use-site
 // fallback never paints: the theme reaches them only through the SET.
 describe('CngxCard theme-derived tokens', () => {
+  // A '*' token SET to a missing theme token turns invalid instead of falling
+  // back to its initial, so the border SET carries the initial colour.
+  it('keeps the initial border without the core theme', () => {
+    const root = document.documentElement;
+    root.style.setProperty('--cngx-color-border', 'initial');
+    try {
+      const card = mount(ThemedCardHost, '.cngx-card');
+      expect(computedValue(card, 'border-top-width')).toBe('1px');
+      expect(computedValue(card, 'border-top-style')).toBe('solid');
+    } finally {
+      root.style.removeProperty('--cngx-color-border');
+    }
+  });
+
   it('derives the corner radius on every element that reads it', () => {
     const card = mount(ThemedCardHost, '.cngx-card');
     expect(computedValue(card, 'border-top-left-radius')).toBe('20px');

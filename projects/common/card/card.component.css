@@ -607,7 +607,7 @@
   :root {
     --cngx-card-bg: var(--cngx-color-surface);
     --cngx-card-color: var(--cngx-color-text);
-    --cngx-card-border: 1px solid var(--cngx-color-border);
+    --cngx-card-border: 1px solid var(--cngx-color-border, oklch(0.81 0.005 250));
     --cngx-card-divider: var(--cngx-color-border);
     --cngx-card-title-color: var(--cngx-color-text);
   }
