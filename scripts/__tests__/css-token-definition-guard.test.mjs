@@ -21,15 +21,19 @@ import { describe, expect, it } from 'vitest';
  *
  * Rule B - dead fallback on a registered property. A property registered via
  * `@property` always resolves, so `var(--p, fallback)` never uses its fallback.
- * In `projects/core/**` every fallback that differs from the registered
- * `initial-value` is a hit (compared after folding case, whitespace and `0` vs
- * `0px`). Elsewhere only a sentinel registration (`transparent`, `none`, `0`,
- * `initial`) with a real fallback is a hit: there the author meant the fallback
- * but the sentinel paints (owner decision 2026-11-13 keeps the general form to
- * core). Static stand-in for "never set on an ancestor rule": the guard cannot
- * see the runtime cascade, so a row whose property IS set by an ancestor
- * component is allowlisted with that reason. A fallback equal to the initial or
- * `inherit` passes, and so does a sentinel fallback on a sentinel registration.
+ * A fallback that differs from the registered `initial-value` is a hit
+ * (compared after folding case, whitespace and `0` vs `0px`): in
+ * `projects/core/**` against every registration, elsewhere against the
+ * registrations of the same stylesheet. A registration in another sheet outside
+ * core is loaded only where that sheet is, so there the fallback is live and
+ * passes. Repo-wide, a sentinel registration (`transparent`, `none`, `0`,
+ * `initial`) with a real fallback is a hit too: the author meant the fallback
+ * but the sentinel paints. Static stand-in for "never set on an ancestor rule":
+ * the guard cannot see the runtime cascade, so a row whose property IS set by
+ * an ancestor component is allowlisted with that reason. A fallback equal to
+ * the initial or `inherit` passes. A sentinel fallback on a sentinel
+ * registration passes only where the general form does not apply: a read
+ * outside core of a registration in another sheet.
  *
  * Rules C to E cover every scanned component stylesheet, `.css` and `.scss`
  * (a `.scss` sheet loses its `//` line comments first). Rule C - a
@@ -499,8 +503,15 @@ function repoOffenders(files = SCANNED, assigned = assignedAcross(files)) {
     for (const token of undefinedPaletteReads(source, DEFINED, FAMILIES)) {
       rows.push({ rule: 'A', token, file: rel });
     }
+    const ownRegistrations = registrations(source);
     const anyInitial = rel.startsWith('projects/core/');
-    for (const token of deadFallbacks(source, REGISTERED, { anyInitial })) {
+    const deadFallbackTokens = new Set(deadFallbacks(source, REGISTERED, { anyInitial }));
+    if (!anyInitial) {
+      for (const token of deadFallbacks(source, ownRegistrations, { anyInitial: true })) {
+        deadFallbackTokens.add(token);
+      }
+    }
+    for (const token of deadFallbackTokens) {
       rows.push({ rule: 'B', token, file: rel });
     }
     for (const token of materialSystemReads(source)) {
@@ -517,7 +528,7 @@ function repoOffenders(files = SCANNED, assigned = assignedAcross(files)) {
     for (const token of translucentPrimaryLiterals(source)) {
       rows.push({ rule: 'F', token, file: rel });
     }
-    for (const [token, initials] of registrations(source)) {
+    for (const [token, initials] of ownRegistrations) {
       const emberInitial = [...initials].some((initial) => EMBER_PRIMARY.test(initial));
       if (emberInitial && !assigned.has(token)) {
         rows.push({ rule: 'G', token, file: rel });
@@ -744,6 +755,51 @@ describe('Rule B - dead fallback on a registered property', () => {
         { anyInitial: true },
       ),
     ).toEqual([]);
+  });
+
+  it('outside core flags a differing fallback on a same-file registration only', () => {
+    const own = `
+      @property --cngx-x-gap { syntax: '<length>'; inherits: false; initial-value: 4px; }
+      .a { gap: var(--cngx-x-gap, 8px); }
+    `;
+    const borrowed = '.b { gap: var(--cngx-x-gap, 8px); }';
+    // The borrowed pass holds only while no real sheet registers the probe token.
+    expect(REGISTERED.has('--cngx-x-gap')).toBe(false);
+    expect(
+      repoOffenders([
+        { rel: 'projects/ui/x/x.css', source: own },
+        { rel: 'projects/ui/y/y.css', source: borrowed },
+      ]).map(key),
+    ).toEqual(['B --cngx-x-gap projects/ui/x/x.css']);
+  });
+
+  it('outside core reports one row when the sentinel and the same-file form both hit', () => {
+    const rel = 'projects/ui/x/x.css';
+    const source = `
+      @property --cngx-step-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+      .a { background: var(--cngx-step-bg, oklch(0.5 0.1 200)); }
+    `;
+    expect(REGISTERED.get('--cngx-step-bg')?.has('transparent')).toBe(true);
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`B --cngx-step-bg ${rel}`]);
+  });
+
+  it('outside core compares against the same-file initial, not the core one', () => {
+    const rel = 'projects/ui/x/x.css';
+    const source = `
+      @property --cngx-space-md { syntax: '<length>'; inherits: true; initial-value: 12px; }
+      .a { gap: var(--cngx-space-md, 16px); }
+    `;
+    expect(REGISTERED.get('--cngx-space-md')?.has('16px')).toBe(true);
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`B --cngx-space-md ${rel}`]);
+  });
+
+  it('outside core flags a sentinel fallback on a same-file sentinel registration', () => {
+    const rel = 'projects/ui/x/x.css';
+    const source = `
+      @property --cngx-x-ring { syntax: '*'; inherits: false; initial-value: transparent; }
+      .a { outline-color: var(--cngx-x-ring, none); }
+    `;
+    expect(repoOffenders([{ rel, source }]).map(key)).toEqual([`B --cngx-x-ring ${rel}`]);
   });
 
   it('reads nested var() bodies with balanced parentheses', () => {
