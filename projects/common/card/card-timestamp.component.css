@@ -94,7 +94,7 @@
          host. 4 -> xs. */
       --cngx-card-timestamp-gap: var(--cngx-space-xs);
       display: inline-flex;
-      gap: var(--cngx-card-timestamp-gap, var(--cngx-space-xs, 4px));
+      gap: var(--cngx-card-timestamp-gap);
       font-size: var(--cngx-card-timestamp-size, 0.75rem);
       color: var(--cngx-card-timestamp-color, oklch(0.36 0.02 290));
       line-height: 1.4;

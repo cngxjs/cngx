@@ -42,8 +42,7 @@
  *   pinned via `:root` delegation so dark-mode primary cascades
  *   without the @property initial-value shadowing the chain)
  * - `--cngx-checkbox-radius` -> `--cngx-radius-sm`
- * - `--cngx-checkbox-color` -> `--cngx-color-primary` (checkmark
- *   variant only)
+ * - `--cngx-checkbox-color` - leaf token, `currentColor` by default
  * - `--cngx-checkbox-bg`, `--cngx-checkbox-border`,
  *   `--cngx-checkbox-checked-color` - leaf tokens
  */
@@ -186,6 +185,13 @@
   :root {
     --cngx-checkbox-checked-bg: var(--cngx-color-primary);
   }
+
+  /* Derive the box radius from the theme: the registered initial defeats a
+   * use-site fallback. Kept in this layer so a bridge and a consumer override
+   * still win. */
+  .cngx-checkbox-indicator {
+    --cngx-checkbox-radius: var(--cngx-radius-sm);
+  }
 }
 
 @layer cngx.components {
@@ -239,14 +245,14 @@
       width: var(--cngx-checkbox-size, 1em);
       height: var(--cngx-checkbox-size, 1em);
       border: var(--cngx-checkbox-border, 1.5px solid currentColor);
-      border-radius: var(--cngx-checkbox-radius, var(--cngx-radius-sm, 2px));
+      border-radius: var(--cngx-checkbox-radius);
       background: var(--cngx-checkbox-bg, transparent);
     }
 
     :scope.cngx-checkbox-indicator--checked .cngx-checkbox-indicator__box,
     :scope.cngx-checkbox-indicator--indeterminate .cngx-checkbox-indicator__box {
-      background: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
-      border-color: var(--cngx-checkbox-checked-bg, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      background: var(--cngx-checkbox-checked-bg);
+      border-color: var(--cngx-checkbox-checked-bg);
       color: var(--cngx-checkbox-checked-color, oklch(1 0 0));
     }
 
@@ -294,7 +300,7 @@
        that rounds out of the band. Moving the band edge moves this step. */
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__check,
     :scope.cngx-checkbox-indicator--checkmark .cngx-checkbox-indicator__dash {
-      color: var(--cngx-checkbox-color, var(--cngx-color-primary, oklch(0.66 0.19 50)));
+      color: var(--cngx-checkbox-color);
       --cngx-icon-svg-size: max(
         calc(var(--cngx-checkbox-size, 1em) * 0.75),
         var(--cngx-icon-svg-micro-floor, 0.75rem),

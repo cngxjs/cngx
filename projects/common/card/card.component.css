@@ -53,13 +53,15 @@
  * - `--cngx-card-padding` -> `--cngx-space-md`
  * - `--cngx-card-focus-color` -> `--cngx-color-primary`
  * - `--cngx-card-selected-border` -> `--cngx-color-primary`
- * - `--cngx-card-badge-*-bg` -> `--cngx-badge-*-bg` ->
- *   `--cngx-color-{intent}`
+ * - `--cngx-card-badge-primary-bg` -> `--cngx-badge-primary-bg` ->
+ *   `--cngx-color-primary`
+ * - `--cngx-card-badge-{danger,warning,success,info}-bg` -> `--cngx-color-{intent}`
+ * - `--cngx-card-badge-neutral-bg` -> `--cngx-color-text-muted`
  *
- * Tinted-surface accents and the selected background use
- * `color-mix()` against the matching foundation semantic colour and
- * the card surface; themes only need to pin the tokens when the
- * runtime mix is not desired.
+ * The selected background and the accent tints and borders derive
+ * from the matching foundation semantic colour with relative colour
+ * syntax; the accent pairs read the feedback family's
+ * `--cngx-feedback-*` severity tokens first.
  *
  * **Dark mode**
  *
@@ -519,8 +521,7 @@
   }
 
   /**
-   * Background of the `danger` intent. Falls back through
-   * `--cngx-badge-error-bg` then `--cngx-color-danger`.
+   * Background of the `danger` intent. Derives from `--cngx-color-danger`.
    * @group Variant / Danger
    * @see [[--cngx-color-danger]]
    */
@@ -541,8 +542,7 @@
   }
 
   /**
-   * Background of the `warning` intent. Falls back through
-   * `--cngx-badge-warning-bg` then `--cngx-color-warning`.
+   * Background of the `warning` intent. Derives from `--cngx-color-warning`.
    * @group Variant / Warning
    * @see [[--cngx-color-warning]]
    */
@@ -563,8 +563,7 @@
   }
 
   /**
-   * Background of the `success` intent. No `CngxBadge` analogue -
-   * falls straight back to `--cngx-color-success`.
+   * Background of the `success` intent. Derives from `--cngx-color-success`.
    * @group Variant / Success
    * @see [[--cngx-color-success]]
    */
@@ -585,8 +584,7 @@
   }
 
   /**
-   * Background of the `info` intent. No `CngxBadge` analogue -
-   * falls straight back to `--cngx-color-info`.
+   * Background of the `info` intent. Derives from `--cngx-color-info`.
    * @group Variant / Info
    * @see [[--cngx-color-info]]
    */
@@ -607,8 +605,8 @@
   }
 
   /**
-   * Background of the `neutral` intent. Falls back through
-   * `--cngx-badge-neutral-bg` then `--cngx-color-text-muted`.
+   * Background of the `neutral` intent. Derives from
+   * `--cngx-color-text-muted`.
    * @group Variant / Neutral
    */
   @property --cngx-card-badge-neutral-bg {
@@ -673,6 +671,27 @@
       --cngx-feedback-error-border,
       oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.85 0.08 h)
     );
+  }
+
+  /* Derive radius and badge fills from the theme: the registered initial
+   * defeats a use-site fallback, so the default lives in a SET. Kept in this
+   * layer so a Material bridge (`cngx.components`) and a consumer override
+   * still win. The radii do not inherit, so every element that reads one SETs
+   * it. */
+  .cngx-card {
+    --cngx-card-badge-danger-bg: var(--cngx-color-danger);
+    --cngx-card-badge-warning-bg: var(--cngx-color-warning);
+    --cngx-card-badge-success-bg: var(--cngx-color-success);
+    --cngx-card-badge-info-bg: var(--cngx-color-info);
+    --cngx-card-badge-neutral-bg: var(--cngx-color-text-muted);
+  }
+  .cngx-card,
+  .cngx-card::before,
+  .cngx-card__media {
+    --cngx-card-radius: var(--cngx-radius-lg);
+  }
+  .cngx-card__badge {
+    --cngx-card-badge-radius: var(--cngx-radius-pill);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -803,10 +822,10 @@
       display: block;
       position: relative;
       padding: var(--cngx-card-padding, var(--cngx-space-md, 16px));
-      border-radius: var(--cngx-card-radius, var(--cngx-radius-lg, 12px));
-      background: var(--cngx-card-bg, var(--cngx-color-surface, oklch(1 0 0)));
-      border: var(--cngx-card-border, 1px solid var(--cngx-color-border, oklch(0.81 0.005 250)));
-      color: var(--cngx-card-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      border-radius: var(--cngx-card-radius);
+      background: var(--cngx-card-bg);
+      border: var(--cngx-card-border);
+      color: var(--cngx-card-color);
       transition:
         box-shadow var(--cngx-duration-fast, 150ms) ease,
         border-color var(--cngx-duration-fast, 150ms) ease,
@@ -863,7 +882,7 @@
       content: '';
       position: absolute;
       inset-inline-start: 0;
-      inset-block: var(--cngx-card-radius, 12px);
+      inset-block: var(--cngx-card-radius);
       width: var(--cngx-card-selected-bar-width, 3px);
       background: var(--cngx-card-selected-border, var(--cngx-color-primary, oklch(0.66 0.19 50)));
       border-radius: 999px;
@@ -910,8 +929,7 @@
       margin: calc(-1 * var(--cngx-card-padding, var(--cngx-space-md, 16px)));
       margin-bottom: 0;
       overflow: hidden;
-      border-radius: var(--cngx-card-radius, var(--cngx-radius-lg, 12px))
-        var(--cngx-card-radius, var(--cngx-radius-lg, 12px)) 0 0;
+      border-radius: var(--cngx-card-radius) var(--cngx-card-radius) 0 0;
     }
     .cngx-card__media img,
     .cngx-card__media video {
@@ -933,7 +951,7 @@
       margin: 0;
       font-size: var(--cngx-card-title-size, 1rem);
       font-weight: var(--cngx-card-title-weight, 600);
-      color: var(--cngx-card-title-color, var(--cngx-color-text, oklch(0.2 0.01 290)));
+      color: var(--cngx-card-title-color);
       line-height: 1.3;
     }
 
@@ -961,7 +979,7 @@
       gap: var(--cngx-space-sm, 8px);
       padding-block-start: var(--cngx-space-sm, 8px);
       border-top: 1px solid
-        var(--cngx-card-divider, var(--cngx-color-border, oklch(0.81 0.005 250)));
+        var(--cngx-card-divider);
     }
     .cngx-card__actions--end {
       justify-content: flex-end;
@@ -1063,7 +1081,7 @@
       min-width: var(--cngx-card-badge-size-md, 22px);
       height: var(--cngx-card-badge-size-md, 22px);
       padding: 0 var(--cngx-card-badge-padding-inline, 5px);
-      border-radius: var(--cngx-card-badge-radius, var(--cngx-radius-pill, 999px));
+      border-radius: var(--cngx-card-badge-radius);
       border: var(--cngx-card-badge-border, 2px solid oklch(1 0 0));
       font-size: var(--cngx-card-badge-font-size-md, 0.7rem);
       font-weight: 700;
@@ -1118,32 +1136,23 @@
       color: var(--cngx-card-badge-primary-color, oklch(1 0 0));
     }
     .cngx-card__badge--intent-danger {
-      background: var(
-        --cngx-card-badge-danger-bg,
-        var(--cngx-badge-error-bg, var(--cngx-color-danger, oklch(0.62 0.22 25)))
-      );
+      background: var(--cngx-card-badge-danger-bg);
       color: var(--cngx-card-badge-danger-color, oklch(1 0 0));
     }
     .cngx-card__badge--intent-warning {
-      background: var(
-        --cngx-card-badge-warning-bg,
-        var(--cngx-badge-warning-bg, var(--cngx-color-warning, oklch(0.72 0.18 70)))
-      );
+      background: var(--cngx-card-badge-warning-bg);
       color: var(--cngx-card-badge-warning-color, oklch(0.2 0.01 250));
     }
     .cngx-card__badge--intent-success {
-      background: var(--cngx-card-badge-success-bg, var(--cngx-color-success, oklch(0.6 0.15 145)));
+      background: var(--cngx-card-badge-success-bg);
       color: var(--cngx-card-badge-success-color, oklch(1 0 0));
     }
     .cngx-card__badge--intent-info {
-      background: var(--cngx-card-badge-info-bg, var(--cngx-color-info, oklch(0.65 0.12 240)));
+      background: var(--cngx-card-badge-info-bg);
       color: var(--cngx-card-badge-info-color, oklch(1 0 0));
     }
     .cngx-card__badge--intent-neutral {
-      background: var(
-        --cngx-card-badge-neutral-bg,
-        var(--cngx-badge-neutral-bg, var(--cngx-color-text-muted, oklch(0.68 0.01 240)))
-      );
+      background: var(--cngx-card-badge-neutral-bg);
       color: var(--cngx-card-badge-neutral-color, oklch(1 0 0));
     }
 

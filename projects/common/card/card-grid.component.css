@@ -54,7 +54,7 @@
       --cngx-card-grid-gap: var(--cngx-space-md);
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(var(--cngx-card-grid-min, 280px), 1fr));
-      gap: var(--cngx-card-grid-gap, var(--cngx-space-md, 16px));
+      gap: var(--cngx-card-grid-gap);
     }
 
     :scope.cngx-card-grid--compact {

@@ -242,3 +242,14 @@ describe('CngxChip geometry', () => {
     expect(rasterise(ring('.chip-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
   });
 });
+
+// The chip and remove radii are registered with a fixed initial, so a use-site
+// fallback never paints: the theme reaches them only through the SET.
+describe('CngxChip theme-derived radius', () => {
+  it('derives the chip and remove radii from the pill radius', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-pill', '5px');
+    expect(computedValue(host, 'border-top-left-radius')).toBe('5px');
+    expect(computedValue(query(host, '.cngx-chip__remove'), 'border-top-left-radius')).toBe('5px');
+  });
+});

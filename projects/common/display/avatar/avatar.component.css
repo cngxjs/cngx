@@ -320,6 +320,16 @@
     --cngx-avatar-color: oklch(0.28 0 0);
     --cngx-avatar-status-border: oklch(1 0 0);
   }
+
+  /* Derive the circle radius and status hues from the theme: the registered
+   * initial defeats a use-site fallback, so the default lives in a SET. Kept
+   * in this layer so a Material bridge and a consumer override still win. */
+  .cngx-avatar {
+    --cngx-avatar-circle-radius: var(--cngx-radius-pill);
+    --cngx-avatar-status-online: var(--cngx-color-success);
+    --cngx-avatar-status-busy: var(--cngx-color-danger);
+    --cngx-avatar-status-away: var(--cngx-color-warning);
+  }
 }
 
 @layer cngx.components {
@@ -337,16 +347,16 @@
       font-weight: 600;
 
       /* Themable */
-      width: var(--cngx-avatar-size, var(--cngx-avatar-size-md, 2.5rem));
-      height: var(--cngx-avatar-size, var(--cngx-avatar-size-md, 2.5rem));
-      font-size: var(--cngx-avatar-font-size, var(--cngx-avatar-font-size-md, 1rem));
-      background: var(--cngx-avatar-bg, var(--cngx-color-border, oklch(0.92 0.01 240)));
-      color: var(--cngx-avatar-color, var(--cngx-color-text, oklch(0.28 0 0)));
+      width: var(--cngx-avatar-size);
+      height: var(--cngx-avatar-size);
+      font-size: var(--cngx-avatar-font-size);
+      background: var(--cngx-avatar-bg);
+      color: var(--cngx-avatar-color);
     }
 
     /* Shape variants */
     :scope.cngx-avatar--circle {
-      border-radius: var(--cngx-avatar-circle-radius, var(--cngx-radius-pill, 999px));
+      border-radius: var(--cngx-avatar-circle-radius);
     }
     :scope.cngx-avatar--square {
       border-radius: var(--cngx-avatar-square-radius, 6px);
@@ -393,20 +403,20 @@
       width: var(--cngx-avatar-status-size, 0.65em);
       height: var(--cngx-avatar-status-size, 0.65em);
       border-radius: var(--cngx-radius-pill, 999px);
-      border: 2px solid var(--cngx-avatar-status-border, var(--cngx-color-surface, oklch(1 0 0)));
+      border: 2px solid var(--cngx-avatar-status-border);
       background: var(--cngx-avatar-status-bg, oklch(0.68 0.01 240));
     }
     .cngx-avatar__status--online {
-      background: var(--cngx-avatar-status-online, var(--cngx-color-success, oklch(0.68 0.18 145)));
+      background: var(--cngx-avatar-status-online);
     }
     .cngx-avatar__status--offline {
       background: var(--cngx-avatar-status-offline, oklch(0.68 0.01 240));
     }
     .cngx-avatar__status--busy {
-      background: var(--cngx-avatar-status-busy, var(--cngx-color-danger, oklch(0.62 0.22 25)));
+      background: var(--cngx-avatar-status-busy);
     }
     .cngx-avatar__status--away {
-      background: var(--cngx-avatar-status-away, var(--cngx-color-warning, oklch(0.72 0.18 70)));
+      background: var(--cngx-avatar-status-away);
     }
   }
 }

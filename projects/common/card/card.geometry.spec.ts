@@ -4,6 +4,7 @@ import { computedValue, gridTracks, rasterise, type Rgba } from '@cngx/testing/g
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxCardBadge } from './card-badge.directive';
+import { CngxCardMedia } from './card-media.directive';
 import { CngxCard } from './card.component';
 import { CngxCardGrid } from './card-grid.component';
 import { CngxCardSkeleton } from './card-skeleton.component';
@@ -101,6 +102,27 @@ const EMBER = 'oklch(0.66 0.19 50)';
   `,
 })
 class PrimaryCardHost {}
+
+@Component({
+  standalone: true,
+  imports: [CngxCard, CngxCardBadge, CngxCardMedia],
+  template: `
+    <div
+      style="--cngx-radius-lg: 20px; --cngx-radius-pill: 6px;
+        --cngx-color-danger: rgb(200, 10, 10); --cngx-color-warning: rgb(200, 150, 10);
+        --cngx-color-success: rgb(10, 150, 10); --cngx-color-text-muted: rgb(90, 90, 90)"
+    >
+      <cngx-card as="button" [selectable]="true" [selected]="true">
+        <div cngxCardMedia></div>
+        <span cngxCardBadge intent="danger">D</span>
+        <span cngxCardBadge intent="warning">W</span>
+        <span cngxCardBadge intent="success">S</span>
+        <span cngxCardBadge intent="neutral">N</span>
+      </cngx-card>
+    </div>
+  `,
+})
+class ThemedCardHost {}
 
 describe('CngxCard geometry', () => {
   it('is a block surface that positions its badge anchor', () => {
@@ -210,5 +232,36 @@ describe('CngxCard primary tokens', () => {
     const badge = '.cngx-card__badge--intent-primary';
     expect(colour(root, `.branded ${badge}`, 'background-color')).toEqual(rasterise(BLUE));
     expect(colour(root, `.default ${badge}`, 'background-color')).toEqual(rasterise(EMBER));
+  });
+});
+
+// Radius and badge fills are registered with a fixed initial, so a use-site
+// fallback never paints: the theme reaches them only through the SET.
+describe('CngxCard theme-derived tokens', () => {
+  it('derives the corner radius on every element that reads it', () => {
+    const card = mount(ThemedCardHost, '.cngx-card');
+    expect(computedValue(card, 'border-top-left-radius')).toBe('20px');
+    const media = card.querySelector('.cngx-card__media') as HTMLElement;
+    expect(computedValue(media, 'border-top-left-radius')).toBe('20px');
+    expect(getComputedStyle(card, '::before').insetBlockStart).toBe('20px');
+  });
+
+  it('derives the badge fills and radius from the theme', () => {
+    const card = mount(ThemedCardHost, '.cngx-card');
+    const badge = (intent: string): HTMLElement =>
+      card.querySelector(`.cngx-card__badge--intent-${intent}`) as HTMLElement;
+    expect(rasterise(computedValue(badge('danger'), 'background-color'))).toEqual(
+      rasterise('rgb(200, 10, 10)'),
+    );
+    expect(rasterise(computedValue(badge('warning'), 'background-color'))).toEqual(
+      rasterise('rgb(200, 150, 10)'),
+    );
+    expect(rasterise(computedValue(badge('success'), 'background-color'))).toEqual(
+      rasterise('rgb(10, 150, 10)'),
+    );
+    expect(rasterise(computedValue(badge('neutral'), 'background-color'))).toEqual(
+      rasterise('rgb(90, 90, 90)'),
+    );
+    expect(computedValue(badge('danger'), 'border-top-left-radius')).toBe('6px');
   });
 });
