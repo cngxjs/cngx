@@ -761,4 +761,102 @@ describe('field atom value sync - CNGX2032 hand value binding warning', () => {
     expect(warnings()).toHaveLength(1);
     expect(warnings()[0]).toMatch(/the field "[^"]*bound"/);
   });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.colour">
+        <cngx-select [label]="'Colour'" [options]="options" [formField]="f.colour" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxSelect, FormField],
+  })
+  class FormFieldSelectHost {
+    readonly options = [
+      { value: 'red', label: 'Red' },
+      { value: 'blue', label: 'Blue' },
+    ];
+    readonly model = signal({ colour: 'red' });
+    readonly f = form(this.model);
+  }
+
+  it('stays silent for a select bound through [formField]', () => {
+    const warnings = collectWarnings();
+    const { fixture, host } = mountHost(FormFieldSelectHost);
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    select.value.set('blue');
+    flush(fixture);
+
+    expect(host.model().colour).toBe('blue');
+    expect(host.f.colour().dirty()).toBe(true);
+    expect(warnings()).toEqual([]);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.check">
+        @if (owned()) {
+          <input type="checkbox" style="display: none" [formField]="f.check" />
+        }
+        <cngx-checkbox>Check</cngx-checkbox>
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxCheckbox, FormField],
+  })
+  class SwitchingOwnerHost {
+    readonly owned = signal(true);
+    readonly model = signal({ check: false });
+    readonly f = form(this.model);
+  }
+
+  it('stays silent when a [formField] owner comes and goes', () => {
+    const warnings = collectWarnings();
+    const { fixture, host, el } = mountHost(SwitchingOwnerHost);
+    host.owned.set(false);
+    flush(fixture);
+    host.owned.set(true);
+    flush(fixture);
+    el.querySelector<HTMLElement>('cngx-checkbox')!.click();
+    flush(fixture);
+    host.owned.set(false);
+    flush(fixture);
+    el.querySelector<HTMLElement>('cngx-checkbox')!.click();
+    flush(fixture);
+
+    expect(warnings()).toEqual([]);
+  });
+
+  interface Colour {
+    readonly id: number;
+  }
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.colour">
+        <cngx-select [label]="'Colour'" [options]="options" [compareWith]="byId" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxSelect],
+  })
+  class ObjectSelectHost {
+    readonly options = [
+      { value: { id: 1 }, label: 'Red' },
+      { value: { id: 2 }, label: 'Blue' },
+    ];
+    readonly byId = (a: Colour | undefined, b: Colour | undefined) => a?.id === b?.id;
+    readonly model = signal<{ colour: Colour }>({ colour: { id: 2 } });
+    readonly f = form(this.model);
+  }
+
+  it('stays silent when a compareWith select re-picks an equal value with a new identity', () => {
+    const warnings = collectWarnings();
+    const { fixture, host } = mountHost(ObjectSelectHost);
+    const select = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<Colour>;
+    select.value.set(host.options[1].value);
+    flush(fixture);
+
+    expect(warnings()).toEqual([]);
+  });
 });
+

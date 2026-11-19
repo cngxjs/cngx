@@ -1,6 +1,6 @@
 import { effect, untracked, type Signal, type WritableSignal } from '@angular/core';
 import { cngxDevWarn } from '@cngx/utils';
-import type { CngxFieldRef } from './models';
+import type { CngxErrorFieldState, CngxFieldRef } from './models';
 
 // Field refs that already warned CNGX2032.
 const handBoundWarned = new WeakSet<object>();
@@ -81,14 +81,20 @@ export function bindFieldValue<V>(
   // The first run per target is the mount seed; every later run is a user
   // change. The flag is consumed even when that first run writes nothing.
   let seededTarget: WritableSignal<V> | undefined;
+  // Dev only: the target was gone (another owner took the value) and its first
+  // run after the gap re-syncs, so it is no evidence of a second writer.
+  let resumed = false;
   effect(() => {
     const control = target();
     if (!control) {
+      resumed = seededTarget !== undefined;
       return;
     }
     const next = control();
     const mode: FieldWriteMode = seededTarget === control ? 'user' : 'seed';
     seededTarget = control;
+    const rejoined = resumed;
+    resumed = false;
     untracked(() => {
       const fieldRef = fieldState();
       const raw = fieldRef.value();
@@ -105,7 +111,11 @@ export function bindFieldValue<V>(
       pushed = null;
       if (options.valueEquals(options.coerceFromField(held), next)) {
         if (typeof ngDevMode !== 'undefined' && ngDevMode && mode === 'user') {
-          warnIfHandBound(fieldRef, echo !== null && options.valueEquals(echo.value, next));
+          // A hand binding hands the control's own value to the field: same
+          // identity. An equal value under `compareWith` is a re-pick, not a writer.
+          const handed = Object.is(held, next);
+          const echoed = echo !== null && options.valueEquals(echo.value, next);
+          warnIfHandBound(fieldRef, rejoined || !handed || echoed);
         }
         return;
       }
@@ -116,8 +126,14 @@ export function bindFieldValue<V>(
 
 // The field already holds a user change it did not receive from this sync:
 // something else wrote it, typically `[(value)]="f.x().value"` on the control.
-function warnIfHandBound(fieldRef: CngxFieldRef, echo: boolean): void {
-  if (echo || handBoundWarned.has(fieldRef)) {
+// A `[formField]` on the field is a supported second owner (it writes through
+// `controlValue` and dirties), so it never warns.
+function warnIfHandBound(fieldRef: CngxFieldRef, explained: boolean): void {
+  if (explained || handBoundWarned.has(fieldRef)) {
+    return;
+  }
+  const bindings = (fieldRef as Partial<CngxErrorFieldState>).formFieldBindings?.();
+  if (bindings && bindings.length > 0) {
     return;
   }
   handBoundWarned.add(fieldRef);
