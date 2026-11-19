@@ -1,11 +1,14 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { disabled, form, FormField, readonly } from '@angular/forms/signals';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxChip } from '@cngx/common/display';
 import {
+  CngxSlider,
+  CngxSliderTrack,
   CngxButtonMultiToggleGroup,
   CngxButtonToggle,
   CngxButtonToggleGroup,
@@ -20,10 +23,12 @@ import {
   CngxToggle,
 } from '@cngx/common/interactive';
 import { CngxFormBridge } from '@cngx/forms/controls';
-import { CngxInput, CngxNumericInput } from '@cngx/forms/input';
+import { CngxInput, CngxNumericInput, CngxRating } from '@cngx/forms/input';
+import { CngxSelect } from '@cngx/forms/select';
 
 import { adaptFormControl } from './form-control-adapter';
 import { CngxFormField } from './form-field.component';
+import { CngxSliderFieldBridge } from './slider-field-bridge.directive';
 
 // An atom dropped into cngx-form-field without a value binding: the field
 // syncs the control it discovered. A click writes the model and dirties the
@@ -526,4 +531,234 @@ describe('field atom value sync - R7 locked field', () => {
       expect(host.f.check().dirty()).toBe(false);
     });
   }
+});
+
+describe('field atom value sync - CNGX2032 hand value binding warning', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function collectWarnings() {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    return () =>
+      warn.mock.calls
+        .map((call: unknown[]) => String(call[0]))
+        .filter((message) => message.startsWith('CNGX2032: '));
+  }
+
+  function mountHost<T>(type: Type<T>) {
+    const fixture = TestBed.createComponent(type);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.detectChanges();
+    flush(fixture);
+    return { fixture, host: fixture.componentInstance, el: fixture.nativeElement as HTMLElement };
+  }
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.check">
+        <cngx-checkbox [(value)]="f.check().value">Check</cngx-checkbox>
+      </cngx-form-field>
+      <cngx-form-field [field]="f.pay">
+        <cngx-radio-group label="Pay" [(value)]="f.pay().value">
+          <cngx-radio value="card">Card</cngx-radio>
+          <cngx-radio value="cash">Cash</cngx-radio>
+        </cngx-radio-group>
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxCheckbox, CngxRadioGroup, CngxRadio],
+  })
+  class HandBoundHost {
+    readonly model = signal({ check: false, pay: 'card' });
+    readonly f = form(this.model);
+  }
+
+  it('warns once per field when an atom is also bound by hand', () => {
+    const warnings = collectWarnings();
+    const { fixture, el } = mountHost(HandBoundHost);
+    expect(warnings()).toEqual([]);
+
+    const box = el.querySelector<HTMLElement>('cngx-checkbox')!;
+    box.click();
+    flush(fixture);
+    box.click();
+    flush(fixture);
+    el.querySelector<HTMLElement>('cngx-radio:nth-of-type(2)')!.click();
+    flush(fixture);
+
+    expect(warnings()).toHaveLength(2);
+    expect(warnings()[0]).toMatch(
+      /^CNGX2032: \[cngx-form-field\] the field "[^"]*check" is also bound by hand on its control/,
+    );
+    expect(warnings()[1]).toMatch(/the field "[^"]*pay"/);
+  });
+
+  it('stays silent for atoms without a value binding: clicks, reset(value), external writes', () => {
+    const warnings = collectWarnings();
+    const { fixture, host, el } = mountAtoms(SEEDED);
+    for (const c of CASES) {
+      within(el, c.key, c.click).click();
+      flush(fixture);
+    }
+    host.f().reset(structuredClone(DEFAULTS));
+    flush(fixture);
+    host.f.check().value.set(true);
+    host.model.set(structuredClone(SEEDED));
+    flush(fixture);
+    fixture.debugElement.query(By.directive(CngxCheckbox)).componentInstance.value.set(false);
+    flush(fixture);
+
+    expect(warnings()).toEqual([]);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="field">
+        <cngx-checkbox [formControl]="control">Check</cngx-checkbox>
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxCheckbox, ReactiveFormsModule, CngxFormBridge],
+  })
+  class RfHost {
+    readonly control = new FormControl(false, { nonNullable: true });
+    readonly field = adaptFormControl(this.control, 'check', inject(DestroyRef));
+  }
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.check">
+        <input type="checkbox" style="display: none" [formField]="f.check" />
+        <cngx-checkbox>Check</cngx-checkbox>
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxCheckbox, FormField],
+  })
+  class BoundElsewhereHost {
+    readonly model = signal({ check: false });
+    readonly f = form(this.model);
+  }
+
+  it('stays silent for Reactive Forms and [formField] owners', () => {
+    const warnings = collectWarnings();
+    const rf = mountHost(RfHost);
+    rf.el.querySelector<HTMLElement>('cngx-checkbox')!.click();
+    flush(rf.fixture);
+    rf.host.control.setValue(false);
+    rf.host.control.reset(true);
+    flush(rf.fixture);
+
+    const owned = mountHost(BoundElsewhereHost);
+    owned.el.querySelector<HTMLElement>('cngx-checkbox')!.click();
+    flush(owned.fixture);
+    owned.host.f.check().value.set(true);
+    flush(owned.fixture);
+
+    expect(warnings()).toEqual([]);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.colour">
+        <cngx-select [label]="'Colour'" [options]="options" />
+      </cngx-form-field>
+      <cngx-form-field [field]="f.stars">
+        <cngx-rating />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxSelect, CngxRating],
+  })
+  class SelectHost {
+    readonly options = [
+      { value: 'red', label: 'Red' },
+      { value: 'blue', label: 'Blue' },
+    ];
+    readonly model = signal({ colour: 'red', stars: 0 });
+    readonly f = form(this.model);
+  }
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.colour">
+        <cngx-select [label]="'Colour'" [options]="options" [(value)]="f.colour().value" />
+      </cngx-form-field>
+      <cngx-form-field [field]="f.stars">
+        <cngx-rating [(value)]="f.stars().value" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxSelect, CngxRating],
+  })
+  class HandBoundSelectHost {
+    readonly options = [
+      { value: 'red', label: 'Red' },
+      { value: 'blue', label: 'Blue' },
+    ];
+    readonly model = signal({ colour: 'red', stars: 0 });
+    readonly f = form(this.model);
+  }
+
+  it('covers the select family and the rating: silent without a hand binding, one warning each with it', () => {
+    const warnings = collectWarnings();
+    const plain = mountHost(SelectHost);
+    const plainSelect = plain.fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    plainSelect.value.set('blue');
+    flush(plain.fixture);
+    plain.fixture.debugElement.query(By.directive(CngxRating)).componentInstance.value.set(3);
+    flush(plain.fixture);
+    expect(plain.host.model()).toEqual({ colour: 'blue', stars: 3 });
+    plain.host.f().reset({ colour: 'red', stars: 0 });
+    flush(plain.fixture);
+    expect(plain.host.model()).toEqual({ colour: 'red', stars: 0 });
+    expect(warnings()).toEqual([]);
+
+    const bound = mountHost(HandBoundSelectHost);
+    const boundSelect = bound.fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    boundSelect.value.set('blue');
+    flush(bound.fixture);
+    bound.fixture.debugElement.query(By.directive(CngxRating)).componentInstance.value.set(3);
+    flush(bound.fixture);
+    expect(bound.host.model()).toEqual({ colour: 'blue', stars: 3 });
+    expect(warnings()).toHaveLength(2);
+    expect(warnings()[0]).toMatch(/the field "[^"]*colour"/);
+    expect(warnings()[1]).toMatch(/the field "[^"]*stars"/);
+  });
+
+  @Component({
+    template: `
+      <cngx-form-field [field]="f.plain">
+        <cngx-slider cngxSliderFieldBridge [min]="0" [max]="100" aria-label="Plain" />
+      </cngx-form-field>
+      <cngx-form-field [field]="f.bound">
+        <cngx-slider cngxSliderFieldBridge [min]="0" [max]="100" aria-label="Bound" [(value)]="f.bound().value" />
+      </cngx-form-field>
+    `,
+    imports: [CngxFormField, CngxSlider, CngxSliderFieldBridge],
+  })
+  class SliderHost {
+    readonly model = signal({ plain: 40, bound: 40 });
+    readonly f = form(this.model);
+  }
+
+  it('covers the slider bridge: silent without a hand binding, one warning with it', () => {
+    const warnings = collectWarnings();
+    const { fixture, host } = mountHost(SliderHost);
+    const [plain, bound] = fixture.debugElement
+      .queryAll(By.directive(CngxSlider))
+      .map((de) => de.injector.get(CngxSliderTrack));
+
+    plain.value.set(60);
+    flush(fixture);
+    host.f().reset({ plain: 40, bound: 40 });
+    flush(fixture);
+    expect(warnings()).toEqual([]);
+
+    bound.value.set(70);
+    flush(fixture);
+    bound.value.set(80);
+    flush(fixture);
+    expect(host.model()).toEqual({ plain: 40, bound: 80 });
+    expect(warnings()).toHaveLength(1);
+    expect(warnings()[0]).toMatch(/the field "[^"]*bound"/);
+  });
 });

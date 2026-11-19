@@ -2268,6 +2268,23 @@
       ]
     },
     {
+      "code": "CNGX2032",
+      "lib": "forms",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "A field control also bound by hand",
+      "page": "core-concepts/error-codes/cngx2032.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx2032.html",
+      "status": "active",
+      "files": ["projects/forms/field/field-value-sync.ts"],
+      "messages": [
+        {
+          "file": "projects/forms/field/field-value-sync.ts",
+          "text": "[cngx-form-field] the field \"${...}\" is also bound by hand on its control, so a change is written as a programmatic value: the field stays pristine and a schema debounce() is skipped. Remove the [(value)] binding; the field syncs the control."
+        }
+      ]
+    },
+    {
       "code": "CNGX3001",
       "lib": "ui",
       "severity": "warn",

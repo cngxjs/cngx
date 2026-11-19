@@ -424,7 +424,7 @@ click writes the model and marks it dirty, `reset()` clears both. Two owners kee
 value instead: Reactive Forms through `formControlName` / `[formControl]`
 (`CngxFormBridge`), and any `[formField]` bound to the field. A hand
 `[(value)]="f.terms().value"` is unnecessary; it writes through `value.set`, so the field
-stays pristine.
+stays pristine, and warns [`CNGX2032`](../../../core-concepts/error-codes/cngx2032.md) in dev mode.
 
 A disabled field disables the atom; the atom's own `[disabled]` still applies on top. A
 readonly field locks the value but keeps the atom focusable and announces

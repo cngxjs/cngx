@@ -1,5 +1,9 @@
 import { effect, untracked, type Signal, type WritableSignal } from '@angular/core';
+import { cngxDevWarn } from '@cngx/utils';
 import type { CngxFieldRef } from './models';
+
+// Field refs that already warned CNGX2032.
+const handBoundWarned = new WeakSet<object>();
 
 /**
  * Value options of {@link bindFieldValue}. The same shape as the value half
@@ -34,6 +38,11 @@ export interface FieldValueBindingOptions<V> {
  * Signal Forms exposes it, because `value()` lags behind a schema `debounce()`
  * and a second change inside the window would otherwise be dropped.
  *
+ * In dev mode a user change the field already holds, which the field -> control
+ * run did not write itself, means a second writer on the field (a hand
+ * `[(value)]="f.x().value"` on the control): warns
+ * [`CNGX2032`](/error-codes/cngx2032.md) once per field.
+ *
  * Requires an injection context.
  *
  * @internal
@@ -45,6 +54,9 @@ export function bindFieldValue<V>(
 ): void {
   const toField = options.toFieldValue ?? ((v: V) => v as unknown);
   const skip = options.shouldSkipFieldValue;
+  // Dev only: the value the field -> control run last wrote into the control,
+  // so the control -> field run can tell its own echo from a second writer.
+  let pushed: { readonly value: V } | null = null;
 
   effect(() => {
     const control = target();
@@ -58,6 +70,9 @@ export function bindFieldValue<V>(
     const fieldValue = options.coerceFromField(raw);
     untracked(() => {
       if (!options.valueEquals(control(), fieldValue)) {
+        if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+          pushed = { value: fieldValue };
+        }
         control.set(fieldValue);
       }
     });
@@ -86,12 +101,32 @@ export function bindFieldValue<V>(
       const pending = controlValueOf(fieldRef);
       const held =
         mode === 'user' && typeof pending === 'function' ? (pending as () => unknown)() : raw;
+      const echo = pushed;
+      pushed = null;
       if (options.valueEquals(options.coerceFromField(held), next)) {
+        if (typeof ngDevMode !== 'undefined' && ngDevMode && mode === 'user') {
+          warnIfHandBound(fieldRef, echo !== null && options.valueEquals(echo.value, next));
+        }
         return;
       }
       writeFieldValue(fieldRef, toField(next), mode);
     });
   });
+}
+
+// The field already holds a user change it did not receive from this sync:
+// something else wrote it, typically `[(value)]="f.x().value"` on the control.
+function warnIfHandBound(fieldRef: CngxFieldRef, echo: boolean): void {
+  if (echo || handBoundWarned.has(fieldRef)) {
+    return;
+  }
+  handBoundWarned.add(fieldRef);
+  cngxDevWarn(
+    'CNGX2032',
+    `[cngx-form-field] the field "${fieldRef.name()}" is also bound by hand on its control, ` +
+      'so a change is written as a programmatic value: the field stays pristine and a schema ' +
+      'debounce() is skipped. Remove the [(value)] binding; the field syncs the control.',
+  );
 }
 
 /**
