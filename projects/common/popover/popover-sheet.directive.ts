@@ -330,10 +330,12 @@ export class CngxPopoverSheet
     this.requestClose('backdrop');
   };
 
-  // Closing on pointerdown releases inert before the gesture's click lands,
-  // so that click would hit the page element under the tap. Swallow the
-  // one click that belongs to this gesture; the next pointerdown or a short
-  // timeout disarms it, so a later tap is never eaten.
+  // Closing on pointerdown releases inert before the gesture's mousedown and
+  // click land, so they would hit the page element under the tap: the
+  // mousedown would take focus from the restored opener, the click would
+  // activate the element. Swallow both for this gesture; the next
+  // pointerdown or a short timeout disarms them, so a later tap is never
+  // eaten.
   private clickSwallowTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Chromium also turns an unhandled Escape keydown into a CloseWatcher close
@@ -357,9 +359,7 @@ export class CngxPopoverSheet
     event.stopPropagation();
     this.disarmClickSwallow();
   };
-  // The same gesture's mousedown would move focus to the page element under
-  // the tap and undo the restore to the opener. Its default only; the event
-  // still propagates.
+  // Default only: the mousedown still propagates.
   private readonly swallowMouseDown = (event: MouseEvent): void => {
     event.preventDefault();
   };
