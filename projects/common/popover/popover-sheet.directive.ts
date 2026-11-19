@@ -260,15 +260,20 @@ export class CngxPopoverSheet
   /** `true` in the sheet and fullscreen presentations. */
   readonly modal = computed(() => this.presentation() !== 'anchored');
 
+  private readonly showing = computed(() => {
+    const state = this.popover.state();
+    return state === 'opening' || state === 'open';
+  });
+  // A closing sheet has handed focus back and is no longer modal to a
+  // reader or to Tab; the trap and aria-modal both read this one signal.
+  private readonly modalShowing = computed(() => this.modal() && this.showing());
+
   /**
    * @internal Drives the composed `CngxFocusTrap`: Tab stays inside while
-   * modal and opening or open. A closing sheet has handed focus back, so its
-   * trap anchors leave the Tab order with the close.
+   * modal and opening or open, so the trap anchors leave the Tab order when
+   * the close starts.
    */
-  readonly focusTrapEnabled = computed(() => {
-    const state = this.popover.state();
-    return this.modal() && (state === 'opening' || state === 'open');
-  });
+  readonly focusTrapEnabled = this.modalShowing;
   /** @internal The sheet moves focus itself, inside `show()`. */
   readonly focusTrapAutoFocus = false;
 
@@ -280,12 +285,9 @@ export class CngxPopoverSheet
   });
 
   protected readonly roleAttr = computed(() => (this.modal() ? 'dialog' : this.staticRole));
-  // Only an opening or open sheet is modal to a reader: a closing or closed
-  // one would pull CngxLiveAnnouncer's scoped messages into a hidden panel.
-  protected readonly ariaModal = computed(() => {
-    const state = this.popover.state();
-    return this.modal() && (state === 'opening' || state === 'open') ? 'true' : null;
-  });
+  // A closing or closed sheet marked modal would pull CngxLiveAnnouncer's
+  // scoped messages into a hidden panel.
+  protected readonly ariaModal = computed(() => (this.modalShowing() ? 'true' : null));
   protected readonly ariaLabelledBy = computed(() =>
     this.modal()
       ? (this.labelledBy() ?? this.titleRegistry.current()?.id() ?? null)
@@ -418,8 +420,7 @@ export class CngxPopoverSheet
    * is on.
    */
   requestClose(reason: CngxPopoverSheetCloseReason): void {
-    const state = this.popover.state();
-    if (state !== 'open' && state !== 'opening') {
+    if (!untracked(() => this.showing())) {
       return;
     }
     this.closeRequested.emit(reason);

@@ -977,7 +977,7 @@ describe('CngxPopoverSheet', () => {
       expect(document.activeElement).toBe(ctx.q('.close'));
     });
 
-    it('takes the sentinels out of the Tab order when the close fade starts', () => {
+    it('drops the sentinels and aria-modal together when the close fade starts', () => {
       vi.useFakeTimers();
       const ctx = setup();
       openFromOpener(ctx);
@@ -986,12 +986,14 @@ describe('CngxPopoverSheet', () => {
           ctx.panel.parentElement!.querySelectorAll<HTMLElement>('.cdk-focus-trap-anchor'),
         );
       expect(anchors().every((a) => a.getAttribute('tabindex') === '0')).toBe(true);
+      expect(ctx.panel.getAttribute('aria-modal')).toBe('true');
 
       stubTransition('0.2s');
       ctx.host.popover().hide();
       ctx.flush();
       expect(ctx.host.popover().state()).toBe('closing');
       expect(anchors().some((a) => a.getAttribute('tabindex') === '0')).toBe(false);
+      expect(ctx.panel.hasAttribute('aria-modal')).toBe(false);
       vi.useRealTimers();
     });
   });
