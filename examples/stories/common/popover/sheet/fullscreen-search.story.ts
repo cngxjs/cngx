@@ -24,7 +24,8 @@ export const STORY: DemoSpec = {
     'CngxPopoverSheetInitialFocus',
     'CngxCloseButton',
   ],
-  setup: `protected readonly query = signal('');
+  setup: `protected readonly presentation = signal<'auto' | 'fullscreen' | 'anchored'>('auto');
+  protected readonly query = signal('');
   private readonly countries = [
     'Austria', 'Belgium', 'Croatia', 'Cyprus', 'Czechia', 'Denmark', 'Estonia',
     'Finland', 'France', 'Germany', 'Greece', 'Hungary', 'Ireland', 'Italy',
@@ -70,7 +71,6 @@ export const STORY: DemoSpec = {
       }
     </ul>
   </div>`,
-  setupChrome: `protected readonly presentation = signal<'auto' | 'fullscreen' | 'anchored'>('auto');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'fullscreen', 'anchored']; track mode) {
       <label>

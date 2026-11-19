@@ -41,8 +41,19 @@ export const STORY: DemoSpec = {
     'Madrid', 'Oslo', 'Paris', 'Prague', 'Rome', 'Stockholm', 'Vienna', 'Warsaw',
   ];
   protected saveFavourite = () =>
-    new Promise<void>((_, reject) => setTimeout(() => reject('Could not save, you are offline'), 1500));`,
-  template: `<div class="demo-inline-actions" [attr.dir]="dir()">
+    new Promise<void>((_, reject) => setTimeout(() => reject('Could not save, you are offline'), 1500));
+
+  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
+  protected readonly blockClose = signal(false);
+  protected readonly escapeCloses = signal(true);
+  protected readonly lastRequest = signal<string | undefined>(undefined);
+  protected handleCloseRequested(reason: string, sheet: { announce(m: string, p?: 'polite' | 'assertive'): void }): void {
+    this.lastRequest.set(reason);
+    if (this.blockClose()) {
+      sheet.announce('Closing is blocked', 'assertive');
+    }
+  }`,
+  template: `<div class="demo-inline-actions">
     <button type="button" [cngxPopoverTrigger]="pop" (click)="pop.show()">
       {{ city() ?? 'Choose a city' }}
     </button>
@@ -123,17 +134,15 @@ export const STORY: DemoSpec = {
     this.destroyRef.onDestroy(() => observer.disconnect());
   });
 
-  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
+  // The popover places itself from the document direction, so the RTL radio
+  // flips <html dir> and puts the page's own value back on destroy.
   protected readonly dir = signal<'ltr' | 'rtl'>('ltr');
-  protected readonly blockClose = signal(false);
-  protected readonly escapeCloses = signal(true);
-  protected readonly lastRequest = signal<string | undefined>(undefined);
-  protected handleCloseRequested(reason: string, sheet: { announce(m: string, p?: 'polite' | 'assertive'): void }): void {
-    this.lastRequest.set(reason);
-    if (this.blockClose()) {
-      sheet.announce('Closing is blocked', 'assertive');
-    }
-  }`,
+  private readonly root = this.hostEl.nativeElement.ownerDocument.documentElement;
+  private readonly rootDir = this.root.getAttribute('dir');
+  private readonly applyDir = effect(() => this.root.setAttribute('dir', this.dir()));
+  private readonly restoreDir = this.destroyRef.onDestroy(() =>
+    this.rootDir === null ? this.root.removeAttribute('dir') : this.root.setAttribute('dir', this.rootDir),
+  );`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
       <label>
