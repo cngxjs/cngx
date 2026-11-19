@@ -39,7 +39,17 @@ import { CngxSidenavLayout } from './sidenav-layout';
           color: var(--cngx-color-text);
         "
       ></span>
+      <span class="muted-probe" style="color: var(--cngx-color-text-muted)"></span>
     </div>
+    <cngx-sidenav
+      class="brand-rail"
+      mode="side"
+      [opened]="true"
+      ariaLabel="Brand"
+      style="--cngx-sidenav-bg: rgb(20, 40, 80); --cngx-sidenav-color: rgb(250, 240, 200)"
+    >
+      <span class="brand-ring-probe">Inbox</span>
+    </cngx-sidenav>
     <cngx-sidenav class="page-rail" mode="side" [opened]="true" ariaLabel="Page"
       >Inbox</cngx-sidenav
     >
@@ -88,8 +98,8 @@ function el(root: HTMLElement, selector: string): HTMLElement {
   return found;
 }
 
-function ringColor(root: HTMLElement, token: string): string {
-  const probe = el(root, '.ring-probe');
+function ringColor(root: HTMLElement, token: string, selector = '.ring-probe'): string {
+  const probe = el(root, selector);
   probe.style.color = `var(${token})`;
   return getComputedStyle(probe).color;
 }
@@ -140,8 +150,25 @@ describe('CngxSidenav scheme island', () => {
         expect(ringColor(root, '--cngx-nav-link-focus-outline-color')).toBe(probe.color);
         expect(ringColor(root, '--cngx-nav-link-focus-inner-color')).toBe(probe.backgroundColor);
       });
+
+      it('writes the section label in the island muted text colour', () => {
+        const root = mountIn();
+        expect(ringColor(root, '--cngx-nav-label-color')).toBe(
+          getComputedStyle(el(root, '.muted-probe')).color,
+        );
+      });
     });
   }
+
+  it('draws the focus ring outer colour from the brand rail ink', () => {
+    const root = mount();
+    expect(ringColor(root, '--cngx-nav-link-focus-outline-color', '.brand-ring-probe')).toBe(
+      'rgb(250, 240, 200)',
+    );
+    expect(ringColor(root, '--cngx-nav-link-focus-inner-color', '.brand-ring-probe')).toBe(
+      'rgb(20, 40, 80)',
+    );
+  });
 
   // The peek casts the expanded shadow; the state is the sidebar's attribute.
   function peekShadow(root: HTMLElement, selector: string): { x: string; tint: string } {

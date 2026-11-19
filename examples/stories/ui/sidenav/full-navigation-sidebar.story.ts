@@ -17,7 +17,7 @@ export const STORY: DemoSpec = {
     'CngxSidenavContent',
   ],
   moduleImports: [
-    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from \'@cngx/ui\';',
+    'import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent } from \'@cngx/ui/sidenav\';',
     'import { CngxNavHeader, CngxNavFooter, CngxNavMark, CngxNavName } from \'@cngx/common/interactive\';',
     'import { CngxAvatar } from \'@cngx/common/display\';',
     'import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavGroupContent, CngxNavBadge } from \'@cngx/common\';',

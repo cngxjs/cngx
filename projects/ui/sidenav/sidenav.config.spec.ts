@@ -1,4 +1,4 @@
-import { Component, Directive, viewChild, type Type } from '@angular/core';
+import { Component, Directive, isSignal, signal, viewChild, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -12,6 +12,7 @@ import {
   withSidenavShortcut,
 } from './config/features';
 import type { CngxSidenavConfigFeature } from './config/provide-sidenav-config';
+import type { CngxSidenavConfig, CngxSidenavLabels } from './config/sidenav.config';
 import { injectSidenavConfig } from './config/inject-sidenav-config';
 import { provideSidenavConfig, provideSidenavConfigAt } from './config/provide-sidenav-config';
 
@@ -42,6 +43,10 @@ function atHost(...features: CngxSidenavConfigFeature[]): Type<{ probe: () => Cf
     readonly probe = viewChild.required(CfgProbe);
   }
   return FeatureAtHost;
+}
+
+function readLabels(labels: CngxSidenavConfig['labels']): Partial<CngxSidenavLabels> | undefined {
+  return isSignal(labels) ? labels() : labels;
 }
 
 function resolveAt(root: CngxSidenavConfigFeature[], at: CngxSidenavConfigFeature[]) {
@@ -133,12 +138,30 @@ describe('CNGX_SIDENAV_CONFIG', () => {
     ).toBe('menu');
   });
 
-  it('provideSidenavConfigAt replaces labels whole', () => {
+  it('provideSidenavConfigAt merges labels per key with the root', () => {
     const cfg = resolveAt(
-      [withSidenavLabels({ toggleShortcut: 'Menü umschalten' })],
+      [withSidenavLabels({ toggleShortcut: 'Menü umschalten', resizeHandle: 'Breite' })],
       [withSidenavLabels({ resizeHandle: 'Breite ändern' })],
     );
-    expect(cfg.labels).toEqual({ resizeHandle: 'Breite ändern' });
+    expect(readLabels(cfg.labels)).toEqual({
+      toggleShortcut: 'Menü umschalten',
+      resizeHandle: 'Breite ändern',
+    });
+  });
+
+  it('merges two withSidenavLabels calls per key, the later one winning', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideSidenavConfig(
+          withSidenavLabels({ startRegion: 'Navigation', resizeHandle: 'Breite' }),
+          withSidenavLabels(signal({ resizeHandle: 'Breite ändern' })),
+        ),
+      ],
+    });
+    expect(readLabels(TestBed.inject(CNGX_SIDENAV_CONFIG).labels)).toEqual({
+      startRegion: 'Navigation',
+      resizeHandle: 'Breite ändern',
+    });
   });
 
   it('provideSidenavConfigAt replaces persistence and inherits it when absent', () => {

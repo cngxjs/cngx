@@ -10,9 +10,10 @@ import { CngxSidenavLayout } from './sidenav-layout';
 // Runs in a real Chromium (the `test-geometry` target). Guards the recorded
 // mini-rail trap: `--cngx-sidenav-mini-width` is registered `inherits: true`
 // so descendants read the host-configured width instead of freezing at the
-// 56px registered initial. `inherits: false` reintroduced the overflow bug the
-// memory records; this asserts the configured width reaches the body and that
-// the collapsed body fits inside the rail border.
+// 56px registered initial. `inherits: false` sized the collapsed body from
+// that 56px initial instead of the configured rail width; this asserts the
+// configured width reaches the body and that the collapsed body fits inside
+// the rail border.
 
 @Component({
   selector: 'cngx-sidenav-geometry-host',
