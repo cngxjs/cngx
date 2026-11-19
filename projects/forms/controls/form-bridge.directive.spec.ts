@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  CngxCheckbox,
   CngxCheckboxGroup,
   CngxMultiChipGroup,
   CngxRadioGroup,
@@ -343,6 +344,86 @@ describe('CngxFormBridge', () => {
       externalProbe.set('b');
       TestBed.flushEffects();
       expect(fn).toHaveBeenCalledTimes(1); // wrap held - no cascade
+    });
+  });
+
+  // ── Parent [value] binding next to [formControl] ─────────────────────
+
+  describe('parent [value] binding next to [formControl]', () => {
+    @Component({
+      template: `<cngx-checkbox [formControl]="ctrl" [(value)]="mirror" #host>label</cngx-checkbox>`,
+      imports: [CngxCheckbox, ReactiveFormsModule, CngxFormBridge],
+    })
+    class MirrorHost {
+      ctrl = new FormControl<boolean>(false, { nonNullable: true });
+      readonly mirror = signal(false);
+      @ViewChild('host', { read: ElementRef }) hostEl!: ElementRef<HTMLElement>;
+    }
+
+    function setup(ctrl?: FormControl<boolean>) {
+      TestBed.configureTestingModule({ imports: [MirrorHost] });
+      const fixture = TestBed.createComponent(MirrorHost);
+      if (ctrl) {
+        fixture.componentInstance.ctrl = ctrl;
+      }
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      const host = fixture.componentInstance;
+      const setValue = vi.spyOn(host.ctrl, 'setValue');
+      return { fixture, host, setValue };
+    }
+
+    it('a programmatic parent write leaves the control pristine and calls no setValue', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.mirror.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      expect(host.ctrl.value).toBe(false);
+      expect(host.ctrl.dirty).toBe(false);
+      expect(setValue).not.toHaveBeenCalled();
+    });
+
+    it('a click dirties the control with exactly one setValue', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.hostEl.nativeElement.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
+      expect(setValue).toHaveBeenCalledTimes(1);
+      expect(host.mirror()).toBe(true);
+    });
+
+    it('Space dirties the control with exactly one setValue', () => {
+      const { fixture, host, setValue } = setup();
+
+      host.hostEl.nativeElement.dispatchEvent(
+        new KeyboardEvent('keydown', { key: ' ', bubbles: true }),
+      );
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
+      expect(setValue).toHaveBeenCalledTimes(1);
+    });
+
+    it("updateOn: 'blur' holds the click until focus leaves", () => {
+      const { fixture, host } = setup(new FormControl(false, { nonNullable: true, updateOn: 'blur' }));
+
+      host.hostEl.nativeElement.click();
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(host.ctrl.value).toBe(false);
+
+      host.hostEl.nativeElement.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      expect(host.ctrl.value).toBe(true);
+      expect(host.ctrl.dirty).toBe(true);
     });
   });
 

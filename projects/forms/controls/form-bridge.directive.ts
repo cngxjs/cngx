@@ -1,12 +1,10 @@
 import {
   DestroyRef,
   Directive,
-  type EffectRef,
-  effect,
   ElementRef,
   forwardRef,
   inject,
-  Injector,
+  type OutputRefSubscription,
   untracked,
 } from '@angular/core';
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -33,17 +31,16 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *
  * Behaviour:
  * - All four CVA hooks wrap their bodies in `untracked()`. Load-bearing on
- *   `registerOnChange`: the effect reads `control.value()` then invokes
- *   `fn(value)` outside the dependency graph, so any signal `fn` touches
- *   (today via RF internals, tomorrow via signal-based RF) does not feed
- *   back into the effect.
- * - `registerOnChange` skips its first run - initial value is delivered
- *   via `writeValue` per CVA contract.
+ *   `registerOnChange`: the atom may write its model inside a reactive
+ *   context, so `fn(value)` runs outside the dependency graph and any signal
+ *   `fn` touches (today via RF internals, tomorrow via signal-based RF) is
+ *   never tracked by that context.
  * - A write through the atom's `value` model (typing, a click, `value.set`)
  *   reaches the control synchronously via the model's `subscribe`, so a form
- *   submitted in the same task (Enter right after a keystroke) reads it. The
- *   effect stays for changes that bypass `set` (a parent `[value]` binding);
- *   after a synchronous forward it sees `lastSeen` and does nothing.
+ *   submitted in the same task (Enter right after a keystroke) reads it.
+ * - A parent `[value]` binding next to `[formControl]` is not a user change
+ *   (CVA contract): it updates the atom but never the control, which stays
+ *   pristine. The model's `subscribe` does not fire for an input binding.
  * - `writeValue` stamps `lastSeen`; the change-listener short-circuits on
  *   `Object.is` so the RF→atom→RF round-trip never re-emits.
  *
@@ -85,7 +82,6 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
 })
 export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   private readonly control = inject(CNGX_CONTROL_VALUE) as CngxControlValue<T>;
-  private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -96,7 +92,7 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   private static readonly UNSET: unique symbol = Symbol('cngx-form-bridge-unset');
   private lastSeen: T | typeof CngxFormBridge.UNSET = CngxFormBridge.UNSET;
 
-  private effectRef: EffectRef | null = null;
+  private subscription: OutputRefSubscription | null = null;
 
   /**
    * RF → view. Stamps `lastSeen` then writes the atom's model signal; the
@@ -111,41 +107,20 @@ export class CngxFormBridge<T = unknown> implements ControlValueAccessor {
   }
 
   /**
-   * Forwards atom writes into `fn(value)`: synchronously on every write through
-   * the `value` model, and through a tracked effect over `control.value()` for
-   * changes that do not go through `set`. The effect's first run is the
-   * post-mount baseline (CVA contract - initial value was delivered via
-   * `writeValue`). Both paths share the `lastSeen` guard, so a value forwards
-   * once.
+   * Forwards every atom write through the `value` model's `set` into
+   * `fn(value)`, synchronously. Only the atom's own writes reach this path:
+   * a parent `[value]` binding updates the model without emitting, so it never
+   * dirties the control. The initial value arrives via `writeValue`, which
+   * stamps `lastSeen`, so its echo through the model never forwards.
    */
   registerOnChange(fn: (value: T) => void): void {
     this.onChange = fn;
-    if (this.effectRef !== null) {
+    if (this.subscription !== null) {
       return;
     }
-    const subscription = this.control.value.subscribe((value) => {
-      if (this.lastSeen === CngxFormBridge.UNSET) {
-        // Not observed yet: the effect takes the baseline on its first run.
-        return;
-      }
-      this.forward(value);
-    });
-    this.effectRef = effect(
-      () => {
-        const value = this.control.value();
-        if (this.lastSeen === CngxFormBridge.UNSET) {
-          // CVA contract: registerOnChange listens for future changes only.
-          this.lastSeen = value;
-          return;
-        }
-        this.forward(value);
-      },
-      { injector: this.injector },
-    );
-    this.destroyRef.onDestroy(() => {
-      subscription.unsubscribe();
-      this.effectRef?.destroy();
-    });
+    const subscription = this.control.value.subscribe((value) => this.forward(value));
+    this.subscription = subscription;
+    this.destroyRef.onDestroy(() => subscription.unsubscribe());
   }
 
   private forward(value: T): void {
