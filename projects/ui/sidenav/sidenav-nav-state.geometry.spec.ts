@@ -14,7 +14,7 @@ import {
   CngxNavName,
 } from '@cngx/common/interactive';
 import { computedValue, contrastRatio, oklabOf, parkPointer } from '@cngx/testing/geometry';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
 
 import { CngxSidenav, type SidenavPosition } from './sidenav';
@@ -703,11 +703,14 @@ describe('rail as a crop of the expanded sidenav', () => {
     return out;
   }
 
-  // The hover peek settles after the composed hover intent's 120ms dwell.
+  // The hover peek lands after the composed hover intent's 120ms dwell; poll
+  // for it instead of sleeping a fixed margin past the dwell.
   async function peek(el: (selector: string) => HTMLElement, settle: () => void): Promise<void> {
     el('.crop').dispatchEvent(new PointerEvent('pointerenter'));
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    settle();
+    await vi.waitFor(() => {
+      settle();
+      expect(el('.crop').getAttribute('data-sidebar-state')).toBe('peek');
+    });
   }
 
   it('keeps the header mark, rows, icon box, section label, group head and bar in place in rail, peek and expanded', async () => {

@@ -3,6 +3,7 @@ import { Component, signal, type DebugElement } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CngxDrawerModality } from '@cngx/common/layout';
 import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavContent } from './sidenav-content';
@@ -25,7 +26,7 @@ let mockTrap: {
   template: `
     <button class="external-trigger" type="button">Open</button>
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()">
+      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()" [modality]="modality()">
         <a class="nav-first" href="#a">First</a>
         <a class="nav-last" href="#b">Last</a>
       </cngx-sidenav>
@@ -37,6 +38,7 @@ let mockTrap: {
 class FocusHost {
   open = signal(false);
   mode = signal<SidenavMode>('over');
+  modality = signal<CngxDrawerModality>('page');
 }
 
 @Component({
@@ -118,6 +120,26 @@ describe('CngxSidenav focus management', () => {
     TestBed.flushEffects();
     expect(content.hasAttribute('inert')).toBe(false);
     expect(outside.hasAttribute('inert')).toBe(false);
+  });
+
+  it('keeps a contained overlay modal inside the layout only', () => {
+    const { fixture, host, sidenavEl } = setup();
+    const outside = fixture.nativeElement.querySelector('.external-trigger') as HTMLElement;
+    const content = fixture.nativeElement.querySelector('cngx-sidenav-content') as HTMLElement;
+    host.modality.set('contained');
+    host.open.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(content.hasAttribute('inert')).toBe(true);
+    expect(outside.hasAttribute('inert')).toBe(false);
+    expect(mockTrap.enabled).toBe(false);
+    expect(sidenavEl.hasAttribute('aria-modal')).toBe(false);
+    expect(sidenavEl.getAttribute('role')).toBe('navigation');
+
+    host.open.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(content.hasAttribute('inert')).toBe(false);
   });
 
   it('closes the overlay on Escape inside it', () => {
@@ -295,7 +317,10 @@ describe('CngxSidenav accessible name', () => {
     TestBed.configureTestingModule({
       providers: [
         provideCngxI18n(
-          withPartialPack({ locale: 'de', sidenav: { startRegion: 'Pack start', endRegion: 'Pack end' } }),
+          withPartialPack({
+            locale: 'de',
+            sidenav: { startRegion: 'Pack start', endRegion: 'Pack end' },
+          }),
           withDocumentLanguage('off'),
         ),
         provideSidenavConfig(withSidenavLabels({ startRegion: 'Config start' })),

@@ -1,9 +1,17 @@
-import { Component, Directive, viewChild } from '@angular/core';
+import { Component, Directive, viewChild, type Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_SIDENAV_CONFIG, CNGX_SIDENAV_DEFAULTS } from './config/sidenav.config.defaults';
-import { withSidenavDimensions, withSidenavShortcut } from './config/features';
+import {
+  withSidenavDimensions,
+  withSidenavHoverDwell,
+  withSidenavLabels,
+  withSidenavPersistence,
+  withSidenavRouterSync,
+  withSidenavShortcut,
+} from './config/features';
+import type { CngxSidenavConfigFeature } from './config/provide-sidenav-config';
 import { injectSidenavConfig } from './config/inject-sidenav-config';
 import { provideSidenavConfig, provideSidenavConfigAt } from './config/provide-sidenav-config';
 
@@ -22,6 +30,25 @@ class CfgProbe {
 })
 class AtHost {
   readonly probe = viewChild.required(CfgProbe);
+}
+
+function atHost(...features: CngxSidenavConfigFeature[]): Type<{ probe: () => CfgProbe }> {
+  @Component({
+    imports: [CfgProbe],
+    viewProviders: [provideSidenavConfigAt(...features)],
+    template: `<i cfgProbe></i>`,
+  })
+  class FeatureAtHost {
+    readonly probe = viewChild.required(CfgProbe);
+  }
+  return FeatureAtHost;
+}
+
+function resolveAt(root: CngxSidenavConfigFeature[], at: CngxSidenavConfigFeature[]) {
+  TestBed.configureTestingModule({ providers: [provideSidenavConfig(...root)] });
+  const fixture = TestBed.createComponent(atHost(...at));
+  fixture.detectChanges();
+  return fixture.componentInstance.probe().cfg;
 }
 
 describe('CNGX_SIDENAV_CONFIG', () => {
@@ -81,5 +108,46 @@ describe('CNGX_SIDENAV_CONFIG', () => {
 
     expect(cfg.dimensions?.width).toBe('360px'); // At override wins
     expect(cfg.shortcut).toBe('mod+k'); // inherited from root via skipSelf merge
+  });
+
+  it('provideSidenavConfigAt merges hover per key with the parent', () => {
+    const cfg = resolveAt(
+      [withSidenavHoverDwell({ enterDelay: 200, leaveDelay: 80 })],
+      [withSidenavHoverDwell({ enterDelay: 400 })],
+    );
+    expect(cfg.hover?.enterDelay).toBe(400);
+    expect(cfg.hover?.leaveDelay).toBe(80);
+  });
+
+  it('provideSidenavConfigAt overrides the router-sync param and inherits it when absent', () => {
+    expect(
+      resolveAt(
+        [withSidenavRouterSync({ param: 'menu' })],
+        [withSidenavRouterSync({ param: 'side' })],
+      ).routerSync?.param,
+    ).toBe('side');
+    TestBed.resetTestingModule();
+    expect(
+      resolveAt([withSidenavRouterSync({ param: 'menu' })], [withSidenavShortcut('mod+.')])
+        .routerSync?.param,
+    ).toBe('menu');
+  });
+
+  it('provideSidenavConfigAt replaces labels whole', () => {
+    const cfg = resolveAt(
+      [withSidenavLabels({ toggleShortcut: 'Menü umschalten' })],
+      [withSidenavLabels({ resizeHandle: 'Breite ändern' })],
+    );
+    expect(cfg.labels).toEqual({ resizeHandle: 'Breite ändern' });
+  });
+
+  it('provideSidenavConfigAt replaces persistence and inherits it when absent', () => {
+    expect(
+      resolveAt([withSidenavPersistence('app')], [withSidenavPersistence('panel')]).persistence,
+    ).toEqual({ storageKey: 'panel' });
+    TestBed.resetTestingModule();
+    expect(
+      resolveAt([withSidenavPersistence('app')], [withSidenavShortcut('mod+.')]).persistence,
+    ).toEqual({ storageKey: 'app' });
   });
 });

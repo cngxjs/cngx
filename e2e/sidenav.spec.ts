@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.describe('CngxSidenav layout regressions', () => {
   test('rail body does not overflow a non-default-width rail (side mode)', async ({ page }) => {
@@ -234,5 +234,153 @@ test.describe('CngxSidenav layout regressions', () => {
     await page.keyboard.press('Escape');
     await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
     await expect(trigger).toBeFocused();
+  });
+});
+
+test.describe('CngxSidenav user gestures', () => {
+  const FULL_NAV = '/#/ui/sidenav/full-navigation-sidebar';
+
+  // The full-navigation story binds no mode: only the expanded width class
+  // docks the rail with its resize handle.
+  async function dockedFullNav(page: Page) {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await page.goto(FULL_NAV);
+    const nav = page.locator('cngx-sidenav').first();
+    await expect(nav).toHaveClass(/cngx-sidenav--side/);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'expanded');
+    return nav;
+  }
+
+  const railWidth = (nav: Locator) =>
+    nav.evaluate((el) => el.style.getPropertyValue('--cngx-sidenav-width'));
+
+  test('a backdrop click closes the overlay and restores focus to the opener', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/router-sync/deep-linkable-overlay');
+    const nav = page.locator('cngx-sidenav').first();
+    const opener = page.getByRole('button', { name: 'Open menu' });
+    await opener.click();
+    await expect(nav).toHaveClass(/cngx-sidenav--open/);
+
+    // The surface is engaged once focus has moved into the rail.
+    await expect(nav.getByRole('link', { name: 'Dashboard' })).toBeFocused();
+    const backdrop = page.locator('.cngx-sidenav-backdrop').first();
+    await expect(backdrop).toBeVisible();
+    const backdropBox = (await backdrop.boundingBox())!;
+    // Press the far end of the backdrop: the rail may still be sliding in, so
+    // a point measured from its box could land inside it. A raw mouse press,
+    // since the backdrop is a pointer target, not an actionable element.
+    await page.mouse.click(
+      backdropBox.x + backdropBox.width - 20,
+      backdropBox.y + backdropBox.height / 2,
+    );
+    await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
+    await expect(page.getByRole('button', { name: 'Open menu' })).toBeFocused();
+  });
+
+  test('drag and arrow keys resize the rail and move aria-valuenow', async ({ page }) => {
+    const nav = await dockedFullNav(page);
+    const handle = nav.locator('.cngx-sidenav__resize-handle');
+    await expect(handle).toHaveAttribute('aria-valuenow', '240');
+
+    await handle.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect
+      .poll(async () => Number(await handle.getAttribute('aria-valuenow')))
+      .toBeGreaterThan(240);
+    const afterKey = Number(await handle.getAttribute('aria-valuenow'));
+    expect(await railWidth(nav)).toBe(`${afterKey}px`);
+
+    const box = (await handle.boundingBox())!;
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 60, y, { steps: 6 });
+    await page.mouse.up();
+    const afterDrag = Number(await handle.getAttribute('aria-valuenow'));
+    expect(afterDrag).toBeGreaterThanOrEqual(afterKey + 50);
+    expect(await railWidth(nav)).toBe(`${afterDrag}px`);
+  });
+
+  test('a persisted collapsed state survives a reload', async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
+    await page.goto('/#/ui/sidenav/persistence/collapsed-across-reloads');
+    await page.evaluate(() => localStorage.removeItem('cngx-demo-sidenav:start'));
+    await page.reload();
+    const nav = page.locator('cngx-sidenav').first();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'expanded');
+
+    await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+
+    await page.reload();
+    await expect(page.locator('cngx-sidenav').first()).toHaveAttribute(
+      'data-sidebar-state',
+      'rail',
+    );
+    await page.evaluate(() => localStorage.removeItem('cngx-demo-sidenav:start'));
+  });
+
+  test('under rtl the start rail sits at the inline start and the arrow keys mirror', async ({
+    page,
+  }) => {
+    const nav = await dockedFullNav(page);
+    await page.locator('html').evaluate((el) => el.setAttribute('dir', 'rtl'));
+    const content = page.locator('cngx-sidenav-content').first();
+    await expect
+      .poll(async () => (await nav.boundingBox())!.x)
+      .toBeGreaterThan((await content.boundingBox())!.x);
+
+    const handle = nav.locator('.cngx-sidenav__resize-handle');
+    await handle.focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect
+      .poll(async () => Number(await handle.getAttribute('aria-valuenow')))
+      .toBeGreaterThan(240);
+  });
+
+  test('the mod+. shortcut toggles the rail', async ({ page }) => {
+    const nav = await dockedFullNav(page);
+    // mod resolves from the page's platform (Client Hints first), which need
+    // not match the host OS Playwright's ControlOrMeta reads.
+    const mod = await page.evaluate(() => {
+      const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+      const platform = nav.userAgentData?.platform || nav.platform || '';
+      return /mac|iphone|ipad|ipod/i.test(platform) ? 'Meta' : 'Control';
+    });
+    await page.keyboard.press(`${mod}+Period`);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'rail');
+    await page.keyboard.press(`${mod}+Period`);
+    await expect(nav).toHaveAttribute('data-sidebar-state', 'expanded');
+  });
+
+  test('a contained drawer blocks its layout only', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/contained-modality/drawer-inside-a-panel');
+    const nav = page.locator('cngx-sidenav').first();
+    await page.getByRole('button', { name: 'Open filters' }).click();
+    await expect(nav).toHaveClass(/cngx-sidenav--open/);
+    await expect(nav).not.toHaveAttribute('aria-modal', 'true');
+    await expect(nav).toHaveAttribute('role', 'navigation');
+    // The trigger stays live; its sibling inside the layout does not.
+    await expect(page.getByRole('button', { name: 'Close filters' })).toBeVisible();
+    await expect
+      .poll(() =>
+        page
+          .locator('cngx-sidenav-content button', { hasText: 'Export' })
+          .evaluate((el) => el.closest('[inert]') !== null),
+      )
+      .toBe(true);
+
+    const outside = page.getByRole('button', { name: /Outside the layout/ });
+    await outside.click();
+    await expect(outside).toHaveText(/Outside the layout: 1/);
+    await expect(nav).not.toHaveClass(/cngx-sidenav--open/);
+  });
+
+  test('a ?nav=open deep link opens the overlay', async ({ page }) => {
+    await page.goto('/#/ui/sidenav/router-sync/deep-linkable-overlay?nav=open');
+    const nav = page.locator('cngx-sidenav').first();
+    await expect(nav).toHaveClass(/cngx-sidenav--open/);
+    await expect(nav).toHaveAttribute('aria-modal', 'true');
   });
 });
