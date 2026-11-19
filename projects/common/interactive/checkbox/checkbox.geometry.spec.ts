@@ -76,4 +76,10 @@ describe('CngxCheckbox theme-derived focus radius', () => {
     mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
     expect(computedValue(box, '--cngx-checkbox-focus-radius')).toBe('5px');
   });
+
+  it('paints the focus ring with the primary in scope', () => {
+    const [box] = mount();
+    mountedRoot!.style.setProperty('--cngx-color-primary', 'rgb(0, 0, 200)');
+    expect(computedValue(box, '--cngx-checkbox-focus-outline')).toBe('2px solid rgb(0, 0, 200)');
+  });
 });

@@ -160,4 +160,10 @@ describe('CngxToggle theme-derived radii', () => {
     expect(computedValue(host, '--cngx-toggle-focus-radius')).toBe('5px');
     expect(computedValue(query(host, '.cngx-toggle__track'), 'border-top-left-radius')).toBe('6px');
   });
+
+  it('paints the focus ring with the primary in scope', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-color-primary', 'rgb(0, 0, 200)');
+    expect(computedValue(host, '--cngx-toggle-focus-outline')).toBe('2px solid rgb(0, 0, 200)');
+  });
 });

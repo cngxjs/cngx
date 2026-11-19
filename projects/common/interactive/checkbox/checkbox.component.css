@@ -60,6 +60,7 @@
 
   /**
    * Focus-ring outline shorthand applied via `outline` on the host.
+   * Defaults to a 2px primary ring, as on the radio.
    * @group State / Focus
    */
   @property --cngx-checkbox-focus-outline {
@@ -89,11 +90,12 @@
     initial-value: 0.25rem;
   }
 
-  /* Derive the focus radius from the theme: the registered initial defeats a
-   * use-site fallback, so the default lives in a SET. Kept in this layer so a
-   * Material bridge and a consumer override still win. */
+  /* Derive the focus ring and radius from the theme: the registered initial
+   * defeats a use-site fallback, so the default lives in a SET. Kept in this
+   * layer so a Material bridge and a consumer override still win. */
   .cngx-checkbox {
     --cngx-checkbox-focus-radius: var(--cngx-radius-sm);
+    --cngx-checkbox-focus-outline: 2px solid var(--cngx-color-primary);
   }
 }
 
