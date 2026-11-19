@@ -90,4 +90,19 @@ $theme: mat.define-theme(
     margin: 0;
     font: var(--mat-sys-title-small);
   }
+
+  // The page row every lab page shows first.
+  .lab-pages {
+    inline-size: 100%;
+    font: var(--mat-sys-label-large);
+  }
+
+  .lab-pages a {
+    color: var(--mat-sys-primary);
+  }
+
+  .lab-pages a.lab-page-active {
+    color: inherit;
+    text-decoration: none;
+  }
 }

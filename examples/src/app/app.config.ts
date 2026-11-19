@@ -176,6 +176,11 @@ export const appConfig: ApplicationConfig = {
               path: '',
               loadComponent: () => import('./material-lab/material-lab').then((m) => m.MaterialLab),
             },
+            {
+              path: 'display',
+              loadComponent: () =>
+                import('./material-lab/display/lab-display').then((m) => m.LabDisplay),
+            },
           ],
         },
         ...routes,

@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { form, schema, required, email, disabled, FormField } from '@angular/forms/signals';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -186,6 +187,8 @@ interface FieldModel {
   providers: [CngxBanner, { provide: STEPPER_GLOBAL_OPTIONS, useValue: { showError: true } }],
   viewProviders: [provideButtonCaretIcon(MaterialLabCaret)],
   imports: [
+    RouterLink,
+    RouterLinkActive,
     FormsModule,
     FormField,
     MatFormFieldModule,
@@ -280,6 +283,10 @@ interface FieldModel {
   ],
   template: `
     <div class="lab mat-app-background mat-typography">
+      <nav class="lab-row lab-pages" aria-label="Material lab pages">
+        <a routerLink="/material-lab" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="lab-page-active">Forms and overlays</a>
+        <a routerLink="/material-lab/display" ariaCurrentWhenActive="page" routerLinkActive="lab-page-active">Display</a>
+      </nav>
       <section class="lab-wide">
         <h3>buttons (Material left, cngx right)</h3>
         <div class="lab-row">
