@@ -203,3 +203,14 @@ describe('CngxCheckboxIndicator glyph geometry', () => {
     });
   }
 });
+
+// The box radius is registered with a fixed initial, so a use-site fallback
+// never paints: the theme reaches it only through the SET.
+describe('CngxCheckboxIndicator theme-derived radius', () => {
+  it('derives the box radius from the radius scale', () => {
+    mountGlyph('md', false);
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
+    const box = mountedRoot!.querySelector('.cngx-checkbox-indicator__box') as HTMLElement;
+    expect(computedValue(box, 'border-top-left-radius')).toBe('5px');
+  });
+});

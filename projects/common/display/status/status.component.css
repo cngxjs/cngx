@@ -189,7 +189,7 @@
     }
 
     :scope.cngx-status--success .cngx-status__dot {
-      background: var(--cngx-status-success-color, var(--cngx-color-success, oklch(0.65 0.18 145)));
+      background: var(--cngx-status-success-color);
     }
 
     :scope.cngx-status--warning .cngx-status__dot {
@@ -197,7 +197,7 @@
     }
 
     :scope.cngx-status--danger .cngx-status__dot {
-      background: var(--cngx-status-danger-color, var(--cngx-color-danger, oklch(0.65 0.22 25)));
+      background: var(--cngx-status-danger-color);
     }
 
     :scope.cngx-status--info .cngx-status__dot {

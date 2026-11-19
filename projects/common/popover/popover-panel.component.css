@@ -383,8 +383,8 @@
       position: fixed;
       inset: unset;
       box-sizing: border-box;
-      background: var(--cngx-popover-panel-bg, var(--cngx-color-surface, oklch(1 0 0)));
-      color: var(--cngx-popover-panel-color, var(--cngx-color-text, oklch(0.27 0.04 250)));
+      background: var(--cngx-popover-panel-bg);
+      color: var(--cngx-popover-panel-color);
       border-radius: var(--cngx-popover-panel-border-radius, 12px);
       border: var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
       box-shadow: var(--cngx-popover-panel-shadow, 0 8px 24px oklch(0 0 0 / 0.12));
@@ -495,7 +495,7 @@
       position: absolute;
       width: calc(var(--cngx-popover-panel-arrow-size, 8px) * 2);
       height: calc(var(--cngx-popover-panel-arrow-size, 8px) * 2);
-      background: var(--cngx-popover-panel-bg, oklch(1 0 0));
+      background: var(--cngx-popover-panel-bg);
       border: var(--cngx-popover-panel-border, 1px solid oklch(0 0 0 / 0.08));
       transform: rotate(45deg);
       pointer-events: none;

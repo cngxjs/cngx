@@ -473,12 +473,19 @@
     --cngx-tag-info-color: oklch(0.4 0.15 250);
     --cngx-tag-info-subtle-bg: oklch(0.97 0.025 240);
   }
+
+  /* Derive the radius from the theme: the registered initial defeats a use-site
+   * fallback. It does not inherit, so the SET sits on the tag itself. Kept in
+   * this layer so a Material bridge and a consumer override still win. */
+  .cngx-tag {
+    --cngx-tag-radius: var(--cngx-radius-sm);
+  }
 }
 
 @layer cngx.components {
   @scope (.cngx-tag) {
     :scope {
-      border-radius: var(--cngx-tag-radius, var(--cngx-radius-sm, 4px));
+      border-radius: var(--cngx-tag-radius);
       font-weight: var(--cngx-tag-font-weight, 500);
       background: var(--cngx-tag-bg, transparent);
       color: var(--cngx-tag-color, inherit);
@@ -489,27 +496,27 @@
     :scope.cngx-tag--filled[data-color='neutral'] {
       --cngx-tag-bg: var(--cngx-tag-neutral-bg);
       --cngx-tag-color: var(--cngx-tag-neutral-color);
-      --cngx-tag-border: 1px solid var(--cngx-tag-neutral-border, transparent);
+      --cngx-tag-border: 1px solid var(--cngx-tag-neutral-border);
     }
     :scope.cngx-tag--filled[data-color='success'] {
       --cngx-tag-bg: var(--cngx-tag-success-bg);
-      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
-      --cngx-tag-border: 1px solid var(--cngx-tag-success-border, transparent);
+      --cngx-tag-color: var(--cngx-tag-success-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-success-border);
     }
     :scope.cngx-tag--filled[data-color='warning'] {
       --cngx-tag-bg: var(--cngx-tag-warning-bg);
-      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
-      --cngx-tag-border: 1px solid var(--cngx-tag-warning-border, transparent);
+      --cngx-tag-color: var(--cngx-tag-warning-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-warning-border);
     }
     :scope.cngx-tag--filled[data-color='error'] {
       --cngx-tag-bg: var(--cngx-tag-error-bg);
-      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
-      --cngx-tag-border: 1px solid var(--cngx-tag-error-border, transparent);
+      --cngx-tag-color: var(--cngx-tag-error-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-error-border);
     }
     :scope.cngx-tag--filled[data-color='info'] {
       --cngx-tag-bg: var(--cngx-tag-info-bg);
-      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
-      --cngx-tag-border: 1px solid var(--cngx-tag-info-border, transparent);
+      --cngx-tag-color: var(--cngx-tag-info-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-info-border);
     }
 
     /* Outline variant - transparent fill, colored stroke */
@@ -520,23 +527,23 @@
     }
     :scope.cngx-tag--outline[data-color='success'] {
       --cngx-tag-bg: transparent;
-      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
-      --cngx-tag-border: 1px solid var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-color: var(--cngx-tag-success-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-success-color);
     }
     :scope.cngx-tag--outline[data-color='warning'] {
       --cngx-tag-bg: transparent;
-      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
-      --cngx-tag-border: 1px solid var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-color: var(--cngx-tag-warning-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-warning-color);
     }
     :scope.cngx-tag--outline[data-color='error'] {
       --cngx-tag-bg: transparent;
-      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
-      --cngx-tag-border: 1px solid var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-color: var(--cngx-tag-error-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-error-color);
     }
     :scope.cngx-tag--outline[data-color='info'] {
       --cngx-tag-bg: transparent;
-      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
-      --cngx-tag-border: 1px solid var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-color: var(--cngx-tag-info-color);
+      --cngx-tag-border: 1px solid var(--cngx-tag-info-color);
     }
 
     /* Subtle variant - softer tint */
@@ -547,22 +554,22 @@
     }
     :scope.cngx-tag--subtle[data-color='success'] {
       --cngx-tag-bg: var(--cngx-tag-success-subtle-bg);
-      --cngx-tag-color: var(--cngx-tag-success-color, var(--cngx-color-success));
+      --cngx-tag-color: var(--cngx-tag-success-color);
       --cngx-tag-border: 1px solid transparent;
     }
     :scope.cngx-tag--subtle[data-color='warning'] {
       --cngx-tag-bg: var(--cngx-tag-warning-subtle-bg);
-      --cngx-tag-color: var(--cngx-tag-warning-color, var(--cngx-color-warning));
+      --cngx-tag-color: var(--cngx-tag-warning-color);
       --cngx-tag-border: 1px solid transparent;
     }
     :scope.cngx-tag--subtle[data-color='error'] {
       --cngx-tag-bg: var(--cngx-tag-error-subtle-bg);
-      --cngx-tag-color: var(--cngx-tag-error-color, var(--cngx-color-danger));
+      --cngx-tag-color: var(--cngx-tag-error-color);
       --cngx-tag-border: 1px solid transparent;
     }
     :scope.cngx-tag--subtle[data-color='info'] {
       --cngx-tag-bg: var(--cngx-tag-info-subtle-bg);
-      --cngx-tag-color: var(--cngx-tag-info-color, var(--cngx-color-info));
+      --cngx-tag-color: var(--cngx-tag-info-color);
       --cngx-tag-border: 1px solid transparent;
     }
   }
