@@ -290,6 +290,30 @@ Every item carries `tabindex="-1"`; the active-descendant model means the menu c
 
 State transitions (submenu open / close, item activated, disabled-item press) are announced via a polite live region maintained by `CngxMenuAnnouncer`. The strings come from `CngxMenuConfig.ariaLabels`. Swap the implementation through `CNGX_MENU_ANNOUNCER_FACTORY` for telemetry or test doubles.
 
+## Surface
+
+The menu container paints its own floating surface from four tokens:
+
+| Token | Default |
+|-|-|
+| `--cngx-menu-bg` | `--cngx-color-surface` |
+| `--cngx-menu-border` | `1px solid --cngx-color-border` |
+| `--cngx-menu-radius` | `--cngx-radius-md` |
+| `--cngx-menu-shadow` | `--cngx-shadow-md` |
+
+Nothing strips that surface when the menu sits inside another one. A `[cngxMenu]` placed in a `CngxPopoverPanel` (or any host that paints its own background, border and shadow) draws a second border and shadow inside the first. Set the tokens on the menu in that case:
+
+```css
+.my-panel [cngxMenu] {
+  --cngx-menu-bg: transparent;
+  --cngx-menu-border: 0;
+  --cngx-menu-radius: 0;
+  --cngx-menu-shadow: none;
+}
+```
+
+The Material bridge sets the same tokens for its themed menu surface, so keep this rule unlayered (or in a layer after the theme) to win over it. The breadcrumb overflow menu does this in `projects/ui/breadcrumb/breadcrumb-overflow.component.css`. A plain menu trigger with a bare `cngxPopover` needs nothing: the bare popover paints no chrome, so the menu's surface is the only one.
+
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/menu/) for inputs, outputs, and full token signatures.
