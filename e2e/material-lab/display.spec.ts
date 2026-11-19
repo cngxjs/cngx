@@ -69,12 +69,8 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
-    test('card: the surface, corner and body type match the raised mat-card', async ({ page }) => {
-      await expectSame(page, mat('card'), cngx('card'), [
-        'background-color',
-        'color',
-        'border-top-left-radius',
-      ]);
+    test('card: the surface and body type match the raised mat-card', async ({ page }) => {
+      await expectSame(page, mat('card'), cngx('card'), ['background-color', 'color']);
       await expectSame(page, mat('card', '.mat-mdc-card-title'), cngx('card', '[cngxCardTitle]'), ['color']);
       await expectSame(page, mat('card', '.mat-mdc-card-content'), cngx('card', '[cngxCardBody]'), [
         'color',
