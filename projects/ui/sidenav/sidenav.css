@@ -78,7 +78,10 @@
  * **Inheritance**
  *
  * - `--cngx-sidenav-bg` -> `--cngx-color-surface`
- * - `--cngx-sidenav-color` -> `--cngx-color-text`
+ * - `--cngx-sidenav-color` -> `--cngx-color-text`. Under the Material
+ *   bridge the rows, header and footer keep their Material roles when a
+ *   rail sets its own bg and color; see "Brand rail under the bridge" in
+ *   the README.
  * - `--cngx-sidenav-z-index` -> `2`, the rail's stacking over the content
  * - `--cngx-sidenav-border-color` -> `--cngx-color-border`
  * - `--cngx-nav-header-border-color` / `--cngx-nav-footer-border-color`
