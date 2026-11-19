@@ -42,6 +42,12 @@
   }
 }
 
+// mat-checkbox draws its box with a fixed 2px corner in M3 and M2 (no
+// Material token); the cngx default reads --cngx-radius-sm (4px).
+@mixin base($theme) {
+  --cngx-checkbox-radius: 2px;
+}
+
 @mixin _checked-thumb($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-toggle-thumb-bg: var(--mat-sys-on-primary);
@@ -65,6 +71,7 @@
     )
   ) {
     @include color($theme);
+    @include base($theme);
   }
   // One thumb token cannot satisfy contrast on both tracks - the
   // checked state re-scopes it to on-primary, read on the __thumb

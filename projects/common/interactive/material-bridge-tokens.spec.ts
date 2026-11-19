@@ -40,7 +40,7 @@ class AsyncClickHosts {
  * no test target.
  */
 
-function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
+function bridgeCss(bridge: string, themeVersion: 'v1' | 'v0'): string {
   const entry =
     themeVersion === 'v1'
       ? `
@@ -63,7 +63,11 @@ $theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)))
 
 @include bridge.theme($theme);
 `;
-  return emittedTokenNames(compileThemeEntry(entry));
+  return compileThemeEntry(entry);
+}
+
+function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
+  return emittedTokenNames(bridgeCss(bridge, themeVersion));
 }
 
 describe('interactive-controls Material bridge', () => {
@@ -73,6 +77,7 @@ describe('interactive-controls Material bridge', () => {
     '--cngx-checkbox-border',
     '--cngx-checkbox-checked-bg',
     '--cngx-checkbox-checked-color',
+    '--cngx-checkbox-radius',
     '--cngx-radio-indicator-checked-color',
     '--cngx-radio-indicator-color',
     '--cngx-radio-indicator-mark-color',
@@ -83,6 +88,16 @@ describe('interactive-controls Material bridge', () => {
 
   it('emits only consumed token names (M3)', () => {
     expect(bridgeTokenNames('interactive-controls-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('maps the checkbox box onto the fixed 2px mat-checkbox corner (M3 and M2)', () => {
+    // The cngx default reads --cngx-radius-sm, which the system bridge maps
+    // to corner-extra-small (4px); mat-checkbox draws 2px in both versions.
+    for (const version of ['v1', 'v0'] as const) {
+      expect(bridgeCss('interactive-controls-theme', version), version).toContain(
+        '--cngx-checkbox-radius: 2px',
+      );
+    }
   });
 
   it('state-scopes the checked thumb to on-primary (M3)', () => {
