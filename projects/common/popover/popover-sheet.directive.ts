@@ -357,6 +357,12 @@ export class CngxPopoverSheet
     event.stopPropagation();
     this.disarmClickSwallow();
   };
+  // The same gesture's mousedown would move focus to the page element under
+  // the tap and undo the restore to the opener. Its default only; the event
+  // still propagates.
+  private readonly swallowMouseDown = (event: MouseEvent): void => {
+    event.preventDefault();
+  };
 
   constructor() {
     // A breakpoint crossing or request flip while open. Open and close
@@ -632,11 +638,13 @@ export class CngxPopoverSheet
   }
 
   private armClickSwallow(): void {
+    this.doc.addEventListener('mousedown', this.swallowMouseDown, true);
     this.doc.addEventListener('click', this.swallowClick, true);
     this.clickSwallowTimer = setTimeout(() => this.disarmClickSwallow(), CLICK_SWALLOW_MS);
   }
 
   private disarmClickSwallow(): void {
+    this.doc.removeEventListener('mousedown', this.swallowMouseDown, true);
     this.doc.removeEventListener('click', this.swallowClick, true);
     if (this.clickSwallowTimer !== null) {
       clearTimeout(this.clickSwallowTimer);
