@@ -16,7 +16,9 @@ let mountedRoot: HTMLElement | null = null;
 @Component({
   standalone: true,
   imports: [CngxCopyBlock],
-  template: `<cngx-copy-block [value]="'npm i @cngx/common'"><code>npm i @cngx/common</code></cngx-copy-block>`,
+  template: `<cngx-copy-block [value]="'npm i @cngx/common'"
+    ><code>npm i @cngx/common</code></cngx-copy-block
+  >`,
 })
 class CopyHost {}
 
@@ -71,5 +73,21 @@ describe('CngxCopyBlock geometry', () => {
     const host = mount();
     const content = query(host, '.cngx-copy-block__content');
     expect(computedValue(content, 'unicode-bidi')).toBe('isolate');
+  });
+});
+
+// The button radius, font size and copied border are registered with a fixed
+// initial, so a use-site fallback never paints: the theme reaches them only
+// through the SET.
+describe('CngxCopyBlock theme-derived button tokens', () => {
+  it('derives the button radius, font size and copied border from the theme', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
+    mountedRoot!.style.setProperty('--cngx-font-size-sm', '11px');
+    mountedRoot!.style.setProperty('--cngx-color-success', 'rgb(0, 128, 0)');
+    const button = query(host, '.cngx-copy-block__button');
+    expect(computedValue(button, 'border-top-left-radius')).toBe('5px');
+    expect(computedValue(button, 'font-size')).toBe('11px');
+    expect(computedValue(button, '--cngx-copy-block-btn-copied-border')).toBe('rgb(0, 128, 0)');
   });
 });

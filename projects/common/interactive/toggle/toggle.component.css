@@ -261,6 +261,15 @@
   .light {
     --cngx-toggle-track-bg-off: oklch(0 0 0 / 0.25);
   }
+
+  /* Derive the focus and track radii from the theme: the registered initial
+   * defeats a use-site fallback, so the default lives in a SET. The track
+   * radius inherits and reaches the __track descendant from the host. Kept in
+   * this layer so a Material bridge and a consumer override still win. */
+  .cngx-toggle {
+    --cngx-toggle-focus-radius: var(--cngx-radius-sm);
+    --cngx-toggle-track-radius: var(--cngx-radius-pill);
+  }
 }
 
 @layer cngx.components {
@@ -309,7 +318,7 @@
     :scope:focus-visible {
       outline: var(--cngx-toggle-focus-outline, 2px solid currentColor);
       outline-offset: var(--cngx-toggle-focus-offset, 2px);
-      border-radius: var(--cngx-toggle-focus-radius, var(--cngx-radius-sm, 0.25rem));
+      border-radius: var(--cngx-toggle-focus-radius);
     }
 
     .cngx-toggle__track {
@@ -317,7 +326,7 @@
       flex: 0 0 auto;
       inline-size: var(--cngx-toggle-track-width, 2.25rem);
       block-size: var(--cngx-toggle-track-height, 1.25rem);
-      border-radius: var(--cngx-toggle-track-radius, var(--cngx-radius-pill, 9999px));
+      border-radius: var(--cngx-toggle-track-radius);
       background: var(--cngx-toggle-track-bg-off, oklch(0 0 0 / 0.25));
       transition: background-color var(--cngx-toggle-transition, 150ms ease);
     }

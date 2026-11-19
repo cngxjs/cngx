@@ -67,3 +67,13 @@ describe('CngxCheckbox geometry', () => {
     expect(computedValue(second, 'margin-inline-start')).toBe('24px');
   });
 });
+
+// The focus radius is registered with a fixed initial, so a use-site fallback
+// never paints: the theme reaches it only through the SET.
+describe('CngxCheckbox theme-derived focus radius', () => {
+  it('derives the focus radius from the sm radius', () => {
+    const [box] = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
+    expect(computedValue(box, '--cngx-checkbox-focus-radius')).toBe('5px');
+  });
+});

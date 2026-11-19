@@ -88,6 +88,13 @@
     inherits: false;
     initial-value: 0.25rem;
   }
+
+  /* Derive the focus radius from the theme: the registered initial defeats a
+   * use-site fallback, so the default lives in a SET. Kept in this layer so a
+   * Material bridge and a consumer override still win. */
+  .cngx-checkbox {
+    --cngx-checkbox-focus-radius: var(--cngx-radius-sm);
+  }
 }
 
 @layer cngx.components {
@@ -135,7 +142,7 @@
     :scope:focus-visible {
       outline: var(--cngx-checkbox-focus-outline, 2px solid currentColor);
       outline-offset: var(--cngx-checkbox-focus-offset, 2px);
-      border-radius: var(--cngx-checkbox-focus-radius, var(--cngx-radius-sm, 0.25rem));
+      border-radius: var(--cngx-checkbox-focus-radius);
     }
 
     .cngx-checkbox__label {

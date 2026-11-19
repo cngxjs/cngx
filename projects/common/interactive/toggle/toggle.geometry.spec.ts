@@ -149,3 +149,15 @@ describe('CngxToggle geometry', () => {
     expect(computedValue(thumb, 'inset-block-start')).toBe('4px');
   });
 });
+
+// The focus and track radii are registered with a fixed initial, so a use-site
+// fallback never paints: the theme reaches them only through the SET.
+describe('CngxToggle theme-derived radii', () => {
+  it('derives the focus radius from the sm radius and the track radius from the pill radius', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '5px');
+    mountedRoot!.style.setProperty('--cngx-radius-pill', '6px');
+    expect(computedValue(host, '--cngx-toggle-focus-radius')).toBe('5px');
+    expect(computedValue(query(host, '.cngx-toggle__track'), 'border-top-left-radius')).toBe('6px');
+  });
+});

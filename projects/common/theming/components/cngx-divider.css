@@ -109,6 +109,13 @@
   .dark {
     --cngx-divider-color: oklch(0.45 0.005 250);
   }
+
+  /* Derive the spacing from the density scale: the registered initial defeats
+   * a use-site fallback, so the default lives in a SET. Kept in this layer so
+   * a Material bridge and a consumer override still win. */
+  .cngx-divider {
+    --cngx-divider-spacing: var(--cngx-space-sm);
+  }
 }
 
 @layer cngx.components {
@@ -123,7 +130,7 @@
       box-sizing: border-box;
       width: 100%;
       height: var(--cngx-divider-thickness, 1px);
-      margin-block: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-block: var(--cngx-divider-spacing);
       margin-inline: 0;
       border: 0;
       background: var(--cngx-divider-color);
@@ -135,7 +142,7 @@
       width: var(--cngx-divider-thickness, 1px);
       height: 1em;
       margin-block: 0;
-      margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-inline: var(--cngx-divider-spacing);
       align-self: stretch;
     }
 
@@ -145,7 +152,7 @@
     }
     :scope.cngx-divider--vertical.cngx-divider--inset {
       margin-block: var(--cngx-divider-inset-amount);
-      margin-inline: var(--cngx-divider-spacing, var(--cngx-space-sm, 8px));
+      margin-inline: var(--cngx-divider-spacing);
     }
   }
 }

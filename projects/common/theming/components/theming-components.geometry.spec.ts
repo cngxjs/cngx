@@ -18,9 +18,9 @@ function mount<T>(type: new () => T, selector: string): HTMLElement {
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
   fixture.detectChanges();
-  const host = (mountedRoot.matches(selector) ? mountedRoot : mountedRoot.querySelector(selector)) as
-    | HTMLElement
-    | null;
+  const host = (
+    mountedRoot.matches(selector) ? mountedRoot : mountedRoot.querySelector(selector)
+  ) as HTMLElement | null;
   if (!host) {
     throw new Error(`${selector} did not render`);
   }
@@ -161,6 +161,68 @@ describe('CngxBadge geometry (Track-B)', () => {
       computedValue(root.querySelector(selector) as HTMLElement, 'background-color');
     expect(rasterise(fill('.badge-branded'))).toEqual(rasterise('oklch(0.55 0.15 250)'));
     expect(rasterise(fill('.badge-default'))).toEqual(rasterise('oklch(0.66 0.19 50)'));
+  });
+});
+
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./cngx-badge.css'],
+  template: `
+    <div class="badges">
+      <span class="cngx-badge-host">
+        <span class="cngx-badge-indicator cngx-badge-indicator--error badge-error">1</span>
+      </span>
+      <span class="cngx-badge-host">
+        <span class="cngx-badge-indicator cngx-badge-indicator--warning badge-warning">2</span>
+      </span>
+    </div>
+  `,
+})
+class StatusBadgeHost {}
+
+// The radius and the error and warning fills are registered with a fixed
+// initial, so a use-site fallback never paints: the theme reaches them only
+// through the SET.
+describe('CngxBadge theme-derived tokens', () => {
+  it('derives the radius and the status fills from the theme', () => {
+    const root = mount(StatusBadgeHost, '.badges');
+    root.style.setProperty('--cngx-radius-pill', '5px');
+    root.style.setProperty('--cngx-color-danger', 'rgb(200, 0, 0)');
+    root.style.setProperty('--cngx-color-warning', 'rgb(200, 150, 0)');
+    const error = root.querySelector('.badge-error') as HTMLElement;
+    const warning = root.querySelector('.badge-warning') as HTMLElement;
+    expect(computedValue(error, 'border-top-left-radius')).toBe('5px');
+    expect(computedValue(error, 'background-color')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(warning, 'background-color')).toBe('rgb(200, 150, 0)');
+  });
+});
+
+// ── cngx-divider.css ───────────────────────────────────────────────────────
+
+@Component({
+  standalone: true,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./cngx-divider.css'],
+  template: `
+    <div class="dividers">
+      <hr class="cngx-divider divider-horizontal" />
+      <span class="cngx-divider cngx-divider--vertical divider-vertical"></span>
+    </div>
+  `,
+})
+class DividerHost {}
+
+// The spacing is registered with a fixed pixel initial, so a use-site fallback
+// never paints: the density scale reaches it only through the SET.
+describe('CngxDivider density-derived spacing', () => {
+  it('derives the margin from the sm space rung', () => {
+    const root = mount(DividerHost, '.dividers');
+    root.style.setProperty('--cngx-space-sm', '4px');
+    const horizontal = root.querySelector('.divider-horizontal') as HTMLElement;
+    const vertical = root.querySelector('.divider-vertical') as HTMLElement;
+    expect(computedValue(horizontal, 'margin-block-start')).toBe('4px');
+    expect(computedValue(vertical, 'margin-inline-start')).toBe('4px');
   });
 });
 
