@@ -109,6 +109,13 @@
     --cngx-file-drop-transition: var(--cngx-duration-base) ease;
   }
 
+  /* Radius and success border follow the theme scale and status hue. Both are
+   * inherits: false and read on the host, so the SET sits on the host too. */
+  :where(.cngx-file-drop) {
+    --cngx-file-drop-radius: var(--cngx-radius-md);
+    --cngx-file-drop-success-border: var(--cngx-color-success);
+  }
+
   /**
    * Border color applied while a drag is hovering. Defaults to
    * `currentColor` so the dropzone picks up the inherited text color.
@@ -164,8 +171,8 @@
       display: block;
       border: var(--cngx-file-drop-border-width, 2px) dashed
         var(--cngx-file-drop-border-color, oklch(0.8 0 0));
-      border-radius: var(--cngx-file-drop-radius, var(--cngx-radius-md, 8px));
-      padding: var(--cngx-file-drop-padding, var(--cngx-space-xl, 32px));
+      border-radius: var(--cngx-file-drop-radius);
+      padding: var(--cngx-file-drop-padding);
       text-align: center;
       cursor: pointer;
       transition:
@@ -180,10 +187,7 @@
     }
 
     :scope.cngx-file-drop--has-files {
-      border-color: var(
-        --cngx-file-drop-success-border,
-        var(--cngx-color-success, oklch(0.65 0.15 155))
-      );
+      border-color: var(--cngx-file-drop-success-border);
       border-style: solid;
     }
 

@@ -245,12 +245,12 @@
     }
     .cngx-action-select__clear {
       padding: var(--cngx-select-clear-padding, 0 0.25rem);
-      color: var(--cngx-select-clear-color, currentColor);
+      color: var(--cngx-select-clear-color, oklch(0 0 0 / 0.5));
       font: inherit;
     }
     .cngx-action-select__caret {
-      color: var(--cngx-select-caret-color, currentColor);
-      font-size: var(--cngx-select-caret-size, 1em);
+      color: var(--cngx-select-caret-color, oklch(0 0 0 / 0.5));
+      font-size: var(--cngx-select-caret-size, 1.6em);
       /* The glyph box, not the font's ascent/descent, is what align-items
          centres: a zero line-height left the ink of a text glyph below the
          value text by about 0.13 x the caret size. */

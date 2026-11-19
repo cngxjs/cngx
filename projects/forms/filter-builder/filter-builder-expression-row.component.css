@@ -95,6 +95,24 @@
       border-end-end-radius: calc(var(--cngx-radius-md, 0.5rem) - 1px);
     }
 
+    /* Every stop in the capsule shows the same ring: inset, so it stays inside
+       the pill, and in the segment's own shape. The select trigger sits two
+       levels below its segment and takes the segment's corners. */
+    .cngx-filter-builder__expression > * > *:has(> .cngx-field-trigger),
+    .cngx-filter-builder__expression > * > * > .cngx-field-trigger {
+      border-radius: inherit;
+    }
+
+    .cngx-filter-builder__expression > * > * > .cngx-field-trigger:is(:focus-visible, :focus-within),
+    .cngx-filter-builder__expression > input[cngxInput]:focus-visible,
+    .cngx-filter-builder__expression > .cngx-filter-builder__action-button--remove:focus-visible {
+      outline: var(
+        --cngx-filter-builder-focus-outline,
+        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
+      );
+      outline-offset: -2px;
+    }
+
     .cngx-filter-builder__field-select,
     .cngx-filter-builder__operator-select {
       --cngx-select-min-width: 0px;
@@ -110,9 +128,9 @@
 
     .cngx-filter-builder__expression > input[cngxInput] {
       flex: 0 1 auto;
-      inline-size: var(--cngx-filter-builder-value-basis, 8rem);
+      inline-size: var(--cngx-filter-builder-value-basis);
       min-inline-size: 0;
-      max-inline-size: var(--cngx-filter-builder-value-max, 20rem);
+      max-inline-size: var(--cngx-filter-builder-value-max);
       /* Borderless segment; the transparent bottom edge keeps the height
          stable when the unfinished-value cue flips it to dashed. */
       font: inherit;

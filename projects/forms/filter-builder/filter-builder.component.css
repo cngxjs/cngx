@@ -16,7 +16,7 @@
  *   `:focus-visible` - alpha-on-black hover tint (alpha-on-white in
  *   dark mode)
  * - `.cngx-filter-builder__action-button:focus-visible` - 2px
- *   currentColor outline, 2px offset
+ *   primary outline, 2px offset
  * - `.cngx-filter-builder__action-button[disabled]` - 0.5 opacity dim,
  *   `not-allowed` cursor
  *
@@ -323,7 +323,8 @@
   }
 
   /**
-   * Focus-ring outline shorthand applied to action buttons.
+   * Focus-ring outline shorthand applied to action buttons, the logic
+   * joiner and the expression-row segments. Defaults to a 2px primary ring.
    * @group State / Focus
    */
   @property --cngx-filter-builder-focus-outline {
@@ -396,7 +397,7 @@
   :root {
     --cngx-filter-builder-border-color: var(--cngx-color-border);
     --cngx-filter-builder-action-border: var(--cngx-color-border);
-    --cngx-filter-builder-rail: 2px solid var(--cngx-color-border);
+    --cngx-filter-builder-rail: 2px solid var(--cngx-color-border, oklch(0.87 0 0));
     --cngx-filter-builder-action-remove-fg: var(
       --cngx-color-danger-text,
       oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
@@ -405,6 +406,19 @@
       --cngx-color-danger-text,
       oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
     );
+  }
+
+  /* The focus ring follows the theme primary, as on checkbox, radio and
+   * toggle. Registered inherits: false, so the SET sits on every element that
+   * reads it: the action buttons, the logic joiner and the expression-row
+   * segments (select trigger, value input). */
+  :where(
+    .cngx-filter-builder__action-button,
+    .cngx-filter-builder__logic-joiner,
+    .cngx-filter-builder__expression > * > * > .cngx-field-trigger,
+    .cngx-filter-builder__expression > input[cngxInput]
+  ) {
+    --cngx-filter-builder-focus-outline: 2px solid var(--cngx-color-primary);
   }
 
   /* Dark-mode component-local swap - alpha-on-black hover-bg
@@ -499,10 +513,7 @@
       inset-block: var(--cngx-space-xs, 0.25rem);
       inset-inline-start: 0;
       inline-size: var(--cngx-space-sm, 0.5rem);
-      border: var(
-        --cngx-filter-builder-rail,
-        2px solid var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)))
-      );
+      border: var(--cngx-filter-builder-rail);
       border-inline-end: none;
       border-start-start-radius: var(--cngx-radius-md, 0.5rem);
       border-end-start-radius: var(--cngx-radius-md, 0.5rem);
@@ -512,7 +523,7 @@
       /* Negation is a state worth a box: dashed outline reads as
          "exclusion" (Pillar 2 - the state change is visible). */
       border: 1px var(--cngx-filter-builder-negated-border-style, dashed)
-        var(--cngx-filter-builder-border-color, var(--cngx-color-border, oklch(0.87 0 0)));
+        var(--cngx-filter-builder-border-color);
       border-radius: var(--cngx-filter-builder-radius, 0.375rem);
       padding: var(--cngx-filter-builder-group-padding, 0.5rem);
     }
@@ -555,7 +566,7 @@
       color: var(--cngx-filter-builder-action-fg, inherit);
       background: var(--cngx-filter-builder-action-bg, transparent);
       border: var(--cngx-filter-builder-action-border-width, 1px) solid
-        var(--cngx-filter-builder-action-border, var(--cngx-color-border, oklch(0.82 0 0)));
+        var(--cngx-filter-builder-action-border);
       border-radius: var(--cngx-filter-builder-action-radius, 0.375rem);
       cursor: pointer;
       transition:
@@ -579,16 +590,7 @@
     }
 
     .cngx-filter-builder__action-button--remove {
-      color: var(
-        --cngx-filter-builder-action-remove-fg,
-        var(
-          --cngx-filter-builder-error-fg,
-          var(
-            --cngx-color-danger-text,
-            oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
-          )
-        )
-      );
+      color: var(--cngx-filter-builder-action-remove-fg);
     }
 
     .cngx-filter-builder__action-glyph {

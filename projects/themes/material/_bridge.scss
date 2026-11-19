@@ -10,7 +10,12 @@
 //   1. `@layer cngx.components` - bridge assignments must sit in the same
 //      layer as the component token defaults so a consumer's unlayered
 //      override always wins, and so the `@property` `initial-value` of
-//      registered tokens loses to the layered assignment.
+//      registered tokens loses to the layered assignment. A component
+//      default that derives from the theme (`--p: var(--cngx-*)`) sits one
+//      layer lower, in `@layer cngx.tokens`, so a bridge assignment beats it
+//      by layer order; a literal default stays in `cngx.components`, where
+//      the bridge wins by source order and `:where()`. A derived default in
+//      `cngx.components` would silently beat the bridge.
 //   2. `:where(...)` - zero specificity, so any consumer selector beats
 //      the bridge regardless of layer order within cngx.components.
 //

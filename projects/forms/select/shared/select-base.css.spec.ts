@@ -234,7 +234,9 @@ describe('select-family field-skin rule set', () => {
   // auto, so the content width survives.
   it('sizes a bare select from its content or the container token, keyed on the host', () => {
     const flat = SHARED.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
-    expect(flat).toContain("[data-skin='bare']:has(> * > .cngx-field-trigger)::before { display: none; }");
+    expect(flat).toContain(
+      "[data-skin='bare']:has(> * > .cngx-field-trigger)::before { display: none; }",
+    );
     expect(flat).toContain(
       "[data-skin='bare']:not(.cngx-field-box > *):has(> * > .cngx-field-trigger) { inline-size: var(--cngx-field-bare-inline-size); }",
     );
@@ -283,8 +285,12 @@ describe('select-family field-skin rule set', () => {
     )
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/\s+/g, ' ');
-    expect(bare).toContain('--cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px));');
-    const focus = bare.slice(bare.indexOf(':scope.cngx-field-trigger:is(:focus-visible, :focus-within) {'));
+    expect(bare).toContain(
+      '--cngx-field-ring-offset: calc(-1 * var(--cngx-field-ring-width, 2px));',
+    );
+    const focus = bare.slice(
+      bare.indexOf(':scope.cngx-field-trigger:is(:focus-visible, :focus-within) {'),
+    );
     expect(focus.slice(0, focus.indexOf('}'))).toContain(
       'outline-offset: var(--cngx-field-ring-offset, 3px)',
     );
@@ -300,8 +306,7 @@ describe('select-family field-skin rule set', () => {
     const SKIN = readFileSync(fromHere('../../theming/components/cngx-field-skin.css'), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/\s+/g, ' ');
-    const flat = (css: string): string =>
-      css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
+    const flat = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ');
     const FILL = flat(
       scopeBlock("@scope ([data-skin='fill']:not(.cngx-field-box > *) > * > .cngx-field-trigger)"),
     );
@@ -401,14 +406,13 @@ describe('select-family action-region frame', () => {
   });
 
   it('delegates the separator colour to the foundation border at :root', () => {
-    expect(SHARED).toContain('--cngx-select-action-border: 1px solid var(--cngx-color-border);');
+    expect(SHARED).toContain(
+      '--cngx-select-action-border: 1px solid var(--cngx-color-border, oklch(0.85 0.01 250));',
+    );
   });
 
   it('keeps the separator on under the Material bridge', () => {
-    const bridge = readFileSync(
-      fromHere('../../../themes/material/select-theme.scss'),
-      'utf8',
-    );
+    const bridge = readFileSync(fromHere('../../../themes/material/select-theme.scss'), 'utf8');
     const value = /--cngx-select-action-border:\s*([^;]+);/.exec(bridge)?.[1].trim();
     expect(value).toBeDefined();
     expect(value).not.toBe('none');
@@ -417,10 +421,7 @@ describe('select-family action-region frame', () => {
   // The bridge caret matches the 10px mat-select arrow; the geometry spec
   // pins the same value to a 17px box with 10px of ink.
   it('sizes the Material bridge caret to the 10px mat-select arrow', () => {
-    const bridge = readFileSync(
-      fromHere('../../../themes/material/select-theme.scss'),
-      'utf8',
-    );
+    const bridge = readFileSync(fromHere('../../../themes/material/select-theme.scss'), 'utf8');
     const value = /--cngx-select-caret-size:\s*([^;]+);/.exec(bridge)?.[1].trim();
     expect(value).toBe('calc(0.625rem / 0.27)');
   });

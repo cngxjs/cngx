@@ -260,11 +260,10 @@ $-trigger-focus: ':is(:focus-within, [aria-expanded="true"], :has([aria-expanded
 $-trigger-invalid: ':is([aria-invalid="true"], :has(> [role="combobox"][aria-invalid="true"]))';
 
 @mixin -focus-ring($theme) {
-  $ring: if(
-    mat.get-theme-version($theme) == 1,
-    var(--mat-sys-primary),
-    mat.get-theme-color($theme, primary)
-  );
+  $ring: var(--mat-sys-primary);
+  @if mat.get-theme-version($theme) != 1 {
+    $ring: mat.get-theme-color($theme, primary);
+  }
   @layer cngx.components {
     #{$-outlined-trigger}#{$-trigger-focus} {
       outline: 2px solid #{$ring};

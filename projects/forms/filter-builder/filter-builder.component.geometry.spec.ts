@@ -195,7 +195,10 @@ afterEach(() => {
 
 describe('CngxFilterBuilder geometry', () => {
   it('paints the remove glyph with the danger text colour, not plain danger', () => {
-    setRoot({ '--cngx-color-danger': 'rgb(200, 0, 0)', '--cngx-color-danger-text': 'rgb(10, 20, 30)' });
+    setRoot({
+      '--cngx-color-danger': 'rgb(200, 0, 0)',
+      '--cngx-color-danger-text': 'rgb(10, 20, 30)',
+    });
     const remove = query(mount(), '.cngx-filter-builder__action-button--remove');
     remove.focus();
     expect(remove.matches(':focus-visible')).toBe(true);
@@ -304,8 +307,12 @@ describe('CngxFilterBuilder geometry', () => {
     expect(joiner.getBoundingClientRect().width).toBeLessThan(96);
     // Sits between the two capsules in document flow.
     const rows = Array.from(host.querySelectorAll('.cngx-filter-builder__expression'));
-    expect(joiner.getBoundingClientRect().y).toBeGreaterThan(rows[0].getBoundingClientRect().bottom - 1);
-    expect(joiner.getBoundingClientRect().bottom).toBeLessThan(rows[1].getBoundingClientRect().y + 1);
+    expect(joiner.getBoundingClientRect().y).toBeGreaterThan(
+      rows[0].getBoundingClientRect().bottom - 1,
+    );
+    expect(joiner.getBoundingClientRect().bottom).toBeLessThan(
+      rows[1].getBoundingClientRect().y + 1,
+    );
   });
 
   it('draws the caret glyph on the 12px micro box inside the builder', () => {
@@ -349,5 +356,65 @@ describe('CngxFilterBuilder geometry', () => {
     } finally {
       document.documentElement.style.removeProperty('--cngx-color-primary');
     }
+  });
+});
+
+// The focus ring is registered with a currentColor initial, so without a SET
+// it paints in the text colour (black on add, red on remove, brown on the
+// joiner). Inside the capsule the select trigger and the value input drew
+// their own outset rings in their own shape.
+describe('CngxFilterBuilder focus ring', () => {
+  const PRIMARY = 'rgb(0, 0, 200)';
+
+  function ringOf(el: HTMLElement): { color: string; offset: string } {
+    el.focus();
+    expect(el.matches(':focus-visible, :focus-within')).toBe(true);
+    return {
+      color: computedValue(el, 'outline-color'),
+      offset: computedValue(el, 'outline-offset'),
+    };
+  }
+
+  afterEach(() => {
+    document.documentElement.style.removeProperty('--cngx-color-primary');
+  });
+
+  it('paints the action buttons and the joiner in the primary, outside the box', () => {
+    setRoot({ '--cngx-color-primary': PRIMARY });
+    const host = mountRaster();
+    for (const selector of [
+      '.cngx-filter-builder__action-button--add-filter',
+      '.cngx-filter-builder__logic-joiner',
+    ]) {
+      expect(ringOf(query(host, selector))).toEqual({ color: PRIMARY, offset: '2px' });
+    }
+  });
+
+  it('paints every capsule segment with the same inset primary ring', () => {
+    setRoot({ '--cngx-color-primary': PRIMARY });
+    const host = mountRaster();
+    const capsule = query(host, '.cngx-filter-builder__expression');
+    const segments = [
+      ...Array.from(capsule.querySelectorAll<HTMLElement>('.cngx-field-trigger')),
+      query(capsule, 'input[cngxInput]'),
+      query(capsule, '.cngx-filter-builder__action-button--remove'),
+    ];
+    expect(segments.length).toBe(4);
+    for (const segment of segments) {
+      expect(ringOf(segment)).toEqual({ color: PRIMARY, offset: '-2px' });
+    }
+  });
+
+  it('shapes the select trigger like its capsule segment', () => {
+    const capsule = query(mountRaster(), '.cngx-filter-builder__expression');
+    const [field, operator] = Array.from(
+      capsule.querySelectorAll<HTMLElement>('.cngx-field-trigger'),
+    );
+    const fieldSegment = query(capsule, '.cngx-filter-builder__field-select');
+    expect(computedValue(field, 'border-radius')).toBe(
+      computedValue(fieldSegment, 'border-radius'),
+    );
+    expect(computedValue(field, 'border-top-right-radius')).toBe('0px');
+    expect(computedValue(operator, 'border-radius')).toBe('0px');
   });
 });

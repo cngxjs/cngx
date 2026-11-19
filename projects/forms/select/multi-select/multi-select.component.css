@@ -304,7 +304,7 @@
     .cngx-multi-select__caret {
       flex: 0 0 auto;
       color: var(--cngx-select-caret-color, inherit);
-      font-size: var(--cngx-select-caret-size, 1em);
+      font-size: var(--cngx-select-caret-size, 1.6em);
       /* The glyph box, not the font's ascent/descent, is what align-items
          centres: a zero line-height left the ink of a text glyph below the
          value text by about 0.13 x the caret size. */
