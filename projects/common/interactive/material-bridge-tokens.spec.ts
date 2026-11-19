@@ -359,6 +359,25 @@ $theme: mat.define-theme((
   });
 });
 
+describe('divider Material bridge', () => {
+  // every name is read by theming/components/cngx-divider.css on .cngx-divider
+  const CONSUMED = ['--cngx-divider-color', '--cngx-divider-spacing'];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(bridgeTokenNames('divider-theme', 'v1')).toEqual(CONSUMED);
+  });
+
+  it('emits the same names (M2)', () => {
+    expect(bridgeTokenNames('divider-theme', 'v0')).toEqual(CONSUMED);
+  });
+
+  it('drops the spacing to the zero margin of mat-divider (M3 and M2)', () => {
+    // The cngx default reads --cngx-space-sm (8px at density 0).
+    for (const version of ['v1', 'v0'] as const) {
+      expect(bridgeCss('divider-theme', version), version).toContain('--cngx-divider-spacing: 0');
+    }
+  });
+});
 
 describe('async-click Material bridge', () => {
   // every name is consumed by theming/components/cngx-async.css on the

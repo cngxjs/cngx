@@ -98,13 +98,13 @@ for (const scheme of ['light', 'dark'] as const) {
       ]);
     });
 
-    test('divider: the rule paints the mat-divider colour at 1px', async ({ page }) => {
+    test('divider: the rule paints the mat-divider colour at 1px with no block margin', async ({ page }) => {
       await expectSame(
         page,
         mat('divider'),
         cngx('divider'),
-        ['background-color', 'height'],
-        ['border-top-color', 'border-top-width'],
+        ['background-color', 'height', 'margin-top', 'margin-bottom'],
+        ['border-top-color', 'border-top-width', 'margin-top', 'margin-bottom'],
       );
     });
 
