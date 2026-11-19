@@ -165,7 +165,7 @@
       border: var(--cngx-file-drop-border-width, 2px) dashed
         var(--cngx-file-drop-border-color, oklch(0.8 0 0));
       border-radius: var(--cngx-file-drop-radius, var(--cngx-radius-md, 8px));
-      padding: var(--cngx-file-drop-padding, var(--cngx-space-xl, 32px));
+      padding: var(--cngx-file-drop-padding);
       text-align: center;
       cursor: pointer;
       transition:

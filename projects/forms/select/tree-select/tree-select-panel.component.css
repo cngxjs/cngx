@@ -447,10 +447,7 @@
      * so the tree highlights identically to the rest of the family and themes
      * through the same Material bridge mapping. */
     .cngx-tree-select__node:hover {
-      background: var(
-        --cngx-tree-select-node-hover-bg,
-        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
-      );
+      background: var(--cngx-tree-select-node-hover-bg);
     }
 
     .cngx-tree-select__node.cngx-tree-select__node--active {
@@ -587,10 +584,7 @@
     }
 
     .cngx-tree-select__footer-clear:hover {
-      background: var(
-        --cngx-tree-select-node-hover-bg,
-        color-mix(in oklch, var(--cngx-color-primary, oklch(0.66 0.19 50)) 10%, transparent)
-      );
+      background: var(--cngx-tree-select-node-hover-bg);
     }
 
     .cngx-tree-select__footer-clear[aria-disabled='true'] {

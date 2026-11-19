@@ -110,9 +110,9 @@
 
     .cngx-filter-builder__expression > input[cngxInput] {
       flex: 0 1 auto;
-      inline-size: var(--cngx-filter-builder-value-basis, 8rem);
+      inline-size: var(--cngx-filter-builder-value-basis);
       min-inline-size: 0;
-      max-inline-size: var(--cngx-filter-builder-value-max, 20rem);
+      max-inline-size: var(--cngx-filter-builder-value-max);
       /* Borderless segment; the transparent bottom edge keeps the height
          stable when the unfinished-value cue flips it to dashed. */
       font: inherit;
