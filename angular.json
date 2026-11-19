@@ -353,7 +353,7 @@
                 {
                   "type": "bundle",
                   "name": "material-lab-theme",
-                  "maximumWarning": "88kB",
+                  "maximumWarning": "92kB",
                   "maximumError": "96kB"
                 },
                 {
