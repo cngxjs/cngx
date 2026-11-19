@@ -143,12 +143,14 @@ function warnIfHandBound(fieldRef: CngxFieldRef, explained: boolean): void {
     return;
   }
   handBoundWarned.add(fieldRef);
-  cngxDevWarn(
-    'CNGX2032',
-    `[cngx-form-field] the field "${fieldRef.name()}" is also bound by hand on its control, ` +
-      'so a change is written as a programmatic value: the field stays pristine and a schema ' +
-      'debounce() is skipped. Remove the [(value)] binding; the field syncs the control.',
-  );
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    cngxDevWarn(
+      'CNGX2032',
+      `[cngx-form-field] the field "${fieldRef.name()}" is also bound by hand on its control, ` +
+        'so a change is written as a programmatic value: the field stays pristine and a schema ' +
+        'debounce() is skipped. Remove the [(value)] binding; the field syncs the control.',
+    );
+  }
 }
 
 /**
