@@ -2100,7 +2100,7 @@
    (currentColor resolves at the dot). */
 @layer cngx.tokens {
   :where(.cngx-stepper) {
-    --cngx-dot-step-completed-fill: var(--cngx-step-completed-color, currentColor);
+    --cngx-dot-step-completed-fill: var(--cngx-step-completed-color);
     --cngx-dot-step-active-fill: var(
       --cngx-step-active-fill,
       var(--cngx-color-primary, oklch(0.66 0.19 50))
@@ -2231,7 +2231,7 @@
 }
 
 .cngx-stepper__mobile-dot--completed {
-  background: var(--cngx-dot-step-completed-fill, var(--cngx-step-completed-color, currentColor));
+  background: var(--cngx-dot-step-completed-fill, var(--cngx-step-completed-color));
 }
 
 .cngx-stepper__mobile-dot--active {
