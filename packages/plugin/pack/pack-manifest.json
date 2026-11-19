@@ -69,7 +69,7 @@
     {
       "artifact": "pack/recipes/common-interactive-async-click.md",
       "source": "examples/stories/common/interactive/async-click/basic-happy-path.story.ts",
-      "contentHash": "sha256:ab3e4ddfdc4187503ba3758d89d96ab9c8a64259cf7e3fc67c14571c11e80f43"
+      "contentHash": "sha256:3282584dc8a83ea89302ead5d7dedc2b50e45a1a02a611cc83d50fd7cdfced17"
     },
     {
       "artifact": "pack/recipes/common-interactive-retry.md",

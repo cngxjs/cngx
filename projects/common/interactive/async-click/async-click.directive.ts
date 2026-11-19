@@ -6,6 +6,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  ErrorHandler,
   inject,
   Injector,
   input,
@@ -77,7 +78,7 @@ export interface CngxAsyncSettle {
 }
 
 /**
- * Async action handler with loading state, auto-disable, and success/error feedback.
+ * Async action handler with loading state, `aria-disabled` while pending, and success/error feedback.
  *
  * Place on any clickable element (button, link, div). Executes the provided
  * async action on click, tracks the full lifecycle as a state machine, and
@@ -106,7 +107,9 @@ export interface CngxAsyncSettle {
  * `(settled)` is emitted, nothing is spoken and the feedback timer is
  * cleared. The `AbortSignal` handed to the action aborts, so an action that
  * forwards it (and `createRetry`, which stops its backoff loop on it) can
- * end early. A run that resolves {@link CNGX_ASYNC_CANCELLED} returns to
+ * end early. The runner itself keeps an Observable action subscribed after
+ * the abort until it emits or completes; `createRetry` unsubscribes its
+ * attempt on the abort. A run that resolves {@link CNGX_ASYNC_CANCELLED} returns to
  * `idle` silently.
  *
  * The busy visual is gated, the truth is not: {@link busyVisible} (and with it
@@ -178,6 +181,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     optional: true,
   });
   private readonly announcer = inject(CngxLiveAnnouncer);
+  private readonly errorHandler = inject(ErrorHandler);
 
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>({ alias: 'cngxAsyncClick' });
@@ -289,6 +293,7 @@ export class CngxAsyncClick implements CngxAsyncRunState {
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
   private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+  private pendingSettle: (() => string) | null = null;
   private generation = 0;
   private readonly injector = inject(Injector);
   private regionSpan: HTMLSpanElement | null = null;
@@ -301,6 +306,13 @@ export class CngxAsyncClick implements CngxAsyncRunState {
         clearTimeout(this.feedbackTimer);
       }
       this.abortController.abort();
+      // Destroy cancels the afterNextRender write, so a host removed by its
+      // own settle would never speak it.
+      const read = this.pendingSettle;
+      this.pendingSettle = null;
+      if (read) {
+        this.speakOnDestroy(read);
+      }
     });
 
     // Arm the feedback-reset window when the run has settled AND the busy
@@ -394,6 +406,9 @@ export class CngxAsyncClick implements CngxAsyncRunState {
    * `visibility: hidden` ancestor, an `inert` popover fading out) leaves the
    * region empty and hands a non-empty text to `CngxLiveAnnouncer`, scoped
    * to the host, because a reader never speaks a region in a hidden subtree.
+   * A host destroyed before that render (removed by its own `(settled)`)
+   * hands the pending text to `CngxLiveAnnouncer` from its destroy hook; with
+   * several settles pending it speaks only the latest.
    */
   private speak(read: () => string): void {
     if (!untracked(this.autoAnnounce)) {
@@ -404,13 +419,19 @@ export class CngxAsyncClick implements CngxAsyncRunState {
     if (this.regionSpan) {
       this.regionSpan.textContent = '';
     }
+    this.pendingSettle = read;
     afterNextRender(
       {
         // The visibility probe reads style, so it runs before the write.
         earlyRead: () => this.hostRendered(),
         write: (rendered) => {
+          // A destroy between the read and write phases of one pass already
+          // spoke this text from the destroy hook.
           if (this.destroyed) {
             return;
+          }
+          if (this.pendingSettle === read) {
+            this.pendingSettle = null;
           }
           const text = read();
           if (rendered) {
@@ -426,6 +447,23 @@ export class CngxAsyncClick implements CngxAsyncRunState {
       },
       { injector: this.injector },
     );
+  }
+
+  /**
+   * Runs inside view teardown, so a throwing host announcement goes to the
+   * `ErrorHandler` instead of aborting the remaining destroy hooks.
+   */
+  private speakOnDestroy(read: () => string): void {
+    let text: string;
+    try {
+      text = read();
+    } catch (err: unknown) {
+      this.errorHandler.handleError(err);
+      return;
+    }
+    if (text !== '') {
+      this.announcer.announce(text, 'polite', this.el.nativeElement);
+    }
   }
 
   /**

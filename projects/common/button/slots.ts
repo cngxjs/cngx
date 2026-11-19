@@ -2,6 +2,8 @@ import { Directive } from '@angular/core';
 
 /**
  * Content before the label: icon, avatar, badge or `<kbd>`. Trims the inline-start padding.
+ * Rendered by `cngxButton`, `cngxMenuButton`, `cngxActionButton`, `cngxPopoverAction` and
+ * `cngxPopoverDismiss`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
  * @since 0.1.0
@@ -17,6 +19,8 @@ export class CngxButtonStart {}
 
 /**
  * Content after the label: caret, count or shortcut hint. Trims the inline-end padding.
+ * Rendered by `cngxButton`, `cngxMenuButton`, `cngxActionButton`, `cngxPopoverAction` and
+ * `cngxPopoverDismiss`.
  *
  * ```html
  * <button cngxButton>Export <kbd cngxButtonEnd>E</kbd></button>

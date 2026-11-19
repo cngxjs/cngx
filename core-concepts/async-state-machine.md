@@ -337,9 +337,9 @@ Keep `status()` / `state` for everything that shows the current outcome; put per
 
 `AsyncAction` is `(signal?: AbortSignal) => Promise<unknown> | Observable<unknown>`. `cngxAsyncClick` passes a signal that aborts when the directive is destroyed:
 
-- The library never aborts the in-flight run. On destroy it stops listening: no state write, no `(settled)`, no announcement, the feedback timer cleared, and the signal aborts.
+- The library never aborts the in-flight run. On destroy it stops listening: no state write, no `(settled)`, no announcement, the feedback timer cleared, and the signal aborts. The bare runner keeps an Observable action subscribed after the abort until it emits or completes.
 - An action that wants cancellation owns it: pass the signal on to `fetch` or end an `HttpClient` call on its abort event.
-- `createRetry` forwards the signal to every attempt and stops on it: the backoff timer is cleared, no further attempt starts and an aborted run settles the retry state idle (`lastError` kept). It stays a pure factory (no injection context); a direct call without a signal has no destroy binding.
+- `createRetry` forwards the signal to every attempt and stops on it: an Observable attempt is unsubscribed, the backoff timer is cleared, no further attempt starts and an aborted run settles the retry state idle (`lastError` kept). It stays a pure factory (no injection context); a direct call without a signal has no destroy binding.
 - A run that ends without an outcome (superseded, `reset()`, aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. It is resolved, not rejected, so an `await` caller gets no surprise throw. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`.
 
 ```typescript

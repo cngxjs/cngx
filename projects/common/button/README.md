@@ -75,8 +75,8 @@ preference axes in `@cngx/core`. `md` is the form-control row, so an `md` button
 
 - `[disabled]` renders `aria-disabled="true"`, not the native attribute. The button stays in the
   tab order and `disabledReason` is read through `aria-describedby`. Clicks, middle clicks,
-  `routerLink` navigation and form submission are swallowed. The one click that passes closes an
-  open menu on its trigger.
+  `routerLink` navigation and form submission are swallowed. A disabled menu trigger opens on
+  neither click nor key, and an open menu closes when its trigger becomes disabled.
 - A disabled `<a cngxButton>` keeps its `href`, so the context menu can still open it in a new
   tab.
 - The button merges every description source into one `aria-describedby`. A static attribute is
@@ -97,18 +97,22 @@ preference axes in `@cngx/core`. `md` is the form-control row, so an `md` button
 
 ## Button group
 
-`[cngxButtonGroup]` joins buttons, icon buttons and addons into one framed, `role="group"` row.
-`orientation="vertical"` stacks them. `variant` and `size` set on the group reach every button
-inside. The group needs `aria-label` or `aria-labelledby`, else it warns
-[`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md) in development. A group whose
-children are groups is a toolbar.
+`[cngxButtonGroup]` joins buttons, icon buttons, addons and separators into one framed row. The host is `role="group"` and needs a name: set `aria-label` or `aria-labelledby`, else it warns [`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md) in development.
 
-- `cngxButtonGroupSeparator` draws a decorative divider between segments.
-- `cngxButtonGroupAddon` gives an avatar, icon or count a segment on the button row. Its media
-  is capped to `--cngx-button-group-addon-media-size` (`1lh` of the addon), so a 24px avatar
-  never stretches a 20px-line row.
-- Pressed or selected state is not the group's job. Use `CngxButtonToggleGroup` from
-  `@cngx/common/interactive`.
+```html
+<div cngxButtonGroup variant="outline" aria-label="History">
+  <button cngxButton>Undo</button>
+  <button cngxButton>Redo</button>
+</div>
+```
+
+- **Orientation.** `orientation="horizontal"` is the default; `vertical` stacks the segments into a column.
+- **Shared variant and size.** `variant` and `size` set on the group reach every `cngxButton` and `cngxIconButton` inside through `CNGX_BUTTON_GROUP`; a button's own input still wins (`input ?? group ?? config ?? default`). `tone` is not passed, intent is per button. A nested group without its own value inherits the outer group's.
+- **Toolbar.** A group whose direct children are groups is a toolbar: the sub-groups sit apart, the gap floored to `--cngx-target-gap` on a coarse pointer. One group child is enough, so a loose button next to sub-groups gets no segment geometry; wrap it in a group of its own.
+- **Separator.** `cngxButtonGroupSeparator` draws a divider that follows the orientation. It is decorative (`aria-hidden="true"`); when the split carries meaning, use two labelled groups.
+- **Addon.** `cngxButtonGroupAddon` gives non-interactive content (an avatar, an icon, a count, a short status) a segment of the group's size. It adds no role; its text is read in document order between the buttons. Its media is capped to `--cngx-button-group-addon-media-size` (`1lh` of the addon), so a 24px avatar never stretches a 20px-line row.
+- **Geometry.** The segment geometry (collapsed seams, outer radius only, lifted hover and focus) ships in the `cngx.css` bundle (`cngx-button-group.css`), not on the directive.
+- **Selection** is not the group's job; use `CngxButtonToggleGroup` from `@cngx/common/interactive` for pressed state.
 
 ## Close button
 
@@ -131,25 +135,6 @@ Migrating from `<cngx-close-button label="...">` in `@cngx/common/interactive`: 
 `<button cngxCloseButton aria-label="...">` and drop `.cngx-close-button__btn` from selectors.
 `--cngx-close-button-padding`, `-focus-outline`, `-focus-offset`, `-bg`, `-border` and
 `-transition` are gone. The button tokens and the global focus ring take over.
-
-## Button group
-
-`[cngxButtonGroup]` joins buttons, icon buttons, addons and separators into one framed row. The host is `role="group"` and needs a name: set `aria-label` or `aria-labelledby`, else it warns [`CNGX1072`](../../../core-concepts/error-codes/cngx1072.md) in development.
-
-```html
-<div cngxButtonGroup variant="outline" aria-label="History">
-  <button cngxButton>Undo</button>
-  <button cngxButton>Redo</button>
-</div>
-```
-
-- **Orientation.** `orientation="horizontal"` is the default; `vertical` stacks the segments into a column.
-- **Shared variant and size.** `variant` and `size` set on the group reach every `cngxButton` and `cngxIconButton` inside through `CNGX_BUTTON_GROUP`; a button's own input still wins (`input ?? group ?? config ?? default`). `tone` is not passed, intent is per button. A nested group without its own value inherits the outer group's.
-- **Toolbar.** A group whose direct children are groups is a toolbar: the sub-groups sit apart, the gap floored to `--cngx-target-gap` on a coarse pointer. One group child is enough, so a loose button next to sub-groups gets no segment geometry; wrap it in a group of its own.
-- **Separator.** `cngxButtonGroupSeparator` draws a divider that follows the orientation. It is decorative (`aria-hidden="true"`); when the split carries meaning, use two labelled groups.
-- **Addon.** `cngxButtonGroupAddon` gives non-interactive content (an avatar, an icon, a count, a short status) a segment of the group's size. It adds no role; its text is read in document order between the buttons.
-- **Geometry.** The segment geometry (collapsed seams, outer radius only, lifted hover and focus) ships in the `cngx.css` bundle (`cngx-button-group.css`), not on the directive.
-- **Selection** is not the group's job; use `CngxButtonToggleGroup` for pressed state.
 
 ## Opening a menu
 

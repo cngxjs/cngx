@@ -961,7 +961,9 @@ describe('CngxAsyncClick with a host-reflected run and announcement', () => {
     [showDelay]="0"
     [minDwell]="50"
     [feedbackDuration]="100"
-  >Go</button>`,
+  >
+    Go
+  </button>`,
   imports: [CngxAsyncClick, TestHostBusy],
 })
 class ReArmHost {
@@ -1126,5 +1128,144 @@ describe('CngxAsyncClick run end without an outcome', () => {
     expect(attempt).toHaveBeenCalledTimes(1);
     expect(events).toHaveLength(0);
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+@Component({
+  template: `@if (shown()) {
+    <button [cngxAsyncClick]="action" (settled)="removeOnSettle && shown.set(false)">Go</button>
+  }`,
+  imports: [CngxAsyncClick],
+})
+class UnmountHost {
+  readonly shown = signal(true);
+  removeOnSettle = true;
+  actionImpl: AsyncAction = () => Promise.resolve();
+  readonly action: AsyncAction = (signal) => this.actionImpl(signal);
+}
+
+@Component({
+  template: `<div role="dialog" aria-modal="true">
+    @if (shown()) {
+      <button [cngxAsyncClick]="action" (settled)="shown.set(false)">Go</button>
+    }
+  </div>`,
+  imports: [CngxAsyncClick],
+})
+class ModalUnmountHost {
+  readonly shown = signal(true);
+  readonly action: AsyncAction = () => Promise.resolve();
+}
+
+@Directive({
+  selector: '[testThrowingAnnouncement]',
+  providers: [{ provide: CNGX_HOST_INTERACTION_STATE, useExisting: TestThrowingAnnouncement }],
+})
+class TestThrowingAnnouncement {
+  readonly disabled = computed(() => false);
+  readonly announcement = (): string => {
+    throw new Error('announcement');
+  };
+}
+
+@Component({
+  template: `@if (shown()) {
+    <button testThrowingAnnouncement [cngxAsyncClick]="action" (settled)="shown.set(false)">
+      Go
+    </button>
+  }`,
+  imports: [CngxAsyncClick, TestThrowingAnnouncement],
+})
+class ThrowingUnmountHost {
+  readonly shown = signal(true);
+  readonly action: AsyncAction = () => Promise.resolve();
+}
+
+describe('CngxAsyncClick host destroyed by its own settle (A13)', () => {
+  function spyAnnounce() {
+    return vi
+      .spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce')
+      .mockImplementation(() => undefined);
+  }
+
+  it('speaks the pending settle text once through the live announcer', async () => {
+    const announce = spyAnnounce();
+    const fixture = TestBed.createComponent(UnmountHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    });
+    flush(fixture);
+
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith('Action succeeded', 'polite', btn);
+  });
+
+  it('announces nothing when the host is destroyed with no settle pending', async () => {
+    const announce = spyAnnounce();
+    const fixture = TestBed.createComponent(UnmountHost);
+    fixture.componentInstance.removeOnSettle = false;
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect((btn.nextElementSibling as HTMLElement).textContent).toBe('Action succeeded');
+    });
+
+    fixture.componentInstance.shown.set(false);
+    flush(fixture);
+
+    expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  it('pins the scope a host removed inside an open modal hands to the announcer', async () => {
+    const scopes: { connected: boolean; inModal: boolean }[] = [];
+    vi.spyOn(TestBed.inject(CngxLiveAnnouncer), 'announce').mockImplementation(
+      (_message, _politeness, scope) => {
+        scopes.push({
+          connected: scope?.isConnected ?? false,
+          inModal: scope?.closest('[aria-modal="true"]') != null,
+        });
+      },
+    );
+    const fixture = TestBed.createComponent(ModalUnmountHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    });
+    flush(fixture);
+
+    // Angular detaches the view's nodes before it runs the destroy hooks, so
+    // the scope no longer finds its modal and the text goes to the body
+    // regions (announcer debt: body-routed sources outside a modal).
+    expect(scopes).toEqual([{ connected: false, inModal: false }]);
+  });
+  it('hands a throwing host announcement to the ErrorHandler and finishes the teardown', async () => {
+    const handleError = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [{ provide: ErrorHandler, useValue: { handleError } }],
+    });
+    const announce = spyAnnounce();
+    const fixture = TestBed.createComponent(ThrowingUnmountHost);
+    flush(fixture);
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    btn.click();
+    await vi.waitFor(() => {
+      flush(fixture);
+      expect(fixture.nativeElement.querySelector('button')).toBeNull();
+    });
+
+    expect(handleError).toHaveBeenCalledWith(new Error('announcement'));
+    expect(announce).not.toHaveBeenCalled();
+    // The region is removed by a later destroy hook of the same directive.
+    expect(fixture.nativeElement.querySelector('[aria-live]')).toBeNull();
   });
 });
