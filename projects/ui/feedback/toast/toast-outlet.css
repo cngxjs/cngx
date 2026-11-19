@@ -316,7 +316,7 @@
    */
   @property --cngx-toast-font-size {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 0.875rem;
   }
 
@@ -326,7 +326,7 @@
    */
   @property --cngx-toast-line-height {
     syntax: '*';
-    inherits: false;
+    inherits: true;
     initial-value: 1.5;
   }
 
@@ -350,8 +350,9 @@
     initial-value: 0.875rem;
   }
 
-  /* The title follows the body size unless set on its own. inherits:false,
-   * so the derivation sits on the title that reads it. */
+  /* The title follows the body size unless set on its own. The body size
+   * inherits from the toast or outlet; the title size is inherits:false, so
+   * its derivation sits on the title that reads it. */
   :where(.cngx-toast__title) {
     --cngx-toast-title-font-size: var(--cngx-toast-font-size);
   }
