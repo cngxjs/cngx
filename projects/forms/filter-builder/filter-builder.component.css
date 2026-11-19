@@ -16,7 +16,7 @@
  *   `:focus-visible` - alpha-on-black hover tint (alpha-on-white in
  *   dark mode)
  * - `.cngx-filter-builder__action-button:focus-visible` - 2px
- *   currentColor outline, 2px offset
+ *   primary outline, 2px offset
  * - `.cngx-filter-builder__action-button[disabled]` - 0.5 opacity dim,
  *   `not-allowed` cursor
  *
@@ -323,7 +323,8 @@
   }
 
   /**
-   * Focus-ring outline shorthand applied to action buttons.
+   * Focus-ring outline shorthand applied to action buttons, the logic
+   * joiner and the expression-row segments. Defaults to a 2px primary ring.
    * @group State / Focus
    */
   @property --cngx-filter-builder-focus-outline {
@@ -405,6 +406,19 @@
       --cngx-color-danger-text,
       oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
     );
+  }
+
+  /* The focus ring follows the theme primary, as on checkbox, radio and
+   * toggle. Registered inherits: false, so the SET sits on every element that
+   * reads it: the action buttons, the logic joiner and the expression-row
+   * segments (select trigger, value input). */
+  :where(
+    .cngx-filter-builder__action-button,
+    .cngx-filter-builder__logic-joiner,
+    .cngx-filter-builder__expression > * > * > .cngx-field-trigger,
+    .cngx-filter-builder__expression > input[cngxInput]
+  ) {
+    --cngx-filter-builder-focus-outline: 2px solid var(--cngx-color-primary);
   }
 
   /* Dark-mode component-local swap - alpha-on-black hover-bg
