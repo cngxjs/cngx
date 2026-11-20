@@ -37,18 +37,9 @@ export const CNGX_CARD_I18N = new InjectionToken<Signal<CngxCardI18n>>('CngxCard
 });
 
 /**
- * Branded feature-fn for {@link provideCardI18n}.
+ * A label override feature of `provideCardI18n`.
  */
-export type CngxCardI18nFeature = ((bundle: Signal<CngxCardI18n>) => Signal<CngxCardI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineCardI18nFeature(
-  fn: (bundle: Signal<CngxCardI18n>) => Signal<CngxCardI18n>,
-): CngxCardI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxCardI18nFeature = (bundle: Signal<CngxCardI18n>) => Signal<CngxCardI18n>;
 
 /**
  * Override i18n labels via a partial bundle - unset keys keep the language
@@ -58,7 +49,7 @@ function defineCardI18nFeature(
 export function withCardI18nLabels(
   overrides: Partial<CngxCardI18n> | Signal<Partial<CngxCardI18n>>,
 ): CngxCardI18nFeature {
-  return defineCardI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**

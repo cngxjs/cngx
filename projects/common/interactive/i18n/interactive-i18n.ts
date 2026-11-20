@@ -95,22 +95,13 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
 );
 
 /**
- * Branded feature-fn for {@link provideInteractiveI18n}.
+ * A label override feature of `provideInteractiveI18n`.
  *
  * @since 0.1.0
  */
-export type CngxInteractiveI18nFeature = ((
+export type CngxInteractiveI18nFeature = (
   bundle: Signal<CngxInteractiveI18n>,
-) => Signal<CngxInteractiveI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineInteractiveI18nFeature(
-  fn: (bundle: Signal<CngxInteractiveI18n>) => Signal<CngxInteractiveI18n>,
-): CngxInteractiveI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+) => Signal<CngxInteractiveI18n>;
 
 /**
  * Override i18n labels via a partial bundle - unset keys keep the language
@@ -122,7 +113,7 @@ function defineInteractiveI18nFeature(
 export function withInteractiveI18nLabels(
   overrides: Partial<CngxInteractiveI18n> | Signal<Partial<CngxInteractiveI18n>>,
 ): CngxInteractiveI18nFeature {
-  return defineInteractiveI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**

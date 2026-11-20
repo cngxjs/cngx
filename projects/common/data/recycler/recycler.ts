@@ -78,18 +78,9 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('Cngx
 });
 
 /**
- * Branded feature-fn for {@link provideRecyclerI18n}.
+ * A label override feature of `provideRecyclerI18n`.
  */
-export type CngxRecyclerI18nFeature = ((bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineRecyclerI18nFeature(
-  fn: (bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>,
-): CngxRecyclerI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxRecyclerI18nFeature = (bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>;
 
 /**
  * Override recycler announcements via a partial bundle - keys you leave out
@@ -99,7 +90,7 @@ function defineRecyclerI18nFeature(
 export function withRecyclerI18nLabels(
   overrides: Partial<RecyclerI18n> | Signal<Partial<RecyclerI18n>>,
 ): CngxRecyclerI18nFeature {
-  return defineRecyclerI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**
