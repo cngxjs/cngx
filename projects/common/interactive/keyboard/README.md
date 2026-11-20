@@ -231,7 +231,7 @@ The binding `id` is the stable identity; a binding with a `description` is liste
 A press resolves from the focused element outwards through the hotkey scopes that contain it:
 
 - `[cngxHotkeyScope]` marks a region. `reach: 'focus'` bindings registered below it (and `[shortcutScope]="'self'"` shortcuts on their host) fire only while focus is inside it.
-- `[cngxHotkeyScopeModal]="true"` makes it modal: while focus is inside, global bindings outside it stay quiet. Modal dialogs and drawers provide this scope themselves.
+- `[cngxHotkeyScopeModal]="true"` makes it modal: while focus is inside (or has dropped to the body), global bindings outside it stay quiet and their combos do not reach the browser either. Modal dialogs and drawers provide this scope themselves.
 - `[cngxHotkeyScopeActive]="false"` mutes everything registered below it: the bindings never fire and are not listed, without unregistering.
 - The deeper scope wins when two bindings match one press (intended shadowing, silent). Two matches at the same depth run the later registration and warn [`CNGX1077`](../../../../core-concepts/error-codes/cngx1077.md) in dev mode.
 

@@ -137,6 +137,8 @@ interface HotkeyEntry {
 interface Candidate {
   readonly binding: CngxHotkeyBinding;
   readonly rank: number;
+  /** Only the modal on the chain keeps it from firing: swallowed, never run. */
+  readonly cut: boolean;
 }
 
 const FUNCTION_KEY = /^f([1-9]|1\d|2[0-4])$/;
@@ -280,6 +282,10 @@ function warnTie(
  *    reach allows it: `'focus'` needs its scope on the chain, `'global'`
  *    needs no modal on the chain or its scope inside the innermost modal.
  * 4. The deeper scope on the chain wins; among equals the last registration.
+ * 5. A matching binding that only the modal keeps from firing is swallowed:
+ *    its event is `preventDefault()`ed and nothing runs, so the browser
+ *    default (Save page on `mod+s`) stays away too. A disabled binding, a
+ *    muted scope and an unbound combo leave the default alone.
  *
  * Inside a text field (`isTextEntryTarget`: an `input` of a text, number,
  * date or time type, `textarea`, `select`, `contenteditable`,
@@ -356,8 +362,13 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
       const rank = rankOf(entry.scope, chain);
       for (const binding of entry.source()) {
         const enabled = binding.enabled?.() ?? true;
-        if (enabled && reaches(binding, entry.scope, chain, modal)) {
-          out.push({ binding, rank });
+        if (!enabled) {
+          continue;
+        }
+        if (reaches(binding, entry.scope, chain, modal)) {
+          out.push({ binding, rank, cut: false });
+        } else if (modal !== null && reaches(binding, entry.scope, chain, null)) {
+          out.push({ binding, rank, cut: true });
         }
       }
     }
@@ -383,6 +394,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     }
     let winner: Candidate | null = null;
     let tied: CngxHotkeyBinding[] = [];
+    let swallowed = false;
     for (const candidate of candidates(contextOf(target))) {
       const { binding } = candidate;
       if (typeof ngDevMode !== 'undefined' && ngDevMode) {
@@ -396,6 +408,10 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
         continue;
       }
       if (!matchesKeyCombo(event, combo, isMac)) {
+        continue;
+      }
+      if (candidate.cut) {
+        swallowed = true;
         continue;
       }
       if (winner === null || candidate.rank < winner.rank) {
@@ -413,6 +429,11 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
       }
       event.preventDefault();
       winner.binding.run(event);
+      return;
+    }
+    // The app owns the combo; a modal blocking it must not hand it to the browser.
+    if (swallowed) {
+      event.preventDefault();
     }
   }
 
@@ -456,7 +477,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     const winners = new Map<string, Candidate>();
     for (const candidate of candidates(element)) {
       const { binding } = candidate;
-      if (binding.description === undefined || comboOf(binding) === null) {
+      if (candidate.cut || binding.description === undefined || comboOf(binding) === null) {
         continue;
       }
       const held = winners.get(binding.id);
