@@ -11,7 +11,7 @@ import {
   type OutputRef,
   type Signal,
 } from '@angular/core';
-import { CNGX_NESTED_INTERACTIVE_SELECTOR } from '@cngx/core/utils';
+import { CNGX_NESTED_INTERACTIVE_SELECTOR, isComposingKeydown } from '@cngx/core/utils';
 
 import { CngxSearch } from '../keyboard/search.directive';
 import { injectHostInteractionBlocked } from '../trigger-guard/host-interaction-blocked';
@@ -206,9 +206,8 @@ export class CngxListboxTrigger<T = unknown> {
 
     // Keys pressed during an IME composition belong to the IME: the Enter that
     // confirms a candidate must not pick an option, and the arrows move
-    // through the candidate list. Safari reports the confirming Enter with
-    // `isComposing: false` and keyCode 229, hence both checks.
-    if (event.isComposing || event.keyCode === 229) {
+    // through the candidate list.
+    if (isComposingKeydown(event)) {
       return;
     }
 
