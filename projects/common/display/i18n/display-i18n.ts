@@ -119,22 +119,12 @@ export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('Cn
 });
 
 /**
- * Branded feature-fn for {@link provideDisplayI18n}.
+ * A label override feature of `provideDisplayI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_DISPLAY_I18N, withDisplayI18nLabels
  */
-export type CngxDisplayI18nFeature = ((
-  bundle: Signal<CngxDisplayI18n>,
-) => Signal<CngxDisplayI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineDisplayI18nFeature(
-  fn: (bundle: Signal<CngxDisplayI18n>) => Signal<CngxDisplayI18n>,
-): CngxDisplayI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxDisplayI18nFeature = (bundle: Signal<CngxDisplayI18n>) => Signal<CngxDisplayI18n>;
 
 /**
  * Override display labels via a partial bundle - unset keys keep the
@@ -146,7 +136,7 @@ function defineDisplayI18nFeature(
 export function withDisplayI18nLabels(
   overrides: Partial<CngxDisplayI18n> | Signal<Partial<CngxDisplayI18n>>,
 ): CngxDisplayI18nFeature {
-  return defineDisplayI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**
