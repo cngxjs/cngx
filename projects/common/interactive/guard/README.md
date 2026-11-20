@@ -60,18 +60,23 @@ Unload guards are orthogonal protection mechanisms:
 ### Example: Composition Pattern
 
 ```typescript
+// canDeactivateWhenClean protects route navigation: the Router passes the
+// routed component to the callback.
+const routes: Routes = [
+  {
+    path: 'edit',
+    component: EditComponent,
+    canDeactivate: [canDeactivateWhenClean((page: EditComponent) => page.isDirty())],
+  },
+];
+
 // CngxBeforeUnload protects browser close
-// canDeactivateWhenClean protects route navigation
 @Component({
-  providers: [
-    provideRouter(routes, withCanDeactivate([canDeactivateWhenClean(() => this.isDirty())]))
-  ]
+  template: `<form [cngxBeforeUnload]="isDirty()">...</form>`,
+  imports: [CngxBeforeUnload],
 })
 export class EditComponent {
   readonly isDirty = signal(false);
-
-  // In template:
-  // <form [cngxBeforeUnload]="isDirty()">
 }
 ```
 
@@ -122,7 +127,7 @@ const routes: Routes = [
     component: EditComponent,
     canDeactivate: [
       canDeactivateWhenClean(
-        () => inject(EditComponent).isDirty(),
+        (page: EditComponent) => page.isDirty(),
         'You have unsaved changes. Leave without saving?'
       ),
     ],
@@ -145,11 +150,6 @@ const routes: Routes = [
     </form>
   `,
   imports: [CngxBeforeUnload, ReactiveFormsModule],
-  providers: [
-    withCanDeactivate([
-      canDeactivateWhenClean(() => this.form.dirty, 'Save your changes?'),
-    ]),
-  ],
 })
 export class SettingsComponent {
   readonly form = this.fb.group({
@@ -168,6 +168,17 @@ export class SettingsComponent {
     });
   }
 }
+
+// app.routes.ts
+const routes: Routes = [
+  {
+    path: 'settings',
+    component: SettingsComponent,
+    canDeactivate: [
+      canDeactivateWhenClean((page: SettingsComponent) => page.form.dirty, 'Save your changes?'),
+    ],
+  },
+];
 ```
 
 ### Custom Confirmation Message
@@ -179,7 +190,7 @@ const routes: Routes = [
     component: BlogEditorComponent,
     canDeactivate: [
       canDeactivateWhenClean(
-        () => inject(BlogEditorComponent).content() !== '',
+        (page: BlogEditorComponent) => page.content() !== '',
         'Discard your draft? This cannot be undone.'
       ),
     ],

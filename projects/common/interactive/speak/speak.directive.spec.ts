@@ -49,6 +49,23 @@ class LangHost {
   message = signal('');
 }
 
+@Component({
+  template: '<div [cngxSpeak]="message()" [enabled]="enabled()"></div>',
+  imports: [CngxSpeak],
+})
+class EnabledHost {
+  message = signal('Hello');
+  enabled = signal(true);
+}
+
+@Component({
+  template: '<div [cngxSpeak]="message()" [rate]="2" [pitch]="0.5" [volume]="0.3"></div>',
+  imports: [CngxSpeak],
+})
+class ParamsHost {
+  message = signal('');
+}
+
 describe('CngxSpeak', () => {
   let initialLang: string | null;
   beforeEach(() => {
@@ -238,5 +255,125 @@ describe('CngxSpeak', () => {
   it('reports supported based on speechSynthesis availability', () => {
     const { dir } = setup();
     expect(dir.supported).toBe(true);
+  });
+
+  it('does not speak a non-empty mount value', () => {
+    const fixture = TestBed.createComponent(EnabledHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(speechSynthesis.speak).not.toHaveBeenCalled();
+
+    fixture.componentInstance.message.set('Changed');
+    TestBed.flushEffects();
+    expect(speechSynthesis.speak).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not auto-speak a text change while enabled is false', () => {
+    const fixture = TestBed.createComponent(EnabledHost);
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    fixture.componentInstance.message.set('Changed');
+    TestBed.flushEffects();
+    expect(speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  it('does not re-speak the unchanged text when enabled goes from false to true', () => {
+    const fixture = TestBed.createComponent(EnabledHost);
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    fixture.componentInstance.message.set('Changed');
+    TestBed.flushEffects();
+    fixture.componentInstance.enabled.set(true);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  it('passes rate, pitch and volume to the utterance', () => {
+    const fixture = TestBed.createComponent(ParamsHost);
+    fixture.detectChanges();
+    fixture.componentInstance.message.set('Hello');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect([utterance.rate, utterance.pitch, utterance.volume]).toEqual([2, 0.5, 0.3]);
+  });
+
+  it('cancel() stops an own utterance and is a no-op without one', () => {
+    const { fixture, dir } = setup();
+    dir.cancel();
+    expect(speechSynthesis.cancel).not.toHaveBeenCalled();
+
+    fixture.componentInstance.message.set('Hello');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    utterance.onstart?.();
+    dir.cancel();
+    expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+    expect(dir.speaking()).toBe(false);
+  });
+
+  it('toggle() speaks the bound text when idle and cancels while speaking', () => {
+    const fixture = TestBed.createComponent(EnabledHost);
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    const dir = fixture.debugElement.query(By.directive(CngxSpeak)).injector.get(CngxSpeak);
+
+    dir.toggle();
+    expect(speechSynthesis.speak).toHaveBeenCalledTimes(1);
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    expect(utterance.text).toBe('Hello');
+    utterance.onstart?.();
+
+    dir.toggle();
+    expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+    expect(dir.speaking()).toBe(false);
+  });
+
+  it('toggle() cancels an own utterance that is queued but not started', () => {
+    const fixture = TestBed.createComponent(EnabledHost);
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    const dir = fixture.debugElement.query(By.directive(CngxSpeak)).injector.get(CngxSpeak);
+
+    dir.toggle();
+    expect(dir.speaking()).toBe(false);
+    dir.toggle();
+    expect(speechSynthesis.speak).toHaveBeenCalledTimes(1);
+    expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels its own utterance when the text becomes empty', () => {
+    const { fixture, dir } = setup();
+    fixture.componentInstance.message.set('Hello');
+    TestBed.flushEffects();
+    const utterance = vi.mocked(speechSynthesis.speak).mock.calls[0][0] as unknown as MockUtterance;
+    utterance.onstart?.();
+
+    fixture.componentInstance.message.set('');
+    TestBed.flushEffects();
+    expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+
+    // The engine reports the cancelled utterance as interrupted; that
+    // callback, not the text effect, ends speaking.
+    utterance.onerror?.();
+    expect(dir.speaking()).toBe(false);
+
+    fixture.componentInstance.message.set('Again');
+    TestBed.flushEffects();
+    const next = vi.mocked(speechSynthesis.speak).mock.calls[1][0] as unknown as MockUtterance;
+    next.onstart?.();
+    utterance.onend?.();
+    expect(dir.speaking()).toBe(true);
+  });
+
+  it('reads speaking() before the text input is bound without throwing', () => {
+    @Component({
+      template: '<div [class.on]="tts.speaking()" [cngxSpeak]="\'Hi\'" #tts="cngxSpeak"></div>',
+      imports: [CngxSpeak],
+    })
+    class SelfReadHost {}
+    const fixture = TestBed.createComponent(SelfReadHost);
+    expect(() => fixture.detectChanges()).not.toThrow();
   });
 });
