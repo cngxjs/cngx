@@ -132,7 +132,9 @@ for (const scheme of ['light', 'dark'] as const) {
       ];
 
       await page.hover(pair('tooltip', '.probe-mat-trigger'));
-      await expect(page.locator(matSurface)).toBeVisible();
+      // Visible is not open: mat-mdc-tooltip sits at scale(0) until the show
+      // class starts its scale-in, and the box would be read scaled.
+      await expect(page.locator('.mat-mdc-tooltip')).toHaveClass(/mat-mdc-tooltip-show/);
       await settle(page);
       const matValues = await Promise.all(props.map((p) => computedValue(page, matSurface, p)));
       const matBox = await box(page, matSurface);
