@@ -63,7 +63,8 @@ export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriv
  * Prevents focus from falling to `<body>` when dynamic content is removed
  * (dialogs closing, panels collapsing, tabs switching). The directive captures
  * `document.activeElement` at initialization time and restores it when the
- * host element is destroyed.
+ * host element is destroyed while focus is inside it or has dropped to
+ * `<body>`. Focus the user moved elsewhere before the destroy stays put.
  *
  * Fallback chain: stored element → provided fallback → nearest focusable ancestor.
  * When none resolves, focus is left where the browser put it - `<body>` is
@@ -111,7 +112,10 @@ export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriv
   standalone: true,
 })
 export class CngxFocusRestore {
-  /** Whether to restore focus when the host element is destroyed. */
+  /**
+   * Whether to restore focus when the host element is destroyed. Applies only
+   * when focus is inside the host or on `<body>` at that moment.
+   */
   readonly restoreOnDestroy = input<boolean>(true);
   /** Explicit fallback element if the stored element is no longer in the DOM. */
   readonly fallback = input<HTMLElement | null>(null);
@@ -133,6 +137,9 @@ export class CngxFocusRestore {
   // Read only inside the restore paths (untracked edge, destroy, manual
   // restore()); nothing derives from it, so it is not a signal.
   private storedElement: HTMLElement | null = null;
+  // The host is already detached when DestroyRef fires, so the ancestor
+  // walk starts from the parent recorded while it was still attached.
+  private lastParent: HTMLElement | null = null;
 
   private resolvedDriver: CngxFocusRestoreDriver | null | undefined = undefined;
   private driver(): CngxFocusRestoreDriver | null {
@@ -152,6 +159,7 @@ export class CngxFocusRestore {
     if (activeEl instanceof HTMLElement) {
       this.storedElement = activeEl;
     }
+    afterNextRender({ read: () => (this.lastParent = this.host().parentElement) });
 
     effect(() => {
       const current = this.engagement.current();
@@ -171,10 +179,11 @@ export class CngxFocusRestore {
         return;
       }
 
-      const target = this.resolveTarget();
-      if (target) {
-        target.focus();
+      // Focus the user moved elsewhere in the meantime stays where it is.
+      if (!this.focusLost()) {
+        return;
       }
+      this.resolveTarget()?.focus();
     });
   }
 
@@ -232,6 +241,9 @@ export class CngxFocusRestore {
     );
   }
 
+  // A detached host still contains the element that had focus in it, so the
+  // check also holds on destroy, where the browser may report either that
+  // element or `<body>`.
   private focusLost(): boolean {
     const activeEl = this.doc.activeElement;
     return !activeEl || activeEl === this.doc.body || this.host().contains(activeEl);
@@ -271,7 +283,7 @@ export class CngxFocusRestore {
 
   /** Traverses up the DOM tree looking for the first natively focusable element. */
   private findFocusableAncestor(): HTMLElement | null {
-    let current = (this.el.nativeElement as HTMLElement).parentElement;
+    let current = this.host().parentElement ?? this.lastParent;
     while (current) {
       if (this.isFocusable(current)) {
         return current;
