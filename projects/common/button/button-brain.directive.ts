@@ -12,6 +12,7 @@ import {
   input,
 } from '@angular/core';
 import {
+  CNGX_ACTION_STATUS,
   CNGX_HOST_INTERACTION_STATE,
   type CngxHostInteractionState,
 } from '@cngx/common/interactive';
@@ -163,6 +164,12 @@ export class CngxButtonBrain implements CngxButtonState {
   readonly blocked = this.core.blocked;
   /** Busy glyph from `provideButtonSpinner`, or `null` for the built-in spinner. */
   readonly spinner = injectButtonSpinner();
+
+  /**
+   * @internal The action status on this element (`CngxActionStatusBrain`), or `null`. Read on
+   * self only, so a button projected into an action host never sees the outer host's status.
+   */
+  readonly actionStatus = injectLazySelf(CNGX_ACTION_STATUS, { optional: true });
 
   /** Id of the reason span `CngxButtonAdornment` renders. */
   readonly reasonId = this.core.reasonId;
