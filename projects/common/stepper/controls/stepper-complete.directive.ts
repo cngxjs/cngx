@@ -81,8 +81,8 @@ export class CngxStepperComplete {
   );
   private readonly runner = inject(CNGX_ASYNC_RUN_STATE, { host: true });
 
-  // Busy for the run and for the held busy visual after it, so Back and
-  // Next refuse exactly as long as Finish shows aria-busy.
+  // Busy for the run and for the held busy visual after it. The runner's own
+  // [busy] hint and a host-reflected busy stay out: they are not this run.
   private readonly busy = computed(() => this.runner.pending() || this.runner.busyVisible());
   private readonly busyKey = nextUid('cngx-stepper-complete');
 
