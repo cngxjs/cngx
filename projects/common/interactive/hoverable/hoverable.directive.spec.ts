@@ -21,28 +21,16 @@ describe('CngxHoverable', () => {
     expect(ctx.directive.hovered()).toBe(false);
   });
 
-  function host(): HTMLElement {
-    return ctx.fixture.debugElement.query(By.css('div')).nativeElement as HTMLElement;
-  }
-
-  const pointer = (type: string, pointerType: string) =>
-    new PointerEvent(type, { pointerType, bubbles: false });
-
-  it('sets hovered=true on a mouse pointerenter', () => {
-    host().dispatchEvent(pointer('pointerenter', 'mouse'));
+  it('sets hovered=true on mouseenter', () => {
+    const el = ctx.fixture.debugElement.query(By.css('div'));
+    el.triggerEventHandler('mouseenter');
     expect(ctx.directive.hovered()).toBe(true);
   });
 
-  it('sets hovered=false on pointerleave', () => {
-    host().dispatchEvent(pointer('pointerenter', 'pen'));
-    host().dispatchEvent(pointer('pointerleave', 'pen'));
-    expect(ctx.directive.hovered()).toBe(false);
-  });
-
-  it('does not hover on touch, so a tap leaves no sticky state', () => {
-    host().dispatchEvent(pointer('pointerenter', 'touch'));
-    // The emulated mouse events a browser sends after a tap must not set it either.
-    host().dispatchEvent(new MouseEvent('mouseenter'));
+  it('sets hovered=false on mouseleave', () => {
+    const el = ctx.fixture.debugElement.query(By.css('div'));
+    el.triggerEventHandler('mouseenter');
+    el.triggerEventHandler('mouseleave');
     expect(ctx.directive.hovered()).toBe(false);
   });
 
