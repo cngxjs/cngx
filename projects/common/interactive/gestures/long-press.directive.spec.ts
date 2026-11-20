@@ -148,7 +148,7 @@ describe('CngxLongPress', () => {
       host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
       vi.advanceTimersByTime(500);
       document.dispatchEvent(new PointerEvent('pointerup'));
-      target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
     }
 
     it('suppresses the click that follows a completed long press', () => {
@@ -174,7 +174,18 @@ describe('CngxLongPress', () => {
       completeAndRelease(host, host);
       host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
       document.dispatchEvent(new PointerEvent('pointerup'));
-      host.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      host.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+      expect(fixture.componentInstance.clicks).toBe(1);
+    });
+
+    it('never swallows a keyboard click, even when no pointer click followed the press', () => {
+      const { host, fixture } = setup();
+      host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      vi.advanceTimersByTime(500);
+      // Released outside the host: the pointer click lands elsewhere, the guard stays armed.
+      document.dispatchEvent(new PointerEvent('pointerup'));
+      // Enter / Space activation and el.click() carry detail 0.
+      host.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 }));
       expect(fixture.componentInstance.clicks).toBe(1);
     });
 
@@ -183,7 +194,7 @@ describe('CngxLongPress', () => {
       host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
       vi.advanceTimersByTime(100);
       document.dispatchEvent(new PointerEvent('pointerup'));
-      host.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      host.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
       expect(fixture.componentInstance.clicks).toBe(1);
     });
   });

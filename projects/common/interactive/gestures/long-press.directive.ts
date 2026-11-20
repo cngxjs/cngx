@@ -11,9 +11,10 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  * accidental triggers during scrolling), pointer up, pointer cancel, pointer
  * leave, and `enabled` turning `false`. Other buttons never start a press.
  *
- * The `click` that follows the release of a completed long press is cancelled
- * in the capture phase on the host, so a host or child `(click)` does not run
- * on top of the long-press action. A short tap clicks as usual.
+ * The pointer `click` that follows the release of a completed long press is
+ * cancelled in the capture phase on the host, so a host or child `(click)`
+ * does not run on top of the long-press action. A short tap clicks as usual,
+ * and a keyboard or programmatic click is never cancelled.
  *
  * Exposes `longPressing` signal for real-time visual feedback while the user holds.
  * A long press has no keyboard equivalent: give the action a second path
@@ -68,9 +69,12 @@ export class CngxLongPress {
     const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
     const doc = inject(DOCUMENT);
 
+    // A keyboard or programmatic click (detail 0) is never swallowed: when the
+    // pointer click of the press landed elsewhere the guard stays armed until
+    // the next pointerdown, and must not eat an Enter / Space activation.
     fromEvent<MouseEvent>(el, 'click', { capture: true })
       .pipe(
-        filter(() => this.suppressClick),
+        filter((click) => this.suppressClick && click.detail !== 0),
         takeUntilDestroyed(),
       )
       .subscribe((click) => {
