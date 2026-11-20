@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'sass:list';
 @use 'sass:map';
 @use '@angular/material' as mat;
@@ -27,7 +28,9 @@
 //   neutral boundary reads (mat-stroked-button)
 // - variant `secondary` -> the `*-container` roles through the three
 //   --cngx-button-secondary-* hooks (neutral = secondary-container, the M3
-//   tonal button; primary = primary-container; danger = error-container)
+//   tonal button; primary = primary-container; danger = error-container);
+//   M2 has no container roles, so only an M2 light danger secondary sets the
+//   label hook (its pressed wash sits under 4.5:1 otherwise)
 // - shape -> corner-full: --cngx-button-radius on the host (a real-specificity
 //   rule, see `shape()`; the radius rung --cngx-radius-md stays untouched so
 //   projected children keep theirs), the group end radius, the close-button
@@ -233,8 +236,10 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
     }
   } @else {
     // M2 has no container roles and no state-layer tokens: the secondary
-    // hooks stay unset, so the tone mix paints, and hover and pressed keep
-    // the default shade and wash. The scheme knobs follow the theme type.
+    // fill hooks stay unset, so the tone mix paints, and hover and pressed
+    // keep the default shade and wash. The scheme knobs follow the theme type.
+    // Only the M2 light danger secondary sets its label: the shifted warn text
+    // sits under 4.5:1 on the hover and pressed wash.
     @include bridge.on('.cngx-button') {
       @include _scheme-knobs(mat.get-theme-type($theme));
       --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
@@ -251,6 +256,19 @@ $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
     }
     @include bridge.on('.cngx-close-button') {
       --cngx-close-button-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    }
+    @if mat.get-theme-type($theme) == light {
+      $warn: mat.get-theme-color($theme, warn);
+      $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
+      // 27% is the sheet's pressed secondary mix (cngx-button.css); 4.6 leaves
+      // the margin the browser measurement needs over 4.5.
+      $pressed: (
+        color.mix($warn, mat.get-theme-color($theme, background, background), 27%, $method: rgb),
+        color.mix($warn, mat.get-theme-color($theme, background, card), 27%, $method: rgb)
+      );
+      @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
+        --cngx-button-secondary-color: #{bridge.readable-on($warn, $text, $pressed, 4.6)};
+      }
     }
   }
 }

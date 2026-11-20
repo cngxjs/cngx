@@ -287,6 +287,19 @@ describe('button Material bridge', () => {
     expect(host.has('--cngx-color-on-danger')).toBe(false);
   });
 
+  it('sets the danger secondary label on an M2 light theme only (M2)', () => {
+    const light = compileThemeEntry(M2_ENTRY);
+    expect(
+      block(light, '.cngx-button[data-variant=secondary][data-tone=danger]').get(
+        '--cngx-button-secondary-color',
+      ),
+    ).toBe('#a92b22');
+    const dark = compileThemeEntry(
+      M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'),
+    );
+    expect(dark).not.toContain('[data-tone=danger]');
+  });
+
   it('paints the secondary variant from the container roles per tone (M3)', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const pairs = [
