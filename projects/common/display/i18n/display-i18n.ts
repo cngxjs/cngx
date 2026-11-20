@@ -122,6 +122,7 @@ export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('Cn
  * A label override feature of `provideDisplayI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_DISPLAY_I18N, withDisplayI18nLabels
  */
 export type CngxDisplayI18nFeature = (bundle: Signal<CngxDisplayI18n>) => Signal<CngxDisplayI18n>;
 

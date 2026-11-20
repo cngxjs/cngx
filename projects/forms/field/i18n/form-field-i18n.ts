@@ -154,6 +154,7 @@ export const CNGX_FORM_FIELD_I18N = new InjectionToken<Signal<CngxFormFieldI18n>
  * A label override feature of `provideFormFieldI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_FORM_FIELD_I18N, withFormFieldI18nLabels
  */
 export type CngxFormFieldI18nFeature = (
   bundle: Signal<CngxFormFieldI18n>,

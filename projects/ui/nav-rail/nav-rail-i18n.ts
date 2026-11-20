@@ -41,6 +41,7 @@ export const CNGX_NAV_RAIL_I18N = new InjectionToken<Signal<CngxNavRailI18n>>('C
  * A label override feature of `provideNavRailI18n`.
  *
  * @since 0.3.0
+ * @relatedTo CNGX_NAV_RAIL_I18N, withNavRailI18nLabels
  */
 export type CngxNavRailI18nFeature = (bundle: Signal<CngxNavRailI18n>) => Signal<CngxNavRailI18n>;
 

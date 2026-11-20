@@ -174,6 +174,9 @@ export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxCh
 
 /**
  * A label override feature of `provideChartI18n`.
+ *
+ * @since 0.1.0
+ * @relatedTo CNGX_CHART_I18N, withChartI18nLabels
  */
 export type CngxChartI18nFeature = (bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>;
 

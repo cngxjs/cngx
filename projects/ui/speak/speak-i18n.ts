@@ -41,6 +41,7 @@ export const CNGX_SPEAK_I18N = new InjectionToken<Signal<CngxSpeakI18n>>('CngxSp
  * A label override feature of `provideSpeakI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_SPEAK_I18N, withSpeakI18nLabels
  */
 export type CngxSpeakI18nFeature = (bundle: Signal<CngxSpeakI18n>) => Signal<CngxSpeakI18n>;
 

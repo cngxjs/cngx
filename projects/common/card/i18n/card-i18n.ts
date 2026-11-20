@@ -38,6 +38,9 @@ export const CNGX_CARD_I18N = new InjectionToken<Signal<CngxCardI18n>>('CngxCard
 
 /**
  * A label override feature of `provideCardI18n`.
+ *
+ * @since 0.1.0
+ * @relatedTo CNGX_CARD_I18N, withCardI18nLabels
  */
 export type CngxCardI18nFeature = (bundle: Signal<CngxCardI18n>) => Signal<CngxCardI18n>;
 

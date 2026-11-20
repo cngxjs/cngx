@@ -98,6 +98,7 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
  * A label override feature of `provideInteractiveI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_INTERACTIVE_I18N, withInteractiveI18nLabels
  */
 export type CngxInteractiveI18nFeature = (
   bundle: Signal<CngxInteractiveI18n>,

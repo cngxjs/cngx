@@ -98,6 +98,7 @@ export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18
  * A label override feature of `provideKpiI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_KPI_I18N, withKpiI18nLabels
  */
 export type CngxKpiI18nFeature = (bundle: Signal<CngxKpiI18n>) => Signal<CngxKpiI18n>;
 

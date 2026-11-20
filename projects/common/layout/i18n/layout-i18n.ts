@@ -83,6 +83,7 @@ export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('Cngx
  * A label override feature of `provideLayoutI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_LAYOUT_I18N, withLayoutI18nLabels
  */
 export type CngxLayoutI18nFeature = (bundle: Signal<CngxLayoutI18n>) => Signal<CngxLayoutI18n>;
 

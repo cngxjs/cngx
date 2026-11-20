@@ -79,6 +79,9 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('Cngx
 
 /**
  * A label override feature of `provideRecyclerI18n`.
+ *
+ * @since 0.1.0
+ * @relatedTo CNGX_RECYCLER_I18N, withRecyclerI18nLabels
  */
 export type CngxRecyclerI18nFeature = (bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>;
 
