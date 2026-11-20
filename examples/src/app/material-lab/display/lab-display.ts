@@ -13,8 +13,27 @@ import {
   CngxCardSubtitle,
   CngxCardTitle,
 } from '@cngx/common/card';
-import { CngxBadge, CngxChip, CngxDivider } from '@cngx/common/display';
-import { CngxButtonToggle, CngxButtonToggleGroup, CngxRipple } from '@cngx/common/interactive';
+import {
+  CngxAvatar,
+  CngxBadge,
+  CngxChip,
+  CngxDivider,
+  CngxPasswordStrengthMeter,
+  CngxSegmentedProgress,
+  CngxStatus,
+} from '@cngx/common/display';
+import {
+  CngxAsyncClick,
+  CngxButtonToggle,
+  CngxButtonToggleGroup,
+  CngxCopyBlock,
+  CngxRipple,
+  CngxSpeak,
+} from '@cngx/common/interactive';
+import { CngxFileDrop, CngxRating } from '@cngx/forms/input';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui/skeleton';
+import { CngxSpeakButton } from '@cngx/ui/speak';
 
 import { injectLabSheet } from '../inject-lab-sheet';
 import { LabPages } from '../lab-pages';
@@ -23,6 +42,10 @@ import { LabPages } from '../lab-pages';
  * Display pairs of the Material bridge fidelity harness: badge, button-toggle,
  * card, chip, divider and ripple. Material left (`probe-mat`), cngx right
  * (`probe-cngx`), both under the `material-lab-display-theme` bundle.
+ *
+ * Below the pairs sit the cngx-only display widgets, each under its bridge.
+ * Material has no twin for them, so they are here for the eye; their token
+ * reach is pinned in `e2e/material-bridge-rendered.spec.ts`.
  *
  * Route: `/#/material-lab/display`.
  */
@@ -41,14 +64,27 @@ import { LabPages } from '../lab-pages';
     CngxBadge,
     CngxButtonToggle,
     CngxButtonToggleGroup,
+    CngxAsyncClick,
+    CngxAvatar,
     CngxCard,
     CngxCardBody,
     CngxCardHeader,
     CngxCardSubtitle,
     CngxCardTitle,
     CngxChip,
+    CngxCopyBlock,
     CngxDivider,
+    CngxEmptyState,
+    CngxFileDrop,
+    CngxPasswordStrengthMeter,
+    CngxRating,
     CngxRipple,
+    CngxSegmentedProgress,
+    CngxSkeletonContainer,
+    CngxSkeletonPlaceholder,
+    CngxSpeak,
+    CngxSpeakButton,
+    CngxStatus,
   ],
   template: `
     <div class="lab mat-app-background mat-typography">
@@ -128,12 +164,99 @@ import { LabPages } from '../lab-pages';
           <div class="probe-cngx lab-ripple-box" cngxRipple>Press</div>
         </div>
       </section>
+
+      <h2 class="lab-heading">cngx-only (no Material twin)</h2>
+
+      <section class="lab-wide" data-pendant="avatar">
+        <h3>avatar</h3>
+        <div class="lab-pendant">
+          <cngx-avatar initials="AL" status="online" />
+          <cngx-avatar initials="BK" status="busy" />
+          <cngx-avatar initials="CM" status="away" shape="square" />
+          <cngx-avatar initials="DN" status="offline" size="lg" />
+        </div>
+      </section>
+
+      <section class="lab-wide" data-pendant="status">
+        <h3>status</h3>
+        <div class="lab-pendant">
+          <cngx-status tone="success" label="Operational" />
+          <cngx-status tone="warning" label="Degraded" />
+          <cngx-status tone="danger" label="Outage" />
+          <cngx-status tone="info" label="Maintenance" />
+          <cngx-status tone="neutral" label="Unknown" />
+        </div>
+      </section>
+
+      <section class="lab-wide" data-pendant="segmented-progress">
+        <h3>segmented-progress</h3>
+        <cngx-segmented-progress class="lab-meter" [segments]="segments" />
+      </section>
+
+      <section class="lab-wide" data-pendant="password-strength-meter">
+        <h3>password-strength-meter (weak, good)</h3>
+        <div class="lab-pendant">
+          <cngx-password-strength-meter class="lab-meter" [score]="1" />
+          <cngx-password-strength-meter class="lab-meter" [score]="3" />
+        </div>
+      </section>
+
+      <section class="lab-wide" data-pendant="skeleton">
+        <h3>skeleton</h3>
+        <cngx-skeleton [loading]="true" [showDelay]="0">
+          <ng-template cngxSkeletonPlaceholder>
+            <div class="cngx-skeleton__bone lab-bone"></div>
+          </ng-template>
+        </cngx-skeleton>
+      </section>
+
+      <section class="lab-wide" data-pendant="empty-state">
+        <h3>empty-state</h3>
+        <cngx-empty-state title="No results" description="Try a different filter." />
+      </section>
+
+      <section class="lab-wide" data-pendant="copy-block">
+        <h3>copy-block</h3>
+        <cngx-copy-block value="npm install @cngx/themes">
+          <code>npm install &#64;cngx/themes</code>
+        </cngx-copy-block>
+      </section>
+
+      <section class="lab-wide" data-pendant="async-click">
+        <h3>async-click (press for success or error)</h3>
+        <div class="lab-pendant">
+          <button type="button" class="lab-async" [cngxAsyncClick]="succeed">Save</button>
+          <button type="button" class="lab-async" [cngxAsyncClick]="fail">Fail</button>
+        </div>
+      </section>
+
+      <section class="lab-wide" data-pendant="speak-button">
+        <h3>speak-button</h3>
+        <div class="lab-pendant">
+          <span [cngxSpeak]="speakText" #tts="cngxSpeak">{{ speakText }}</span>
+          <cngx-speak-button [speakRef]="tts" />
+        </div>
+      </section>
+
+      <section class="lab-wide" data-pendant="rating">
+        <h3>rating</h3>
+        <cngx-rating ariaLabel="Lab rating" [value]="3" />
+      </section>
+
+      <section class="lab-wide" data-pendant="file-drop">
+        <h3>file-drop (drag a file over it)</h3>
+        <div cngxFileDrop ariaLabel="Drop files">Drop files here</div>
+      </section>
     </div>
   `,
 })
 export class LabDisplay {
   protected readonly matView = signal('list');
   protected readonly cngxView = signal<string | undefined>('list');
+  protected readonly segments = ['done', 'done', 'active', 'todo', 'error'] as const;
+  protected readonly speakText = 'Read this line aloud.';
+  protected readonly succeed = (): Promise<void> => Promise.resolve();
+  protected readonly fail = (): Promise<void> => Promise.reject(new Error('lab failure'));
 
   constructor() {
     injectLabSheet('material-lab-display-theme');

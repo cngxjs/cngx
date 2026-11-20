@@ -86,7 +86,10 @@ $theme: mat.define-theme(
     gap: 12px;
   }
 
-  .lab h3 {
+  // Direct children only: an unlayered `.lab h3` would also restyle every
+  // heading a widget renders itself (empty-state, chart-panel) and show the
+  // lab chrome as if it were the bridge value.
+  .lab section > h3 {
     margin: 0;
     font: var(--mat-sys-title-small);
   }
