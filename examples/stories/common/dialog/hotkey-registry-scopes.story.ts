@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
     this.lastFired.set('dialog.submit');
   }`,
   template: `  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-    <button type="button" class="chip" [cngxKeyboardShortcut]="'mod+s'" shortcutId="app.save" (shortcutTriggered)="handleSave()">
+    <button type="button" class="chip" [cngxKeyboardShortcut]="'mod+s'" shortcutId="app.save" (shortcutTriggered)="handleSave()" (click)="handleSave()">
       Save (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd>)
     </button>
     <button type="button" class="chip" (click)="confirm.open()">Open dialog</button>
