@@ -18,14 +18,14 @@ import { createTransitionTracker } from '@cngx/core/utils';
 /**
  * CSS selector matching natively-focusable elements: links with an
  * `href`, the enabled form controls, the summary of a `<details>`,
- * editable content, and anything with an explicit non-negative `tabindex`. Form controls carry `:not(:disabled)` because
- * a disabled control is not in the tab order - without it a descendant
- * probe would count a disabled button as focusable and a restore target
- * could land on an unfocusable element. Single source of truth for "is
- * this focusable" - the element-level {@link CngxFocusRestore} predicate
- * matches against it, and descendant probes (e.g. "does this panel
- * contain a focusable child?") query against it. Keeping one selector
- * stops the two uses from drifting apart.
+ * editable content, and anything with an explicit non-negative `tabindex`.
+ * Form controls carry `:not(:disabled)` because a disabled control is not in
+ * the tab order - without it a descendant probe would count a disabled button
+ * as focusable and a restore target could land on an unfocusable element.
+ * Single source of truth for "is this focusable" - the element-level
+ * {@link CngxFocusRestore} predicate matches against it, and descendant probes
+ * (e.g. "does this panel contain a focusable child?") query against it.
+ * Keeping one selector stops the two uses from drifting apart.
  *
  * @since 0.1.0
  */

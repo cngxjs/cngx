@@ -51,12 +51,12 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  *
  * Both body regions are created when the service is created, so they are in
  * the DOM before the first announcement (a screen reader commonly misses a
- * change to a region inserted a frame earlier), and reused thereafter. Because polite and assertive live in separate fixed-
- * politeness nodes, an assertive announcement never clobbers a concurrent
- * polite one. Per region, the text is cleared and re-set one frame later so an
- * identical consecutive message is still re-read by the screen reader. A
- * written message is cleared again after 7 s, so no stale text stays in the
- * region; a test that runs all timers reads the text before that.
+ * change to a region inserted a frame earlier), and reused thereafter.
+ * Because polite and assertive live in separate fixed-politeness nodes, an
+ * assertive announcement never clobbers a concurrent polite one. Per region,
+ * the text is cleared and re-set one frame later so an identical consecutive
+ * message is still re-read by the screen reader. A written message is cleared
+ * again after 7 s, so no stale text stays in the region.
  *
  * A modal dialog hides everything outside it from assistive technology, so a
  * body region is silent while one is open. Pass the announcing element as the
@@ -99,8 +99,6 @@ export class CngxLiveAnnouncer implements OnDestroy {
   private regions: CngxLiveRegionPair | null = null;
 
   constructor() {
-    // A screen reader commonly misses a change to a region that entered the
-    // DOM a frame earlier, so the body pair exists before the first message.
     if (this.isBrowser) {
       this.regions = createLiveRegionPair(this.doc.body, this.doc);
       this.regions.ensure();
