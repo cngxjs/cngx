@@ -32,6 +32,10 @@ import { afterEach, describe, expect, it } from 'vitest';
       <div class="cngx-select__commit-error-hint">Not saved</div>
       <span class="probe" style="color: var(--cngx-color-danger-text)"></span>
     </div>
+    <div class="scheme-light" data-color-scheme="light">
+      <div class="cngx-select__panel">panel</div>
+    </div>
+    <div class="cngx-select__panel panel-default">panel</div>
   `,
 })
 class DerivedTokensHost {}
@@ -57,6 +61,7 @@ function query(root: HTMLElement, selector: string): HTMLElement {
 afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
+  document.documentElement.style.removeProperty('--cngx-shadow-md');
 });
 
 describe('select-base theme-derived tokens', () => {
@@ -70,6 +75,16 @@ describe('select-base theme-derived tokens', () => {
     const lightHint = query(root, '.scheme-default .cngx-select__commit-error-hint');
     const darkHint = query(root, '.scheme-dark .cngx-select__commit-error-hint');
     expect(computedValue(darkHint, 'color')).not.toBe(computedValue(lightHint, 'color'));
+  });
+
+  it('derives the panel shadow from the shadow scale in the default and light scheme', () => {
+    const marker = 'rgb(255, 0, 0) 0px 2px 3px 0px';
+    document.documentElement.style.setProperty('--cngx-shadow-md', marker);
+    const root = mount();
+    expect(computedValue(query(root, '.panel-default'), 'box-shadow')).toBe(marker);
+    expect(computedValue(query(root, '.scheme-light .cngx-select__panel'), 'box-shadow')).toBe(
+      marker,
+    );
   });
 
   it('rounds the chip overflow badge with the chip radius', () => {

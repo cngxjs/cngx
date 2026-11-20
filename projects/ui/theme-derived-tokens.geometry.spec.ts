@@ -84,10 +84,9 @@ const SCHEMES = ['light', 'dark'] as const;
       ></span>
     </div>
     <div class="cngx-toast-outlet">
-      <div class="cngx-toast">
-        <strong class="cngx-toast__title toast-title" style="--cngx-toast-font-size: 20px"
-          >Saved</strong
-        >
+      <div class="cngx-toast" style="--cngx-toast-font-size: 20px; --cngx-toast-line-height: 30px">
+        <strong class="cngx-toast__title toast-title">Saved</strong>
+        <span class="cngx-toast__message toast-message">Changes stored</span>
       </div>
     </div>
   `,
@@ -207,8 +206,11 @@ describe('ui theme-derived tokens', () => {
     }
   });
 
-  it('sizes the toast title with the toast font size', () => {
+  it('sizes the toast title and message with the font size and line height set on the toast', () => {
     const root = mount();
-    expect(computedValue(query(root, '.toast-title'), 'font-size')).toBe('20px');
+    for (const selector of ['.toast-title', '.toast-message']) {
+      expect(computedValue(query(root, selector), 'font-size')).toBe('20px');
+      expect(computedValue(query(root, selector), 'line-height')).toBe('30px');
+    }
   });
 });
