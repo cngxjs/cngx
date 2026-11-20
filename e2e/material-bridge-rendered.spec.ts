@@ -988,3 +988,419 @@ html {
     expect(await alpha(page, '#off', 'background-color')).toBe(0.04);
   });
 });
+
+/**
+ * Resolves a CSS color expression (a `color-mix()` over stand-ins) the way the
+ * browser serializes it, so a mixed bridge token is compared against the same
+ * mix and never against a hand-computed rgb() that rounds differently.
+ */
+function resolvedColor(page: Page, expression: string): Promise<string> {
+  return page.evaluate((value) => {
+    const probe = document.createElement('div');
+    probe.style.color = value;
+    document.body.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }, expression);
+}
+
+/**
+ * Unlayered stand-ins for the type and shape roles the display bridges read
+ * beyond MAT_SYS_EXTRAS. Off every cngx initial-value, so an equality can only
+ * hold when the bridge assignment landed.
+ */
+const DISPLAY_SYS_EXTRAS = `<style>:root {
+  --mat-sys-label-large-size: 15px;
+  --mat-sys-label-medium-weight: 610;
+  --mat-sys-title-small-size: 19px;
+  --mat-sys-corner-full: 23px;
+  --mat-sys-corner-medium: 13px;
+}</style>`;
+
+test.describe('material-bridge rendered values: avatar', () => {
+  const AVATAR_CSS = ['projects/common/display/avatar/avatar.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('avatar-theme');
+
+  const AVATAR_HTML = `${DISPLAY_SYS_EXTRAS}
+<cngx-avatar id="avatar-circle" class="cngx-avatar cngx-avatar--md cngx-avatar--circle">
+  <span class="cngx-avatar__initials">AL</span>
+  <span id="dot-online" class="cngx-avatar__status cngx-avatar__status--online"></span>
+</cngx-avatar>
+<cngx-avatar id="avatar-square" class="cngx-avatar cngx-avatar--lg cngx-avatar--square">
+  <span class="cngx-avatar__initials">BK</span>
+  <span id="dot-busy" class="cngx-avatar__status cngx-avatar__status--busy"></span>
+</cngx-avatar>
+<cngx-avatar class="cngx-avatar cngx-avatar--md cngx-avatar--circle">
+  <span id="dot-away" class="cngx-avatar__status cngx-avatar__status--away"></span>
+</cngx-avatar>
+<cngx-avatar class="cngx-avatar cngx-avatar--md cngx-avatar--circle">
+  <span id="dot-offline" class="cngx-avatar__status cngx-avatar__status--offline"></span>
+</cngx-avatar>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: AVATAR_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: AVATAR_HTML,
+    });
+  });
+
+  test('the plate paints the container-high pair', async ({ page }) => {
+    expect(await computedValue(page, '#avatar-circle', 'background-color')).toBe(
+      matSys('surface-container-high'),
+    );
+    expect(await computedValue(page, '#avatar-circle', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('the size rungs read the label and title scale on the host', async ({ page }) => {
+    // inherits:false tokens: the bridge assigns them on the host, and the size
+    // class reads them on the same element.
+    expect(await computedValue(page, '#avatar-circle', 'font-size')).toBe('15px');
+    expect(await computedValue(page, '#avatar-square', 'font-size')).toBe('19px');
+  });
+
+  test('both shapes paint the Material corner roles', async ({ page }) => {
+    expect(await computedValue(page, '#avatar-circle', 'border-top-left-radius')).toBe('23px');
+    expect(await computedValue(page, '#avatar-square', 'border-top-left-radius')).toBe('13px');
+  });
+
+  test('every status dot paints its role and the surface ring', async ({ page }) => {
+    expect(await computedValue(page, '#dot-online', 'background-color')).toBe(matSys('tertiary'));
+    expect(await computedValue(page, '#dot-busy', 'background-color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#dot-offline', 'background-color')).toBe(matSys('outline'));
+    expect(await computedValue(page, '#dot-away', 'background-color')).toBe(
+      await resolvedColor(
+        page,
+        `color-mix(in srgb, ${matSys('tertiary')} 60%, ${matSys('error')} 40%)`,
+      ),
+    );
+    expect(await computedValue(page, '#dot-online', 'border-top-color')).toBe(matSys('surface'));
+  });
+});
+
+test.describe('material-bridge rendered values: status', () => {
+  const STATUS_CSS = ['projects/common/display/status/status.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('status-theme');
+
+  const STATUS_HTML = `${DISPLAY_SYS_EXTRAS}
+<cngx-status id="status-success" class="cngx-status cngx-status--success"><span class="cngx-status__dot"></span><span class="cngx-status__label">Operational</span></cngx-status>
+<cngx-status id="status-warning" class="cngx-status cngx-status--warning"><span class="cngx-status__dot"></span></cngx-status>
+<cngx-status id="status-danger" class="cngx-status cngx-status--danger"><span class="cngx-status__dot"></span></cngx-status>
+<cngx-status id="status-info" class="cngx-status cngx-status--info"><span class="cngx-status__dot"></span></cngx-status>
+<cngx-status id="status-neutral" class="cngx-status cngx-status--neutral"><span class="cngx-status__dot"></span></cngx-status>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: STATUS_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: STATUS_HTML,
+    });
+  });
+
+  test('every tone dot paints its Material role', async ({ page }) => {
+    const dot = (tone: string) => `#status-${tone} .cngx-status__dot`;
+    expect(await computedValue(page, dot('success'), 'background-color')).toBe(matSys('tertiary'));
+    expect(await computedValue(page, dot('warning'), 'background-color')).toBe(
+      matSys('secondary'),
+    );
+    expect(await computedValue(page, dot('danger'), 'background-color')).toBe(matSys('error'));
+    expect(await computedValue(page, dot('info'), 'background-color')).toBe(matSys('primary'));
+    expect(await computedValue(page, dot('neutral'), 'background-color')).toBe(matSys('outline'));
+  });
+
+  test('the label sits on the label-medium scale', async ({ page }) => {
+    expect(await computedValue(page, '#status-success', 'font-size')).toBe(
+      matSysExtra('label-medium-size'),
+    );
+    expect(await computedValue(page, '#status-success', 'font-weight')).toBe('610');
+  });
+});
+
+test.describe('material-bridge rendered values: segmented-progress', () => {
+  const SEGMENTED_CSS = [
+    'projects/common/display/segmented-progress/segmented-progress.css',
+  ] as const;
+  const BRIDGE_CSS = compileBridge('segmented-progress-theme');
+
+  const SEGMENTED_HTML = `
+<cngx-segmented-progress class="cngx-segmented-progress">
+  <span id="seg-done" class="cngx-segmented-progress__segment" data-state="done"></span>
+  <span id="seg-active" class="cngx-segmented-progress__segment" data-state="active"></span>
+  <span id="seg-todo" class="cngx-segmented-progress__segment" data-state="todo"></span>
+  <span id="seg-error" class="cngx-segmented-progress__segment" data-state="error"></span>
+</cngx-segmented-progress>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: SEGMENTED_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: SEGMENTED_HTML,
+    });
+  });
+
+  test('done, todo and error segments paint their Material roles', async ({ page }) => {
+    expect(await computedValue(page, '#seg-done', 'background-color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#seg-todo', 'background-color')).toBe(
+      matSys('surface-variant'),
+    );
+    expect(await computedValue(page, '#seg-error', 'background-color')).toBe(matSys('error'));
+  });
+
+  test('the active segment mixes the primary stand-in toward the surface', async ({ page }) => {
+    // The fixture sets no --cngx-color-surface, so the read site falls back to
+    // its literal white; the bridge only owns the primary side of the mix.
+    expect(await computedValue(page, '#seg-active', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in oklab, ${matSys('primary')} 60%, oklch(1 0 0))`),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: password-strength-meter', () => {
+  const METER_CSS = [
+    'projects/common/display/password-strength-meter/password-strength-meter.css',
+  ] as const;
+  const BRIDGE_CSS = compileBridge('password-strength-meter-theme');
+
+  const METER_HTML = `
+<cngx-password-strength-meter id="meter-weak" class="cngx-password-strength-meter" data-strength="weak">
+  <span id="weak-filled" class="cngx-password-strength-meter__segment" data-filled="true"></span>
+  <span id="weak-empty" class="cngx-password-strength-meter__segment" data-filled="false"></span>
+</cngx-password-strength-meter>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: METER_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: METER_HTML,
+    });
+  });
+
+  test('a weak score paints error, the empty track surface-variant', async ({ page }) => {
+    expect(await computedValue(page, '#weak-filled', 'background-color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#weak-empty', 'background-color')).toBe(
+      matSys('surface-variant'),
+    );
+  });
+
+  test('the fill token reaches the segment read site', async ({ page }) => {
+    // Unregistered token, assigned on the host and inherited into the
+    // segment, where the [data-filled] rule reads it.
+    expect(
+      await computedValue(page, '#weak-filled', '--cngx-password-strength-meter-fill-color'),
+    ).toBe(matSys('primary'));
+  });
+});
+
+test.describe('material-bridge rendered values: skeleton', () => {
+  const SKELETON_CSS = ['projects/ui/skeleton/skeleton-container.css'] as const;
+  const BRIDGE_CSS = compileBridge('skeleton-theme');
+
+  const SKELETON_HTML = `
+<cngx-skeleton class="cngx-skeleton cngx-skeleton--loading cngx-skeleton--shimmer">
+  <div id="bone" class="cngx-skeleton__bone" style="block-size: 12px"></div>
+</cngx-skeleton>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: SKELETON_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: SKELETON_HTML,
+    });
+  });
+
+  test('the bone paints the container fill and the shimmer highlight', async ({ page }) => {
+    expect(await computedValue(page, '#bone', 'background-color')).toBe(
+      matSys('surface-container'),
+    );
+    const shimmer = await computedValue(page, '#bone', 'background-image');
+    expect(shimmer).toContain(matSys('surface-container-high'));
+    expect(shimmer).toContain(matSys('surface-container'));
+  });
+});
+
+test.describe('material-bridge rendered values: empty-state', () => {
+  const EMPTY_CSS = ['projects/ui/empty-state/empty-state.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('empty-state-theme');
+
+  const EMPTY_HTML = `
+<cngx-empty-state id="empty" class="cngx-empty-state">
+  <div class="cngx-empty-state__icon-slot"></div>
+  <svg id="empty-icon" class="cngx-empty-state__default-icon"></svg>
+  <h3 id="empty-title" class="cngx-empty-state__title">No results</h3>
+  <p id="empty-desc" class="cngx-empty-state__description">Try a different filter.</p>
+</cngx-empty-state>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: EMPTY_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: EMPTY_HTML,
+    });
+  });
+
+  test('body, icon and title paint the on-surface roles', async ({ page }) => {
+    expect(await computedValue(page, '#empty', 'color')).toBe(matSys('on-surface-variant'));
+    expect(await computedValue(page, '#empty-icon', 'color')).toBe(matSys('on-surface-variant'));
+    expect(await computedValue(page, '#empty-title', 'color')).toBe(matSys('on-surface'));
+  });
+});
+
+test.describe('material-bridge rendered values: copy-block', () => {
+  const COPY_CSS = ['projects/common/interactive/copy/copy-block.css'] as const;
+  const BRIDGE_CSS = compileBridge('copy-block-theme');
+
+  const COPY_HTML = `
+<cngx-copy-block class="cngx-copy-block">
+  <div class="cngx-copy-block__content"><code>npm install</code></div>
+  <button id="copy-idle" type="button" class="cngx-copy-block__button">Copy</button>
+</cngx-copy-block>
+<cngx-copy-block class="cngx-copy-block">
+  <div class="cngx-copy-block__content"><code>npm install</code></div>
+  <button id="copy-done" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
+</cngx-copy-block>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: COPY_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: COPY_HTML,
+    });
+  });
+
+  test('the idle button paints the on-surface tint and the outline-variant edge', async ({
+    page,
+  }) => {
+    // inherits:false tokens: the broadcast assignment puts them on the button.
+    expect(await computedValue(page, '#copy-idle', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('on-surface')} 6%, transparent)`),
+    );
+    expect(await computedValue(page, '#copy-idle', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#copy-idle', 'border-top-color')).toBe(
+      matSys('outline-variant'),
+    );
+  });
+
+  test('the copied button paints the tertiary set', async ({ page }) => {
+    expect(await computedValue(page, '#copy-done', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('tertiary')} 12%, transparent)`),
+    );
+    expect(await computedValue(page, '#copy-done', 'border-top-color')).toBe(matSys('tertiary'));
+    expect(await computedValue(page, '#copy-done', 'color')).toBe(matSys('tertiary'));
+  });
+});
+
+test.describe('material-bridge rendered values: async-click', () => {
+  const ASYNC_CSS = ['projects/common/theming/components/cngx-async.css'] as const;
+  const BRIDGE_CSS = compileBridge('async-click-theme');
+
+  const ASYNC_HTML = `
+<button id="async-ok" type="button" class="cngx-async cngx-async--success" style="border: 1px solid">Save</button>
+<button id="async-fail" type="button" class="cngx-async cngx-async--error" style="border: 1px solid">Save</button>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: ASYNC_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: ASYNC_HTML,
+    });
+  });
+
+  test('the success state paints the primary set', async ({ page }) => {
+    expect(await computedValue(page, '#async-ok', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('primary')} 12%, transparent)`),
+    );
+    expect(await computedValue(page, '#async-ok', 'color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#async-ok', 'border-top-color')).toBe(matSys('primary'));
+  });
+
+  test('the error state paints the error set', async ({ page }) => {
+    expect(await computedValue(page, '#async-fail', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('error')} 12%, transparent)`),
+    );
+    expect(await computedValue(page, '#async-fail', 'color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#async-fail', 'border-top-color')).toBe(matSys('error'));
+  });
+});
+
+test.describe('material-bridge rendered values: speak-button', () => {
+  const SPEAK_CSS = ['projects/ui/speak/speak-button.css'] as const;
+  const BRIDGE_CSS = compileBridge('speak-button-theme');
+
+  const SPEAK_HTML = `
+<cngx-speak-button class="cngx-speak-button">
+  <button id="speak-idle" type="button" class="cngx-speak-button__btn"><svg id="speak-icon" class="cngx-speak-button__icon"></svg></button>
+</cngx-speak-button>
+<cngx-speak-button class="cngx-speak-button cngx-speak-button--speaking">
+  <button id="speak-on" type="button" class="cngx-speak-button__btn"></button>
+</cngx-speak-button>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: SPEAK_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: SPEAK_HTML,
+    });
+  });
+
+  test('the resting button paints the container-low surface and variant ink', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#speak-idle', 'background-color')).toBe(
+      matSys('surface-container-low'),
+    );
+    expect(await computedValue(page, '#speak-idle', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('hover paints the container surface and the primary ink and edge', async ({ page }) => {
+    await page.hover('#speak-idle');
+    expect(await computedValue(page, '#speak-idle', 'background-color')).toBe(
+      matSys('surface-container'),
+    );
+    expect(await computedValue(page, '#speak-idle', 'color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#speak-idle', 'border-top-color')).toBe(matSys('primary'));
+  });
+
+  test('the speaking state paints the primary pair', async ({ page }) => {
+    expect(await computedValue(page, '#speak-on', 'background-color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#speak-on', 'color')).toBe(matSys('on-primary'));
+  });
+
+  test('the inherits:false icon size lands on the icon via the broadcast', async ({ page }) => {
+    // 18px is the bridge's density-0 rung; the registered initial is 16px.
+    expect(await computedValue(page, '#speak-icon', '--cngx-icon-svg-size')).toBe('18px');
+  });
+});
+
+test.describe('material-bridge rendered values: file-drop', () => {
+  const DROP_CSS = ['projects/forms/theming/components/cngx-file-drop.css'] as const;
+  const BRIDGE_CSS = compileBridge('file-drop-theme');
+
+  const DROP_HTML = `
+<div id="drop-idle" class="cngx-file-drop">Drop files here</div>
+<div id="drop-over" class="cngx-file-drop cngx-file-drop--dragging">Drop files here</div>
+<div id="drop-done" class="cngx-file-drop cngx-file-drop--has-files">Drop files here</div>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: DROP_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: DROP_HTML,
+    });
+  });
+
+  test('the idle zone paints the outline edge', async ({ page }) => {
+    expect(await computedValue(page, '#drop-idle', 'border-top-color')).toBe(matSys('outline'));
+  });
+
+  test('the drag-over zone paints the primary edge and tint', async ({ page }) => {
+    expect(await computedValue(page, '#drop-over', 'border-top-color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#drop-over', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('primary')} 5%, transparent)`),
+    );
+  });
+
+  test('a zone with files paints the tertiary edge', async ({ page }) => {
+    expect(await computedValue(page, '#drop-done', 'border-top-color')).toBe(matSys('tertiary'));
+  });
+});
