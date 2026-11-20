@@ -189,6 +189,32 @@ describe('CngxLongPress', () => {
       expect(fixture.componentInstance.clicks).toBe(1);
     });
 
+    it('disarms on any pointerdown, even one a descendant stops from reaching the host', () => {
+      const { host, fixture } = setup();
+      const child = host.querySelector<HTMLElement>('.child');
+      if (!child) {
+        throw new Error('no child');
+      }
+      child.addEventListener('pointerdown', (e) => e.stopPropagation());
+      host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      vi.advanceTimersByTime(500);
+      // Released outside the host: the trailing click never reaches it.
+      document.dispatchEvent(new PointerEvent('pointerup'));
+      child.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      child.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+      expect(fixture.componentInstance.childClicks).toBe(1);
+    });
+
+    it('disarms on a keydown anywhere', () => {
+      const { host, fixture } = setup();
+      host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));
+      vi.advanceTimersByTime(500);
+      document.dispatchEvent(new PointerEvent('pointerup'));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
+      host.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+      expect(fixture.componentInstance.clicks).toBe(1);
+    });
+
     it('does not touch a click after a short tap', () => {
       const { host, fixture } = setup();
       host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 100, clientY: 100 }));

@@ -71,7 +71,7 @@ export class CngxLongPress {
 
     // A keyboard or programmatic click (detail 0) is never swallowed: when the
     // pointer click of the press landed elsewhere the guard stays armed until
-    // the next pointerdown, and must not eat an Enter / Space activation.
+    // the next interaction, and must not eat an Enter / Space activation.
     fromEvent<MouseEvent>(el, 'click', { capture: true })
       .pipe(
         filter((click) => this.suppressClick && click.detail !== 0),
@@ -91,9 +91,18 @@ export class CngxLongPress {
     const pointerLeave$ = fromEvent<PointerEvent>(el, 'pointerleave');
     const disabled$ = toObservable(this.enabled).pipe(filter((enabled) => !enabled));
 
+    // Any pointerdown or keydown anywhere ends the guard, captured on the
+    // document so a descendant that stops propagation cannot keep it armed
+    // (mirrors the drawer surface's trailing-click release).
+    merge(
+      fromEvent(doc, 'pointerdown', { capture: true }),
+      fromEvent(doc, 'keydown', { capture: true }),
+    )
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => (this.suppressClick = false));
+
     pointerDown$
       .pipe(
-        tap(() => (this.suppressClick = false)),
         filter((down) => down.button === 0 && this.enabled()),
         switchMap((start) => {
           const startX = start.clientX;
