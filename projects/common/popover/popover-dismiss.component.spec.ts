@@ -1,6 +1,7 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CngxButtonEnd, CngxButtonStart } from '@cngx/common/button';
 
 import { CngxPopoverDismiss } from './popover-dismiss.component';
 import { CngxPopoverPanel } from './popover-panel.component';
@@ -64,6 +65,19 @@ class DismissHost {
 class PanelDismissHost {
   readonly panel = viewChild.required(CngxPopoverPanel);
 }
+
+@Component({
+  template: `
+    <div cngxPopover>
+      <button id="slots" cngxPopoverDismiss>
+        <span cngxButtonStart>S</span>Cancel<span cngxButtonEnd>E</span>
+      </button>
+      <button id="plain" cngxPopoverDismiss>Cancel</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverDismiss, CngxButtonStart, CngxButtonEnd],
+})
+class SlotDismissHost {}
 
 function setup() {
   const fixture = TestBed.createComponent(DismissHost);
@@ -146,6 +160,32 @@ describe('CngxPopoverDismiss', () => {
     flush();
     expect(popoverEl.hidePopover).not.toHaveBeenCalled();
     expect(host.popover().state()).not.toBe('closed');
+  });
+
+  describe('slots', () => {
+    it('renders start before and end after the label, and flags both on the host', () => {
+      const fixture = TestBed.createComponent(SlotDismissHost);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const slots = root.querySelector('#slots') as HTMLButtonElement;
+      const label = slots.querySelector('.cngx-button__label') as HTMLElement;
+      const start = slots.querySelector('[cngxButtonStart]') as HTMLElement;
+      const end = slots.querySelector('[cngxButtonEnd]') as HTMLElement;
+
+      expect(start.parentElement).toBe(slots);
+      expect(end.parentElement).toBe(slots);
+      expect(label.textContent?.trim()).toBe('Cancel');
+      expect(start.nextElementSibling).toBe(label);
+      expect(label.nextElementSibling).toBe(end);
+      expect(start.classList).toContain('cngx-button__slot--start');
+      expect(end.classList).toContain('cngx-button__slot--end');
+      expect(slots.hasAttribute('data-start')).toBe(true);
+      expect(slots.hasAttribute('data-end')).toBe(true);
+
+      const plain = root.querySelector('#plain') as HTMLButtonElement;
+      expect(plain.hasAttribute('data-start')).toBe(false);
+      expect(plain.hasAttribute('data-end')).toBe(false);
+    });
   });
 
   describe('inside a CngxPopoverPanel', () => {

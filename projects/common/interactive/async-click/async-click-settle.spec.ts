@@ -27,10 +27,8 @@ function flush(fixture: ReturnType<typeof TestBed.createComponent>): void {
 /** Every non-empty text write into `region` (text node swaps and in-place updates). */
 function recordWrites(region: Node): () => string[] {
   const writes: string[] = [];
-  const observer = new MutationObserver(() => undefined);
-  observer.observe(region, { childList: true, characterData: true, subtree: true });
-  return () => {
-    for (const record of observer.takeRecords()) {
+  const collect = (records: MutationRecord[]): void => {
+    for (const record of records) {
       const text =
         record.type === 'characterData'
           ? ((record.target as Text).data ?? '')
@@ -39,6 +37,13 @@ function recordWrites(region: Node): () => string[] {
         writes.push(text.trim());
       }
     }
+  };
+  // Records the callback already received are gone from takeRecords(), so a
+  // drained microtask between write and read must not lose them.
+  const observer = new MutationObserver(collect);
+  observer.observe(region, { childList: true, characterData: true, subtree: true });
+  return () => {
+    collect(observer.takeRecords());
     return writes;
   };
 }

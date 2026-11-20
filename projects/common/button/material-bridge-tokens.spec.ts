@@ -101,19 +101,85 @@ const READERS = [
   'projects/common/theming/components/cngx-button-group.css',
 ];
 
-function block(css: string, selector: string): string {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = css.match(new RegExp(`:where\\(${escaped}\\)\\s*\\{[^}]*\\}`));
-  if (!match) {
-    throw new Error(`no :where(${selector}) block emitted`);
-  }
-  return match[0];
+// The compiled bridge goes through the CSSOM, so a declaration is read by
+// property name off its rule instead of matched as text.
+function styleRules(css: string): CSSStyleRule[] {
+  const style = document.createElement('style');
+  style.textContent = css;
+  document.head.appendChild(style);
+  const rules: CSSStyleRule[] = [];
+  const walk = (list: CSSRuleList): void => {
+    for (const rule of Array.from(list)) {
+      if ('selectorText' in rule) {
+        rules.push(rule as CSSStyleRule);
+      }
+      if ('cssRules' in rule) {
+        walk((rule as CSSGroupingRule).cssRules);
+      }
+    }
+  };
+  walk(style.sheet?.cssRules ?? ([] as unknown as CSSRuleList));
+  style.remove();
+  return rules;
 }
+
+// The CSSOM serialises attribute values quoted; the selectors below are not.
+const unquoted = (selector: string): string => selector.replaceAll('"', '');
+
+/** Top-level members of a selector list (a comma inside `:is()` / `:not()` stays). */
+function members(selectorText: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < selectorText.length; i++) {
+    const ch = selectorText[i];
+    if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    } else if (ch === ',' && depth === 0) {
+      out.push(selectorText.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  out.push(selectorText.slice(start).trim());
+  return out;
+}
+
+const holds = (rule: CSSStyleRule, selector: string): boolean =>
+  members(unquoted(rule.selectorText)).includes(selector);
 
 // Sass breaks a long color-mix() over lines; compare on one line.
 function flat(css: string): string {
   return css.replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')');
 }
+
+/** Declarations of every rule whose selector list holds `selector`, later rules winning. */
+function declarations(css: string, selector: string): ReadonlyMap<string, string> {
+  const matching = styleRules(css).filter((rule) => holds(rule, selector));
+  if (matching.length === 0) {
+    throw new Error(`no ${selector} rule emitted`);
+  }
+  const out = new Map<string, string>();
+  for (const rule of matching) {
+    for (const name of Array.from(rule.style)) {
+      out.set(name, flat(rule.style.getPropertyValue(name).trim()));
+    }
+  }
+  return out;
+}
+
+/** The full selector list of the rule that holds `selector`. */
+function selectorList(css: string, selector: string): string {
+  const rule = styleRules(css).find((r) => holds(r, selector));
+  if (!rule) {
+    throw new Error(`no ${selector} rule emitted`);
+  }
+  return unquoted(rule.selectorText);
+}
+
+const block = (css: string, selector: string): ReadonlyMap<string, string> =>
+  declarations(css, `:where(${selector})`);
 
 describe('button Material bridge', () => {
   it('emits only consumed token names (M3)', () => {
@@ -166,7 +232,7 @@ describe('button Material bridge', () => {
       for (const name of SCHEME_KNOBS) {
         const expected = literal(scheme, name);
         expect(expected, `${name} missing from the sheet's ${type} block`).toBeDefined();
-        expect(literal(host, name), `${type} ${name}`).toBe(expected);
+        expect(host.get(name), `${type} ${name}`).toBe(expected);
       }
     }
   });
@@ -188,22 +254,22 @@ describe('button Material bridge', () => {
   it('maps the tones onto the Material roles and on-colours (M3)', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const host = block(css, '.cngx-button');
-    expect(host).toContain('--cngx-color-primary: var(--mat-sys-primary)');
-    expect(host).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
-    expect(host).toContain('--cngx-color-on-primary-strong: var(--mat-sys-on-primary)');
-    expect(host).toContain('--cngx-color-danger: var(--mat-sys-error)');
-    expect(host).toContain('--cngx-color-danger-strong: var(--mat-sys-error)');
-    expect(host).toContain('--cngx-color-on-danger-strong: var(--mat-sys-on-error)');
-    expect(host).not.toContain('--cngx-color-on-primary:');
-    expect(host).not.toContain('--cngx-color-on-danger:');
-    expect(block(css, '.cngx-button[data-tone=primary]')).toContain(
-      '--cngx-button-hover-shade: var(--mat-sys-on-primary)',
+    expect(host.get('--cngx-color-primary')).toBe('var(--mat-sys-primary)');
+    expect(host.get('--cngx-color-primary-strong')).toBe('var(--mat-sys-primary)');
+    expect(host.get('--cngx-color-on-primary-strong')).toBe('var(--mat-sys-on-primary)');
+    expect(host.get('--cngx-color-danger')).toBe('var(--mat-sys-error)');
+    expect(host.get('--cngx-color-danger-strong')).toBe('var(--mat-sys-error)');
+    expect(host.get('--cngx-color-on-danger-strong')).toBe('var(--mat-sys-on-error)');
+    expect(host.has('--cngx-color-on-primary')).toBe(false);
+    expect(host.has('--cngx-color-on-danger')).toBe(false);
+    expect(block(css, '.cngx-button[data-tone=primary]').get('--cngx-button-hover-shade')).toBe(
+      'var(--mat-sys-on-primary)',
     );
-    expect(block(css, '.cngx-button[data-tone=danger]')).toContain(
-      '--cngx-button-hover-shade: var(--mat-sys-on-error)',
+    expect(block(css, '.cngx-button[data-tone=danger]').get('--cngx-button-hover-shade')).toBe(
+      'var(--mat-sys-on-error)',
     );
-    expect(block(css, '.cngx-button[data-variant=outline]')).toContain(
-      '--cngx-color-border-strong: var(--mat-sys-outline)',
+    expect(block(css, '.cngx-button[data-variant=outline]').get('--cngx-color-border-strong')).toBe(
+      'var(--mat-sys-outline)',
     );
   });
 
@@ -215,10 +281,10 @@ describe('button Material bridge', () => {
       '--cngx-color-danger-strong',
       '--cngx-color-on-danger-strong',
     ]) {
-      expect(host).toContain(`${token}:`);
+      expect(host.has(token), token).toBe(true);
     }
-    expect(host).not.toContain('--cngx-color-on-primary:');
-    expect(host).not.toContain('--cngx-color-on-danger:');
+    expect(host.has('--cngx-color-on-primary')).toBe(false);
+    expect(host.has('--cngx-color-on-danger')).toBe(false);
   });
 
   it('paints the secondary variant from the container roles per tone (M3)', () => {
@@ -230,11 +296,13 @@ describe('button Material bridge', () => {
     ] as const;
     for (const [tone, container, onContainer] of pairs) {
       const tonal = block(css, `.cngx-button[data-variant=secondary][data-tone=${tone}]`);
-      expect(tonal).toContain(`--cngx-button-secondary-bg: var(--mat-sys-${container})`);
-      expect(tonal).toContain(`--cngx-button-secondary-color: var(--mat-sys-${onContainer})`);
-      expect(tonal).toContain('--mat-sys-hover-state-layer-opacity');
-      expect(flat(tonal)).toContain(
-        `--cngx-button-secondary-bg-pressed: color-mix(in srgb, var(--mat-sys-${onContainer}) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), var(--mat-sys-${container}))`,
+      expect(tonal.get('--cngx-button-secondary-bg')).toBe(`var(--mat-sys-${container})`);
+      expect(tonal.get('--cngx-button-secondary-color')).toBe(`var(--mat-sys-${onContainer})`);
+      expect(tonal.get('--cngx-button-secondary-bg-hover')).toContain(
+        '--mat-sys-hover-state-layer-opacity',
+      );
+      expect(tonal.get('--cngx-button-secondary-bg-pressed')).toBe(
+        `color-mix(in srgb, var(--mat-sys-${onContainer}) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), var(--mat-sys-${container}))`,
       );
     }
   });
@@ -242,20 +310,21 @@ describe('button Material bridge', () => {
   it('maps the state layers onto the M3 hover and pressed opacities (M3), M2 keeps the default', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const host = block(css, '.cngx-button');
-    expect(host).toContain(
-      '--cngx-button-hover-layer: calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%)',
+    expect(host.get('--cngx-button-hover-layer')).toBe(
+      'calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%)',
     );
-    expect(host).toContain(
-      '--cngx-button-pressed-layer: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
+    expect(host.get('--cngx-button-pressed-layer')).toBe(
+      'calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
     );
-    expect(host).toContain(
-      '--cngx-button-pressed-wash: calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
+    expect(host.get('--cngx-button-pressed-wash')).toBe(
+      'calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%)',
     );
-    expect(flat(css)).toContain(
-      '--cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%), transparent)',
+    const close = block(css, '.cngx-close-button');
+    expect(close.get('--cngx-close-button-hover-bg')).toBe(
+      'color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%), transparent)',
     );
-    expect(flat(css)).toContain(
-      '--cngx-close-button-pressed-bg: color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), transparent)',
+    expect(close.get('--cngx-close-button-pressed-bg')).toBe(
+      'color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), transparent)',
     );
     const m2 = compileThemeEntry(M2_ENTRY);
     for (const name of [
@@ -270,15 +339,17 @@ describe('button Material bridge', () => {
 
   it('rounds the family to corner-full in M3 only', () => {
     const m3 = compileThemeEntry(M3_ENTRY);
-    expect(flat(m3)).toContain(
-      '.cngx-button:not(.cngx-close-button) { --cngx-button-radius: var(--mat-sys-corner-full); }',
-    );
+    expect(
+      declarations(m3, '.cngx-button:not(.cngx-close-button)').get('--cngx-button-radius'),
+    ).toBe('var(--mat-sys-corner-full)');
     // The radius rung stays untouched, so projected children keep theirs.
     expect(m3).not.toContain('--cngx-radius-md');
-    expect(block(m3, '.cngx-button-group')).toContain(
-      '--cngx-button-group-radius: var(--mat-sys-corner-full)',
+    expect(block(m3, '.cngx-button-group').get('--cngx-button-group-radius')).toBe(
+      'var(--mat-sys-corner-full)',
     );
-    expect(m3).toContain('--cngx-close-button-radius: var(--mat-sys-corner-full)');
+    expect(block(m3, '.cngx-close-button').get('--cngx-close-button-radius')).toBe(
+      'var(--mat-sys-corner-full)',
+    );
     expect(compileThemeEntry(M2_ENTRY)).not.toContain('radius');
   });
 
@@ -312,68 +383,90 @@ describe('button Material bridge', () => {
   });
 
   it('keeps the close-button tokens the old close-button bridge set', () => {
-    const m3 = compileThemeEntry(M3_ENTRY);
+    const m3 = block(compileThemeEntry(M3_ENTRY), '.cngx-close-button');
     // The hover wash is the M3 hover state layer (8% at the default opacity).
-    expect(flat(m3)).toContain('--cngx-close-button-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface)');
-    expect(m3).toContain('--cngx-close-button-color: var(--mat-sys-on-surface-variant)');
-    expect(compileThemeEntry(M2_ENTRY)).toContain('--cngx-close-button-color: rgba(0, 0, 0, 0.54)');
+    expect(m3.get('--cngx-close-button-hover-bg')).toContain(
+      'color-mix(in srgb, var(--mat-sys-on-surface)',
+    );
+    expect(m3.get('--cngx-close-button-color')).toBe('var(--mat-sys-on-surface-variant)');
+    expect(
+      block(compileThemeEntry(M2_ENTRY), '.cngx-close-button').get('--cngx-close-button-color'),
+    ).toBe('rgba(0, 0, 0, 0.54)');
   });
 
   it('derives every M3 metric from the --cngx-space-* scale, never a density map (M3)', () => {
     const css = compileThemeEntry(M3_ENTRY);
-    const paddings = [
-      ...css.matchAll(/(--cngx-button-padding-(?:block|inline)|padding-inline-(?:start|end)):\s*([^;]+);/g),
-    ];
+    const paddings = styleRules(css).flatMap((rule) =>
+      Array.from(rule.style)
+        .filter((name) =>
+          [
+            '--cngx-button-padding-block',
+            '--cngx-button-padding-inline',
+            'padding-inline-start',
+            'padding-inline-end',
+          ].includes(name),
+        )
+        .map((name) => [name, flat(rule.style.getPropertyValue(name).trim())] as const),
+    );
     expect(paddings.length).toBeGreaterThan(0);
-    for (const [, prop, value] of paddings) {
+    for (const [prop, value] of paddings) {
       // A rung, or a ratio of the inline padding that is itself a rung.
       expect(value, prop).toMatch(
         /^(?:calc\()?var\(--cngx-(?:space-(?:xs|sm|md|lg|xl), \d+px|button-padding-inline, var\(--cngx-space-lg, 24px\))\)/,
       );
     }
-    const md = (selector: string): string => {
-      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // The selector may head a list (the group addon shares the rule).
-      const match = css.match(new RegExp(`${escaped}[^{]*\\{[^}]*\\}`));
-      if (!match) {
-        throw new Error(`no ${selector} block emitted`);
-      }
-      return match[0];
-    };
-    const base = md('.cngx-button[data-size=md]:not([data-variant=link])');
-    expect(base).toContain('--cngx-button-padding-inline: var(--cngx-space-lg, 24px)');
-    expect(base).toContain(
-      '--cngx-button-padding-block: calc(var(--cngx-space-sm, 8px) * 1.25 - var(--cngx-button-border-width, 1px))',
+    // The selector may head a list (the group addon shares the rule).
+    const base = declarations(css, '.cngx-button[data-size=md]:not([data-variant=link])');
+    expect(base.get('--cngx-button-padding-inline')).toBe('var(--cngx-space-lg, 24px)');
+    expect(base.get('--cngx-button-padding-block')).toBe(
+      'calc(var(--cngx-space-sm, 8px) * 1.25 - var(--cngx-button-border-width, 1px))',
     );
-    expect(md('.cngx-button[data-size=md][data-variant=ghost]')).toContain(
-      '--cngx-button-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5)',
+    expect(
+      declarations(css, '.cngx-button[data-size=md][data-variant=ghost]').get(
+        '--cngx-button-padding-inline',
+      ),
+    ).toBe('calc(var(--cngx-space-sm, 8px) * 1.5)');
+    expect(selectorList(css, '.cngx-button[data-size=md]:not([data-variant=link])')).toContain(
+      '.cngx-button-group > .cngx-button-group__addon[data-size=md]',
     );
-    expect(base).toContain('.cngx-button-group > .cngx-button-group__addon[data-size=md]');
-    const type = md('.cngx-button[data-size=md]:not([data-variant=link], .cngx-icon-button)');
-    expect(type).toContain('.cngx-button-group > .cngx-button-group__addon[data-size=md]');
-    expect(type).toContain('--cngx-button-font-size: var(--mat-sys-label-large-size, 0.875rem)');
-    expect(type).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
-    expect(type).toContain('letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem)');
+    const typeSelector = '.cngx-button[data-size=md]:not([data-variant=link], .cngx-icon-button)';
+    expect(selectorList(css, typeSelector)).toContain(
+      '.cngx-button-group > .cngx-button-group__addon[data-size=md]',
+    );
+    const type = declarations(css, typeSelector);
+    expect(type.get('--cngx-button-font-size')).toBe('var(--mat-sys-label-large-size, 0.875rem)');
+    expect(type.get('line-height')).toBe('var(--mat-sys-label-large-line-height, 1.25rem)');
+    expect(type.get('letter-spacing')).toBe('var(--mat-sys-label-large-tracking, 0.006rem)');
     // M3 Expressive XS (32) and S (40) buttons use label-large: our sm and md
     // take it; xs (28, no M3 twin) keeps label-medium, lg takes title-medium.
     const roles = { xs: 'label-medium', sm: 'label-large', md: 'label-large', lg: 'title-medium' };
     for (const [size, role] of Object.entries(roles)) {
-      expect(md(`.cngx-button[data-size=${size}]:not([data-variant=link], .cngx-icon-button)`), size).toContain(
-        `--cngx-button-font-size: var(--mat-sys-${role}-size,`,
-      );
+      expect(
+        declarations(
+          css,
+          `.cngx-button[data-size=${size}]:not([data-variant=link], .cngx-icon-button)`,
+        ).get('--cngx-button-font-size'),
+        size,
+      ).toContain(`var(--mat-sys-${role}-size,`);
     }
     // The sm row keeps its 32px box on the taller label-large line: 20 + 2 * 6.
-    expect(md('.cngx-button[data-size=sm]:not([data-variant=link])')).toContain(
-      '--cngx-button-padding-block: calc(var(--cngx-space-sm, 8px) * 0.75 - var(--cngx-button-border-width, 1px))',
-    );
+    expect(
+      declarations(css, '.cngx-button[data-size=sm]:not([data-variant=link])').get(
+        '--cngx-button-padding-block',
+      ),
+    ).toBe('calc(var(--cngx-space-sm, 8px) * 0.75 - var(--cngx-button-border-width, 1px))');
   });
 
   it('gives the sm close button the md icon-button box through its own hooks (M3)', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const close = block(css, '.cngx-close-button[data-size=sm]');
-    expect(close).toContain('--cngx-close-button-size: calc(var(--mat-sys-label-large-line-height, 1.25rem)');
-    expect(close).toContain('var(--cngx-space-sm, 8px) * 1.25');
-    expect(close).toContain('--cngx-close-button-icon-size: calc(var(--cngx-font-size-control, 1rem) * 1.5)');
+    expect(close.get('--cngx-close-button-size')).toContain(
+      'calc(var(--mat-sys-label-large-line-height, 1.25rem)',
+    );
+    expect(close.get('--cngx-close-button-size')).toContain('var(--cngx-space-sm, 8px) * 1.25');
+    expect(close.get('--cngx-close-button-icon-size')).toBe(
+      'calc(var(--cngx-font-size-control, 1rem) * 1.5)',
+    );
     expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-close-button-size');
   });
 

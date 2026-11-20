@@ -2,6 +2,7 @@ import { Component, computed, signal, viewChild } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxLiveAnnouncer } from '@cngx/common/a11y';
+import { CngxButtonEnd, CngxButtonStart } from '@cngx/common/button';
 import {
   type CngxActionOutcome,
   CNGX_INTERACTIVE_LANGUAGE_EN,
@@ -312,6 +313,21 @@ class LabelsExternalHost {
   readonly ext = signal<CngxAsyncState<unknown> | undefined>(undefined);
   readonly outcomes: CngxActionOutcome[] = [];
   readonly saveAction = (): Promise<void> => Promise.resolve();
+}
+
+@Component({
+  template: `
+    <div cngxPopover>
+      <button id="slots" cngxPopoverAction [action]="saveAction">
+        <span cngxButtonStart>S</span>Save<span cngxButtonEnd>E</span>
+      </button>
+      <button id="plain" cngxPopoverAction [action]="saveAction">Save</button>
+    </div>
+  `,
+  imports: [CngxPopover, CngxPopoverAction, CngxButtonStart, CngxButtonEnd],
+})
+class SlotConfirmHost {
+  readonly saveAction = () => Promise.resolve();
 }
 
 function setup<T>(hostType: new () => T) {
@@ -1173,6 +1189,32 @@ describe('CngxPopoverAction', () => {
       await vi.advanceTimersByTimeAsync(0);
       expect(host.action().state.status()).toBe('error');
       expect(host.action().state.error()).toBeInstanceOf(Error);
+    });
+  });
+
+  describe('slots', () => {
+    it('renders start and end outside the status stack, flanking it, and flags both on the host', () => {
+      const { fixture } = setup(SlotConfirmHost);
+      const root = fixture.nativeElement as HTMLElement;
+      const slots = root.querySelector('#slots') as HTMLButtonElement;
+      const stack = label(slots);
+      const start = slots.querySelector('[cngxButtonStart]') as HTMLElement;
+      const end = slots.querySelector('[cngxButtonEnd]') as HTMLElement;
+
+      // Outside the stack, so a status swap never hides the slot content.
+      expect(start.parentElement).toBe(slots);
+      expect(end.parentElement).toBe(slots);
+      expect(stack.contains(start)).toBe(false);
+      expect(stack.contains(end)).toBe(false);
+      expect(start.nextElementSibling).toBe(stack);
+      expect(stack.nextElementSibling).toBe(end);
+      expect(shownLabel(slots)).toBe('Save');
+      expect(slots.hasAttribute('data-start')).toBe(true);
+      expect(slots.hasAttribute('data-end')).toBe(true);
+
+      const plain = root.querySelector('#plain') as HTMLButtonElement;
+      expect(plain.hasAttribute('data-start')).toBe(false);
+      expect(plain.hasAttribute('data-end')).toBe(false);
     });
   });
 

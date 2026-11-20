@@ -317,6 +317,115 @@ test.describe('forced-colors (WHCM) affordance survival', () => {
     expect(paint.color).not.toBe(paint.grayText);
   });
 
+  // The rest of the family shares the .cngx-button forced block: every host
+  // opts out of the UA forcing and paints the ButtonFace / ButtonText pair
+  // itself, so the exact system pair (not just "some opaque colour") is what
+  // proves no author tone or hint colour leaks through.
+  const systemColours = (page: import('@playwright/test').Page) =>
+    page.evaluate(() => {
+      const probe = document.createElement('span');
+      document.body.appendChild(probe);
+      const read = (keyword: string): string => {
+        probe.style.color = keyword;
+        return getComputedStyle(probe).color;
+      };
+      const colours = {
+        buttonText: read('ButtonText'),
+        buttonFace: read('ButtonFace'),
+        highlight: read('Highlight'),
+        highlightText: read('HighlightText'),
+      };
+      probe.remove();
+      return colours;
+    });
+
+  const readPaint = (locator: Locator) =>
+    locator.evaluate((el) => {
+      const cs = getComputedStyle(el as Element);
+      return {
+        color: cs.color,
+        backgroundColor: cs.backgroundColor,
+        borderTopColor: cs.borderTopColor,
+        borderTopWidth: cs.borderTopWidth,
+        borderLeftColor: cs.borderLeftColor,
+      };
+    });
+
+  test('button group seam: a second solid primary segment draws a HighlightText start edge', async ({ page }) => {
+    await openForced(page, '/#/common/button/group/basic');
+    const group = page.locator('.cngx-ex-artifact .cngx-button-group[aria-label="Review"]');
+    const first = group.locator('.cngx-button', { hasText: /^\s*Approve\s*$/ });
+    const second = group.locator('.cngx-button', { hasText: 'Approve all' });
+    await expect(second).toBeVisible();
+    const sys = await systemColours(page);
+    const lead = await readPaint(first);
+    const next = await readPaint(second);
+    // Both segments fill with Highlight, so without the seam the two merge.
+    expect(lead.backgroundColor).toBe(sys.highlight);
+    expect(next.backgroundColor).toBe(sys.highlight);
+    expect(lead.borderLeftColor).toBe(sys.highlight);
+    expect(next.borderLeftColor).toBe(sys.highlightText);
+    expect(next.borderLeftColor).not.toBe(next.backgroundColor);
+  });
+
+  test('menu button paints ButtonText on ButtonFace, caret included (outline tone forced away)', async ({ page }) => {
+    await openForced(page, '/#/common/menu-button/menu-button/basic');
+    const button = page.locator('.cngx-ex-artifact .cngx-menu-button').first();
+    await expect(button).toBeVisible();
+    const sys = await systemColours(page);
+    const s = await readPaint(button);
+    expect(s.backgroundColor).toBe(sys.buttonFace);
+    expect(s.color).toBe(sys.buttonText);
+    expect(s.borderTopColor).toBe(sys.buttonText);
+    expect(parseFloat(s.borderTopWidth)).toBeGreaterThan(0);
+    const caret = await readPaint(button.locator('.cngx-menu-button__caret'));
+    expect(caret.color).toBe(sys.buttonText);
+  });
+
+  test('icon menu button (ghost) gains an opaque ButtonText border on ButtonFace', async ({ page }) => {
+    await openForced(page, '/#/common/menu-button/icon-menu-button/kebab');
+    const button = page.locator('.cngx-ex-artifact .cngx-icon-menu-button').first();
+    await expect(button).toBeVisible();
+    const sys = await systemColours(page);
+    const s = await readPaint(button);
+    expect(s.backgroundColor).toBe(sys.buttonFace);
+    expect(s.color).toBe(sys.buttonText);
+    expect(s.borderTopColor).toBe(sys.buttonText);
+    expect(parseFloat(s.borderTopWidth)).toBeGreaterThan(0);
+  });
+
+  test('close button glyph takes ButtonText, not the muted hint colour, inside a ButtonText border', async ({ page }) => {
+    await openForced(page, '/#/common/button/close-button/basic');
+    const button = page.locator('.cngx-ex-artifact .cngx-close-button').first();
+    await expect(button).toBeVisible();
+    const sys = await systemColours(page);
+    const s = await readPaint(button);
+    expect(s.color).toBe(sys.buttonText);
+    expect(s.backgroundColor).toBe(sys.buttonFace);
+    expect(s.borderTopColor).toBe(sys.buttonText);
+    expect(parseFloat(s.borderTopWidth)).toBeGreaterThan(0);
+  });
+
+  test('action button: solid primary fills with Highlight, an outline danger one stays ButtonText on ButtonFace', async ({ page }) => {
+    await openForced(page, '/#/ui/action-button/async-button/string-labels');
+    const solid = page
+      .locator('.cngx-ex-artifact .cngx-action-button[data-variant="solid"][data-tone="primary"]')
+      .first();
+    const outline = page
+      .locator('.cngx-ex-artifact .cngx-action-button[data-variant="outline"][data-tone="danger"]')
+      .first();
+    await expect(solid).toBeVisible();
+    await expect(outline).toBeVisible();
+    const sys = await systemColours(page);
+    const primary = await readPaint(solid);
+    expect(primary.backgroundColor).toBe(sys.highlight);
+    expect(primary.color).toBe(sys.highlightText);
+    const danger = await readPaint(outline);
+    expect(danger.backgroundColor).toBe(sys.buttonFace);
+    expect(danger.color).toBe(sys.buttonText);
+    expect(danger.borderTopColor).toBe(sys.buttonText);
+  });
+
   test('selected card re-signals with a Highlight border (base :scope rule beaten)', async ({ page }) => {
     await openForced(page, '/#/common/card/action-card-with-selection');
     const clickable = page.locator('.cngx-ex-artifact .cngx-card--interactive').first();
