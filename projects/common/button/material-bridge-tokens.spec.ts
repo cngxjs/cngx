@@ -297,7 +297,27 @@ describe('button Material bridge', () => {
     const dark = compileThemeEntry(
       M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'),
     );
-    expect(dark).not.toContain('[data-tone=danger]');
+    expect(dark).not.toContain('.cngx-button[data-variant=secondary][data-tone=danger]');
+  });
+
+  it('derives the M2 danger secondary label from the sheet pressed secondary mix', () => {
+    // The bridge restates the sheet's pressed wash in Sass; read both so a
+    // change to either side fails here instead of leaving the label stale.
+    const read = (path: string): string =>
+      readFileSync(fileURLToPath(new URL('../../../' + path, import.meta.url)), 'utf-8');
+    const sheet = read(BUTTON_SHEET);
+    const pressedRule = sheet.indexOf(
+      ":scope[data-variant='secondary']:is(:active, .cngx-pressed)",
+    );
+    expect(pressedRule).toBeGreaterThan(-1);
+    const sheetMix = sheet
+      .slice(pressedRule, sheet.indexOf('}', pressedRule))
+      .match(/currentColor\) (\d+%)/)?.[1];
+    const bridgeMix = read('projects/themes/material/button-theme.scss').match(
+      /\$_secondary-pressed-mix: (\d+%);/,
+    )?.[1];
+    expect(sheetMix).toBeDefined();
+    expect(bridgeMix).toBe(sheetMix);
   });
 
   it('paints the secondary variant from the container roles per tone (M3)', () => {
