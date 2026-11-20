@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  computed,
   Directive,
   ElementRef,
   inject,
@@ -10,7 +11,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { fromEvent, switchMap } from 'rxjs';
+import { EMPTY, fromEvent, switchMap } from 'rxjs';
 
 /**
  * @internal Lets a directive that composes `CngxClickOutside` as a host
@@ -83,7 +84,7 @@ function controlledIdsOf(target: EventTarget | null): readonly string[] {
 export class CngxClickOutside {
   /** The DOM event type to listen for. `'pointerdown'` covers both mouse and touch. */
   readonly eventType = input<'pointerdown' | 'click' | 'mousedown' | 'touchstart'>('pointerdown');
-  /** When `false` the directive is disabled and no events are emitted. */
+  /** When `false` nothing is emitted and no document listener is attached. */
   readonly enabled = input<boolean>(true);
   /** Emitted when the user interacts outside the host element. */
   readonly clickOutside = output<PointerEvent | MouseEvent | TouchEvent>();
@@ -100,28 +101,44 @@ export class CngxClickOutside {
     return this.resolvedDriver;
   }
 
+  /** Whether outside interactions emit: the driver wins over `[enabled]`. */
+  private readonly active = computed(() => this.driver()?.clickOutsideEnabled() ?? this.enabled());
+
+  /** The event type to listen for, or `null` while inactive (no document listener). */
+  private readonly listenType = computed(() => (this.active() ? this.eventType() : null));
+
   constructor() {
-    toObservable(this.eventType)
+    toObservable(this.listenType)
       .pipe(
-        switchMap((type) => fromEvent<PointerEvent | MouseEvent | TouchEvent>(this.doc, type)),
+        switchMap((type) =>
+          type ? fromEvent<PointerEvent | MouseEvent | TouchEvent>(this.doc, type) : EMPTY,
+        ),
         takeUntilDestroyed(),
       )
       .subscribe((e) => {
-        if (this.isOutside(e.target)) {
+        if (this.isOutside(e)) {
           this.clickOutside.emit(e);
         }
       });
   }
 
-  private isOutside(target: EventTarget | null): boolean {
-    const enabled = this.driver()?.clickOutsideEnabled() ?? this.enabled();
-    if (!enabled) {
+  /**
+   * Reads the event path instead of `host.contains(target)`: the path is fixed
+   * at dispatch, so a target removed by an earlier listener of the same press
+   * still counts as inside, and a press inside an open shadow root is not
+   * mistaken for its retargeted shadow host.
+   */
+  private isOutside(event: Event): boolean {
+    // Re-checked here: the listener detaches one effect flush after a disable.
+    if (!this.active()) {
       return false;
     }
     const host = this.el.nativeElement as HTMLElement;
-    if (host.contains(target as Node)) {
+    const path = event.composedPath();
+    if (path.includes(host)) {
       return false;
     }
-    return !(host.id !== '' && controlledIdsOf(target).includes(host.id));
+    const origin = path[0] ?? event.target;
+    return !(host.id !== '' && controlledIdsOf(origin).includes(host.id));
   }
 }

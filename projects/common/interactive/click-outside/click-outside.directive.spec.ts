@@ -1,4 +1,4 @@
-import { Component, Directive, signal } from '@angular/core';
+import { Component, Directive, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -54,6 +54,36 @@ class TestOutsideDriver {
 })
 class DriverHost {
   onOutside = vi.fn();
+}
+
+@Component({
+  selector: 'cngx-shadow-panel',
+  encapsulation: ViewEncapsulation.ShadowDom,
+  template: `
+    <div cngxClickOutside (clickOutside)="onOutside()">
+      <span class="inside"></span>
+    </div>
+    <button class="shadow-outside"></button>
+  `,
+  imports: [CngxClickOutside],
+})
+class ShadowPanel {
+  onOutside = vi.fn();
+}
+
+@Component({
+  template: `
+    <div cngxClickOutside (clickOutside)="onOutside()">
+      <span class="inside" (pointerdown)="removeInside($event)"></span>
+    </div>
+  `,
+  imports: [CngxClickOutside],
+})
+class DetachHost {
+  onOutside = vi.fn();
+  removeInside(event: Event): void {
+    (event.currentTarget as Element).remove();
+  }
 }
 
 describe('CngxClickOutside', () => {
@@ -166,8 +196,72 @@ describe('CngxClickOutside', () => {
       expect(fixture.componentInstance.onOutside).not.toHaveBeenCalled();
 
       driverEnabled.set(true);
+      TestBed.flushEffects();
       dispatch(outside);
       expect(fixture.componentInstance.onOutside).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('document listener', () => {
+    function countDocumentListeners(spy: { mock: { calls: unknown[][] } }): number {
+      return spy.mock.calls.filter((call) => call[0] === 'pointerdown').length;
+    }
+
+    it('attaches no document listener while disabled', () => {
+      const add = vi.spyOn(document, 'addEventListener');
+      const fixture = TestBed.createComponent(TestHost);
+      fixture.componentInstance.enabled.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(countDocumentListeners(add)).toBe(0);
+
+      fixture.componentInstance.enabled.set(true);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(countDocumentListeners(add)).toBe(1);
+      add.mockRestore();
+    });
+
+    it('removes the document listener when disabled', () => {
+      const remove = vi.spyOn(document, 'removeEventListener');
+      const { fixture, host } = setup();
+      TestBed.flushEffects();
+      host.enabled.set(false);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(countDocumentListeners(remove)).toBe(1);
+      remove.mockRestore();
+    });
+  });
+
+  describe('event path', () => {
+    it('treats a target detached during the same press as inside', () => {
+      TestBed.configureTestingModule({ imports: [DetachHost] });
+      const fixture = TestBed.createComponent(DetachHost);
+      fixture.detectChanges();
+      const inside = fixture.debugElement.query(By.css('.inside')).nativeElement as Element;
+      dispatch(inside);
+      expect(inside.isConnected).toBe(false);
+      expect(fixture.componentInstance.onOutside).not.toHaveBeenCalled();
+    });
+
+    it('sees through shadow DOM retargeting', () => {
+      TestBed.configureTestingModule({ imports: [ShadowPanel] });
+      const fixture = TestBed.createComponent(ShadowPanel);
+      document.body.appendChild(fixture.nativeElement);
+      fixture.detectChanges();
+      const root = (fixture.nativeElement as HTMLElement).shadowRoot;
+      const inside = root?.querySelector('.inside');
+      const outside = root?.querySelector('.shadow-outside');
+      if (!inside || !outside) {
+        throw new Error('shadow content did not render');
+      }
+      inside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, composed: true }));
+      expect(fixture.componentInstance.onOutside).not.toHaveBeenCalled();
+
+      outside.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, composed: true }));
+      expect(fixture.componentInstance.onOutside).toHaveBeenCalledTimes(1);
+      (fixture.nativeElement as HTMLElement).remove();
     });
   });
 });
