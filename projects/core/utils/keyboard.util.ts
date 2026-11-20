@@ -434,13 +434,13 @@ const NON_TEXT_INPUT_TYPES = new Set([
 ]);
 
 const TEXT_ENTRY_ROLES = '[role="textbox"], [role="searchbox"]';
-const EDITABLE_REGION = '[contenteditable]:not([contenteditable="false"])';
 
 /**
  * Whether a key event target takes text or owns its keys natively: a
  * `<textarea>`, a `<select>`, an `<input>` of any type except the button-like
  * and pointer-only ones (button, submit, reset, checkbox, radio, range, color,
- * file, image, hidden), an element inside a `contenteditable` region, or a
+ * file, image, hidden), an element whose nearest `contenteditable` ancestor
+ * is editable (a `contenteditable="false"` island inside an editor is not), or a
  * `role="textbox"` / `"searchbox"` element. Date, time, month, week and
  * number inputs count: their keys move a caret or a segment.
  *
@@ -471,11 +471,13 @@ export function isTextEntryTarget(target: EventTarget | null): boolean {
   if (tag === 'INPUT') {
     return !NON_TEXT_INPUT_TYPES.has((target as HTMLInputElement).type.toLowerCase());
   }
-  return (
-    (target as HTMLElement).isContentEditable === true ||
-    target.matches(TEXT_ENTRY_ROLES) ||
-    target.closest(EDITABLE_REGION) !== null
-  );
+  if (target.matches(TEXT_ENTRY_ROLES)) {
+    return true;
+  }
+  // The nearest contenteditable ancestor decides: a contenteditable="false"
+  // island (a chip, a mention list inside an editor) is not text entry.
+  const region = target.closest('[contenteditable]');
+  return region !== null && region.getAttribute('contenteditable') !== 'false';
 }
 
 /**

@@ -475,6 +475,10 @@ describe('isTextEntryTarget', () => {
     expect(isTextEntryTarget(el('<button></button>'))).toBe(false);
     expect(isTextEntryTarget(el('<div role="listbox"></div>'))).toBe(false);
     expect(isTextEntryTarget(el('<div contenteditable="false"></div>'))).toBe(false);
+    const island = el(
+      '<div contenteditable="true"><div contenteditable="false"><button>chip</button></div></div>',
+    ).querySelector('button');
+    expect(isTextEntryTarget(island)).toBe(false);
     expect(isTextEntryTarget(null)).toBe(false);
     expect(isTextEntryTarget(document)).toBe(false);
   });
