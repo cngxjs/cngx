@@ -1418,17 +1418,17 @@ describe('CngxMatTabs instrumentation directive', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
-    // Snapshot the body-scope live-region count BEFORE setup so the
-    // assertion handles a non-clean DOM (other test fixtures may leave
-    // their own regions; the per-test count delta is what matters).
+    // The shared CngxLiveAnnouncer inserts its polite + assertive pair when
+    // it is created; snapshot after that so the delta counts only spans the
+    // directive mounts itself (other fixtures may leave regions behind too).
+    TestBed.inject(CngxLiveAnnouncer);
     const baselineCount = document.body.querySelectorAll<HTMLElement>(
       ':scope > span[aria-live].cngx-sr-only',
     ).length;
     await setupPlumbing();
     // liveAnnouncement is empty at rest, so the empty-quiet contract holds:
-    // the directive mounts no span of its own. The shared CngxLiveAnnouncer
-    // creates its region lazily on the first non-empty announcement (axes
-    // 33/34), so there is no fourth competing body region here.
+    // the directive mounts no span of its own, so there is no fourth
+    // competing body region next to the shared pair.
     const liveRegions = document.body.querySelectorAll<HTMLElement>(
       ':scope > span[aria-live].cngx-sr-only',
     );

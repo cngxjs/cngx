@@ -49,8 +49,9 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  * directives and event handlers (e.g. `CngxCopyValue` copy success,
  * `CngxOtpInput` completion).
  *
- * Each region is created lazily on the first announcement of its politeness and
- * reused thereafter. Because polite and assertive live in separate fixed-
+ * Both body regions are created when the service is created, so they are in
+ * the DOM before the first announcement (a screen reader commonly misses a
+ * change to a region inserted a frame earlier), and reused thereafter. Because polite and assertive live in separate fixed-
  * politeness nodes, an assertive announcement never clobbers a concurrent
  * polite one. Per region, the text is cleared and re-set one frame later so an
  * identical consecutive message is still re-read by the screen reader.
@@ -94,6 +95,15 @@ export class CngxLiveAnnouncer implements OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private regions: CngxLiveRegionPair | null = null;
+
+  constructor() {
+    // A screen reader commonly misses a change to a region that entered the
+    // DOM a frame earlier, so the body pair exists before the first message.
+    if (this.isBrowser) {
+      this.regions = createLiveRegionPair(this.doc.body, this.doc);
+      this.regions.ensure();
+    }
+  }
   /**
    * One pair per open `aria-modal` container, released once it closes.
    * `outer` is the container's parent at creation, the route for its unwritten

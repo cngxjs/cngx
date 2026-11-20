@@ -374,6 +374,9 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
 
   it('mounts no eager live region - it delegates to the shared CngxLiveAnnouncer', async () => {
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    // The shared announcer inserts its pair when created; the delta after
+    // that counts only spans the nav directive mounts itself.
+    TestBed.inject(CngxLiveAnnouncer);
     const baseline = document.body.querySelectorAll<HTMLElement>(
       ':scope > span[aria-live].cngx-sr-only',
     ).length;
@@ -381,8 +384,8 @@ describe('CngxMatTabNav native nav-bar bridge', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // No rejection has fired, so liveAnnouncement is empty and the shared
-    // announcer creates no region - the nav directive owns no span of its own.
+    // No rejection has fired, so liveAnnouncement is empty and the nav
+    // directive owns no span of its own.
     const regions = document.body.querySelectorAll<HTMLElement>(
       ':scope > span[aria-live].cngx-sr-only',
     );

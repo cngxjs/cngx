@@ -33,6 +33,11 @@ describe('CngxLiveAnnouncer', () => {
     vi.useRealTimers();
   });
 
+  it('inserts both body regions when the service is created, before any announce', () => {
+    expect(politeEl()?.textContent).toBe('');
+    expect(assertiveEl()?.textContent).toBe('');
+  });
+
   it('writes the message to the polite region one frame later', () => {
     announcer.announce('Saved');
     const region = politeEl();
