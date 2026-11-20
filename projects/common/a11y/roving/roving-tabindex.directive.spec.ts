@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideDirection } from '@cngx/core';
 
@@ -450,5 +450,243 @@ describe('CngxRovingTabindex - keyboard hygiene', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(dir.activeIndex()).toBe(2);
+  });
+});
+
+describe('CngxRovingTabindex - item identity', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [DynamicHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(DynamicHost);
+    fixture.componentInstance.items.set(
+      ['One', 'Two', 'Three', 'Four'].map((label) => ({ label, disabled: false })),
+    );
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxRovingTabindex));
+    const dir = container.injector.get(CngxRovingTabindex);
+    const buttons = () => fixture.debugElement.queryAll(By.css('button'));
+    const settle = (): void => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    };
+    return { fixture, container, dir, buttons, settle };
+  }
+
+  function label(el: { nativeElement: HTMLElement }): string {
+    return el.nativeElement.textContent?.trim() ?? '';
+  }
+
+  it('keeps the tab stop on the active item when an item before it is removed', () => {
+    const { fixture, container, dir, buttons, settle } = setup();
+    dir.activeIndex.set(2);
+    settle();
+    fixture.componentInstance.items.update((items) => items.filter((i) => i.label !== 'One'));
+    settle();
+
+    expect(dir.activeIndex()).toBe(1);
+    const stop = buttons().find((b) => b.nativeElement.getAttribute('tabindex') === '0');
+    expect(stop && label(stop)).toBe('Three');
+
+    container.triggerEventHandler(
+      'keydown',
+      new KeyboardEvent('keydown', { key: 'ArrowRight', cancelable: true }),
+    );
+    settle();
+    expect(label(buttons()[dir.activeIndex()])).toBe('Four');
+  });
+
+  it('follows the active item through a reorder', () => {
+    const { fixture, dir, buttons, settle } = setup();
+    dir.activeIndex.set(0);
+    settle();
+    fixture.componentInstance.items.update((items) => [...items].reverse());
+    settle();
+
+    expect(dir.activeIndex()).toBe(3);
+    expect(label(buttons()[3])).toBe('One');
+    expect(buttons()[3].nativeElement.getAttribute('tabindex')).toBe('0');
+  });
+});
+
+describe('CngxRovingTabindex - disabled items', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [DynamicHost] }));
+
+  function setup(disabled: string[]) {
+    const fixture = TestBed.createComponent(DynamicHost);
+    fixture.componentInstance.items.set(
+      ['One', 'Two', 'Three', 'Four'].map((label) => ({
+        label,
+        disabled: disabled.includes(label),
+      })),
+    );
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxRovingTabindex));
+    const dir = container.injector.get(CngxRovingTabindex);
+    const key = (k: string): void => {
+      container.triggerEventHandler('keydown', new KeyboardEvent('keydown', { key: k }));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    };
+    return { dir, key };
+  }
+
+  it('skips a disabled item with the arrows in both directions', () => {
+    const { dir, key } = setup(['Two']);
+    key('ArrowRight');
+    expect(dir.activeIndex()).toBe(2);
+    key('ArrowLeft');
+    expect(dir.activeIndex()).toBe(0);
+  });
+
+  it('lands Home and End on the first and last enabled item', () => {
+    const { dir, key } = setup(['One', 'Four']);
+    expect(dir.activeIndex()).toBe(1);
+    key('End');
+    expect(dir.activeIndex()).toBe(2);
+    key('Home');
+    expect(dir.activeIndex()).toBe(1);
+  });
+
+  it('wraps past disabled items at the ends when loop is on', () => {
+    const { dir, key } = setup(['One']);
+    dir.activeIndex.set(3);
+    key('ArrowRight');
+    expect(dir.activeIndex()).toBe(1);
+  });
+});
+
+@Component({
+  template: `
+    <div cngxRovingTabindex orientation="horizontal" data-testid="toolbar">
+      <button cngxRovingItem data-testid="bold">Bold</button>
+      <input cngxRovingItem type="text" data-testid="text" />
+      <input cngxRovingItem type="date" data-testid="date" />
+      <div cngxRovingItem tabindex="-1" data-testid="group">
+        <input type="range" data-testid="range" />
+        <span role="slider" tabindex="0" aria-valuenow="1" data-testid="slider">Zoom</span>
+      </div>
+      <button cngxRovingItem data-testid="italic">Italic</button>
+    </div>
+  `,
+  imports: [CngxRovingTabindex, CngxRovingItem],
+})
+class EditableToolbarHost {}
+
+describe('CngxRovingTabindex - fields and nested widgets', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [EditableToolbarHost] }));
+
+  function setup() {
+    const fixture = TestBed.createComponent(EditableToolbarHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const container = fixture.debugElement.query(By.directive(CngxRovingTabindex));
+    const dir = container.injector.get(CngxRovingTabindex);
+    const root = fixture.nativeElement as HTMLElement;
+    const byTestId = (id: string): HTMLElement =>
+      root.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+    const press = (el: HTMLElement, key: string, init: KeyboardEventInit = {}): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+      el.dispatchEvent(event);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      return event;
+    };
+    return { dir, byTestId, press };
+  }
+
+  for (const field of ['text', 'date']) {
+    it(`leaves the caret keys of a ${field} input item to the field`, () => {
+      const { dir, byTestId, press } = setup();
+      const index = field === 'text' ? 1 : 2;
+      dir.activeIndex.set(index);
+      for (const key of ['ArrowLeft', 'ArrowRight', 'Home', 'End']) {
+        expect(press(byTestId(field), key).defaultPrevented, key).toBe(false);
+        expect(dir.activeIndex(), key).toBe(index);
+      }
+    });
+  }
+
+  for (const widget of ['range', 'slider']) {
+    it(`leaves the arrows of a nested ${widget} to it`, () => {
+      const { dir, byTestId, press } = setup();
+      dir.activeIndex.set(3);
+      expect(press(byTestId(widget), 'ArrowRight').defaultPrevented).toBe(false);
+      expect(dir.activeIndex()).toBe(3);
+    });
+  }
+
+  it('ignores the keys of an IME composition', () => {
+    const { dir, byTestId, press } = setup();
+    expect(press(byTestId('bold'), 'ArrowRight', { isComposing: true }).defaultPrevented).toBe(
+      false,
+    );
+    expect(dir.activeIndex()).toBe(0);
+  });
+
+  it('leaves a key a nested composite already handled alone', () => {
+    const { dir, byTestId } = setup();
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
+    event.preventDefault();
+    byTestId('bold').dispatchEvent(event);
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(0);
+  });
+
+  it('still navigates from a plain button item', () => {
+    const { dir, byTestId, press } = setup();
+    expect(press(byTestId('bold'), 'ArrowRight').defaultPrevented).toBe(true);
+    expect(dir.activeIndex()).toBe(1);
+  });
+});
+
+describe('CngxRovingTabindex - server render', () => {
+  beforeEach(() => {
+    // afterNextRender reads the ngServerMode global, not PLATFORM_ID.
+    vi.stubGlobal('ngServerMode', true);
+    TestBed.configureTestingModule({ imports: [TestHost] });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('writes the tab stops without waiting for a browser render', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const buttons = fixture.debugElement.queryAll(By.css('button'));
+    expect(buttons.map((b) => b.nativeElement.getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+  });
+});
+
+describe('CngxRovingTabindex - virtual tab stop', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [VirtualTestHost] }));
+
+  it('keeps one rendered item in the tab order while the active index is outside the window', () => {
+    const fixture = TestBed.createComponent(VirtualTestHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const dir = fixture.debugElement
+      .query(By.directive(CngxRovingTabindex))
+      .injector.get(CngxRovingTabindex);
+    dir.activeIndex.set(50);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    const stops = fixture.debugElement
+      .queryAll(By.css('button'))
+      .filter((b) => b.nativeElement.getAttribute('tabindex') === '0');
+    expect(stops.length).toBe(1);
+    expect(stops[0].nativeElement.getAttribute('data-cngx-recycle-index')).toBe('9');
+    expect(dir.activeIndex()).toBe(50);
   });
 });

@@ -16,6 +16,29 @@ import {
   resolveInlineStep,
   resolveStepFrom,
 } from '@cngx/core';
+import { isComposingKeydown, isTextEntryTarget } from '@cngx/core/utils';
+
+/**
+ * Widgets whose arrow keys are their own. A key from inside one that sits in
+ * the roving group (a slider in a toolbar item, a nested listbox) belongs to
+ * it, not to the group.
+ */
+const ARROW_KEY_WIDGETS = [
+  'input[type="range"]',
+  '[role="slider"]',
+  '[role="spinbutton"]',
+  '[role="scrollbar"]',
+  '[role="combobox"]',
+  '[role="listbox"]',
+  '[role="tree"]',
+  '[role="treegrid"]',
+  '[role="grid"]',
+  '[role="menu"]',
+  '[role="menubar"]',
+  '[role="tablist"]',
+  '[role="radiogroup"]',
+  '[role="toolbar"]',
+].join(', ');
 
 /**
  * Marker directive for items managed by `CngxRovingTabindex`.
@@ -145,8 +168,15 @@ export class CngxRovingTabindex {
   /** All `CngxRovingItem` children discovered via `contentChildren`. */
   private readonly items = contentChildren(CngxRovingItem);
 
-  /** Guards against setting `tabindex` before the DOM is ready. */
-  private readonly initialized = signal(false);
+  /**
+   * Flips after the first browser render. Virtual mode waits for it: it reads
+   * the `data-cngx-recycle-index` attributes, which the item bindings write
+   * during that render. Standard mode writes before it (so a server render
+   * carries the tab stops) and once more after it, because an item's own
+   * `[attr.tabindex]` binding (null under a roving parent) clears the
+   * attribute during that render.
+   */
+  private readonly rendered = signal(false);
 
   /** Host element for `data-cngx-recycle-index` queries in virtual mode. */
   private readonly hostEl = inject(ElementRef<HTMLElement>);
@@ -172,17 +202,23 @@ export class CngxRovingTabindex {
   readonly pendingFocus = this.pendingFocusState.asReadonly();
 
   constructor() {
-    afterNextRender(() => this.initialized.set(true));
+    // The item list and the index the last run settled on: a list change with
+    // an unchanged index re-finds the item that held the tab stop.
+    let previousItems: readonly CngxRovingItem[] = [];
+    let previousActive = -1;
+
+    afterNextRender(() => this.rendered.set(true));
 
     effect(() => {
-      if (!this.initialized()) {
-        return;
-      }
+      const rendered = this.rendered();
       const items = this.items();
       const active = this.activeIndex();
       const vc = this.virtualCount();
 
       if (vc != null) {
+        if (!rendered) {
+          return;
+        }
         // Virtual mode: match by data-cngx-recycle-index attribute. Clamp the
         // model itself when the virtual space shrinks below it - a ghost
         // index would otherwise anchor the next arrow press. An empty space
@@ -191,35 +227,49 @@ export class CngxRovingTabindex {
         if (clamped !== active) {
           untracked(() => this.activeIndex.set(clamped));
         }
-        items.forEach((item) => {
-          const el = item.elementRef.nativeElement as HTMLElement;
-          const idx = el.dataset['cngxRecycleIndex'];
-          el.setAttribute('tabindex', idx != null && Number(idx) === clamped ? '0' : '-1');
-        });
-      } else {
-        // Standard mode: match by array index. The tab stop must land on an
-        // enabled item - fall back to the first enabled one when the clamped
-        // target is disabled (initial index into a disabled leaf, or the
-        // active item got disabled). The model is written back so keyboard
-        // navigation anchors where the tab stop actually sits. An empty list
-        // keeps the model untouched so a repopulated list restores it.
-        if (items.length === 0) {
-          return;
-        }
-        let target = Math.max(0, Math.min(active, items.length - 1));
-        if (items[target]?.disabled()) {
-          target = this.findFirst(items) ?? target;
-        }
-        if (target !== active) {
-          untracked(() => this.activeIndex.set(target));
-        }
-        items.forEach((item, i) =>
+        const stop = virtualTabStop(items, clamped);
+        items.forEach((item) =>
           (item.elementRef.nativeElement as HTMLElement).setAttribute(
             'tabindex',
-            i === target ? '0' : '-1',
+            item === stop ? '0' : '-1',
           ),
         );
+        return;
       }
+
+      // Standard mode: match by array index. When the list changed under an
+      // unchanged index, the item that held the tab stop is looked up again,
+      // so a removal or reorder before it does not hand the stop to another
+      // item. The tab stop must land on an enabled item - fall back to the
+      // first enabled one when the target is disabled (initial index into a
+      // disabled leaf, or the active item got disabled). The model is written
+      // back so keyboard navigation anchors where the tab stop actually sits.
+      // An empty list keeps the model untouched so a repopulated list
+      // restores it.
+      if (items.length === 0) {
+        return;
+      }
+      let anchor = active;
+      if (items !== previousItems && active === previousActive) {
+        const held = previousItems[active];
+        const moved = held ? items.indexOf(held) : -1;
+        anchor = moved >= 0 ? moved : active;
+      }
+      let target = Math.max(0, Math.min(anchor, items.length - 1));
+      if (items[target]?.disabled()) {
+        target = this.findFirst(items) ?? target;
+      }
+      previousItems = items;
+      previousActive = target;
+      if (target !== active) {
+        untracked(() => this.activeIndex.set(target));
+      }
+      items.forEach((item, i) =>
+        (item.elementRef.nativeElement as HTMLElement).setAttribute(
+          'tabindex',
+          i === target ? '0' : '-1',
+        ),
+      );
     });
   }
 
@@ -256,6 +306,9 @@ export class CngxRovingTabindex {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
     // untouched (Ctrl+Home, Cmd+ArrowLeft and friends belong to the app).
     if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    if (!this.ownsKey(event)) {
       return;
     }
 
@@ -315,6 +368,25 @@ export class CngxRovingTabindex {
     } else if (nextIndex === currentActive) {
       event.preventDefault();
     }
+  }
+
+  /**
+   * Whether the group may take the key: not one a nested widget already
+   * handled, not part of an IME composition, not from a text field (an
+   * `<input>` item or one inside an item keeps its caret keys) and not from
+   * inside a nested widget that owns its arrows.
+   */
+  private ownsKey(event: KeyboardEvent): boolean {
+    if (event.defaultPrevented || isComposingKeydown(event)) {
+      return false;
+    }
+    const target = event.target as Element | null;
+    if (isTextEntryTarget(target)) {
+      return false;
+    }
+    const host = this.hostEl.nativeElement as HTMLElement;
+    const widget = target?.closest(ARROW_KEY_WIDGETS) ?? null;
+    return widget === null || widget === host || !host.contains(widget);
   }
 
   /**
@@ -415,4 +487,30 @@ export class CngxRovingTabindex {
       isDisabledAt: (i) => items[i].disabled(),
     });
   }
+}
+
+/**
+ * @internal The rendered item that holds the tab stop in virtual mode: the
+ * one at the active index, or, while that index is outside the rendered
+ * window, the rendered item nearest to it, so the group never drops out of
+ * the Tab order. Focusing it moves the active index there (`focusin`).
+ */
+function virtualTabStop(
+  items: readonly CngxRovingItem[],
+  active: number,
+): CngxRovingItem | null {
+  let nearest: CngxRovingItem | null = null;
+  let distance = Infinity;
+  for (const item of items) {
+    const raw = (item.elementRef.nativeElement as HTMLElement).dataset['cngxRecycleIndex'];
+    if (raw == null) {
+      continue;
+    }
+    const gap = Math.abs(Number(raw) - active);
+    if (gap < distance) {
+      nearest = item;
+      distance = gap;
+    }
+  }
+  return nearest;
 }
