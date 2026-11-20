@@ -6,7 +6,10 @@
  * cancels the key would starve consumer `(click)` listeners. On a native
  * button host the returned handler does nothing. On any other host
  * (`<div role="button">`, a `<th>`, a link-styled span) it cancels the key's
- * default (Space would scroll) and calls `activate`.
+ * default (Space would scroll) and calls `activate`, once per press: an
+ * auto-repeat while the key is held only cancels the default. A key from a
+ * focused descendant (a button inside a sort header) belongs to that
+ * control and is left alone.
  *
  * Bind the handler to both keys next to the host's `(click)`:
  *
@@ -38,7 +41,16 @@ export function createActivationKeyHandler(
     if (host.tagName === 'BUTTON') {
       return;
     }
+    // A focused descendant (a filter button in a sort header) is its own
+    // control: its Enter / Space are not the host's.
+    const target = event.target;
+    if (target !== null && target !== host) {
+      return;
+    }
     event.preventDefault();
+    if ((event as KeyboardEvent).repeat) {
+      return;
+    }
     activate(event);
   };
 }
