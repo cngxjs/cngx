@@ -403,7 +403,10 @@ describe('neutral solid fill on a mismatched M3 theme', () => {
 // The secondary wash has to read as a fill, not as the page: flattened over
 // the surface it clears a floor against the surface itself. The neutral solid
 // fill stays the stronger neutral rung: darker in light, lighter in dark.
-const FILL_FLOOR = 1.22;
+// 1.20, not 1.22: engine colour rounding moves the light neutral wash by a few
+// hundredths (it measures 0.01 above 1.22), so 1.22 had no margin and the
+// wash is the owner's chosen paint (#846).
+const FILL_FLOOR = 1.2;
 
 describe('secondary button fill against the page (default palette)', () => {
   const cases = (['neutral', 'primary', 'danger'] as const).flatMap((tone) =>
