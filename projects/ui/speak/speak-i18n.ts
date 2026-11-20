@@ -38,20 +38,11 @@ export const CNGX_SPEAK_I18N = new InjectionToken<Signal<CngxSpeakI18n>>('CngxSp
 });
 
 /**
- * Branded feature-fn for {@link provideSpeakI18n}.
+ * A label override feature of `provideSpeakI18n`.
  *
  * @since 0.1.0
  */
-export type CngxSpeakI18nFeature = ((bundle: Signal<CngxSpeakI18n>) => Signal<CngxSpeakI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineSpeakI18nFeature(
-  fn: (bundle: Signal<CngxSpeakI18n>) => Signal<CngxSpeakI18n>,
-): CngxSpeakI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxSpeakI18nFeature = (bundle: Signal<CngxSpeakI18n>) => Signal<CngxSpeakI18n>;
 
 /**
  * Override i18n labels via a partial bundle - unset keys, and keys set to
@@ -64,7 +55,7 @@ function defineSpeakI18nFeature(
 export function withSpeakI18nLabels(
   overrides: Partial<CngxSpeakI18n> | Signal<Partial<CngxSpeakI18n>>,
 ): CngxSpeakI18nFeature {
-  return defineSpeakI18nFeature((bundle) => createFilledOverrideMerge(bundle, overrides));
+  return (bundle) => createFilledOverrideMerge(bundle, overrides);
 }
 
 /**
