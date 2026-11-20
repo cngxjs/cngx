@@ -17,8 +17,8 @@ import { createTransitionTracker } from '@cngx/core/utils';
 
 /**
  * CSS selector matching natively-focusable elements: links with an
- * `href`, the enabled form controls, and anything with an explicit
- * non-negative `tabindex`. Form controls carry `:not(:disabled)` because
+ * `href`, the enabled form controls, the summary of a `<details>`,
+ * editable content, and anything with an explicit non-negative `tabindex`. Form controls carry `:not(:disabled)` because
  * a disabled control is not in the tab order - without it a descendant
  * probe would count a disabled button as focusable and a restore target
  * could land on an unfocusable element. Single source of truth for "is
@@ -30,7 +30,7 @@ import { createTransitionTracker } from '@cngx/core/utils';
  * @since 0.1.0
  */
 export const CNGX_FOCUSABLE_SELECTOR =
-  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
+  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), details > summary:first-of-type, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * @internal Lets a directive that composes `CngxFocusRestore` as a host

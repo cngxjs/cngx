@@ -25,6 +25,22 @@ describe('CNGX_FOCUSABLE_SELECTOR', () => {
     expect(matches('<a href="#">x</a>')).toBe(true);
   });
 
+  it('matches the summary of a details element and editable content', () => {
+    const details = document.createElement('details');
+    details.innerHTML = '<summary>x</summary><summary>y</summary>';
+    const [first, second] = Array.from(details.querySelectorAll('summary'));
+    expect(first.matches(CNGX_FOCUSABLE_SELECTOR)).toBe(true);
+    expect(second.matches(CNGX_FOCUSABLE_SELECTOR)).toBe(false);
+    expect(matches('<div contenteditable>x</div>')).toBe(true);
+    expect(matches('<div contenteditable="true">x</div>')).toBe(true);
+    expect(matches('<div contenteditable="plaintext-only">x</div>')).toBe(true);
+  });
+
+  it('rejects a summary outside details and non-editable content', () => {
+    expect(matches('<summary>x</summary>')).toBe(false);
+    expect(matches('<div contenteditable="false">x</div>')).toBe(false);
+  });
+
   it('matches elements with an explicit non-negative tabindex', () => {
     expect(matches('<div tabindex="0">x</div>')).toBe(true);
     expect(matches('<span tabindex="2">x</span>')).toBe(true);
