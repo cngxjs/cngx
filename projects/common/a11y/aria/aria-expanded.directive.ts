@@ -10,14 +10,12 @@ import {
 } from '@angular/core';
 
 /**
- * Lets a directive that composes `CngxAriaExpanded` as a host directive drive
- * `aria-expanded` from its own state instead of `[cngxAriaExpanded]`.
- * Provided by the composer on the same element (`useExisting`); the ARIA
- * directive resolves it lazily with `self: true`, because the composer
- * constructs after its host directives. `CngxExpandable` is the in-library
- * composer.
- *
- * @since 0.1.0
+ * @internal Lets a directive that composes `CngxAriaExpanded` as a host
+ * directive drive `aria-expanded` from its own state instead of
+ * `[cngxAriaExpanded]`. Provided by the composer on the same element
+ * (`useExisting`); the ARIA directive resolves it lazily with `self: true`,
+ * because the composer constructs after its host directives. `CngxExpandable`
+ * is the in-library composer.
  */
 export interface CngxAriaExpandedDriver {
   /**
@@ -27,11 +25,7 @@ export interface CngxAriaExpandedDriver {
   readonly ariaExpanded: Signal<boolean | null>;
 }
 
-/**
- * See {@link CngxAriaExpandedDriver}.
- *
- * @since 0.1.0
- */
+/** @internal See {@link CngxAriaExpandedDriver}. */
 export const CNGX_ARIA_EXPANDED_DRIVER = new InjectionToken<CngxAriaExpandedDriver>(
   'CngxAriaExpandedDriver',
 );
