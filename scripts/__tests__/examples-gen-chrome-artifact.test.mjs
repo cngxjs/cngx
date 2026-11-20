@@ -40,7 +40,16 @@ const SELF_CONTAINED_PANEL_SCOPE = [
   'ui/stepper/stepper-connectors/wizard-rail',
 ];
 
-const NOT_MEMBERS = new Set(['if', 'for', 'while', 'switch', 'return', 'catch', 'constructor', 'super']);
+const NOT_MEMBERS = new Set([
+  'if',
+  'for',
+  'while',
+  'switch',
+  'return',
+  'catch',
+  'constructor',
+  'super',
+]);
 
 /** Names of class members declared at brace depth 0 of a `setup` / `setupChrome` body. */
 function classMembers(body = '') {
@@ -74,7 +83,9 @@ function templateExpressions(template = '') {
   return [
     ...[...template.matchAll(/\{\{([\s\S]*?)\}\}/g)].map((m) => m[1]),
     ...[...template.matchAll(/[[(*][^\s=]*\s*=\s*"([^"]*)"/g)].map((m) => m[1]),
-    ...[...template.matchAll(/@(?:if|else if|for|switch|case|let|defer)\b([^{\n]*)/g)].map((m) => m[1]),
+    ...[...template.matchAll(/@(?:if|else if|for|switch|case|let|defer)\b([^{\n]*)/g)].map(
+      (m) => m[1],
+    ),
   ].join('\n');
 }
 
@@ -91,6 +102,20 @@ function chromeOnlyReads(story) {
         new RegExp(`this\\.${id}\\b`).test(story.setup ?? '')
       );
     });
+}
+
+/**
+ * String keys handed to `wrapDemoAction` / `failDemoActionWhen` that name no member of the story.
+ * The keys cannot be typed (the members are protected), so a rename is caught here instead.
+ */
+function unknownDemoActionKeys(story) {
+  const members = new Set([...classMembers(story.setup), ...classMembers(story.setupChrome)]);
+  const calls = `${story.setup ?? ''}\n${story.setupChrome ?? ''}`;
+  return [
+    ...calls.matchAll(/\b(?:wrapDemoAction|failDemoActionWhen)\(\s*this\s*,\s*['"]([\w$]+)['"]/g),
+  ]
+    .map((m) => m[1])
+    .filter((key) => !members.has(key));
 }
 
 describe('examples chrome divs', () => {
@@ -127,10 +152,29 @@ describe('examples chrome divs', () => {
     expect(hits).toEqual([]);
   });
 
+  it('every demo action key names a member of its story', () => {
+    const hits = stories
+      .filter((s) => s.story)
+      .map(({ route, story }) => [route, unknownDemoActionKeys(story)])
+      .filter(([, keys]) => keys.length > 0)
+      .map(([route, keys]) => `${route}: ${keys.join(', ')}`);
+    expect(hits).toEqual([]);
+  });
+
+  it('flags a demo action key whose member was renamed', () => {
+    const story = {
+      setup: 'protected readonly saveDraft = () => Promise.resolve();',
+      setupChrome:
+        "private readonly knob = wrapDemoAction(this, 'save', (o) => o);\nprivate readonly fail = failDemoActionWhen(\n  this,\n  'saveDraft',\n  () => false,\n  () => 'x',\n);",
+    };
+    expect(unknownDemoActionKeys(story)).toEqual(['save']);
+  });
+
   it('flags a template binding, a setup read and a control-flow read of a chrome-only member', () => {
     const story = {
       setup: 'protected readonly run = () => (this.failNext ? 1 : 0);',
-      setupChrome: 'protected failNext = false;\nprotected readonly mode = signal(1);\nprotected readonly log = signal([]);\nprotected readonly local = 1;',
+      setupChrome:
+        'protected failNext = false;\nprotected readonly mode = signal(1);\nprotected readonly log = signal([]);\nprotected readonly local = 1;',
       template: '<p [attr.mode]="1" title="log">{{ local }}</p>@if (mode()) {<b>log</b>}',
     };
     expect(chromeOnlyReads(story).sort()).toEqual(['failNext', 'local', 'mode']);

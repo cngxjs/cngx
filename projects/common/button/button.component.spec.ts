@@ -1,8 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router, RouterLink } from '@angular/router';
-import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
+import {
+  CNGX_ACTION_STATUS,
+  CngxAsyncClick,
+  type AsyncAction,
+  type CngxActionStatus,
+} from '@cngx/common/interactive';
 import { vi } from 'vitest';
 import { CNGX_LOADING_DEFAULTS, provideLoadingConfigAt, withShowDelay } from '@cngx/core/utils';
 
@@ -245,6 +250,31 @@ class ScopedLoadingAsyncHost {
   imports: [CngxButton, CngxButtonStart, CngxButtonEnd],
 })
 class SlotHost {}
+
+// Stands in for an action-status host (an action button) around projected
+// content: only the active cell is read by the adornment.
+@Directive({
+  selector: '[testActionStatus]',
+  providers: [
+    {
+      provide: CNGX_ACTION_STATUS,
+      useValue: { activeCell: signal('succeeded') } as unknown as CngxActionStatus,
+    },
+  ],
+})
+class TestActionStatus {}
+
+@Component({
+  template: `
+    <div testActionStatus>
+      <button id="nested" cngxButton [cngxAsyncClick]="action">Nested</button>
+    </div>
+  `,
+  imports: [CngxButton, CngxAsyncClick, TestActionStatus],
+})
+class NestedInActionStatusHost {
+  readonly action: AsyncAction = () => new Promise<void>(() => undefined);
+}
 
 describe('CngxButton', () => {
   describe('axis resolution', () => {
@@ -571,6 +601,20 @@ describe('CngxButton', () => {
       expect(btn.querySelector(':scope > .cngx-button__busy')).toBeNull();
       expect(adornment.querySelector(':scope > .cngx-button__busy')).not.toBeNull();
       expect(adornment.querySelector(':scope > .cngx-button__reason')?.textContent).toBe('Locked');
+      vi.useRealTimers();
+    });
+
+    it("ignores an ancestor's action status and shows its own busy layer (B18)", async () => {
+      vi.useFakeTimers();
+      const { fixture, q } = render(NestedInActionStatusHost);
+      const btn = q('#nested');
+      btn.click();
+      await vi.advanceTimersByTimeAsync(CNGX_LOADING_DEFAULTS.showDelay);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+
+      expect(btn.dataset['busy']).toBe('true');
+      expect(btn.querySelector('.cngx-button__busy')).not.toBeNull();
       vi.useRealTimers();
     });
 

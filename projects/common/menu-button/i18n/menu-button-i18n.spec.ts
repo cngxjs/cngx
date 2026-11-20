@@ -13,6 +13,7 @@ import {
   injectMenuButtonI18n,
   provideMenuButtonI18n,
   withMenuButtonI18nLabels,
+  type CngxMenuButtonI18nFeature,
 } from './menu-button-i18n';
 
 describe('CNGX_MENU_BUTTON_I18N', () => {
@@ -66,6 +67,17 @@ describe('CNGX_MENU_BUTTON_I18N', () => {
     const { bundle } = TestBed.createComponent(Subtree).componentInstance;
     expect(bundle().splitToggle).toBe('More actions');
     expect(TestBed.inject(CNGX_MENU_BUTTON_I18N)().splitToggle).toBe('Weitere Optionen');
+  });
+
+  it('takes a plain bundle function as a feature, chained after withMenuButtonI18nLabels', () => {
+    const shout: CngxMenuButtonI18nFeature = (bundle) =>
+      computed(() => ({ ...bundle(), splitToggle: bundle().splitToggle.toUpperCase() }));
+    TestBed.configureTestingModule({
+      providers: [
+        provideMenuButtonI18n(withMenuButtonI18nLabels({ splitToggle: 'More actions' }), shout),
+      ],
+    });
+    expect(TestBed.inject(CNGX_MENU_BUTTON_I18N)().splitToggle).toBe('MORE ACTIONS');
   });
 
   it('follows a Signal override and keeps its reference on an equal recompute', () => {

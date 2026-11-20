@@ -81,7 +81,9 @@ export class CngxStepperComplete {
   );
   private readonly runner = inject(CNGX_ASYNC_RUN_STATE, { host: true });
 
-  private readonly pending = computed(() => this.runner.state.status() === 'pending');
+  // Busy for the run and for the held busy visual after it. The runner's own
+  // [busy] hint and a host-reflected busy stay out: they are not this run.
+  private readonly busy = computed(() => this.runner.pending() || this.runner.busyVisible());
   private readonly busyKey = nextUid('cngx-stepper-complete');
 
   /** `true` when the active step is the last one - the finish step. */
@@ -92,12 +94,13 @@ export class CngxStepperComplete {
       warnStepperControlUnhosted('cngxStepperComplete', this.resolvedHost);
     }
 
-    // The run holds the host busy, so Back, Next and header navigation
-    // refuse while Finish runs. register() reads and writes the registry's
-    // own signal, so the call stays untracked; only the host is a dependency.
+    // The run and its dwell hold the host busy, so Back, Next and header
+    // navigation refuse while Finish runs. register() reads and writes the
+    // registry's own signal, so the call stays untracked; only the host is a
+    // dependency.
     effect((onCleanup) => {
       const host = this.resolvedHost();
-      const release = untracked(() => host?.registerBusy?.(this.busyKey, this.pending));
+      const release = untracked(() => host?.registerBusy?.(this.busyKey, this.busy));
       if (release) {
         onCleanup(release);
       }

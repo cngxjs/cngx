@@ -12,7 +12,7 @@ import {
 import { CngxIcon } from '@cngx/common/display';
 import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
 import { CngxIconMenuButton, CngxSplitButton } from '@cngx/common/menu-button';
-import { CngxPopover } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverAction } from '@cngx/common/popover';
 import { CngxActionButton } from './action-button';
 import {
   CNGX_ASYNC_RUN_STATE,
@@ -1718,5 +1718,123 @@ describe('CngxActionButton language switch', () => {
     fixture.componentInstance.mock.status.set('error');
     fixture.detectChanges();
     expect(live.textContent?.trim()).toBe('Fehlgeschlagen');
+  });
+});
+
+// CngxActionButton and CngxPopoverAction compose the same hosts twice
+// (popover-accepted-debt: host inputs do not forward transitively, and a
+// shared const does not cross the ui / common d.ts boundary). This pins the
+// two lists to each other; a difference must be named here.
+describe('CngxActionButton and CngxPopoverAction host composition parity', () => {
+  /** Directive input / output name to the public name the host exposes. */
+  interface Forwarded {
+    readonly inputs: Record<string, string>;
+    readonly outputs: Record<string, string>;
+  }
+
+  function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+  }
+
+  function bindingMap(value: unknown): Record<string, string> {
+    if (Array.isArray(value)) {
+      return Object.fromEntries(
+        value
+          .filter((v): v is string => typeof v === 'string')
+          .map((entry) => {
+            const [inner, alias] = entry.split(':').map((part) => part.trim());
+            return [inner, alias ?? inner];
+          }),
+      );
+    }
+    return isRecord(value)
+      ? Object.fromEntries(
+          Object.entries(value).filter((e): e is [string, string] => typeof e[1] === 'string'),
+        )
+      : {};
+  }
+
+  function componentDef(type: object): Record<string, unknown> {
+    const def: unknown = Reflect.get(type, '\u0275cmp');
+    if (!isRecord(def)) {
+      throw new Error('no component definition');
+    }
+    return def;
+  }
+
+  function hostDirectives(type: object): Map<string, Forwarded> {
+    const raw = componentDef(type)['hostDirectives'];
+    const entries: unknown[] = (Array.isArray(raw) ? raw : []).flatMap((entry: unknown) =>
+      typeof entry === 'function' ? (entry as () => unknown[])() : [entry],
+    );
+    const map = new Map<string, Forwarded>();
+    for (const entry of entries) {
+      const directive = isRecord(entry) ? entry['directive'] : entry;
+      if (typeof directive !== 'function') {
+        continue;
+      }
+      // The build may prefix class names with an underscore.
+      map.set(directive.name.replace(/^_+/, ''), {
+        inputs: isRecord(entry) ? bindingMap(entry['inputs']) : {},
+        outputs: isRecord(entry) ? bindingMap(entry['outputs']) : {},
+      });
+    }
+    return map;
+  }
+
+  function hostClasses(type: object): string[] {
+    const attrs = componentDef(type)['hostAttrs'];
+    if (!Array.isArray(attrs)) {
+      return [];
+    }
+    // AttributeMarker.Classes (1) is followed by the class names up to the next marker.
+    const start = attrs.indexOf(1);
+    if (start < 0) {
+      return [];
+    }
+    const rest = attrs.slice(start + 1);
+    const end = rest.findIndex((v) => typeof v !== 'string');
+    return (end < 0 ? rest : rest.slice(0, end)).filter((v): v is string => typeof v === 'string');
+  }
+
+  const ALLOWED = {
+    /** The variant input carries each host's own selector name. */
+    variantAlias: { action: 'cngxActionButton', popover: 'cngxPopoverAction' },
+    /** Host directives only one side composes. */
+    onlyAction: ['CngxActionToast'],
+    onlyPopover: ['CngxPopoverCloseOnSuccess'],
+    /** Each host's own class next to the shared cngx-button. */
+    ownClass: { action: 'cngx-action-button', popover: 'cngx-popover-action' },
+  } as const;
+
+  it('forwards the same brain, runner and status-brain inputs and outputs', () => {
+    const action = hostDirectives(CngxActionButton);
+    const popover = hostDirectives(CngxPopoverAction);
+
+    const onlyAction = [...action.keys()].filter((k) => !popover.has(k));
+    const onlyPopover = [...popover.keys()].filter((k) => !action.has(k));
+    expect(onlyAction).toEqual([...ALLOWED.onlyAction]);
+    expect(onlyPopover).toEqual([...ALLOWED.onlyPopover]);
+
+    const shared = [...action.keys()].filter((k) => popover.has(k));
+    expect(shared.length).toBeGreaterThanOrEqual(3);
+    for (const name of shared) {
+      const a = action.get(name);
+      const b = popover.get(name);
+      const aInputs = { ...a?.inputs };
+      const bInputs = { ...b?.inputs };
+      if (aInputs['variant'] === ALLOWED.variantAlias.action) {
+        expect(bInputs['variant'], name).toBe(ALLOWED.variantAlias.popover);
+        delete aInputs['variant'];
+        delete bInputs['variant'];
+      }
+      expect(aInputs, `${name} inputs`).toEqual(bInputs);
+      expect(a?.outputs, `${name} outputs`).toEqual(b?.outputs);
+    }
+  });
+
+  it('shares the cngx-button host class and differs only in its own class', () => {
+    expect(hostClasses(CngxActionButton)).toEqual(['cngx-button', ALLOWED.ownClass.action]);
+    expect(hostClasses(CngxPopoverAction)).toEqual(['cngx-button', ALLOWED.ownClass.popover]);
   });
 });

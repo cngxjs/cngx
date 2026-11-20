@@ -6,7 +6,6 @@ import {
   inject,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_ACTION_STATUS } from '@cngx/common/interactive';
 
 import { CngxButtonBrain } from './button-brain.directive';
 
@@ -56,10 +55,10 @@ import { CngxButtonBrain } from './button-brain.directive';
 export class CngxButtonAdornment {
   /** @internal */
   protected readonly brain = inject(CngxButtonBrain);
-  private readonly status = inject(CNGX_ACTION_STATUS, { optional: true });
 
   /** @internal */
   protected readonly busy = computed(
-    () => this.brain.busyVisible() && (this.status?.activeCell() ?? 'idle') === 'idle',
+    () =>
+      this.brain.busyVisible() && (this.brain.actionStatus()?.activeCell() ?? 'idle') === 'idle',
   );
 }

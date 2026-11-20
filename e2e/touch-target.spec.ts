@@ -71,6 +71,13 @@ const ATOMS: {
     selector: '.cngx-close-button',
     axis: 'block',
   },
+  // The close button is a square target: the floor lifts both axes.
+  {
+    name: 'close-button-inline',
+    route: '/#/common/button/close-button/basic',
+    selector: '.cngx-close-button',
+    axis: 'inline',
+  },
   {
     name: 'button-toggle',
     route: '/#/common/interactive/button-toggle/group/basic-view-switcher',
@@ -209,6 +216,24 @@ const ATOMS: {
     route: '/#/common/menu-button/icon-menu-button/kebab',
     selector: '.cngx-icon-menu-button',
     axis: 'inline',
+  },
+  {
+    name: 'split-caret',
+    route: '/#/common/menu-button/split-button/basic',
+    selector: '.cngx-split-button > .cngx-icon-menu-button',
+    axis: 'inline',
+  },
+  {
+    name: 'split-caret-block',
+    route: '/#/common/menu-button/split-button/basic',
+    selector: '.cngx-split-button > .cngx-icon-menu-button',
+    axis: 'block',
+  },
+  {
+    name: 'action-button-outline',
+    route: '/#/ui/action-button/async-button/string-labels',
+    selector: ".cngx-action-button[data-variant='outline']",
+    axis: 'block',
   },
   {
     name: 'popover-action',

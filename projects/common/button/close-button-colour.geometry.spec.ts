@@ -25,6 +25,7 @@ const SCHEMES = ['light', 'dark'] as const;
     '../../core/theming/system-tokens.css',
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
+    '../theming/components/cngx-button.css',
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
@@ -45,6 +46,10 @@ const SCHEMES = ['light', 'dark'] as const;
         <button cngxCloseButton class="blocked" disabled aria-label="Close"></button>
         <span class="probe-muted" style="color: var(--cngx-color-text-muted)"></span>
         <span class="probe-text" style="color: var(--cngx-color-text)"></span>
+        <span
+          class="probe-disabled"
+          style="color: color-mix(in oklab, var(--cngx-color-text) 38%, transparent)"
+        ></span>
       </div>
     }
   `,
@@ -112,6 +117,8 @@ describe.each(SCHEMES)('close button colour, %s', (scheme) => {
     const root = mount();
     const btn = at(root, '.blocked');
     expect(btn.getAttribute('aria-disabled')).toBe('true');
+    expect(effectiveOpacity(btn)).toBe(1);
+    expect(computedValue(btn, 'color')).toBe(computedValue(at(root, '.probe-disabled'), 'color'));
     expect(computedValue(btn, 'color')).not.toBe(computedValue(at(root, '.probe-muted'), 'color'));
   });
 });

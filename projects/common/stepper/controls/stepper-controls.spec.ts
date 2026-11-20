@@ -126,6 +126,20 @@ class BackDuringFinishHost {
   readonly action = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
 }
 
+@Component({
+  standalone: true,
+  imports: [CngxStepperPrevious, CngxStepperComplete],
+  hostDirectives: [CngxStepperPresenter],
+  template: `
+    <button cngxStepperPrevious>Back</button>
+    <button [cngxStepperComplete]="action" [showDelay]="0" [minDwell]="50">Finish</button>
+  `,
+})
+class BackDuringFinishDwellHost {
+  release: () => void = () => undefined;
+  readonly action = (): Promise<void> => new Promise<void>((resolve) => (this.release = resolve));
+}
+
 function navSetup(): {
   fixture: ReturnType<typeof TestBed.createComponent<NavHost>>;
   presenter: CngxStepperPresenter;
@@ -331,6 +345,44 @@ describe('stepper nav controls', () => {
         fixture.componentInstance.release();
       }
     });
+  });
+
+  it('keeps Back aria-disabled until Finish drops aria-busy after its dwell (A15)', async () => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(BackDuringFinishDwellHost);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    presenter.register(reg('a'));
+    presenter.register(reg('b'));
+    presenter.select(1);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const [prev, finish] = Array.from(root.querySelectorAll('button'));
+    const advance = async (ms: number): Promise<void> => {
+      await vi.advanceTimersByTimeAsync(ms);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    };
+
+    finish.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await advance(0);
+    fixture.componentInstance.release();
+    await advance(0);
+
+    expect(finish.getAttribute('aria-busy')).toBe('true');
+    expect(prev.getAttribute('aria-disabled')).toBe('true');
+    prev.click();
+    fixture.detectChanges();
+    expect(presenter.activeStepIndex()).toBe(1);
+
+    await advance(50);
+    expect(finish.hasAttribute('aria-busy')).toBe(false);
+    expect(prev.hasAttribute('aria-disabled')).toBe(false);
+    vi.useRealTimers();
   });
 
   describe('CngxStepperComplete run lifecycle', () => {
