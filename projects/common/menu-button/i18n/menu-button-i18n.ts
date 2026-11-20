@@ -43,18 +43,9 @@ export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18
  * @since 0.1.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, withMenuButtonI18nLabels
  */
-export type CngxMenuButtonI18nFeature = ((
+export type CngxMenuButtonI18nFeature = (
   bundle: Signal<CngxMenuButtonI18n>,
-) => Signal<CngxMenuButtonI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineMenuButtonI18nFeature(
-  fn: (bundle: Signal<CngxMenuButtonI18n>) => Signal<CngxMenuButtonI18n>,
-): CngxMenuButtonI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+) => Signal<CngxMenuButtonI18n>;
 
 /**
  * Overrides single keys. Unset keys keep the language pack's phrase, or the English default. Pass
@@ -67,7 +58,7 @@ function defineMenuButtonI18nFeature(
 export function withMenuButtonI18nLabels(
   overrides: Partial<CngxMenuButtonI18n> | Signal<Partial<CngxMenuButtonI18n>>,
 ): CngxMenuButtonI18nFeature {
-  return defineMenuButtonI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**
