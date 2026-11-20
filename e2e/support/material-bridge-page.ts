@@ -121,6 +121,10 @@ export const MAT_SYS_EXTRAS = {
   'label-small-size': '11px',
   'label-small-weight': '570',
   'label-medium-size': '13px',
+  'label-medium-weight': '610',
+  'label-large-size': '15px',
+  'title-small-size': '19px',
+  'corner-medium': '13px',
   'corner-large': '17px',
   level3: '0 7px 9px rgb(7, 8, 9)',
 } as const;

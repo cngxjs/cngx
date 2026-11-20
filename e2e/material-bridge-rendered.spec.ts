@@ -1006,23 +1006,16 @@ function resolvedColor(page: Page, expression: string): Promise<string> {
 }
 
 /**
- * Unlayered stand-ins for the type and shape roles the display bridges read
- * beyond MAT_SYS_EXTRAS. Off every cngx initial-value, so an equality can only
- * hold when the bridge assignment landed.
+ * corner-full stays out of MAT_SYS_EXTRAS: the field block pins the
+ * matIconButton suffix at the 9999px fallback of field-theme.scss.
  */
-const DISPLAY_SYS_EXTRAS = `<style>:root {
-  --mat-sys-label-large-size: 15px;
-  --mat-sys-label-medium-weight: 610;
-  --mat-sys-title-small-size: 19px;
-  --mat-sys-corner-full: 23px;
-  --mat-sys-corner-medium: 13px;
-}</style>`;
+const CORNER_FULL_STANDIN = '23px';
 
 test.describe('material-bridge rendered values: avatar', () => {
   const AVATAR_CSS = ['projects/common/display/avatar/avatar.component.css'] as const;
   const BRIDGE_CSS = compileBridge('avatar-theme');
 
-  const AVATAR_HTML = `${DISPLAY_SYS_EXTRAS}
+  const AVATAR_HTML = `<style>:root { --mat-sys-corner-full: ${CORNER_FULL_STANDIN}; }</style>
 <cngx-avatar id="avatar-circle" class="cngx-avatar cngx-avatar--md cngx-avatar--circle">
   <span class="cngx-avatar__initials">AL</span>
   <span id="dot-online" class="cngx-avatar__status cngx-avatar__status--online"></span>
@@ -1056,13 +1049,21 @@ test.describe('material-bridge rendered values: avatar', () => {
   test('the size rungs read the label and title scale on the host', async ({ page }) => {
     // inherits:false tokens: the bridge assigns them on the host, and the size
     // class reads them on the same element.
-    expect(await computedValue(page, '#avatar-circle', 'font-size')).toBe('15px');
-    expect(await computedValue(page, '#avatar-square', 'font-size')).toBe('19px');
+    expect(await computedValue(page, '#avatar-circle', 'font-size')).toBe(
+      matSysExtra('label-large-size'),
+    );
+    expect(await computedValue(page, '#avatar-square', 'font-size')).toBe(
+      matSysExtra('title-small-size'),
+    );
   });
 
   test('both shapes paint the Material corner roles', async ({ page }) => {
-    expect(await computedValue(page, '#avatar-circle', 'border-top-left-radius')).toBe('23px');
-    expect(await computedValue(page, '#avatar-square', 'border-top-left-radius')).toBe('13px');
+    expect(await computedValue(page, '#avatar-circle', 'border-top-left-radius')).toBe(
+      CORNER_FULL_STANDIN,
+    );
+    expect(await computedValue(page, '#avatar-square', 'border-top-left-radius')).toBe(
+      matSysExtra('corner-medium'),
+    );
   });
 
   test('every status dot paints its role and the surface ring', async ({ page }) => {
@@ -1083,7 +1084,7 @@ test.describe('material-bridge rendered values: status', () => {
   const STATUS_CSS = ['projects/common/display/status/status.component.css'] as const;
   const BRIDGE_CSS = compileBridge('status-theme');
 
-  const STATUS_HTML = `${DISPLAY_SYS_EXTRAS}
+  const STATUS_HTML = `
 <cngx-status id="status-success" class="cngx-status cngx-status--success"><span class="cngx-status__dot"></span><span class="cngx-status__label">Operational</span></cngx-status>
 <cngx-status id="status-warning" class="cngx-status cngx-status--warning"><span class="cngx-status__dot"></span></cngx-status>
 <cngx-status id="status-danger" class="cngx-status cngx-status--danger"><span class="cngx-status__dot"></span></cngx-status>
@@ -1113,7 +1114,9 @@ test.describe('material-bridge rendered values: status', () => {
     expect(await computedValue(page, '#status-success', 'font-size')).toBe(
       matSysExtra('label-medium-size'),
     );
-    expect(await computedValue(page, '#status-success', 'font-weight')).toBe('610');
+    expect(await computedValue(page, '#status-success', 'font-weight')).toBe(
+      matSysExtra('label-medium-weight'),
+    );
   });
 });
 
