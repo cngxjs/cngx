@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import {
   CNGX_NESTED_INTERACTIVE_SELECTOR,
+  isComposingKeydown,
+  isTextEntryTarget,
   matchesKeyCombo,
   parseKeyCombo,
   provideNestedInteractiveSelector,
@@ -418,5 +420,74 @@ describe('CNGX_NESTED_INTERACTIVE_SELECTOR', () => {
     const selector = child.get(CNGX_NESTED_INTERACTIVE_SELECTOR);
     expect(matches(selector, '<app-rating></app-rating>')).toBe(true);
     expect(matches(selector, '<span role="spinbutton"></span>')).toBe(true);
+  });
+});
+
+describe('isTextEntryTarget', () => {
+  const el = (html: string): Element => {
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    return host.firstElementChild!;
+  };
+
+  it('reads every text-like input type as text entry, date and time included', () => {
+    for (const type of [
+      'text',
+      'search',
+      'email',
+      'url',
+      'tel',
+      'password',
+      'number',
+      'date',
+      'time',
+      'datetime-local',
+      'month',
+      'week',
+    ]) {
+      expect(isTextEntryTarget(el(`<input type="${type}" />`)), type).toBe(true);
+    }
+    expect(isTextEntryTarget(el('<input />'))).toBe(true);
+  });
+
+  it('leaves the button-like and pointer-only input types out', () => {
+    for (const type of ['button', 'submit', 'reset', 'checkbox', 'radio', 'range', 'color', 'file']) {
+      expect(isTextEntryTarget(el(`<input type="${type}" />`)), type).toBe(false);
+    }
+  });
+
+  it('counts textarea, select, editable regions and the text roles', () => {
+    for (const html of [
+      '<textarea></textarea>',
+      '<select></select>',
+      '<div contenteditable="true"></div>',
+      '<div contenteditable=""><b>inner</b></div>',
+      '<div role="textbox"></div>',
+      '<div role="searchbox"></div>',
+    ]) {
+      expect(isTextEntryTarget(el(html)), html).toBe(true);
+    }
+    const inner = el('<div contenteditable="true"><b>inner</b></div>').firstElementChild;
+    expect(isTextEntryTarget(inner)).toBe(true);
+  });
+
+  it('reads plain elements, contenteditable=false and non-elements as false', () => {
+    expect(isTextEntryTarget(el('<button></button>'))).toBe(false);
+    expect(isTextEntryTarget(el('<div role="listbox"></div>'))).toBe(false);
+    expect(isTextEntryTarget(el('<div contenteditable="false"></div>'))).toBe(false);
+    expect(isTextEntryTarget(null)).toBe(false);
+    expect(isTextEntryTarget(document)).toBe(false);
+  });
+});
+
+describe('isComposingKeydown', () => {
+  it('flags isComposing and the Safari keyCode 229 commit key', () => {
+    expect(isComposingKeydown(new KeyboardEvent('keydown', { key: 'a', isComposing: true }))).toBe(
+      true,
+    );
+    expect(isComposingKeydown(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 229 }))).toBe(
+      true,
+    );
+    expect(isComposingKeydown(new KeyboardEvent('keydown', { key: 'Enter' }))).toBe(false);
   });
 });
