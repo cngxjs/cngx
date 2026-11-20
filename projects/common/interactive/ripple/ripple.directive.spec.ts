@@ -5,11 +5,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxRipple } from './ripple.directive';
 
 @Component({
-  template: `<button cngxRipple [rippleDisabled]="disabled()" #r="cngxRipple">Click</button>`,
+  template: `<button
+    cngxRipple
+    [rippleDisabled]="disabled()"
+    [rippleColor]="color()"
+    [rippleCentered]="centered()"
+    #r="cngxRipple"
+  >
+    Click
+  </button>`,
   imports: [CngxRipple],
 })
 class TestHost {
   readonly disabled = signal(false);
+  readonly color = signal<string | undefined>(undefined);
+  readonly centered = signal(false);
 }
 
 describe('CngxRipple', () => {
@@ -124,5 +134,34 @@ describe('CngxRipple', () => {
     expect(dir.active()).toBe(false);
     // Both 1s fallback timers are cleared; ambient scheduler timers stay.
     expect(vi.getTimerCount()).toBe(timersBeforeDestroy - 2);
+  });
+
+  describe('colour', () => {
+    it('leaves --cngx-ripple-color to the cascade when rippleColor is not set', () => {
+      const { host } = setup();
+      host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+      const wave = host.querySelector('.cngx-ripple__wave') as HTMLElement;
+      expect(wave.style.getPropertyValue('--cngx-ripple-color')).toBe('');
+    });
+
+    it('writes --cngx-ripple-color inline when rippleColor is bound', () => {
+      const { fixture, host } = setup();
+      fixture.componentInstance.color.set('rgb(255, 0, 0)');
+      fixture.detectChanges();
+      host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+      const wave = host.querySelector('.cngx-ripple__wave') as HTMLElement;
+      expect(wave.style.getPropertyValue('--cngx-ripple-color')).toBe('rgb(255, 0, 0)');
+    });
+  });
+
+  it('starts a centred wave from the host centre', () => {
+    const { fixture, host } = setup();
+    fixture.componentInstance.centered.set(true);
+    fixture.detectChanges();
+    host.getBoundingClientRect = () => ({ left: 0, top: 0, width: 100, height: 50 }) as DOMRect;
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 5 }));
+    const wave = host.querySelector('.cngx-ripple__wave') as HTMLElement;
+    expect(wave.style.getPropertyValue('--cngx-ripple-x')).toBe('50px');
+    expect(wave.style.getPropertyValue('--cngx-ripple-y')).toBe('25px');
   });
 });

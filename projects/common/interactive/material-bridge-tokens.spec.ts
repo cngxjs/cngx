@@ -273,7 +273,7 @@ describe('ripple Material bridge', () => {
     }
   });
 
-  it('layers the bridge and broadcasts to host + descendants', () => {
+  it('layers the bridge on the .cngx-ripple host class', () => {
     const entry = `
 @use '@angular/material' as mat;
 @use 'material/ripple-theme' as bridge;
@@ -288,8 +288,10 @@ $theme: mat.define-theme((
     // formerly the only unlayered bridge besides filter-builder - an
     // unlayered rule would beat any layered consumer override
     expect(css).toMatch(/@layer cngx\.components\s*\{/);
-    // opacity/duration are inherits:false, read on the __wave child
-    expect(css).toMatch(/:where\(\[cngxRipple\], \[cngxRipple\] \*\)\s*\{/);
+    // the class is on every ripple host, including cngxPressRipple and
+    // hostDirectives compositions that carry no [cngxRipple] attribute
+    expect(css).toMatch(/:where\(\.cngx-ripple\)\s*\{/);
+    expect(css).not.toContain('[cngxRipple]');
   });
 });
 

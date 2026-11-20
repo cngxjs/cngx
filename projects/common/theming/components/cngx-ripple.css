@@ -33,6 +33,11 @@
  *
  * **Inheritance**
  *
+ * The wave sits two levels below the host (host > container > wave),
+ * so all three surface tokens inherit: a value set on the host or any
+ * ancestor reaches the wave. The directive writes
+ * `--cngx-ripple-color` inline only when `[rippleColor]` is bound.
+ *
  * - `--cngx-ripple-color` defaults to `currentColor` so the wave
  *   tracks the host's text color without a per-component override
  *
@@ -62,7 +67,7 @@
    */
   @property --cngx-ripple-opacity {
     syntax: '<number>';
-    inherits: false;
+    inherits: true;
     initial-value: 0.12;
   }
 
@@ -72,7 +77,7 @@
    */
   @property --cngx-ripple-duration {
     syntax: '<time>';
-    inherits: false;
+    inherits: true;
     initial-value: 0.5s;
   }
 }

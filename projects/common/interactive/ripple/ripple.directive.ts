@@ -54,8 +54,12 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
   },
 })
 export class CngxRipple {
-  /** Ripple color - passed as `--cngx-ripple-color` on the wave element. */
-  readonly color = input<string>('currentColor', { alias: 'rippleColor' });
+  /**
+   * Ripple color, written inline as `--cngx-ripple-color` on the wave when set.
+   * Unset, the wave reads `--cngx-ripple-color` from the cascade (a host
+   * override, the Material bridge, or the `currentColor` default).
+   */
+  readonly color = input<string | undefined>(undefined, { alias: 'rippleColor' });
   /** Whether the ripple originates from the center of the host. */
   readonly centered = input<boolean>(false, { alias: 'rippleCentered' });
   /** Whether the ripple effect is disabled. */
@@ -146,7 +150,10 @@ export class CngxRipple {
     wave.style.setProperty('--cngx-ripple-x', `${x}px`);
     wave.style.setProperty('--cngx-ripple-y', `${y}px`);
     wave.style.setProperty('--cngx-ripple-size', `${size}px`);
-    wave.style.setProperty('--cngx-ripple-color', this.color());
+    const color = this.color();
+    if (color) {
+      wave.style.setProperty('--cngx-ripple-color', color);
+    }
 
     this.ensureContainer(host).appendChild(wave);
     this.activeState.set(true);
