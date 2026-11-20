@@ -50,6 +50,14 @@ describe('CngxPressRipple', () => {
     expect(button.injector.get(CngxRipple)).toBeTruthy();
   });
 
+  it('neither presses nor ripples on a right-click', () => {
+    const { fixture, el, pressable } = setup();
+    el.dispatchEvent(new PointerEvent('pointerdown', { button: 2, clientX: 40, clientY: 20 }));
+    fixture.detectChanges();
+    expect(pressable.pressed()).toBe(false);
+    expect(el.querySelector('.cngx-ripple__wave')).toBeNull();
+  });
+
   it('drives press feedback on pointerdown', () => {
     const { fixture, el, pressable } = setup();
     el.dispatchEvent(new PointerEvent('pointerdown', { clientX: 40, clientY: 20 }));

@@ -43,7 +43,7 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
   standalone: true,
   host: {
     '[class.cngx-pressed]': 'pressed()',
-    '(pointerdown)': 'handlePointerDown()',
+    '(pointerdown)': 'handlePointerDown($event)',
     '(pointerup)': 'handlePointerUp()',
     '(pointercancel)': 'handlePointerCancel()',
     '(pointerleave)': 'handlePointerLeave()',
@@ -75,7 +75,11 @@ export class CngxPressable {
   }
 
   /** @internal - sets pressed state immediately on pointer contact (0ms latency). */
-  protected handlePointerDown(): void {
+  protected handlePointerDown(event: PointerEvent): void {
+    // Primary button only, like CngxRipple: a right-click opens a context menu.
+    if (event.button !== 0) {
+      return;
+    }
     this.clearTimer();
     this.pointerDown = true;
     this.pressedState.set(true);
