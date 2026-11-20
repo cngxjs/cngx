@@ -354,5 +354,14 @@ describe('CngxSpeak', () => {
     TestBed.flushEffects();
     expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
     expect(dir.speaking()).toBe(false);
+
+    // The cancelled utterance's late callbacks must not revive or end a new one.
+    utterance.onend?.();
+    fixture.componentInstance.message.set('Again');
+    TestBed.flushEffects();
+    const next = vi.mocked(speechSynthesis.speak).mock.calls[1][0] as unknown as MockUtterance;
+    next.onstart?.();
+    utterance.onerror?.();
+    expect(dir.speaking()).toBe(true);
   });
 });

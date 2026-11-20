@@ -5,7 +5,7 @@ import {
   effect,
   inject,
   input,
-  signal,
+  linkedSignal,
   untracked,
 } from '@angular/core';
 import { CNGX_LOCALE, createTransitionTracker, injectLocale } from '@cngx/core/utils';
@@ -21,8 +21,9 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * `CngxLiveRegion` for ARIA live regions).
  *
  * The directive is purely behavioral: it exposes the `speaking()` signal, the
- * `supported` flag and `speak()` / `cancel()` / `toggle()` methods. The consumer renders their own
- * UI (button, icon, link) and calls the methods via the template reference.
+ * `supported` flag and `speak()` / `cancel()` / `toggle()` methods. The
+ * consumer renders their own UI (button, icon, link) and calls the methods via
+ * the template reference.
  *
  * Pair with `CngxSpeakButton` (`@cngx/ui`) for a ready-made speaker button.
  *
@@ -111,10 +112,14 @@ export class CngxSpeak {
    */
   readonly enabled = input(true);
 
-  private readonly speakingState = signal(false);
+  // Derived reset: an empty text ends own speech (the effect cancels the
+  // utterance), so `speaking` drops to false without a write in the effect.
+  private readonly speakingState = linkedSignal<string, boolean>({
+    source: this.text,
+    computation: (value, previous) => (value ? (previous?.value ?? false) : false),
+  });
   private readonly supportedState: boolean;
   private readonly synth: SpeechSynthesis | null;
-  // Mount value is the baseline: previous === current until the text changes.
   private readonly textTransition = createTransitionTracker(() => this.text());
 
   // Retains the in-flight utterance: Chrome garbage-collects unreferenced
@@ -146,7 +151,7 @@ export class CngxSpeak {
       // per-utterance parameters read in performSpeak must not re-speak either.
       untracked(() => {
         if (!value) {
-          this.cancelOwn();
+          this.releaseOwn();
           return;
         }
         if (this.enabled() && this.synth) {
@@ -230,11 +235,16 @@ export class CngxSpeak {
   }
 
   private cancelOwn(): void {
+    this.releaseOwn();
+    this.speakingState.set(false);
+  }
+
+  /** Stops an own utterance without touching `speaking`; safe inside the text effect. */
+  private releaseOwn(): void {
     if (this.activeUtterance) {
       this.activeUtterance = null;
       this.synth?.cancel();
     }
-    this.speakingState.set(false);
   }
 
   /** Ignores stale callbacks of a replaced utterance so a new one keeps `speaking` intact. */
