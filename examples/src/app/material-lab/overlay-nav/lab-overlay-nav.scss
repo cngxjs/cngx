@@ -1,0 +1,130 @@
+// Working-tree bridges (relative, not the published package) so the harness
+// reflects the current bridge source.
+@use '../../../../../projects/themes/material/bridge' as bridge;
+@use '../../../../../projects/themes/material/tooltip-theme.scss' as tooltip;
+@use '../../../../../projects/themes/material/context-menu-theme.scss' as context-menu;
+@use '../../../../../projects/themes/material/popover-sheet-theme.scss' as popover-sheet;
+@use '../../../../../projects/themes/material/nav-link-theme.scss' as nav-link;
+@use '../../../../../projects/themes/material/backdrop-theme.scss' as backdrop;
+@use '../../../../../projects/themes/material/command-palette-theme.scss' as command-palette;
+@use '../../../../../projects/themes/material/toc-theme.scss' as toc;
+@use '../../../../../projects/themes/material/nav-rail-theme.scss' as nav-rail;
+@use '../lab-base' as base;
+
+$theme: base.$theme;
+
+@include base.root();
+
+html {
+  @include base.material();
+  @include tooltip.theme($theme);
+  @include context-menu.theme($theme);
+  @include popover-sheet.theme($theme);
+  @include backdrop.theme($theme);
+  @include command-palette.theme($theme);
+  @include toc.theme($theme);
+  @include nav-rail.theme($theme);
+}
+
+// nav-link-theme emits bare declarations (its documented host is
+// sidenav-theme's `on()` block). A bare nav of cngxNavLink rows takes them on
+// the rows, as sidenav-theme places them, and the M3 list item metrics on
+// the nav container, as sidenav-theme places them on a railed sidenav.
+@include bridge.on('.cngx-nav-link, [cngxNavGroup]') {
+  @include nav-link.theme($theme);
+}
+
+@include bridge.on('nav.lab-nav-list') {
+  @include nav-link.metrics($theme);
+}
+
+@include base.chrome();
+
+.lab-heading {
+  flex-basis: 100%;
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.lab-trigger {
+  padding: 6px 12px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.lab-zone {
+  display: grid;
+  place-items: center;
+  inline-size: 200px;
+  block-size: 96px;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  cursor: context-menu;
+}
+
+.lab-nav-row {
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.lab-nav-list {
+  inline-size: 280px;
+}
+
+.lab-sheet-body {
+  padding: 16px;
+}
+
+.lab-sheet-title {
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.lab-sheet-text {
+  margin: 0 0 12px;
+}
+
+// The backdrop is position: fixed by default; the frame keeps it inside the
+// section so it does not cover the lab.
+.lab-backdrop-frame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 280px;
+  block-size: 120px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lab-backdrop {
+  position: absolute;
+}
+
+.lab-toc-row {
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.lab-toc-article {
+  inline-size: 280px;
+  block-size: 160px;
+  overflow-y: auto;
+}
+
+.lab-toc-article p {
+  margin: 0 0 96px;
+}
+
+.lab-rail-row {
+  align-items: stretch;
+  gap: 32px;
+}
+
+.lab-nav-rail {
+  block-size: 360px;
+}

@@ -95,20 +95,12 @@ export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18
 });
 
 /**
- * Branded feature-fn for {@link provideKpiI18n}.
+ * A label override feature of `provideKpiI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_KPI_I18N, withKpiI18nLabels
  */
-export type CngxKpiI18nFeature = ((bundle: Signal<CngxKpiI18n>) => Signal<CngxKpiI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineKpiI18nFeature(
-  fn: (bundle: Signal<CngxKpiI18n>) => Signal<CngxKpiI18n>,
-): CngxKpiI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxKpiI18nFeature = (bundle: Signal<CngxKpiI18n>) => Signal<CngxKpiI18n>;
 
 /**
  * Override KPI labels via a partial bundle - unset keys keep the language
@@ -120,7 +112,7 @@ function defineKpiI18nFeature(
 export function withKpiI18nLabels(
   overrides: Partial<CngxKpiI18n> | Signal<Partial<CngxKpiI18n>>,
 ): CngxKpiI18nFeature {
-  return defineKpiI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**

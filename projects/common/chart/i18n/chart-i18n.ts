@@ -173,18 +173,12 @@ export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxCh
 });
 
 /**
- * Branded feature-fn for {@link provideChartI18n}.
+ * A label override feature of `provideChartI18n`.
+ *
+ * @since 0.1.0
+ * @relatedTo CNGX_CHART_I18N, withChartI18nLabels
  */
-export type CngxChartI18nFeature = ((bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineChartI18nFeature(
-  fn: (bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>,
-): CngxChartI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxChartI18nFeature = (bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>;
 
 /**
  * Override chart copy via a partial bundle - unset keys keep the language
@@ -194,7 +188,7 @@ function defineChartI18nFeature(
 export function withChartI18nLabels(
   overrides: Partial<CngxChartI18n> | Signal<Partial<CngxChartI18n>>,
 ): CngxChartI18nFeature {
-  return defineChartI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**

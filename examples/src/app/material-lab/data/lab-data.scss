@@ -1,0 +1,68 @@
+// Working-tree bridges (relative, not the published package) so the harness
+// reflects the current bridge source.
+@use '../../../../../projects/themes/material/chart-theme.scss' as chart;
+@use '../../../../../projects/themes/material/chart-panel-theme.scss' as chart-panel;
+@use '../../../../../projects/themes/material/metric-theme.scss' as metric;
+@use '../../../../../projects/themes/material/stat-card-theme.scss' as stat-card;
+@use '../../../../../projects/themes/material/delta-theme.scss' as delta;
+@use '../../../../../projects/themes/material/trend-theme.scss' as trend;
+@use '../../../../../projects/themes/material/goal-theme.scss' as goal;
+@use '../../../../../projects/themes/material/timeline-theme.scss' as timeline;
+@use '../../../../../projects/themes/material/treetable-theme.scss' as treetable;
+@use '../../../../../projects/themes/material/incremental-list-theme.scss' as incremental-list;
+@use '../../../../../projects/themes/material/filter-builder-theme.scss' as filter-builder;
+@use '../lab-base' as base;
+
+$theme: base.$theme;
+
+@include base.root();
+
+html {
+  @include base.material();
+  @include chart.theme($theme);
+  @include chart-panel.theme($theme);
+  @include metric.theme($theme);
+  @include stat-card.theme($theme);
+  @include delta.theme($theme);
+  @include trend.theme($theme);
+  @include goal.theme($theme);
+  @include timeline.theme($theme);
+  @include treetable.theme($theme);
+  @include incremental-list.theme($theme);
+  @include filter-builder.theme($theme);
+}
+
+@include base.chrome();
+
+.lab-pendant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.lab-chart {
+  inline-size: 320px;
+}
+
+.lab-heading {
+  flex-basis: 100%;
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+.lab-stat {
+  inline-size: 220px;
+}
+
+.lab-lists {
+  align-items: flex-start;
+}
+
+.lab-lists > * {
+  inline-size: 240px;
+}
+
+.lab-timeline-text {
+  margin: 0;
+}
