@@ -690,3 +690,43 @@ describe('CngxRovingTabindex - virtual tab stop', () => {
     expect(dir.activeIndex()).toBe(50);
   });
 });
+
+@Component({
+  template: `
+    <div cngxRovingTabindex [(activeIndex)]="index">
+      @for (item of items; track item.label) {
+        <button cngxRovingItem [cngxRovingItemDisabled]="item.disabled">{{ item.label }}</button>
+      }
+    </div>
+    <span data-testid="bound">{{ index }}</span>
+  `,
+  imports: [CngxRovingTabindex, CngxRovingItem],
+})
+class TwoWayHost {
+  index = 5;
+  items = [
+    { label: 'One', disabled: true },
+    { label: 'Two', disabled: false },
+  ];
+}
+
+describe('CngxRovingTabindex - two-way initial write-back', () => {
+  beforeEach(() => TestBed.configureTestingModule({ imports: [TwoWayHost] }));
+
+  it.each([
+    ['out of range', 5],
+    ['on a disabled item', 0],
+  ])('settles an initial index %s without a changed-after-checked error', (_, start) => {
+    const fixture = TestBed.createComponent(TwoWayHost);
+    fixture.componentInstance.index = start;
+    expect(() => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+    }).not.toThrow();
+    expect(fixture.componentInstance.index).toBe(1);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[data-testid="bound"]')?.textContent,
+    ).toBe('1');
+  });
+});
