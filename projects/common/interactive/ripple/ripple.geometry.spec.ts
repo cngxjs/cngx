@@ -135,7 +135,9 @@ describe('CngxRipple token cascade', () => {
     if (!host) {
       throw new Error(`${selector} did not render`);
     }
-    host.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }));
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }),
+    );
     const wave = host.querySelector('.cngx-ripple__wave');
     if (!wave) {
       throw new Error(`no wave on ${selector}`);
@@ -191,7 +193,9 @@ describe('CngxRipple reduced motion', () => {
     if (!host) {
       throw new Error('.host did not render');
     }
-    host.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }));
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }),
+    );
     return host;
   }
 

@@ -128,8 +128,12 @@ describe('CngxPressable', () => {
       const host = fixture.debugElement.query(By.css('[role=button]'));
       const dir = host.injector.get(CngxPressable);
       const el = host.nativeElement as HTMLElement;
-      const key = (type: 'keydown' | 'keyup', k: string, init: KeyboardEventInit = {}, target: HTMLElement = el) =>
-        target.dispatchEvent(new KeyboardEvent(type, { key: k, bubbles: true, ...init }));
+      const key = (
+        type: 'keydown' | 'keyup',
+        k: string,
+        init: KeyboardEventInit = {},
+        target: HTMLElement = el,
+      ) => target.dispatchEvent(new KeyboardEvent(type, { key: k, bubbles: true, ...init }));
       return { fixture, el, dir, key };
     }
 
