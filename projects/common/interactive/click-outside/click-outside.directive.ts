@@ -84,7 +84,11 @@ function controlledIdsOf(target: EventTarget | null): readonly string[] {
 export class CngxClickOutside {
   /** The DOM event type to listen for. `'pointerdown'` covers both mouse and touch. */
   readonly eventType = input<'pointerdown' | 'click' | 'mousedown' | 'touchstart'>('pointerdown');
-  /** When `false` nothing is emitted and no document listener is attached. */
+  /**
+   * When `false` nothing is emitted and no document listener is attached.
+   * A composing directive that provides `CNGX_CLICK_OUTSIDE_DRIVER` decides
+   * instead; this input is then ignored.
+   */
   readonly enabled = input<boolean>(true);
   /** Emitted when the user interacts outside the host element. */
   readonly clickOutside = output<PointerEvent | MouseEvent | TouchEvent>();

@@ -19,8 +19,9 @@ import { computed, DestroyRef, Directive, ElementRef, inject, input, signal } fr
  * Ships default styles in `cngx-ripple.css` (part of `@cngx/themes/cngx.css`).
  * Reduced motion is the stylesheet's call, not the directive's: the wave is
  * always created, and under the app motion axis (`provideMotion`,
- * `cngxMotionScope`) or the OS preference it fades in place instead of
- * expanding.
+ * `cngxMotionScope`) or the OS preference it does not expand. With the
+ * reduced-motion safety net of `@cngx/themes/cngx.css` loaded it is
+ * removed at once; without it, it fades in place.
  *
  * ### Button with ripple
  * ```html

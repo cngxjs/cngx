@@ -24,7 +24,10 @@
  * Under reduced motion (`[data-motion='reduced']` on an ancestor, or
  * `prefers-reduced-motion: reduce` without a root `data-motion='full'`)
  * the wave skips the expansion: it appears at full size and fades
- * with `cngx-ripple-fade` over the same duration.
+ * with `cngx-ripple-fade`. With `motion-tokens.css` loaded (it is part
+ * of `@cngx/themes/cngx.css`) the safety net collapses that fade to
+ * 0.01ms, so the wave is effectively not shown; the fade only plays
+ * where the net is not loaded.
  *
  * **Per-instance geometry**
  *
@@ -35,9 +38,12 @@
  * **Inheritance**
  *
  * The wave sits two levels below the host (host > container > wave),
- * so all three surface tokens inherit: a value set on the host or any
- * ancestor reaches the wave. The directive writes
- * `--cngx-ripple-color` inline only when `[rippleColor]` is bound.
+ * so all three surface tokens inherit: a value set on the host or an
+ * ancestor reaches the wave. The Material bridge sets the tokens on
+ * every `.cngx-ripple` host, so with the bridge loaded an override
+ * must sit on the host itself; an ancestor value is shadowed there.
+ * The directive writes `--cngx-ripple-color` inline only when
+ * `[rippleColor]` is bound.
  *
  * - `--cngx-ripple-color` defaults to `currentColor` so the wave
  *   tracks the host's text color without a per-component override
@@ -125,7 +131,7 @@
      motion-tokens.css: a [data-motion='reduced'] ancestor (provideMotion,
      cngxMotionScope), or the OS preference unless the root opts back in with
      data-motion='full'. The wave appears at full size and only fades, so
-     animationend still removes it. */
+     animationend still removes it (instantly under the safety net). */
   [data-motion='reduced'] .cngx-ripple__wave {
     animation-name: cngx-ripple-fade;
   }
