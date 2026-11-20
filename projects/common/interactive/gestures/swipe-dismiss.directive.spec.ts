@@ -20,6 +20,15 @@ class TestHost {
   swiped = vi.fn();
 }
 
+@Component({
+  template: `<div [cngxSwipeDismiss]="direction()" [threshold]="100" (swiped)="swiped()"></div>`,
+  imports: [CngxSwipeDismiss],
+})
+class DirectionHost {
+  readonly direction = signal<'left' | 'right' | 'up' | 'down'>('left');
+  readonly swiped = vi.fn();
+}
+
 describe('CngxSwipeDismiss', () => {
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
@@ -245,6 +254,54 @@ describe('CngxSwipeDismiss', () => {
 
       fixture.destroy();
       expect(release).toHaveBeenCalledExactlyOnceWith(7);
+    });
+  });
+
+  describe.each([
+    { direction: 'left', far: { x: 100, y: 200 }, back: { x: 260, y: 200 } },
+    { direction: 'right', far: { x: 300, y: 200 }, back: { x: 140, y: 200 } },
+    { direction: 'up', far: { x: 200, y: 100 }, back: { x: 200, y: 260 } },
+    { direction: 'down', far: { x: 200, y: 300 }, back: { x: 200, y: 140 } },
+  ] as const)('direction $direction', ({ direction, far, back }) => {
+    function setupDirection() {
+      const fixture = TestBed.createComponent(DirectionHost);
+      fixture.componentInstance.direction.set(direction);
+      fixture.detectChanges();
+      const debug = fixture.debugElement.query(By.directive(CngxSwipeDismiss));
+      return {
+        el: debug.nativeElement as HTMLElement,
+        dir: debug.injector.get(CngxSwipeDismiss),
+        host: fixture.componentInstance,
+      };
+    }
+
+    const at = (type: string, p: { x: number; y: number }, target: EventTarget = document) =>
+      target.dispatchEvent(new PointerEvent(type, { clientX: p.x, clientY: p.y, bubbles: true }));
+    const start = { x: 200, y: 200 };
+
+    it('emits when the drag passes the threshold', () => {
+      const { el, host } = setupDirection();
+      at('pointerdown', start, el);
+      at('pointermove', far);
+      at('pointerup', far);
+      expect(host.swiped).toHaveBeenCalledOnce();
+    });
+
+    it('does not emit for the opposite direction', () => {
+      const { el, host } = setupDirection();
+      at('pointerdown', start, el);
+      at('pointermove', back);
+      at('pointerup', back);
+      expect(host.swiped).not.toHaveBeenCalled();
+    });
+
+    it('drops the progress to 0 when the drag reverses past the start', () => {
+      const { el, dir } = setupDirection();
+      at('pointerdown', start, el);
+      at('pointermove', far);
+      expect(dir.swipeProgress()).toBe(1);
+      at('pointermove', back);
+      expect(dir.swipeProgress()).toBe(0);
     });
   });
 });
