@@ -3,8 +3,7 @@ import { type KeyCombo, parseKeyCombo, resolveAriaKeyShortcuts } from '@cngx/cor
 /**
  * @internal Combos the browser handles before the page sees them (close,
  * reopen and new tab or window, quit, tab switching). A page binding on one
- * of them never fires reliably, so the registry warns and the recorder
- * rejects them.
+ * of them never fires reliably, so the registry warns (CNGX1078).
  */
 export const CNGX_RESERVED_HOTKEYS: readonly string[] = [
   'mod+w',

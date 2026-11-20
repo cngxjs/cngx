@@ -1,5 +1,6 @@
 import type { Signal } from '@angular/core';
 import type { CngxListbox } from '@cngx/common/interactive';
+import { isComposingKeydown } from '@cngx/core/utils';
 
 /**
  * @internal
@@ -22,7 +23,7 @@ export function createListboxKeyForward(
 ): (event: KeyboardEvent) => void {
   const homeEnd = options.homeEnd ?? 'caret';
   return (event) => {
-    if (event.isComposing || event.keyCode === 229) {
+    if (isComposingKeydown(event)) {
       return;
     }
     const lb = listboxRef();

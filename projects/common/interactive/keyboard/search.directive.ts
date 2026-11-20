@@ -116,13 +116,19 @@ export class CngxSearch {
     return true;
   }
 
-  /** Clears the search term and resets the input element value. */
+  /**
+   * Clears the search term, drops a pending one and resets the input element
+   * value. Emits `searchChange('')` only when the term was not empty already.
+   */
   clear(): void {
+    const changed = this.termState() !== '';
     this.pendingTerm = null;
     this.settled.next();
     this.termState.set('');
     this.renderer.setProperty(this.el.nativeElement, 'value', '');
-    this.searchChange.emit('');
+    if (changed) {
+      this.searchChange.emit('');
+    }
   }
 
   private commit(term: string): void {

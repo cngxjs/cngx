@@ -192,6 +192,75 @@ describe('createHotkeyRegistry', () => {
       expect(help.run).toHaveBeenCalledOnce();
     });
 
+    it('resolves a press on the body against the open modal: focus dropped out of a dialog', () => {
+      const registry = makeRegistry();
+      const modal = signal(true);
+      const dialogEl = el();
+      const dialog = scopeOn(dialogEl, null, { modal });
+      const save = bind('app.save', 'mod+s');
+      const submit = bind('dialog.submit', 'mod+enter');
+      registry.register(source(save), null);
+      registry.register(source(submit), dialog);
+
+      const blocked = press(document.body, 's', { ctrlKey: true });
+      press(document.body, 'Enter', { ctrlKey: true });
+
+      expect(save.run).not.toHaveBeenCalled();
+      expect(blocked.defaultPrevented).toBe(true);
+      expect(submit.run).toHaveBeenCalledOnce();
+
+      modal.set(false);
+      press(document.body, 's', { ctrlKey: true });
+      expect(save.run).toHaveBeenCalledOnce();
+    });
+
+    it('swallows a combo only the modal cuts, so the browser default stays away too', () => {
+      const registry = makeRegistry();
+      const dialogEl = el();
+      const inside = el('button', dialogEl);
+      scopeOn(dialogEl, null, { modal: signal(true) });
+      const save = bind('app.save', 'mod+s');
+      registry.register(source(save), null);
+
+      const event = press(inside, 's', { ctrlKey: true });
+
+      expect(save.run).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('leaves the browser default to a disabled, a muted or an unbound combo behind a modal', () => {
+      const registry = makeRegistry();
+      const dialogEl = el();
+      const inside = el('button', dialogEl);
+      scopeOn(dialogEl, null, { modal: signal(true) });
+      const closedEl = el();
+      registry.register(source(bind('app.save', 'mod+s', { enabled: signal(false) })), null);
+      registry.register(
+        source(bind('closed.print', 'mod+p')),
+        scopeOn(closedEl, null, { active: signal(false) }),
+      );
+      const list = el();
+      registry.register(source(bind('list.next', 'n', { reach: 'focus' })), scopeOn(list));
+
+      expect(press(inside, 's', { ctrlKey: true }).defaultPrevented).toBe(false);
+      expect(press(inside, 'p', { ctrlKey: true }).defaultPrevented).toBe(false);
+      expect(press(inside, 'k', { ctrlKey: true }).defaultPrevented).toBe(false);
+      expect(press(inside, 'n').defaultPrevented).toBe(false);
+    });
+
+    it('ignores a modal scope whose element left the document for a press on the body', () => {
+      const registry = makeRegistry();
+      const dialogEl = el();
+      scopeOn(dialogEl, null, { modal: signal(true) });
+      const save = bind('app.save', 'mod+s');
+      registry.register(source(save), null);
+      dialogEl.remove();
+
+      press(document.body, 's', { ctrlKey: true });
+
+      expect(save.run).toHaveBeenCalledOnce();
+    });
+
     it('skips a binding while enabled() is false', () => {
       const registry = makeRegistry();
       const enabled = signal(false);
@@ -250,6 +319,7 @@ describe('createHotkeyRegistry', () => {
       registry.register(source(save), null);
 
       press(document, 's', { ctrlKey: true, isComposing: true });
+      press(document, 's', { ctrlKey: true, keyCode: 229 });
 
       expect(save.run).not.toHaveBeenCalled();
     });
@@ -345,6 +415,23 @@ describe('createHotkeyRegistry', () => {
       press(inner, 'n', { composed: true });
 
       expect(next.run).toHaveBeenCalledOnce();
+    });
+
+    it('keeps bare keys out of date, time and number fields', () => {
+      const registry = makeRegistry();
+      const next = bind('next', 'n');
+      const save = bind('save', 'mod+s');
+      registry.register(source(next, save), null);
+
+      for (const type of ['date', 'time', 'datetime-local', 'month', 'week', 'number']) {
+        const field = el('input') as HTMLInputElement;
+        field.type = type;
+        press(field, 'n');
+        press(field, 's', { ctrlKey: true });
+      }
+
+      expect(next.run).not.toHaveBeenCalled();
+      expect(save.run).toHaveBeenCalledTimes(6);
     });
 
     it('fires bare keys on a non-text input', () => {

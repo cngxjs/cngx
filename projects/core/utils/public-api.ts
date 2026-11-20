@@ -29,6 +29,8 @@ export {
 } from './keyboard.util';
 export {
   CNGX_NESTED_INTERACTIVE_SELECTOR,
+  isComposingKeydown,
+  isTextEntryTarget,
   provideNestedInteractiveSelector,
 } from './keyboard.util';
 export {

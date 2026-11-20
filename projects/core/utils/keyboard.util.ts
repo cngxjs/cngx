@@ -416,3 +416,83 @@ export function provideNestedInteractiveSelector(...selectors: string[]): Provid
     },
   ];
 }
+
+// Input types whose keys are not text: arrows, Home/End and Space keep their
+// widget meaning there. Every other type (text, number, date, time, ...) takes
+// the caret or a native picker.
+const NON_TEXT_INPUT_TYPES = new Set([
+  'button',
+  'submit',
+  'reset',
+  'checkbox',
+  'radio',
+  'range',
+  'color',
+  'file',
+  'image',
+  'hidden',
+]);
+
+const TEXT_ENTRY_ROLES = '[role="textbox"], [role="searchbox"]';
+
+/**
+ * Whether a key event target takes text or owns its keys natively: a
+ * `<textarea>`, a `<select>`, an `<input>` of any type except the button-like
+ * and pointer-only ones (button, submit, reset, checkbox, radio, range, color,
+ * file, image, hidden), an element whose nearest `contenteditable` ancestor
+ * is editable (a `contenteditable="false"` island inside an editor is not), or a
+ * `role="textbox"` / `"searchbox"` element. Date, time, month, week and
+ * number inputs count: their keys move a caret or a segment.
+ *
+ * The one rule every keyboard primitive reads before it takes a key:
+ * `CngxActiveDescendant` (typeahead, Space, Home/End), `CngxRovingTabindex`
+ * (arrows, Home/End) and the hotkey registry (single-key bindings).
+ *
+ * ```ts
+ * if (isTextEntryTarget(event.target)) {
+ *   return; // the field owns the key
+ * }
+ * ```
+ *
+ * @param target The event target, `null` or a non-element reads `false`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo isComposingKeydown, CNGX_NESTED_INTERACTIVE_SELECTOR
+ */
+export function isTextEntryTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+  const tag = target.tagName;
+  if (tag === 'TEXTAREA' || tag === 'SELECT') {
+    return true;
+  }
+  if (tag === 'INPUT') {
+    return !NON_TEXT_INPUT_TYPES.has((target as HTMLInputElement).type.toLowerCase());
+  }
+  if (target.matches(TEXT_ENTRY_ROLES)) {
+    return true;
+  }
+  // The nearest contenteditable ancestor decides: a contenteditable="false"
+  // island (a chip, a mention list inside an editor) is not text entry.
+  const region = target.closest('[contenteditable]');
+  return region !== null && region.getAttribute('contenteditable') !== 'false';
+}
+
+/**
+ * Whether a `keydown` belongs to an IME composition session: `isComposing`,
+ * or the legacy `keyCode` 229 that Safari reports for the key that commits
+ * the composition. Such a key is text input, never navigation or activation.
+ *
+ * @param event The key event to test.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
+ * @since 0.1.0
+ * @relatedTo isTextEntryTarget
+ */
+export function isComposingKeydown(event: KeyboardEvent): boolean {
+  // keyCode is deprecated, but it is the only signal Safari gives for the
+  // composition-commit Enter.
+  return event.isComposing || event.keyCode === 229;
+}

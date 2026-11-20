@@ -2,6 +2,7 @@ import { afterNextRender, type ElementRef, type Injector, type Signal } from '@a
 
 import type { CngxListbox } from '@cngx/common/interactive';
 import type { CngxPopover } from '@cngx/common/popover';
+import { isComposingKeydown } from '@cngx/core/utils';
 
 import type { CngxFlatNavStrategy } from '../flat-nav-strategy';
 import type { CngxSelectOptionDef } from '../option.model';
@@ -95,8 +96,8 @@ export function createActionTriggerInput<Prev, T = unknown>(
 
   const handleTriggerEnter = (event: Event): void => {
     // The Enter that confirms an IME candidate is not a create: the term is
-    // still being composed. keyCode 229 covers Safari's `isComposing: false`.
-    if (event instanceof KeyboardEvent && (event.isComposing || event.keyCode === 229)) {
+    // still being composed.
+    if (event instanceof KeyboardEvent && isComposingKeydown(event)) {
       return;
     }
     if (event.defaultPrevented) {
