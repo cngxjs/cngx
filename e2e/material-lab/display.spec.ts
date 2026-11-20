@@ -38,14 +38,16 @@ for (const scheme of ['light', 'dark'] as const) {
       await page.waitForFunction(() =>
         Array.from(document.styleSheets).some((sheet) => sheet.href?.endsWith('/material-lab-display-theme.css')),
       );
-      await page.evaluate(() =>
-        Promise.all(
-          document
-            .getAnimations()
-            .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
-            .map((a) => a.finished),
-        ),
-      );
+      // A transition restarted by a later style change rejects its finished
+      // promise with AbortError and leaves a replacement behind, so wait in a
+      // loop until no finite animation is left.
+      await page.evaluate(async () => {
+        const finite = (): Animation[] =>
+          document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity);
+        for (let pending = finite(); pending.length > 0; pending = finite()) {
+          await Promise.all(pending.map((a) => a.finished.catch(() => undefined)));
+        }
+      });
     });
 
     test('badge: the error indicator matches mat-badge in colour, box and type', async ({ page }) => {
