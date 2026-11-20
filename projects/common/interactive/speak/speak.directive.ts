@@ -5,7 +5,7 @@ import {
   effect,
   inject,
   input,
-  linkedSignal,
+  signal,
   untracked,
 } from '@angular/core';
 import { CNGX_LOCALE, createTransitionTracker, injectLocale } from '@cngx/core/utils';
@@ -112,12 +112,7 @@ export class CngxSpeak {
    */
   readonly enabled = input(true);
 
-  // Derived reset: an empty text ends own speech (the effect cancels the
-  // utterance), so `speaking` drops to false without a write in the effect.
-  private readonly speakingState = linkedSignal<string, boolean>({
-    source: this.text,
-    computation: (value, previous) => (value ? (previous?.value ?? false) : false),
-  });
+  private readonly speakingState = signal(false);
   private readonly supportedState: boolean;
   private readonly synth: SpeechSynthesis | null;
   private readonly textTransition = createTransitionTracker(() => this.text());
@@ -151,7 +146,7 @@ export class CngxSpeak {
       // per-utterance parameters read in performSpeak must not re-speak either.
       untracked(() => {
         if (!value) {
-          this.releaseOwn();
+          this.interruptOwn();
           return;
         }
         if (this.enabled() && this.synth) {
@@ -235,14 +230,20 @@ export class CngxSpeak {
   }
 
   private cancelOwn(): void {
-    this.releaseOwn();
+    if (this.activeUtterance) {
+      this.activeUtterance = null;
+      this.synth?.cancel();
+    }
     this.speakingState.set(false);
   }
 
-  /** Stops an own utterance without touching `speaking`; safe inside the text effect. */
-  private releaseOwn(): void {
+  /**
+   * Stops an own utterance from inside the text effect without writing
+   * `speaking`: the utterance stays the owner, so the engine's `error`
+   * ('interrupted' / 'canceled') or `end` callback for it ends `speaking`.
+   */
+  private interruptOwn(): void {
     if (this.activeUtterance) {
-      this.activeUtterance = null;
       this.synth?.cancel();
     }
   }

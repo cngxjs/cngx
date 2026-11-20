@@ -353,15 +353,27 @@ describe('CngxSpeak', () => {
     fixture.componentInstance.message.set('');
     TestBed.flushEffects();
     expect(speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+
+    // The engine reports the cancelled utterance as interrupted; that
+    // callback, not the text effect, ends speaking.
+    utterance.onerror?.();
     expect(dir.speaking()).toBe(false);
 
-    // The cancelled utterance's late callbacks must not revive or end a new one.
-    utterance.onend?.();
     fixture.componentInstance.message.set('Again');
     TestBed.flushEffects();
     const next = vi.mocked(speechSynthesis.speak).mock.calls[1][0] as unknown as MockUtterance;
     next.onstart?.();
-    utterance.onerror?.();
+    utterance.onend?.();
     expect(dir.speaking()).toBe(true);
+  });
+
+  it('reads speaking() before the text input is bound without throwing', () => {
+    @Component({
+      template: '<div [class.on]="tts.speaking()" [cngxSpeak]="\'Hi\'" #tts="cngxSpeak"></div>',
+      imports: [CngxSpeak],
+    })
+    class SelfReadHost {}
+    const fixture = TestBed.createComponent(SelfReadHost);
+    expect(() => fixture.detectChanges()).not.toThrow();
   });
 });
