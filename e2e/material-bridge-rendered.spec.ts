@@ -135,7 +135,9 @@ test.describe('material-bridge rendered values: checkbox box corner', () => {
   // cngx.tokens; the stand-in below plays the system bridge, which maps
   // radius-sm to corner-extra-small (4px). mat-checkbox draws a fixed 2px
   // box corner, so the bridge has to win over the derived 4px.
-  const CHECKBOX_CSS = ['projects/common/display/checkbox-indicator/checkbox-indicator.component.css'] as const;
+  const CHECKBOX_CSS = [
+    'projects/common/display/checkbox-indicator/checkbox-indicator.component.css',
+  ] as const;
   const SYSTEM_RADIUS = ':root { --cngx-radius-sm: 4px; }';
   const CHECKBOX_HTML = `
 <cngx-checkbox-indicator class="cngx-checkbox-indicator cngx-checkbox-indicator--checkbox">
@@ -152,7 +154,11 @@ test.describe('material-bridge rendered values: checkbox box corner', () => {
   });
 
   test('without the bridge the box follows the 4px radius scale', async ({ page }) => {
-    await renderFixture(page, { componentCss: CHECKBOX_CSS, bridgeCss: SYSTEM_RADIUS, html: CHECKBOX_HTML });
+    await renderFixture(page, {
+      componentCss: CHECKBOX_CSS,
+      bridgeCss: SYSTEM_RADIUS,
+      html: CHECKBOX_HTML,
+    });
     expect(await computedValue(page, '#box', 'border-top-left-radius')).toBe('4px');
   });
 });
@@ -1105,9 +1111,7 @@ test.describe('material-bridge rendered values: status', () => {
   test('every tone dot paints its Material role', async ({ page }) => {
     const dot = (tone: string) => `#status-${tone} .cngx-status__dot`;
     expect(await computedValue(page, dot('success'), 'background-color')).toBe(matSys('tertiary'));
-    expect(await computedValue(page, dot('warning'), 'background-color')).toBe(
-      matSys('secondary'),
-    );
+    expect(await computedValue(page, dot('warning'), 'background-color')).toBe(matSys('secondary'));
     expect(await computedValue(page, dot('danger'), 'background-color')).toBe(matSys('error'));
     expect(await computedValue(page, dot('info'), 'background-color')).toBe(matSys('primary'));
     expect(await computedValue(page, dot('neutral'), 'background-color')).toBe(matSys('outline'));
@@ -1349,9 +1353,7 @@ test.describe('material-bridge rendered values: speak-button', () => {
     });
   });
 
-  test('the resting button paints the container-low surface and variant ink', async ({
-    page,
-  }) => {
+  test('the resting button paints the container-low surface and variant ink', async ({ page }) => {
     expect(await computedValue(page, '#speak-idle', 'background-color')).toBe(
       matSys('surface-container-low'),
     );
@@ -1809,6 +1811,192 @@ test.describe('material-bridge rendered values: filter-builder', () => {
   test('a negated group paints the outline-variant edge', async ({ page }) => {
     expect(await computedValue(page, '#fb-negated', 'border-left-color')).toBe(
       matSys('outline-variant'),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: backdrop', () => {
+  const BACKDROP_CSS = [
+    'projects/common/theming/components/cngx-backdrop.css',
+    'projects/common/theming/components/cngx-drawer.css',
+  ] as const;
+  const BRIDGE_CSS = compileBridge('backdrop-theme');
+
+  const BACKDROP_HTML = `
+<div id="backdrop" cngxBackdrop class="cngx-backdrop cngx-backdrop--visible"></div>
+<div id="drawer" class="cngx-drawer"></div>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: BACKDROP_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: BACKDROP_HTML,
+    });
+  });
+
+  test('the visible backdrop paints the scrim at 32%', async ({ page }) => {
+    expect(await computedValue(page, '#backdrop', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('scrim')} 32%, transparent)`),
+    );
+  });
+
+  test('the drawer scrim falls back to the bridged backdrop colour', async ({ page }) => {
+    const scrim = await page
+      .locator('#drawer')
+      .evaluate((el) => getComputedStyle(el, '::after').backgroundColor);
+    expect(scrim).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('scrim')} 32%, transparent)`),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: toc', () => {
+  const TOC_CSS = ['projects/ui/toc/toc.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('toc-theme');
+
+  const TOC_HTML = `
+<cngx-toc>
+  <nav class="cngx-toc__nav" aria-label="On this page">
+    <ul class="cngx-toc__list">
+      <li class="cngx-toc__item" data-active-trail>
+        <a id="toc-trail" class="cngx-toc__link" href="#install">Installation</a>
+        <ul class="cngx-toc__list">
+          <li class="cngx-toc__item"><a id="toc-active" class="cngx-toc__link" href="#npm" aria-current="location">Using npm</a></li>
+        </ul>
+      </li>
+      <li class="cngx-toc__item"><a id="toc-rest" class="cngx-toc__link" href="#usage">Usage</a></li>
+    </ul>
+  </nav>
+</cngx-toc>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: TOC_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: TOC_HTML,
+    });
+  });
+
+  test('a resting link paints the variant ink', async ({ page }) => {
+    expect(await computedValue(page, '#toc-rest', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('the current link paints the primary ink and rail', async ({ page }) => {
+    expect(await computedValue(page, '#toc-active', 'color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#toc-active', 'border-left-color')).toBe(matSys('primary'));
+  });
+
+  test('the active trail paints the on-surface ink', async ({ page }) => {
+    expect(await computedValue(page, '#toc-trail', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('hover paints the on-surface ink', async ({ page }) => {
+    await page.hover('#toc-rest');
+    expect(await computedValue(page, '#toc-rest', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('keyboard focus draws the primary ring', async ({ page }) => {
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#toc-trail')).toBeFocused();
+    expect(await computedValue(page, '#toc-trail', 'outline-color')).toBe(matSys('primary'));
+  });
+});
+
+test.describe('material-bridge rendered values: nav-rail theme()', () => {
+  const RAIL_CSS = [
+    'projects/common/theming/components/cngx-nav.css',
+    'projects/ui/nav-rail/nav-rail.css',
+  ] as const;
+  const BRIDGE_CSS = compileBridge('nav-rail-theme');
+
+  // Rows without an icon draw their initial, so no icon stylesheet is needed.
+  const rows = (prefix: string): string => `
+    <a id="${prefix}-active" class="cngx-nav-link cngx-nav-link--active" href="#" aria-current="page" data-initial="I">Inbox</a>
+    <a id="${prefix}-rest" class="cngx-nav-link" href="#" data-initial="S">Starred</a>`;
+
+  const RAIL_HTML = `<style>:root { --mat-sys-corner-full: ${CORNER_FULL_STANDIN}; }</style>
+<cngx-nav-rail id="rail-end" class="cngx-nav-rail" data-label-placement="end" data-side="start">
+  <div id="rail-header" class="cngx-nav-header">Mail</div>
+  <div class="cngx-nav-rail__body">
+    ${rows('end')}
+    <button id="end-group" type="button" cngxNavGroup class="cngx-nav-group" data-initial="M">More</button>
+    <div id="flyout" class="cngx-nav-group-content" popover="manual">
+      <div><a class="cngx-nav-link" href="#" style="--cngx-nav-depth: 1">History</a></div>
+    </div>
+  </div>
+</cngx-nav-rail>
+<cngx-nav-rail id="rail-below" class="cngx-nav-rail" data-label-placement="below" data-side="start">
+  <div class="cngx-nav-rail__body">${rows('below')}</div>
+</cngx-nav-rail>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: RAIL_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: RAIL_HTML,
+    });
+  });
+
+  test('the rail paints the surface pair with no divider', async ({ page }) => {
+    expect(await computedValue(page, '#rail-end', 'background-color')).toBe(matSys('surface'));
+    expect(await computedValue(page, '#rail-end', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#rail-end', 'border-right-width')).toBe('0px');
+  });
+
+  test('rows paint the list item roles and the full pill', async ({ page }) => {
+    expect(await computedValue(page, '#end-active', 'background-color')).toBe(
+      matSys('secondary-container'),
+    );
+    expect(await computedValue(page, '#end-active', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#end-rest', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#end-rest', 'border-top-left-radius')).toBe(
+      CORNER_FULL_STANDIN,
+    );
+  });
+
+  test('a hovered row paints the on-surface state layer', async ({ page }) => {
+    await page.hover('#end-rest');
+    expect(await computedValue(page, '#end-rest', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('on-surface')} 8%, transparent)`),
+    );
+  });
+
+  test('the stacked look paints the active pill and the label-medium label', async ({ page }) => {
+    const pill = await page
+      .locator('#below-active')
+      .evaluate((el) => getComputedStyle(el, '::after').backgroundColor);
+    expect(pill).toBe(matSys('secondary-container'));
+    expect(await computedValue(page, '#below-active', 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(await computedValue(page, '#below-rest', 'font-size')).toBe(
+      matSysExtra('label-medium-size'),
+    );
+  });
+
+  test('the header slot paints the container-low surface and the outline-variant edge', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#rail-header', 'background-color')).toBe(
+      matSys('surface-container-low'),
+    );
+    expect(await computedValue(page, '#rail-header', 'border-bottom-color')).toBe(
+      matSys('outline-variant'),
+    );
+    expect(await computedValue(page, '#rail-header', 'font-size')).toBe(
+      matSysExtra('title-small-size'),
+    );
+  });
+
+  test('the open flyout paints the menu container, edge and corner', async ({ page }) => {
+    await page.locator('#flyout').evaluate((el) => (el as HTMLElement).showPopover());
+    expect(await computedValue(page, '#flyout', 'background-color')).toBe(
+      matSys('surface-container'),
+    );
+    expect(await computedValue(page, '#flyout', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#flyout', 'border-top-color')).toBe(
+      matSys('outline-variant'),
+    );
+    expect(await computedValue(page, '#flyout', 'border-top-left-radius')).toBe(
+      matSysExtra('corner-medium'),
     );
   });
 });
