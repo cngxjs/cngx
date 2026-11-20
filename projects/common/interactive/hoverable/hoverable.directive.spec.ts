@@ -38,4 +38,24 @@ describe('CngxHoverable', () => {
     expect('set' in ctx.directive.hovered).toBe(false);
     expect('update' in ctx.directive.hovered).toBe(false);
   });
+
+  describe('after a touch contact', () => {
+    function hostEl(): HTMLElement {
+      return ctx.fixture.debugElement.query(By.css('div')).nativeElement as HTMLElement;
+    }
+
+    it('ignores the emulated mouseenter a browser sends after a tap', () => {
+      hostEl().dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'touch' }));
+      hostEl().dispatchEvent(new MouseEvent('mouseenter'));
+      expect(ctx.directive.hovered()).toBe(false);
+    });
+
+    it('hovers again once a mouse pointer enters', () => {
+      hostEl().dispatchEvent(new PointerEvent('pointerdown', { pointerType: 'touch' }));
+      hostEl().dispatchEvent(new MouseEvent('mouseenter'));
+      hostEl().dispatchEvent(new PointerEvent('pointerenter', { pointerType: 'mouse' }));
+      hostEl().dispatchEvent(new MouseEvent('mouseenter'));
+      expect(ctx.directive.hovered()).toBe(true);
+    });
+  });
 });
