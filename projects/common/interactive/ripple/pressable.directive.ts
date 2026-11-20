@@ -44,7 +44,7 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
     '(pointerdown)': 'handlePointerDown()',
     '(pointerup)': 'handlePointerUp()',
     '(pointercancel)': 'handlePointerCancel()',
-    '(pointerleave)': 'handlePointerCancel()',
+    '(pointerleave)': 'handlePointerLeave()',
   },
 })
 export class CngxPressable {
@@ -58,6 +58,9 @@ export class CngxPressable {
   /** Pending timer handle for the delayed release. */
   private releaseTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Whether a pointer is down on the host (between pointerdown and pointerup/cancel). */
+  private pointerDown = false;
+
   constructor() {
     // Cancel any pending release timer on destroy to avoid writing to a dead directive.
     inject(DestroyRef).onDestroy(() => this.clearTimer());
@@ -66,11 +69,14 @@ export class CngxPressable {
   /** @internal - sets pressed state immediately on pointer contact (0ms latency). */
   protected handlePointerDown(): void {
     this.clearTimer();
+    this.pointerDown = true;
     this.pressedState.set(true);
   }
 
   /** @internal - releases after `releaseDelay` ms to prevent flash on quick taps. */
   protected handlePointerUp(): void {
+    this.pointerDown = false;
+    this.clearTimer();
     const delay = this.releaseDelay();
     if (delay > 0) {
       this.releaseTimer = setTimeout(() => this.pressedState.set(false), delay);
@@ -79,10 +85,21 @@ export class CngxPressable {
     }
   }
 
-  /** @internal - immediate release on cancel/leave (no delay). */
+  /** @internal - immediate release on cancel (no delay). */
   protected handlePointerCancel(): void {
+    this.pointerDown = false;
     this.clearTimer();
     this.pressedState.set(false);
+  }
+
+  /**
+   * @internal - leaving with the pointer down cancels the press. On touch,
+   * `pointerleave` follows `pointerup`; the pending delayed release stays.
+   */
+  protected handlePointerLeave(): void {
+    if (this.pointerDown) {
+      this.handlePointerCancel();
+    }
   }
 
   private clearTimer(): void {

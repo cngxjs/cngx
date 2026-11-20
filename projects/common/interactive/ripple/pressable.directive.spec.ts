@@ -80,6 +80,31 @@ describe('CngxPressable', () => {
     expect(dir.pressed()).toBe(false);
   });
 
+  it('keeps the release delay on touch, where pointerleave follows pointerup', () => {
+    const { button, dir } = setup();
+    button.triggerEventHandler('pointerdown');
+    button.triggerEventHandler('pointerup');
+    button.triggerEventHandler('pointerleave');
+    expect(dir.pressed()).toBe(true);
+
+    vi.advanceTimersByTime(80);
+    expect(dir.pressed()).toBe(false);
+  });
+
+  it('keeps one release timer when a second pointerup arrives without a pointerdown', () => {
+    const { button, dir } = setup();
+    button.triggerEventHandler('pointerdown');
+    button.triggerEventHandler('pointerup');
+    vi.advanceTimersByTime(10);
+    // A second finger lifting: no pointerdown in between.
+    button.triggerEventHandler('pointerup');
+    vi.advanceTimersByTime(40);
+    // New press at 50 ms. An orphaned first timer would release it at 80 ms.
+    button.triggerEventHandler('pointerdown');
+    vi.advanceTimersByTime(40);
+    expect(dir.pressed()).toBe(true);
+  });
+
   it('clears pending timer on new pointerdown', () => {
     const { button, dir } = setup();
     button.triggerEventHandler('pointerdown');
