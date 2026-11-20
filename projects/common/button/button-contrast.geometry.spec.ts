@@ -328,35 +328,25 @@ async function m2Secondary(
   return { color, ratio };
 }
 
-describe('secondary button label on a mismatched M2 theme', () => {
-  // Danger on M2 light sits below 4.5:1 on hover and press in its own scheme
-  // too (4.48 / 4.29, tracked separately), so those rows pin that the label
-  // follows the theme type instead of the 4.5:1 floor.
-  const followsType = (tone: string, theme: string, state: string): boolean =>
-    tone === 'danger' && theme === 'light' && state !== 'rest';
-
-  const cases = SCHEME_MISMATCHES.flatMap(({ theme, scheme }) =>
-    M2_TONES.flatMap((tone) =>
-      (['rest', 'hover', 'pressed'] as const).map((state) => [tone, theme, scheme, state] as const),
+describe('secondary button label on an M2 theme', () => {
+  const cases = (['light', 'dark'] as const).flatMap((theme) =>
+    (['light', 'dark'] as const).flatMap((scheme) =>
+      M2_TONES.flatMap((tone) =>
+        (['rest', 'hover', 'pressed'] as const).map(
+          (state) => [tone, theme, scheme, state] as const,
+        ),
+      ),
     ),
   );
 
-  it.each(cases.filter(([tone, theme, , state]) => !followsType(tone, theme, state)))(
+  it.each(cases)(
     'secondary %s on M2 %s under a %s scheme clears 4.5:1 at %s',
     async (tone, theme, scheme, state) => {
       const { ratio } = await m2Secondary(tone, theme, scheme, state);
-      expect(ratio, `${tone} / M2 ${theme} / ${state}: ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
-        4.5,
-      );
-    },
-  );
-
-  it.each(cases.filter(([tone, theme, , state]) => followsType(tone, theme, state)))(
-    'secondary %s on M2 %s under a %s scheme paints its own scheme label at %s',
-    async (tone, theme, scheme, state) => {
-      const mismatched = await m2Secondary(tone, theme, scheme, state);
-      const matched = await m2Secondary(tone, theme, theme, state);
-      expect(mismatched.color).toBe(matched.color);
+      expect(
+        ratio,
+        `${tone} / M2 ${theme} / ${state}: ${ratio.toFixed(2)}:1`,
+      ).toBeGreaterThanOrEqual(4.5);
     },
   );
 });
