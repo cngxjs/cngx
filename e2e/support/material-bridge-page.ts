@@ -120,7 +120,15 @@ export function matSys(token: MatSysColorToken): string {
 export const MAT_SYS_EXTRAS = {
   'label-small-size': '11px',
   'label-small-weight': '570',
-  'label-medium-size': '13px',
+  'label-medium-size': '13.5px',
+  'label-medium-weight': '610',
+  'label-large-size': '15px',
+  'title-small-size': '19px',
+  'headline-medium-size': '29px',
+  'headline-medium-weight': '430',
+  'body-medium-size': '16.5px',
+  'body-medium-weight': '380',
+  'corner-medium': '13px',
   'corner-large': '17px',
   level3: '0 7px 9px rgb(7, 8, 9)',
 } as const;
