@@ -1,8 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, Directive, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxAriaExpanded } from './aria-expanded.directive';
+import { CNGX_ARIA_EXPANDED_DRIVER, CngxAriaExpanded } from './aria-expanded.directive';
 
 @Component({
   template: `<button [cngxAriaExpanded]="open()" [controls]="controlsId()">Toggle</button>`,
@@ -45,5 +45,53 @@ describe('CngxAriaExpanded', () => {
     host.controlsId.set('my-panel');
     fixture.detectChanges();
     expect(el.getAttribute('aria-controls')).toBe('my-panel');
+  });
+});
+
+@Component({
+  template: `<button cngxAriaExpanded>Toggle</button>`,
+  imports: [CngxAriaExpanded],
+})
+class BareHost {}
+
+describe('CngxAriaExpanded bare attribute', () => {
+  it('reads the bare attribute as expanded', () => {
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.css('button')).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+const driven = signal<boolean | null>(true);
+
+@Directive({
+  selector: '[testExpandedDriver]',
+  hostDirectives: [{ directive: CngxAriaExpanded, inputs: ['cngxAriaExpanded'] }],
+  providers: [{ provide: CNGX_ARIA_EXPANDED_DRIVER, useExisting: TestExpandedDriver }],
+})
+class TestExpandedDriver {
+  readonly ariaExpanded = driven.asReadonly();
+}
+
+@Component({
+  template: `<button testExpandedDriver [cngxAriaExpanded]="false">Toggle</button>`,
+  imports: [TestExpandedDriver],
+})
+class DriverHost {}
+
+describe('CngxAriaExpanded driver', () => {
+  it('writes the driver value over the input and omits the attribute on null', () => {
+    TestBed.configureTestingModule({ imports: [DriverHost] });
+    const fixture = TestBed.createComponent(DriverHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.css('button')).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-expanded')).toBe('true');
+
+    driven.set(null);
+    fixture.detectChanges();
+    expect(el.hasAttribute('aria-expanded')).toBe(false);
+    driven.set(true);
   });
 });

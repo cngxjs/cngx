@@ -75,6 +75,18 @@ describe('CngxFocusVisible', () => {
     expect(dirA.focusVisible()).toBe(true);
   });
 
+  it('clears the pointer flag after pointercancel so the next Tab-in shows the ring', () => {
+    vi.useFakeTimers();
+    const { buttons, dirA } = setup();
+    // Touch scroll start or an OS gesture cancels the pointer; no pointerup follows.
+    buttons[0].triggerEventHandler('pointerdown');
+    document.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true }));
+    vi.runAllTimers();
+
+    buttons[0].triggerEventHandler('focusin');
+    expect(dirA.focusVisible()).toBe(true);
+  });
+
   it('keeps a touch tap classified as pointer focus (focusin after pointerup)', () => {
     vi.useFakeTimers();
     const { buttons, dirA } = setup();

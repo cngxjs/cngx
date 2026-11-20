@@ -27,6 +27,7 @@ import {
   createHotkeyScope,
   type CngxHotkeyScopeNode,
 } from '@cngx/common/interactive';
+import { CNGX_FOCUSABLE_SELECTOR } from '@cngx/common/a11y';
 import { createScrollLock } from '@cngx/common/layout';
 import { cngxDevWarn } from '@cngx/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
@@ -249,7 +250,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
    * Only applies to modal dialogs.
    *
    * - `'first-focusable'` -- focus the first `[autofocus]` element, or the
-   *   first focusable element in DOM order (default)
+   *   first element in DOM order matching `CNGX_FOCUSABLE_SELECTOR` (default)
    * - `'none'` -- do not move focus
    * - Any CSS selector string -- focus the first element matching the selector
    *
@@ -770,10 +771,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T>, CngxDialogAriaRegi
         return;
       }
 
-      const focusable = dialog.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
-      focusable?.focus();
+      dialog.querySelector<HTMLElement>(CNGX_FOCUSABLE_SELECTOR)?.focus();
     } else {
       const target = dialog.querySelector<HTMLElement>(strategy);
       target?.focus();

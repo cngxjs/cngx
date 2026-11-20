@@ -112,3 +112,43 @@ describe('CngxAutofocus stale schedules', () => {
     }
   });
 });
+
+@Component({
+  template: `<input cngxAutofocus class="target" />`,
+  imports: [CngxAutofocus],
+})
+class BareHost {}
+
+@Component({
+  template: `<input cngxAutofocus [autofocusOptions]="{ preventScroll: true }" class="target" />`,
+  imports: [CngxAutofocus],
+})
+class OptionsHost {}
+
+describe('CngxAutofocus attribute forms', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({ imports: [BareHost, OptionsHost] });
+  });
+
+  it('focuses on the bare attribute', () => {
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    vi.runAllTimers();
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('.target')).nativeElement as HTMLElement;
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('passes autofocusOptions to focus()', () => {
+    const fixture = TestBed.createComponent(OptionsHost);
+    const input = fixture.debugElement.query(By.css('.target')).nativeElement as HTMLElement;
+    const focusSpy = vi.spyOn(input, 'focus');
+    fixture.detectChanges();
+    vi.runAllTimers();
+    fixture.detectChanges();
+
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+  });
+});

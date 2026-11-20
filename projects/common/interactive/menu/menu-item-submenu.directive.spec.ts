@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { CngxLiveAnnouncer } from '@cngx/common/a11y';
 import { CngxPopover } from '@cngx/common/popover';
 
 import { CNGX_MENU_ANNOUNCER_FACTORY, type CngxMenuAnnouncerLike } from './menu-announcer';
@@ -299,6 +300,9 @@ describe('CngxMenuItemSubmenu', () => {
     fixture.destroy();
 
     expect(() => vi.advanceTimersByTime(500)).not.toThrow();
+    // The root announcer holds its last message for a while; its timer is
+    // not the submenu's, so only the submenu's own timers are counted.
+    TestBed.inject(CngxLiveAnnouncer).ngOnDestroy();
     expect(vi.getTimerCount()).toBe(0);
   });
 });

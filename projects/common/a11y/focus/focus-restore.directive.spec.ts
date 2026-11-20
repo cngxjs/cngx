@@ -81,6 +81,27 @@ class InertOwnerHost {
   readonly open = signal(false);
 }
 
+@Component({
+  template: `
+    <button class="trigger">Trigger</button>
+    <button class="elsewhere">Elsewhere</button>
+    <div class="ancestor" tabindex="0">
+      <div class="plain">
+        @if (showPanel()) {
+          <div cngxFocusRestore [restoreOnDestroy]="restoreOnDestroy()">
+            <button class="inside">Inside</button>
+          </div>
+        }
+      </div>
+    </div>
+  `,
+  imports: [CngxFocusRestore],
+})
+class DestroyHost {
+  readonly showPanel = signal(false);
+  readonly restoreOnDestroy = signal(true);
+}
+
 const driverActive = signal(false);
 
 @Directive({
@@ -151,6 +172,91 @@ describe('CngxFocusRestore', () => {
 
       expect(document.activeElement).toBe(q('.elsewhere'));
       (fixture.nativeElement as HTMLElement).remove();
+    });
+  });
+
+  describe('destroy-driven restore', () => {
+    beforeEach(() => TestBed.configureTestingModule({ imports: [DestroyHost] }));
+
+    function setup() {
+      const fixture = TestBed.createComponent(DestroyHost);
+      document.body.appendChild(fixture.nativeElement as HTMLElement);
+      fixture.detectChanges();
+      const q = (sel: string) =>
+        fixture.debugElement.query(By.css(sel)).nativeElement as HTMLElement;
+      const panel = (show: boolean) => {
+        fixture.componentInstance.showPanel.set(show);
+        fixture.detectChanges();
+      };
+      const cleanup = () => (fixture.nativeElement as HTMLElement).remove();
+      return { fixture, q, panel, cleanup };
+    }
+
+    it('keeps focus the user moved outside the host before the destroy', () => {
+      const { q, panel, cleanup } = setup();
+      q('.trigger').focus();
+      panel(true);
+      q('.elsewhere').focus();
+
+      panel(false);
+
+      expect(document.activeElement).toBe(q('.elsewhere'));
+      cleanup();
+    });
+
+    it('restores when focus was inside the host at destroy', () => {
+      const { q, panel, cleanup } = setup();
+      q('.trigger').focus();
+      panel(true);
+      q('.inside').focus();
+
+      panel(false);
+
+      expect(document.activeElement).toBe(q('.trigger'));
+      cleanup();
+    });
+
+    it('does not restore when restoreOnDestroy is false', () => {
+      const { fixture, q, panel, cleanup } = setup();
+      fixture.componentInstance.restoreOnDestroy.set(false);
+      q('.trigger').focus();
+      panel(true);
+      q('.inside').focus();
+
+      panel(false);
+
+      expect(document.activeElement).not.toBe(q('.trigger'));
+      cleanup();
+    });
+
+    it('falls back to the nearest focusable ancestor when the stored element is gone', () => {
+      const { q, panel, cleanup } = setup();
+      const opener = document.createElement('button');
+      document.body.appendChild(opener);
+      opener.focus();
+      panel(true);
+      opener.remove();
+      q('.inside').focus();
+
+      panel(false);
+
+      expect(document.activeElement).toBe(q('.ancestor'));
+      cleanup();
+    });
+
+    it('never targets body when nothing resolves', () => {
+      const { q, panel, cleanup } = setup();
+      q('.ancestor').removeAttribute('tabindex');
+      (document.activeElement as HTMLElement | null)?.blur();
+      panel(true);
+      const focusSpy = vi.spyOn(document.body, 'focus');
+      q('.inside').focus();
+
+      panel(false);
+
+      expect(focusSpy).not.toHaveBeenCalled();
+      focusSpy.mockRestore();
+      cleanup();
     });
   });
 

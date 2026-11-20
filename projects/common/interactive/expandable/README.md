@@ -30,7 +30,7 @@ Uncontrolled, toggled via a sibling button:
 </div>
 ```
 
-Controlled by a tree controller. The bound input wins over internal state:
+Controlled by a tree controller. `[expanded]` is a `model()`, so `[(expanded)]` binds it two-way:
 
 ```html
 <div role="tree" aria-label="Files">
@@ -38,7 +38,7 @@ Controlled by a tree controller. The bound input wins over internal state:
     role="treeitem"
     aria-level="1"
     cngxExpandable
-    [cngxExpandableOpen]="ctrl.isExpanded(id)()"
+    [expanded]="ctrl.isExpanded(id)()"
     [controls]="childrenId"
   >
     <button type="button" tabindex="-1" (click)="ctrl.toggle(id)">▸</button>
@@ -50,11 +50,11 @@ Controlled by a tree controller. The bound input wins over internal state:
 
 ## Accessibility
 
-Two host attributes, both derived from inputs:
+Two host attributes, written by the composed `CngxAriaExpanded`:
 
 | Attribute | Source |
 |-|-|
-| `aria-expanded` | `expanded()` (always present, `true` or `false`) |
+| `aria-expanded` | `expanded()`, omitted when `[leaf]` is set |
 | `aria-controls` | `controls()` when set, otherwise omitted |
 
 No keyboard handling. The directive is passive by design: in a `treeitem` row, clicks / Enter / Space belong to the selection flow, and expand/collapse is wired to ArrowLeft/Right by the surrounding nav directive or to a dedicated twisty button. Owners of the controlled content are responsible for hiding it (`[hidden]`, `@if`, or DOM removal) so screen readers do not announce collapsed subtrees.

@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxExpandable: Controlled by external state',
-  subtitle: 'Bind <code>[cngxExpandableOpen]</code> to a parent signal; the directive\'s internal state is bypassed and the host <code>aria-expanded</code> mirrors the bound value, so several rows can coordinate from a shared source.',
-  description: 'When the parent owns the expansion state (typically a <code>CngxTreeController</code>, a Map of expanded keys, or a URL-driven state slice), bind <code>[cngxExpandableOpen]</code> to that signal. The directive\'s <code>expanded</code> computed resolves the controlled input first and falls back to internal state only when the input is <code>undefined</code>. A flat toggle button drives the consumer signal directly; the directive\'s host <code>aria-expanded</code> mirrors it. Useful when several rows must coordinate (e.g. accordion with single-open enforcement, tree with persisted expansion across navigation).',
+  subtitle: 'Bind <code>[expanded]</code> to a parent signal; the host <code>aria-expanded</code> mirrors the bound value, so several rows can coordinate from a shared source.',
+  description: 'When the parent owns the expansion state (typically a <code>CngxTreeController</code>, a Map of expanded keys, or a URL-driven state slice), bind <code>[expanded]</code> to that signal, or <code>[(expanded)]</code> when the directive\'s own <code>expand()</code> / <code>collapse()</code> should write back. A flat toggle button drives the consumer signal directly; the directive\'s host <code>aria-expanded</code> mirrors it. Useful when several rows must coordinate (e.g. accordion with single-open enforcement, tree with persisted expansion across navigation).',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -45,7 +45,7 @@ export const STORY: DemoSpec = {
           role="treeitem"
           aria-level="1"
           cngxExpandable
-          [cngxExpandableOpen]="isExpanded(row)"
+          [expanded]="isExpanded(row)"
           [controls]="row + '-content'"
           style="display:flex; align-items:center; gap:8px"
         >
