@@ -80,20 +80,12 @@ export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('Cngx
 });
 
 /**
- * Branded feature-fn for {@link provideLayoutI18n}.
+ * A label override feature of `provideLayoutI18n`.
  *
  * @since 0.1.0
+ * @relatedTo CNGX_LAYOUT_I18N, withLayoutI18nLabels
  */
-export type CngxLayoutI18nFeature = ((bundle: Signal<CngxLayoutI18n>) => Signal<CngxLayoutI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineLayoutI18nFeature(
-  fn: (bundle: Signal<CngxLayoutI18n>) => Signal<CngxLayoutI18n>,
-): CngxLayoutI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxLayoutI18nFeature = (bundle: Signal<CngxLayoutI18n>) => Signal<CngxLayoutI18n>;
 
 /**
  * Override layout labels via a partial bundle - unset keys keep the
@@ -105,7 +97,7 @@ function defineLayoutI18nFeature(
 export function withLayoutI18nLabels(
   overrides: Partial<CngxLayoutI18n> | Signal<Partial<CngxLayoutI18n>>,
 ): CngxLayoutI18nFeature {
-  return defineLayoutI18nFeature((bundle) => createOverrideMerge(bundle, overrides));
+  return (bundle) => createOverrideMerge(bundle, overrides);
 }
 
 /**
