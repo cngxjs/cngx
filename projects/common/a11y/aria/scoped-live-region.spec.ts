@@ -71,6 +71,24 @@ describe('injectScopedLiveRegion', () => {
     expect(host.querySelector('span[aria-live]')).toBeNull();
   });
 
+  it('ignores announce() and ensure() after the host was destroyed', () => {
+    const { fixture, host, region } = setup();
+    fixture.destroy();
+    region.ensure();
+    region.announce('late');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(host.querySelector('span[aria-live]')).toBeNull();
+  });
+
+  it('recreates the regions after a manual destroy()', () => {
+    const { region, inHost } = setup();
+    region.ensure();
+    region.destroy();
+    region.announce('again');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS);
+    expect(inHost('polite')?.textContent).toBe('again');
+  });
+
   it('is a no-op on the server', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: PLATFORM_ID, useValue: 'server' }],
