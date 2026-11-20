@@ -112,6 +112,19 @@ class BlockingDialogHost {
   readonly dialog = viewChild.required(CngxDialog);
 }
 
+@Component({
+  template: `
+    <dialog cngxDialog #dlg="cngxDialog">
+      <fieldset disabled><button id="fieldset-disabled">Locked</button></fieldset>
+      <button id="enabled">Enabled</button>
+    </dialog>
+  `,
+  imports: [CngxDialog],
+})
+class DisabledFieldsetHost {
+  readonly dialog = viewChild.required(CngxDialog);
+}
+
 function setup<T>(hostType: new () => T) {
   const fixture = TestBed.createComponent(hostType);
   fixture.detectChanges();
@@ -205,6 +218,17 @@ describe('CngxDialog', () => {
       dialog.open();
       dialog.open(); // second call
       expect(dialogEl.showModal).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('first-focusable', () => {
+    it('skips a control disabled by its fieldset', () => {
+      const { fixture, dialogEl } = setup(DisabledFieldsetHost);
+      document.body.appendChild(fixture.nativeElement as HTMLElement);
+      openFully(fixture, dialogEl);
+
+      expect(document.activeElement?.id).toBe('enabled');
+      (fixture.nativeElement as HTMLElement).remove();
     });
   });
 
