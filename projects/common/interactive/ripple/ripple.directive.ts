@@ -1,8 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angular/core';
 
-import { createMediaQuerySignal } from '@cngx/core/utils';
-
 /**
  * Touch/click ripple feedback without Material dependency.
  *
@@ -19,6 +17,10 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * at zero specificity, so a host that is already positioned keeps its own value.
  *
  * Ships default styles in `cngx-ripple.css` (part of `@cngx/themes/cngx.css`).
+ * Reduced motion is the stylesheet's call, not the directive's: the wave is
+ * always created, and under the app motion axis (`provideMotion`,
+ * `cngxMotionScope`) or the OS preference it fades in place instead of
+ * expanding.
  *
  * ### Button with ripple
  * ```html
@@ -34,7 +36,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  *
  * ### Disable ripple
  * ```html
- * <button cngxRipple [rippleDisabled]="isReducedMotion()">Click</button>
+ * <button cngxRipple [rippleDisabled]="readOnly()">Click</button>
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/ripple.directive.ts
@@ -72,11 +74,6 @@ export class CngxRipple {
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly prefersReducedMotion = createMediaQuerySignal(
-    '(prefers-reduced-motion: reduce)',
-    this.destroyRef,
-    this.doc.defaultView,
-  );
 
   /**
    * Cleanups of waves whose animation has not finished yet. Flushed on
@@ -116,7 +113,7 @@ export class CngxRipple {
 
   /** @internal */
   protected handlePointerDown(event: PointerEvent): void {
-    if (this.disabled() || this.prefersReducedMotion()) {
+    if (this.disabled()) {
       return;
     }
 

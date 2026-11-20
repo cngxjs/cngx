@@ -21,9 +21,10 @@
  * `--cngx-ripple-duration` and fades opacity from
  * `--cngx-ripple-opacity` to 0.
  *
- * Under `prefers-reduced-motion: reduce` the keyframe is suppressed
- * and the wave appears as a static tint that fades on opacity
- * transition only.
+ * Under reduced motion (`[data-motion='reduced']` on an ancestor, or
+ * `prefers-reduced-motion: reduce` without a root `data-motion='full'`)
+ * the wave skips the expansion: it appears at full size and fades
+ * with `cngx-ripple-fade` over the same duration.
  *
  * **Per-instance geometry**
  *
@@ -118,13 +119,30 @@
       );
       animation: cngx-ripple-expand var(--cngx-ripple-duration, 0.5s) ease-out forwards;
     }
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      :scope {
-        animation: none;
-        opacity: var(--cngx-ripple-opacity, 0.12);
-        transition: opacity var(--cngx-duration-fast, 150ms) ease;
-      }
+  /* Reduced motion follows the same axis as the safety net in
+     motion-tokens.css: a [data-motion='reduced'] ancestor (provideMotion,
+     cngxMotionScope), or the OS preference unless the root opts back in with
+     data-motion='full'. The wave appears at full size and only fades, so
+     animationend still removes it. */
+  [data-motion='reduced'] .cngx-ripple__wave {
+    animation-name: cngx-ripple-fade;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .cngx-ripple__wave {
+      animation-name: cngx-ripple-fade;
+    }
+  }
+
+  @keyframes cngx-ripple-fade {
+    0% {
+      opacity: var(--cngx-ripple-opacity, 0.12);
+    }
+
+    100% {
+      opacity: 0;
     }
   }
 

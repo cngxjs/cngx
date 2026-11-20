@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createMatchMediaMock } from '@cngx/testing';
 import { CngxRipple } from './ripple.directive';
 
 @Component({
@@ -163,5 +164,17 @@ describe('CngxRipple', () => {
     const wave = host.querySelector('.cngx-ripple__wave') as HTMLElement;
     expect(wave.style.getPropertyValue('--cngx-ripple-x')).toBe('50px');
     expect(wave.style.getPropertyValue('--cngx-ripple-y')).toBe('25px');
+  });
+
+  it('still renders a wave under OS reduced motion; CSS owns the reduced visual', () => {
+    const media = createMatchMediaMock(true);
+    media.install(window);
+    try {
+      const { host } = setup();
+      host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+      expect(host.querySelector('.cngx-ripple__wave')).not.toBeNull();
+    } finally {
+      media.restore(window);
+    }
   });
 });

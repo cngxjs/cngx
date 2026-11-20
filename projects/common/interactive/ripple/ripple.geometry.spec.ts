@@ -155,3 +155,59 @@ describe('CngxRipple token cascade', () => {
     expect(wave.getPropertyValue('--cngx-ripple-color').trim()).toBe('rgb(0, 0, 255)');
   });
 });
+
+// Reduced motion follows the app axis in CSS: under a [data-motion='reduced']
+// ancestor the wave skips the expand keyframe, appears at full size and only
+// fades, and the fade's animationend removes it (no 1s fallback wait).
+
+@Component({
+  selector: 'cngx-ripple-motion-host',
+  standalone: true,
+  imports: [CngxRipple],
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-ripple.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div [attr.data-motion]="motion()">
+      <div
+        cngxRipple
+        class="host"
+        style="inline-size: 100px; block-size: 40px; --cngx-ripple-duration: 40ms"
+      ></div>
+    </div>
+  `,
+})
+class MotionHost {
+  readonly motion = signal<'reduced' | null>(null);
+}
+
+describe('CngxRipple reduced motion', () => {
+  function pressIn(motion: 'reduced' | null): HTMLElement {
+    const fixture = TestBed.createComponent(MotionHost);
+    fixture.componentInstance.motion.set(motion);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const host = mountedRoot.querySelector<HTMLElement>('.host');
+    if (!host) {
+      throw new Error('.host did not render');
+    }
+    host.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }));
+    return host;
+  }
+
+  it('expands the wave without a motion pick', () => {
+    const wave = pressIn(null).querySelector('.cngx-ripple__wave');
+    expect(wave && getComputedStyle(wave).animationName).toBe('cngx-ripple-expand');
+  });
+
+  it('fades the wave in place under data-motion="reduced"', () => {
+    const wave = pressIn('reduced').querySelector('.cngx-ripple__wave');
+    expect(wave && getComputedStyle(wave).animationName).toBe('cngx-ripple-fade');
+  });
+
+  it('removes the reduced wave when its fade ends', async () => {
+    const host = pressIn('reduced');
+    await new Promise((done) => setTimeout(done, 300));
+    expect(host.querySelector('.cngx-ripple__wave')).toBeNull();
+  });
+});
