@@ -5,10 +5,10 @@ import { computed, type DestroyRef, InjectionToken, signal, type Signal } from '
  * active flag, linked to its enclosing scope.
  *
  * A modal scope (an open modal dialog, an engaged drawer overlay) blocks
- * every `'global'` binding outside it while focus is inside it. An inactive
- * scope (a closed dialog whose children stay in the DOM) mutes every binding
- * registered in it or in a descendant scope: they never fire and are not
- * listed. The app scope is implicit (`document.documentElement`) and has no
+ * every `'global'` binding outside it while focus is inside it or has dropped
+ * to the body. An inactive scope (a closed dialog whose children stay in the
+ * DOM) mutes every binding registered in it or in a descendant scope: they
+ * never fire and are not listed. The app scope is implicit (`document.documentElement`) and has no
  * node.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
@@ -74,6 +74,9 @@ const SCOPES_BY_ELEMENT = new WeakMap<Element, CngxHotkeyScopeNode[]>();
 // The index is not a signal; reading this makes a scope created or released
 // later invalidate a computed that walked the chain (the help listing).
 const scopesVersion = signal(0);
+// Scopes created with a modal flag, for a press that lands outside every
+// scope while a modal is open (focus dropped to the body).
+const MODAL_CAPABLE_SCOPES = new Set<CngxHotkeyScopeNode>();
 
 /**
  * Creates a hotkey scope node for a region and makes it visible to keypress
@@ -107,12 +110,39 @@ export function createHotkeyScope(options: CngxHotkeyScopeOptions): CngxHotkeySc
   // Raw index reads: a scope created during a view's render must not track the version it bumps.
   SCOPES_BY_ELEMENT.set(node.element, [...(SCOPES_BY_ELEMENT.get(node.element) ?? []), node]);
   scopesVersion.update((v) => v + 1);
+  if (options.modal !== undefined) {
+    MODAL_CAPABLE_SCOPES.add(node);
+  }
   options.destroyRef?.onDestroy(() => {
+    MODAL_CAPABLE_SCOPES.delete(node);
     const rest = (SCOPES_BY_ELEMENT.get(node.element) ?? []).filter((s) => s !== node);
     SCOPES_BY_ELEMENT.set(node.element, rest);
     scopesVersion.update((v) => v + 1);
   });
   return node;
+}
+
+/**
+ * @internal The open modal scope a press outside every scope resolves against:
+ * the deepest connected, unmuted scope whose modal flag is set, the last
+ * created among equals; `null` when no modal is open. A scope whose element
+ * left the document is dropped from the index.
+ */
+export function openModalHotkeyScope(): CngxHotkeyScopeNode | null {
+  let found: CngxHotkeyScopeNode | null = null;
+  for (const scope of MODAL_CAPABLE_SCOPES) {
+    if (!scope.element.isConnected) {
+      MODAL_CAPABLE_SCOPES.delete(scope);
+      continue;
+    }
+    if (!scope.modal() || scope.muted()) {
+      continue;
+    }
+    if (found === null || depthOf(scope) >= depthOf(found)) {
+      found = scope;
+    }
+  }
+  return found;
 }
 
 /** Live scopes of an element, in creation order; reactive to scope churn. */

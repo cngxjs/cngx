@@ -185,6 +185,11 @@ export const appConfig: ApplicationConfig = {
               path: 'data',
               loadComponent: () => import('./material-lab/data/lab-data').then((m) => m.LabData),
             },
+            {
+              path: 'overlay-nav',
+              loadComponent: () =>
+                import('./material-lab/overlay-nav/lab-overlay-nav').then((m) => m.LabOverlayNav),
+            },
           ],
         },
         ...routes,

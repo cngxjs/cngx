@@ -13,6 +13,8 @@ import { cngxDevWarn } from '@cngx/utils';
 import { injectWindow } from '@cngx/core/tokens';
 import {
   createKeyedRegistry,
+  isComposingKeydown,
+  isTextEntryTarget,
   type KeyCombo,
   matchesKeyCombo,
   nextUid,
@@ -23,6 +25,7 @@ import type { CngxHotkeyBinding, CngxHotkeyRef, CngxHotkeyRegistration } from '.
 import { parseHotkeyCombo } from './hotkey-combo';
 import {
   CNGX_HOTKEY_SCOPE,
+  openModalHotkeyScope,
   resolveHotkeyScopeChain,
   type CngxHotkeyScopeNode,
 } from './hotkey-scope';
@@ -134,33 +137,14 @@ interface HotkeyEntry {
 interface Candidate {
   readonly binding: CngxHotkeyBinding;
   readonly rank: number;
+  /** Only the modal on the chain keeps it from firing: swallowed, never run. */
+  readonly cut: boolean;
 }
 
-const TEXT_INPUT_TYPES = new Set(['text', 'search', 'email', 'url', 'tel', 'password', 'number']);
 const FUNCTION_KEY = /^f([1-9]|1\d|2[0-4])$/;
-const EDITABLE = '[contenteditable]:not([contenteditable="false"])';
-const TEXT_ROLES = '[role="textbox"], [role="searchbox"]';
 
 function read<T>(value: T | Signal<T>): T {
   return isSignal(value) ? value() : value;
-}
-
-function isTextEntry(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) {
-    return false;
-  }
-  const tag = target.tagName;
-  if (tag === 'TEXTAREA' || tag === 'SELECT') {
-    return true;
-  }
-  if (tag === 'INPUT') {
-    return TEXT_INPUT_TYPES.has((target as HTMLInputElement).type);
-  }
-  return (
-    (target as HTMLElement).isContentEditable === true ||
-    target.matches(TEXT_ROLES) ||
-    target.closest(EDITABLE) !== null
-  );
 }
 
 /** Cheap pre-check on the press: nothing else can pass `firesInTextEntry`. */
@@ -226,7 +210,7 @@ function sameGroups(a: readonly CngxHotkeyGroup[], b: readonly CngxHotkeyGroup[]
 
 // Module scope on purpose: the production build drops an unused top-level
 // function with its cngxDevWarn import, but not one nested in a closure.
-/** Dev-only checks of a binding's current combo at registration. */
+/** Dev-only checks of a binding's combo, run once per id and combo pair. */
 function warnRegistration(
   binding: CngxHotkeyBinding,
   combo: KeyCombo | null,
@@ -292,16 +276,21 @@ function warnTie(
  *
  * 1. A registration whose scope or an ancestor scope is inactive is muted.
  * 2. The chain is every scope containing `event.target`, innermost first, cut
- *    after the first modal one.
+ *    after the first modal one. A press on the body (focus dropped out of an
+ *    open modal) resolves against the deepest open modal scope instead.
  * 3. A binding fires when its combo matches, `enabled()` is true, and its
  *    reach allows it: `'focus'` needs its scope on the chain, `'global'`
  *    needs no modal on the chain or its scope inside the innermost modal.
  * 4. The deeper scope on the chain wins; among equals the last registration.
+ * 5. A matching binding that only the modal keeps from firing is swallowed:
+ *    its event is `preventDefault()`ed and nothing runs, so the browser
+ *    default (Save page on `mod+s`) stays away too. A disabled binding, a
+ *    muted scope and an unbound combo leave the default alone.
  *
- * Inside a text field (text-like `input`, `textarea`, `select`,
- * `contenteditable`, `role="textbox"` / `"searchbox"`, also inside a shadow
- * root) only combos with `ctrl`, `meta` or `mod`, function keys
- * and `escape` fire. Events the page already handled (`defaultPrevented`),
+ * Inside a text field (`isTextEntryTarget`: an `input` of a text, number,
+ * date or time type, `textarea`, `select`, `contenteditable`,
+ * `role="textbox"` / `"searchbox"`, also inside a shadow root) only combos
+ * with `ctrl`, `meta` or `mod`, function keys and `escape` fire. Events the page already handled (`defaultPrevented`),
  * IME composition and auto-repeat (unless `allowRepeat`) are skipped. A
  * fired binding gets a `preventDefault()`ed event.
  *
@@ -321,6 +310,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   const parsed = new Map<string, KeyCombo | null>();
   const lastGroups = new WeakMap<Element, readonly CngxHotkeyGroup[]>();
   const warnedTies = new Set<string>();
+  const checkedCombos = new Set<string>();
   let listening = false;
   let destroyed = false;
 
@@ -332,8 +322,32 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     return parsed.get(combo) ?? null;
   }
 
+  /**
+   * Dev-only: diagnoses a binding's current combo once per id and combo pair.
+   * Runs at registration and on a key press, so a Signal combo remapped later
+   * is diagnosed on the next press; never from the reactive listing.
+   */
+  function checkCombo(binding: CngxHotkeyBinding): void {
+    const raw = read(binding.combo);
+    const seen = `${binding.id}\u0000${raw}`;
+    if (checkedCombos.has(seen)) {
+      return;
+    }
+    checkedCombos.add(seen);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnRegistration(binding, comboOf(binding), isMac);
+    }
+  }
+
+  // Focus that dropped out of an open modal (window switch, removed focused
+  // node) lands on the body; the modal still owns the keyboard then.
   function contextOf(target: EventTarget | null): Element {
-    return target instanceof Element ? target : doc.documentElement;
+    const outsideEveryScope =
+      !(target instanceof Element) || target === doc.body || target === doc.documentElement;
+    if (!outsideEveryScope) {
+      return target;
+    }
+    return openModalHotkeyScope()?.element ?? doc.documentElement;
   }
 
   /** Every live candidate for a context, with its precedence rank. */
@@ -348,8 +362,13 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
       const rank = rankOf(entry.scope, chain);
       for (const binding of entry.source()) {
         const enabled = binding.enabled?.() ?? true;
-        if (enabled && reaches(binding, entry.scope, chain, modal)) {
-          out.push({ binding, rank });
+        if (!enabled) {
+          continue;
+        }
+        if (reaches(binding, entry.scope, chain, modal)) {
+          out.push({ binding, rank, cut: false });
+        } else if (modal !== null && reaches(binding, entry.scope, chain, null)) {
+          out.push({ binding, rank, cut: true });
         }
       }
     }
@@ -363,20 +382,24 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   }
 
   function resolveKeydown(event: KeyboardEvent): void {
-    if (event.defaultPrevented || event.isComposing) {
+    if (event.defaultPrevented || isComposingKeydown(event)) {
       return;
     }
     // At the document a shadow-DOM press is retargeted to its host; the
     // composed path still starts at the field the user types in.
     const target = event.composedPath()[0] ?? event.target;
-    const inText = isTextEntry(target);
+    const inText = isTextEntryTarget(target);
     if (inText && !mayFireInTextEntry(event)) {
       return;
     }
     let winner: Candidate | null = null;
     let tied: CngxHotkeyBinding[] = [];
+    let swallowed = false;
     for (const candidate of candidates(contextOf(target))) {
       const { binding } = candidate;
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        checkCombo(binding);
+      }
       if (event.repeat && !binding.allowRepeat) {
         continue;
       }
@@ -385,6 +408,10 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
         continue;
       }
       if (!matchesKeyCombo(event, combo, isMac)) {
+        continue;
+      }
+      if (candidate.cut) {
+        swallowed = true;
         continue;
       }
       if (winner === null || candidate.rank < winner.rank) {
@@ -402,6 +429,11 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
       }
       event.preventDefault();
       winner.binding.run(event);
+      return;
+    }
+    // The app owns the combo; a modal blocking it must not hand it to the browser.
+    if (swallowed) {
+      event.preventDefault();
     }
   }
 
@@ -430,7 +462,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     registrations.register(key, entry);
     syncListener();
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      untracked(source).forEach((binding) => warnRegistration(binding, comboOf(binding), isMac));
+      untracked(source).forEach((binding) => checkCombo(binding));
     }
     return {
       unregister: () => {
@@ -445,7 +477,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     const winners = new Map<string, Candidate>();
     for (const candidate of candidates(element)) {
       const { binding } = candidate;
-      if (binding.description === undefined || comboOf(binding) === null) {
+      if (candidate.cut || binding.description === undefined || comboOf(binding) === null) {
         continue;
       }
       const held = winners.get(binding.id);

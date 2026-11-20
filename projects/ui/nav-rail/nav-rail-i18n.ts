@@ -38,22 +38,12 @@ export const CNGX_NAV_RAIL_I18N = new InjectionToken<Signal<CngxNavRailI18n>>('C
 });
 
 /**
- * Branded feature-fn for {@link provideNavRailI18n}.
+ * A label override feature of `provideNavRailI18n`.
  *
  * @since 0.3.0
+ * @relatedTo CNGX_NAV_RAIL_I18N, withNavRailI18nLabels
  */
-export type CngxNavRailI18nFeature = ((
-  bundle: Signal<CngxNavRailI18n>,
-) => Signal<CngxNavRailI18n>) & {
-  readonly _target: 'i18n';
-};
-
-/** @internal */
-function defineNavRailI18nFeature(
-  fn: (bundle: Signal<CngxNavRailI18n>) => Signal<CngxNavRailI18n>,
-): CngxNavRailI18nFeature {
-  return Object.assign(fn, { _target: 'i18n' as const });
-}
+export type CngxNavRailI18nFeature = (bundle: Signal<CngxNavRailI18n>) => Signal<CngxNavRailI18n>;
 
 /**
  * Override i18n labels via a partial bundle - unset keys, and keys set to
@@ -66,7 +56,7 @@ function defineNavRailI18nFeature(
 export function withNavRailI18nLabels(
   overrides: Partial<CngxNavRailI18n> | Signal<Partial<CngxNavRailI18n>>,
 ): CngxNavRailI18nFeature {
-  return defineNavRailI18nFeature((bundle) => createFilledOverrideMerge(bundle, overrides));
+  return (bundle) => createFilledOverrideMerge(bundle, overrides);
 }
 
 /**

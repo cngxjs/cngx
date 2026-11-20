@@ -5,7 +5,8 @@ import { DestroyRef, Directive, inject, input } from '@angular/core';
  * Prevents accidental page navigation when there are unsaved changes.
  *
  * Sets a `beforeunload` event handler that shows the browser's native
- * confirmation dialog when `enabled` is `true`. Does NOT integrate with
+ * confirmation dialog when `enabled` is `true` (`preventDefault()` plus the
+ * legacy `returnValue`, so older Chromium prompts too). Does NOT integrate with
  * the Angular Router - for route guard protection, use `canDeactivateWhenClean()`.
  *
  * ### Protect a form
@@ -18,7 +19,11 @@ import { DestroyRef, Directive, inject, input } from '@angular/core';
  * ### Combined with route guard
  * ```typescript
  * // In route config:
- * { path: 'edit', component: EditComponent, canDeactivate: [canDeactivateWhenClean(() => editForm.dirty())] }
+ * {
+ *   path: 'edit',
+ *   component: EditComponent,
+ *   canDeactivate: [canDeactivateWhenClean((page: EditComponent) => page.editForm.dirty())],
+ * }
  *
  * // In template:
  * <form [cngxBeforeUnload]="editForm.dirty()">…</form>
@@ -47,6 +52,9 @@ export class CngxBeforeUnload {
     const handler = (event: BeforeUnloadEvent) => {
       if (this.enabled()) {
         event.preventDefault();
+        // Chromium before 119 ignores preventDefault() here and only prompts
+        // on a truthy legacy returnValue.
+        event.returnValue = true;
       }
     };
 

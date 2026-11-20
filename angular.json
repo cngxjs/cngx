@@ -339,6 +339,11 @@
                 "input": "examples/src/app/material-lab/data/lab-data.scss",
                 "bundleName": "material-lab-data-theme",
                 "inject": false
+              },
+              {
+                "input": "examples/src/app/material-lab/overlay-nav/lab-overlay-nav.scss",
+                "bundleName": "material-lab-overlay-nav-theme",
+                "inject": false
               }
             ]
           },
@@ -370,6 +375,12 @@
                 {
                   "type": "bundle",
                   "name": "material-lab-data-theme",
+                  "maximumWarning": "24kB",
+                  "maximumError": "32kB"
+                },
+                {
+                  "type": "bundle",
+                  "name": "material-lab-overlay-nav-theme",
                   "maximumWarning": "24kB",
                   "maximumError": "32kB"
                 }

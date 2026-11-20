@@ -51,12 +51,27 @@ describe('CngxSearch', () => {
   });
 
   it('clear() resets term to empty and emits', () => {
-    const { dir } = setup();
+    vi.useFakeTimers();
+    const { el, dir } = setup();
+    el.nativeElement.value = 'term';
+    el.nativeElement.dispatchEvent(new Event('input'));
+    vi.runAllTimers();
     const spy = vi.fn();
     dir.searchChange.subscribe(spy);
     dir.clear();
     expect(dir.term()).toBe('');
+    expect(el.nativeElement.value).toBe('');
     expect(spy).toHaveBeenCalledWith('');
+  });
+
+  it('clear() emits nothing when the term is already empty', () => {
+    const { el, dir } = setup();
+    el.nativeElement.value = 'typed, not committed';
+    const spy = vi.fn();
+    dir.searchChange.subscribe(spy);
+    dir.clear();
+    expect(spy).not.toHaveBeenCalled();
+    expect(el.nativeElement.value).toBe('');
   });
 
   it('clear cancels a pending debounce', () => {
@@ -73,7 +88,8 @@ describe('CngxSearch', () => {
     dir.clear();
     vi.advanceTimersByTime(300);
     expect(dir.term()).toBe('');
-    expect(spy.mock.calls).toEqual([['']]);
+    // The pending term never reached `term`, so the empty term did not change.
+    expect(spy).not.toHaveBeenCalled();
   });
 
   describe('flush and cancel', () => {
