@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angular/core';
+import { computed, DestroyRef, Directive, ElementRef, inject, input, signal } from '@angular/core';
 
 /**
  * Touch/click ripple feedback without Material dependency.
@@ -67,9 +67,9 @@ export class CngxRipple {
   /** Whether the ripple effect is disabled. */
   readonly disabled = input<boolean>(false, { alias: 'rippleDisabled' });
 
-  private readonly activeState = signal(false);
-  /** Whether a ripple animation is currently playing. */
-  readonly active = this.activeState.asReadonly();
+  private readonly liveWaves = signal(0);
+  /** Whether a ripple animation is currently playing (any of overlapping waves). */
+  readonly active = computed(() => this.liveWaves() > 0);
 
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly doc = inject(DOCUMENT);
@@ -113,7 +113,8 @@ export class CngxRipple {
 
   /** @internal */
   protected handlePointerDown(event: PointerEvent): void {
-    if (this.disabled()) {
+    // Primary button only: a right-click opens a context menu, not a press.
+    if (this.disabled() || event.button !== 0) {
       return;
     }
 
@@ -153,7 +154,7 @@ export class CngxRipple {
     }
 
     this.ensureContainer(host).appendChild(wave);
-    this.activeState.set(true);
+    this.liveWaves.update((n) => n + 1);
 
     // Remove after animation completes - guard against double-invocation
     let cleaned = false;
@@ -165,7 +166,7 @@ export class CngxRipple {
       this.pendingCleanups.delete(cleanup);
       clearTimeout(fallbackTimer);
       wave.remove();
-      this.activeState.set(false);
+      this.liveWaves.update((n) => n - 1);
     };
     this.pendingCleanups.add(cleanup);
 

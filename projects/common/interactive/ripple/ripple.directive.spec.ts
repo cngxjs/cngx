@@ -177,4 +177,21 @@ describe('CngxRipple', () => {
       media.restore(window);
     }
   });
+
+  it('does not ripple on a non-primary button', () => {
+    const { host } = setup();
+    host.dispatchEvent(new PointerEvent('pointerdown', { button: 2, clientX: 50, clientY: 25 }));
+    expect(host.querySelector('.cngx-ripple__wave')).toBeNull();
+  });
+
+  it('stays active until the last of overlapping waves ends', () => {
+    const { host, dir } = setup();
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 50, clientY: 25 }));
+    host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+    const [first, second] = Array.from(host.querySelectorAll('.cngx-ripple__wave'));
+    first.dispatchEvent(new Event('animationend'));
+    expect(dir.active()).toBe(true);
+    second.dispatchEvent(new Event('animationend'));
+    expect(dir.active()).toBe(false);
+  });
 });
