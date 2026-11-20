@@ -181,6 +181,10 @@ export const appConfig: ApplicationConfig = {
               loadComponent: () =>
                 import('./material-lab/display/lab-display').then((m) => m.LabDisplay),
             },
+            {
+              path: 'data',
+              loadComponent: () => import('./material-lab/data/lab-data').then((m) => m.LabData),
+            },
           ],
         },
         ...routes,

@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 const LAB_PAGES = [
   { path: '/material-lab', label: 'Forms and overlays', exact: true },
   { path: '/material-lab/display', label: 'Display', exact: false },
+  { path: '/material-lab/data', label: 'Data', exact: false },
 ] as const;
 
 /**
