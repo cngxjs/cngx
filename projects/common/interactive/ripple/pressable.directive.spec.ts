@@ -114,4 +114,58 @@ describe('CngxPressable', () => {
     vi.advanceTimersByTime(80);
     expect(dir.pressed()).toBe(true); // still pressed from second press
   });
+
+  describe('keyboard', () => {
+    @Component({
+      template: `<div cngxPressable role="button" tabindex="0"><input class="inner" /></div>`,
+      imports: [CngxPressable],
+    })
+    class KeyHost {}
+
+    function setupKey() {
+      const fixture = TestBed.createComponent(KeyHost);
+      fixture.detectChanges();
+      const host = fixture.debugElement.query(By.css('[role=button]'));
+      const dir = host.injector.get(CngxPressable);
+      const el = host.nativeElement as HTMLElement;
+      const key = (type: 'keydown' | 'keyup', k: string, init: KeyboardEventInit = {}, target: HTMLElement = el) =>
+        target.dispatchEvent(new KeyboardEvent(type, { key: k, bubbles: true, ...init }));
+      return { fixture, el, dir, key };
+    }
+
+    it('presses while Space is held on the host', () => {
+      const { dir, key } = setupKey();
+      key('keydown', ' ');
+      expect(dir.pressed()).toBe(true);
+      key('keyup', ' ');
+      vi.advanceTimersByTime(80);
+      expect(dir.pressed()).toBe(false);
+    });
+
+    it('presses on Enter until keyup', () => {
+      const { dir, key } = setupKey();
+      key('keydown', 'Enter');
+      expect(dir.pressed()).toBe(true);
+      key('keyup', 'Enter');
+      vi.advanceTimersByTime(80);
+      expect(dir.pressed()).toBe(false);
+    });
+
+    it('ignores keys from a descendant control', () => {
+      const { el, dir, key } = setupKey();
+      const input = el.querySelector<HTMLElement>('.inner');
+      if (!input) {
+        throw new Error('no inner input');
+      }
+      key('keydown', ' ', {}, input);
+      expect(dir.pressed()).toBe(false);
+    });
+
+    it('releases on blur while a key is held', () => {
+      const { el, dir, key } = setupKey();
+      key('keydown', ' ');
+      el.dispatchEvent(new FocusEvent('blur'));
+      expect(dir.pressed()).toBe(false);
+    });
+  });
 });
