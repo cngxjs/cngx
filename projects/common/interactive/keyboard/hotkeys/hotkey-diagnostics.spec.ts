@@ -93,7 +93,7 @@ describe('hotkey registry diagnostics', () => {
     );
   });
 
-  it('warns for a combo remapped after registration, once per binding and combo', () => {
+  it('warns for a combo remapped after registration on the next press, never from the listing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const combo = signal('mod+s');
     const registry = makeRegistry();
@@ -104,10 +104,11 @@ describe('hotkey registry diagnostics', () => {
     expect(codes(warn)).toEqual([]);
 
     combo.set('mod+w');
-    pressCtrlS();
-    pressCtrlS();
     registry.liveGroupsFor(null);
+    expect(codes(warn)).toEqual([]);
 
+    pressCtrlS();
+    pressCtrlS();
     expect(codes(warn)).toEqual(['CNGX1078']);
   });
 

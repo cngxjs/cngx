@@ -13,6 +13,7 @@ import { cngxDevWarn } from '@cngx/utils';
 import { injectWindow } from '@cngx/core/tokens';
 import {
   createKeyedRegistry,
+  isComposingKeydown,
   isTextEntryTarget,
   type KeyCombo,
   matchesKeyCombo,
@@ -280,8 +281,8 @@ function warnTie(
  *
  * Inside a text field (`isTextEntryTarget`: an `input` of a text, number,
  * date or time type, `textarea`, `select`, `contenteditable`,
- * `role="textbox"` / `"searchbox"`, also inside a shadow root) only combos with `ctrl`, `meta` or `mod`, function keys
- * and `escape` fire. Events the page already handled (`defaultPrevented`),
+ * `role="textbox"` / `"searchbox"`, also inside a shadow root) only combos
+ * with `ctrl`, `meta` or `mod`, function keys and `escape` fire. Events the page already handled (`defaultPrevented`),
  * IME composition and auto-repeat (unless `allowRepeat`) are skipped. A
  * fired binding gets a `preventDefault()`ed event.
  *
@@ -310,17 +311,24 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     if (!parsed.has(combo)) {
       parsed.set(combo, parseHotkeyCombo(combo));
     }
-    const result = parsed.get(combo) ?? null;
-    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      // Checked on first sight of each id and combo pair, so a Signal combo
-      // remapped after registration is diagnosed too.
-      const seen = `${binding.id}\u0000${combo}`;
-      if (!checkedCombos.has(seen)) {
-        checkedCombos.add(seen);
-        warnRegistration(binding, result, isMac);
-      }
+    return parsed.get(combo) ?? null;
+  }
+
+  /**
+   * Dev-only: diagnoses a binding's current combo once per id and combo pair.
+   * Runs at registration and on a key press, so a Signal combo remapped later
+   * is diagnosed on the next press; never from the reactive listing.
+   */
+  function checkCombo(binding: CngxHotkeyBinding): void {
+    const raw = read(binding.combo);
+    const seen = `${binding.id}\u0000${raw}`;
+    if (checkedCombos.has(seen)) {
+      return;
     }
-    return result;
+    checkedCombos.add(seen);
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      warnRegistration(binding, comboOf(binding), isMac);
+    }
   }
 
   function contextOf(target: EventTarget | null): Element {
@@ -354,7 +362,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   }
 
   function resolveKeydown(event: KeyboardEvent): void {
-    if (event.defaultPrevented || event.isComposing) {
+    if (event.defaultPrevented || isComposingKeydown(event)) {
       return;
     }
     // At the document a shadow-DOM press is retargeted to its host; the
@@ -368,6 +376,9 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     let tied: CngxHotkeyBinding[] = [];
     for (const candidate of candidates(contextOf(target))) {
       const { binding } = candidate;
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        checkCombo(binding);
+      }
       if (event.repeat && !binding.allowRepeat) {
         continue;
       }
@@ -421,7 +432,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     registrations.register(key, entry);
     syncListener();
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      untracked(source).forEach((binding) => comboOf(binding));
+      untracked(source).forEach((binding) => checkCombo(binding));
     }
     return {
       unregister: () => {

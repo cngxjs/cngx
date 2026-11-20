@@ -250,6 +250,7 @@ describe('createHotkeyRegistry', () => {
       registry.register(source(save), null);
 
       press(document, 's', { ctrlKey: true, isComposing: true });
+      press(document, 's', { ctrlKey: true, keyCode: 229 });
 
       expect(save.run).not.toHaveBeenCalled();
     });
