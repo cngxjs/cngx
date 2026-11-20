@@ -116,6 +116,37 @@ describe('CngxSwipeDismiss', () => {
     expect(dir.swiping()).toBe(false);
   });
 
+  it('ignores a non-primary button', () => {
+    const { el, dir, host } = setup();
+    el.dispatchEvent(
+      new PointerEvent('pointerdown', { button: 2, clientX: 200, clientY: 100, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointermove', { clientX: 100, clientY: 100, bubbles: true }),
+    );
+    expect(dir.swiping()).toBe(false);
+    document.dispatchEvent(
+      new PointerEvent('pointerup', { clientX: 100, clientY: 100, bubbles: true }),
+    );
+    expect(host.swiped).not.toHaveBeenCalled();
+  });
+
+  it('does not emit when disabled mid-gesture', () => {
+    const { fixture, el, host } = setup();
+    el.dispatchEvent(
+      new PointerEvent('pointerdown', { clientX: 200, clientY: 100, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointermove', { clientX: 100, clientY: 100, bubbles: true }),
+    );
+    host.enabled.set(false);
+    fixture.detectChanges();
+    document.dispatchEvent(
+      new PointerEvent('pointerup', { clientX: 100, clientY: 100, bubbles: true }),
+    );
+    expect(host.swiped).not.toHaveBeenCalled();
+  });
+
   it('advertises touch-action derived from the dismiss direction', () => {
     const { el } = setup();
     // Horizontal dismiss hands vertical panning back to the browser.
