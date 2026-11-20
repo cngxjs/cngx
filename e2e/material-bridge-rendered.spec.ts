@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { expect, test, type Page } from '@playwright/test';
 
 import {
@@ -1405,5 +1408,407 @@ test.describe('material-bridge rendered values: file-drop', () => {
 
   test('a zone with files paints the tertiary edge', async ({ page }) => {
     expect(await computedValue(page, '#drop-done', 'border-top-color')).toBe(matSys('tertiary'));
+  });
+});
+
+/**
+ * The chart layers ship their read rules as inline `styles` in the component
+ * source, not as a stylesheet. Loaded verbatim from the source so the fixture
+ * reads the shipped rules, never a copy.
+ */
+function inlineComponentStyles(path: string): string {
+  const source = readFileSync(resolve(__dirname, '..', path), 'utf8');
+  const match = /styles:\s*\[\s*`([\s\S]*?)`/.exec(source);
+  if (!match) {
+    throw new Error(`no inline styles in ${path}`);
+  }
+  return match[1];
+}
+
+test.describe('material-bridge rendered values: chart', () => {
+  const CHART_CSS = ['projects/common/chart/chart-tokens.css'] as const;
+  const LAYER_CSS = [
+    'projects/common/chart/chart/chart.component.ts',
+    'projects/common/chart/axis/axis.component.ts',
+    'projects/common/chart/layers/line.component.ts',
+    'projects/common/chart/layers/bar.component.ts',
+  ]
+    .map(inlineComponentStyles)
+    .join('\n');
+  const BRIDGE_CSS = compileBridge('chart-theme');
+  // Plays the system bridge's success rung, which a color-scheme Material
+  // theme leaves at the core value (themes-accepted-debt §4).
+  const CORE_SUCCESS = 'rgb(211, 212, 213)';
+
+  const CHART_HTML = `<style>:root { --cngx-color-success: ${CORE_SUCCESS}; }</style>
+<cngx-chart id="chart">
+  <svg width="200" height="100">
+    <g class="cngx-axis">
+      <line id="axis-line" class="cngx-axis__line" x1="0" y1="0" x2="100" y2="0"></line>
+      <text id="tick-label" class="cngx-axis__tick-label" x="0" y="20">10</text>
+      <line id="grid-line" class="cngx-axis__grid-line" x1="0" y1="40" x2="100" y2="40"></line>
+    </g>
+    <path id="line" class="cngx-line" d="M0 0 L10 10"></path>
+    <rect id="bar" class="cngx-bar" width="10" height="10"></rect>
+  </svg>
+  <div id="fallback-error" class="cngx-chart__fallback cngx-chart__fallback--error">Error</div>
+</cngx-chart>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: CHART_CSS, bridgeCss: BRIDGE_CSS, html: CHART_HTML });
+    await page.addStyleTag({ content: LAYER_CSS });
+  });
+
+  test('the axis paints the variant ink, the text ink and the outline-variant grid', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#axis-line', 'stroke')).toBe(matSys('on-surface-variant'));
+    expect(await computedValue(page, '#tick-label', 'fill')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#grid-line', 'stroke')).toBe(matSys('outline-variant'));
+  });
+
+  test('line and bar paint primary, the error fallback paints error', async ({ page }) => {
+    expect(await computedValue(page, '#line', 'stroke')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#bar', 'fill')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#fallback-error', 'color')).toBe(matSys('error'));
+  });
+
+  test('the success series keeps the core success rung', async ({ page }) => {
+    // The bridge maps no success role; the series must follow the system
+    // rung, not a Material stand-in.
+    expect(await computedValue(page, '#chart', '--cngx-chart-success')).toBe(CORE_SUCCESS);
+  });
+});
+
+test.describe('material-bridge rendered values: chart-panel', () => {
+  const PANEL_CSS = ['projects/ui/chart-panel/chart-panel.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('chart-panel-theme');
+
+  const PANEL_HTML = `
+<cngx-chart-panel id="panel" class="cngx-chart-panel">
+  <h3 class="cngx-chart-panel__title">Revenue</h3>
+  <span id="panel-subtitle" class="cngx-chart-panel__subtitle">Quarterly</span>
+  <div id="panel-footer" class="cngx-chart-panel__footer">Source: ledger</div>
+</cngx-chart-panel>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: PANEL_CSS, bridgeCss: BRIDGE_CSS, html: PANEL_HTML });
+  });
+
+  test('the panel paints the surface, its edge and the text ink', async ({ page }) => {
+    expect(await computedValue(page, '#panel', 'background-color')).toBe(matSys('surface'));
+    expect(await computedValue(page, '#panel', 'border-top-color')).toBe(matSys('outline-variant'));
+    expect(await computedValue(page, '#panel', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('subtitle and footer paint the variant ink', async ({ page }) => {
+    expect(await computedValue(page, '#panel-subtitle', 'color')).toBe(
+      matSys('on-surface-variant'),
+    );
+    expect(await computedValue(page, '#panel-footer', 'color')).toBe(matSys('on-surface-variant'));
+  });
+});
+
+test.describe('material-bridge rendered values: metric', () => {
+  const METRIC_CSS = ['projects/common/data/display/metric/metric.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('metric-theme');
+
+  const METRIC_HTML = `
+<cngx-metric class="cngx-metric">
+  <span id="metric-value" class="cngx-metric__value">1.2</span>
+  <span id="metric-unit" class="cngx-metric__unit">M EUR</span>
+</cngx-metric>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: METRIC_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: METRIC_HTML,
+    });
+  });
+
+  test('the value paints on-surface on the headline-medium scale', async ({ page }) => {
+    expect(await computedValue(page, '#metric-value', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#metric-value', 'font-size')).toBe(
+      matSysExtra('headline-medium-size'),
+    );
+    expect(await computedValue(page, '#metric-value', 'font-weight')).toBe(
+      matSysExtra('headline-medium-weight'),
+    );
+  });
+
+  test('the unit paints the variant ink on the body-medium scale', async ({ page }) => {
+    expect(await computedValue(page, '#metric-unit', 'color')).toBe(matSys('on-surface-variant'));
+    expect(await computedValue(page, '#metric-unit', 'font-size')).toBe(
+      matSysExtra('body-medium-size'),
+    );
+    expect(await computedValue(page, '#metric-unit', 'font-weight')).toBe(
+      matSysExtra('body-medium-weight'),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: stat-card', () => {
+  const STAT_CSS = ['projects/ui/stat-card/stat-card.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('stat-card-theme');
+
+  const STAT_HTML = `
+<cngx-stat-card class="cngx-stat-card">
+  <div class="cngx-stat-card__stat cngx-stat-card__stat--skeleton">
+    <span id="stat-bone" class="cngx-stat-card__skeleton-line cngx-stat-card__skeleton-line--value"></span>
+  </div>
+  <div class="cngx-stat-card__error cngx-empty-state">
+    <span id="stat-error-icon" class="cngx-stat-card__error-icon"></span>
+  </div>
+  <div id="stat-stale" class="cngx-stat-card__stale">
+    <span id="stat-glyph" class="cngx-stat-card__stale-glyph"></span>Showing last known value
+  </div>
+  <div id="stat-footer" class="cngx-stat-card__footer">Updated now</div>
+</cngx-stat-card>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: STAT_CSS, bridgeCss: BRIDGE_CSS, html: STAT_HTML });
+  });
+
+  test('the footer paints the variant ink', async ({ page }) => {
+    expect(await computedValue(page, '#stat-footer', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('error and stale states paint the error set', async ({ page }) => {
+    expect(await computedValue(page, '#stat-error-icon', 'color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#stat-stale', 'color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#stat-glyph', 'background-color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#stat-glyph', 'color')).toBe(matSys('on-error'));
+  });
+
+  test('the loading bone paints surface-variant', async ({ page }) => {
+    expect(await computedValue(page, '#stat-bone', 'background-color')).toBe(
+      matSys('surface-variant'),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: delta', () => {
+  const DELTA_CSS = ['projects/common/data/display/delta/delta.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('delta-theme');
+
+  const DELTA_HTML = `
+<cngx-delta id="delta-up" class="cngx-delta cngx-delta--positive">+5.3%</cngx-delta>
+<cngx-delta id="delta-down" class="cngx-delta cngx-delta--negative">-2.1%</cngx-delta>
+<cngx-delta id="delta-flat" class="cngx-delta cngx-delta--neutral">0.0%</cngx-delta>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: DELTA_CSS, bridgeCss: BRIDGE_CSS, html: DELTA_HTML });
+  });
+
+  test('every sentiment paints its Material role', async ({ page }) => {
+    // The positive rung is mapped to tertiary by the bridge, not left on the
+    // core success text rung.
+    expect(await computedValue(page, '#delta-up', 'color')).toBe(matSys('tertiary'));
+    expect(await computedValue(page, '#delta-down', 'color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#delta-flat', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('the figure sits on the label-medium scale', async ({ page }) => {
+    expect(await computedValue(page, '#delta-up', 'font-size')).toBe(
+      matSysExtra('label-medium-size'),
+    );
+    expect(await computedValue(page, '#delta-up', 'font-weight')).toBe(
+      matSysExtra('label-medium-weight'),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: trend', () => {
+  const TREND_CSS = ['projects/common/data/display/trend/trend.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('trend-theme');
+
+  const TREND_HTML = `
+<cngx-trend id="trend-up" class="cngx-trend cngx-trend--up">+5.3%</cngx-trend>
+<cngx-trend id="trend-down" class="cngx-trend cngx-trend--down">-2.1%</cngx-trend>
+<cngx-trend id="trend-flat" class="cngx-trend">0.0%</cngx-trend>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: TREND_CSS, bridgeCss: BRIDGE_CSS, html: TREND_HTML });
+  });
+
+  test('up, down and flat paint their Material roles', async ({ page }) => {
+    expect(await computedValue(page, '#trend-up', 'color')).toBe(matSys('tertiary'));
+    expect(await computedValue(page, '#trend-down', 'color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#trend-flat', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('the figure sits on the label-medium scale', async ({ page }) => {
+    expect(await computedValue(page, '#trend-up', 'font-size')).toBe(
+      matSysExtra('label-medium-size'),
+    );
+    expect(await computedValue(page, '#trend-up', 'font-weight')).toBe(
+      matSysExtra('label-medium-weight'),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: goal', () => {
+  const GOAL_CSS = ['projects/common/data/display/goal/goal.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('goal-theme');
+
+  const GOAL_HTML = `
+<cngx-goal class="cngx-goal" style="--cngx-goal-fill: 73%">
+  <span id="goal-track" class="cngx-goal__track"><span id="goal-fill" class="cngx-goal__fill"></span></span>
+</cngx-goal>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: GOAL_CSS, bridgeCss: BRIDGE_CSS, html: GOAL_HTML });
+  });
+
+  test('the track paints surface-variant and the fill primary', async ({ page }) => {
+    expect(await computedValue(page, '#goal-track', 'background-color')).toBe(
+      matSys('surface-variant'),
+    );
+    expect(await computedValue(page, '#goal-fill', 'background-color')).toBe(matSys('primary'));
+  });
+});
+
+test.describe('material-bridge rendered values: treetable', () => {
+  const TREETABLE_CSS = ['projects/data-display/treetable/treetable.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('treetable-theme');
+
+  const TREETABLE_HTML = `
+<cngx-treetable class="cngx-treetable">
+  <cdk-table>
+    <cdk-header-row id="tt-header"><cdk-header-cell id="tt-header-cell">Unit</cdk-header-cell></cdk-header-row>
+    <cdk-row id="tt-row"><cdk-cell id="tt-cell">Platform</cdk-cell></cdk-row>
+    <cdk-row id="tt-hover" class="cngx-treetable__row--highlighted"><cdk-cell>Runtime</cdk-cell></cdk-row>
+    <cdk-row id="tt-selected" class="cngx-treetable__row--selected"><cdk-cell>Tooling</cdk-cell></cdk-row>
+  </cdk-table>
+</cngx-treetable>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: TREETABLE_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: TREETABLE_HTML,
+    });
+  });
+
+  test('header, cells and row edge paint their Material roles', async ({ page }) => {
+    expect(await computedValue(page, '#tt-header', 'background-color')).toBe(
+      matSys('surface-container'),
+    );
+    expect(await computedValue(page, '#tt-header-cell', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#tt-cell', 'color')).toBe(matSys('on-surface'));
+    expect(await computedValue(page, '#tt-row', 'border-bottom-color')).toBe(
+      matSys('outline-variant'),
+    );
+  });
+
+  test('the highlighted and selected rows paint the state layers', async ({ page }) => {
+    expect(await computedValue(page, '#tt-hover', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('on-surface')} 4%, transparent)`),
+    );
+    expect(await computedValue(page, '#tt-selected', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('primary')} 12%, transparent)`),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: incremental-list', () => {
+  const LIST_CSS = ['projects/ui/collection/incremental-list.component.css'] as const;
+  const BRIDGE_CSS = compileBridge('incremental-list-theme');
+
+  const LIST_HTML = `
+<cngx-incremental-list id="list-card" class="cngx-incremental-list" data-skin="card">
+  <div class="cngx-incremental-list__items">
+    <div id="list-item" class="cngx-incremental-list__item">Ada</div>
+    <div class="cngx-incremental-list__item">Grace</div>
+  </div>
+  <p id="list-message" class="cngx-incremental-list__message">All 2 loaded</p>
+</cngx-incremental-list>
+<cngx-incremental-list class="cngx-incremental-list" data-skin="plain">
+  <div class="cngx-incremental-list__inline-error">
+    <span id="list-error" class="cngx-incremental-list__error-text">Could not load</span>
+    <button id="list-retry" type="button" class="cngx-incremental-list__retry">Retry</button>
+  </div>
+</cngx-incremental-list>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, { componentCss: LIST_CSS, bridgeCss: BRIDGE_CSS, html: LIST_HTML });
+  });
+
+  test('the card skin paints the surface, the divider and the text ink', async ({ page }) => {
+    expect(await computedValue(page, '#list-card', 'background-color')).toBe(matSys('surface'));
+    expect(await computedValue(page, '#list-card', 'border-top-color')).toBe(
+      matSys('outline-variant'),
+    );
+    expect(await computedValue(page, '#list-item', 'border-bottom-color')).toBe(
+      matSys('outline-variant'),
+    );
+    expect(await computedValue(page, '#list-card', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('message, error and retry paint their Material roles', async ({ page }) => {
+    expect(await computedValue(page, '#list-message', 'color')).toBe(matSys('on-surface-variant'));
+    expect(await computedValue(page, '#list-error', 'color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#list-retry', 'color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#list-retry', 'border-top-color')).toBe(matSys('outline'));
+  });
+});
+
+test.describe('material-bridge rendered values: filter-builder', () => {
+  const BUILDER_CSS = [
+    'projects/forms/filter-builder/filter-builder.component.css',
+    'projects/forms/filter-builder/filter-builder-row.component.css',
+  ] as const;
+  const BRIDGE_CSS = compileBridge('filter-builder-theme');
+
+  const BUILDER_HTML = `
+<cngx-filter-builder id="builder">
+  <p id="fb-empty" class="cngx-filter-builder__empty">No filters defined</p>
+  <cngx-filter-row>
+    <span class="cngx-filter-expression-incomplete"><input id="fb-incomplete" cngxInput /></span>
+  </cngx-filter-row>
+  <div id="fb-negated" class="cngx-filter-builder__group cngx-filter-group-negated"></div>
+  <button id="fb-add" type="button" class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-filter">Add filter</button>
+  <button id="fb-remove" type="button" class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove">Remove</button>
+</cngx-filter-builder>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: BUILDER_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: BUILDER_HTML,
+    });
+  });
+
+  test('the empty note paints the variant ink', async ({ page }) => {
+    expect(await computedValue(page, '#fb-empty', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('the action button paints the primary ink and the outline-variant edge', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#fb-add', 'color')).toBe(matSys('primary'));
+    expect(await computedValue(page, '#fb-add', 'border-top-color')).toBe(
+      matSys('outline-variant'),
+    );
+  });
+
+  test('hover paints the container surface', async ({ page }) => {
+    await page.hover('#fb-add');
+    expect(await computedValue(page, '#fb-add', 'background-color')).toBe(
+      matSys('surface-container'),
+    );
+  });
+
+  test('an incomplete expression paints the tertiary edge', async ({ page }) => {
+    expect(await computedValue(page, '#fb-incomplete', 'border-bottom-color')).toBe(
+      matSys('tertiary'),
+    );
+  });
+
+  test('a negated group paints the outline-variant edge', async ({ page }) => {
+    expect(await computedValue(page, '#fb-negated', 'border-left-color')).toBe(
+      matSys('outline-variant'),
+    );
   });
 });
