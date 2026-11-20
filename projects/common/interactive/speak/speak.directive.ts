@@ -1,6 +1,5 @@
 import { DOCUMENT } from '@angular/common';
 import {
-  afterNextRender,
   DestroyRef,
   Directive,
   effect,
@@ -9,7 +8,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { CNGX_LOCALE, injectLocale } from '@cngx/core/utils';
+import { CNGX_LOCALE, createTransitionTracker, injectLocale } from '@cngx/core/utils';
 
 /** Angular's `LOCALE_ID` when the app provides none. */
 const IMPLICIT_LOCALE_ID = 'en-US';
@@ -21,8 +20,8 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * assistance, or convenience. Not a screen reader replacement (use
  * `CngxLiveRegion` for ARIA live regions).
  *
- * The directive is purely behavioral: it exposes `speaking()` and `supported()`
- * signals plus `speak()` / `cancel()` methods. The consumer renders their own
+ * The directive is purely behavioral: it exposes the `speaking()` signal, the
+ * `supported` flag and `speak()` / `cancel()` / `toggle()` methods. The consumer renders their own
  * UI (button, icon, link) and calls the methods via the template reference.
  *
  * Pair with `CngxSpeakButton` (`@cngx/ui`) for a ready-made speaker button.
@@ -34,6 +33,10 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  *   <button (click)="tts.toggle()">{{ tts.speaking() ? 'Stop' : 'Listen' }}</button>
  * </p>
  * ```
+ *
+ * The value bound at mount is a baseline and is never spoken on its own; only
+ * a later change to a non-empty value auto-speaks. A change to an empty value
+ * stops this directive's own speech.
  *
  * ### Auto-speak on dynamic value change
  * ```html
@@ -70,7 +73,11 @@ const IMPLICIT_LOCALE_ID = 'en-US';
   standalone: true,
 })
 export class CngxSpeak {
-  /** Text to speak. When `enabled` is `true`, speech triggers on every change to a non-empty value. */
+  /**
+   * Text to speak. When `enabled` is `true`, speech triggers on every later
+   * change to a non-empty value; the mount value is never auto-spoken. A
+   * change to an empty value cancels this directive's own utterance.
+   */
   readonly text = input.required<string>({ alias: 'cngxSpeak' });
 
   /** Speech rate (0.1–10, default 1). */
@@ -97,13 +104,18 @@ export class CngxSpeak {
   // Without a provided CNGX_LOCALE this reads the nearest LOCALE_ID.
   private readonly locale = injectLocale();
   private readonly documentElement = inject(DOCUMENT).documentElement;
-  /** Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()`. */
+  /**
+   * Controls auto-speak on text changes. Does NOT affect `speak()` or
+   * `cancel()`, and re-enabling does not speak a text that changed while
+   * disabled.
+   */
   readonly enabled = input(true);
 
   private readonly speakingState = signal(false);
   private readonly supportedState: boolean;
   private readonly synth: SpeechSynthesis | null;
-  private readonly initialized = signal(false);
+  // Mount value is the baseline: previous === current until the text changes.
+  private readonly textTransition = createTransitionTracker(() => this.text());
 
   // Retains the in-flight utterance: Chrome garbage-collects unreferenced
   // utterances mid-speech and then never fires their onend/onerror, which
@@ -124,16 +136,23 @@ export class CngxSpeak {
     this.supportedState = !!this.synth;
     this.supported = this.supportedState;
 
-    afterNextRender(() => this.initialized.set(true));
-
     effect(() => {
-      const value = this.text();
-      if (!this.initialized() || !value || !this.enabled() || !this.synth) {
+      const value = this.textTransition.current();
+      if (value === this.textTransition.previous()) {
         return;
       }
-      // untracked: rate/pitch/volume/lang are per-utterance parameters read
-      // inside performSpeak - a parameter change must not re-speak the text.
-      untracked(() => this.performSpeak(value));
+      // untracked: `enabled` gates a text change, it is not a trigger itself -
+      // re-enabling must not speak a text that changed while disabled. The
+      // per-utterance parameters read in performSpeak must not re-speak either.
+      untracked(() => {
+        if (!value) {
+          this.cancelOwn();
+          return;
+        }
+        if (this.enabled() && this.synth) {
+          this.performSpeak(value);
+        }
+      });
     });
 
     inject(DestroyRef).onDestroy(() => this.cancelOwn());
@@ -156,9 +175,9 @@ export class CngxSpeak {
     this.cancelOwn();
   }
 
-  /** Toggle speech: speak text if idle, cancel if speaking. */
+  /** Toggle speech: speak text if idle, cancel an own utterance that is queued or speaking. */
   toggle(): void {
-    if (this.speakingState()) {
+    if (this.activeUtterance) {
       this.cancel();
     } else {
       const text = this.text();
