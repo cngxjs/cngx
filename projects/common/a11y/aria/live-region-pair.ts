@@ -4,6 +4,12 @@ import type { AriaLivePoliteness } from './live-announcer';
 // repeated identical string still registers as a content change for the SR.
 const CLEAR_DELAY_MS = 16;
 
+// How long a written message stays in its region before it is cleared. A
+// screen reader takes the text when the change event fires, so the clear is
+// silent; it stops a stale message from being read by browsing to the end
+// of the document, or after a route change.
+const HOLD_MS = 7000;
+
 /**
  * A message whose write into its live region has not landed yet.
  */
@@ -42,7 +48,8 @@ interface PendingWrite {
  * @internal Browser only: callers guard the server path. Each region is a
  * visually hidden `aria-live` + `aria-atomic="true"` span (the attribute
  * contract of `CngxLiveRegion`), created lazily on the first announce of its
- * politeness or by `ensure()`.
+ * politeness or by `ensure()`. A written message is cleared again after a
+ * hold, so the region never keeps stale text.
  *
  * `redirect` is asked when a write is due: returning `true` means the caller
  * took the message elsewhere (its container stopped being readable while the
@@ -60,6 +67,18 @@ export function createLiveRegionPair(
   const pending: Record<AriaLivePoliteness, PendingWrite | null> = {
     polite: null,
     assertive: null,
+  };
+  const holds: Record<AriaLivePoliteness, ReturnType<typeof setTimeout> | null> = {
+    polite: null,
+    assertive: null,
+  };
+
+  const cancelHold = (politeness: AriaLivePoliteness): void => {
+    const hold = holds[politeness];
+    if (hold !== null) {
+      clearTimeout(hold);
+      holds[politeness] = null;
+    }
   };
 
   const ensureRegion = (politeness: AriaLivePoliteness): HTMLElement => {
@@ -102,6 +121,7 @@ export function createLiveRegionPair(
       // keep independent timers so one politeness never cancels the other.
       region.textContent = '';
       cancel(politeness);
+      cancelHold(politeness);
       pending[politeness] = {
         message,
         timer: setTimeout(() => {
@@ -110,6 +130,10 @@ export function createLiveRegionPair(
             return;
           }
           region.textContent = message;
+          holds[politeness] = setTimeout(() => {
+            holds[politeness] = null;
+            region.textContent = '';
+          }, HOLD_MS);
         }, delayMs),
       };
     },
@@ -131,6 +155,7 @@ export function createLiveRegionPair(
     destroy() {
       for (const politeness of POLITENESS) {
         cancel(politeness);
+        cancelHold(politeness);
         regions[politeness]?.remove();
         regions[politeness] = null;
       }

@@ -54,7 +54,9 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  * change to a region inserted a frame earlier), and reused thereafter. Because polite and assertive live in separate fixed-
  * politeness nodes, an assertive announcement never clobbers a concurrent
  * polite one. Per region, the text is cleared and re-set one frame later so an
- * identical consecutive message is still re-read by the screen reader.
+ * identical consecutive message is still re-read by the screen reader. A
+ * written message is cleared again after 7 s, so no stale text stays in the
+ * region; a test that runs all timers reads the text before that.
  *
  * A modal dialog hides everything outside it from assistive technology, so a
  * body region is silent while one is open. Pass the announcing element as the
