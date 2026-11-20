@@ -1490,6 +1490,25 @@ describe('CngxActiveDescendant - compareWith', () => {
     expect(dir.activeIndex()).toBe(2);
   });
 
+  it('highlightByValue finds an equal value through compareWith', () => {
+    const { dir } = setupRows(byId);
+    dir.highlightByValue({ id: 2 } as Row);
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(1);
+  });
+
+  it('resolves a deferred by-value highlight through compareWith once rows render', () => {
+    const { fixture, dir } = setupRows(byId);
+    fixture.componentInstance.rows.set([]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    dir.highlightByValue({ id: 3 } as Row);
+    fixture.componentInstance.rows.set(rowItems());
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dir.activeIndex()).toBe(2);
+  });
+
   it('drops the highlight under the default Object.is', () => {
     const { fixture, dir } = setupRows();
     dir.highlightByIndex(0);
@@ -1529,6 +1548,47 @@ describe('CngxActiveDescendant - keyboard hygiene', () => {
     TestBed.flushEffects();
     expect(dir.activeItem()).toBeNull();
     expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('prevents the page scroll for Home / End deferred while no row is rendered', () => {
+    const { fixture } = setup();
+    fixture.componentInstance.options.set([]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    for (const k of ['Home', 'End']) {
+      const event = new KeyboardEvent('keydown', { key: k, cancelable: true });
+      container.triggerEventHandler('keydown', event);
+      expect(event.defaultPrevented, k).toBe(true);
+    }
+  });
+
+  it('drops the highlight when its item turns disabled', () => {
+    const { fixture, dir } = setup();
+    dir.highlightByValue('b');
+    TestBed.flushEffects();
+    expect(dir.activeItem()?.value).toBe('b');
+
+    fixture.componentInstance.options.update((opts) =>
+      opts.map((o) => (o.value === 'b' ? { ...o, disabled: true } : o)),
+    );
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(dir.activeItem()).toBeNull();
+  });
+
+  it('leaves a key a nested widget already handled alone', () => {
+    const { fixture, dir } = setup();
+    dir.highlightFirst();
+    TestBed.flushEffects();
+    const container = fixture.debugElement.query(By.directive(CngxActiveDescendant));
+    const event = new KeyboardEvent('keydown', { key: 'ArrowDown', cancelable: true });
+    event.preventDefault();
+    container.triggerEventHandler('keydown', event);
+    TestBed.flushEffects();
+    expect(dir.activeItem()?.value).toBe('a');
   });
 
   it('drops the active state, not just the display, when its item leaves the list', () => {
@@ -1769,6 +1829,107 @@ describe('CngxActiveDescendant - Enter and Space ownership', () => {
     const event = press(byTestId('div-host'), 'Enter');
     expect(event.defaultPrevented).toBe(true);
     expect(spy).toHaveBeenCalledWith('a');
+  });
+});
+
+
+describe('CngxActiveDescendant - editable host and IME composition', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [SpaceKeyHost] });
+  });
+
+  function setupEditable() {
+    const fixture = TestBed.createComponent(SpaceKeyHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const byTestId = (id: string): HTMLElement =>
+      root.querySelector(`[data-testid="${id}"]`) as HTMLElement;
+    const adOf = (id: string): CngxActiveDescendant =>
+      fixture.debugElement
+        .query(By.css(`[data-testid="${id}"]`))
+        .injector.get(CngxActiveDescendant);
+    const press = (el: HTMLElement, key: string, init: KeyboardEventInit = {}): KeyboardEvent => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
+      el.dispatchEvent(event);
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      return event;
+    };
+    return { byTestId, adOf, press };
+  }
+
+  for (const hostId of ['input-host', 'textarea-host']) {
+    it(`lets printable keys reach the ${hostId} instead of typeahead`, () => {
+      const { byTestId, adOf, press } = setupEditable();
+      const ad = adOf(hostId);
+      expect(press(byTestId(hostId), 'b').defaultPrevented).toBe(false);
+      expect(ad.activeItem()).toBeNull();
+    });
+
+    it(`lets Space type into the ${hostId} while an item is active`, () => {
+      const { byTestId, adOf, press } = setupEditable();
+      const ad = adOf(hostId);
+      const spy = vi.fn<(v: unknown) => void>();
+      ad.activated.subscribe(spy);
+      ad.highlightByValue('a');
+      TestBed.flushEffects();
+
+      expect(press(byTestId(hostId), ' ').defaultPrevented).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it(`leaves Home / End to the caret of the ${hostId}`, () => {
+      const { byTestId, adOf, press } = setupEditable();
+      const ad = adOf(hostId);
+      ad.highlightByValue('a');
+      TestBed.flushEffects();
+
+      expect(press(byTestId(hostId), 'End').defaultPrevented).toBe(false);
+      expect(ad.activeItem()?.value).toBe('a');
+      expect(press(byTestId(hostId), 'Home').defaultPrevented).toBe(false);
+      expect(ad.activeItem()?.value).toBe('a');
+    });
+  }
+
+  it('keeps arrows and Enter on an input host (combobox)', () => {
+    const { byTestId, adOf, press } = setupEditable();
+    const ad = adOf('input-host');
+    const spy = vi.fn<(v: unknown) => void>();
+    ad.activated.subscribe(spy);
+
+    expect(press(byTestId('input-host'), 'ArrowDown').defaultPrevented).toBe(true);
+    expect(ad.activeItem()?.value).toBe('a');
+    expect(press(byTestId('input-host'), 'Enter').defaultPrevented).toBe(true);
+    expect(spy).toHaveBeenCalledWith('a');
+  });
+
+  for (const init of [{ isComposing: true }, { keyCode: 229 }] as KeyboardEventInit[]) {
+    it(`ignores every key of an IME composition (${JSON.stringify(init)})`, () => {
+      const { byTestId, adOf, press } = setupEditable();
+      const ad = adOf('input-host');
+      const spy = vi.fn<(v: unknown) => void>();
+      ad.activated.subscribe(spy);
+      ad.highlightByValue('a');
+      TestBed.flushEffects();
+
+      expect(press(byTestId('input-host'), 'Enter', init).defaultPrevented).toBe(false);
+      expect(press(byTestId('input-host'), 'ArrowDown', init).defaultPrevented).toBe(false);
+      expect(spy).not.toHaveBeenCalled();
+      expect(ad.activeItem()?.value).toBe('a');
+    });
+  }
+
+  it('skips a date field nested in the host', () => {
+    const { byTestId, adOf, press } = setupEditable();
+    const ad = adOf('div-host');
+    const date = document.createElement('input');
+    date.type = 'date';
+    byTestId('div-host').appendChild(date);
+
+    expect(press(date, 'Home').defaultPrevented).toBe(false);
+    expect(ad.activeItem()).toBeNull();
   });
 });
 

@@ -22,6 +22,8 @@ import {
   CNGX_NESTED_INTERACTIVE_SELECTOR,
   createTypeaheadWalker,
   injectLocale,
+  isComposingKeydown,
+  isTextEntryTarget,
 } from '@cngx/core/utils';
 
 import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from './ad-item.token';
@@ -151,7 +153,7 @@ export class CngxActiveDescendant {
   /** Document writing direction - flips the horizontal-arrow steps under `rtl` (APG). */
   private readonly direction = injectDirection();
 
-  /** Guards host attribute writes until after first render. */
+  /** Holds `autoHighlightFirst` back until after first render. */
   private readonly initialized = signal(false);
 
   /**
@@ -210,7 +212,13 @@ export class CngxActiveDescendant {
       if (!previous) {
         return -1;
       }
-      return clampIndex(reResolveIndex(source, previous.source, previous.value), source.total);
+      const index = clampIndex(
+        reResolveIndex(source, previous.source, previous.value),
+        source.total,
+      );
+      // An item that turned disabled cannot hold a highlight navigation skips.
+      const disabled = source.skipDisabled && !!source.items[index - source.offset]?.disabled;
+      return disabled ? -1 : index;
     },
   });
 
@@ -441,7 +449,7 @@ export class CngxActiveDescendant {
   }
 
   /**
-   * Highlight the first rendered item whose value matches (via `Object.is`).
+   * Highlight the first rendered item whose value matches (via `compareWith`).
    * No-op if no match. Disabled items are rejected when `skipDisabled()` is
    * true. In virtual mode only the rendered window is searched; the resolved
    * index is absolute.
@@ -451,7 +459,8 @@ export class CngxActiveDescendant {
       return;
     }
     const items = this.resolvedItems();
-    const idx = items.findIndex((it) => Object.is(it.value, value));
+    const compare = this.compareWith() as (a: unknown, b: unknown) => boolean;
+    const idx = items.findIndex((it) => compare(it.value, value));
     if (idx < 0) {
       return;
     }
@@ -484,26 +493,44 @@ export class CngxActiveDescendant {
     // Never hijack browser/app shortcuts: Ctrl/Cmd/Alt combos pass through
     // untouched (Ctrl+C would otherwise hit the typeahead branch and get
     // preventDefault'd). Shift stays allowed - it produces printable chars.
+    // A key a nested widget already handled, and every key of an IME
+    // composition (the commit Enter included), is not ours either.
     if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    if (event.defaultPrevented || isComposingKeydown(event)) {
       return;
     }
 
     // Skip events from editable descendants. Without this, every
     // printable key typed into a descendant <input> hits AD's typeahead
     // branch, gets preventDefault'd, and never reaches the input.
-    const target = event.target as HTMLElement | null;
-    if (target && target !== event.currentTarget && isEditableTarget(target)) {
+    const target = event.target as Element | null;
+    if (target !== event.currentTarget && isTextEntryTarget(target)) {
       return;
     }
 
+    // A text host (combobox input, textarea) keeps the caret keys and the
+    // characters it types: only the arrows and Enter drive the list.
+    const textHost = isTextEntryTarget(this.hostEl.nativeElement as HTMLElement);
     const key = event.key;
 
     if (this.isNavKey(key)) {
+      if (textHost && (key === 'Home' || key === 'End')) {
+        return;
+      }
       const before = this.activeIndexState();
+      const intentBefore = this.pendingIntentState();
       this.dispatchNav(key);
-      if (this.activeIndexState() !== before) {
+      const moved = this.activeIndexState() !== before;
+      const deferred = this.pendingIntentState() !== intentBefore;
+      if (moved || deferred) {
         event.preventDefault();
       }
+      return;
+    }
+
+    if (textHost && (key === ' ' || isPrintableChar(key))) {
       return;
     }
 
@@ -557,10 +584,11 @@ export class CngxActiveDescendant {
       return;
     }
 
-    // Nothing to activate: Space would scroll the page from a focused host,
-    // unless the host takes text and the space must be typed. Enter stays
-    // untouched so a consumer's own Enter handler still runs.
-    if (key === ' ' && !isEditableTarget(host)) {
+    // Nothing to activate: Space would scroll the page from a focused host.
+    // A text host never gets here with Space (the keydown handler leaves it
+    // to the field). Enter stays untouched so a consumer's own Enter handler
+    // still runs.
+    if (key === ' ') {
       event.preventDefault();
     }
   }
@@ -767,7 +795,7 @@ function resolveIntent(source: ActiveIndexSource & { readonly intent: PendingInt
       return outside || isDisabledAt?.(intent.index) ? -1 : intent.index;
     }
     case 'byValue': {
-      const idx = items.findIndex((it) => Object.is(it.value, intent.value));
+      const idx = items.findIndex((it) => source.compareWith(it.value, intent.value));
       return idx < 0 || (source.skipDisabled && items[idx].disabled) ? -1 : idx + offset;
     }
   }
@@ -824,39 +852,6 @@ function handleToItem(handle: CngxAdItemHandle): ActiveDescendantItem {
 /** @internal */
 function isPrintableChar(key: string): boolean {
   return key.length === 1 && /\S/.exec(key) !== null;
-}
-
-/**
- * True when the element would capture text input natively - a text
- * `<input>`, `<textarea>`, or any `contenteditable` host. Read-only /
- * button-type inputs (submit, radio, checkbox) are NOT editable; AD's
- * keyboard navigation still applies when focus lands on them.
- *
- * @internal
- */
-function isEditableTarget(el: HTMLElement): boolean {
-  if (el.isContentEditable) {
-    return true;
-  }
-  const tag = el.tagName;
-  if (tag === 'TEXTAREA') {
-    return true;
-  }
-  if (tag === 'INPUT') {
-    const type = (el as HTMLInputElement).type.toLowerCase();
-    return (
-      type !== 'button' &&
-      type !== 'submit' &&
-      type !== 'reset' &&
-      type !== 'checkbox' &&
-      type !== 'radio' &&
-      type !== 'range' &&
-      type !== 'color' &&
-      type !== 'file' &&
-      type !== 'image'
-    );
-  }
-  return false;
 }
 
 /** @internal */
