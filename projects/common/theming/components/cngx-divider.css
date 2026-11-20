@@ -11,7 +11,8 @@
  * - `--vertical` - inline-block column, `margin-inline` breathing room,
  *   `align-self: stretch` so it fills its flex parent (1em floor outside one)
  * - `--inset` - drops the line in from the start/end edge to align
- *   with indented list content; stacks with `--vertical`
+ *   with indented list content; stacks with `--vertical`, where it clips
+ *   the line inside the row height instead of growing the row
  *
  * **Inheritance**
  *
@@ -153,9 +154,11 @@
     :scope.cngx-divider--inset {
       margin-inline: var(--cngx-divider-inset-amount);
     }
+    /* Clip instead of margin-block: a margin counts toward the flex item's
+       outer size and grows the row. The 25% cap keeps a line in short rows. */
     :scope.cngx-divider--vertical.cngx-divider--inset {
-      margin-block: var(--cngx-divider-inset-amount);
       margin-inline: var(--cngx-divider-spacing);
+      clip-path: inset(min(var(--cngx-divider-inset-amount), 25%) 0);
     }
   }
 }

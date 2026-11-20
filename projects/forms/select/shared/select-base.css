@@ -1036,6 +1036,7 @@
     --cngx-select-action-border: 1px solid var(--cngx-color-border, oklch(0.85 0.01 250));
     --cngx-select-panel-bg: var(--cngx-color-surface);
     --cngx-select-panel-color: var(--cngx-color-text, currentColor);
+    --cngx-select-panel-shadow: var(--cngx-shadow-md);
     --cngx-select-check-color: var(--cngx-color-primary);
     --cngx-select-option-highlight-bg: color-mix(
       in oklch,
@@ -1155,7 +1156,7 @@
   }
   [data-color-scheme='light'],
   .light {
-    --cngx-select-panel-shadow: 0 4px 12px oklch(0 0 0 / 0.12);
+    --cngx-select-panel-shadow: var(--cngx-shadow-md);
     --cngx-select-option-highlight-bg: color-mix(
       in oklch,
       var(--cngx-color-primary) 10%,

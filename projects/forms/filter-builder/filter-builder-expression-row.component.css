@@ -106,10 +106,7 @@
     .cngx-filter-builder__expression > * > * > .cngx-field-trigger:is(:focus-visible, :focus-within),
     .cngx-filter-builder__expression > input[cngxInput]:focus-visible,
     .cngx-filter-builder__expression > .cngx-filter-builder__action-button--remove:focus-visible {
-      outline: var(
-        --cngx-filter-builder-focus-outline,
-        2px solid var(--cngx-color-primary, oklch(0.66 0.19 50))
-      );
+      outline: var(--cngx-filter-builder-focus-outline, 2px solid currentColor);
       outline-offset: -2px;
     }
 
