@@ -151,15 +151,13 @@ export const CNGX_FORM_FIELD_I18N = new InjectionToken<Signal<CngxFormFieldI18n>
 );
 
 /**
- * Branded feature-fn for {@link provideFormFieldI18n}.
+ * A label override feature of `provideFormFieldI18n`.
  *
  * @since 0.1.0
  */
-export type CngxFormFieldI18nFeature = ((
+export type CngxFormFieldI18nFeature = (
   bundle: Signal<CngxFormFieldI18n>,
-) => Signal<CngxFormFieldI18n>) & {
-  readonly _target: 'i18n';
-};
+) => Signal<CngxFormFieldI18n>;
 
 /**
  * Override form-field labels via a partial bundle - unset keys keep the
@@ -177,15 +175,12 @@ export type CngxFormFieldI18nFeature = ((
 export function withFormFieldI18nLabels(
   overrides: CngxFormFieldI18nOverrides | Signal<CngxFormFieldI18nOverrides>,
 ): CngxFormFieldI18nFeature {
-  return Object.assign(
-    (bundle: Signal<CngxFormFieldI18n>) =>
-      createNestedOverrideMerge<CngxFormFieldI18n, 'errorMessages'>(
-        bundle,
-        overrides,
-        'errorMessages',
-      ),
-    { _target: 'i18n' as const },
-  );
+  return (bundle) =>
+    createNestedOverrideMerge<CngxFormFieldI18n, 'errorMessages'>(
+      bundle,
+      overrides,
+      'errorMessages',
+    );
 }
 
 /**
