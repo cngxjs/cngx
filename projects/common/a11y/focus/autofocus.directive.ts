@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  booleanAttribute,
   DestroyRef,
   Directive,
   effect,
@@ -51,7 +52,10 @@ import {
 })
 export class CngxAutofocus {
   /** Whether to focus the element. Defaults to `true` (always focus on render). */
-  readonly when = input<boolean>(true, { alias: 'cngxAutofocus' });
+  readonly when = input<boolean, unknown>(true, {
+    alias: 'cngxAutofocus',
+    transform: booleanAttribute,
+  });
   /** Delay in ms before focusing - useful when the element appears during a transition. */
   readonly delay = input<number>(0, { alias: 'autofocusDelay' });
   /** `FocusOptions` passed to `element.focus()`. */

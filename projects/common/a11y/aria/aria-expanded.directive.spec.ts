@@ -47,3 +47,19 @@ describe('CngxAriaExpanded', () => {
     expect(el.getAttribute('aria-controls')).toBe('my-panel');
   });
 });
+
+@Component({
+  template: `<button cngxAriaExpanded>Toggle</button>`,
+  imports: [CngxAriaExpanded],
+})
+class BareHost {}
+
+describe('CngxAriaExpanded bare attribute', () => {
+  it('reads the bare attribute as expanded', () => {
+    TestBed.configureTestingModule({ imports: [BareHost] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const el = fixture.debugElement.query(By.css('button')).nativeElement as HTMLElement;
+    expect(el.getAttribute('aria-expanded')).toBe('true');
+  });
+});

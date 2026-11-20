@@ -1,4 +1,4 @@
-import { Directive, input } from '@angular/core';
+import { booleanAttribute, Directive, input } from '@angular/core';
 
 /**
  * Manages `aria-expanded` and optionally `aria-controls` on the host element.
@@ -50,7 +50,10 @@ import { Directive, input } from '@angular/core';
 })
 export class CngxAriaExpanded {
   /** Whether the controlled element is currently expanded. Sets `aria-expanded`. */
-  readonly expanded = input<boolean>(false, { alias: 'cngxAriaExpanded' });
+  readonly expanded = input<boolean, unknown>(false, {
+    alias: 'cngxAriaExpanded',
+    transform: booleanAttribute,
+  });
   /** The `id` of the controlled element. Sets `aria-controls`. */
   readonly controls = input<string | undefined>(undefined);
 }
