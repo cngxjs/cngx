@@ -89,8 +89,9 @@ export class CngxSwipeDismiss {
         const delta = this.getDelta(dx, dy);
         if (delta > 0) {
           this.swipingState.set(true);
-          this.swipeProgressState.set(Math.min(1, delta / this.threshold()));
         }
+        // Every move writes progress, so a drag reversed past the start reads 0.
+        this.swipeProgressState.set(Math.min(1, Math.max(0, delta) / this.threshold()));
       },
       onSettle: (settle) => {
         if (settle) {

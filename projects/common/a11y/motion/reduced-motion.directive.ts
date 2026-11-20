@@ -14,6 +14,11 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  * directive makes the preference available in component logic (e.g., to pick
  * a different animation strategy or suppress requestAnimationFrame loops).
  *
+ * This is the OS preference only. An in-app pick through `provideMotion` /
+ * `injectMotion` (`CNGX_MOTION`, `<html data-motion>`) is not seen here; to
+ * decide on the motion the user actually gets, read `injectEffectiveMotion()`
+ * from `@cngx/core` instead.
+ *
  * ### Conditional animation
  * ```html
  * <div cngxReducedMotion #rm="cngxReducedMotion"
@@ -41,7 +46,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
   host: { '[class.cngx-reduced-motion]': 'prefersReducedMotion()' },
 })
 export class CngxReducedMotion {
-  /** `true` when the user's OS is set to prefer reduced motion. Updates reactively. */
+  /** `true` when the user's OS is set to prefer reduced motion (ignores `CNGX_MOTION`). Updates reactively. */
   readonly prefersReducedMotion: Signal<boolean>;
 
   constructor() {

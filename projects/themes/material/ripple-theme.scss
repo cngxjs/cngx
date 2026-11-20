@@ -1,7 +1,8 @@
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
-// Ripple theme mixin for `[cngxRipple]`.
+// Ripple theme mixin for every ripple host (`cngxRipple`, `cngxPressRipple`
+// and the button family), matched by the `.cngx-ripple` host class.
 //
 // CSS vars:
 // - `--cngx-ripple-color`: ripple fill (default: `currentColor`)
@@ -28,11 +29,11 @@
 }
 
 @mixin theme($theme) {
-  // Host + descendants broadcast (select-theme precedent): opacity and
-  // duration are registered inherits:false and are read on the
-  // .cngx-ripple__wave child - a host-only set resolves to the
-  // initial-value there.
-  @include bridge.on(bridge.broadcast('[cngxRipple]')) {
+  // All three tokens are registered inherits: true, so a host-level set
+  // reaches the .cngx-ripple__wave grandchild. The .cngx-ripple class is
+  // on every ripple host; a [cngxRipple] attribute selector missed hosts
+  // that compose the directive (cngxPressRipple, hostDirectives).
+  @include bridge.on('.cngx-ripple') {
     @include base();
     @include color($theme);
   }

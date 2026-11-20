@@ -12,7 +12,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMatchMediaMock } from '@cngx/testing';
 
-import { provideDirection } from '@cngx/core';
+import { CNGX_MOTION, type CngxMotionPreference, provideDirection } from '@cngx/core';
 import {
   CNGX_DESCRIBED_BY,
   createDescribedByRegistry,
@@ -230,6 +230,31 @@ describe('CngxTooltip', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  describe('motion class on the trigger', () => {
+    function setupMotion(pick: CngxMotionPreference, osReduce: boolean) {
+      TestBed.configureTestingModule({
+        providers: [{ provide: CNGX_MOTION, useValue: signal<CngxMotionPreference>(pick) }],
+      });
+      createMatchMediaMock(osReduce).install(window);
+      installPopoverStubs();
+      const fixture = TestBed.createComponent(BasicTooltipHost);
+      fixture.detectChanges();
+      return fixture.nativeElement.querySelector('#trigger') as HTMLElement;
+    }
+
+    it('follows an in-app reduced pick over an OS no-preference', () => {
+      expect(setupMotion('reduced', false).classList).toContain('cngx-reduced-motion');
+    });
+
+    it('follows an in-app full pick over an OS reduce', () => {
+      expect(setupMotion('full', true).classList).not.toContain('cngx-reduced-motion');
+    });
+
+    it('falls back to the OS preference on auto', () => {
+      expect(setupMotion('auto', true).classList).toContain('cngx-reduced-motion');
+    });
   });
 
   describe('tooltip element creation', () => {
