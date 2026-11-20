@@ -192,6 +192,41 @@ describe('createHotkeyRegistry', () => {
       expect(help.run).toHaveBeenCalledOnce();
     });
 
+    it('resolves a press on the body against the open modal: focus dropped out of a dialog', () => {
+      const registry = makeRegistry();
+      const modal = signal(true);
+      const dialogEl = el();
+      const dialog = scopeOn(dialogEl, null, { modal });
+      const save = bind('app.save', 'mod+s');
+      const submit = bind('dialog.submit', 'mod+enter');
+      registry.register(source(save), null);
+      registry.register(source(submit), dialog);
+
+      const blocked = press(document.body, 's', { ctrlKey: true });
+      press(document.body, 'Enter', { ctrlKey: true });
+
+      expect(save.run).not.toHaveBeenCalled();
+      expect(blocked.defaultPrevented).toBe(false);
+      expect(submit.run).toHaveBeenCalledOnce();
+
+      modal.set(false);
+      press(document.body, 's', { ctrlKey: true });
+      expect(save.run).toHaveBeenCalledOnce();
+    });
+
+    it('ignores a modal scope whose element left the document for a press on the body', () => {
+      const registry = makeRegistry();
+      const dialogEl = el();
+      scopeOn(dialogEl, null, { modal: signal(true) });
+      const save = bind('app.save', 'mod+s');
+      registry.register(source(save), null);
+      dialogEl.remove();
+
+      press(document.body, 's', { ctrlKey: true });
+
+      expect(save.run).toHaveBeenCalledOnce();
+    });
+
     it('skips a binding while enabled() is false', () => {
       const registry = makeRegistry();
       const enabled = signal(false);

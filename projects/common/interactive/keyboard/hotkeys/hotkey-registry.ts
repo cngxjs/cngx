@@ -25,6 +25,7 @@ import type { CngxHotkeyBinding, CngxHotkeyRef, CngxHotkeyRegistration } from '.
 import { parseHotkeyCombo } from './hotkey-combo';
 import {
   CNGX_HOTKEY_SCOPE,
+  openModalHotkeyScope,
   resolveHotkeyScopeChain,
   type CngxHotkeyScopeNode,
 } from './hotkey-scope';
@@ -273,7 +274,8 @@ function warnTie(
  *
  * 1. A registration whose scope or an ancestor scope is inactive is muted.
  * 2. The chain is every scope containing `event.target`, innermost first, cut
- *    after the first modal one.
+ *    after the first modal one. A press on the body (focus dropped out of an
+ *    open modal) resolves against the deepest open modal scope instead.
  * 3. A binding fires when its combo matches, `enabled()` is true, and its
  *    reach allows it: `'focus'` needs its scope on the chain, `'global'`
  *    needs no modal on the chain or its scope inside the innermost modal.
@@ -331,8 +333,15 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     }
   }
 
+  // Focus that dropped out of an open modal (window switch, removed focused
+  // node) lands on the body; the modal still owns the keyboard then.
   function contextOf(target: EventTarget | null): Element {
-    return target instanceof Element ? target : doc.documentElement;
+    const outsideEveryScope =
+      !(target instanceof Element) || target === doc.body || target === doc.documentElement;
+    if (!outsideEveryScope) {
+      return target;
+    }
+    return openModalHotkeyScope()?.element ?? doc.documentElement;
   }
 
   /** Every live candidate for a context, with its precedence rank. */
