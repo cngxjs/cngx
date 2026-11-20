@@ -48,7 +48,7 @@ export function createActivationKeyHandler(
       return;
     }
     event.preventDefault();
-    if ((event as KeyboardEvent).repeat) {
+    if (event instanceof KeyboardEvent && event.repeat) {
       return;
     }
     activate(event);
