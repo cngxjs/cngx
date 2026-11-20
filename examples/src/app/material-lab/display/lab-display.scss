@@ -6,6 +6,18 @@
 @use '../../../../../projects/themes/material/divider-theme.scss' as divider;
 @use '../../../../../projects/themes/material/chip-theme.scss' as chip;
 @use '../../../../../projects/themes/material/ripple-theme.scss' as ripple;
+@use '../../../../../projects/themes/material/avatar-theme.scss' as avatar;
+@use '../../../../../projects/themes/material/status-theme.scss' as status;
+@use '../../../../../projects/themes/material/segmented-progress-theme.scss' as segmented-progress;
+@use '../../../../../projects/themes/material/password-strength-meter-theme.scss' as
+  password-strength-meter;
+@use '../../../../../projects/themes/material/skeleton-theme.scss' as skeleton;
+@use '../../../../../projects/themes/material/empty-state-theme.scss' as empty-state;
+@use '../../../../../projects/themes/material/copy-block-theme.scss' as copy-block;
+@use '../../../../../projects/themes/material/async-click-theme.scss' as async-click;
+@use '../../../../../projects/themes/material/speak-button-theme.scss' as speak-button;
+@use '../../../../../projects/themes/material/rating-theme.scss' as rating;
+@use '../../../../../projects/themes/material/file-drop-theme.scss' as file-drop;
 @use '../lab-base' as base;
 
 $theme: base.$theme;
@@ -20,6 +32,17 @@ html {
   @include divider.theme($theme);
   @include chip.theme($theme);
   @include ripple.theme($theme);
+  @include avatar.theme($theme);
+  @include status.theme($theme);
+  @include segmented-progress.theme($theme);
+  @include password-strength-meter.theme($theme);
+  @include skeleton.theme($theme);
+  @include empty-state.theme($theme);
+  @include copy-block.theme($theme);
+  @include async-click.theme($theme);
+  @include speak-button.theme($theme);
+  @include rating.theme($theme);
+  @include file-drop.theme($theme);
 }
 
 @include base.chrome();
@@ -49,5 +72,39 @@ html {
   border: 1px solid var(--mat-sys-outline-variant);
   border-radius: 4px;
   user-select: none;
+  cursor: pointer;
+}
+
+.lab-pendant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.lab-meter {
+  inline-size: 240px;
+}
+
+.lab-bone {
+  block-size: 12px;
+  inline-size: 240px;
+}
+
+.lab-heading {
+  flex-basis: 100%;
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+}
+
+// The async state rules paint background, ink and border-color from the
+// cngx.components layer, which any unlayered colour here would override; the
+// lab sets only the edge width and the box, so the state colours show.
+.lab-async {
+  padding: 6px 12px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 4px;
+  font: inherit;
   cursor: pointer;
 }
