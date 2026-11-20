@@ -90,6 +90,17 @@ export class CngxRovingItem {
  * Works for toolbars, tab lists, card grids, menu bars, and any composite
  * widget where only one item should be in the tab order at a time.
  *
+ * ### Keys the group leaves alone
+ *
+ * A key from a text field (an `<input>` item, a field inside an item), a key
+ * of an IME composition, and an arrow from inside a nested widget that owns
+ * its arrows (a range input or an element with a slider, spinbutton,
+ * scrollbar, combobox, listbox, tree, treegrid, grid, menu, menubar,
+ * tablist, radiogroup or toolbar role)
+ * stays with that element. A custom widget without one of those roles keeps
+ * its arrows by calling `preventDefault()` on the keys it handles: the group
+ * skips every key that arrives already handled.
+ *
  * ### Virtual mode
  *
  * When `virtualCount` is set, `activeIndex` ranges from 0 to `virtualCount - 1`
