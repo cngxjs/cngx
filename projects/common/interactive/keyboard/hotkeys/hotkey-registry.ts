@@ -13,6 +13,7 @@ import { cngxDevWarn } from '@cngx/utils';
 import { injectWindow } from '@cngx/core/tokens';
 import {
   createKeyedRegistry,
+  isTextEntryTarget,
   type KeyCombo,
   matchesKeyCombo,
   nextUid,
@@ -136,31 +137,10 @@ interface Candidate {
   readonly rank: number;
 }
 
-const TEXT_INPUT_TYPES = new Set(['text', 'search', 'email', 'url', 'tel', 'password', 'number']);
 const FUNCTION_KEY = /^f([1-9]|1\d|2[0-4])$/;
-const EDITABLE = '[contenteditable]:not([contenteditable="false"])';
-const TEXT_ROLES = '[role="textbox"], [role="searchbox"]';
 
 function read<T>(value: T | Signal<T>): T {
   return isSignal(value) ? value() : value;
-}
-
-function isTextEntry(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) {
-    return false;
-  }
-  const tag = target.tagName;
-  if (tag === 'TEXTAREA' || tag === 'SELECT') {
-    return true;
-  }
-  if (tag === 'INPUT') {
-    return TEXT_INPUT_TYPES.has((target as HTMLInputElement).type);
-  }
-  return (
-    (target as HTMLElement).isContentEditable === true ||
-    target.matches(TEXT_ROLES) ||
-    target.closest(EDITABLE) !== null
-  );
 }
 
 /** Cheap pre-check on the press: nothing else can pass `firesInTextEntry`. */
@@ -226,7 +206,7 @@ function sameGroups(a: readonly CngxHotkeyGroup[], b: readonly CngxHotkeyGroup[]
 
 // Module scope on purpose: the production build drops an unused top-level
 // function with its cngxDevWarn import, but not one nested in a closure.
-/** Dev-only checks of a binding's current combo at registration. */
+/** Dev-only checks of a binding's combo, run once per id and combo pair. */
 function warnRegistration(
   binding: CngxHotkeyBinding,
   combo: KeyCombo | null,
@@ -298,9 +278,9 @@ function warnTie(
  *    needs no modal on the chain or its scope inside the innermost modal.
  * 4. The deeper scope on the chain wins; among equals the last registration.
  *
- * Inside a text field (text-like `input`, `textarea`, `select`,
- * `contenteditable`, `role="textbox"` / `"searchbox"`, also inside a shadow
- * root) only combos with `ctrl`, `meta` or `mod`, function keys
+ * Inside a text field (`isTextEntryTarget`: an `input` of a text, number,
+ * date or time type, `textarea`, `select`, `contenteditable`,
+ * `role="textbox"` / `"searchbox"`, also inside a shadow root) only combos with `ctrl`, `meta` or `mod`, function keys
  * and `escape` fire. Events the page already handled (`defaultPrevented`),
  * IME composition and auto-repeat (unless `allowRepeat`) are skipped. A
  * fired binding gets a `preventDefault()`ed event.
@@ -321,6 +301,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
   const parsed = new Map<string, KeyCombo | null>();
   const lastGroups = new WeakMap<Element, readonly CngxHotkeyGroup[]>();
   const warnedTies = new Set<string>();
+  const checkedCombos = new Set<string>();
   let listening = false;
   let destroyed = false;
 
@@ -329,7 +310,17 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     if (!parsed.has(combo)) {
       parsed.set(combo, parseHotkeyCombo(combo));
     }
-    return parsed.get(combo) ?? null;
+    const result = parsed.get(combo) ?? null;
+    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+      // Checked on first sight of each id and combo pair, so a Signal combo
+      // remapped after registration is diagnosed too.
+      const seen = `${binding.id}\u0000${combo}`;
+      if (!checkedCombos.has(seen)) {
+        checkedCombos.add(seen);
+        warnRegistration(binding, result, isMac);
+      }
+    }
+    return result;
   }
 
   function contextOf(target: EventTarget | null): Element {
@@ -369,7 +360,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     // At the document a shadow-DOM press is retargeted to its host; the
     // composed path still starts at the field the user types in.
     const target = event.composedPath()[0] ?? event.target;
-    const inText = isTextEntry(target);
+    const inText = isTextEntryTarget(target);
     if (inText && !mayFireInTextEntry(event)) {
       return;
     }
@@ -430,7 +421,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
     registrations.register(key, entry);
     syncListener();
     if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      untracked(source).forEach((binding) => warnRegistration(binding, comboOf(binding), isMac));
+      untracked(source).forEach((binding) => comboOf(binding));
     }
     return {
       unregister: () => {

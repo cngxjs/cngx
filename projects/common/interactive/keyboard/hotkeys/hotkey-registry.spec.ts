@@ -347,6 +347,23 @@ describe('createHotkeyRegistry', () => {
       expect(next.run).toHaveBeenCalledOnce();
     });
 
+    it('keeps bare keys out of date, time and number fields', () => {
+      const registry = makeRegistry();
+      const next = bind('next', 'n');
+      const save = bind('save', 'mod+s');
+      registry.register(source(next, save), null);
+
+      for (const type of ['date', 'time', 'datetime-local', 'month', 'week', 'number']) {
+        const field = el('input') as HTMLInputElement;
+        field.type = type;
+        press(field, 'n');
+        press(field, 's', { ctrlKey: true });
+      }
+
+      expect(next.run).not.toHaveBeenCalled();
+      expect(save.run).toHaveBeenCalledTimes(6);
+    });
+
     it('fires bare keys on a non-text input', () => {
       const registry = makeRegistry();
       const search = bind('search', '/');

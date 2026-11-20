@@ -93,6 +93,24 @@ describe('hotkey registry diagnostics', () => {
     );
   });
 
+  it('warns for a combo remapped after registration, once per binding and combo', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const combo = signal('mod+s');
+    const registry = makeRegistry();
+    registry.register(
+      signal<readonly CngxHotkeyBinding[]>([{ id: 'close', combo, run: () => undefined }]),
+      null,
+    );
+    expect(codes(warn)).toEqual([]);
+
+    combo.set('mod+w');
+    pressCtrlS();
+    pressCtrlS();
+    registry.liveGroupsFor(null);
+
+    expect(codes(warn)).toEqual(['CNGX1078']);
+  });
+
   it('stays silent when ngDevMode is off, as in a production build', () => {
     vi.stubGlobal('ngDevMode', false);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
