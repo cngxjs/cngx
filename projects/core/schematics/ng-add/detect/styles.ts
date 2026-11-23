@@ -17,7 +17,10 @@ export interface MaterialFacts {
   readonly themeShape: MaterialThemeShape;
   /** The style entry the theme was found in; `undefined` without a theme. */
   readonly themePath: string | undefined;
-  /** The Sass variable holding a `define-theme` or M2 theme object. */
+  /**
+   * The Sass variable holding a `define-theme` or M2 theme object; only a
+   * `define-theme` object is bridged.
+   */
   readonly themeVariable: string | undefined;
   /** The density the theme declares; 0 when it declares none. */
   readonly density: number;

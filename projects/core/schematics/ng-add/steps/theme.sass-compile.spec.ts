@@ -56,17 +56,6 @@ html {
 }
 `;
 
-const M2_THEME = `@use '@angular/material' as mat;
-
-$theme: mat.m2-define-light-theme((
-  color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette)),
-));
-
-html {
-  @include mat.all-component-themes($theme);
-}
-`;
-
 // The inputs that load the bridge and include one of its mixins; a run that
 // compiles without emitting the bridge passes `compile` all the same.
 function bridged(inputs: readonly string[]): readonly string[] {
@@ -78,13 +67,12 @@ function bridged(inputs: readonly string[]): readonly string[] {
 
 describe('the Material bridge compiles', () => {
   it('finds no bridge in a stylesheet cngx did not edit', () => {
-    expect(bridged([MAP_API, DEFINE_THEME, M2_THEME])).toEqual([]);
+    expect(bridged([MAP_API, DEFINE_THEME])).toEqual([]);
   });
 
   it.each([
     ['a mat.theme() map', MAP_API],
     ['a define-theme object', DEFINE_THEME],
-    ['an M2 object', M2_THEME],
   ])('for %s', async (_, stylesheet) => {
     const run = await runRule(ngAdd({ theme: 'material' }), createFixtureTree('standalone-app', scssApp(stylesheet)));
     const inputs = ['src/styles.scss', 'src/cngx-theme.scss']

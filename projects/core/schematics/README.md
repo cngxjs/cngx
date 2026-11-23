@@ -285,9 +285,10 @@ rewrites every literal of it in the bundles.
   the scss global stylesheet, or into a new `src/material-theme.scss` placed
   first in the build styles of a css app. The bridge entry cngx adds follows
   the stylesheet that imports `cngx.css`, because it emits
-  `@layer cngx.components`. A `define-theme` or M2 object is bridged in its
-  own file instead; `insertStyleImport` places the bridge `@use` ahead of the
-  first `@import` there, the `cngx.css` `@import` after the leading block.
+  `@layer cngx.components`. A `define-theme` object is bridged in its own
+  file instead; `insertStyleImport` places the bridge `@use` ahead of the
+  first `@import` there, the `cngx.css` `@import` after the leading block. An
+  M2 theme is not bridged: ng-add wires the cngx default and notes why.
 
 ## Trying a build against a real app
 
