@@ -79,6 +79,11 @@ const NULL_SIGNAL = signal(null).asReadonly();
  * `Signal`: `private readonly i18n = coerceSignal(inject(TOKEN))`, then read
  * `i18n().x` inside a `computed()` or the template.
  *
+ * An input takes `T | Signal<T>` only when its owner reads it outside change
+ * detection (a document listener) and the bound value can flip inside an event
+ * handler: a bound value would lag one tick there. Resolve it through this
+ * function, as `CngxPopover.closeOnEscape` does.
+ *
  * @since 0.1.0
  * @relatedTo coerceBooleanProperty, coerceNumberProperty, createOverrideMerge
  */
