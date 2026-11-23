@@ -19,6 +19,7 @@ import { createErrorAggregatorContract } from '../error-registry/aggregator-cont
 import { errorSourceMapEqual } from '../error-registry/equal-fns';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '../error-scope/error-scope.token';
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import {
   CNGX_ERROR_AGGREGATOR,
   type CngxErrorAggregatorContract,
@@ -115,6 +116,15 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
    */
   readonly announcePoliteness = input<'polite' | 'assertive' | 'off'>('polite');
 
+  /**
+   * Live-region text while errors show but no active source has a label;
+   * receives the active error count. Falls back to `errorCountAnnouncement`
+   * of `CNGX_INTERACTIVE_I18N` (English: `1 error` / `2 errors`).
+   */
+  readonly errorCountAnnouncement = input<((count: number) => string) | undefined>(undefined);
+
+  private readonly i18n = injectResolvedInteractiveI18n();
+
   private readonly ancestorScope = inject<CngxErrorScopeContract | null>(CNGX_ERROR_SCOPE, {
     optional: true,
   });
@@ -133,6 +143,8 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     sourcesState: this.sourcesState,
     scope: this.effectiveScope,
     locale: injectLocale(),
+    countAnnouncement: (count) =>
+      untracked(() => (this.errorCountAnnouncement() ?? this.i18n().errorCountAnnouncement)(count)),
   });
 
   readonly hasError = this.contract.hasError;

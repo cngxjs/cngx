@@ -3,7 +3,8 @@ import type { CngxMessage } from '@cngx/core/i18n';
 /**
  * The interactive section of a {@link CngxLanguagePack}: the copy of the
  * `@cngx/common/interactive` atoms (async click, copy block, range slider,
- * breadcrumb, the unsaved-changes guard). It feeds `CNGX_INTERACTIVE_I18N`.
+ * breadcrumb, the unsaved-changes guard, the error aggregator). It feeds
+ * `CNGX_INTERACTIVE_I18N`.
  *
  * @since 0.1.0
  * @relatedTo CNGX_INTERACTIVE_I18N
@@ -29,6 +30,11 @@ export interface CngxInteractiveLanguageSection {
   readonly unsavedChanges: string;
   /** `{start}`, `{end}`: the visible value of a range slider. */
   readonly rangeValue: CngxMessage;
+  /**
+   * `{count}`: the active errors of an error aggregator. Spoken by its live
+   * region when none of the active sources has a label.
+   */
+  readonly errorCountAnnouncement: CngxMessage;
 }
 
 /**
@@ -49,6 +55,7 @@ export const CNGX_INTERACTIVE_LANGUAGE_EN: CngxInteractiveLanguageSection = {
   breadcrumb: 'Breadcrumb',
   unsavedChanges: 'You have unsaved changes. Leave anyway?',
   rangeValue: '{start}–{end}',
+  errorCountAnnouncement: { one: '{count} error', other: '{count} errors' },
 };
 
 declare module '@cngx/core/i18n' {

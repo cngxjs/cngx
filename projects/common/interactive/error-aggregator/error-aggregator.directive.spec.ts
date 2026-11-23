@@ -1,11 +1,17 @@
 import { Component, effect, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { provideErrorRegistry } from '../error-registry/provide-error-registry';
 import { CngxErrorScope } from '../error-scope/error-scope.directive';
 import { CngxErrorSource } from '../error-source/error-source.directive';
+import {
+  provideInteractiveI18n,
+  withInteractiveI18nLabels,
+  type CngxInteractiveI18n,
+} from '../i18n/interactive-i18n';
 import { CngxErrorAggregator } from './error-aggregator.directive';
 
 @Component({
@@ -79,6 +85,23 @@ class AutoAnnounceHost {
   aOn = signal(false);
   auto = signal(true);
   politeness = signal<'polite' | 'assertive' | 'off'>('polite');
+}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator [errorCountAnnouncement]="countFn()">
+      <span [cngxErrorSource]="'a'" [when]="aOn()"></span>
+      <span [cngxErrorSource]="'b'" [when]="bOn()"></span>
+      <span [cngxErrorSource]="'c'" [when]="cOn()" [label]="'C failed'"></span>
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class CountHost {
+  aOn = signal(false);
+  bOn = signal(false);
+  cOn = signal(false);
+  countFn = signal<((count: number) => string) | undefined>(undefined);
 }
 
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
@@ -362,5 +385,83 @@ describe('CngxErrorAggregator registry registration', () => {
     expect(registry.getAggregator('shared')).toBe(aggregators[waitingIndex]);
     expect(registry.hasAnyError()).toBe(true);
     warn.mockRestore();
+  });
+});
+
+describe('CngxErrorAggregator count announcement', () => {
+  function setupCount() {
+    const fixture = TestBed.createComponent(CountHost);
+    fixture.detectChanges();
+    const agg = aggregatorOf(fixture);
+    const region = (): string =>
+      stripBidiIsolates(
+        (fixture.debugElement.query(By.directive(CngxErrorAggregator)).nativeElement as HTMLElement)
+          .querySelector('span[aria-live]')?.textContent ?? '',
+      );
+    return { fixture, host: fixture.componentInstance, agg, region };
+  }
+
+  it('speaks the count when no active source has a label', () => {
+    const { fixture, host, agg, region } = setupCount();
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(stripBidiIsolates(agg.announcement())).toBe('1 error');
+    expect(region()).toBe('1 error');
+
+    host.bOn.set(true);
+    fixture.detectChanges();
+    expect(stripBidiIsolates(agg.announcement())).toBe('2 errors');
+    expect(region()).toBe('2 errors');
+  });
+
+  it('speaks the labels only when at least one active source has a label', () => {
+    const { fixture, host, region } = setupCount();
+    host.aOn.set(true);
+    host.cOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('C failed');
+  });
+
+  it('lets a bound [errorCountAnnouncement] win over the token', () => {
+    const { fixture, host, region } = setupCount();
+    host.countFn.set((count) => `Bound ${count}`);
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('Bound 1');
+  });
+
+  it('lets a provideInteractiveI18n override win over the default', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideInteractiveI18n(
+          withInteractiveI18nLabels({ errorCountAnnouncement: (count) => `Token ${count}` }),
+        ),
+      ],
+    });
+    const { fixture, host, region } = setupCount();
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('Token 1');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const labels = signal<Partial<CngxInteractiveI18n>>({
+      errorCountAnnouncement: (count) => `First ${count}`,
+    });
+    TestBed.configureTestingModule({
+      providers: [provideInteractiveI18n(withInteractiveI18nLabels(labels))],
+    });
+    const { fixture, host, region } = setupCount();
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('First 1');
+
+    labels.set({ errorCountAnnouncement: (count) => `Second ${count}` });
+    fixture.detectChanges();
+    expect(region()).toBe('First 1');
+
+    host.bOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('Second 2');
   });
 });

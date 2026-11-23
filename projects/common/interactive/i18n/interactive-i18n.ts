@@ -46,6 +46,11 @@ export interface CngxInteractiveI18n {
    * already formatted; one message, so a locale owns the order and the joiner.
    */
   readonly rangeValue?: (start: string, end: string) => string;
+  /**
+   * Live-region text of `CngxErrorAggregator` when no active source has a
+   * label. Default of its `errorCountAnnouncement` input.
+   */
+  readonly errorCountAnnouncement?: (count: number) => string;
 }
 
 /** @internal Turns an interactive section into the token's keys for a locale. */
@@ -64,6 +69,8 @@ function interactiveBundleFrom(
     breadcrumb: section.breadcrumb,
     unsavedChanges: section.unsavedChanges,
     rangeValue: (start, end) => formatMessage(section.rangeValue, { start, end }, locale),
+    errorCountAnnouncement: (count) =>
+      formatMessage(section.errorCountAnnouncement, { count }, locale),
   };
 }
 

@@ -44,6 +44,11 @@ export interface ErrorAggregatorContractDeps {
   readonly scope: Signal<CngxErrorScopeContract | null | undefined>;
   /** Locale of the announcement list joiner (`injectLocale()` at the call site). */
   readonly locale: Signal<string>;
+  /**
+   * Announcement when no active source has a label. Reads its copy untracked,
+   * so a language flip never re-speaks a shown announcement.
+   */
+  readonly countAnnouncement: (count: number) => string;
 }
 
 /**
@@ -143,14 +148,17 @@ export function createErrorAggregatorContract(
     return resolved ? resolved.showErrors() : true;
   });
 
-  // Live-region text: the locale is read untracked, so a locale flip never
-  // re-speaks a shown announcement; the next error change speaks it.
+  // Live-region text: locale and copy are read untracked, so a language flip
+  // never re-speaks a shown announcement; the next error change speaks it.
   const announcement: Signal<string> = computed(() => {
     if (!shouldShow()) {
       return '';
     }
     const labels = errorLabels();
-    return untracked(() => errorListFormatFor(deps.locale()).format(labels));
+    if (labels.length > 0) {
+      return untracked(() => errorListFormatFor(deps.locale()).format(labels));
+    }
+    return deps.countAnnouncement(errorCount());
   });
 
   return {

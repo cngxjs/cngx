@@ -7,6 +7,7 @@ import { createErrorAggregatorContract } from './aggregator-contract';
 import { errorSourceMapEqual } from './equal-fns';
 
 const EN_US = signal('en-US').asReadonly();
+const COUNT_EN = (count: number): string => `${count} errors`;
 
 function makeSources() {
   return signal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>(
@@ -41,6 +42,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
 
       expect(contract.hasError()).toBe(false);
@@ -60,6 +62,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
 
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
@@ -93,6 +96,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
         locale: locale.asReadonly(),
+        countAnnouncement: COUNT_EN,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       contract.addSource({ key: 'b', condition: b.asReadonly(), label: 'B' });
@@ -117,6 +121,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
 
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
@@ -137,6 +142,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       TestBed.flushEffects();
@@ -153,6 +159,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       TestBed.flushEffects();
@@ -181,6 +188,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
       contract.addSource({ key: 'a', condition: a.asReadonly(), label: 'A' });
       TestBed.flushEffects();
@@ -200,6 +208,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
 
       const cond = signal(true);
@@ -219,6 +228,7 @@ describe('createErrorAggregatorContract', () => {
         sourcesState,
         scope: scope.asReadonly(),
         locale: EN_US,
+        countAnnouncement: COUNT_EN,
       });
       expect(() => contract.removeSource('missing')).not.toThrow();
     });
@@ -236,6 +246,7 @@ describe('createErrorAggregatorContract', () => {
       sourcesState,
       scope: scope.asReadonly(),
       locale: EN_US,
+      countAnnouncement: COUNT_EN,
     });
 
     const refA = a.asReadonly();
@@ -272,6 +283,7 @@ describe('createErrorAggregatorContract dev diagnostics', () => {
       sourcesState: makeSources(),
       scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
       locale: EN_US,
+      countAnnouncement: COUNT_EN,
     });
 
     contract.addSource({ key: 'email', condition: signal(false).asReadonly(), label: 'A' });
@@ -293,6 +305,7 @@ describe('createErrorAggregatorContract duplicate keys', () => {
       sourcesState: makeSources(),
       scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
       locale: EN_US,
+      countAnnouncement: COUNT_EN,
     });
     const first: CngxErrorAggregatorSourceEntry = {
       key: 'email',
@@ -347,5 +360,27 @@ describe('createErrorAggregatorContract duplicate keys', () => {
     contract.addSource({ ...first, label: 'First renamed' });
     expect(contract.activeErrors()).toEqual(['email']);
     expect(contract.errorLabels()).toEqual(['First renamed']);
+  });
+});
+
+describe('createErrorAggregatorContract count announcement', () => {
+  it('announces the count when no active source has a label', () => {
+    const a = signal(false);
+    const b = signal(false);
+    const sourcesState = makeSources();
+    const contract = createErrorAggregatorContract({
+      sourcesState,
+      scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
+      locale: EN_US,
+      countAnnouncement: (count) => `${count} open`,
+    });
+    contract.addSource({ key: 'a', condition: a.asReadonly(), label: null });
+    contract.addSource({ key: 'b', condition: b.asReadonly(), label: null });
+    expect(contract.announcement()).toBe('');
+
+    a.set(true);
+    expect(contract.announcement()).toBe('1 open');
+    b.set(true);
+    expect(contract.announcement()).toBe('2 open');
   });
 });

@@ -323,6 +323,10 @@ export const CNGX_LANGUAGE_EN = {
     breadcrumb: 'Breadcrumb',
     unsavedChanges: 'You have unsaved changes. Leave anyway?',
     rangeValue: '{start}–{end}',
+    errorCountAnnouncement: {
+      one: '{count} error',
+      other: '{count} errors',
+    },
   },
   kpi: {
     deltaLabel: '{value} {sentiment}',

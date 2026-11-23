@@ -213,6 +213,22 @@
       ]
     },
     {
+      "class": "CngxErrorAggregator",
+      "file": "projects/common/interactive/error-aggregator/error-aggregator.directive.ts",
+      "line": 147,
+      "member": "contract",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "errorCountAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["errorCountAnnouncement"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
       "class": "CngxRangeSlider",
       "file": "projects/common/interactive/slider/range-slider.component.ts",
       "line": 125,

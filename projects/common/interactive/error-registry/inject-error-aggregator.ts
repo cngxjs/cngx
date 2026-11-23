@@ -1,10 +1,11 @@
-import { DestroyRef, inject, signal, type Signal } from '@angular/core';
+import { DestroyRef, inject, signal, untracked, type Signal } from '@angular/core';
 import { injectLocale } from '@cngx/core/utils';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
 } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { createErrorAggregatorContract } from './aggregator-contract';
 import { CngxErrorRegistry } from './error-registry';
 import { errorSourceMapEqual } from './equal-fns';
@@ -52,10 +53,12 @@ export function injectErrorAggregator(
   );
   const scopeSignal = signal<CngxErrorScopeContract | null | undefined>(scope);
 
+  const i18n = injectResolvedInteractiveI18n();
   const contract = createErrorAggregatorContract({
     sourcesState,
     scope: scopeSignal.asReadonly(),
     locale: injectLocale(),
+    countAnnouncement: (count) => untracked(() => i18n().errorCountAnnouncement(count)),
   });
 
   if (name) {

@@ -51,8 +51,11 @@ describe('CNGX_INTERACTIVE_I18N', () => {
       breadcrumb: 'Breadcrumb',
       unsavedChanges: 'You have unsaved changes. Leave anyway?',
       rangeValue: expect.any(Function),
+      errorCountAnnouncement: expect.any(Function),
     });
     expect(stripBidiIsolates(bundle.rangeValue?.('20', '80'))).toBe('20–80');
+    expect(stripBidiIsolates(bundle.errorCountAnnouncement?.(1))).toBe('1 error');
+    expect(stripBidiIsolates(bundle.errorCountAnnouncement?.(3))).toBe('3 errors');
   });
 
   it('reads the interactive section of the pack, with English for what it leaves out', () => {

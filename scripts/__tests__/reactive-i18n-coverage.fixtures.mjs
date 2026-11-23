@@ -725,6 +725,12 @@ export const LIVE_REGIONS = [
     testName: 'does not re-announce on a language flip',
   },
   {
+    file: 'projects/common/interactive/error-aggregator/error-aggregator.directive.ts',
+    region: 'CngxErrorAggregator.constructor:effect#1',
+    spec: 'projects/common/interactive/error-aggregator/error-aggregator.directive.spec.ts',
+    testName: 'does not re-announce on a language flip',
+  },
+  {
     file: 'projects/common/interactive/menu/menu-item-submenu.directive.ts',
     region: 'CngxMenuItemSubmenu.constructor:effect#1',
     spec: 'projects/common/interactive/menu/menu-item-submenu.directive.spec.ts',
