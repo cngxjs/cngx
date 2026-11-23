@@ -269,7 +269,7 @@ $theme: mat.define-theme((
   it('lays the on-surface hover state layer over both segment states (M3)', () => {
     const css = bridgeCss('button-toggle-theme');
     expect(css).toContain(
-      'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-surface))',
+      'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--cngx-color-surface))',
     );
     expect(css).toContain(
       'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-secondary-container))',

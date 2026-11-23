@@ -218,6 +218,27 @@ html { @include cngx-density.density($theme); }
     expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(matSys('outline'));
   });
 
+  test('the unchecked hover layer follows a consumer surface override on the segment', async ({
+    page,
+  }) => {
+    // A consumer re-skins the segment surface on the toggle itself (the knobs
+    // are assigned on the button too, so a group override does not reach it);
+    // the hover layer must sit on that surface, not on the Material one.
+    await page.locator('#toggle-idle').evaluate((el) => {
+      (el as HTMLElement).style.setProperty('--cngx-color-surface', 'rgb(240, 200, 120)');
+    });
+    const expected = await page.evaluate((onSurface) => {
+      const probe = document.createElement('div');
+      probe.style.background = `color-mix(in srgb, ${onSurface} 8%, rgb(240, 200, 120))`;
+      document.body.append(probe);
+      const value = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return value;
+    }, matSys('on-surface'));
+    await page.hover('#toggle-idle');
+    expect(await computedValue(page, '#toggle-idle', 'background-color')).toBe(expected);
+  });
+
   test('a hovered checked segment keeps the outline edge', async ({ page }) => {
     await page.hover('#toggle-checked');
     expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(matSys('outline'));

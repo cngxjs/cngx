@@ -90,9 +90,11 @@ $_checked: '#{$_segment}.cngx-button-toggle--checked';
       }
       // M3 hover is an on-surface state layer at 8% over the segment, not
       // the component's primary tint (unchecked, (0,4,0)) or its shade away
-      // from the ink (checked, (0,4,0)); one element above each.
+      // from the ink (checked, (0,4,0)); one element above each. The unchecked
+      // layer sits on the surface knob the segment rests on, so a consumer
+      // surface override on the toggle keeps its hover.
       #{$_segment}:hover:not(.cngx-button-toggle--disabled):not(.cngx-button-toggle--checked) {
-        background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-surface));
+        background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--cngx-color-surface));
       }
       #{$_checked}:hover:not(.cngx-button-toggle--disabled) {
         background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-secondary-container));
