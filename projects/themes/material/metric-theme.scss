@@ -13,9 +13,6 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-metric-value-color: var(--mat-sys-on-surface);
     --cngx-metric-unit-color: var(--mat-sys-on-surface-variant);
-  } @else {
-    --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-metric-unit-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
 
@@ -26,8 +23,6 @@
     --cngx-metric-unit-size: var(--mat-sys-body-medium-size);
     --cngx-metric-unit-weight: var(--mat-sys-body-medium-weight);
   }
-  // M2 has no first-class type-scale sys vars worth bridging; the
-  // component initial values cover the M2 case.
 }
 
 @mixin theme($theme) {

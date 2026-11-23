@@ -15,9 +15,6 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-tooltip-bg: var(--mat-sys-inverse-surface);
     --cngx-tooltip-color: var(--mat-sys-inverse-on-surface);
-  } @else {
-    --cngx-tooltip-bg: #{mat.get-theme-color($theme, background, tooltip)};
-    --cngx-tooltip-color: oklch(1 0 0);
   }
 }
 

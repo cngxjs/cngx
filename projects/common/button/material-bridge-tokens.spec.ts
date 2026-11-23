@@ -26,17 +26,6 @@ $theme: mat.define-theme((
 @include bridge.theme($theme);
 `;
 
-const M2_ENTRY = `
-@use '@angular/material' as mat;
-@use 'material/button-theme' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`;
-
 // Foundation knobs the button sheet reads (button-toggle-theme precedent: the
 // sheet SETs its own tone tokens in :scope, so a leaf assignment would lose)
 // plus the leaf tokens the sheets read without a :scope assignment.
@@ -195,15 +184,8 @@ describe('button Material bridge', () => {
     expect(names).toEqual(CONSUMED);
   });
 
-  it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames(compileThemeEntry(M2_ENTRY));
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect([...CONSUMED, ...SCHEME_KNOBS]).toContain(name);
-    }
-  });
 
-  it('sets the scheme knobs from the theme type to the sheet literals (M2, M3)', () => {
+  it('sets the scheme knobs from the theme type to the sheet literals (M3)', () => {
     // The bridge copies the sheet's scheme blocks; read both from the sheet so
     // a rung change there fails here instead of leaving the bridge stale.
     const sheet = readFileSync(
@@ -222,8 +204,6 @@ describe('button Material bridge', () => {
     const light = sheetBlock("[data-color-scheme='light'],");
     const dark = sheetBlock("[data-color-scheme='dark'],");
     const types = [
-      ['M2 light', M2_ENTRY, light],
-      ['M2 dark', M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'), dark],
       ['M3 light', M3_ENTRY, light],
       ['M3 dark', M3_ENTRY.replace('theme-type: light', 'theme-type: dark'), dark],
     ] as const;
@@ -273,52 +253,8 @@ describe('button Material bridge', () => {
     );
   });
 
-  it('maps the strong fill pairs onto primary and warn with their contrast colours (M2)', () => {
-    const host = block(compileThemeEntry(M2_ENTRY), '.cngx-button');
-    for (const token of [
-      '--cngx-color-primary-strong',
-      '--cngx-color-on-primary-strong',
-      '--cngx-color-danger-strong',
-      '--cngx-color-on-danger-strong',
-    ]) {
-      expect(host.has(token), token).toBe(true);
-    }
-    expect(host.has('--cngx-color-on-primary')).toBe(false);
-    expect(host.has('--cngx-color-on-danger')).toBe(false);
-  });
 
-  it('sets the danger secondary label on an M2 light theme only (M2)', () => {
-    const light = compileThemeEntry(M2_ENTRY);
-    expect(
-      block(light, '.cngx-button[data-variant=secondary][data-tone=danger]').get(
-        '--cngx-button-secondary-color',
-      ),
-    ).toBe('#a92b22');
-    const dark = compileThemeEntry(
-      M2_ENTRY.replace('m2-define-light-theme', 'm2-define-dark-theme'),
-    );
-    expect(dark).not.toContain('.cngx-button[data-variant=secondary][data-tone=danger]');
-  });
 
-  it('derives the M2 danger secondary label from the sheet pressed secondary mix', () => {
-    // The bridge restates the sheet's pressed wash in Sass; read both so a
-    // change to either side fails here instead of leaving the label stale.
-    const read = (path: string): string =>
-      readFileSync(fileURLToPath(new URL('../../../' + path, import.meta.url)), 'utf-8');
-    const sheet = read(BUTTON_SHEET);
-    const pressedRule = sheet.indexOf(
-      ":scope[data-variant='secondary']:is(:active, .cngx-pressed)",
-    );
-    expect(pressedRule).toBeGreaterThan(-1);
-    const sheetMix = sheet
-      .slice(pressedRule, sheet.indexOf('}', pressedRule))
-      .match(/currentColor\) (\d+%)/)?.[1];
-    const bridgeMix = read('projects/themes/material/button-theme.scss').match(
-      /\$_secondary-pressed-mix: (\d+%);/,
-    )?.[1];
-    expect(sheetMix).toBeDefined();
-    expect(bridgeMix).toBe(sheetMix);
-  });
 
   it('paints the secondary variant from the container roles per tone (M3)', () => {
     const css = compileThemeEntry(M3_ENTRY);
@@ -340,7 +276,7 @@ describe('button Material bridge', () => {
     }
   });
 
-  it('maps the state layers onto the M3 hover and pressed opacities (M3), M2 keeps the default', () => {
+  it('maps the state layers onto the M3 hover and pressed opacities (M3)', () => {
     const css = compileThemeEntry(M3_ENTRY);
     const host = block(css, '.cngx-button');
     expect(host.get('--cngx-button-hover-layer')).toBe(
@@ -359,18 +295,9 @@ describe('button Material bridge', () => {
     expect(close.get('--cngx-close-button-pressed-bg')).toBe(
       'color-mix(in srgb, var(--mat-sys-on-surface) calc(var(--mat-sys-pressed-state-layer-opacity, 0.12) * 100%), transparent)',
     );
-    const m2 = compileThemeEntry(M2_ENTRY);
-    for (const name of [
-      '--cngx-button-pressed-layer',
-      '--cngx-button-pressed-wash',
-      '--cngx-button-secondary-bg-pressed',
-      '--cngx-close-button-pressed-bg',
-    ]) {
-      expect(m2).not.toContain(name);
-    }
   });
 
-  it('rounds the family to corner-full in M3 only', () => {
+  it('rounds the family to corner-full (M3)', () => {
     const m3 = compileThemeEntry(M3_ENTRY);
     expect(
       declarations(m3, '.cngx-button:not(.cngx-close-button)').get('--cngx-button-radius'),
@@ -383,10 +310,9 @@ describe('button Material bridge', () => {
     expect(block(m3, '.cngx-close-button').get('--cngx-close-button-radius')).toBe(
       'var(--mat-sys-corner-full)',
     );
-    expect(compileThemeEntry(M2_ENTRY)).not.toContain('radius');
   });
 
-  it('bridges the menu-button caret and the split-button seam in M3 only', () => {
+  it('bridges the menu-button caret and the split-button seam (M3)', () => {
     const m3 = flat(compileThemeEntry(M3_ENTRY));
     expect(m3).toContain(
       '--cngx-icon-size: var(--cngx-menu-button-caret-size, var(--cngx-button-icon-size, 1.25em))',
@@ -398,12 +324,9 @@ describe('button Material bridge', () => {
       'border-inline-start-color: var(--cngx-button-tone-fill, var(--cngx-button-tone, currentColor))',
     );
     expect(m3).not.toContain('data-expanded');
-    const m2 = compileThemeEntry(M2_ENTRY);
-    expect(m2).not.toContain('cngx-split-button');
-    expect(m2).not.toContain('cngx-menu-button');
   });
 
-  it('inks neutral outline, ghost and link labels primary and neutral icon buttons on-surface-variant in M3 only', () => {
+  it('inks neutral outline, ghost and link labels primary and neutral icon buttons on-surface-variant (M3)', () => {
     const m3 = flat(compileThemeEntry(M3_ENTRY));
     expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-primary)');
     expect(m3).toContain('--cngx-button-tone-text: var(--mat-sys-on-surface-variant)');
@@ -412,7 +335,6 @@ describe('button Material bridge', () => {
     expect(m3).toContain(
       '.cngx-button:is([data-variant=outline], [data-variant=ghost], [data-variant=link])[data-tone=neutral]:not(.cngx-icon-button, .cngx-close-button)',
     );
-    expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-button-tone');
   });
 
   it('keeps the close-button tokens the old close-button bridge set', () => {
@@ -422,9 +344,6 @@ describe('button Material bridge', () => {
       'color-mix(in srgb, var(--mat-sys-on-surface)',
     );
     expect(m3.get('--cngx-close-button-color')).toBe('var(--mat-sys-on-surface-variant)');
-    expect(
-      block(compileThemeEntry(M2_ENTRY), '.cngx-close-button').get('--cngx-close-button-color'),
-    ).toBe('rgba(0, 0, 0, 0.54)');
   });
 
   it('derives every M3 metric from the --cngx-space-* scale, never a density map (M3)', () => {
@@ -500,14 +419,8 @@ describe('button Material bridge', () => {
     expect(close.get('--cngx-close-button-icon-size')).toBe(
       'calc(var(--cngx-font-size-control, 1rem) * 1.5)',
     );
-    expect(compileThemeEntry(M2_ENTRY)).not.toContain('--cngx-close-button-size');
   });
 
-  it('keeps the M2 button on the cngx metrics', () => {
-    const css = compileThemeEntry(M2_ENTRY);
-    expect(css).not.toContain('--cngx-button-padding');
-    expect(css).not.toContain('--cngx-button-font-size');
-  });
 
   it('layers every block and carries no mat-icon rule (the icon bridge sizes wrapped glyphs)', () => {
     const css = compileThemeEntry(M3_ENTRY);

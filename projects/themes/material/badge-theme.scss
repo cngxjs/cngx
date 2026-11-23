@@ -28,12 +28,6 @@
     // than competing with primary alerts.
     --cngx-badge-neutral-bg: var(--mat-sys-surface-variant);
     --cngx-badge-neutral-color: var(--mat-sys-on-surface-variant);
-  } @else {
-    --cngx-badge-primary-bg: #{mat.get-theme-color($theme, primary)};
-    --cngx-badge-error-bg: #{mat.get-theme-color($theme, warn)};
-    --cngx-badge-warning-bg: #{mat.get-theme-color($theme, accent)};
-    --cngx-badge-neutral-bg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.12)};
-    --cngx-badge-neutral-color: #{mat.get-theme-color($theme, foreground, text)};
   }
 }
 
@@ -51,8 +45,6 @@
     // Pill radius adopts Material's full-corner token so the indicator
     // matches <mat-badge>, which uses the same radius.
     --cngx-badge-radius: var(--mat-sys-corner-full, 999px);
-  } @else {
-    --cngx-badge-radius: 999px;
   }
 }
 

@@ -45,16 +45,6 @@
 
     // Remove-button focus ring follows the chip palette.
     --cngx-chip-remove-focus-color: var(--mat-sys-primary);
-  } @else {
-    --cngx-chip-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
-    --cngx-chip-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-chip-hover-bg: #{rgba(mat.get-theme-color($theme, primary), 0.16)};
-    --cngx-chip-selected-bg: #{rgba(mat.get-theme-color($theme, primary), 0.24)};
-    --cngx-chip-info-bg: #{rgba(mat.get-theme-color($theme, primary), 0.16)};
-    --cngx-chip-info-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-chip-danger-bg: #{rgba(mat.get-theme-color($theme, warn), 0.16)};
-    --cngx-chip-danger-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-chip-remove-focus-color: #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -106,8 +96,6 @@
     // default ships with. Bridge into the M3 shape so chips line up
     // with <mat-chip-set>.
     --cngx-chip-radius: var(--mat-sys-corner-small, 8px);
-  } @else {
-    --cngx-chip-radius: 8px;
   }
 }
 

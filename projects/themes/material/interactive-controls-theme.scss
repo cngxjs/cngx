@@ -30,19 +30,10 @@
     --cngx-toggle-track-bg-off: var(--mat-sys-surface-variant);
     --cngx-toggle-track-bg-on: var(--mat-sys-primary);
     --cngx-toggle-thumb-bg: var(--mat-sys-outline);
-  } @else {
-    --cngx-checkbox-border: 1.5px solid #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-checkbox-checked-bg: #{mat.get-theme-color($theme, primary)};
-    // Theme-derived idle ring, so M2 apps do not fall back to the
-    // component's 55% currentColor mix.
-    --cngx-radio-indicator-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-radio-indicator-checked-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-radio-indicator-mark-color: #{mat.get-theme-color($theme, primary, default-contrast)};
-    --cngx-toggle-track-bg-on: #{mat.get-theme-color($theme, primary)};
   }
 }
 
-// mat-checkbox draws its box with a fixed 2px corner in M3 and M2 (no
+// mat-checkbox draws its box with a fixed 2px corner (no
 // Material token); the cngx default reads --cngx-radius-sm (4px).
 @mixin base($theme) {
   --cngx-checkbox-radius: 2px;

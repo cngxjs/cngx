@@ -28,20 +28,6 @@
     --cngx-card-timestamp-color: var(--mat-sys-on-surface-variant);
     --cngx-skeleton-bg: var(--mat-sys-surface-container-high);
     --cngx-skeleton-shimmer: var(--mat-sys-surface-container);
-  } @else {
-    --cngx-card-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-card-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-card-title-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-card-subtitle-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-card-border: 1px solid #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-card-focus-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-card-selected-border: #{mat.get-theme-color($theme, primary)};
-    --cngx-card-selected-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
-    --cngx-card-divider: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-metric-unit-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-trend-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-card-timestamp-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
 
@@ -64,12 +50,10 @@
 // per-component density() map here anymore.
 
 // The cngx default reads --cngx-radius-lg, which the system bridge maps to
-// corner-large (16px); M3 cards use corner-medium (12px), M2 cards 4px.
+// corner-large (16px); M3 cards use corner-medium (12px).
 @mixin base($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-card-radius: var(--mat-sys-corner-medium, 12px);
-  } @else {
-    --cngx-card-radius: 4px;
   }
 }
 

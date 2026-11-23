@@ -23,9 +23,6 @@
       color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
     --cngx-popover-panel-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-popover-panel-footer-border-top: 1px solid var(--mat-sys-outline-variant);
-  } @else {
-    --cngx-popover-panel-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-popover-panel-color: #{mat.get-theme-color($theme, foreground, text)};
   }
 }
 

@@ -11,10 +11,9 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * because `projects/themes/material/` has no test target.
  */
 
-function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
-  const entry =
-    themeVersion === 'v1'
-      ? `
+function bridgeTokenNames(): readonly string[] {
+  return emittedTokenNames(
+    compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/chart-theme' as bridge;
 
@@ -23,18 +22,8 @@ $theme: mat.define-theme((
 ));
 
 @include bridge.theme($theme);
-`
-      : `
-@use '@angular/material' as mat;
-@use 'material/chart-theme' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`;
-  return emittedTokenNames(compileThemeEntry(entry));
+`),
+  );
 }
 
 describe('chart Material bridge', () => {
@@ -48,14 +37,6 @@ describe('chart Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+    expect(bridgeTokenNames()).toEqual(CONSUMED);
   });
 });

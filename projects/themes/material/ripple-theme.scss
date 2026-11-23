@@ -17,9 +17,6 @@
   @if mat.get-theme-version($theme) == 1 {
     // M3 - derive from on-surface for subtle ripple
     --cngx-ripple-color: var(--mat-sys-on-surface, currentColor);
-  } @else {
-    // M2 - use foreground
-    --cngx-ripple-color: #{mat.get-theme-color($theme, foreground, base)};
   }
 }
 

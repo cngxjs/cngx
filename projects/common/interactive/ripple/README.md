@@ -218,7 +218,7 @@ html {
 }
 ```
 
-The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-surface` for M3, `foreground.base` for M2) and applies base defaults for `--cngx-ripple-opacity` (`0.12`) and `--cngx-ripple-duration` (`0.5s`).
+The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-surface`, M3 themes only) and applies base defaults for `--cngx-ripple-opacity` (`0.12`) and `--cngx-ripple-duration` (`0.5s`).
 
 ## See Also
 

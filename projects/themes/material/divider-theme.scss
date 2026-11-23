@@ -3,7 +3,7 @@
 
 // Material bridge for CngxDivider. Color follows the outline-variant
 // tone so a cngx divider next to <mat-divider> reads the same, and the
-// spacing drops to 0 because mat-divider carries no margin (M3 and M2);
+// spacing drops to 0 because mat-divider carries no margin;
 // the thickness stays where the consumer set it.
 //
 //   @use '@cngx/themes/material/divider-theme' as divider;
@@ -12,8 +12,6 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-divider-color: var(--mat-sys-outline-variant);
-  } @else {
-    --cngx-divider-color: #{mat.get-theme-color($theme, foreground, divider)};
   }
 }
 

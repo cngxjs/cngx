@@ -171,7 +171,7 @@ html {
 }
 ```
 
-Sets backdrop, border-radius, padding, surface colors, and shadow from the Material palette. Supports both M2 and M3 themes. Includes a `density($level)` mixin for compact/default/comfortable spacing.
+Sets backdrop, border-radius, padding, surface colors, and shadow from the Material palette. Needs an M3 theme; an M2 theme is not bridged. Includes a `density($level)` mixin for compact/default/comfortable spacing.
 
 ## See Also
 

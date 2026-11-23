@@ -12,8 +12,6 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-backdrop-bg: color-mix(in srgb, var(--mat-sys-scrim) 32%, transparent);
-  } @else {
-    --cngx-backdrop-bg: rgba(0, 0, 0, 0.32);
   }
 }
 

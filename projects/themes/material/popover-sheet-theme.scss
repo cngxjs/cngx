@@ -23,13 +23,6 @@
       var(--mat-sys-on-surface-variant) 40%,
       transparent
     );
-  } @else {
-    --cngx-popover-sheet-surface: #{mat.get-theme-color($theme, background, card)};
-    --cngx-popover-sheet-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-popover-sheet-handle-color: #{rgba(
-        mat.get-theme-color($theme, foreground, divider),
-        0.4
-      )};
   }
 }
 
