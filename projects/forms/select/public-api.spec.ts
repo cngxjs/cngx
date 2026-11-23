@@ -100,6 +100,7 @@ describe('@cngx/forms/select public API shape', () => {
       'createReorderCommitHandler',
       'createScalarCommitHandler',
       'createSearchEffects',
+      'createSelectCommitController',
       'createTemplateRegistry',
       'createTriggerFocusState',
       'createTypeaheadController',

@@ -260,8 +260,10 @@ export {
 export {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxSelectCommitControllerFactory,
+  type CngxSelectCommitController,
   type CngxCommitController,
   type CngxCommitBeginHandlers,
+  createSelectCommitController,
   createCommitController,
 } from './shared/commit-controller.token';
 

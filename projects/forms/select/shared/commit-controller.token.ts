@@ -26,7 +26,7 @@ export type {
  * keeps every existing select call-site working while
  * `@cngx/common/data` owns the generic state machine.
  */
-export interface CngxCommitController<T> extends Omit<CngxGenericCommitController<T>, 'begin'> {
+export interface CngxSelectCommitController<T> extends Omit<CngxGenericCommitController<T>, 'begin'> {
   /**
    * Start a new commit. Supersedes any in-flight commit: prior callbacks
    * become no-ops, prior Observable subscriptions are torn down.
@@ -56,7 +56,7 @@ export interface CngxCommitController<T> extends Omit<CngxGenericCommitControlle
  */
 function wrapAsSelectController<T>(
   generic: CngxGenericCommitController<T>,
-): CngxCommitController<T> {
+): CngxSelectCommitController<T> {
   return {
     state: generic.state,
     isCommitting: generic.isCommitting,
@@ -80,20 +80,38 @@ function wrapAsSelectController<T>(
  * {@link CNGX_SELECT_COMMIT_CONTROLLER_FACTORY} for DI-aware
  * resolution.
  */
-export function createCommitController<T>(): CngxCommitController<T> {
+export function createSelectCommitController<T>(): CngxSelectCommitController<T> {
   return wrapAsSelectController(createGenericCommitController<T>());
 }
 
 /**
- * Factory signature for {@link CngxCommitController} instances scoped
+ * @deprecated Use {@link CngxSelectCommitController}. The unprefixed name is
+ * also exported by `@cngx/common/data` with a different `begin` signature;
+ * the alias remains for compatibility and will be removed in a future major.
+ * @since 0.1.0
+ */
+export type CngxCommitController<T> = CngxSelectCommitController<T>;
+
+/**
+ * Alias of {@link createSelectCommitController} under the pre-rename name.
+ *
+ * @deprecated Use `createSelectCommitController`. The unprefixed name is also
+ * exported by `@cngx/common/data` with a different contract; the alias
+ * remains for compatibility and will be removed in a future major.
+ * @since 0.1.0
+ */
+export const createCommitController = createSelectCommitController;
+
+/**
+ * Factory signature for {@link CngxSelectCommitController} instances scoped
  * to the select family. Override this token (retry-with-backoff,
  * offline queues, telemetry) without touching call sites.
  */
-export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>;
+export type CngxSelectCommitControllerFactory = <T>() => CngxSelectCommitController<T>;
 
 /**
  * DI token for the per-variant commit-controller factory. Default
- * resolves to {@link createCommitController}. Override on
+ * resolves to {@link createSelectCommitController}. Override on
  * {@link CNGX_COMMIT_CONTROLLER_FACTORY} to swap the state machine for
  * every cngx feature; override on this token to swap only the select
  * family.
@@ -111,7 +129,7 @@ export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
  * @since 0.1.0
- * @relatedTo createCommitController, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_REORDER_COMMIT_HANDLER_FACTORY
+ * @relatedTo createSelectCommitController, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_REORDER_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_SELECT_COMMIT_CONTROLLER_FACTORY =
   new InjectionToken<CngxSelectCommitControllerFactory>('CngxSelectCommitControllerFactory', {
