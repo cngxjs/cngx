@@ -96,7 +96,9 @@ export class CngxAsyncBoundary implements CngxStateful<readonly unknown[]> {
     {
       equal: (a, b) =>
         a.length === b.length &&
-        a.every((f, i) => f.key === b[i].key && Object.is(f.error, b[i].error)),
+        a.every(
+          (f, i) => f.key === b[i].key && f.label === b[i].label && Object.is(f.error, b[i].error),
+        ),
     },
   );
 }

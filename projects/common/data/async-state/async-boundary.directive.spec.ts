@@ -82,6 +82,23 @@ describe('CngxAsyncBoundary', () => {
     expect(directive.failures()).toBe(first);
   });
 
+  it('follows a changed label of an errored source', () => {
+    const { fixture, host, directive } = setup();
+
+    host.perms.setError('perms-down');
+    TestBed.flushEffects();
+    expect(directive.failures()[0].label).toBe('Permissions');
+
+    host.sources.set([
+      { key: 'user', label: 'User', state: host.user },
+      { key: 'perms', label: 'Access rights', state: host.perms },
+      { key: 'flags', label: 'Feature flags', state: host.flags },
+    ]);
+    fixture.detectChanges();
+
+    expect(directive.failures()[0].label).toBe('Access rights');
+  });
+
   it('reflects aggregate busy through host aria-busy', () => {
     const { fixture, host, debugEl } = setup();
 
