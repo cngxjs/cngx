@@ -1303,6 +1303,10 @@ test.describe('material-bridge rendered values: speak-button', () => {
     expect(await computedValue(page, '#speak-idle', 'color')).toBe(matSys('on-surface-variant'));
   });
 
+  test('the resting edge paints the outline-variant role', async ({ page }) => {
+    expect(await computedValue(page, '#speak-idle', 'border-top-color')).toBe(matSys('outline-variant'));
+  });
+
   test('hover paints the container surface and the primary ink and edge', async ({ page }) => {
     await page.hover('#speak-idle');
     expect(await computedValue(page, '#speak-idle', 'background-color')).toBe(
