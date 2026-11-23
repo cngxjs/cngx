@@ -277,6 +277,24 @@ describe('createErrorAggregatorContract', () => {
 });
 
 describe('createErrorAggregatorContract dev diagnostics', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('does not warn when the same source re-registers with a new label', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const contract = createErrorAggregatorContract({
+      sourcesState: makeSources(),
+      scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
+      locale: EN_US,
+      countAnnouncement: COUNT_EN,
+    });
+    const condition = signal(true).asReadonly();
+
+    contract.addSource({ key: 'email', condition, label: 'Old' });
+    contract.addSource({ key: 'email', condition, label: 'New' });
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it('warns with CNGX1020 when a second source reuses a registered key', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const contract = createErrorAggregatorContract({
