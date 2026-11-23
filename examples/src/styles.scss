@@ -1171,6 +1171,9 @@ button.chip.chip--compact {
 .cngx-ex-overlay-panel {
   background: var(--cngx-color-surface, var(--cngx-ex-surface, #fff));
   color: var(--cngx-color-text, var(--cngx-ex-text, inherit));
+  // Forced colors drop the shadow; the transparent border is repainted in
+  // the system colour and keeps the panel edge visible.
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
@@ -1195,6 +1198,10 @@ button.chip.chip--compact {
   transition: box-shadow 150ms ease;
 }
 .cngx-ex-keyboard-ring.cngx-focus-visible {
+  // The ring is a box-shadow, which forced colors remove; the transparent
+  // outline is repainted in the system colour and stays as the indicator.
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: 0 0 0 2px var(--cngx-color-primary, #f5a623);
 }
 

@@ -46,4 +46,13 @@ test.describe('common/a11y/focus-trap', () => {
     await expect(state).toHaveText('left, focus trapped');
 
   });
+  test('modal-dialog: the panel edge stays drawn under forced colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    await gotoDemo(page, 'common/a11y/focus-trap/modal-dialog');
+
+    await page.getByRole('button', { name: 'Open modal', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Confirm action' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveCSS('border-top-style', 'solid');
+  });
 });
