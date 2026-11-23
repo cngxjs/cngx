@@ -60,7 +60,11 @@ import type {
  */
 const openPopovers = new Set<CngxPopover>();
 
-function setOrRemoveStyle(style: CSSStyleDeclaration, property: string, value: string | null): void {
+function setOrRemoveStyle(
+  style: CSSStyleDeclaration,
+  property: string,
+  value: string | null,
+): void {
   if (value === null) {
     style.removeProperty(property);
     return;
