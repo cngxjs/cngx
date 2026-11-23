@@ -1,11 +1,13 @@
-import { signal, type Resource, type ResourceStatus } from '@angular/core';
+import { resource, signal, type Resource, type ResourceStatus } from '@angular/core';
 import { httpResource, provideHttpClient, type HttpResourceRef } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
 import { fromResource } from './from-resource';
 import { fromHttpResource } from './from-http-resource';
+import { resolveAsyncView } from './resolve-view';
 
 interface FakeResource<T> {
   readonly ref: Resource<T>;
@@ -22,7 +24,7 @@ function fakeResource<T>(): FakeResource<T> {
     status: status.asReadonly(),
     value: value.asReadonly() as Resource<T>['value'],
     error: error.asReadonly(),
-    hasValue: () => value() !== undefined,
+    hasValue: () => status() !== 'error' && value() !== undefined,
     isLoading: () => status() === 'loading' || status() === 'reloading',
   } as unknown as Resource<T>;
   return {
@@ -88,6 +90,139 @@ describe('fromResource', () => {
   });
 });
 
+async function settle(): Promise<void> {
+  for (let i = 0; i < 5; i++) {
+    TestBed.tick();
+    await new Promise((r) => setTimeout(r, 0));
+  }
+}
+
+function viewOf(state: CngxAsyncState<unknown>): string {
+  return resolveAsyncView(state.status(), state.isFirstLoad(), state.isEmpty());
+}
+
+function realResource(fail: { on: boolean }) {
+  const params = signal<number | undefined>(1);
+  return TestBed.runInInjectionContext(() => {
+    const ref = resource({
+      params: () => params(),
+      loader: async ({ params: p }) => {
+        if (fail.on) {
+          throw new Error(`fail-${p}`);
+        }
+        return [`v${p}`];
+      },
+    });
+    return { params, ref, state: fromResource(ref) };
+  });
+}
+
+describe('fromResource over a real resource()', () => {
+  it('reports a failed first load as a first load with the error view', async () => {
+    const { state } = realResource({ on: true });
+    await settle();
+
+    expect(state.status()).toBe('error');
+    expect(state.isFirstLoad()).toBe(true);
+    expect(state.data()).toBeUndefined();
+    expect(viewOf(state)).toBe('error');
+  });
+
+  it('keeps the last good data when a reload of the same request fails', async () => {
+    const fail = { on: false };
+    const { ref, state } = realResource(fail);
+    await settle();
+    expect(viewOf(state)).toBe('content');
+
+    fail.on = true;
+    ref.reload();
+    expect(state.status()).toBe('refreshing');
+    expect(state.isFirstLoad()).toBe(false);
+    await settle();
+
+    expect(state.status()).toBe('error');
+    expect(state.isFirstLoad()).toBe(false);
+    expect(state.data()).toEqual(['v1']);
+    expect(viewOf(state)).toBe('content+error');
+  });
+
+  it('shows the skeleton when a failed first load is reloaded, then the error', async () => {
+    const fail = { on: true };
+    const { ref, state } = realResource(fail);
+    await settle();
+    expect(viewOf(state)).toBe('error');
+
+    ref.reload();
+    expect(state.status()).toBe('refreshing');
+    expect(viewOf(state)).toBe('skeleton');
+    await settle();
+
+    expect(viewOf(state)).toBe('error');
+    expect(state.isFirstLoad()).toBe(true);
+  });
+
+  it('treats a params change that fails as a new first load without data', async () => {
+    const fail = { on: false };
+    const { params, state } = realResource(fail);
+    await settle();
+    expect(state.data()).toEqual(['v1']);
+
+    fail.on = true;
+    params.set(2);
+    expect(state.status()).toBe('loading');
+    expect(state.isFirstLoad()).toBe(true);
+    await settle();
+
+    expect(state.status()).toBe('error');
+    expect(state.data()).toBeUndefined();
+    expect(viewOf(state)).toBe('error');
+  });
+
+  it('reports idle after a success as a first load with no view', async () => {
+    const { params, state } = realResource({ on: false });
+    await settle();
+    expect(state.isFirstLoad()).toBe(false);
+
+    params.set(undefined);
+    await settle();
+
+    expect(state.status()).toBe('idle');
+    expect(state.isFirstLoad()).toBe(true);
+    expect(viewOf(state)).toBe('none');
+  });
+
+  it('keeps lastUpdated across a params change', async () => {
+    const fail = { on: false };
+    const { params, state } = realResource(fail);
+    await settle();
+    const stamp = state.lastUpdated();
+    expect(stamp).toBeInstanceOf(Date);
+
+    fail.on = true;
+    params.set(2);
+    expect(state.status()).toBe('loading');
+    await settle();
+
+    expect(state.status()).toBe('error');
+    expect(state.lastUpdated()).toBe(stamp);
+  });
+
+  it('keeps the data reference across a reloading round trip with an unchanged value', async () => {
+    const fail = { on: false };
+    const { ref, state } = realResource(fail);
+    await settle();
+    const first = state.data();
+
+    fail.on = true;
+    ref.reload();
+    expect(state.data()).toBe(first);
+    await settle();
+
+    expect(state.status()).toBe('error');
+    expect(state.data()).toBe(first);
+  });
+});
+
 describe('fromHttpResource', () => {
   function fakeHttpResource<T>() {
     const fake = fakeResource<T>();
@@ -146,5 +281,23 @@ describe('fromHttpResource', () => {
     expect(state.isFirstLoad()).toBe(true);
     fake.setStatus('reloading');
     expect(state.isLoading()).toBe(true);
+  });
+
+  it('reports a failed first load as a first load with the error view', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const state = TestBed.runInInjectionContext(() =>
+      fromHttpResource(httpResource<string[]>(() => '/api/items')),
+    );
+    await settle();
+    TestBed.inject(HttpTestingController)
+      .expectOne('/api/items')
+      .flush('boom', { status: 500, statusText: 'err' });
+    await settle();
+
+    expect(state.status()).toBe('error');
+    expect(state.isFirstLoad()).toBe(true);
+    expect(viewOf(state)).toBe('error');
   });
 });

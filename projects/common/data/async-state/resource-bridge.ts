@@ -1,5 +1,13 @@
-import { computed, effect, type Resource, signal, type Signal } from '@angular/core';
+import { computed, linkedSignal, type Resource, type Signal } from '@angular/core';
 import { type AsyncStatus, buildAsyncStateView, type CngxAsyncState } from '@cngx/core/utils';
+
+import {
+  nextResourceLatch,
+  resourceLatchEqual,
+  resourceLatchSourceEqual,
+  type ResourceLatch,
+  type ResourceLatchSource,
+} from './resource-latch';
 
 /**
  * Shared projection core for the two resource bridges (`fromResource`,
@@ -7,7 +15,9 @@ import { type AsyncStatus, buildAsyncStateView, type CngxAsyncState } from '@cng
  * the family semantics (`isLoading` includes pending/refreshing,
  * `isBusy === isLoading`) cannot drift between the bridges and the factories.
  *
- * Must be called in an injection context (the tracking `effect()` requires one).
+ * "First load" is per request identity: a failed reload of the same request
+ * keeps the last good value, a params change or `idle` starts over. The latch
+ * is a `linkedSignal` over the pure `nextResourceLatch` reducer - no effect.
  *
  * @internal
  */
@@ -15,17 +25,26 @@ export function buildResourceBridge<T>(
   ref: Resource<T>,
   progress?: Signal<number | undefined>,
 ): CngxAsyncState<T> {
-  // ResourceStatus has no "first load" concept, so a successful load is
-  // latched here together with its timestamp.
-  const hadSuccess = signal(false);
-  const lastUpdated = signal<Date | undefined>(undefined);
+  // Angular throws from value() in error, so the value is read only behind hasValue().
+  const source = computed(
+    (): ResourceLatchSource<T> => {
+      const hasValue = ref.hasValue();
+      return {
+        status: ref.status(),
+        hasValue,
+        value: hasValue ? ref.value() : undefined,
+        error: ref.error(),
+      };
+    },
+    { equal: resourceLatchSourceEqual },
+  );
 
-  effect(() => {
-    const s = ref.status();
-    if (s === 'resolved' || s === 'local') {
-      hadSuccess.set(true);
-      lastUpdated.set(new Date());
-    }
+  // ResourceStatus has no "first load" concept; the latch holds the last good
+  // value of the current request chain with its timestamp.
+  const latch = linkedSignal<ResourceLatchSource<T>, ResourceLatch<T>>({
+    source,
+    computation: (current, previous) => nextResourceLatch(current, previous, new Date()),
+    equal: resourceLatchEqual,
   });
 
   const status = computed((): AsyncStatus => {
@@ -46,12 +65,17 @@ export function buildResourceBridge<T>(
 
   return buildAsyncStateView<T>({
     status,
-    data: computed(() => (ref.hasValue() ? ref.value() : undefined)),
+    data: computed(() => {
+      // Read the latch first so every data reader keeps the request chain observed.
+      const last = latch();
+      return ref.hasValue() ? ref.value() : last.value;
+    }),
     error: computed(() => ref.error()),
     progress,
-    // Idle counts as "before the first load": a not-yet-triggered resource
-    // still shows the skeleton, not the empty state.
-    isFirstLoad: computed(() => !hadSuccess() && (ref.isLoading() || status() === 'idle')),
-    lastUpdated: lastUpdated.asReadonly(),
+    // Idle and a new request count as "before the first load", never as empty.
+    isFirstLoad: computed(() => !latch().has),
+    lastUpdated: computed(() => latch().at, {
+      equal: (a, b) => a?.getTime() === b?.getTime(),
+    }),
   });
 }

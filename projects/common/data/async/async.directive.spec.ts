@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, resource } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { ManualAsyncState } from '../async-state/create-manual-state';
 import { createManualState } from '../async-state/create-manual-state';
+import { fromResource } from '../async-state/from-resource';
 import { CngxAsync } from './async.directive';
 
 @Component({
@@ -120,5 +121,35 @@ describe('CngxAsync', () => {
     // content+error resolves to content in structural directive
     expect(el.querySelector('.error')).toBeNull();
     expect(el.textContent).toContain('existing data');
+  });
+});
+
+describe('CngxAsync over fromResource', () => {
+  @Component({
+    template: `
+      <div *cngxAsync="state; let items; error: errTpl">CONTENT {{ $any(items).length }}</div>
+      <ng-template #errTpl><span class="error">ERRORTPL</span></ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class ResourceHost {
+    readonly ref = resource<string[], unknown>({
+      loader: async (): Promise<string[]> => {
+        throw new Error('first-fail');
+      },
+    });
+    readonly state = fromResource(this.ref);
+  }
+
+  it('renders the error template for a failed first load', async () => {
+    const fixture = TestBed.createComponent(ResourceHost);
+    for (let i = 0; i < 5; i++) {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('.error')?.textContent).toBe('ERRORTPL');
+    expect(el.textContent).not.toContain('CONTENT');
   });
 });

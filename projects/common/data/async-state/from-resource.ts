@@ -6,8 +6,7 @@ import { buildResourceBridge } from './resource-bridge';
 /**
  * Bridge that projects an Angular `Resource<T>` onto `CngxAsyncState<T>`.
  *
- * Must be called in an injection context (the `effect()` that tracks
- * `hadSuccess` requires one).
+ * Must be called in an injection context.
  *
  * All signals are derived reactively from the resource - no manual
  * synchronization. The resource stays the single source of truth.

@@ -106,7 +106,7 @@ readonly residents = injectAsyncState(
 
 Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → AsyncStatus, tracks first-load state (not present in Angular's Resource).
 
-**Requires:** Injection context (uses `effect()` for `hadSuccess` tracking).
+**Requires:** Injection context.
 
 **Returns:** Read-only `CngxAsyncState<T>` (no mutations).
 
