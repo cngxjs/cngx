@@ -52,7 +52,7 @@ export const STORY: DemoSpec = {
           [attr.aria-pressed]="ttsErr.speaking()"
           (click)="ttsErr.toggle()"
         >
-          {{ ttsErr.speaking() ? 'stop' : 'hear error' }}
+          hear error
         </button>
       }
       @if (ttsErr.speaking()) {

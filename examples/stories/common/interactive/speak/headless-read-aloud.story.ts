@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
         type="button"
         class="sort-btn demo-speak-icon-btn"
         [class.demo-speak-icon-btn--active]="tts1.speaking()"
-        [attr.aria-label]="tts1.speaking() ? 'Stop reading' : 'Read passage'"
+        aria-label="Read passage"
         [attr.aria-pressed]="tts1.speaking()"
         (click)="tts1.toggle()"
       >
@@ -61,7 +61,7 @@ export const STORY: DemoSpec = {
         type="button"
         class="sort-btn demo-speak-icon-btn"
         [class.demo-speak-icon-btn--active]="tts2.speaking()"
-        [attr.aria-label]="tts2.speaking() ? 'Stop reading' : 'Read passage'"
+        aria-label="Read order update"
         [attr.aria-pressed]="tts2.speaking()"
         (click)="tts2.toggle()"
       >

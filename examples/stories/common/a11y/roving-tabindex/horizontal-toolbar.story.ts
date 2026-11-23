@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
        [(activeIndex)]="activeToolbar"
        role="toolbar"
        aria-label="Text formatting"
-       style="display:flex;gap:8px">
+       style="display:flex;flex-wrap:wrap;gap:8px">
     <button type="button" cngxRovingItem class="chip">Bold</button>
     <button type="button" cngxRovingItem class="chip">Italic</button>
     <button type="button" cngxRovingItem class="chip">Underline</button>

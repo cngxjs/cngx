@@ -37,6 +37,41 @@ test.describe('common/interactive/click-outside', () => {
     await expect(status).toContainText('closed');
   });
 
+  test('dropdown: Escape on the toggle closes; tabbing out of the panel closes', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/dropdown');
+
+    const toggle = page.getByRole('button', { name: /Toggle dropdown/ });
+    const status = page.locator('.output-badge');
+
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('open');
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(status).toContainText('closed');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('open');
+    await page.keyboard.press('Tab');
+    const inner = page.getByRole('button', { name: 'Inner button (does not close)' });
+    await expect(inner).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(status).toContainText('closed');
+    await expect(toggle).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('open');
+    await page.keyboard.press('Tab');
+    await expect(inner).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(status).toContainText('closed');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('enabled-toggle: outside clicks bump the counter; disabled stops emissions', async ({
     page,
   }) => {
@@ -67,5 +102,34 @@ test.describe('common/interactive/click-outside', () => {
     const afterClicksCount = parseInt((await counter.textContent()) ?? '0', 10);
     expect(afterClicksCount).toBe(afterDisableCount);
 
+  });
+  test('event-type: pointerdown counts on press, click only on release', async ({ page }) => {
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/event-type');
+
+    const valueOf = (label: string) =>
+      page
+        .locator('.event-row')
+        .filter({ has: page.getByText(label, { exact: true }) })
+        .locator('.event-value');
+    const presses = valueOf('Outside presses');
+
+    await page.mouse.move(10, 10);
+    await page.mouse.down();
+    await expect(presses).toHaveText('1');
+    await expect(valueOf('Last event')).toHaveText('pointerdown');
+    await page.mouse.up();
+
+    // The press on the switch is itself outside and still counts as a
+    // pointerdown; the click listener attaches after the switch.
+    const clickType = page.getByRole('button', { name: 'click', exact: true });
+    await clickType.click();
+    await expect(clickType).toHaveAttribute('aria-pressed', 'true');
+    await expect(presses).toHaveText('2');
+    await page.mouse.move(10, 10);
+    await page.mouse.down();
+    await expect(presses).toHaveText('2');
+    await page.mouse.up();
+    await expect(presses).toHaveText('3');
+    await expect(valueOf('Last event')).toHaveText('click');
   });
 });

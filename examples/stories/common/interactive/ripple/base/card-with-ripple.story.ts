@@ -16,16 +16,21 @@ export const STORY: DemoSpec = {
     'import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody } from \'@cngx/common/card\';',
   ],
   imports: ['CngxRipple', 'CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody'],
-  template: `  <cngx-card as="button" cngxRipple #rp="cngxRipple" style="max-width:280px">
+  setup: `protected readonly activations = signal(0);`,
+  template: `  <cngx-card as="button" cngxRipple #rp="cngxRipple" (clicked)="activations.update((n) => n + 1)" style="max-width:280px">
     <header cngxCardHeader>
       <h3 cngxCardTitle>Tappable card</h3>
     </header>
-    <p cngxCardBody>Click anywhere on this card.</p>
+    <p cngxCardBody>Click anywhere on this card, or press Enter or Space.</p>
   </cngx-card>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Ripple active</span>
       <span class="event-value">{{ rp.active() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Activations</span>
+      <span class="event-value">{{ activations() }}</span>
     </div>
   </div>`,
 };

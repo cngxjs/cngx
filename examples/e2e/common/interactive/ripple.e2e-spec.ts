@@ -37,4 +37,44 @@ test.describe('common/interactive/ripple', () => {
     await expect(card.locator('.cngx-ripple__wave')).toHaveCount(1);
 
   });
+  test('card-with-ripple: click, Enter and Space activate the card', async ({ page }) => {
+    await gotoDemo(page, 'common/interactive/ripple/base/card-with-ripple');
+
+    const card = page.getByRole('button', { name: /Tappable card/ });
+    const activations = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('Activations', { exact: true }) })
+      .locator('.event-value');
+    await expect(activations).toHaveText('0');
+    await card.click();
+    await expect(activations).toHaveText('1');
+    await card.focus();
+    await page.keyboard.press('Enter');
+    await expect(activations).toHaveText('2');
+    await page.keyboard.press(' ');
+    await expect(activations).toHaveText('3');
+  });
+  test('ripple-under-reduced-motion: the scoped button carries the reduced motion axis', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/ripple/reduced-motion/ripple-under-reduced-motion');
+
+    const scoped = page.getByRole('button', { name: 'Scoped motion' });
+    const full = page.getByRole('button', { name: 'Full motion' });
+    await expect(scoped.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(1);
+    await expect(full.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(0);
+
+    // The scope wins over the class rule: the wave gets the fade keyframes.
+    await scoped.evaluate((el) => {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }));
+    });
+    const waveName = await scoped.evaluate((el) => {
+      const wave = el.querySelector('.cngx-ripple__wave');
+      return wave ? getComputedStyle(wave).animationName : 'no wave';
+    });
+    expect(waveName).toBe('cngx-ripple-fade');
+
+    await page.getByRole('button', { name: 'Reduce motion on the right' }).click();
+    await expect(scoped.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(0);
+  });
 });

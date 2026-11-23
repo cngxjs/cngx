@@ -59,15 +59,15 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">Active id</span>
-      <span class="event-value">{{ ad.activeId() ?? '—' }}</span>
+      <span class="event-value">{{ ad.activeId() ?? 'none' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Active value</span>
-      <span class="event-value">{{ ad.activeValue() ?? '—' }}</span>
+      <span class="event-value">{{ ad.activeValue() ?? 'none' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Last activated</span>
-      <span class="event-value">{{ lastActivated() ?? '—' }}</span>
+      <span class="event-value">{{ lastActivated() ?? 'none' }}</span>
     </div>
   </div>`,
 };

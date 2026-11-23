@@ -62,5 +62,7 @@ test.describe('CngxActiveDescendant demo', () => {
     await typeaheadBox.focus();
     await page.keyboard.type('e');
     await expect(typeaheadBox).toHaveAttribute('aria-activedescendant', 'fruit-elder-ta');
+    await expect(page.locator('#fruit-elder-ta')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#fruit-apple-ta')).toHaveAttribute('aria-selected', 'false');
   });
 });

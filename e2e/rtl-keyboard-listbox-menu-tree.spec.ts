@@ -11,6 +11,7 @@ const R = {
   menuSubmenu: '/#/common/interactive/menu/submenu/two-level-submenu',
   contextSubmenu: '/#/ui/context-menu/submenu/nested-export-menu',
   treeSelect: '/#/forms/select/tree-select/basic-single-level-toggle',
+  adHorizontal: '/#/common/a11y/active-descendant/horizontal-option-row',
 };
 
 function setRtl(page: Page): Promise<void> {
@@ -39,6 +40,31 @@ test.describe('RTL keyboard navigation: listbox, menu, tree', () => {
     // Physical ArrowRight is inline-back: Underline -> Italic.
     await page.keyboard.press('ArrowRight');
     await expect(buttons.nth(1)).toBeFocused();
+  });
+
+  test('horizontal active descendant: ArrowLeft advances in reading order', async ({ page }) => {
+    await page.goto(R.adHorizontal);
+    const listbox = page.getByRole('listbox', { name: 'Size' });
+    await expect(listbox).toBeVisible();
+    await listbox.focus();
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-s');
+
+    // ltr: ArrowRight forward, ArrowLeft back.
+    await page.keyboard.press('ArrowRight');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-m');
+    await page.keyboard.press('ArrowLeft');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-s');
+
+    // rtl flips the inline arrows; the vertical arrows stay inert.
+    await setRtl(page);
+    await page.keyboard.press('ArrowLeft');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-m');
+    await page.keyboard.press('ArrowLeft');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-l');
+    await page.keyboard.press('ArrowRight');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-m');
+    await page.keyboard.press('ArrowDown');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', 'size-m');
   });
 
   test('menu submenu: ArrowLeft opens the submenu, ArrowRight pops it', async ({ page }) => {

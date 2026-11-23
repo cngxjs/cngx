@@ -18,19 +18,19 @@ export const STORY: DemoSpec = {
     },
   ],
   setup: `protected readonly detailsOpen = signal(false);`,
-  setupChrome: `protected readonly focusedId = signal<string>('—');
+  setupChrome: `protected readonly focusedId = signal<string>('none');
 
   constructor() {
     const host = inject(ElementRef).nativeElement as HTMLElement;
     afterNextRender(() => {
       host.addEventListener('focusin', (e) => {
         const t = e.target as HTMLElement | null;
-        this.focusedId.set(t?.id || (t?.tagName.toLowerCase() ?? '—'));
+        this.focusedId.set(t?.id || (t?.tagName.toLowerCase() ?? 'none'));
       });
       host.addEventListener('focusout', () => {
         setTimeout(() => {
           if (!host.contains(document.activeElement)) {
-            this.focusedId.set('—');
+            this.focusedId.set('none');
           }
         }, 0);
       });

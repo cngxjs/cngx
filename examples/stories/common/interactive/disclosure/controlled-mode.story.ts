@@ -27,11 +27,9 @@ export const STORY: DemoSpec = {
           class="sort-btn" style="margin-top: 0.5rem;">
     Trigger: {{ cd.opened() ? 'expanded' : 'collapsed' }}
   </button>
-  @if (cd.opened()) {
-    <div id="ctrl-content" class="demo-disclosure-panel" style="margin-top: 0.5rem;">
-      Controlled content: state owned by parent signal.
-    </div>
-  }`,
+  <div id="ctrl-content" class="demo-disclosure-panel" style="margin-top: 0.5rem;" [hidden]="!cd.opened()">
+    Controlled content: state owned by parent signal.
+  </div>`,
   templateChrome: `<div class="button-row">
     <button type="button" class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
       External: {{ controlledOpen() ? 'open' : 'closed' }}

@@ -48,9 +48,38 @@ test.describe('common/a11y/focus-restore', () => {
 
     const hideToggle = page.getByRole('button', { name: 'Hide Details' });
     await hideToggle.click();
-    // Details are gone — focus should return to the (now-renamed) toggle.
+    // Details are gone - focus should return to the (now-renamed) toggle.
     const showAgain = page.getByRole('button', { name: 'Show Details' });
     await expect(showAgain).toBeFocused();
 
+  });
+  test('restore-while-open: closing from inside the panel returns focus to the trigger', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/a11y/focus-restore/persistent-panel-restore-while-open');
+
+    const trigger = page.getByRole('button', { name: 'Open filters' });
+    const panel = page.getByRole('region', { name: 'Filters' });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+
+    await page.getByLabel('Search term').focus();
+    await panel.getByRole('button', { name: 'Apply and close' }).click();
+    await expect(panel).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
+  test('restore-while-open: focus moved elsewhere before close stays there', async ({ page }) => {
+    await gotoDemo(page, 'common/a11y/focus-restore/persistent-panel-restore-while-open');
+
+    const trigger = page.getByRole('button', { name: 'Open filters' });
+    const elsewhere = page.getByRole('button', { name: /Elsewhere/ });
+    await trigger.click();
+    await expect(page.getByRole('region', { name: 'Filters' })).toBeVisible();
+
+    await elsewhere.click();
+    await expect(page.getByRole('region', { name: 'Filters' })).toBeHidden();
+    await expect(elsewhere).toBeFocused();
   });
 });

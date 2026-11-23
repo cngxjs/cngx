@@ -52,4 +52,17 @@ test.describe('common/a11y/focus-visible', () => {
     await expect(emailState).toHaveText('keyboard focus');
 
   });
+  test('keyboard-vs-pointer: the ring keeps an outline under forced colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    await gotoDemo(page, 'common/a11y/focus-visible/keyboard-vs-pointer');
+
+    await page.getByRole('button', { name: /Button A/ }).click();
+    await page.keyboard.press('Tab');
+    const buttonB = page.getByRole('button', { name: /Button B/ });
+    await expect(buttonB).toBeFocused();
+    await expect(buttonB).toHaveClass(/cngx-focus-visible/);
+    // Forced colors strip the box-shadow ring; the outline must survive.
+    await expect(buttonB).toHaveCSS('outline-style', 'solid');
+    await expect(buttonB).toHaveCSS('outline-width', '2px');
+  });
 });

@@ -59,4 +59,11 @@ test.describe('common/a11y/aria-expanded', () => {
     await expect(specsState).toHaveText('expanded');
 
   });
+  test('accordion multiple panels: panels carry only their region attributes', async ({ page }) => {
+    await gotoDemo(page, 'common/a11y/aria-expanded/accordion-multiple-panels');
+
+    const panel = page.locator('#panel-specs');
+    await expect(panel).toHaveAttribute('role', 'region');
+    await expect(panel).not.toHaveAttribute('ja', /.*/);
+  });
 });

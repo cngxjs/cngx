@@ -43,7 +43,7 @@ export const STORY: DemoSpec = {
       </button>
       <div
         role="region"
-        [id]="'panel-' + item.key"ja
+        [id]="'panel-' + item.key"
         [attr.aria-labelledby]="'trigger-' + item.key"
         [hidden]="!panels()[item.key]">
         {{ item.content }}
