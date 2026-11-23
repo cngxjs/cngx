@@ -60,6 +60,14 @@ import type {
  */
 const openPopovers = new Set<CngxPopover>();
 
+function setOrRemoveStyle(style: CSSStyleDeclaration, property: string, value: string | null): void {
+  if (value === null) {
+    style.removeProperty(property);
+    return;
+  }
+  style.setProperty(property, value);
+}
+
 /**
  * @internal
  * Derive the panel's actual placement relative to the trigger from the live
@@ -273,8 +281,6 @@ function warnMissingFloatingMiddleware(doc: Document): void {
     '[class.cngx-popover--open]': 'isOpen()',
     '[class.cngx-popover--closing]': 'isClosing()',
     '[style.position-anchor]': 'cssAnchorRef()',
-    '[style.position-try-fallbacks]': 'cssPositionTryFallbacks()',
-    '[style.--cngx-popover-anchor-margin]': 'cssMargin()',
     '[style.--cngx-popover-anchor-offset]': 'cssOffset()',
     '[style.--cngx-popover-arrow-offset]': 'arrowOffset()',
     '(toggle)': 'handleToggle($event)',
@@ -712,9 +718,9 @@ export class CngxPopover {
 
   /**
    * Comma-joined `position-try-fallbacks` value, or `null` to skip the
-   * style write. Bound via host binding so empty / cleared lists drop the
-   * property cleanly. Unsupported browsers ignore the unknown property -
-   * gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
+   * style write. Written by `writeAnchorPlacement()` so empty / cleared lists
+   * drop the property cleanly. Unsupported browsers ignore the unknown
+   * property - gating on `SUPPORTS_ANCHOR` would only suppress a harmless write.
    */
   protected readonly cssPositionTryFallbacks = computed(() => {
     if (!this.anchored()) {
@@ -725,17 +731,9 @@ export class CngxPopover {
   });
 
   constructor() {
-    // Host binding needs a static property name; position-area/inset-area name flips per browser.
-    if (SUPPORTS_ANCHOR) {
-      effect(() => {
-        const style = this.elRef.nativeElement.style;
-        if (!this.anchored()) {
-          style.removeProperty(ANCHOR_AREA_PROPERTY);
-          return;
-        }
-        style.setProperty(ANCHOR_AREA_PROPERTY, POSITION_AREA[this.effectivePlacement()]);
-      });
-    }
+    // One writer for the placement-derived anchor styles: this effect and
+    // show(), which must not wait for change detection before showPopover().
+    effect(() => this.writeAnchorPlacement());
     // A presentation flip while open: leaving the anchored layout stops the
     // floating engine (the arrow geometry is gated in its computeds); coming
     // back re-positions right away instead of waiting for the next scroll or
@@ -834,6 +832,10 @@ export class CngxPopover {
     if (!this.anchored()) {
       this.clearFloatingPosition();
     }
+    // A placement or try-fallback override set in this turn reaches the
+    // effect only on the next change detection; the first frame must not
+    // paint at the previous placement.
+    untracked(() => this.writeAnchorPlacement());
     this.elRef.nativeElement.showPopover();
     // The host binding writes aria-hidden on the next change detection; the
     // seam may move focus into the panel right now, which must not land
@@ -855,6 +857,20 @@ export class CngxPopover {
       this.updateArrowOffset();
     });
     this.opened.emit();
+  }
+
+  /**
+   * Writes `position-area`, `position-try-fallbacks` and the anchor margin from
+   * their computeds. `position-area` goes through a style call because its
+   * property name differs per browser (`ANCHOR_AREA_PROPERTY`).
+   */
+  private writeAnchorPlacement(): void {
+    const style = this.elRef.nativeElement.style;
+    const anchored = this.anchored();
+    const area = SUPPORTS_ANCHOR && anchored ? POSITION_AREA[this.effectivePlacement()] : null;
+    setOrRemoveStyle(style, ANCHOR_AREA_PROPERTY, area);
+    setOrRemoveStyle(style, 'position-try-fallbacks', this.cssPositionTryFallbacks());
+    setOrRemoveStyle(style, '--cngx-popover-anchor-margin', this.cssMargin());
   }
 
   /** Close the popover. No-op if already `closed` or `closing`. */
