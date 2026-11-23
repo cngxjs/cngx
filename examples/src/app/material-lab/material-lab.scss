@@ -1,7 +1,6 @@
 @use '@angular/material' as mat;
 // Working-tree bridges (relative, not the published package) so the harness
 // reflects the current bridge source.
-@use '../../../../projects/themes/material/system-bridge.scss' as cngx-system;
 @use '../../../../projects/themes/material/select-theme.scss' as select;
 @use '../../../../projects/themes/material/option-theme.scss' as option;
 @use '../../../../projects/themes/material/interactive-controls-theme.scss' as controls;
@@ -57,54 +56,6 @@ html {
   @include breadcrumb.theme($theme);
   @include dga.theme($theme);
   @include dga.skins($theme);
-}
-
-// M2 field pairs: the cngx fill field next to mat-form-field appearance="fill",
-// both under the same M2 theme. Each wrapper paints the M2 page background and
-// re-emits the system and field bridges for M2; Sass bubbles the bridge layer
-// out of the wrapper, so `.lab-m2-* :where(...)` outranks the M3 emission of
-// the same layer.
-$m2-color: (
-  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
-  accent: mat.m2-define-palette(mat.$m2-pink-palette),
-);
-$m2-light: mat.m2-define-light-theme((color: $m2-color));
-$m2-dark: mat.m2-define-dark-theme((color: $m2-color));
-
-@mixin m2-wrapper($m2, $scheme) {
-  color-scheme: $scheme;
-  background: mat.get-theme-color($m2, background, background);
-  color: mat.get-theme-color($m2, foreground, text);
-  @include mat.form-field-theme($m2);
-  @include mat.input-theme($m2);
-  @include cngx-system.theme($m2);
-  @include field.theme($m2);
-
-  .lab-m2-card {
-    background: mat.get-theme-color($m2, background, card);
-  }
-}
-
-.lab-m2-light {
-  @include m2-wrapper($m2-light, light);
-}
-
-.lab-m2-dark {
-  @include m2-wrapper($m2-dark, dark);
-}
-
-.lab-m2 {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 4px;
-}
-
-.lab-m2-card {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 4px;
 }
 
 // Material density -2 for one wrapper: Material's own component density
