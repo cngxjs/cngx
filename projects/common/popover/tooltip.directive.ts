@@ -12,8 +12,7 @@ import {
   untracked,
 } from '@angular/core';
 
-import { CngxReducedMotion } from '@cngx/common/a11y';
-import { injectDirection } from '@cngx/core';
+import { injectDirection, injectEffectiveMotion } from '@cngx/core';
 import {
   type CngxDescribedByRegistry,
   createDescribedByRegistry,
@@ -89,8 +88,8 @@ const FOCUS_DEBOUNCE_MS = 50;
   selector: '[cngxTooltip]',
   exportAs: 'cngxTooltip',
   standalone: true,
-  hostDirectives: [CngxReducedMotion],
   host: {
+    '[class.cngx-reduced-motion]': 'reducedMotion()',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
     '[style.anchor-name]': 'cssAnchorName()',
     '(mouseenter)': 'handleMouseEnter()',
@@ -105,6 +104,14 @@ export class CngxTooltip {
   private readonly destroyRef = inject(DestroyRef);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
   private readonly direction = injectDirection();
+  private readonly motion = injectEffectiveMotion();
+
+  /**
+   * @internal
+   * Drives the `cngx-reduced-motion` class on the trigger from the app motion
+   * axis (`CNGX_MOTION`), falling back to the OS preference on `auto`.
+   */
+  protected readonly reducedMotion = computed(() => this.motion() === 'reduced');
 
   /** Tooltip text content. */
   readonly text = input.required<string>({ alias: 'cngxTooltip' });

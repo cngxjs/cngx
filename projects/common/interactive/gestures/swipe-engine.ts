@@ -32,7 +32,10 @@ export interface SwipeEngineHooks {
  * Owns the full hardening set so both directives stay in parity: lazy
  * pointer capture on the host, a `pointercancel` arm, per-gesture `pointerId`
  * filtering on the document-level streams, and `takeUntilDestroyed`
- * teardown. Must be called in an injection context.
+ * teardown. Only the primary button starts a gesture, and `enabled` is
+ * re-read on every move and at settle: a gesture disabled mid-drag stops
+ * reporting moves and settles as cancelled. Must be called in an injection
+ * context.
  *
  * @internal
  */
@@ -47,7 +50,7 @@ export function createSwipeEngine(el: HTMLElement, doc: Document, hooks: SwipeEn
 
   pointerDown$
     .pipe(
-      filter(() => hooks.enabled()),
+      filter((down) => down.button === 0 && hooks.enabled()),
       switchMap((start) => {
         const startX = start.clientX;
         const startY = start.clientY;
@@ -91,10 +94,9 @@ export function createSwipeEngine(el: HTMLElement, doc: Document, hooks: SwipeEn
         const settle$ = merge(
           pointerUp$.pipe(
             filter(samePointer),
-            map((end): SwipeSettle | null => ({
-              dx: end.clientX - startX,
-              dy: end.clientY - startY,
-            })),
+            map((end): SwipeSettle | null =>
+              hooks.enabled() ? { dx: end.clientX - startX, dy: end.clientY - startY } : null,
+            ),
           ),
           pointerCancel$.pipe(
             filter(samePointer),
@@ -104,6 +106,7 @@ export function createSwipeEngine(el: HTMLElement, doc: Document, hooks: SwipeEn
 
         return pointerMove$.pipe(
           filter(samePointer),
+          filter(() => hooks.enabled()),
           tap((move) => {
             const dx = move.clientX - startX;
             const dy = move.clientY - startY;

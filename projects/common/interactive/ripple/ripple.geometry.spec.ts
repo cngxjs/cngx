@@ -2,6 +2,7 @@ import { Component, signal, ViewEncapsulation } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { CngxPressRipple } from './press-ripple.directive';
 import { CngxRipple } from './ripple.directive';
 
 // Runs in a real Chromium (the `test-geometry` target). The directive measures
@@ -77,5 +78,140 @@ describe.each(['ltr', 'rtl'] as const)('CngxRipple geometry: %s', (dir) => {
     const centre = pressAt(mount(dir, true), 40, 30);
     expect(Math.abs(centre.x - 100)).toBeLessThanOrEqual(1);
     expect(Math.abs(centre.y - 50)).toBeLessThanOrEqual(1);
+  });
+});
+
+// Token cascade: a host-level value (the Material bridge shape, a layered
+// zero-specificity rule on the .cngx-ripple host class) must reach the wave,
+// two levels below the host, on both the atom and the press-ripple molecule.
+// A bound [rippleColor] is the only inline write and wins.
+
+@Component({
+  selector: 'cngx-ripple-token-host',
+  standalone: true,
+  imports: [CngxRipple, CngxPressRipple],
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-ripple.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div class="atom" cngxRipple style="inline-size: 100px; block-size: 40px"></div>
+    <div class="molecule" cngxPressRipple style="inline-size: 100px; block-size: 40px"></div>
+    <div
+      class="bound"
+      cngxRipple
+      rippleColor="rgb(0, 0, 255)"
+      style="inline-size: 100px; block-size: 40px"
+    ></div>
+  `,
+})
+class TokenHost {}
+
+describe('CngxRipple token cascade', () => {
+  let bridge: HTMLStyleElement | null = null;
+
+  afterEach(() => {
+    bridge?.remove();
+    bridge = null;
+  });
+
+  function mountWithBridge(): HTMLElement {
+    bridge = document.createElement('style');
+    bridge.textContent = `@layer cngx.components {
+      :where(.cngx-ripple) {
+        --cngx-ripple-color: rgb(0, 128, 0);
+        --cngx-ripple-opacity: 0.3;
+        --cngx-ripple-duration: 0.8s;
+      }
+    }`;
+    document.head.appendChild(bridge);
+    const fixture = TestBed.createComponent(TokenHost);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    return mountedRoot;
+  }
+
+  function waveOf(root: HTMLElement, selector: string): CSSStyleDeclaration {
+    const host = root.querySelector<HTMLElement>(selector);
+    if (!host) {
+      throw new Error(`${selector} did not render`);
+    }
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }),
+    );
+    const wave = host.querySelector('.cngx-ripple__wave');
+    if (!wave) {
+      throw new Error(`no wave on ${selector}`);
+    }
+    return getComputedStyle(wave);
+  }
+
+  it.each(['.atom', '.molecule'])('%s: the wave reads the host-level tokens', (selector) => {
+    const wave = waveOf(mountWithBridge(), selector);
+    expect(wave.getPropertyValue('--cngx-ripple-color').trim()).toBe('rgb(0, 128, 0)');
+    expect(wave.getPropertyValue('--cngx-ripple-opacity').trim()).toBe('0.3');
+    expect(wave.getPropertyValue('--cngx-ripple-duration').trim()).toBe('0.8s');
+  });
+
+  it('a bound rippleColor wins over the host-level colour', () => {
+    const wave = waveOf(mountWithBridge(), '.bound');
+    expect(wave.getPropertyValue('--cngx-ripple-color').trim()).toBe('rgb(0, 0, 255)');
+  });
+});
+
+// Reduced motion follows the app axis in CSS: under a [data-motion='reduced']
+// ancestor the wave skips the expand keyframe, appears at full size and only
+// fades, and the fade's animationend removes it (no 1s fallback wait).
+
+@Component({
+  selector: 'cngx-ripple-motion-host',
+  standalone: true,
+  imports: [CngxRipple],
+  styleUrls: ['../../../core/theming/layers.css', '../../theming/components/cngx-ripple.css'],
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    <div [attr.data-motion]="motion()">
+      <div
+        cngxRipple
+        class="host"
+        style="inline-size: 100px; block-size: 40px; --cngx-ripple-duration: 40ms"
+      ></div>
+    </div>
+  `,
+})
+class MotionHost {
+  readonly motion = signal<'reduced' | null>(null);
+}
+
+describe('CngxRipple reduced motion', () => {
+  function pressIn(motion: 'reduced' | null): HTMLElement {
+    const fixture = TestBed.createComponent(MotionHost);
+    fixture.componentInstance.motion.set(motion);
+    mountedRoot = fixture.nativeElement as HTMLElement;
+    document.body.appendChild(mountedRoot);
+    fixture.detectChanges();
+    const host = mountedRoot.querySelector<HTMLElement>('.host');
+    if (!host) {
+      throw new Error('.host did not render');
+    }
+    host.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10 }),
+    );
+    return host;
+  }
+
+  it('expands the wave without a motion pick', () => {
+    const wave = pressIn(null).querySelector('.cngx-ripple__wave');
+    expect(wave && getComputedStyle(wave).animationName).toBe('cngx-ripple-expand');
+  });
+
+  it('fades the wave in place under data-motion="reduced"', () => {
+    const wave = pressIn('reduced').querySelector('.cngx-ripple__wave');
+    expect(wave && getComputedStyle(wave).animationName).toBe('cngx-ripple-fade');
+  });
+
+  it('removes the reduced wave when its fade ends', async () => {
+    const host = pressIn('reduced');
+    await new Promise((done) => setTimeout(done, 300));
+    expect(host.querySelector('.cngx-ripple__wave')).toBeNull();
   });
 });
