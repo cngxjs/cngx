@@ -54,4 +54,29 @@ test.describe('common/a11y/reduced-motion', () => {
     await expect(count).toHaveText('1');
 
   });
+  test('toast notifications: the list is a polite region and dismiss keeps focus in it', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/a11y/reduced-motion/toast-notifications-motion-aware');
+
+    const addBtn = page.getByRole('button', { name: 'Add notification' });
+    const region = page.getByRole('status');
+    await expect(region).toHaveAttribute('aria-live', 'polite');
+    await expect(region).toHaveAttribute('aria-relevant', 'additions');
+
+    await addBtn.click();
+    await addBtn.click();
+    const dismiss = page.locator('[data-toast-dismiss]');
+    await expect(dismiss).toHaveCount(2);
+    await expect(region.getByRole('listitem')).toHaveCount(2);
+
+    await dismiss.first().focus();
+    await page.keyboard.press('Enter');
+    await expect(dismiss).toHaveCount(1);
+    await expect(dismiss.first()).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(dismiss).toHaveCount(0);
+    await expect(addBtn).toBeFocused();
+  });
 });
