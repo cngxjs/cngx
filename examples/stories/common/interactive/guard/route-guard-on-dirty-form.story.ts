@@ -2,8 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'canDeactivateWhenClean: Route guard on dirty form',
-  subtitle: 'Wire <code>canDeactivateWhenClean(() => isDirty())</code> into a route\'s <code>canDeactivate</code> array. The guard shows a <code>confirm()</code> when navigating away from a dirty form, allows the route to leave when clean, and stays SSR-safe.',
-  description: 'Functional route guard factory. Returns a <code>CanDeactivateFn</code>-compatible callback that reads the consumer\'s <code>isDirty</code> signal, opens the browser <code>confirm()</code> dialog with the configured message, and gates navigation on the user\'s reply. <code>inject(DOCUMENT)</code> at runtime keeps the guard SSR-safe (returns <code>true</code> when no window is available). Production wiring lives in the route config: <code>&#123; path: \'edit\', component: EditComponent, canDeactivate: [canDeactivateWhenClean(() =&gt; editForm.dirty())] &#125;</code>. The live form lets you see the dirty signal flip; Angular Router invokes the returned guard fn in its own injection context on a real navigation. Pair with <code>CngxBeforeUnload</code> to also cover full-page close and tab refresh.',
+  subtitle: 'Wire <code>canDeactivateWhenClean((page: EditPage) =&gt; page.isDirty())</code> into a route\'s <code>canDeactivate</code> array. The Router passes the component it leaves; the guard shows a <code>confirm()</code> when that component is dirty and lets the navigation through when it is clean. Type a draft, then press "Try to leave".',
+  description: 'Functional route guard factory. <code>isDirty</code> receives the routed component on every navigation attempt; when it returns <code>true</code> the guard opens the browser <code>confirm()</code> with the message and gates the navigation on the reply. <code>inject(DOCUMENT)</code> at call time keeps it SSR-safe (allow when no window exists). In an app the guard sits in the route config: <code>&#123; path: \'edit\', component: EditPage, canDeactivate: [canDeactivateWhenClean((page: EditPage) =&gt; page.isDirty())] &#125;</code>. The examples app generates its routes, so the demo chrome registers the same guard on this demo\'s own route at runtime; the navigation runs through the real Router. Pair with <code>CngxBeforeUnload</code> to also cover tab close and reload.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -13,6 +13,7 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { canDeactivateWhenClean } from \'@cngx/common/interactive\';',
+    'import { ActivatedRoute, Router } from \'@angular/router\';',
   ],
   imports: [],
   references: [
@@ -23,15 +24,9 @@ export const STORY: DemoSpec = {
   protected readonly isDirty = signal<boolean>(false);
   protected readonly draft = signal<string>('');
 
-  /**
-   * Returned guard fn; Angular Router would invoke this in its own
-   * injection context on a navigation attempt. The factory is called
-   * here at component-construction time so the demo shows the wiring
-   * shape; the returned fn is intentionally not called from a click
-   * handler because that would skip the Router's injection context.
-   */
+  /** The guard as it goes into a route config; the Router calls it with this component. */
   protected readonly canLeave = canDeactivateWhenClean(
-    () => this.isDirty(),
+    (page: { isDirty(): boolean }) => page.isDirty(),
     'You have unsaved changes. Leave anyway?',
   );
 
@@ -44,6 +39,28 @@ export const STORY: DemoSpec = {
   protected handleSave(): void {
     this.isDirty.set(false);
   }`,
+  setupChrome: `
+  protected readonly lastAttempt = signal<'none' | 'blocked' | 'allowed'>('none');
+  private readonly router = inject(Router);
+
+  protected tryToLeave(): void {
+    void this.router.navigateByUrl('/common/interactive/guard/protect-dirty-form');
+  }
+
+  constructor() {
+    // The generated route has no canDeactivate, so register the guard on it
+    // here; the readout records each decision.
+    const route = inject(ActivatedRoute).routeConfig;
+    if (route) {
+      route.canDeactivate = [
+        (page: { isDirty(): boolean }) => {
+          const allowed = this.canLeave(page);
+          this.lastAttempt.set(allowed ? 'allowed' : 'blocked');
+          return allowed;
+        },
+      ];
+    }
+  }`,
   template: `
   <form style="display:flex; flex-direction:column; gap:8px; max-width:32rem">
     <label for="dg-draft">Draft note</label>
@@ -55,17 +72,18 @@ export const STORY: DemoSpec = {
     ></textarea>
     <button type="button" (click)="handleSave()" style="align-self:flex-start">Save</button>
   </form>`,
-  templateChromeBefore: `
-  <p style="margin-bottom:12px">Touch the textarea to flip the dirty signal, then save to clear it. Production wiring lives in the route config (see description above); Angular Router runs the returned guard fn in its own injection context on a real navigation.</p>`,
   templateChrome: `
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="tryToLeave()">Try to leave: open the beforeunload demo</button>
+  </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
       <span class="event-label">isDirty()</span>
       <span class="event-value">{{ isDirty() }}</span>
     </div>
     <div class="event-row">
-      <span class="event-label">canLeave</span>
-      <span class="event-value">{{ canLeave ? 'guard fn ready' : '—' }}</span>
+      <span class="event-label">Last leave attempt</span>
+      <span class="event-value">{{ lastAttempt() }}</span>
     </div>
   </div>`,
 };
