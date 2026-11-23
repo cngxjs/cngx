@@ -10,14 +10,8 @@ import {
 import { runCommitAction } from './internal/commit-action.runtime';
 import type { CngxSelectCommitAction } from './commit-action.types';
 
-// Re-export lifted handler-side types so consumers that imported them
-// from the select-side path keep working. Source-of-truth lives in
-// @cngx/common/data.
-export type {
-  CngxCommitBeginHandlers,
-  CngxCommitHandle,
-  CngxCommitRunner,
-} from '@cngx/common/data';
+// The select entry re-exports this handler type from here; it lives in @cngx/common/data.
+export type { CngxCommitBeginHandlers } from '@cngx/common/data';
 
 /**
  * Select-side commit-controller surface. Same signal/state graph as
@@ -25,6 +19,9 @@ export type {
  * {@link CngxSelectCommitAction} directly. The action-shape adapter
  * keeps every existing select call-site working while
  * `@cngx/common/data` owns the generic state machine.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
+ * @since 0.1.0
  */
 export interface CngxSelectCommitController<T> extends Omit<CngxGenericCommitController<T>, 'begin'> {
   /**
@@ -79,6 +76,9 @@ function wrapAsSelectController<T>(
  * {@link CNGX_COMMIT_CONTROLLER_FACTORY}. Use
  * {@link CNGX_SELECT_COMMIT_CONTROLLER_FACTORY} for DI-aware
  * resolution.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
+ * @since 0.1.0
  */
 export function createSelectCommitController<T>(): CngxSelectCommitController<T> {
   return wrapAsSelectController(createGenericCommitController<T>());
