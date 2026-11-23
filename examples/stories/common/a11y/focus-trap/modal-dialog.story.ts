@@ -5,13 +5,13 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>[cngxFocusTrap]</code> wraps the CDK <code>FocusTrap</code>. When <code>[enabled]="true"</code>, Tab and Shift+Tab cycle only within the host. <code>[autoFocus]="true"</code> (default) moves focus to the first tabbable element on open.',
   description:
-    'Confines Tab cycling to the dialog while it is open: <code>cngxFocusTrap</code> with <code>[enabled]</code> gates the cycle, <code>[autoFocus]</code> lands focus on the first tabbable control on mount (with it off, the demo focuses the dialog host instead), an Escape handler or backdrop click closes the panel. Paired with <code>cngxFocusRestore</code> on the same host so closing returns focus to the trigger instead of dropping it on <code>body</code>: trap and restore are the two atoms a real modal needs. The browser\'s <code>:focus-visible</code> ring only paints reliably after keyboard interaction, so the <code>Focused id</code> readout below makes the restore visible for mouse-driven runs too.',
+    'Confines Tab cycling to the dialog while it is open: <code>cngxFocusTrap</code> with <code>[enabled]</code> gates the cycle, <code>[autoFocus]</code> lands focus on the first tabbable control on mount (with it off, <code>cngxAutofocus</code> focuses the dialog host instead, so focus never stays outside the <code>aria-modal</code> surface), an Escape handler or backdrop click closes the panel. Paired with <code>cngxFocusRestore</code> on the same host so closing returns focus to the trigger instead of dropping it on <code>body</code>: trap and restore are the two atoms a real modal needs. The browser\'s <code>:focus-visible</code> ring only paints reliably after keyboard interaction, so the <code>Focused id</code> readout below makes the restore visible for mouse-driven runs too.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'behavior', 'composition'],
-  apiComponents: ['CngxFocusTrap', 'CngxFocusRestore'],
-  imports: ['CngxFocusTrap', 'CngxFocusRestore'],
+  apiComponents: ['CngxFocusTrap', 'CngxFocusRestore', 'CngxAutofocus'],
+  imports: ['CngxFocusTrap', 'CngxFocusRestore', 'CngxAutofocus'],
   references: [
     {
       label: 'WAI-ARIA APG: Dialog (Modal) pattern',
@@ -23,18 +23,7 @@ export const STORY: DemoSpec = {
     },
   ],
   setup: `protected readonly modalOpen = signal(false);
-  protected readonly autoFocus = signal(true);
-  private readonly dialogHost = viewChild<ElementRef<HTMLElement>>('dialogPanel');
-  private readonly injector = inject(Injector);
-  protected openModal(): void {
-    this.modalOpen.set(true);
-    if (this.autoFocus()) {
-      return;
-    }
-    // Without autoFocus the trap moves nothing: focus the dialog itself so it
-    // does not stay outside the aria-modal surface.
-    afterNextRender(() => this.dialogHost()?.nativeElement.focus(), { injector: this.injector });
-  }`,
+  protected readonly autoFocus = signal(true);`,
   setupChrome: `protected readonly focusedId = signal<string>('none');
 
   constructor() {
@@ -56,12 +45,12 @@ export const STORY: DemoSpec = {
   template: `  <button type="button"
           id="cngx-focus-trap-modal-trigger"
           class="chip"
-          (click)="openModal()">Open modal</button>
+          (click)="modalOpen.set(true)">Open modal</button>
 
   @if (modalOpen()) {
     <div class="cngx-ex-overlay-backdrop" (click)="modalOpen.set(false)">
-      <div #dialogPanel
-           class="cngx-ex-overlay-panel"
+      <div class="cngx-ex-overlay-panel"
+           [cngxAutofocus]="!autoFocus()"
            cngxFocusTrap
            [enabled]="modalOpen()"
            [autoFocus]="autoFocus()"

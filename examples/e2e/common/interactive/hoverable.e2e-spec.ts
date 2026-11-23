@@ -2,7 +2,7 @@ import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxHoverable exposes a pointer hover signal. The basic demo ORs in
-// a focus signal so the highlight also follows keyboard focus.
+// CngxFocusVisible so the highlight also follows keyboard focus.
 
 test.describe('common/interactive/hoverable', () => {
   test('basic: pointer hover and keyboard focus both highlight the target', async ({ page }) => {
@@ -25,7 +25,10 @@ test.describe('common/interactive/hoverable', () => {
     await expect(target).not.toHaveClass(/demo-hoverable-target--active/);
 
     await target.focus();
-    await expect(valueOf('focused')).toHaveText('true');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(target).toBeFocused();
+    await expect(valueOf('focusVisible()')).toHaveText('true');
     await expect(valueOf('hovered()')).toHaveText('false');
     await expect(target).toHaveClass(/demo-hoverable-target--active/);
   });
