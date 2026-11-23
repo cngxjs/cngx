@@ -31,8 +31,9 @@ export const STORY: DemoSpec = {
   ];
 
   protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;`,
-  setupChrome: `protected readonly side = signal<'start' | 'end'>('end');`,
+  protected readonly byId = (event: { id: number }): number => event.id;
+
+  protected readonly side = signal<'start' | 'end'>('end');`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" [attr.aria-pressed]="side() === 'start'" (click)="side.set('start')">start</button>
     <button type="button" class="chip" [attr.aria-pressed]="side() === 'end'" (click)="side.set('end')">end</button>

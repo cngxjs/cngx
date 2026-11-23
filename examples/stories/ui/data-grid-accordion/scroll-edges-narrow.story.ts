@@ -23,7 +23,9 @@ export const STORY: DemoSpec = {
     { id: 'INV-1002', customer: 'Contoso Ltd', region: 'West', amount: '$860.50' },
     { id: 'INV-1003', customer: 'Fabrikam Inc', region: 'South', amount: '$3,105.00' },
     { id: 'INV-1004', customer: 'Adventure Works', region: 'East', amount: '$412.75' },
-  ];`,
+  ];
+
+  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   template: `  <div style="max-width:420px" [attr.dir]="dir()">
     <cngx-data-grid-accordion [skin]="'ledger'" [multi]="true">
       <cngx-dga-header>
@@ -51,7 +53,6 @@ export const STORY: DemoSpec = {
       </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
-  setupChrome: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
       <input type="radio" name="dga-narrow-dir" value="ltr"

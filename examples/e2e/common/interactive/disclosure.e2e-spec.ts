@@ -82,23 +82,27 @@ test.describe('common/interactive/disclosure', () => {
     }
 
   });
-  test('collapsed disclosures keep their aria-controls target in the DOM', async ({ page }) => {
-    for (const route of [
-      'common/interactive/disclosure/basic-uncontrolled',
-      'common/interactive/disclosure/controlled-mode',
-      'common/interactive/disclosure/faq-accordion',
-      'common/interactive/disclosure/card-with-disclosure-expand-collapse',
-    ]) {
-      await gotoDemo(page, route);
+  // One test per route: a hash-only navigation keeps the previous demo's DOM
+  // for a moment, so a trigger list read across routes can hold stale buttons.
+  for (const demo of [
+    'basic-uncontrolled',
+    'controlled-mode',
+    'faq-accordion',
+    'card-with-disclosure-expand-collapse',
+  ]) {
+    test(`${demo}: collapsed disclosures keep their aria-controls target in the DOM`, async ({
+      page,
+    }) => {
+      await gotoDemo(page, `common/interactive/disclosure/${demo}`);
       const triggers = page.locator('button[cngxdisclosure]');
       await expect(triggers.first()).toHaveAttribute('aria-expanded', 'false');
       for (const trigger of await triggers.all()) {
-        // Retrying read: right after the hash navigation the binding may not have painted yet.
-        await expect(trigger, route).toHaveAttribute('aria-controls', /.+/);
+        // Retrying read: right after the navigation the binding may not have painted yet.
+        await expect(trigger).toHaveAttribute('aria-controls', /.+/);
         const id = await trigger.getAttribute('aria-controls');
-        await expect(page.locator(`[id="${id}"]`), route).toHaveCount(1);
-        await expect(page.locator(`[id="${id}"]`), route).toBeHidden();
+        await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);
+        await expect(page.locator(`[id="${id}"]`)).toBeHidden();
       }
-    }
-  });
+    });
+  }
 });

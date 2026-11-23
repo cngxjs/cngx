@@ -23,8 +23,9 @@ export const STORY: DemoSpec = {
     { value: 'onion', label: 'Onion' },
     { value: 'pepper', label: 'Pepper' },
   ];
-  protected readonly picked = signal<string[]>([]);`,
-  setupChrome: `protected readonly focusedAfterClose = signal('-');
+  protected readonly picked = signal<string[]>([]);
+
+  protected readonly focusedAfterClose = signal('-');
   protected handleOpenedChange(open: boolean): void {
     if (open) {
       this.focusedAfterClose.set('panel open');

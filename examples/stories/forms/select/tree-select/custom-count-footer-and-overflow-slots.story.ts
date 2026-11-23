@@ -58,8 +58,9 @@ export const STORY: DemoSpec = {
     },
   ];
   protected readonly values = signal<string[]>(['figma', 'tokens', 'web', 'ios', 'android', 'tier1']);
-  protected readonly nodeId = (value: string) => value;`,
-  setupChrome: `protected readonly custom = signal(true);
+  protected readonly nodeId = (value: string) => value;
+
+  protected readonly custom = signal(true);
   protected readonly presentation = signal<'anchored' | 'sheet'>('anchored');`,
   template: `  <cngx-tree-select
     [label]="'Teams'"

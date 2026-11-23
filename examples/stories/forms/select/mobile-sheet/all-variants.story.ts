@@ -46,7 +46,10 @@ export const STORY: DemoSpec = {
     { value: 'North', children: [{ value: 'Oslo' }, { value: 'Stockholm' }, { value: 'Helsinki' }] },
     { value: 'South', children: [{ value: 'Athens' }, { value: 'Lisbon' }, { value: 'Rome' }] },
   ];
-  protected readonly nodeId = (value: string): string => value;`,
+  protected readonly nodeId = (value: string): string => value;
+
+  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
+  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   template: `<div [attr.dir]="dir()" style="display: grid; gap: 16px; max-inline-size: 24rem">
     <cngx-select label="City" [options]="cities" [presentation]="presentation()" />
     <cngx-multi-select label="Cities" [options]="cities" [presentation]="presentation()" />
@@ -76,8 +79,6 @@ export const STORY: DemoSpec = {
       }
     </cngx-select-shell>
   </div>`,
-  setupChrome: `protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
-  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
       <label>

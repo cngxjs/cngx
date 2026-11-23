@@ -27,8 +27,9 @@ export const STORY: DemoSpec = {
       return timer(600).pipe(switchMap(() => throwError(() => new Error('Server offline'))));
     }
     return of(intended).pipe(delay(600));
-  };`,
-  setupChrome: `protected readonly failNext = signal(true);`,
+  };
+
+  protected readonly failNext = signal(true);`,
   templateChromeBefore: `<p class="demo-hint">Fail next is on. Pick a different colour and the rejected commit paints the inline per-row badge, not the banner.</p>`,
   template: `<cngx-select
   [label]="'Colour (commit)'"

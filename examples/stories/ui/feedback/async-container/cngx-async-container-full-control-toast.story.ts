@@ -17,17 +17,28 @@ export const STORY: DemoSpec = {
     'import { createManualState, resolveAsyncView } from \'@cngx/common/data\';',
   ],
   imports: ['CngxAsyncContainer', 'CngxAsyncSkeletonTpl', 'CngxAsyncContentTpl', 'CngxAsyncEmptyTpl', 'CngxAsyncErrorTpl'],
-  setup: `protected readonly manual = createManualState<string[]>();`,
-  setupChrome: `private readonly names = ['Alpha', 'Beta', 'Gamma'];
+  setup: `protected readonly manual = createManualState<string[]>();
+
+  private readonly names = ['Alpha', 'Beta', 'Gamma'];
   private ticket = 0;
-  protected readonly view = computed(() =>
+
+  protected firstLoad(): void {
+    this.run(true, () => this.manual.setSuccess(this.names));
+  }
+
+  private run(fromScratch: boolean, settle: () => void): void {
+    const ticket = ++this.ticket;
+    if (fromScratch) {
+      this.manual.reset();
+    }
+    this.manual.set(fromScratch ? 'loading' : 'refreshing');
+    setTimeout(() => ticket === this.ticket && settle(), 1500);
+  }`,
+  setupChrome: `protected readonly view = computed(() =>
     resolveAsyncView(this.manual.status(), this.manual.isFirstLoad(), this.manual.isEmpty()),
   );
   constructor() {
     this.firstLoad();
-  }
-  protected firstLoad(): void {
-    this.run(true, () => this.manual.setSuccess(this.names));
   }
   protected firstLoadFails(): void {
     this.run(true, () => this.manual.setError('Connection refused'));
@@ -40,14 +51,6 @@ export const STORY: DemoSpec = {
   }
   protected refreshFails(): void {
     this.run(false, () => this.manual.setError('Connection refused'));
-  }
-  private run(fromScratch: boolean, settle: () => void): void {
-    const ticket = ++this.ticket;
-    if (fromScratch) {
-      this.manual.reset();
-    }
-    this.manual.set(fromScratch ? 'loading' : 'refreshing');
-    setTimeout(() => ticket === this.ticket && settle(), 1500);
   }
   protected idle(): void {
     this.ticket++;

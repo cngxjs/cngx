@@ -18,9 +18,10 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxSidenavLayout', 'CngxSidenav', 'CngxSidenavContent', 'CngxNavLink', 'CngxPanelTrigger'],
   setup: `protected readonly navOpen = signal(false);
-  protected readonly nav = viewChild(CngxSidenav);`,
-  setupChrome: `protected readonly pinned = signal(false);
-  protected togglePinned(): void {
+  protected readonly nav = viewChild(CngxSidenav);
+
+  protected readonly pinned = signal(false);`,
+  setupChrome: `protected togglePinned(): void {
     this.pinned.update((v) => !v);
     // The pin button sits outside the rail, so its pointerdown dismisses an
     // open overlay; reopen it so pinning shows the overlay with its backdrop.

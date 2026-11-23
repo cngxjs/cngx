@@ -23,9 +23,10 @@ export const STORY: DemoSpec = {
     },
   ],
   setup: `protected readonly message = signal('');
-  protected readonly politeness = signal<'polite' | 'assertive' | 'off'>('polite');`,
-  setupChrome: `protected readonly flashActive = signal(false);
-  protected readonly roleLabel = computed(() => {
+  protected readonly politeness = signal<'polite' | 'assertive' | 'off'>('polite');
+
+  protected readonly flashActive = signal(false);`,
+  setupChrome: `protected readonly roleLabel = computed(() => {
     const politeness = this.politeness();
     if (politeness === 'off') {
       return '(none)';

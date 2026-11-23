@@ -49,16 +49,17 @@ export const STORY: DemoSpec = {
     data: this.dataState,
     error: this.errorState,
     isFirstLoad: this.firstLoadState,
-  });`,
-  setupChrome: `protected setContent(): void {
+  });
+
+  protected setContent(): void {
     this.statusState.set('success');
     this.firstLoadState.set(false);
     this.errorState.set(undefined);
     this.dataState.set([
       { id: 'recents', label: 'Recents', commands: [{ id: 'reopen', label: 'Reopen closed tab', run: () => {} }] },
     ]);
-  }
-  protected setLoading(): void {
+  }`,
+  setupChrome: `protected setLoading(): void {
     this.statusState.set('loading');
     this.firstLoadState.set(true);
   }

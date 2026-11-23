@@ -28,18 +28,6 @@ function selectorMap() {
   return map;
 }
 
-// Story paths of the button family plus the stories its reviews flagged. The
-// rest of the catalogue is not clean yet; widen this list as areas get fixed.
-const SELF_CONTAINED_PANEL_SCOPE = [
-  'common/button/',
-  'common/menu-button/',
-  'common/interactive/async-click/',
-  'common/popover/',
-  'ui/action-button/',
-  'ui/stepper/stepper-footer/complete-finish-button',
-  'ui/stepper/stepper-connectors/wizard-rail',
-];
-
 const NOT_MEMBERS = new Set([
   'if',
   'for',
@@ -145,7 +133,6 @@ describe('examples chrome divs', () => {
   it('no displayed setup or template reads a member declared only in setupChrome', () => {
     const hits = stories
       .filter((s) => s.story?.setupChrome)
-      .filter(({ route }) => SELF_CONTAINED_PANEL_SCOPE.some((p) => route.startsWith(p)))
       .map(({ route, story }) => [route, chromeOnlyReads(story)])
       .filter(([, names]) => names.length > 0)
       .map(([route, names]) => `${route}: ${names.join(', ')}`);

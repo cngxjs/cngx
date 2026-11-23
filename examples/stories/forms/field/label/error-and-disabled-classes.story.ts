@@ -32,9 +32,10 @@ export const STORY: DemoSpec = {
     required(root.valid, { message: 'Required.' });
     required(root.invalid, { message: 'Required.' });
     disabled(root.locked, () => this.lockEnabled());
-  }));`,
-  setupChrome: `  protected readonly lockEnabled = signal(true);
-  protected handleValidate(): void {
+  }));
+
+  protected readonly lockEnabled = signal(true);`,
+  setupChrome: `protected handleValidate(): void {
     this.stateForm.valid().markAsTouched();
     this.stateForm.invalid().markAsTouched();
     this.stateForm.locked().markAsTouched();

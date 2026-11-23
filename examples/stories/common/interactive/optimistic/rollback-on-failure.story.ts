@@ -31,11 +31,10 @@ export const STORY: DemoSpec = {
 
   protected setName(value: string): void {
     this.applyName(value);
-  }`,
-  setupChrome: `
-  protected readonly shouldFail = signal<boolean>(true);
+  }
 
-  protected readonly errorMessage = computed<string>(() => {
+  protected readonly shouldFail = signal<boolean>(true);`,
+  setupChrome: `protected readonly errorMessage = computed<string>(() => {
     const err = this.nameState.error();
     if (err instanceof Error) return err.message;
     if (err === undefined) return '-';

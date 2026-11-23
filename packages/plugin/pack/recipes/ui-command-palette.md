@@ -33,6 +33,15 @@ protected readonly results = buildAsyncStateView<CngxCommandGroup[]>({
   error: this.errorState,
   isFirstLoad: this.firstLoadState,
 });
+
+protected setContent(): void {
+  this.statusState.set('success');
+  this.firstLoadState.set(false);
+  this.errorState.set(undefined);
+  this.dataState.set([
+    { id: 'recents', label: 'Recents', commands: [{ id: 'reopen', label: 'Reopen closed tab', run: () => {} }] },
+  ]);
+}
 ```
 
 ## Wiring

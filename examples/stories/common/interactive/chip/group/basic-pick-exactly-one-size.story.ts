@@ -25,8 +25,9 @@ export const STORY: DemoSpec = {
     { label: 'WAI-ARIA 1.2: `aria-disabled`', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-disabled' },
   ],
   setup: `protected readonly sizes = ['sm', 'md', 'lg'] as const;
-  protected readonly size = signal<'sm' | 'md' | 'lg' | undefined>('md');`,
-  setupChrome: `protected readonly groupDisabled = signal(false);`,
+  protected readonly size = signal<'sm' | 'md' | 'lg' | undefined>('md');
+
+  protected readonly groupDisabled = signal(false);`,
   template: `
   <cngx-chip-group label="T-shirt size" [(selected)]="size" [disabled]="groupDisabled()">
     @for (s of sizes; track s) {

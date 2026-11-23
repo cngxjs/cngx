@@ -24,8 +24,9 @@ export const STORY: DemoSpec = {
     { value: 'docs', label: 'Docs' },
   ];
   protected readonly tag = signal<string | undefined>(undefined);
-  protected readonly createTag: CngxSelectCreateAction<string> = (_term, draft) => draft.label.trim();`,
-  setupChrome: `protected readonly searchLog = signal<string[]>([]);
+  protected readonly createTag: CngxSelectCreateAction<string> = (_term, draft) => draft.label.trim();
+
+  protected readonly searchLog = signal<string[]>([]);
   protected handleSearch(term: string): void {
     this.searchLog.update((l) => [...l.slice(-4), term || '(empty)']);
   }`,

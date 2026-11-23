@@ -18,7 +18,16 @@ export const STORY: DemoSpec = {
   setup: `protected readonly load: readonly number[] = [
     18400, 24100, 31500, 27300, 44200, 52800, 48600, 61200, 57400, 72900, 68300, 80100,
   ];
-  protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');`,
+  protected readonly thousands = (v: unknown): string => Number(v).toLocaleString('en-US');
+
+  protected readonly alignToPlot = signal(true);
+  /**
+   * Inside the chart subtree the four --cngx-chart-plot-* percentages are
+   * readable, so negating them expands the tint from the plot frame back
+   * out to the host box - the misalignment that covers the tick labels.
+   */
+  protected readonly boxInset =
+    'calc(-1 * var(--cngx-chart-plot-block-start, 0px)) calc(-1 * var(--cngx-chart-plot-inline-end, 0px)) calc(-1 * var(--cngx-chart-plot-block-end, 0px)) calc(-1 * var(--cngx-chart-plot-inline-start, 0px))';`,
   template: `<cngx-chart
     [data]="load"
     [width]="480"
@@ -45,14 +54,6 @@ export const STORY: DemoSpec = {
       </div>
     </ng-template>
   </cngx-chart>`,
-  setupChrome: `protected readonly alignToPlot = signal(true);
-  /**
-   * Inside the chart subtree the four --cngx-chart-plot-* percentages are
-   * readable, so negating them expands the tint from the plot frame back
-   * out to the host box - the misalignment that covers the tick labels.
-   */
-  protected readonly boxInset =
-    'calc(-1 * var(--cngx-chart-plot-block-start, 0px)) calc(-1 * var(--cngx-chart-plot-inline-end, 0px)) calc(-1 * var(--cngx-chart-plot-block-end, 0px)) calc(-1 * var(--cngx-chart-plot-inline-start, 0px))';`,
   templateChrome: `<div class="button-row">
     <button type="button" (click)="alignToPlot.set(true)" [attr.aria-pressed]="alignToPlot()">
       Align to plot area

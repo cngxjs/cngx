@@ -26,8 +26,9 @@ export const STORY: DemoSpec = {
   setup: `protected readonly favourite = signal(false);
   protected readonly onRemove = (): void => {
     this.tagRemoved.update((n) => n + 1);
-  };`,
-  setupChrome: `protected readonly tagRemoved = signal(0);`,
+  };
+
+  protected readonly tagRemoved = signal(0);`,
   template: `
   <cngx-chip
     cngxChipInteraction

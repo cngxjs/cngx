@@ -46,14 +46,13 @@ export const STORY: DemoSpec = {
     and the Overview counter stays at <code>0</code>. Switching tabs only ever
     moves a counter from <code>0</code> to <code>1</code>, never higher.
   </p>`,
-  setupChrome: `
-  // Owned by the demo, not the fixture, so the tally starts at zero every
+  setup: `// Owned by the demo, not the fixture, so the tally starts at zero every
   // time this page is opened.
   protected readonly mounts = signal<Record<string, number>>({});
   protected countMount(key: string): void {
     this.mounts.update((m) => ({ ...m, [key]: (m[key] ?? 0) + 1 }));
-  }
-  protected readonly overviewMounts = computed(() => this.mounts()['overview'] ?? 0);
+  }`,
+  setupChrome: `protected readonly overviewMounts = computed(() => this.mounts()['overview'] ?? 0);
   protected readonly reportsMounts = computed(() => this.mounts()['reports'] ?? 0);`,
   templateChrome: `
   <div class="event-grid" style="margin-top:12px">

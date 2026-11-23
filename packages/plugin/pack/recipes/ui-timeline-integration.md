@@ -37,6 +37,18 @@ protected load(): Promise<void> {
       }),
   );
 }
+
+private batch = 0;
+
+private nextBatch(): { id: number; at: Date; summary: string }[] {
+  this.batch += 1;
+  const day = 19 + this.batch;
+  return [
+    { id: this.batch * 10 + 1, at: new Date(`2026-07-${day}T08:15:00`), summary: 'Deploy queued' },
+    { id: this.batch * 10 + 2, at: new Date(`2026-07-${day}T08:41:00`), summary: 'Canary healthy' },
+    { id: this.batch * 10 + 3, at: new Date(`2026-07-${day}T09:02:00`), summary: 'Rollout complete' },
+  ];
+}
 ```
 
 ## Wiring

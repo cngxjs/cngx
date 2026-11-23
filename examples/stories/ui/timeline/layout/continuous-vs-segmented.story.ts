@@ -32,8 +32,9 @@ export const STORY: DemoSpec = {
   ];
 
   protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;`,
-  setupChrome: `protected readonly railStyle = signal<'segmented' | 'continuous'>('continuous');`,
+  protected readonly byId = (event: { id: number }): number => event.id;
+
+  protected readonly railStyle = signal<'segmented' | 'continuous'>('continuous');`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" [attr.aria-pressed]="railStyle() === 'segmented'" (click)="railStyle.set('segmented')">segmented</button>
     <button type="button" class="chip" [attr.aria-pressed]="railStyle() === 'continuous'" (click)="railStyle.set('continuous')">continuous</button>

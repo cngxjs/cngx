@@ -37,8 +37,9 @@ export const STORY: DemoSpec = {
     readonly(root.fruit, () => this.locked());
     readonly(root.tags, () => this.locked());
   });
-  protected readonly editForm = form(this.model, this.editSchema);`,
-  setupChrome: `protected readonly locked = signal(true);`,
+  protected readonly editForm = form(this.model, this.editSchema);
+
+  protected readonly locked = signal(true);`,
   templateChromeBefore: `<p class="demo-hint">All three fields are read-only: open a panel to browse, but no pick sticks. Toggle below to unlock.</p>`,
   template: `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
   <cngx-form-field [field]="editForm.colour">

@@ -29,8 +29,9 @@ export const STORY: DemoSpec = {
     const line = new Date().toLocaleTimeString() + ' -> [' + (intended ?? []).join(', ') + ']';
     this.commitLog.update((l) => [...l.slice(-4), line]);
     return of(intended).pipe(delay(this.slow() ? 1200 : 300));
-  };`,
-  setupChrome: `protected readonly slow = signal(true);
+  };
+
+  protected readonly slow = signal(true);
   protected readonly commitLog = signal<string[]>([]);`,
   template: `<cngx-reorderable-multi-select
   [label]="'Playlist'"

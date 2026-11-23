@@ -26,7 +26,24 @@ export const STORY: DemoSpec = {
     stream: ({ params }) => this.fetchOrders(params),
   });
 
-  protected readonly orders = fromResource(this.ordersResource);`,
+  protected readonly orders = fromResource(this.ordersResource);
+
+  protected readonly failRequests = signal(false);
+  private requestCount = 0;
+
+  // Stand-in for an HttpClient call: answers after 900 ms or fails when the
+  // failure toggle is on.
+  private fetchOrders(region: string) {
+    const request = ++this.requestCount;
+    return timer(900).pipe(
+      map(() => {
+        if (this.failRequests()) {
+          throw new Error('503 Service Unavailable (' + region + ')');
+        }
+        return { region, open: 10 + request, shipped: 40 + request * 2 };
+      }),
+    );
+  }`,
   template: `  <section aria-label="Open orders" [attr.aria-busy]="orders.isBusy()">
     <div *cngxAsync="orders; let data; skeleton: skeletonTpl; empty: emptyTpl; error: errorTpl">
       @if (data) {
@@ -48,22 +65,6 @@ export const STORY: DemoSpec = {
     <p class="demo-error-block" role="alert">{{ err }}</p>
   </ng-template>`,
   setupChrome: `protected readonly regions = ['North', 'South'] as const;
-  protected readonly failRequests = signal(false);
-  private requestCount = 0;
-
-  // Stand-in for an HttpClient call: answers after 900 ms or fails when the
-  // failure toggle is on.
-  private fetchOrders(region: string) {
-    const request = ++this.requestCount;
-    return timer(900).pipe(
-      map(() => {
-        if (this.failRequests()) {
-          throw new Error('503 Service Unavailable (' + region + ')');
-        }
-        return { region, open: 10 + request, shipped: 40 + request * 2 };
-      }),
-    );
-  }
 
   protected setLocally(): void {
     this.ordersResource.set({ region: 'Local draft', open: 0, shipped: 0 });

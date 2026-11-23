@@ -19,6 +19,8 @@ protected readonly upload = () =>
   new Promise<void>((resolve, reject) =>
     setTimeout(() => (this.failNext ? reject(new Error('Upload failed')) : resolve()), 900),
   );
+
+protected failNext = false;
 ```
 
 ## Wiring

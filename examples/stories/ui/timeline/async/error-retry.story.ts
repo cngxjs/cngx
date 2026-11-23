@@ -40,8 +40,9 @@ export const STORY: DemoSpec = {
   protected onRetry(): void {
     this.feed.set('refreshing');
     setTimeout(() => this.feed.setSuccess(this.rows), 400);
-  }`,
-  setupChrome: `protected readonly rows = [
+  }
+
+  protected readonly rows = [
     { id: 1, at: new Date('2026-07-20T09:12:00'), summary: 'Webhook delivered' },
     { id: 2, at: new Date('2026-07-21T09:31:00'), summary: 'Webhook retried' },
   ];
@@ -49,7 +50,10 @@ export const STORY: DemoSpec = {
   protected readonly retryCount = signal(0);
   protected readonly surface = signal<'button-slot' | 'whole-surface'>('button-slot');
 
-  protected failFirstLoad(): void {
+  protected countRetry(): void {
+    this.retryCount.set(this.retryCount() + 1);
+  }`,
+  setupChrome: `protected failFirstLoad(): void {
     this.feed.reset();
     this.feed.set('loading');
     this.feed.setError(new Error('Endpoint unreachable'));
@@ -58,10 +62,6 @@ export const STORY: DemoSpec = {
   protected failRefresh(): void {
     this.feed.setSuccess(this.rows);
     this.feed.setError(new Error('Refresh failed'));
-  }
-
-  protected countRetry(): void {
-    this.retryCount.set(this.retryCount() + 1);
   }`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" (click)="failFirstLoad()">fail first load</button>
