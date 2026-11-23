@@ -1,5 +1,5 @@
 import { Component, resource, signal, type TemplateRef, viewChild } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { type AsyncStatus, buildAsyncStateView } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -242,5 +242,75 @@ describe('CngxAsync slot template swap', () => {
 
     expect(el.querySelector('.skel-a')).toBeNull();
     expect(el.querySelector('.skel-b')).not.toBeNull();
+  });
+});
+
+describe('CngxAsync focus across a view switch', () => {
+  @Component({
+    template: `
+      <button class="outside">Outside</button>
+      <div *cngxAsync="state; skeleton: skel; error: err">CONTENT</div>
+      <ng-template #skel><span class="skeleton">Loading</span></ng-template>
+      <ng-template #err><button class="retry">Retry</button></ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class FocusHost {
+    readonly state = createManualState<string>();
+  }
+
+  async function render(fixture: ComponentFixture<FocusHost>): Promise<void> {
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  async function setup(): Promise<{ fixture: ComponentFixture<FocusHost>; el: HTMLElement }> {
+    const fixture = TestBed.createComponent(FocusHost);
+    fixture.componentInstance.state.setError('boom');
+    await render(fixture);
+    return { fixture, el: fixture.nativeElement };
+  }
+
+  async function errorAgain(fixture: ComponentFixture<FocusHost>, between?: () => void) {
+    fixture.componentInstance.state.set('loading');
+    await render(fixture);
+    between?.();
+    fixture.componentInstance.state.setError('boom again');
+    await render(fixture);
+  }
+
+  it('moves focus from a destroyed Retry button into the next view that has one', async () => {
+    const { fixture, el } = await setup();
+    const first = el.querySelector<HTMLButtonElement>('.retry')!;
+    first.focus();
+    expect(document.activeElement).toBe(first);
+
+    await errorAgain(fixture);
+
+    const next = el.querySelector<HTMLButtonElement>('.retry')!;
+    expect(next).not.toBe(first);
+    expect(document.activeElement).toBe(next);
+  });
+
+  it('never moves focus that sits outside the directive', async () => {
+    const { fixture, el } = await setup();
+    const outside = el.querySelector<HTMLButtonElement>('.outside')!;
+    outside.focus();
+
+    await errorAgain(fixture);
+
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it('does not pull back focus the user moved elsewhere during the skeleton', async () => {
+    const { fixture, el } = await setup();
+    el.querySelector<HTMLButtonElement>('.retry')!.focus();
+    const outside = el.querySelector<HTMLButtonElement>('.outside')!;
+
+    await errorAgain(fixture, () => outside.focus());
+
+    expect(document.activeElement).toBe(outside);
   });
 });

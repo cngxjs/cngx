@@ -1,13 +1,18 @@
+import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   computed,
   Directive,
   effect,
   type EmbeddedViewRef,
   inject,
+  Injector,
   input,
   TemplateRef,
+  untracked,
   ViewContainerRef,
 } from '@angular/core';
+import { CNGX_FOCUSABLE_SELECTOR } from '@cngx/common/a11y';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { resolveAsyncView, type AsyncView } from '../async-state/resolve-view';
@@ -83,6 +88,8 @@ export interface CngxAsyncContext<T> {
 export class CngxAsync<T> {
   private readonly vcr = inject(ViewContainerRef);
   private readonly contentTpl = inject<TemplateRef<CngxAsyncContext<T>>>(TemplateRef);
+  private readonly doc = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
 
   /** The async state to render. */
   readonly cngxAsync = input.required<CngxAsyncState<T>>();
@@ -123,6 +130,9 @@ export class CngxAsync<T> {
   private currentView: AsyncView = 'none';
   private currentTemplate: TemplateRef<unknown> | undefined = undefined;
   private contentViewRef: EmbeddedViewRef<CngxAsyncContext<T>> | null = null;
+  // Set when a view switch destroyed the focused element; cleared once a later
+  // view takes focus or the user moved focus elsewhere.
+  private focusPending = false;
 
   constructor() {
     effect(() => {
@@ -135,13 +145,70 @@ export class CngxAsync<T> {
         return;
       }
 
+      if (this.renderedViewHoldsFocus()) {
+        this.focusPending = true;
+      }
       this.vcr.clear();
       this.contentViewRef = null;
       this.currentView = view;
       this.currentTemplate = tpl;
 
       this.renderView(view, tpl, s);
+      if (this.focusPending) {
+        untracked(() => afterNextRender(() => this.restoreFocus(), { injector: this.injector }));
+      }
     });
+  }
+
+  private renderedRoots(): Node[] {
+    const roots: Node[] = [];
+    for (let i = 0; i < this.vcr.length; i++) {
+      const ref = this.vcr.get(i) as EmbeddedViewRef<unknown> | null;
+      roots.push(...((ref?.rootNodes ?? []) as Node[]));
+    }
+    return roots;
+  }
+
+  private renderedViewHoldsFocus(): boolean {
+    const active = this.doc.activeElement;
+    if (!active || active === this.doc.body) {
+      return false;
+    }
+    return this.renderedRoots().some((node) => node.contains(active));
+  }
+
+  // Restores focus only when it was lost to the body; a view without a
+  // focusable element keeps the request pending for the next one.
+  private restoreFocus(): void {
+    if (!this.focusPending) {
+      return;
+    }
+    const active = this.doc.activeElement;
+    if (active && active !== this.doc.body) {
+      this.focusPending = false;
+      return;
+    }
+    const target = this.firstFocusable();
+    if (target) {
+      this.focusPending = false;
+      target.focus();
+    }
+  }
+
+  private firstFocusable(): HTMLElement | null {
+    for (const node of this.renderedRoots()) {
+      if (!(node instanceof HTMLElement)) {
+        continue;
+      }
+      if (node.matches(CNGX_FOCUSABLE_SELECTOR)) {
+        return node;
+      }
+      const inner = node.querySelector<HTMLElement>(CNGX_FOCUSABLE_SELECTOR);
+      if (inner) {
+        return inner;
+      }
+    }
+    return null;
   }
 
   private updateContentContext(s: CngxAsyncState<T>): void {
