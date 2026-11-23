@@ -180,7 +180,7 @@ describe('copy-block Material bridge', () => {
 
 describe('ripple Material bridge', () => {
   // every name is consumed by cngx-ripple.css on the __wave child
-  const CONSUMED = ['--cngx-ripple-color', '--cngx-ripple-duration', '--cngx-ripple-opacity'];
+  const CONSUMED = ['--cngx-ripple-duration', '--cngx-ripple-opacity'];
 
   it('emits only consumed token names (M3)', () => {
     expect(bridgeTokenNames('ripple-theme')).toEqual(CONSUMED);

@@ -7,9 +7,9 @@ import { computedValue } from '../support/material-bridge-page';
 // the material-fixes roadmap (items 11 to 16) and stays unpinned until fixed.
 // The unchecked toggle text also matches without its component bridge (system
 // bridge); the group corner pin carries the button-toggle.theme proof. The ripple
-// wave follows currentColor by design: the directive sets the colour inline on
-// the wave, so the pin proves the M3 rule "state layer = content colour", not
-// ripple.theme (roadmap item 16).
+// wave follows currentColor by design (the bridge sets no colour), so the colour
+// pin proves the M3 rule "state layer = content colour"; the peak opacity pin
+// carries the ripple.theme proof.
 
 const mat = (pair: string, part = ''): string => `[data-pair=${pair}] .probe-mat ${part}`.trim();
 const cngx = (pair: string, part = ''): string => `[data-pair=${pair}] .probe-cngx ${part}`.trim();
@@ -148,6 +148,21 @@ for (const scheme of ['light', 'dark'] as const) {
       const [cngxColor, cngxRadius] = await pressAndRead('.probe-cngx', cngx('ripple', '.cngx-ripple__wave'));
       expect(channels(cngxColor)).toBe(channels(matColor));
       expect(cngxRadius).toBe(matRadius);
+    });
+
+    test('ripple: the wave peaks at the matRipple 10% opacity', async ({ page }) => {
+      // matRipple carries its peak in the colour alpha, cngx in the opacity token.
+      const box = await page.locator('[data-pair=ripple] .probe-mat').boundingBox();
+      expect(box).not.toBeNull();
+      await page.mouse.move(box!.x + 20, box!.y + 20);
+      await page.mouse.down();
+      const matWave = mat('ripple', '.mat-ripple-element');
+      await expect(page.locator(matWave)).toHaveCount(1);
+      const matColor = await computedValue(page, matWave, 'background-color');
+      await page.mouse.up();
+      const alpha = Number(matColor.match(/\/\s*([\d.]+)\)$|,\s*([\d.]+)\)$/)?.slice(1).find(Boolean));
+      const cngxOpacity = await computedValue(page, cngx('ripple'), '--cngx-ripple-opacity');
+      expect(Number(cngxOpacity)).toBe(alpha);
     });
   });
 }

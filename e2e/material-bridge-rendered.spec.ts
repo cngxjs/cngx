@@ -1115,11 +1115,12 @@ test.describe('material-bridge rendered values: password-strength-meter', () => 
   ] as const;
   const BRIDGE_CSS = compileBridge('password-strength-meter-theme');
 
-  const METER_HTML = `
-<cngx-password-strength-meter id="meter-weak" class="cngx-password-strength-meter" data-strength="weak">
-  <span id="weak-filled" class="cngx-password-strength-meter__segment" data-filled="true"></span>
-  <span id="weak-empty" class="cngx-password-strength-meter__segment" data-filled="false"></span>
+  const tier = (level: string): string => `
+<cngx-password-strength-meter class="cngx-password-strength-meter" data-strength="${level}">
+  <span id="${level}-filled" class="cngx-password-strength-meter__segment" data-filled="true"></span>
+  <span id="${level}-empty" class="cngx-password-strength-meter__segment" data-filled="false"></span>
 </cngx-password-strength-meter>`;
+  const METER_HTML = ['weak', 'fair', 'good', 'strong'].map(tier).join('');
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -1136,13 +1137,15 @@ test.describe('material-bridge rendered values: password-strength-meter', () => 
     );
   });
 
-  test('the fill token reaches the segment read site', async ({ page }) => {
-    // Unregistered token, assigned on the host and inherited into the
-    // segment, where the [data-filled] rule reads it.
-    expect(
-      await computedValue(page, '#weak-filled', '--cngx-password-strength-meter-fill-color'),
-    ).toBe(matSys('primary'));
-  });
+  for (const [level, role] of [
+    ['fair', 'secondary'],
+    ['good', 'primary'],
+    ['strong', 'tertiary'],
+  ] as const) {
+    test(`a ${level} score paints the ${role} role`, async ({ page }) => {
+      expect(await computedValue(page, `#${level}-filled`, 'background-color')).toBe(matSys(role));
+    });
+  }
 });
 
 test.describe('material-bridge rendered values: skeleton', () => {
@@ -1196,6 +1199,46 @@ test.describe('material-bridge rendered values: empty-state', () => {
     expect(await computedValue(page, '#empty', 'color')).toBe(matSys('on-surface-variant'));
     expect(await computedValue(page, '#empty-icon', 'color')).toBe(matSys('on-surface-variant'));
     expect(await computedValue(page, '#empty-title', 'color')).toBe(matSys('on-surface'));
+  });
+
+  test('the title and description take the title-medium and body-medium type', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#empty-title', 'font-size')).toBe(
+      matSysExtra('title-medium-size'),
+    );
+    expect(await computedValue(page, '#empty-title', 'font-weight')).toBe(
+      matSysExtra('title-medium-weight'),
+    );
+    expect(await computedValue(page, '#empty-desc', 'font-size')).toBe(
+      matSysExtra('body-medium-size'),
+    );
+  });
+});
+
+test.describe('material-bridge rendered values: ripple', () => {
+  const RIPPLE_CSS = ['projects/common/theming/components/cngx-ripple.css'] as const;
+  const BRIDGE_CSS = compileBridge('ripple-theme');
+
+  const RIPPLE_HTML = `
+<button id="ripple-host" type="button" class="cngx-ripple" style="color: rgb(201, 32, 77)">
+  <span class="cngx-ripple__container"><span id="ripple-wave" class="cngx-ripple__wave"></span></span>
+</button>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: RIPPLE_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: RIPPLE_HTML,
+    });
+  });
+
+  test('the wave paints the content colour of its host, not on-surface', async ({ page }) => {
+    expect(await computedValue(page, '#ripple-wave', 'background-color')).toBe('rgb(201, 32, 77)');
+  });
+
+  test('the wave peaks at the matRipple 10% opacity', async ({ page }) => {
+    expect(await computedValue(page, '#ripple-wave', '--cngx-ripple-opacity')).toBe('0.1');
   });
 });
 
@@ -1301,6 +1344,10 @@ test.describe('material-bridge rendered values: speak-button', () => {
       matSys('surface-container-low'),
     );
     expect(await computedValue(page, '#speak-idle', 'color')).toBe(matSys('on-surface-variant'));
+  });
+
+  test('the resting edge paints the outline-variant role', async ({ page }) => {
+    expect(await computedValue(page, '#speak-idle', 'border-top-color')).toBe(matSys('outline-variant'));
   });
 
   test('hover paints the container surface and the primary ink and edge', async ({ page }) => {
@@ -1736,6 +1783,14 @@ test.describe('material-bridge rendered values: filter-builder', () => {
     expect(await computedValue(page, '#fb-add', 'border-top-color')).toBe(
       matSys('outline-variant'),
     );
+  });
+
+  test('the resting action button paints the surface role', async ({ page }) => {
+    expect(await computedValue(page, '#fb-add', 'background-color')).toBe(matSys('surface'));
+  });
+
+  test('the remove button paints the error role', async ({ page }) => {
+    expect(await computedValue(page, '#fb-remove', 'color')).toBe(matSys('error'));
   });
 
   test('hover paints the container surface', async ({ page }) => {

@@ -1,11 +1,9 @@
-@use 'sass:map';
-@use 'sass:math';
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
 // Material bridge for CngxEmptyState. Default visuals ship with the
-// component (empty-state.component.css); this file aligns colour,
-// typography, and density tokens with Material.
+// component (empty-state.component.css); this file aligns colour and
+// typography tokens with Material.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/empty-state-theme' as empty;
@@ -27,28 +25,19 @@
   }
 }
 
+// Kept as a published entry point with no body: Material has no empty-state
+// spec, and the component derives its padding from the scale `xl` rung,
+// which `density-bridge.scss` already rescales for a Material density theme.
 @mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
-
-  // The hero empty-state padding (48px) diverges from the scale xl (32px),
-  // so --cngx-empty-padding stays bridged. The gap (16px == space-md) now
-  // derives from the scale in empty-state.component.css, so it is dropped.
-  $paddings: (
-    0: 48px,
-    -1: 40px,
-    -2: 32px,
-    -3: 24px,
-    -4: 20px,
-  );
-
-  --cngx-empty-padding: #{map.get($paddings, $scale)};
 }
 
 @mixin theme($theme) {
   @include bridge.on(cngx-empty-state) {
     @include color($theme);
+  }
+  // The type tokens are registered `inherits: false` and read on the title
+  // and description elements, so they are emitted there.
+  @include bridge.on('.cngx-empty-state__title', '.cngx-empty-state__description') {
     @include typography($theme);
-    @include density($theme);
   }
 }
