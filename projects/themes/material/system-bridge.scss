@@ -1,6 +1,5 @@
 @use 'sass:meta';
 @use '@angular/material' as mat;
-@use './bridge' as bridge;
 
 // System-token bridge - maps cngx foundation tokens
 // (--cngx-color-*, --cngx-space-*, --cngx-radius-*, --cngx-duration-*,
@@ -10,9 +9,8 @@
 // sidenav, …) become optional - call them only when a component-token
 // needs a Material value the system layer cannot derive.
 //
-// Two modes: M3 ($theme version 1) reads --mat-sys-* custom properties
-// at runtime; M2 (version 0) resolves palette colours at compile time
-// via mat.get-theme-color.
+// Reads --mat-sys-* custom properties at runtime, so it needs an M3
+// theme ($theme version 1); any other theme emits no declarations.
 //
 //   @use '@angular/material' as mat;
 //   @use '@cngx/themes/material/system-bridge' as cngx-system;
@@ -106,48 +104,6 @@
   --cngx-shadow-lg: var(--mat-sys-level4);
 }
 
-@mixin _m2($theme) {
-  $primary: mat.get-theme-color($theme, primary);
-  $warn: mat.get-theme-color($theme, warn);
-  $surface: mat.get-theme-color($theme, background, card);
-  $on-surface: mat.get-theme-color($theme, foreground, text);
-  $divider: mat.get-theme-color($theme, foreground, divider);
-
-  --cngx-color-surface: #{$surface};
-  // M2 text already carries its alpha per theme type: black 0.87 light,
-  // white 1.0 dark, as mat-input paints it.
-  --cngx-color-text: #{$on-surface};
-  --cngx-color-text-muted: #{mat.get-theme-color($theme, foreground, secondary-text)};
-  --cngx-color-border: #{rgba($divider, 0.12)};
-  // Mirrors the M2 resting outlined form-field frame: the M2 system
-  // outline-variant, black or white at 0.38 per theme type.
-  @if mat.get-theme-type($theme) == dark {
-    --cngx-color-border-strong: #{rgba(white, 0.38)};
-  } @else {
-    --cngx-color-border-strong: #{rgba(black, 0.38)};
-  }
-  // M2 is always light or dark, so the three rungs always follow the theme.
-  @include _scheme-rungs(mat.get-theme-type($theme));
-  --cngx-color-primary: #{$primary};
-  // A strong fill and its ink travel as a pair, so every reader of the
-  // pair (not only the button host) paints Material ink on a Material fill.
-  --cngx-color-primary-strong: #{$primary};
-  --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
-  --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
-  --cngx-color-accent: oklch(from var(--cngx-color-primary) l c calc(h - 70));
-  --cngx-gradient-brand: linear-gradient(
-    100deg,
-    var(--cngx-color-primary),
-    var(--cngx-color-accent)
-  );
-  // danger stays the raw warn (a fill colour); the text rung is derived
-  --cngx-color-danger: #{$warn};
-  --cngx-color-danger-strong: #{$warn};
-  --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
-  --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
-  --cngx-color-info: #{$primary};
-}
-
 // Bare-element re-skin. cngx.base defines neutral defaults for
 // <button>, <input>, <textarea>, <select> via cngx foundation tokens.
 // When Material is paired in, those bare elements should read as
@@ -174,8 +130,6 @@
   @layer cngx.components {
     @if mat.get-theme-version($theme) == 1 {
       @include _m3($theme);
-    } @else {
-      @include _m2($theme);
     }
   }
 }

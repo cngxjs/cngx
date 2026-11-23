@@ -25,8 +25,6 @@ const REPO_ROOT = resolve(__dirname, '../..');
 const LOAD_PATHS = [resolve(REPO_ROOT, 'node_modules'), resolve(REPO_ROOT, 'projects/themes')];
 const LAYERS_CSS = resolve(REPO_ROOT, 'projects/core/theming/layers.css');
 
-export type ThemeVersion = 'v1' | 'v0';
-
 /**
  * Compiles an arbitrary scss entry against the themes lib + node_modules
  * load paths. For fixture pieces `compileBridge` cannot express - e.g. the
@@ -42,15 +40,10 @@ export function compileEntry(scss: string): string {
  * theme. Entry shape mirrors the name-contract specs
  * (projects/common/interactive/material-bridge-tokens.spec.ts).
  */
-export function compileBridge(bridge: string, themeVersion: ThemeVersion = 'v1'): string {
-  const theme =
-    themeVersion === 'v1'
-      ? `$theme: mat.define-theme((
+export function compileBridge(bridge: string): string {
+  const theme = `$theme: mat.define-theme((
   color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
-));`
-      : `$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));`;
+));`;
   return compileEntry(`
 @use '@angular/material' as mat;
 @use 'material/${bridge}' as bridge;

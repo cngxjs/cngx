@@ -18,9 +18,6 @@ const SCHEME_RUNGS = [
   '--cngx-color-warning',
 ] as const;
 
-const M2_PALETTES =
-  '(color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette)))';
-
 const systemTokens = readFileSync(
   resolve(process.cwd(), 'projects/core/theming/system-tokens.css'),
   'utf-8',
@@ -73,18 +70,6 @@ const THEMES = [
     theme: 'mat.define-theme((color: (theme-type: color-scheme)))',
     scheme: null,
     muted: 'var(--mat-sys-on-surface-variant)',
-  },
-  {
-    name: 'M2 light',
-    theme: `mat.m2-define-light-theme(${M2_PALETTES})`,
-    scheme: 'light',
-    muted: 'rgba(0, 0, 0, 0.54)',
-  },
-  {
-    name: 'M2 dark',
-    theme: `mat.m2-define-dark-theme(${M2_PALETTES})`,
-    scheme: 'dark',
-    muted: 'rgba(255, 255, 255, 0.7)',
   },
 ] as const;
 

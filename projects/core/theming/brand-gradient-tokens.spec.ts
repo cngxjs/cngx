@@ -79,10 +79,6 @@ html {
 
   it.each([
     ['M3', 'mat.define-theme()'],
-    [
-      'M2',
-      'mat.m2-define-light-theme((color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette))))',
-    ],
   ])('re-derives both rungs from the bridged primary under %s', (_, theme) => {
     const blocks = compile(theme);
     expect(blocks).toHaveLength(1);

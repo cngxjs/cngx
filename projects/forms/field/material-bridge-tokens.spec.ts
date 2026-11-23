@@ -381,136 +381,22 @@ probe {
 // error text); without a bridge mapping they would keep the Ember / cngx red
 // under a Material theme.
 describe('system Material bridge', () => {
-  function systemCss(themeVersion: 'v1' | 'v0', scheme: 'light' | 'dark' = 'light'): string {
-    const theme =
-      themeVersion === 'v1'
-        ? `$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));`
-        : `$theme: mat.m2-define-${scheme}-theme((color: (
-            primary: mat.m2-define-palette(mat.$m2-indigo-palette),
-            accent: mat.m2-define-palette(mat.$m2-pink-palette),
-          )));`;
+  function systemCss(): string {
     return compileThemeEntry(
       `
 @use '@angular/material' as mat;
 @use 'material/system-bridge' as bridge;
-${theme}
+$theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
 html { @include bridge.theme($theme); }
 `,
     );
   }
 
   it('maps the strong primary, primary text and danger text rungs (M3)', () => {
-    const css = systemCss('v1');
+    const css = systemCss();
     expect(css).toContain('--cngx-color-primary-strong: var(--mat-sys-primary)');
     expect(css).toContain('--cngx-color-border-strong: var(--mat-sys-outline);');
     expect(css).toContain('--cngx-color-primary-text: var(--mat-sys-primary)');
     expect(css).toContain('--cngx-color-danger-text: var(--mat-sys-error)');
   });
-
-  it('maps the strong primary, primary text and danger text rungs (M2)', () => {
-    const css = systemCss('v0');
-    expect(css).toMatch(/--cngx-color-primary-strong: #[0-9a-f]{3,6}/);
-    expect(css).toContain('--cngx-color-border-strong: rgba(0, 0, 0, 0.38)');
-    expect(css).toMatch(/--cngx-color-primary-text: #[0-9a-f]{3,6}/);
-    expect(css).toMatch(/--cngx-color-danger-text: #[0-9a-f]{3,6}/);
-  });
-
-  // mat-input paints the M2 foreground text as is: black 0.87 light, plain
-  // white dark. A second alpha dimmed every dark text and its 38% disabled rung.
-  it('maps the text rung to the M2 foreground text without an own alpha', () => {
-    expect(systemCss('v0', 'light')).toContain('--cngx-color-text: rgba(0, 0, 0, 0.87);');
-    expect(systemCss('v0', 'dark')).toMatch(/--cngx-color-text: (white|#fff|#ffffff);/);
-  });
-
-  // mat-form-field draws its resting outlined frame in the M2 system
-  // outline-variant: black or white at 0.38 per theme type.
-  it('maps the strong border rung to the M2 outlined frame colour per theme type', () => {
-    expect(systemCss('v0', 'light')).toContain('--cngx-color-border-strong: rgba(0, 0, 0, 0.38)');
-    expect(systemCss('v0', 'dark')).toContain(
-      '--cngx-color-border-strong: rgba(255, 255, 255, 0.38)',
-    );
-  });
-});
-
-// danger stays the raw warn (fill colour); only the text rung is derived,
-// against the page and the card the system surface maps to.
-describe('system Material bridge M2 danger text contrast', () => {
-  function m2(scheme: 'light' | 'dark', warn: string, primary = 'indigo'): Record<string, string> {
-    const css = compileThemeEntry(
-      `
-@use 'sass:color';
-@use '@angular/material' as mat;
-@use 'material/system-bridge' as bridge;
-
-$theme: mat.m2-define-${scheme}-theme((color: (
-  primary: mat.m2-define-palette(mat.$m2-${primary}-palette),
-  accent: mat.m2-define-palette(mat.$m2-pink-palette),
-  warn: mat.m2-define-palette(mat.$m2-${warn}-palette),
-)));
-
-html { @include bridge.theme($theme); }
-probe {
-  --warn: #{color.ie-hex-str(mat.get-theme-color($theme, warn))};
-  --primary: #{color.ie-hex-str(mat.get-theme-color($theme, primary))};
-  --page: #{color.ie-hex-str(mat.get-theme-color($theme, background, background))};
-  --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
-}
-`,
-    );
-    const pick = (pattern: RegExp): string => {
-      const hit = css.match(pattern);
-      if (!hit) {
-        throw new Error(`no match for ${pattern}`);
-      }
-      return hit[1];
-    };
-    const probe = (name: string): string =>
-      `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
-    return {
-      danger: pick(/--cngx-color-danger: (#[0-9a-f]{6})/),
-      dangerText: pick(/--cngx-color-danger-text: (#[0-9a-f]{6})/),
-      primaryText: pick(/--cngx-color-primary-text: (#[0-9a-f]{6})/),
-      warn: probe('warn'),
-      primary: probe('primary'),
-      page: probe('page'),
-      card: probe('card'),
-    };
-  }
-
-  function luminance(hex: string): number {
-    const [r, g, b] = [1, 3, 5]
-      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-      .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-
-  function contrast(a: string, b: string): number {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  }
-
-  for (const scheme of ['light', 'dark'] as const) {
-    for (const warn of ['red', 'deep-orange', 'pink', 'orange']) {
-      it(`${scheme} ${warn}: danger text 4.5:1 on page and card, danger stays raw warn`, () => {
-        const t = m2(scheme, warn);
-        for (const surface of [t['page'], t['card']]) {
-          expect(contrast(t['dangerText'], surface)).toBeGreaterThanOrEqual(4.5);
-        }
-        expect(t['danger']).toBe(t['warn']);
-      });
-    }
-    // The primary text rung derives the same way; a primary that already
-    // passes on both surfaces ships unchanged.
-    for (const primary of ['indigo', 'teal', 'orange', 'cyan']) {
-      it(`${scheme} ${primary}: primary text 4.5:1 on page and card`, () => {
-        const t = m2(scheme, 'red', primary);
-        for (const surface of [t['page'], t['card']]) {
-          expect(contrast(t['primaryText'], surface)).toBeGreaterThanOrEqual(4.5);
-        }
-        if ([t['page'], t['card']].every((surface) => contrast(t['primary'], surface) >= 4.5)) {
-          expect(t['primaryText']).toBe(t['primary']);
-        }
-      });
-    }
-  }
 });
