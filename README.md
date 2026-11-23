@@ -158,7 +158,7 @@ Plain-CSS theme bundle. No JS, no SCSS at runtime in the default bundle.
 
 - `@cngx/themes/cngx.css` - single-import default. Cascade layers, OKLCH system tokens, `@property` declarations, `light-dark()` dark mode out of the box.
 - `@cngx/themes/example-brand.css` - brand template.
-- `@cngx/themes/material/*` - 55 component bridges plus `system-bridge.scss`, `density-bridge.scss`, and a `theme.scss` aggregator. One `@include` wires every cngx component into a Material theme (M2 or M3).
+- `@cngx/themes/material/*` - 55 component bridges plus `system-bridge.scss`, `density-bridge.scss`, and a `theme.scss` aggregator. One `@include` wires every cngx component into a Material M3 theme; an M2 theme is not bridged.
 
 ---
 
@@ -231,7 +231,7 @@ It plugs into `MatTable` (or any CDK-table-backed surface) directly, combining C
 No fork, no shim, no "drop Material first".
 - **Your Material theme themes CNGX too.** `@cngx/themes/material/` ships **55** component bridges plus a `system-bridge.scss` that maps CNGX's foundation tokens (`--cngx-color-*`, `--cngx-space-*`, `--cngx-radius-*`, `--cngx-shadow-*`, ...) onto Material's `--mat-sys-*` design tokens. 
 One include - `@include cngx-material.theme($theme)` next to your existing `mat.all-component-themes($theme)` - and every CNGX component picks up your Material palette, corners, outlines and typography automatically. 
-M3 reads `--mat-sys-*` at runtime; M2 resolves palette colours at compile time via `mat.get-theme-color`. Selective wiring stays available: pull the system bridge plus only the component bridges you actually ship.
+The bridges read `--mat-sys-*` at runtime, so they need an M3 theme; an M2 theme gets no bridge declarations. Selective wiring stays available: pull the system bridge plus only the component bridges you actually ship.
 
 > **The premise.** If you are already on Material, adopt CNGX incrementally on top. If you want to leave Material behind, the same brains drive the CNGX-only Skins on the way out.
 
