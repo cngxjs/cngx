@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxDisclosure: Card with disclosure expand collapse',
   subtitle:
-    'The card title is a disclosure button: click it or press Enter / Space to expand or collapse the body. <code>cngxDisclosure</code> on the native <code>&lt;button&gt;</code> paints <code>aria-expanded</code> and <code>aria-controls</code>, the body sits behind the matching id and <code>@if</code>-mounts when opened.',
+    'The card title is a disclosure button: click it or press Enter / Space to expand or collapse the body. <code>cngxDisclosure</code> on the native <code>&lt;button&gt;</code> paints <code>aria-expanded</code> and <code>aria-controls</code>, the body sits behind the matching id and stays in the DOM with <code>[hidden]</code> while collapsed, so the <code>aria-controls</code> target always exists.',
   description:
     'Composes two atoms into a real disclosure pattern: the card supplies the surface and the header slot, a <code>&lt;button cngxDisclosure&gt;</code> inside the title handles the toggle wiring + ARIA (APG accordion header: heading wraps the button, so the button keeps its role and focus). Each card runs its own disclosure instance so the two demos toggle independently.',
   level: 'organism',
