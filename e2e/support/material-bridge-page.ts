@@ -117,6 +117,8 @@ export const MAT_SYS_EXTRAS = {
   'label-medium-weight': '610',
   'label-large-size': '15px',
   'title-small-size': '19px',
+  'title-medium-size': '17.5px',
+  'title-medium-weight': '540',
   'headline-medium-size': '29px',
   'headline-medium-weight': '430',
   'body-medium-size': '16.5px',

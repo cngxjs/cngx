@@ -1197,6 +1197,20 @@ test.describe('material-bridge rendered values: empty-state', () => {
     expect(await computedValue(page, '#empty-icon', 'color')).toBe(matSys('on-surface-variant'));
     expect(await computedValue(page, '#empty-title', 'color')).toBe(matSys('on-surface'));
   });
+
+  test('the title and description take the title-medium and body-medium type', async ({
+    page,
+  }) => {
+    expect(await computedValue(page, '#empty-title', 'font-size')).toBe(
+      matSysExtra('title-medium-size'),
+    );
+    expect(await computedValue(page, '#empty-title', 'font-weight')).toBe(
+      matSysExtra('title-medium-weight'),
+    );
+    expect(await computedValue(page, '#empty-desc', 'font-size')).toBe(
+      matSysExtra('body-medium-size'),
+    );
+  });
 });
 
 test.describe('material-bridge rendered values: copy-block', () => {
