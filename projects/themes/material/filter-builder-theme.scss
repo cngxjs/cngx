@@ -17,7 +17,7 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-filter-builder-border-color: var(--mat-sys-outline-variant);
     --cngx-filter-builder-empty-fg: var(--mat-sys-on-surface-variant);
-    --cngx-filter-builder-error-fg: var(--mat-sys-error);
+    --cngx-filter-builder-action-remove-fg: var(--mat-sys-error);
     --cngx-filter-builder-action-fg: var(--mat-sys-primary);
     --cngx-filter-builder-action-hover-bg: var(--mat-sys-surface-container);
     --cngx-filter-builder-action-border: var(--mat-sys-outline-variant);

@@ -1746,6 +1746,10 @@ test.describe('material-bridge rendered values: filter-builder', () => {
     expect(await computedValue(page, '#fb-add', 'background-color')).toBe(matSys('surface'));
   });
 
+  test('the remove button paints the error role', async ({ page }) => {
+    expect(await computedValue(page, '#fb-remove', 'color')).toBe(matSys('error'));
+  });
+
   test('hover paints the container surface', async ({ page }) => {
     await page.hover('#fb-add');
     expect(await computedValue(page, '#fb-add', 'background-color')).toBe(
