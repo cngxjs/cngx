@@ -54,4 +54,17 @@ test.describe('common/a11y/roving-tabindex', () => {
     await expect(page.getByRole('menuitem', { name: 'Paste' })).toBeFocused();
 
   });
+  test('horizontal-toolbar: wraps instead of overflowing at 390 px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoDemo(page, 'common/a11y/roving-tabindex/horizontal-toolbar');
+
+    const toolbar = page.getByRole('toolbar', { name: 'Text formatting' });
+    await expect(toolbar).toBeVisible();
+    const overflow = await toolbar.evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+    const pageOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(pageOverflow).toBeLessThanOrEqual(0);
+  });
 });
