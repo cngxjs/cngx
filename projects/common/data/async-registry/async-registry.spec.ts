@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createManualState } from '../async-state/create-manual-state';
@@ -88,6 +88,27 @@ describe('CngxAsyncRegistry', () => {
 
     registry.unregister(id);
     expect(registry.activeOperations()).toHaveLength(0);
+  });
+
+  // B6 probe: register() reads the operations map tracked, so an effect that
+  // registers subscribes to the signal it writes and re-runs. Flipped to a
+  // plain it() by the fix that reads the map untracked.
+  it.fails('register inside an effect runs the effect once', () => {
+    const registry = setupRegistry();
+    let runs = 0;
+    TestBed.runInInjectionContext(() =>
+      effect(() => {
+        runs++;
+        if (runs <= 5) {
+          registry.register(createManualState<number>());
+        }
+      }),
+    );
+    for (let i = 0; i < 10; i++) {
+      TestBed.tick();
+    }
+    console.log(`PROBE P0.5 | effect runs after one register per run: ${runs}`);
+    expect(runs).toBe(1);
   });
 
   it('registers via injectAsyncState({ register: true }) and cleans up on destroy', () => {
