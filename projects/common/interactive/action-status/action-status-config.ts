@@ -66,6 +66,8 @@ export interface CngxActionStatusTemplates {
  *      `''` switches the cell off, also over a config template.
  *   3. `templates` from `provideActionStatusConfigAt(...)` in a parent
  *      component's `viewProviders`, else `provideActionStatusConfig(...)`.
+ *      Both providers merge over the config of their parent injector,
+ *      labels and templates per key.
  *   4. `labels` from the config, over the actionStatus section of the active
  *      language pack (English: empty, no cell).
  *
@@ -206,7 +208,9 @@ export function makeActionStatusConfig(
 
 /**
  * Register app-wide action status defaults composed from `withActionStatus*`
- * features.
+ * features. Merges over the config of the parent injector, labels and
+ * templates per key, so a child environment injector (a lazy route) keeps the
+ * root's keys it does not set.
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -225,7 +229,15 @@ export function provideActionStatusConfig(
     return makeEnvironmentProviders([]);
   }
   return makeEnvironmentProviders([
-    { provide: CNGX_ACTION_STATUS_CONFIG, useValue: makeActionStatusConfig(...features) },
+    {
+      provide: CNGX_ACTION_STATUS_CONFIG,
+      // Optional: in the root environment injector there is no parent config.
+      useFactory: () =>
+        mergeFeatures(
+          inject(CNGX_ACTION_STATUS_CONFIG, { skipSelf: true, optional: true }) ?? {},
+          features,
+        ),
+    },
   ]);
 }
 

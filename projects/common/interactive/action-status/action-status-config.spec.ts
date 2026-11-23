@@ -1,6 +1,9 @@
 import {
   Component,
+  createEnvironmentInjector,
+  EnvironmentInjector,
   inject,
+  isSignal,
   signal,
   viewChild,
   type EnvironmentProviders,
@@ -25,6 +28,7 @@ import {
   provideActionStatusConfigAt,
   withActionStatusLabels,
   withActionStatusTemplates,
+  type CngxActionStatusConfig,
   type CngxActionStatusFailedContext,
 } from './action-status-config';
 import { CngxActionStatusStack } from './action-status-stack.component';
@@ -255,6 +259,48 @@ describe('CNGX_ACTION_STATUS_CONFIG', () => {
     ]);
     expect(cell('error')).toBe('Scoped failed');
     expect(cell('success')).toBe('Root done');
+  });
+
+  describe('environment provider in a child injector', () => {
+    function resolve(
+      root: EnvironmentProviders[],
+      child: EnvironmentProviders[],
+    ): CngxActionStatusConfig {
+      TestBed.configureTestingModule({ providers: root });
+      const parent = TestBed.inject(EnvironmentInjector);
+      return createEnvironmentInjector(child, parent).get(CNGX_ACTION_STATUS_CONFIG);
+    }
+
+    function labelsOf(config: CngxActionStatusConfig): Record<string, unknown> {
+      const labels = config.labels;
+      return (isSignal(labels) ? labels() : labels) ?? {};
+    }
+
+    it('keeps the parent labels and adds its own', () => {
+      const config = resolve(
+        [provideActionStatusConfig(withActionStatusLabels({ succeeded: 'Root done' }))],
+        [provideActionStatusConfig(withActionStatusLabels({ failed: 'Child failed' }))],
+      );
+      expect(labelsOf(config)).toEqual({ succeeded: 'Root done', failed: 'Child failed' });
+    });
+
+    it('merges templates per key over the parent', () => {
+      const rootTpl = {} as TemplateRef<unknown>;
+      const childTpl = {} as TemplateRef<CngxActionStatusFailedContext>;
+      const config = resolve(
+        [provideActionStatusConfig(withActionStatusTemplates({ succeeded: rootTpl }))],
+        [provideActionStatusConfig(withActionStatusTemplates({ failed: childTpl }))],
+      );
+      expect(config.templates?.succeeded).toBe(rootTpl);
+      expect(config.templates?.failed).toBe(childTpl);
+    });
+
+    it('resolves a root-only provider without an ancestor config', () => {
+      TestBed.configureTestingModule({
+        providers: [provideActionStatusConfig(withActionStatusLabels({ succeeded: 'Done' }))],
+      });
+      expect(labelsOf(TestBed.inject(CNGX_ACTION_STATUS_CONFIG))).toEqual({ succeeded: 'Done' });
+    });
   });
 
   it('merges labels per key across features of one provider', () => {
