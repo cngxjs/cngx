@@ -56,12 +56,18 @@ export class CngxErrorScope implements CngxErrorScopeContract {
 
   private readonly showErrorsState = signal(false);
 
+  private readonly revealEpochState = signal(0);
+
   /** Reactive flag consumed by descendants. */
   readonly showErrors = this.showErrorsState.asReadonly();
 
-  /** Reveals errors in this scope (idempotent). */
+  /** Count of `reveal()` calls; an aggregator speaks its errors again on each. */
+  readonly revealEpoch = this.revealEpochState.asReadonly();
+
+  /** Reveals errors in this scope; a repeated call speaks the errors again. */
   reveal(): void {
     this.showErrorsState.set(true);
+    this.revealEpochState.update((n) => n + 1);
   }
 
   /** Resets the scope to hidden (idempotent). */

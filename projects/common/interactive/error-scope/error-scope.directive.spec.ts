@@ -88,6 +88,20 @@ describe('CngxErrorScope', () => {
   });
 });
 
+describe('CngxErrorScope revealEpoch', () => {
+  it('counts every reveal(), a repeated one included, and ignores reset()', () => {
+    const { dir } = setup();
+    expect(dir.revealEpoch()).toBe(0);
+    dir.reveal();
+    dir.reveal();
+    expect(dir.revealEpoch()).toBe(2);
+    dir.reset();
+    expect(dir.revealEpoch()).toBe(2);
+    dir.reveal();
+    expect(dir.revealEpoch()).toBe(3);
+  });
+});
+
 describe('CngxErrorScope registry registration', () => {
   it('re-registers under the new name when cngxErrorScopeName changes', async () => {
     TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });

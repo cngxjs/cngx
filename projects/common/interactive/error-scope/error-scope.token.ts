@@ -21,6 +21,12 @@ export interface CngxErrorScopeContract {
   reset(): void;
   /** Optional name for programmatic registry lookup via {@link CngxErrorRegistry}. */
   readonly scopeName?: Signal<string | undefined>;
+  /**
+   * Count of `reveal()` calls, a repeated one included; `reset()` leaves it.
+   * `CngxErrorAggregator` reads it to speak unchanged errors again on every
+   * reveal. Optional so contracts written before it keep compiling.
+   */
+  readonly revealEpoch?: Signal<number>;
 }
 
 /**

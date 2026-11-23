@@ -214,12 +214,19 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
         spanPoliteness = politeness;
       };
 
+      const injector = inject(Injector);
+      let destroyed = false;
+      let lastEpoch = 0;
+
       effect(() => {
         const enabled = this.autoAnnounce();
         const politeness = this.announcePoliteness();
         const text = this.announcement();
+        const epoch = this.effectiveScope()?.revealEpoch?.() ?? 0;
 
         untracked(() => {
+          const revealedAgain = epoch !== lastEpoch;
+          lastEpoch = epoch;
           if (!enabled) {
             removeSpan();
             return;
@@ -231,18 +238,41 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
             createSpan(politeness, text);
             return;
           }
-          span.textContent = text;
+          if (span.textContent !== text) {
+            span.textContent = text;
+            return;
+          }
+          if (!revealedAgain || text === '') {
+            return;
+          }
+          // Same text on a new reveal: clear now, write after render, so the
+          // reader sees a change and speaks the errors again.
+          const region = span;
+          region.textContent = '';
+          afterNextRender(
+            {
+              write: () => {
+                if (!destroyed && span === region) {
+                  region.textContent = untracked(this.announcement);
+                }
+              },
+            },
+            { injector },
+          );
         });
       });
 
-      destroyRef.onDestroy(removeSpan);
+      destroyRef.onDestroy(() => {
+        destroyed = true;
+        removeSpan();
+      });
     }
 
     const registry = inject(CngxErrorRegistry, { optional: true });
     if (!registry) {
       return;
     }
-    const injector = inject(Injector);
+    const registryInjector = inject(Injector);
     // Registration reacts to name changes: a renamed aggregator unregisters
     // its old key and registers the new one. Deferred behind afterNextRender
     // so registration stays browser-only.
@@ -262,7 +292,7 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
             }
           });
         },
-        { injector },
+        { injector: registryInjector },
       );
       destroyRef.onDestroy(() => {
         if (registered) {

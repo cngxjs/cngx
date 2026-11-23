@@ -33,6 +33,18 @@ describe('injectErrorScope', () => {
     expect(scope.showErrors()).toBe(false);
   });
 
+  it('counts every reveal() in revealEpoch and ignores reset()', () => {
+    TestBed.configureTestingModule({});
+    const fixture = TestBed.createComponent(HostNoName);
+    const { scope } = fixture.componentInstance;
+
+    expect(scope.revealEpoch?.()).toBe(0);
+    scope.reveal();
+    scope.reveal();
+    scope.reset();
+    expect(scope.revealEpoch?.()).toBe(2);
+  });
+
   it('reveal/reset are idempotent', () => {
     TestBed.configureTestingModule({});
     const fixture = TestBed.createComponent(HostNoName);

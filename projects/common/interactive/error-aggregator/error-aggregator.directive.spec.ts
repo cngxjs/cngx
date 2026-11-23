@@ -1,4 +1,4 @@
-import { Component, effect, signal, type Signal } from '@angular/core';
+import { Component, effect, signal, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { provideErrorRegistry } from '../error-registry/provide-error-registry';
 import { CngxErrorScope } from '../error-scope/error-scope.directive';
+import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { CngxErrorSource } from '../error-source/error-source.directive';
 import {
   provideInteractiveI18n,
@@ -102,6 +103,40 @@ class CountHost {
   bOn = signal(false);
   cOn = signal(false);
   countFn = signal<((count: number) => string) | undefined>(undefined);
+}
+
+@Component({
+  template: `
+    <form cngxErrorScope #scope="cngxErrorScope">
+      <fieldset cngxErrorAggregator>
+        <span [cngxErrorSource]="'a'" [when]="aOn()" [label]="'A'"></span>
+      </fieldset>
+      <span>{{ unrelated() }}</span>
+    </form>
+  `,
+  imports: [CngxErrorScope, CngxErrorAggregator, CngxErrorSource],
+})
+class RevoiceHost {
+  aOn = signal(true);
+  unrelated = signal(0);
+  readonly scope = viewChild.required(CngxErrorScope);
+}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator [scope]="scope">
+      <span [cngxErrorSource]="'a'" [when]="true" [label]="'A'"></span>
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class EpochlessScopeHost {
+  readonly show = signal(false);
+  readonly scope: CngxErrorScopeContract = {
+    showErrors: this.show.asReadonly(),
+    reveal: () => this.show.set(true),
+    reset: () => this.show.set(false),
+  };
 }
 
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
@@ -502,5 +537,86 @@ describe('CngxErrorAggregator count announcement', () => {
     host.bOn.set(true);
     fixture.detectChanges();
     expect(region()).toBe('Second 2');
+  });
+});
+
+describe('CngxErrorAggregator re-voice on reveal', () => {
+  function regionOf(fixture: ReturnType<typeof TestBed.createComponent>): HTMLSpanElement {
+    return (
+      fixture.debugElement.query(By.directive(CngxErrorAggregator)).nativeElement as HTMLElement
+    ).querySelector('span[aria-live]')!;
+  }
+
+  function observe(target: Node): () => MutationRecord[] {
+    const records: MutationRecord[] = [];
+    const observer = new MutationObserver((list) => records.push(...list));
+    observer.observe(target, { childList: true, characterData: true, subtree: true });
+    return () => {
+      records.push(...observer.takeRecords());
+      observer.disconnect();
+      return records;
+    };
+  }
+
+  it('empties the region and writes the same text again after render on a second reveal()', async () => {
+    const fixture = TestBed.createComponent(RevoiceHost);
+    fixture.detectChanges();
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const region = regionOf(fixture);
+    expect(region.textContent).toBe('A');
+
+    const stop = observe(region);
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const records = stop().filter((r) => r.type === 'childList');
+
+    expect(records.map((r) => [r.removedNodes.length > 0, r.addedNodes.length > 0])).toEqual([
+      [true, false],
+      [false, true],
+    ]);
+    expect(region.textContent).toBe('A');
+  });
+
+  it('leaves the region alone on an unrelated signal change', async () => {
+    const fixture = TestBed.createComponent(RevoiceHost);
+    fixture.detectChanges();
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const stop = observe(regionOf(fixture));
+    fixture.componentInstance.unrelated.set(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(stop()).toEqual([]);
+  });
+
+  it('writes nothing when destroyed between the clear and the write', async () => {
+    const fixture = TestBed.createComponent(RevoiceHost);
+    fixture.detectChanges();
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const region = regionOf(fixture);
+
+    fixture.componentInstance.scope().reveal();
+    fixture.componentRef.changeDetectorRef.detectChanges();
+    expect(region.textContent).toBe('');
+    fixture.destroy();
+    await Promise.resolve();
+    expect(region.textContent).toBe('');
+  });
+
+  it('keeps working with a scope contract without revealEpoch', () => {
+    const fixture = TestBed.createComponent(EpochlessScopeHost);
+    fixture.detectChanges();
+    expect(regionOf(fixture).textContent).toBe('');
+
+    fixture.componentInstance.scope.reveal();
+    fixture.detectChanges();
+    expect(regionOf(fixture).textContent).toBe('A');
   });
 });

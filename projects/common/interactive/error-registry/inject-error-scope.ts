@@ -22,12 +22,17 @@ import { CngxErrorRegistry } from './error-registry';
  */
 export function injectErrorScope(name?: string): CngxErrorScopeContract {
   const showErrorsState = signal(false);
+  const revealEpochState = signal(0);
   const scopeName = signal<string | undefined>(name);
 
   const contract: CngxErrorScopeContract = {
     showErrors: showErrorsState.asReadonly(),
     scopeName: scopeName.asReadonly(),
-    reveal: () => showErrorsState.set(true),
+    revealEpoch: revealEpochState.asReadonly(),
+    reveal: () => {
+      showErrorsState.set(true);
+      revealEpochState.update((n) => n + 1);
+    },
     reset: () => showErrorsState.set(false),
   };
 
