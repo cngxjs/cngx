@@ -25,6 +25,23 @@ protected readonly ordersResource = rxResource({
 });
 
 protected readonly orders = fromResource(this.ordersResource);
+
+protected readonly failRequests = signal(false);
+private requestCount = 0;
+
+// Stand-in for an HttpClient call: answers after 900 ms or fails when the
+// failure toggle is on.
+private fetchOrders(region: string) {
+  const request = ++this.requestCount;
+  return timer(900).pipe(
+    map(() => {
+      if (this.failRequests()) {
+        throw new Error('503 Service Unavailable (' + region + ')');
+      }
+      return { region, open: 10 + request, shipped: 40 + request * 2 };
+    }),
+  );
+}
 ```
 
 ## Wiring
