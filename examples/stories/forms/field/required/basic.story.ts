@@ -32,8 +32,9 @@ export const STORY: DemoSpec = {
   protected readonly requiredForm = form(this.model, schema((root) => {
     required(root.email, { message: 'Please enter an email' });
   }));
-  protected readonly optionalForm = form(this.model);`,
-  setupChrome: `protected readonly mandatory = signal(true);`,
+  protected readonly optionalForm = form(this.model);
+
+  protected readonly mandatory = signal(true);`,
   template: `  <div style="display:grid;gap:16px;max-width:420px">
     <cngx-form-field [field]="mandatory() ? requiredForm.email : optionalForm.email">
       <label cngxLabel>Email <cngx-required /></label>

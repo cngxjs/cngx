@@ -29,7 +29,9 @@ export const STORY: DemoSpec = {
   }));
   protected readonly total = this.rows
     .reduce((sum, row) => sum + row.amount, 0)
-    .toLocaleString();`,
+    .toLocaleString();
+
+  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   template: `  <div style="max-width:640px" [attr.dir]="dir()">
     <cngx-data-grid-accordion [skin]="'ledger'" [multi]="true" [maxBlockSize]="320">
       <cngx-dga-header>
@@ -54,7 +56,6 @@ export const STORY: DemoSpec = {
       </cngx-dga-footer>
     </cngx-data-grid-accordion>
   </div>`,
-  setupChrome: `protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
       <input type="radio" name="dga-bounded-dir" value="ltr"

@@ -23,8 +23,9 @@ export const STORY: DemoSpec = {
     { label: 'WAI-ARIA 1.2: `aria-describedby`', href: 'https://www.w3.org/TR/wai-aria-1.2/#aria-describedby' },
     { label: 'WCAG 2.1 SC 2.4.3 Focus Order', href: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-order.html' },
   ],
-  setup: `protected readonly favourite = signal(false);`,
-  setupChrome: `protected readonly locked = signal(false);`,
+  setup: `protected readonly favourite = signal(false);
+
+  protected readonly locked = signal(false);`,
   template: `
   <cngx-chip cngxChipInteraction [value]="'locked'" [disabled]="locked()" [(selected)]="favourite">
     Locked tag

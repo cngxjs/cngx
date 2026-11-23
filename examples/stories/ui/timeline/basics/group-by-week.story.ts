@@ -32,8 +32,9 @@ export const STORY: DemoSpec = {
   ];
 
   protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;`,
-  setupChrome: `protected readonly grouping = signal<'day' | 'week' | 'month'>('week');`,
+  protected readonly byId = (event: { id: number }): number => event.id;
+
+  protected readonly grouping = signal<'day' | 'week' | 'month'>('week');`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" [attr.aria-pressed]="grouping() === 'day'" (click)="grouping.set('day')">day</button>
     <button type="button" class="chip" [attr.aria-pressed]="grouping() === 'week'" (click)="grouping.set('week')">week</button>

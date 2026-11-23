@@ -45,8 +45,9 @@ export const STORY: DemoSpec = {
           setTimeout(() => resolve(this.nextBatch()), 900);
         }),
     );
-  }`,
-  setupChrome: `private batch = 0;
+  }
+
+  private batch = 0;
 
   private nextBatch(): { id: number; at: Date; summary: string }[] {
     this.batch += 1;

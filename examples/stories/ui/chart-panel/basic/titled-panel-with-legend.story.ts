@@ -25,8 +25,9 @@ export const STORY: DemoSpec = {
     'CngxAxisDomain',
     'CngxChartLegend',
   ],
-  setup: `protected readonly series: readonly number[] = [42, 51, 47, 63, 58, 71, 69, 82];`,
-  setupChrome: `protected readonly legendPosition = signal<'top' | 'bottom' | 'none'>('bottom');`,
+  setup: `protected readonly series: readonly number[] = [42, 51, 47, 63, 58, 71, 69, 82];
+
+  protected readonly legendPosition = signal<'top' | 'bottom' | 'none'>('bottom');`,
   template: `<cngx-chart-panel [legendPosition]="legendPosition()" style="max-width:520px">
     <h3 cngxChartPanelTitle>Revenue by quarter</h3>
     <span cngxChartPanelSubtitle>EUR, net</span>

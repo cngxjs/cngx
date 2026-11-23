@@ -31,8 +31,9 @@ export const STORY: DemoSpec = {
       return timer(600).pipe(switchMap(() => throwError(() => new Error('Could not save the colour'))));
     }
     return of(intended).pipe(delay(600));
-  };`,
-  setupChrome: `protected readonly failNext = signal(true);`,
+  };
+
+  protected readonly failNext = signal(true);`,
   template: `<cngx-select
   [label]="'Colour (commit)'"
   [options]="colors"

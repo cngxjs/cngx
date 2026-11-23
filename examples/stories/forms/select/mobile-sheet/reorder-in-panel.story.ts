@@ -20,8 +20,9 @@ export const STORY: DemoSpec = {
   setup: `protected readonly stops: CngxSelectOptionDef<string>[] = [
     'Amsterdam', 'Berlin', 'Prague', 'Vienna', 'Budapest', 'Zagreb',
   ].map((name) => ({ value: name, label: name }));
-  protected readonly route = signal<string[]>(['Berlin', 'Prague', 'Vienna']);`,
-  setupChrome: `protected readonly presentation = signal<'anchored' | 'sheet'>('anchored');`,
+  protected readonly route = signal<string[]>(['Berlin', 'Prague', 'Vienna']);
+
+  protected readonly presentation = signal<'anchored' | 'sheet'>('anchored');`,
   template: `<div [cngxTouchTarget]="'on'" style="max-inline-size: 24rem">
     <cngx-reorderable-multi-select
       label="Route"

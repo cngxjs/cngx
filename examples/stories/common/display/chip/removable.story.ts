@@ -25,11 +25,10 @@ export const STORY: DemoSpec = {
   protected handleRemove(tag: string): void {
     this.tags.update((current) => current.filter((t) => t !== tag));
     this.removeLog.update((log) => [...log.slice(-9), tag + ' @ ' + new Date().toLocaleTimeString()]);
-  }`,
-  setupChrome: `
-  protected readonly removeLog = signal<string[]>([]);
+  }
 
-  protected handleReset(): void {
+  protected readonly removeLog = signal<string[]>([]);`,
+  setupChrome: `protected handleReset(): void {
     this.tags.set(['Frontend', 'Cleared', 'Pending review']);
     this.removeLog.set([]);
   }`,

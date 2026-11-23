@@ -31,8 +31,9 @@ export const STORY: DemoSpec = {
   ];
 
   protected readonly at = (event: { at: Date }): Date => event.at;
-  protected readonly byId = (event: { id: number }): number => event.id;`,
-  setupChrome: `protected readonly rowMode = signal<'narrative' | 'activity'>('narrative');
+  protected readonly byId = (event: { id: number }): number => event.id;
+
+  protected readonly rowMode = signal<'narrative' | 'activity'>('narrative');
   protected readonly look = signal<'line' | 'card' | 'bands'>('line');`,
   templateChromeBefore: `<div class="button-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button type="button" class="chip" [attr.aria-pressed]="rowMode() === 'narrative'" (click)="rowMode.set('narrative')">narrative</button>

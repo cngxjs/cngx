@@ -20,9 +20,10 @@ export const STORY: DemoSpec = {
   protected readonly upload = () =>
     new Promise<void>((resolve, reject) =>
       setTimeout(() => (this.failNext ? reject(new Error('Upload failed')) : resolve()), 900),
-    );`,
+    );
+
+  protected failNext = false;`,
   setupChrome: `protected readonly audio = injectCngxAudio();
-  protected failNext = false;
 
   constructor() {
     // Demo-only hook so the headless e2e can read lastPlayed() without sniffing audio.

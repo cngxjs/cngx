@@ -22,8 +22,9 @@ export const STORY: DemoSpec = {
     if (result === undefined) return 'No dialog result yet.';
     if (result === 'dismissed') return 'Dialog was dismissed (Escape or backdrop).';
     return 'Dialog returned: ' + String(result);
-  });`,
-  setupChrome: `  protected handleOpenProgrammatic(): void {
+  });
+
+  protected handleOpenProgrammatic(): void {
     this.progDialog()?.open();
   }
   protected handleSaveProgrammatic(): void {

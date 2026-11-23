@@ -33,11 +33,10 @@ export const STORY: DemoSpec = {
   protected handleReorder(event: CngxReorderEvent<{ id: string; label: string }>): void {
     this.items.set(event.next);
     this.lastMove.set(\`\${event.fromIndex} → \${event.toIndex}\`);
-  }`,
-  setupChrome: `
-  protected readonly lastMove = signal<string>('-');
+  }
 
-  protected readonly itemsLabel = computed<string>(() =>
+  protected readonly lastMove = signal<string>('-');`,
+  setupChrome: `protected readonly itemsLabel = computed<string>(() =>
     this.items().map((i) => i.label).join(', '),
   );`,
   template: `
