@@ -364,7 +364,7 @@ export function createFilterBuilderState<TValue = unknown>(
  * consumers to wrap the default factory with telemetry, persistence, undo
  * stacks, or other cross-cutting concerns via `CNGX_FILTER_BUILDER_STATE_FACTORY`
  * without forking `CngxFilterBuilderPresenter`. Mirrors the select-family
- * `Cngx*ControllerFactory` precedents (e.g. `createCommitController` +
+ * `Cngx*ControllerFactory` precedents (e.g. `createSelectCommitController` +
  * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`).
  */
 export type CngxFilterBuilderStateFactory = <TValue = unknown>(
