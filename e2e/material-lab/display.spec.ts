@@ -121,6 +121,25 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
+    test('button-toggle: each seam paints one line like mat-button-toggle-group', async ({ page }) => {
+      // mat draws the group outline plus a start divider per later segment,
+      // cngx draws the segment borders with every shared seam collapsed; the
+      // vertical lines across the row add up to the same width.
+      const lines = (group: string, parts: string) =>
+        page.evaluate(
+          ([g, p]) => {
+            const width = (el: Element, side: 'Left' | 'Right') =>
+              parseFloat(getComputedStyle(el)[`border${side}Width`]);
+            const els = [document.querySelector(g)!, ...Array.from(document.querySelectorAll(p))];
+            return els.reduce((sum, el) => sum + width(el, 'Left') + width(el, 'Right'), 0);
+          },
+          [group, parts] as const,
+        );
+      expect(await lines(cngx('button-toggle'), cngx('button-toggle', 'button'))).toBe(
+        await lines(mat('button-toggle'), mat('button-toggle', '.mat-button-toggle')),
+      );
+    });
+
     test('button-toggle: the checked segment paints the mat secondary-container pair', async ({ page }) => {
       await expectSame(
         page,
