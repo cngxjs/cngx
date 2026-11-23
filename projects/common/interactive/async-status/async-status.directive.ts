@@ -8,7 +8,7 @@ import {
   type TemplateRef,
 } from '@angular/core';
 
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectActivationGuard, type CngxAsyncState } from '@cngx/core/utils';
 import { cngxDevWarn } from '@cngx/utils';
 
 import { CngxAsyncClick } from '../async-click/async-click.directive';
@@ -78,14 +78,14 @@ export function reflectAsyncDisplayStatus(
   exportAs: 'cngxAsyncStatus',
   host: {
     '[attr.aria-busy]': 'isBusy() || null',
-    '[attr.aria-disabled]': 'disabledAttr() !== null || null',
-    '[attr.disabled]': 'disabledAttr()',
+    '[attr.aria-disabled]': 'blocked() || null',
   },
 })
 export class CngxAsyncStatus {
   private readonly coPlacedAsyncClick = inject(CngxAsyncClick, { self: true, optional: true });
 
   constructor() {
+    injectActivationGuard(() => this.blocked());
     if (typeof ngDevMode !== 'undefined' && ngDevMode && this.coPlacedAsyncClick) {
       cngxDevWarn(
         'CNGX1019',
@@ -98,7 +98,13 @@ export class CngxAsyncStatus {
   /** The externally-owned state to reflect. `null` reflects as idle. */
   readonly state = input<CngxAsyncState<unknown> | null>(null, { alias: 'cngxAsyncStatus' });
 
-  /** When `true`, the host reflects `aria-disabled` / `disabled` while busy. */
+  /**
+   * When `true`, the host reflects `aria-disabled` while busy and refuses
+   * activation: click and auxclick are swallowed, including the click a
+   * `<button>` synthesises for Enter and Space. The native `disabled`
+   * attribute is never set, so a focused host keeps focus. A non-button host
+   * with its own key handler reads `aria-disabled` itself.
+   */
   readonly disableWhilePending = input<boolean>(false);
 
   /** Display bucket of the reflected state (`loading`/`refreshing` → `pending`). */
@@ -137,8 +143,6 @@ export class CngxAsyncStatus {
     }
   });
 
-  /** @internal - `''` (set) while gated-and-busy, else `null` (absent). */
-  protected readonly disabledAttr = computed<'' | null>(() =>
-    this.disableWhilePending() && this.isBusy() ? '' : null,
-  );
+  /** @internal - `true` while gated and busy. */
+  protected readonly blocked = computed(() => this.disableWhilePending() && this.isBusy());
 }

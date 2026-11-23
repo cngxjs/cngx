@@ -31,6 +31,8 @@ function buildMockState(initial: AsyncStatus = 'idle'): {
     <button
       [cngxAsyncStatus]="mockState"
       [disableWhilePending]="disableWhilePending"
+      (click)="clicks = clicks + 1"
+      (auxclick)="auxclicks = auxclicks + 1"
       #ref="cngxAsyncStatus"
     >
       Go
@@ -44,6 +46,8 @@ class Host {
   readonly mock = buildMockState();
   readonly mockState = this.mock.state;
   disableWhilePending = false;
+  clicks = 0;
+  auxclicks = 0;
 }
 
 function setup(disable = false): {
@@ -83,24 +87,44 @@ describe('CngxAsyncStatus', () => {
     expect(btn.getAttribute('aria-busy')).toBe('true');
   });
 
-  it('disableWhilePending toggles [disabled] while busy', () => {
+  it('disableWhilePending reflects aria-disabled while busy, never native disabled', () => {
     const { fixture, btn, host } = setup(true);
     expect(btn.hasAttribute('disabled')).toBe(false);
+    expect(btn.getAttribute('aria-disabled')).toBeNull();
     host.mock.status.set('pending');
     fixture.detectChanges();
-    expect(btn.hasAttribute('disabled')).toBe(true);
+    expect(btn.hasAttribute('disabled')).toBe(false);
     expect(btn.getAttribute('aria-disabled')).toBe('true');
     host.mock.status.set('success');
     fixture.detectChanges();
     expect(btn.hasAttribute('disabled')).toBe(false);
+    expect(btn.getAttribute('aria-disabled')).toBeNull();
   });
 
-  it('does not set [disabled] while busy when disableWhilePending is false', () => {
+  it('refuses click and auxclick while gated and busy, accepts them again after settle', () => {
+    const { fixture, btn, host } = setup(true);
+    host.mock.status.set('pending');
+    fixture.detectChanges();
+    btn.click();
+    btn.dispatchEvent(new MouseEvent('auxclick', { bubbles: true, cancelable: true }));
+    expect(host.clicks).toBe(0);
+    expect(host.auxclicks).toBe(0);
+    host.mock.status.set('success');
+    fixture.detectChanges();
+    btn.click();
+    btn.dispatchEvent(new MouseEvent('auxclick', { bubbles: true, cancelable: true }));
+    expect(host.clicks).toBe(1);
+    expect(host.auxclicks).toBe(1);
+  });
+
+  it('sets neither attribute nor guard while busy when disableWhilePending is false', () => {
     const { fixture, btn, host } = setup(false);
     host.mock.status.set('pending');
     fixture.detectChanges();
     expect(btn.hasAttribute('disabled')).toBe(false);
     expect(btn.getAttribute('aria-disabled')).toBeNull();
+    btn.click();
+    expect(host.clicks).toBe(1);
   });
 
   it('status() collapses the state into its display bucket', () => {
