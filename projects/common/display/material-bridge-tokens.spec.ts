@@ -112,3 +112,69 @@ $theme: mat.define-theme((
     );
   });
 });
+
+/**
+ * Token-name contract for the chip Material bridge
+ * (`projects/themes/material/chip-theme.scss`). The chip SETs its padding and
+ * gap tokens inside `@scope`, so the bridge assigns them in a raw rule on the
+ * density rungs instead of a literal px map.
+ */
+describe('chip Material bridge', () => {
+  function compileChipBridge(): string {
+    return compileThemeEntry(`
+@use '@angular/material' as mat;
+@use 'material/chip-theme' as bridge;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
+
+@include bridge.theme($theme);
+`);
+  }
+
+  // every name is read by chip.component.css
+  const CONSUMED = [
+    '--cngx-chip-bg',
+    '--cngx-chip-border',
+    '--cngx-chip-color',
+    '--cngx-chip-danger-bg',
+    '--cngx-chip-danger-color',
+    '--cngx-chip-focus-outline',
+    '--cngx-chip-font-size',
+    '--cngx-chip-hover-bg',
+    '--cngx-chip-hover-color',
+    '--cngx-chip-info-bg',
+    '--cngx-chip-info-color',
+    '--cngx-chip-inner-gap',
+    '--cngx-chip-padding-block',
+    '--cngx-chip-padding-inline',
+    '--cngx-chip-radius',
+    '--cngx-chip-remove-focus-color',
+    '--cngx-chip-selected-bg',
+    '--cngx-chip-selected-color',
+    '--cngx-chip-success-bg',
+    '--cngx-chip-success-color',
+    '--cngx-chip-warning-bg',
+    '--cngx-chip-warning-color',
+  ];
+
+  it('emits only consumed token names (M3)', () => {
+    expect(emittedTokenNames(compileChipBridge())).toEqual(CONSUMED);
+  });
+
+  it('rests transparent with an outline edge and an on-surface-variant label (M3)', () => {
+    const css = compileChipBridge();
+    expect(css).toContain('--cngx-chip-bg: transparent');
+    expect(css).toContain('--cngx-chip-border: 1px solid var(--mat-sys-outline)');
+    expect(css).toContain('--cngx-chip-color: var(--mat-sys-on-surface-variant)');
+  });
+
+  it('derives the metrics from the density rungs, not px maps (M3)', () => {
+    const css = compileChipBridge();
+    expect(css).toContain('--cngx-chip-padding-block: calc(var(--cngx-space-xs, 4px) * 1.5 - 1px)');
+    expect(css).toContain('--cngx-chip-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5 - 1px)');
+    expect(css).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
+    expect(css).not.toMatch(/--cngx-chip-padding-(block|inline): \d+px/);
+  });
+});

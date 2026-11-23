@@ -129,10 +129,42 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
-    test('chip: the corner and label size match mat-chip', async ({ page }) => {
-      await expectSame(page, mat('chip'), cngx('chip'), ['border-top-left-radius']);
+    test('chip: height, corner and surface match mat-chip', async ({ page }) => {
+      await expectSame(page, mat('chip'), cngx('chip'), ['height', 'border-top-left-radius', 'background-color']);
+    });
+
+    test('chip: the edge paints the mat-chip outline', async ({ page }) => {
+      // mat-chip draws its outline on the primary action's ::before.
+      const outline = await page
+        .locator(mat('chip', '.mdc-evolution-chip__action--primary'))
+        .evaluate((el) => {
+          const before = getComputedStyle(el, '::before');
+          return [before.borderTopWidth, before.borderTopColor];
+        });
+      expect([
+        await computedValue(page, cngx('chip'), 'border-top-width'),
+        await computedValue(page, cngx('chip'), 'border-top-color'),
+      ]).toEqual(outline);
+    });
+
+    test('chip: the label sits at the mat-chip inset in its colour and type', async ({ page }) => {
+      const inset = (host: string, label: string) =>
+        page.evaluate(
+          ([h, l]) =>
+            document.querySelector(l)!.getBoundingClientRect().left -
+            document.querySelector(h)!.getBoundingClientRect().left,
+          [host, label] as const,
+        );
+      expect(await inset(cngx('chip'), cngx('chip', '.cngx-chip__label'))).toBe(
+        await inset(mat('chip'), mat('chip', '.mdc-evolution-chip__text-label')),
+      );
       await expectSame(page, mat('chip', '.mdc-evolution-chip__text-label'), cngx('chip', '.cngx-chip__label'), [
+        'color',
+        'font-family',
         'font-size',
+        'line-height',
+        'font-weight',
+        'letter-spacing',
       ]);
     });
 

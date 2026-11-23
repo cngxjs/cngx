@@ -1,5 +1,3 @@
-@use 'sass:map';
-@use 'sass:math';
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
@@ -8,7 +6,7 @@
 // interactive chip reads like an M3 assist / filter chip:
 //   - color: idle / hover / focus / selected / disabled / variants
 //   - typography: label-large (matches M3 chip text scale)
-//   - density: padding scales with Material's density token
+//   - metrics: 32px height and 12px label inset on the density rungs
 //   - base: corner radius via corner-small (M3 chips are rounded
 //     squares, not pills)
 //
@@ -17,10 +15,11 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Idle - M3 assist-chip rest surface.
-    --cngx-chip-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-    --cngx-chip-color: var(--mat-sys-on-surface);
-    --cngx-chip-border: 1px solid var(--mat-sys-outline-variant);
+    // Idle - M3 assist-chip rest: no fill, outline edge, on-surface-variant
+    // label, like <mat-chip>.
+    --cngx-chip-bg: transparent;
+    --cngx-chip-color: var(--mat-sys-on-surface-variant);
+    --cngx-chip-border: 1px solid var(--mat-sys-outline);
 
     // Hover - adds the M3 hover state-layer (8% on-surface).
     --cngx-chip-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 16%, transparent);
@@ -56,38 +55,31 @@
   }
 }
 
+// Kept so existing `@include chip.density()` call sites compile; metrics()
+// carries the chip metrics on the density rungs.
 @mixin density($theme) {
-  $scale: mat.get-theme-density($theme);
-  $scale: math.max(-4, math.min(0, $scale));
+}
 
-  // M3 default chip is 32px tall with 16px inline + 6px block padding.
-  // Negative scales tighten both axes proportionally; the inner gap
-  // between leading icon / label / trailing remove follows the same curve.
-  $padding-block: (
-    0: 6px,
-    -1: 4px,
-    -2: 3px,
-    -3: 2px,
-    -4: 1px,
-  );
-  $padding-inline: (
-    0: 16px,
-    -1: 12px,
-    -2: 10px,
-    -3: 8px,
-    -4: 6px,
-  );
-  $inner-gap: (
-    0: 8px,
-    -1: 6px,
-    -2: 4px,
-    -3: 4px,
-    -4: 2px,
-  );
-
-  --cngx-chip-padding-block: #{map.get($padding-block, $scale)};
-  --cngx-chip-padding-inline: #{map.get($padding-inline, $scale)};
-  --cngx-chip-inner-gap: #{map.get($inner-gap, $scale)};
+// The chip SETs its padding and gap tokens and writes a literal line height
+// inside `@scope (.cngx-chip)` `:scope` (0,1,0), so these sit in a raw rule
+// one element above (0,1,1). Padding is a rung minus the 1px border: 32px
+// height (20px label line + 2 * 5px + 2 * 1px) and a 12px label inset at
+// density 0. The label-large line height, weight, tracking and family have no
+// token; consumer override: an unlayered property rule on the chip.
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      cngx-chip.cngx-chip {
+        --cngx-chip-padding-block: calc(var(--cngx-space-xs, 4px) * 1.5 - 1px);
+        --cngx-chip-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5 - 1px);
+        --cngx-chip-inner-gap: var(--cngx-space-sm, 8px);
+        line-height: var(--mat-sys-label-large-line-height, 1.25rem);
+        font-weight: var(--mat-sys-label-large-weight, 500);
+        letter-spacing: var(--mat-sys-label-large-tracking, 0.0063rem);
+        font-family: var(--mat-sys-label-large-font, Roboto, sans-serif);
+      }
+    }
+  }
 }
 
 @mixin base($theme) {
@@ -107,11 +99,11 @@
   @include bridge.on(cngx-chip, cngx-chip-group, cngx-multi-chip-group) {
     @include color($theme);
   }
-  // Typography + density + radius are `inherits: false` per the chip
-  // component spec, so they must land on the chip element itself.
+  // Typography + radius are `inherits: false` per the chip component
+  // spec, so they must land on the chip element itself.
   @include bridge.on(cngx-chip) {
     @include typography($theme);
-    @include density($theme);
     @include base($theme);
   }
+  @include metrics($theme);
 }
