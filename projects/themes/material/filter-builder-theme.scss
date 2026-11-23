@@ -19,15 +19,25 @@
     --cngx-filter-builder-empty-fg: var(--mat-sys-on-surface-variant);
     --cngx-filter-builder-error-fg: var(--mat-sys-error);
     --cngx-filter-builder-action-fg: var(--mat-sys-primary);
-    --cngx-filter-builder-action-bg: var(--mat-sys-surface);
     --cngx-filter-builder-action-hover-bg: var(--mat-sys-surface-container);
     --cngx-filter-builder-action-border: var(--mat-sys-outline-variant);
     --cngx-filter-builder-incomplete-border-color: var(--mat-sys-tertiary);
   }
 }
 
+// The resting action fill is registered `inherits: false` and read on the
+// action button itself, so it is emitted there, not on the host.
+@mixin _action-surfaces($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-filter-builder-action-bg: var(--mat-sys-surface);
+  }
+}
+
 @mixin theme($theme) {
   @include bridge.on(cngx-filter-builder) {
     @include color($theme);
+  }
+  @include bridge.on('.cngx-filter-builder__action-button') {
+    @include _action-surfaces($theme);
   }
 }

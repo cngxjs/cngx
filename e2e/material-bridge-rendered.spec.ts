@@ -1742,6 +1742,10 @@ test.describe('material-bridge rendered values: filter-builder', () => {
     );
   });
 
+  test('the resting action button paints the surface role', async ({ page }) => {
+    expect(await computedValue(page, '#fb-add', 'background-color')).toBe(matSys('surface'));
+  });
+
   test('hover paints the container surface', async ({ page }) => {
     await page.hover('#fb-add');
     expect(await computedValue(page, '#fb-add', 'background-color')).toBe(
