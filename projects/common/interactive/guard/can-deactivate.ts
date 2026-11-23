@@ -35,6 +35,7 @@ import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
  *   `CNGX_INTERACTIVE_I18N` (English `'You have unsaved changes. Leave anyway?'`)
  *   when the guard runs, so it follows the active language.
  * @returns A functional guard compatible with Angular's `canDeactivate`.
+ * <example-url>/#/common/interactive/guard/route-guard-on-dirty-form</example-url>
  */
 export function canDeactivateWhenClean<T = unknown>(
   isDirty: (component: T) => boolean,

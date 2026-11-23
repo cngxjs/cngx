@@ -57,38 +57,10 @@ const KNOWN_FAILURES = [
   },
   {
     slice: '1 primitives',
-    file: 'projects/common/interactive/guard/README.md',
-    line: 242,
-    kind: 'missing-path',
-    ref: 'examples/stories/common/guard-demo/',
-  },
-  {
-    slice: '1 primitives',
     file: 'projects/common/interactive/hoverable/README.md',
     line: 266,
     kind: 'unknown-host-binding',
     ref: 'CngxHoverable hovered',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/interactive/speak/README.md',
-    line: 408,
-    kind: 'missing-path',
-    ref: 'examples/stories/common/speak-demo/',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/interactive/speak/speak.directive.ts',
-    line: 66,
-    kind: 'missing-route',
-    ref: 'ui/speak/speak-button/material-integration-theme-scss-mat-icon-button',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/interactive/speak/speak.directive.ts',
-    line: 68,
-    kind: 'missing-route',
-    ref: 'ui/speak/speak-button/theming-css-custom-properties',
   },
   {
     slice: '2 async-state',

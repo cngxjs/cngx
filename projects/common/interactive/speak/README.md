@@ -34,6 +34,31 @@ export class ArticleComponent {
 }
 ```
 
+## Behaviour
+
+The value bound at mount is a baseline and is never spoken on its own. Auto-speak fires only on a later change to a non-empty value while `enabled` is `true`. A change to an empty value stops this directive's own utterance. `speak()` and `toggle()` work regardless of `enabled`.
+
+## API
+
+| Input | Type | Default | Description |
+|-|-|-|-|
+| `cngxSpeak` | `string` | required | Text read by `toggle()` and auto-spoken on later changes |
+| `enabled` | `boolean` | `true` | Gates auto-speak on text changes only; re-enabling does not speak a text that changed while disabled |
+| `rate` | `number` | `1` | Speech rate (0.1-10) |
+| `pitch` | `number` | `1` | Speech pitch (0-2) |
+| `volume` | `number` | `1` | Speech volume (0-1) |
+| `lang` | `string` | `''` | BCP 47 tag. Empty uses `CNGX_LOCALE`, else a `LOCALE_ID` other than `'en-US'`, else `<html lang>`, else the browser voice |
+
+| Member | Kind | Description |
+|-|-|-|
+| `speaking()` | `Signal<boolean>` | `true` while an own utterance is spoken |
+| `supported` | `boolean` | Whether the browser has `speechSynthesis` |
+| `speak(text)` | method | Speaks `text`; ignores `enabled` |
+| `toggle()` | method | Speaks the bound text when idle, cancels an own utterance otherwise |
+| `cancel()` | method | Cancels this directive's utterance; no-op when none is live |
+
+Exported as `cngxSpeak`.
+
 ## Accessibility
 
 CngxSpeak provides cognitive accessibility (dyslexia support, reading assistance):
@@ -63,36 +88,25 @@ CngxSpeak is a headless atom - the consumer owns the UI:
 
 ### Example: Composition Pattern
 
-```typescript
-// Directive provides the speech logic
-// Consumer provides the button and any visual feedback
+```html
+<!-- Directive provides the speech logic, consumer provides the button -->
 <p [cngxSpeak]="content" #tts="cngxSpeak">
   {{ content }}
-  <button (click)="tts.toggle()" aria-label="Toggle read aloud">
-    {{ tts.speaking() ? '⏸️ Stop' : '▶️ Read' }}
+  <button (click)="tts.toggle()">
+    {{ tts.speaking() ? 'Stop' : 'Read' }}
   </button>
 </p>
 
-// More complex: with rate control
-<div>
-  <textarea [cngxSpeak]="text" #tts="cngxSpeak"></textarea>
-
-  <div class="controls">
-    <button (click)="tts.speak(text)" [disabled]="tts.speaking()">
-      Play
-    </button>
-    <button (click)="tts.cancel()" [disabled]="!tts.speaking()">
-      Stop
-    </button>
-    <input type="range" min="0.5" max="2" step="0.1"
-           [value]="rate()" (change)="rate.set($event.target.value)" />
-  </div>
-</div>
+<!-- With rate control -->
+<p [cngxSpeak]="content" [rate]="rate()" #tts2="cngxSpeak">{{ content }}</p>
+<button (click)="tts2.toggle()">{{ tts2.speaking() ? 'Stop' : 'Play' }}</button>
+<input #rateInput type="range" min="0.5" max="2" step="0.1"
+       [value]="rate()" (input)="rate.set(rateInput.valueAsNumber)" />
 ```
 
 ## Styling
 
-CngxSpeak has no styling - it's purely behavioral. Use the `speaking()` signal for visual feedback:
+CngxSpeak has no styling - it's purely behavioral. Bind the `speaking()` signal for visual feedback, e.g. `[class.speaking]="tts.speaking()"`:
 
 ```scss
 button {
@@ -112,21 +126,16 @@ button {
   selector: 'app-article',
   template: `
     <article>
-      <h1>{{ article.title }}</h1>
+      <h1>{{ article()?.title }}</h1>
 
       <div [cngxSpeak]="articleText()" #tts="cngxSpeak" class="content">
-        {{ article.body }}
+        {{ article()?.body }}
       </div>
 
       <button (click)="tts.toggle()" class="speak-btn"
               [class.speaking]="tts.speaking()"
-              [attr.aria-pressed]="tts.speaking()"
-              aria-label="Toggle read aloud">
-        @if (tts.speaking()) {
-          ⏸️ Stop reading
-        } @else {
-          ▶️ Read aloud
-        }
+              [attr.aria-pressed]="tts.speaking()">
+        Read aloud
       </button>
     </article>
   `,
@@ -146,13 +155,12 @@ button {
   `],
 })
 export class ArticleComponent {
-  @Input() article: Article | null = null;
+  readonly article = input<Article | null>(null);
 
-  readonly articleText = computed(() =>
-    this.article
-      ? `${this.article.title}. ${this.article.body}`
-      : ''
-  );
+  readonly articleText = computed(() => {
+    const article = this.article();
+    return article ? `${article.title}. ${article.body}` : '';
+  });
 }
 ```
 
@@ -163,14 +171,14 @@ export class ArticleComponent {
   selector: 'app-multilingual-article',
   template: `
     <article>
-      <h1>{{ article.title }}</h1>
+      <h1>{{ article()?.title }}</h1>
 
       <div [cngxSpeak]="content()" [lang]="selectedLang()" #tts="cngxSpeak">
-        {{ article.body }}
+        {{ article()?.body }}
       </div>
 
       <div class="controls">
-        <select [value]="selectedLang()" (change)="selectedLang.set($event.target.value)"
+        <select #langSelect [value]="selectedLang()" (change)="selectedLang.set(langSelect.value)"
                 aria-label="Select language for reading">
           <option value="">Default ({{ browserLanguage }})</option>
           <option value="en-US">English (US)</option>
@@ -182,11 +190,7 @@ export class ArticleComponent {
 
         <button (click)="tts.toggle()" class="btn"
                 [attr.aria-pressed]="tts.speaking()">
-          @if (tts.speaking()) {
-            ⏸️ Stop reading
-          } @else {
-            ▶️ Read aloud
-          }
+          {{ tts.speaking() ? 'Stop reading' : 'Read aloud' }}
         </button>
       </div>
     </article>
@@ -194,52 +198,55 @@ export class ArticleComponent {
   imports: [CngxSpeak],
 })
 export class MultilingualArticleComponent {
-  @Input() article: Article | null = null;
+  readonly article = input<Article | null>(null);
 
   readonly selectedLang = signal('');
   readonly browserLanguage = navigator.language;
 
-  readonly content = computed(() =>
-    this.article ? `${this.article.title}. ${this.article.body}` : ''
-  );
+  readonly content = computed(() => {
+    const article = this.article();
+    return article ? `${article.title}. ${article.body}` : '';
+  });
 }
 ```
 
 ### Notification with Auto-Read
+
+The message present at mount is not read; each later message is.
 
 ```typescript
 @Component({
   selector: 'app-alert',
   template: `
     <div role="alert" class="alert">
-      <p [cngxSpeak]="message()" #tts="cngxSpeak">
+      <p [cngxSpeak]="message()" [enabled]="autoRead()" #tts="cngxSpeak">
         {{ message() }}
       </p>
-      <button (click)="tts.cancel()" *ngIf="tts.speaking()">
-        Stop reading
-      </button>
+      @if (tts.speaking()) {
+        <button (click)="tts.cancel()">Stop reading</button>
+      }
     </div>
   `,
   imports: [CngxSpeak],
 })
 export class AlertComponent {
-  @Input() message = signal('Alert message');
-  @Input() autoRead = signal(true);
-
-  // Auto-speak when message changes (if enabled)
-  // Directive handles this via [enabled] input
+  readonly message = input.required<string>();
+  readonly autoRead = input(true);
 }
 ```
 
 ### Text Editor with Read-Back
+
+`[enabled]="false"` keeps the directive from speaking on every keystroke; Play reads on demand.
 
 ```typescript
 @Component({
   selector: 'app-text-editor',
   template: `
     <div class="editor">
-      <textarea [value]="content()" (input)="content.set($event.target.value)"
-                [cngxSpeak]="content()" #tts="cngxSpeak"
+      <textarea #editor [value]="content()" (input)="content.set(editor.value)"
+                [cngxSpeak]="content()" [enabled]="false"
+                [rate]="rate()" [pitch]="pitch()" #tts="cngxSpeak"
                 placeholder="Type or paste text..."></textarea>
 
       <div class="controls">
@@ -251,14 +258,14 @@ export class AlertComponent {
         </button>
 
         <label>Speed:
-          <input type="range" min="0.5" max="2" step="0.1" [value]="rate()"
-                 (change)="rate.set($event.target.value)" />
+          <input #speed type="range" min="0.5" max="2" step="0.1" [value]="rate()"
+                 (input)="rate.set(speed.valueAsNumber)" />
           {{ rate().toFixed(1) }}x
         </label>
 
         <label>Pitch:
-          <input type="range" min="0.5" max="2" step="0.1" [value]="pitch()"
-                 (change)="pitch.set($event.target.value)" />
+          <input #pitchInput type="range" min="0.5" max="2" step="0.1" [value]="pitch()"
+                 (input)="pitch.set(pitchInput.valueAsNumber)" />
         </label>
       </div>
 
@@ -315,7 +322,7 @@ export class TextEditorComponent {
 @Component({
   selector: 'app-dyslexia-friendly',
   template: `
-    <article class="content" [cngxSpeak]="fullText()" #tts="cngxSpeak">
+    <article class="content" [cngxSpeak]="fullText()" [rate]="rate()" #tts="cngxSpeak">
       <h1>{{ title() }}</h1>
 
       <div class="text-with-audio">
@@ -328,17 +335,13 @@ export class TextEditorComponent {
           </button>
           <button (click)="tts.toggle()" class="speak-btn"
                   [class.speaking]="tts.speaking()">
-            @if (tts.speaking()) {
-              ⏸️ Stop reading
-            } @else {
-              ▶️ Read aloud
-            }
+            {{ tts.speaking() ? 'Stop reading' : 'Read aloud' }}
           </button>
 
           <label>Reading speed:
-            <input type="range" min="0.5" max="1.5" step="0.1"
+            <input #speed type="range" min="0.5" max="1.5" step="0.1"
                    [value]="rate()"
-                   (change)="rate.set($event.target.value)"
+                   (input)="rate.set(speed.valueAsNumber)"
                    aria-label="Adjust reading speed" />
           </label>
         </aside>
@@ -390,8 +393,9 @@ export class DyslexiaFriendlyComponent {
 
 ### Suppress Auto-Speak for Dynamic Content
 
-```typescript
-// Only speak when explicitly toggled, not on every input change
+Only speak when explicitly asked, not on every value change:
+
+```html
 <div [cngxSpeak]="liveUpdates()" [enabled]="false" #tts="cngxSpeak">
   {{ liveUpdates() }}
   <button (click)="tts.speak(liveUpdates())">
@@ -405,5 +409,5 @@ export class DyslexiaFriendlyComponent {
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/speak/)
 - [SpeechSynthesis API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis)
 - [Cognitive Accessibility - WebAIM](https://webaim.org/articles/cognitive/)
-- Demo: `examples/stories/common/speak-demo/`
+- Demo: `examples/stories/common/interactive/speak/`
 - Tests: `projects/common/interactive/speak/speak.directive.spec.ts`
