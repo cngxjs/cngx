@@ -1115,11 +1115,12 @@ test.describe('material-bridge rendered values: password-strength-meter', () => 
   ] as const;
   const BRIDGE_CSS = compileBridge('password-strength-meter-theme');
 
-  const METER_HTML = `
-<cngx-password-strength-meter id="meter-weak" class="cngx-password-strength-meter" data-strength="weak">
-  <span id="weak-filled" class="cngx-password-strength-meter__segment" data-filled="true"></span>
-  <span id="weak-empty" class="cngx-password-strength-meter__segment" data-filled="false"></span>
+  const tier = (level: string): string => `
+<cngx-password-strength-meter class="cngx-password-strength-meter" data-strength="${level}">
+  <span id="${level}-filled" class="cngx-password-strength-meter__segment" data-filled="true"></span>
+  <span id="${level}-empty" class="cngx-password-strength-meter__segment" data-filled="false"></span>
 </cngx-password-strength-meter>`;
+  const METER_HTML = ['weak', 'fair', 'good', 'strong'].map(tier).join('');
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -1136,13 +1137,15 @@ test.describe('material-bridge rendered values: password-strength-meter', () => 
     );
   });
 
-  test('the fill token reaches the segment read site', async ({ page }) => {
-    // Unregistered token, assigned on the host and inherited into the
-    // segment, where the [data-filled] rule reads it.
-    expect(
-      await computedValue(page, '#weak-filled', '--cngx-password-strength-meter-fill-color'),
-    ).toBe(matSys('primary'));
-  });
+  for (const [level, role] of [
+    ['fair', 'secondary'],
+    ['good', 'primary'],
+    ['strong', 'tertiary'],
+  ] as const) {
+    test(`a ${level} score paints the ${role} role`, async ({ page }) => {
+      expect(await computedValue(page, `#${level}-filled`, 'background-color')).toBe(matSys(role));
+    });
+  }
 });
 
 test.describe('material-bridge rendered values: skeleton', () => {
