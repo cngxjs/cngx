@@ -76,6 +76,15 @@ class NoEscapeHost {
 }
 
 @Component({
+  template: `<div cngxPopover #pop="cngxPopover" [closeOnEscape]="gate">Live gate</div>`,
+  imports: [CngxPopover],
+})
+class LiveEscapeGateHost {
+  readonly gate = signal(true);
+  readonly popover = viewChild.required(CngxPopover);
+}
+
+@Component({
   template: `<div cngxPopover #pop="cngxPopover" mode="auto">Auto mode</div>`,
   imports: [CngxPopover],
 })
@@ -422,6 +431,22 @@ describe('CngxPopover', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       fixture.detectChanges();
       expect(host.popover().state()).toBe(stateBefore);
+    });
+
+    it('reads a bound signal gate at keydown time, without change detection in between', () => {
+      const { fixture } = setup(LiveEscapeGateHost);
+      const host = fixture.componentInstance as LiveEscapeGateHost;
+      host.popover().show();
+      fixture.detectChanges();
+
+      host.gate.set(false);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(host.popover().state()).not.toBe('closed');
+
+      host.gate.set(true);
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+      expect(host.popover().state()).toBe('closed');
     });
   });
 
