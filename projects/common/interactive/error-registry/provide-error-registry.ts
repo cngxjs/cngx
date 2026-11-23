@@ -1,8 +1,10 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
   type EnvironmentProviders,
   inject,
   makeEnvironmentProviders,
+  PLATFORM_ID,
   provideEnvironmentInitializer,
   type Provider,
 } from '@angular/core';
@@ -70,15 +72,16 @@ export function provideErrorRegistry(
   if (config.revealOnSubmit) {
     providers.push(
       provideEnvironmentInitializer(() => {
-        if (typeof document === 'undefined') {
+        if (!isPlatformBrowser(inject(PLATFORM_ID))) {
           return;
         }
+        const doc = inject(DOCUMENT);
         const registry = inject(CngxErrorRegistry);
         const destroyRef = inject(DestroyRef);
         const handler = (): void => registry.revealAll();
-        document.addEventListener('submit', handler, true);
+        doc.addEventListener('submit', handler, true);
         destroyRef.onDestroy(() => {
-          document.removeEventListener('submit', handler, true);
+          doc.removeEventListener('submit', handler, true);
         });
       }),
     );
