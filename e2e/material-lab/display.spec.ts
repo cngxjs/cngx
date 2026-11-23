@@ -164,6 +164,23 @@ for (const scheme of ['light', 'dark'] as const) {
       ]);
     });
 
+    test('card: the parts stack flush inside the mat-card inset', async ({ page }) => {
+      // clientHeight excludes the border: the cngx 1px border belongs to the
+      // parked raised vs outlined decision, mat-card raised has none.
+      const inner = (sel: string) => page.locator(sel).evaluate((el) => el.clientHeight);
+      expect(await inner(cngx('card'))).toBe(await inner(mat('card')));
+      for (const property of ['padding-top', 'padding-bottom', 'row-gap']) {
+        expect(await computedValue(page, cngx('card', '[cngxCardHeader]'), property), property).toBe('0px');
+      }
+      expect(await computedValue(page, cngx('card', '[cngxCardBody]'), 'padding-top')).toBe('0px');
+    });
+
+    test('card: title and subtitle take the mat-card type and colour', async ({ page }) => {
+      const type = ['color', 'font-size', 'line-height', 'font-weight', 'letter-spacing'];
+      await expectSame(page, mat('card', '.mat-mdc-card-title'), cngx('card', '[cngxCardTitle]'), type);
+      await expectSame(page, mat('card', '.mat-mdc-card-subtitle'), cngx('card', '[cngxCardSubtitle]'), type);
+    });
+
     test('divider: the rule paints the mat-divider colour at 1px with no block margin', async ({ page }) => {
       await expectSame(
         page,
