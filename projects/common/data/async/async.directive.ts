@@ -20,6 +20,11 @@ import { resolveAsyncView, type AsyncView } from '../async-state/resolve-view';
 /**
  * Template context for the `*cngxAsync` content template.
  * `$implicit` provides the data value, typed via `ngTemplateContextGuard`.
+ *
+ * Typed as `T` for template ergonomics, but the content view receives the
+ * state's `data()` as is: a producer whose data goes `undefined` while it stays
+ * in the content view (e.g. `refreshing` after a cleared value) passes
+ * `undefined` through. Guard with `@if` / `?.` when the producer can do that.
  */
 export interface CngxAsyncContext<T> {
   /** The data value - bound via `let data` in microsyntax. */
@@ -41,6 +46,14 @@ export interface CngxAsyncContext<T> {
  *   `resolveAsyncView` reports this as `content+error`, but a structural
  *   directive renders exactly one template, so the error half is flattened
  *   away here; surface it separately (toast, alert) when it must be visible
+ *
+ * ### Focus across a view switch
+ * When a switch destroys the view that holds focus, focus moves to the first
+ * focusable element (outside any `inert` subtree) of the next rendered view, so
+ * a focused Retry button does not drop keyboard users onto `<body>`. One view
+ * without a focusable element (a skeleton) is bridged; after that the hand-off
+ * lapses. Focus that sits outside the directive, or that the user moved
+ * elsewhere in the meantime, is never touched.
  *
  * ### Minimal - just content
  * ```html
