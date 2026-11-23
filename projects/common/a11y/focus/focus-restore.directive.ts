@@ -33,24 +33,36 @@ export const CNGX_FOCUSABLE_SELECTOR =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), details > summary:first-of-type, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * @internal Lets a directive that composes `CngxFocusRestore` as a host
- * directive drive its capture / restore edges from its own state instead of
+ * Lets a directive that composes `CngxFocusRestore` as a host directive drive
+ * its capture / restore edges from its own state instead of
  * `[cngxFocusRestoreWhile]`. Provided by the composer on the same element
  * (`useExisting`); the restore directive resolves it lazily with
  * `self: true`, because the composer constructs after its host directives.
+ * `CngxDrawerSurface` is the in-library composer.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
+ * @since 0.1.0
  */
 export interface CngxFocusRestoreDriver {
   /** Whether the surface is engaged; wins over `[cngxFocusRestoreWhile]`. */
   readonly focusRestoreActive: Signal<boolean>;
   /**
    * The fallback when the stored element cannot take focus back; wins over
-   * `[focusRestoreFallback]`. Read at restore time, so a composer can derive
+   * the `[fallback]` input. Read at restore time, so a composer can derive
    * it from the DOM (the element that controls the host).
    */
   focusRestoreFallback?(): HTMLElement | null;
 }
 
-/** @internal See {@link CngxFocusRestoreDriver}. */
+/**
+ * Injection token for a {@link CngxFocusRestoreDriver}. A composer provides it
+ * on its own element (`useExisting`) to override `[cngxFocusRestoreWhile]`
+ * and `[fallback]` of its `CngxFocusRestore` host directive. Used by
+ * `CngxDrawerSurface`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
+ * @since 0.1.0
+ */
 export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriver>(
   'CngxFocusRestoreDriver',
 );
@@ -92,7 +104,7 @@ export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriv
  *
  * ### With explicit fallback
  * ```html
- * <div cngxFocusRestore [focusRestoreFallback]="fallbackBtn">
+ * <div cngxFocusRestore [fallback]="fallbackBtn">
  *   Dynamic content…
  * </div>
  * <button #fallbackBtn>Fallback target</button>

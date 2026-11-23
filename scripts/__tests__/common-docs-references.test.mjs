@@ -50,27 +50,6 @@ const DOC_PATH = join(REPO_ROOT, '.compodoc/documentation.json');
 const KNOWN_FAILURES = [
   {
     slice: '1 primitives',
-    file: 'projects/common/a11y/focus/README.md',
-    line: 68,
-    kind: 'unknown-export-as',
-    ref: 'cngxDialog',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/a11y/focus/README.md',
-    line: 68,
-    kind: 'unknown-binding',
-    ref: 'dialog [cngxFocusTrap]',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/a11y/focus/focus-restore.directive.ts',
-    line: 95,
-    kind: 'unknown-binding',
-    ref: 'div [focusRestoreFallback]',
-  },
-  {
-    slice: '1 primitives',
     file: 'projects/common/a11y/motion/README.md',
     line: 205,
     kind: 'unknown-binding',

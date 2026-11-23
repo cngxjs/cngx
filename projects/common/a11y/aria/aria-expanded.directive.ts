@@ -10,12 +10,15 @@ import {
 } from '@angular/core';
 
 /**
- * @internal Lets a directive that composes `CngxAriaExpanded` as a host
- * directive drive `aria-expanded` from its own state instead of
- * `[cngxAriaExpanded]`. Provided by the composer on the same element
- * (`useExisting`); the ARIA directive resolves it lazily with `self: true`,
- * because the composer constructs after its host directives. `CngxExpandable`
- * is the in-library composer.
+ * Lets a directive that composes `CngxAriaExpanded` as a host directive drive
+ * `aria-expanded` from its own state instead of `[cngxAriaExpanded]`.
+ * Provided by the composer on the same element (`useExisting`); the ARIA
+ * directive resolves it lazily with `self: true`, because the composer
+ * constructs after its host directives. `CngxExpandable` is the in-library
+ * composer.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
+ * @since 0.1.0
  */
 export interface CngxAriaExpandedDriver {
   /**
@@ -25,7 +28,15 @@ export interface CngxAriaExpandedDriver {
   readonly ariaExpanded: Signal<boolean | null>;
 }
 
-/** @internal See {@link CngxAriaExpandedDriver}. */
+/**
+ * Injection token for a {@link CngxAriaExpandedDriver}. A composer provides it
+ * on its own element (`useExisting`) to override `[cngxAriaExpanded]` of its
+ * `CngxAriaExpanded` host directive; `aria-controls` still follows
+ * `[controls]`. Used by `CngxExpandable`.
+ *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
+ * @since 0.1.0
+ */
 export const CNGX_ARIA_EXPANDED_DRIVER = new InjectionToken<CngxAriaExpandedDriver>(
   'CngxAriaExpandedDriver',
 );

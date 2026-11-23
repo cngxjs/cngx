@@ -90,6 +90,7 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-announcer.ts
  * @since 0.1.0
  * @relatedTo CngxLiveRegion
+ * <example-url>/#/common/a11y/live-announcer/polite-vs-assertive</example-url>
  */
 @Injectable({ providedIn: 'root' })
 export class CngxLiveAnnouncer implements OnDestroy {
