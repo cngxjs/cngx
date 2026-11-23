@@ -41,9 +41,9 @@ function sameBinding(
  * modal scope (an open modal dialog) sits between focus and the host;
  * `'self'` fires only while focus is inside the host.
  *
- * Inside a text field (`input` of a text type, `textarea`, `select`,
- * `contenteditable`) only combos with `ctrl`, `meta` or `mod`, function keys
- * and `escape` fire, in both scopes: `'mod+k'` works while typing, a bare
+ * Inside a text field (`isTextEntryTarget`: an `input` of a text, number,
+ * date or time type, `textarea`, `select`, `contenteditable`) only combos
+ * with `ctrl`, `meta` or `mod`, function keys and `escape` fire, in both scopes: `'mod+k'` works while typing, a bare
  * `'/'` does not.
  *
  * Name the shortcut with `shortcutId` to make it remappable, and give it a

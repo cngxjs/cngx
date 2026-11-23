@@ -34,6 +34,7 @@ import { EMPTY, fromEvent, map, merge, of, Subject, switchMap, tap, timer } from
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/search.directive.ts
  * @since 0.1.0
  * @relatedTo CngxKeyboardShortcut, CngxListboxSearch
+ * <example-url>/#/common/interactive/search/typeahead-filter</example-url>
  * @axis level molecule
  */
 @Directive({

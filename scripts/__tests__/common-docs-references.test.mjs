@@ -99,20 +99,6 @@ const KNOWN_FAILURES = [
   },
   {
     slice: '1 primitives',
-    file: 'projects/common/interactive/keyboard/README.md',
-    line: 8,
-    kind: 'unknown-import',
-    ref: 'KeyCombo from @cngx/common/interactive',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/interactive/keyboard/README.md',
-    line: 98,
-    kind: 'unknown-export-as',
-    ref: 'dialog',
-  },
-  {
-    slice: '1 primitives',
     file: 'projects/common/interactive/speak/README.md',
     line: 408,
     kind: 'missing-path',
