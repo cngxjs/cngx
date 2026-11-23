@@ -107,7 +107,7 @@ Every keyboard family and every anchor family that reacts to direction ships an 
 
 |Family|What mirrors|RTL spec|
 |-|-|-|
-|Roving toolbar, menu, submenu, context menu, tree|Inline arrow keys|`rtl-keyboard-listbox-menu-tree.spec.ts`|
+|Roving toolbar, horizontal active descendant, menu, submenu, context menu, tree|Inline arrow keys|`rtl-keyboard-listbox-menu-tree.spec.ts`|
 |Standalone hierarchical-nav tree|Expand / collapse arrows|`rtl-hierarchical-nav.spec.ts`|
 |Tabs, stepper, tab overflow|Inline arrow keys|`rtl-keyboard-tabs-stepper.spec.ts`|
 |Slider, reorderable multi-select, chip strip|Inline arrow keys|`rtl-keyboard-slider-reorder.spec.ts`|
