@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CngxErrorAggregator } from '../error-aggregator/error-aggregator.directive';
 import { CngxErrorSource } from './error-source.directive';
 
@@ -35,6 +35,27 @@ class TestHost {
   imports: [CngxErrorSource],
 })
 class OrphanHost {}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator>
+      @if (showFirst()) {
+        <span [cngxErrorSource]="'email'" [when]="firstOn()" [label]="firstLabel()"></span>
+      }
+      @if (showSecond()) {
+        <span [cngxErrorSource]="'email'" [when]="secondOn()" [label]="'Second'"></span>
+      }
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class DuplicateKeyHost {
+  showFirst = signal(true);
+  showSecond = signal(true);
+  firstOn = signal(true);
+  secondOn = signal(false);
+  firstLabel = signal('First');
+}
 
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
   const de = fixture.debugElement.query(By.directive(CngxErrorAggregator));
@@ -81,5 +102,44 @@ describe('CngxErrorSource', () => {
       fixture.detectChanges();
       fixture.destroy();
     }).not.toThrow();
+  });
+
+  describe('duplicate keys', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    function setupDuplicates() {
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(DuplicateKeyHost);
+      fixture.detectChanges();
+      return { fixture, host: fixture.componentInstance, agg: aggregatorOf(fixture) };
+    }
+
+    it('re-surfaces the earlier source when the later one is destroyed', () => {
+      const { fixture, host, agg } = setupDuplicates();
+      expect(agg.hasError()).toBe(false);
+
+      host.showSecond.set(false);
+      fixture.detectChanges();
+      expect(agg.hasError()).toBe(true);
+      expect(agg.errorLabels()).toEqual(['First']);
+    });
+
+    it('keeps the later source when the earlier one is destroyed', () => {
+      const { fixture, host, agg } = setupDuplicates();
+      host.secondOn.set(true);
+      host.showFirst.set(false);
+      fixture.detectChanges();
+      expect(agg.hasError()).toBe(true);
+      expect(agg.errorLabels()).toEqual(['Second']);
+    });
+
+    it('keeps one entry per key when a duplicate changes its label', () => {
+      const { fixture, host, agg } = setupDuplicates();
+      host.secondOn.set(true);
+      host.firstLabel.set('First renamed');
+      fixture.detectChanges();
+      expect(agg.activeErrors()).toEqual(['email']);
+      expect(agg.errorCount()).toBe(1);
+    });
   });
 });

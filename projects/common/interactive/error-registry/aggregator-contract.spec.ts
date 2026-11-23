@@ -1,6 +1,6 @@
 import { effect, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CngxErrorAggregatorSourceEntry } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { createErrorAggregatorContract } from './aggregator-contract';
@@ -281,5 +281,71 @@ describe('createErrorAggregatorContract dev diagnostics', () => {
     expect(warn).toHaveBeenCalledWith(
       expect.stringMatching(/^CNGX1020: addSource\(\): an error source with key "email"/),
     );
+  });
+});
+
+describe('createErrorAggregatorContract duplicate keys', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function setupDuplicates() {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const contract = createErrorAggregatorContract({
+      sourcesState: makeSources(),
+      scope: signal<CngxErrorScopeContract | null>(null).asReadonly(),
+      locale: EN_US,
+    });
+    const first: CngxErrorAggregatorSourceEntry = {
+      key: 'email',
+      condition: signal(true).asReadonly(),
+      label: 'First',
+    };
+    const second: CngxErrorAggregatorSourceEntry = {
+      key: 'email',
+      condition: signal(false).asReadonly(),
+      label: 'Second',
+    };
+    contract.addSource(first);
+    contract.addSource(second);
+    return { contract, first, second };
+  }
+
+  it('re-surfaces the shadowed source when the later one is removed', () => {
+    const { contract, second } = setupDuplicates();
+    expect(contract.hasError()).toBe(false);
+
+    contract.removeSource('email', second);
+    expect(contract.hasError()).toBe(true);
+    expect(contract.errorLabels()).toEqual(['First']);
+  });
+
+  it('keeps the later source when the shadowed one is removed', () => {
+    const { contract, first, second } = setupDuplicates();
+    contract.removeSource('email', first);
+    expect(contract.hasError()).toBe(false);
+
+    contract.removeSource('email', second);
+    expect(contract.activeErrors()).toEqual([]);
+    expect(contract.errorCount()).toBe(0);
+  });
+
+  it('matches the owner by condition identity, not by entry object', () => {
+    const { contract, second } = setupDuplicates();
+    contract.removeSource('email', { ...second, label: 'Renamed' });
+    expect(contract.errorLabels()).toEqual(['First']);
+  });
+
+  it('drops the key and every shadowed entry when removed without an entry', () => {
+    const { contract } = setupDuplicates();
+    contract.removeSource('email');
+    expect(contract.hasError()).toBe(false);
+    expect(contract.errorCount()).toBe(0);
+  });
+
+  it('keeps exactly one entry per key across a label change of a duplicate', () => {
+    const { contract, first } = setupDuplicates();
+    contract.removeSource('email', first);
+    contract.addSource({ ...first, label: 'First renamed' });
+    expect(contract.activeErrors()).toEqual(['email']);
+    expect(contract.errorLabels()).toEqual(['First renamed']);
   });
 });

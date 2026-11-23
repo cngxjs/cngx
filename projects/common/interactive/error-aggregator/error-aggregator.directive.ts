@@ -152,12 +152,13 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   }
 
   /**
-   * Removes the error source registered under `key`; no-op when the key is absent.
+   * Removes an error source; no-op when the key is absent. With `entry` only that
+   * source leaves and a shadowed duplicate of the key takes over again.
    * Implements `removeSource` of `CngxErrorAggregatorContract` (`CNGX_ERROR_AGGREGATOR`),
    * called by `CngxErrorSource` on teardown.
    */
-  removeSource(key: string): void {
-    this.contract.removeSource(key);
+  removeSource(key: string, entry?: CngxErrorAggregatorSourceEntry): void {
+    this.contract.removeSource(key, entry);
   }
 
   constructor() {

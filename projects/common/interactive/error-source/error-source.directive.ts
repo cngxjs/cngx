@@ -66,11 +66,12 @@ export class CngxErrorSource {
     effect((onCleanup) => {
       const key = this.cngxErrorSource();
       const label = this.label();
+      const entry = { key, condition: this.when, label };
       untracked(() => {
-        aggregator.addSource({ key, condition: this.when, label });
+        aggregator.addSource(entry);
       });
       onCleanup(() => {
-        untracked(() => aggregator.removeSource(key));
+        untracked(() => aggregator.removeSource(key, entry));
       });
     });
   }
