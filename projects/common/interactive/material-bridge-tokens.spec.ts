@@ -1,29 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
-import { CngxButton } from '@cngx/common/button';
 import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
-
-import { CngxAsyncClick } from './async-click/async-click.directive';
-
-@Component({
-  selector: 'cngx-async-click-bridge-hosts',
-  standalone: true,
-  imports: [CngxAsyncClick, CngxButton],
-  template: `
-    <button type="button" class="bare" [cngxAsyncClick]="run">Save</button>
-    <a role="button" class="anchor" [cngxAsyncClick]="run">Save</a>
-    <button cngxButton class="button" [cngxAsyncClick]="run">Save</button>
-    <button type="button" class="plain">Save</button>
-  `,
-})
-class AsyncClickHosts {
-  readonly run = (): Promise<void> => Promise.resolve();
-}
 
 /**
  * Token-name contract for the Material bridges whose consumers live in
@@ -295,10 +275,12 @@ describe('async-click Material bridge', () => {
     expect(bridgeTokenNames('async-click-theme')).toEqual(CONSUMED);
   });
 
-  // `[cngxAsyncClick]="fn"` is a property binding and leaves no attribute, so
-  // the bridge selector is matched against rendered hosts, not just read back.
-  it('assigns on a selector every rendered cngxAsyncClick host matches', () => {
-    const entry = `
+  // The tokens are registered `inherits: true`, so the bridge lands on the
+  // include host and the state hosts inherit them; a per-element selector
+  // would shadow an ancestor SET.
+  function asyncClickCss(includeAt: string | null): string {
+    const include = '@include bridge.theme($theme);';
+    return compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/async-click-theme' as bridge;
 
@@ -306,24 +288,27 @@ $theme: mat.define-theme((
   color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
 ));
 
-@include bridge.theme($theme);
-`;
-    const css = compileThemeEntry(entry);
-    expect(css).toMatch(/@layer cngx\.components\s*\{/);
-    const block = css.match(/(:where\([^)]*\))\s*\{([^}]*)\}/);
-    expect(block).not.toBeNull();
-    const [, selector, body] = block!;
-    expect(body).toContain('--cngx-async-error-color: var(--mat-sys-error)');
-    expect(body).toContain('--cngx-async-success-color: var(--mat-sys-primary)');
+${includeAt ? `${includeAt} { ${include} }` : include}
+`);
+  }
 
-    const fixture = TestBed.createComponent(AsyncClickHosts);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-    for (const name of ['bare', 'anchor', 'button']) {
-      const host = root.querySelector(`.${name}`);
-      expect(host, name).not.toBeNull();
-      expect(host!.matches(selector), `${name} matches ${selector}`).toBe(true);
-    }
-    expect(root.querySelector('.plain')!.matches(selector)).toBe(false);
+  it('emits on :root for a root include, not on the state hosts', () => {
+    const css = asyncClickCss(null);
+    const block = css.match(/@layer cngx\.components\s*\{\s*:root\s*\{([^}]*)\}/);
+    expect(block).not.toBeNull();
+    expect(emittedTokenNames(block![1])).toEqual(CONSUMED);
+    expect(block![1]).toContain('--cngx-async-error-color: var(--mat-sys-error)');
+    expect(block![1]).toContain('--cngx-async-success-color: var(--mat-sys-primary)');
+    expect(css).not.toContain('.cngx-async');
+    expect(css).not.toContain(':where(');
+  });
+
+  it('emits on the selector the bridge is included in', () => {
+    const css = asyncClickCss('.app-theme');
+    const block = css.match(/@layer cngx\.components\s*\{\s*\.app-theme\s*\{([^}]*)\}/);
+    expect(block).not.toBeNull();
+    expect(emittedTokenNames(block![1])).toEqual(CONSUMED);
+    expect(css).not.toContain(':root');
+    expect(css).not.toContain('.cngx-async');
   });
 });

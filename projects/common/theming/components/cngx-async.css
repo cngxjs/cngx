@@ -8,9 +8,10 @@
  * `<button cngxAsyncClick>` or an anchor.
  *
  * Every host also carries the stable `cngx-async` class, whatever its
- * phase. A theme that sets the `--cngx-async-*` colour tokens per host targets
- * it (the Material bridge does): `[cngxAsyncClick]` is a property binding and
- * leaves no attribute to select on. `--cngx-async-pending-opacity` belongs to
+ * phase: `[cngxAsyncClick]` is a property binding and leaves no attribute to
+ * select on. The colour tokens inherit, so a theme sets them on an ancestor;
+ * the Material bridge sets them on its theme host, not per host.
+ * `--cngx-async-pending-opacity` belongs to
  * the host: a theme rule on `.cngx-async` would outrank a host that turns the
  * dim off on itself.
  *

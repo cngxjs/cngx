@@ -1292,7 +1292,10 @@ test.describe('material-bridge rendered values: async-click', () => {
 
   const ASYNC_HTML = `
 <button id="async-ok" type="button" class="cngx-async cngx-async--success" style="border: 1px solid">Save</button>
-<button id="async-fail" type="button" class="cngx-async cngx-async--error" style="border: 1px solid">Save</button>`;
+<button id="async-fail" type="button" class="cngx-async cngx-async--error" style="border: 1px solid">Save</button>
+<div style="--cngx-async-success-bg: rgb(1, 2, 3)">
+  <button id="async-themed" type="button" class="cngx-async cngx-async--success" style="border: 1px solid">Save</button>
+</div>`;
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -1316,6 +1319,11 @@ test.describe('material-bridge rendered values: async-click', () => {
     );
     expect(await computedValue(page, '#async-fail', 'color')).toBe(matSys('error'));
     expect(await computedValue(page, '#async-fail', 'border-top-color')).toBe(matSys('error'));
+  });
+
+  test('an ancestor SET of a colour token wins over the bridge', async ({ page }) => {
+    expect(await computedValue(page, '#async-themed', 'background-color')).toBe('rgb(1, 2, 3)');
+    expect(await computedValue(page, '#async-themed', 'color')).toBe(matSys('primary'));
   });
 });
 

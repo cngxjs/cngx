@@ -1,8 +1,22 @@
 @use 'sass:list';
 
 // Private conventions module for the Material bridges. Every bridge routes
-// its token emission through `on()` so the two placement conventions the
-// bridges depend on cannot be forgotten per file:
+// its token emission through `on()` or `host()` so the placement conventions
+// the bridges depend on cannot be forgotten per file.
+//
+// Emission rule, decided per token from its `@property` registration:
+//
+//   - `inherits: true`: emit on the theme host with `host()`. The token
+//     reaches every component by inheritance, and an ancestor SET between
+//     the theme host and the component wins.
+//   - `inherits: false`: emit on the element that reads it, with `on()` or
+//     `on(broadcast(...))`; a host-only assignment resolves to the
+//     `initial-value` there.
+//   - `inherits: true` but SET by the component stylesheet on an element at
+//     or below the host: emit on that element with `on()`, or the
+//     component SET shadows the inherited bridge value.
+//
+// The layer and specificity conventions of `on()`:
 //
 //   1. `@layer cngx.components` - bridge assignments must sit in the same
 //      layer as the component token defaults so a consumer's unlayered
@@ -46,6 +60,24 @@
   @layer cngx.components {
     :where(#{$selectors}) {
       @content;
+    }
+  }
+}
+
+/// Emits the content block on the selector the mixin is included in, inside
+/// `@layer cngx.components`, as plain declarations without `:where()` (the
+/// system-bridge form). For tokens registered `inherits: true`: they reach
+/// every component below the include host by inheritance. Included outside
+/// any selector it emits on `:root`, because a declaration without a
+/// selector would be dropped.
+@mixin host() {
+  @layer cngx.components {
+    @if & {
+      @content;
+    } @else {
+      :root {
+        @content;
+      }
     }
   }
 }

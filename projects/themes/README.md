@@ -138,6 +138,8 @@ The `theme` aggregate includes `button-theme` and `async-click-theme`, so an app
 @include async-click.theme($theme);
 ```
 
+`async-click-theme` sets its `--cngx-async-*` tokens on the selector it is included in (`:root` at the top level) and every state host inherits them, so a nested Material sub-theme includes it again on its own container.
+
 ## When not to use it
 
 The component libraries work without `@cngx/themes`: every stylesheet falls back to literal values when a token is unset. You lose dark mode, density tracking, and one-place branding - so skip this package only for isolated embeds where the host page owns all styling.
