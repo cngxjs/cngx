@@ -1,6 +1,6 @@
 # Control Value
 
-DI contract for cngx interactive atoms that route their primary value through a Signal. The field bridge (`[cngxBindField]`, `CngxFormField`) and any custom forms adapter pull this token off the host element to reach the atom's value and disabled flag without importing the concrete directive class. Structural counterpart to `CNGX_FORM_FIELD_CONTROL` from `@cngx/forms`: this one is the raw value shape, that one is the full form-field control surface.
+DI contract for cngx interactive atoms that route their primary value through a Signal. `CngxFormBridge` (`@cngx/forms/controls`, the Reactive Forms `ControlValueAccessor`), `CngxFormField` (`@cngx/forms/field`) and any custom forms adapter pull this token off the host element to reach the atom's value and disabled flag without importing the concrete directive class. Structural counterpart to `CNGX_FORM_FIELD_CONTROL` from `@cngx/forms/field`: this one is the raw value shape, that one is the full form-field control surface.
 
 ## Import
 
@@ -41,5 +41,5 @@ Provide `CNGX_FORM_FIELD_CONTROL` on the same instance as well and `<cngx-form-f
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/control-value/) for the full token surface.
-- `CNGX_FORM_FIELD_CONTROL` (`@cngx/forms`) for the full form-field control contract on top of this value shape.
+- `CNGX_FORM_FIELD_CONTROL` (`@cngx/forms/field`) for the full form-field control contract on top of this value shape.
 - `CngxFormField` (`@cngx/forms/field`) for the field that syncs a control providing both tokens.

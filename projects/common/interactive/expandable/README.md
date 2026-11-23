@@ -48,6 +48,26 @@ Controlled by a tree controller. `[expanded]` is a `model()`, so `[(expanded)]` 
 </div>
 ```
 
+Two-way, so `toggle()` / `expand()` / `collapse()` write back to the owner's signal:
+
+```html
+<div role="treeitem" cngxExpandable #row="cngxExpandable" [(expanded)]="open">
+  <button type="button" tabindex="-1" (click)="row.toggle()">▸</button>
+</div>
+```
+
+## API
+
+| Member | Kind | Description |
+|-|-|-|
+| `expanded` | `model<boolean>`, default `false` | Open state; `[(expanded)]` or `(expandedChange)` |
+| `leaf` | `input<boolean>`, default `false` | Row with nothing to expand: `aria-expanded` is omitted |
+| `controls` | input forwarded to `CngxAriaExpanded` | Id written as `aria-controls` |
+| `ariaExpanded()` | `Signal<boolean \| null>` | Value the composed `CngxAriaExpanded` writes; `null` on a leaf |
+| `expand()` / `collapse()` / `toggle()` | methods | Set `expanded`; each change emits `expandedChange` |
+
+Exported as `cngxExpandable`.
+
 ## Accessibility
 
 Two host attributes, written by the composed `CngxAriaExpanded`:
