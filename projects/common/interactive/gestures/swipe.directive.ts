@@ -45,6 +45,7 @@ interface SwipeReading {
  * @since 0.1.0
  * @relatedTo CngxSwipeDismiss, CngxLongPress
  * <example-url>/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
+ * <example-url>/#/common/interactive/gestures/swipe/swipe-to-page</example-url>
  * @axis level atom
  */
 @Directive({

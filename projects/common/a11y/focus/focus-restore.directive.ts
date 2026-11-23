@@ -118,6 +118,7 @@ export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriv
  * @relatedTo CngxAutofocus, CngxFocusTrap, CngxFocusVisible
  * <example-url>/#/common/a11y/focus-restore/inline-details</example-url>
  * <example-url>/#/common/a11y/focus-restore/panel-with-automatic-restore</example-url>
+ * <example-url>/#/common/a11y/focus-restore/persistent-panel-restore-while-open</example-url>
  * @axis level atom
  */
 @Directive({

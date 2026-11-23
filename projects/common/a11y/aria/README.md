@@ -88,6 +88,7 @@ protected handleSaveFailed(): void {
 - `CngxScopedLiveRegion` is `announce(message, politeness?)`, `ensure()`, `takePending()` and `destroy()`.
 - `ensure()` creates both regions up front, so they are in the DOM before the first message.
 - `takePending()` cancels writes that have not landed and returns them, so a closing overlay can hand them to `CngxLiveAnnouncer`.
+- Demo: `examples/stories/common/a11y/live-announcer/scoped-announcing-in-a-modal.story.ts`.
 
 
 ## Accessibility Patterns

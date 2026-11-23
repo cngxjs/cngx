@@ -50,6 +50,7 @@ export interface CngxScopedLiveRegion {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/scoped-live-region.ts
  * @since 0.1.0
  * @relatedTo CngxLiveAnnouncer, CngxLiveRegion
+ * <example-url>/#/common/a11y/live-announcer/scoped-announcing-in-a-modal</example-url>
  */
 export function injectScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion {
   const doc = inject(DOCUMENT);

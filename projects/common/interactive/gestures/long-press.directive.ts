@@ -40,6 +40,7 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  * @relatedTo CngxSwipeDismiss, CngxPressable
  * <example-url>/#/common/interactive/gestures/long-press/custom-threshold</example-url>
  * <example-url>/#/common/interactive/gestures/long-press/long-press-with-visual-feedback</example-url>
+ * <example-url>/#/common/interactive/gestures/long-press/trailing-click-suppression</example-url>
  * @axis level atom
  */
 @Directive({
