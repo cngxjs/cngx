@@ -215,7 +215,7 @@
     {
       "class": "CngxErrorAggregator",
       "file": "projects/common/interactive/error-aggregator/error-aggregator.directive.ts",
-      "line": 148,
+      "line": 159,
       "member": "contract",
       "enclosing": "untracked",
       "tiers": [

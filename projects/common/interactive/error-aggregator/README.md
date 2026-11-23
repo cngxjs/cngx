@@ -67,7 +67,7 @@ The directive provides itself via `useExisting`, so any descendant (`CngxErrorSo
 | `errorLabels` | `Signal<readonly string[]>` | Active source labels (skips null labels). |
 | `shouldShow` | `Signal<boolean>` | Gated by ambient scope's `showErrors()`. |
 | `announcement` | `Signal<string>` | Joined labels, or the count message when no active source has a label; empty when hidden. |
-| `addSource(entry: CngxErrorAggregatorSourceEntry)` | `void` | Last wins on `key`; the replaced source stays listed (CNGX1020). |
+| `addSource(entry: CngxErrorAggregatorSourceEntry)` | `void` | Last wins on `key`; the replaced source stays listed ([`CNGX1020`](../../../../core-concepts/error-codes/cngx1020.md)). |
 | `removeSource(key: string, entry?: CngxErrorAggregatorSourceEntry)` | `void` | No-op if absent. With `entry` only that source leaves and a replaced one takes the key back. |
 
 ### `CngxErrorAggregatorSourceEntry`
