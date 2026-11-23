@@ -2,19 +2,21 @@ import { signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
-import { createCommitController } from '../commit-controller.token';
+import { createSelectCommitController } from '../commit-controller.token';
 import { commitLedgerFor } from './commit-ledger';
 import { commitRetryFor } from './commit-retry';
 
 describe('commitRetryFor', () => {
   it('returns one router per controller', () => {
-    const controller = createCommitController<string>();
+    const controller = createSelectCommitController<string>();
     expect(commitRetryFor(controller)).toBe(commitRetryFor(controller));
-    expect(commitRetryFor(controller)).not.toBe(commitRetryFor(createCommitController<string>()));
+    expect(commitRetryFor(controller)).not.toBe(
+      commitRetryFor(createSelectCommitController<string>()),
+    );
   });
 
   it('routes Retry to the handler that started the last commit', () => {
-    const router = commitRetryFor(createCommitController<string>());
+    const router = commitRetryFor(createSelectCommitController<string>());
     const log: string[] = [];
     const handler = (name: string) => ({
       begin: () => log.push(`begin:${name}`),
@@ -36,7 +38,7 @@ describe('commitRetryFor', () => {
   });
 
   it('a claim drops the ledger record of the earlier commit', () => {
-    const controller = createCommitController<string>();
+    const controller = createSelectCommitController<string>();
     const ledger = commitLedgerFor<string, string>(controller);
     const commitAction = signal(() => new Subject<string>());
     ledger.beginScalar<string | undefined>({

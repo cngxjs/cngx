@@ -7,7 +7,7 @@ import {
   dispatchScalarClear,
   type ScalarCommitHandler,
 } from './scalar-commit-handler';
-import { createCommitController } from './commit-controller.token';
+import { createSelectCommitController } from './commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
@@ -57,7 +57,7 @@ function makeHarness(opts?: {
   const valueWriteLog: (T | undefined)[] = [];
 
   const core = {
-    commitController: createCommitController<T>(),
+    commitController: createSelectCommitController<T>(),
     togglingOption,
     findOption: (v: T): CngxSelectOptionDef<T> | null => known.get(v) ?? null,
   } as unknown as CngxSelectCore<T, T>;
@@ -189,7 +189,7 @@ describe('createScalarCommitHandler', () => {
         compareWith: signal<CngxSelectCompareFn<T>>((a, b) => Object.is(a, b)),
         commitMode: signal<CngxSelectCommitMode>('optimistic'),
         core: {
-          commitController: createCommitController<T>(),
+          commitController: createSelectCommitController<T>(),
           togglingOption: signal(null),
           findOption: () => null,
         } as unknown as CngxSelectCore<T, T>,
@@ -215,7 +215,7 @@ describe('createScalarCommitHandler', () => {
           compareWith: signal<CngxSelectCompareFn<T>>((a, b) => Object.is(a, b)),
           commitMode: signal<CngxSelectCommitMode>('optimistic'),
           core: {
-            commitController: createCommitController<T>(),
+            commitController: createSelectCommitController<T>(),
             togglingOption: signal(null),
             findOption: () => null,
           } as unknown as CngxSelectCore<T, T>,
@@ -247,7 +247,7 @@ describe('createScalarCommitHandler', () => {
   });
 
   describe('dispatchScalarClear', () => {
-    function coreOf(controller = createCommitController<T>()): CngxSelectCore<T, T> {
+    function coreOf(controller = createSelectCommitController<T>()): CngxSelectCore<T, T> {
       return {
         commitController: controller,
         togglingOption: signal<CngxSelectOptionDef<T> | null>(opt('a')),
@@ -256,7 +256,7 @@ describe('createScalarCommitHandler', () => {
     }
 
     it('without an action cancels a pending commit, settles its state and clears locally', () => {
-      const controller = createCommitController<T>();
+      const controller = createSelectCommitController<T>();
       const core = coreOf(controller);
       controller.begin(() => new Subject<T>().asObservable(), 'a', undefined, {
         onSuccess: () => undefined,

@@ -4,12 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualState } from '@cngx/common/data';
 
 import { createReorderCommitHandler } from './reorder-commit-handler';
-import type { CngxCommitController } from './commit-controller.token';
+import type { CngxSelectCommitController } from './commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 
 function makeController<T>(): {
-  readonly controller: CngxCommitController<T>;
+  readonly controller: CngxSelectCommitController<T>;
   resolve(value?: T): void;
   reject(err: unknown): void;
 } {
@@ -18,7 +18,7 @@ function makeController<T>(): {
   const state = createManualState<T | undefined>();
   const intended = signal<T | undefined>(undefined);
   const isCommittingState = signal(false);
-  const controller: CngxCommitController<T> = {
+  const controller: CngxSelectCommitController<T> = {
     state,
     isCommitting: isCommittingState.asReadonly(),
     intendedValue: intended.asReadonly(),

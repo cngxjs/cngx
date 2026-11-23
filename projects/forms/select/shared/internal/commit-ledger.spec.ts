@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { arrayEqual } from '@cngx/utils';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../commit-action.types';
-import { createCommitController } from '../commit-controller.token';
+import { createSelectCommitController } from '../commit-controller.token';
 import type { CngxSelectOptionDef } from '../option.model';
 import {
   commitLedgerFor,
@@ -36,7 +36,7 @@ interface Harness {
 }
 
 function harness(initial: T[] = []): Harness {
-  const ledger = createCommitLedger<T[], T>(createCommitController<T[]>());
+  const ledger = createCommitLedger<T[], T>(createSelectCommitController<T[]>());
   const values = signal<T[]>(initial);
   const mode = signal<CngxSelectCommitMode>('optimistic');
   const calls: (T[] | undefined)[] = [];
@@ -229,7 +229,7 @@ describe('createCommitLedger', () => {
   });
 
   it('records scalar commits with their option', () => {
-    const ledger = createCommitLedger<T, T>(createCommitController<T>());
+    const ledger = createCommitLedger<T, T>(createSelectCommitController<T>());
     const value = signal<T | undefined>('red');
     const commitAction = signal<CngxSelectCommitAction<T> | null>(() => new Subject<T>());
     ledger.beginScalar<T | undefined>({
@@ -296,8 +296,10 @@ describe('createCommitLedger', () => {
 
 describe('commitLedgerFor', () => {
   it('hands every caller of one controller the same ledger', () => {
-    const controller = createCommitController<T[]>();
+    const controller = createSelectCommitController<T[]>();
     expect(commitLedgerFor(controller)).toBe(commitLedgerFor(controller));
-    expect(commitLedgerFor(controller)).not.toBe(commitLedgerFor(createCommitController<T[]>()));
+    expect(commitLedgerFor(controller)).not.toBe(
+      commitLedgerFor(createSelectCommitController<T[]>()),
+    );
   });
 });

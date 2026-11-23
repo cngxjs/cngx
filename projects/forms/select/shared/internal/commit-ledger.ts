@@ -3,7 +3,7 @@ import { signal, untracked, type Signal, type WritableSignal } from '@angular/co
 import type { AsyncStatus } from '@cngx/core/utils';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from '../commit-action.types';
-import type { CngxCommitController } from '../commit-controller.token';
+import type { CngxSelectCommitController } from '../commit-controller.token';
 import type { CngxSelectOptionDef } from '../option.model';
 
 /**
@@ -177,7 +177,7 @@ function sameRecord<TCommit, TOption>(
  * @internal
  */
 export function createCommitLedger<TCommit, TOption = unknown>(
-  controller: CngxCommitController<TCommit>,
+  controller: CngxSelectCommitController<TCommit>,
 ): CommitLedger<TCommit, TOption> {
   const last = signal<CommitRecord<TCommit, TOption> | null>(null, {
     equal: sameRecord,
@@ -327,7 +327,7 @@ const LEDGERS = new WeakMap<object, CommitLedger<unknown, unknown>>();
  * @internal
  */
 export function commitLedgerFor<TCommit, TOption = unknown>(
-  controller: CngxCommitController<TCommit>,
+  controller: CngxSelectCommitController<TCommit>,
 ): CommitLedger<TCommit, TOption> {
   const existing = LEDGERS.get(controller);
   if (existing) {

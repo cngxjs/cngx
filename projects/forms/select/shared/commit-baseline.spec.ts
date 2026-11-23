@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createArrayCommitHandler,
   createCommitBaseline,
-  createCommitController,
+  createSelectCommitController,
   type ArrayCommitHandler,
   type ArrayCommitHandlerOptions,
   type CngxArrayCommitHandlerFactory,
@@ -59,7 +59,7 @@ const replacementFactory: CngxArrayCommitHandlerFactory = <V>(
 function harness() {
   const values = signal<T[]>(['a']);
   const core: CngxCommitHandlerCore<T, T[]> = {
-    commitController: createCommitController<T[]>(),
+    commitController: createSelectCommitController<T[]>(),
     togglingOption: signal<CngxSelectOptionDef<T> | null>(null),
     findOption: () => null,
     announce: () => undefined,

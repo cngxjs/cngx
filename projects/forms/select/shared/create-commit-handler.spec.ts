@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createCreateCommitHandler } from './create-commit-handler';
-import { createCommitController } from './commit-controller.token';
+import { createSelectCommitController } from './commit-controller.token';
 import { createLocalItemsBuffer } from './local-items-buffer';
 import type { CngxSelectCreateAction } from './create-action.types';
 import type { CngxSelectOptionDef } from './option.model';
@@ -47,7 +47,7 @@ function makeHarness(): Harness {
 
   const handler = createCreateCommitHandler<T, Prev>({
     quickCreateAction,
-    commitController: createCommitController<T>(),
+    commitController: createSelectCommitController<T>(),
     localItemsBuffer,
     closeOnSuccess,
     onCreated: (created, previousSnapshot) => createdLog.push({ created, previousSnapshot }),
