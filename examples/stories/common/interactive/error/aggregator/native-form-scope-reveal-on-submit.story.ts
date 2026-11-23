@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'A <code>&lt;form cngxErrorScope&gt;</code> wraps a fieldset aggregator. Errors stay hidden until <code>(submit)</code> fires <code>scope.reveal()</code>; the resolved <code>shouldShow()</code> then unblocks the visible error list. <code>hasError</code> stays <code>true</code> from page load while <code>shouldShow</code> only flips after submit.',
   description:
-    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive is template-free; render the SR live region yourself.',
+    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive renders its own polite live region inside the host and speaks the labels on every submit; the visible list is plain markup. <code>novalidate</code> keeps the browser from blocking the submit, so the scope reveals.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -34,6 +34,7 @@ export const STORY: DemoSpec = {
   protected readonly passwordWeak = signal(true);`,
   template: `
   <form
+    novalidate
     cngxErrorScope
     cngxErrorScopeName="signup"
     #scope="cngxErrorScope"
@@ -57,7 +58,7 @@ export const STORY: DemoSpec = {
       </label>
 
       @if (signup.shouldShow()) {
-        <ul role="alert" class="demo-error-list">
+        <ul class="demo-error-list">
           @for (label of signup.errorLabels(); track label) {
             <li>{{ label }}</li>
           }

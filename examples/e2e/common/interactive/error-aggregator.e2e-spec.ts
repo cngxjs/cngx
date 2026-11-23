@@ -26,7 +26,43 @@ test.describe('common/interactive/error-aggregator', () => {
     await expect(errorCount).toHaveText('1');
     await page.getByRole('button', { name: 'Toggle email-taken' }).click();
     await expect(errorCount).toHaveText('2');
+  });
 
+  test('native form: submit reveals through one status region and speaks again', async ({ page }) => {
+    await gotoDemo(
+      page,
+      'common/interactive/error/aggregator/native-form-scope-reveal-on-submit',
+    );
+    const shouldShow = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('shouldShow()', { exact: true }) })
+      .locator('.event-value');
+    const form = page.locator('form[cngxErrorScope]');
+
+    await page.locator('#cngx-error-signup-email').fill('not-an-email');
+    await expect(shouldShow).toHaveText('false');
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect(shouldShow).toHaveText('true');
+
+    await expect(form.locator('[role="alert"]')).toHaveCount(0);
+    const region = form.locator('[role="status"]');
+    await expect(region).toHaveCount(1);
+    await expect(region).toHaveText('Email format invalid, Password too weak');
+
+    await region.evaluate((el) => {
+      const w = window as unknown as { __pr4Mutations: number };
+      w.__pr4Mutations = 0;
+      new MutationObserver((list) => (w.__pr4Mutations += list.length)).observe(el, {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+    });
+    await page.getByRole('button', { name: 'Submit' }).click();
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __pr4Mutations: number }).__pr4Mutations))
+      .toBeGreaterThan(0);
+    await expect(region).toHaveText('Email format invalid, Password too weak');
   });
 
   test('card host: aggregator no-scope variant shows errors immediately', async ({ page }) => {
@@ -47,6 +83,8 @@ test.describe('common/interactive/error-aggregator', () => {
     const errors = page.locator('[role="alert"]');
     await expect(errors).toBeVisible();
     await expect(errors.locator('li')).not.toHaveCount(0);
+    // [autoAnnounce]="false": the role="alert" list is the only announcement path.
+    await expect(page.locator('[cngxErrorAggregator] [role="status"]')).toHaveCount(0);
   });
 
   test('material-mat-tab: tab label shows error count badge', async ({ page }) => {
