@@ -1,4 +1,6 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input } from '@angular/core';
+import { CNGX_FORM_FIELD_CONTROL } from '@cngx/core/tokens';
+import { cngxDevWarn } from '@cngx/utils';
 import { CNGX_ERROR_SCOPE } from '../error-scope/error-scope.token';
 
 /**
@@ -73,4 +75,20 @@ export class CngxErrorState {
     const id = this.cngxErrorMessageId();
     return this.shown() && id && id.length > 0 ? id : null;
   });
+
+  constructor() {
+    if (
+      typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      inject(CNGX_FORM_FIELD_CONTROL, { optional: true, self: true })
+    ) {
+      cngxDevWarn(
+        'CNGX1084',
+        '[cngxErrorState] shares its host with a form-field control, which binds ' +
+          'aria-invalid and aria-errormessage itself. Drop [cngxErrorState] there; ' +
+          'the control reports its error state to cngx-form-field.',
+        inject(ElementRef).nativeElement,
+      );
+    }
+  }
 }

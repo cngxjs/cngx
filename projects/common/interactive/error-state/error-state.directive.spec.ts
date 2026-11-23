@@ -1,7 +1,8 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, Directive, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/core/tokens';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CngxErrorScope } from '../error-scope/error-scope.directive';
 import { CngxErrorState } from './error-state.directive';
 
@@ -31,6 +32,27 @@ class ScopedHost {
   invalid = signal(true);
   scope = viewChild.required(CngxErrorScope);
 }
+
+@Directive({
+  selector: '[testFieldControl]',
+  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useValue: {} as CngxFormFieldControl }],
+})
+class TestFieldControl {}
+
+@Component({
+  template: `
+    <input testFieldControl [cngxErrorState]="true" />
+    <input [cngxErrorState]="true" />
+  `,
+  imports: [CngxErrorState, TestFieldControl],
+})
+class CoPlacedHost {}
+
+@Component({
+  template: `<div testFieldControl><input [cngxErrorState]="true" /></div>`,
+  imports: [CngxErrorState, TestFieldControl],
+})
+class AncestorControlHost {}
 
 function setup() {
   const fixture = TestBed.createComponent(TestHost);
@@ -118,6 +140,26 @@ describe('CngxErrorState', () => {
       expect(el.classList.contains('cngx-error')).toBe(false);
       expect(el.getAttribute('aria-invalid')).toBe('false');
       expect(el.getAttribute('aria-errormessage')).toBeNull();
+    });
+  });
+
+  describe('co-placement with a form-field control', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it('warns once with CNGX1084 for the host that also provides CNGX_FORM_FIELD_CONTROL', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      TestBed.createComponent(CoPlacedHost).detectChanges();
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringMatching(/^CNGX1084: \[cngxErrorState\]/),
+        expect.any(HTMLInputElement),
+      );
+    });
+
+    it('does not warn for a control on an ancestor', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      TestBed.createComponent(AncestorControlHost).detectChanges();
+      expect(warn).not.toHaveBeenCalled();
     });
   });
 });

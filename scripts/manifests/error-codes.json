@@ -1690,6 +1690,23 @@
       ]
     },
     {
+      "code": "CNGX1084",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Error state on a form-field control",
+      "page": "core-concepts/error-codes/cngx1084.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1084.html",
+      "status": "active",
+      "files": ["projects/common/interactive/error-state/error-state.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/interactive/error-state/error-state.directive.ts",
+          "text": "[cngxErrorState] shares its host with a form-field control, which binds aria-invalid and aria-errormessage itself. Drop [cngxErrorState] there; the control reports its error state to cngx-form-field."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
