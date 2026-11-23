@@ -9,9 +9,7 @@ test.describe('common/interactive/long-press', () => {
   test('visual-feedback: holding past the threshold fires longPressed', async ({ page }) => {
     await gotoDemo(page, 'common/interactive/gestures/long-press/long-press-with-visual-feedback');
 
-    const target = page.locator('div[cngxlongpress]').first().or(
-      page.locator('div').filter({ hasText: 'Long press me' }),
-    );
+    const target = page.getByRole('button', { name: 'Long press me' });
     await expect(target).toBeVisible();
 
     const completed = page
@@ -31,6 +29,37 @@ test.describe('common/interactive/long-press', () => {
 
     await expect(completed).toContainText('1', { timeout: 2000 });
 
+  });
+
+  test('visual-feedback: a completed hold swallows the trailing click, a tap and Enter click', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/gestures/long-press/long-press-with-visual-feedback');
+
+    const target = page.getByRole('button', { name: 'Long press me' });
+    const valueOf = (label: string) =>
+      page
+        .locator('.event-row')
+        .filter({ has: page.getByText(label, { exact: true }) })
+        .locator('.event-value');
+    const completed = valueOf('Completed');
+    const clicks = valueOf('Clicks');
+    await expect(clicks).toHaveText('0');
+
+    const box = await target.boundingBox();
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await page.mouse.down();
+    await expect(completed).toContainText('1', { timeout: 2000 });
+    await page.mouse.up();
+    await expect(clicks).toHaveText('0');
+
+    await target.click();
+    await expect(clicks).toHaveText('1');
+    await expect(completed).toContainText('1');
+
+    await target.focus();
+    await page.keyboard.press('Enter');
+    await expect(clicks).toHaveText('2');
   });
 
   test('custom-threshold: 1-second hold flips button text mid-press', async ({ page }) => {
@@ -58,5 +87,22 @@ test.describe('common/interactive/long-press', () => {
     await expect(page.getByRole('button', { name: /Hold 1s to delete/ })).toBeVisible();
     await page.mouse.up();
 
+  });
+  test('custom-threshold: "Delete now" is the keyboard path to the same action', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/gestures/long-press/custom-threshold');
+
+    const confirmations = page.locator('.demo-gesture-hint strong');
+    await expect(confirmations).toHaveText('0');
+
+    await page.getByRole('button', { name: 'Long press to delete' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(confirmations).toHaveText('0');
+
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Delete now' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(confirmations).toHaveText('1');
   });
 });
