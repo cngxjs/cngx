@@ -63,4 +63,26 @@ test.describe('common/a11y/focus-trap', () => {
     const dialog = page.getByRole('dialog', { name: 'Confirm action' });
     await expect(dialog).toBeFocused();
   });
+  test('modal-dialog: Tab and Shift+Tab wrap inside the dialog', async ({ page }) => {
+    await gotoDemo(page, 'common/a11y/focus-trap/modal-dialog');
+
+    await page.getByRole('button', { name: 'Open modal', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Confirm action' });
+    const input = page.getByLabel('Type CONFIRM to proceed');
+    const cancel = dialog.getByRole('button', { name: 'Cancel' });
+    const confirm = dialog.getByRole('button', { name: 'Confirm' });
+    await expect(input).toBeFocused();
+
+    await page.keyboard.press('Tab');
+    await expect(cancel).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(confirm).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(input).toBeFocused();
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(confirm).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(cancel).toBeFocused();
+  });
 });

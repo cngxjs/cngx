@@ -29,4 +29,18 @@ test.describe('common/a11y/live-announcer', () => {
     await expect(page.locator('[aria-live="assertive"]', { hasText: 'Save failed' })).toHaveCount(0);
     await expect(opener).toBeFocused();
   });
+  test('polite vs assertive: each politeness writes its own body region', async ({ page }) => {
+    await gotoDemo(page, 'common/a11y/live-announcer/polite-vs-assertive');
+
+    const polite = page.locator('body > span.cngx-sr-only[aria-live="polite"]');
+    const assertive = page.locator('body > span.cngx-sr-only[aria-live="assertive"]');
+
+    await page.getByRole('button', { name: 'Announce polite' }).click();
+    await expect(polite).toHaveText('Draft saved');
+
+    await page.getByLabel('Message').fill('Save failed');
+    await page.getByRole('button', { name: 'Announce assertive' }).click();
+    await expect(assertive).toHaveText('Save failed');
+    await expect(polite).toHaveText('Draft saved');
+  });
 });
