@@ -14,7 +14,7 @@ import { CngxErrorScope, CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '@
 
 ```html
 <form
-  [cngxErrorScope]
+  cngxErrorScope
   cngxErrorScopeName="checkout"
   #scope="cngxErrorScope"
   (submit)="scope.reveal(); save()"
@@ -25,14 +25,15 @@ import { CngxErrorScope, CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '@
 </form>
 ```
 
-Descendants stay silent until the user submits. A second submit is a no-op. `scope.reset()` puts the form back to its silent state, for example after a successful save.
+Descendants stay silent until the user submits. A second submit keeps the scope revealed and makes every descendant aggregator speak its errors again. `scope.reset()` puts the form back to its silent state, for example after a successful save.
 
 ## Public API
 
 | Member | Type | Notes |
 |-|-|-|
 | `showErrors` | `Signal<boolean>` | Reactive flag descendants read through `CNGX_ERROR_SCOPE`. |
-| `reveal()` | `void` | Sets `showErrors` to `true`. Idempotent. |
+| `revealEpoch` | `Signal<number>` | Count of `reveal()` calls; aggregators speak their errors again on each. `reset()` leaves it. |
+| `reveal()` | `void` | Sets `showErrors` to `true` and bumps `revealEpoch`. |
 | `reset()` | `void` | Sets `showErrors` to `false`. Idempotent. |
 
 Exported as `cngxErrorScope` for template references.
@@ -47,10 +48,11 @@ export interface CngxErrorScopeContract {
   reveal(): void;
   reset(): void;
   readonly scopeName?: Signal<string | undefined>;
+  readonly revealEpoch?: Signal<number>;
 }
 ```
 
-Implement this contract to override the gate, for example a test double that pre-reveals, or a host that mirrors `showErrors` from an external store.
+Implement this contract to override the gate, for example a test double that pre-reveals, or a host that mirrors `showErrors` from an external store. `revealEpoch` is optional; without it an aggregator does not speak unchanged errors again on a repeated reveal.
 
 ## See also
 

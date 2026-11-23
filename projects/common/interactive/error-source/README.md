@@ -1,6 +1,6 @@
 # Error Source
 
-Marks the host element as a single error condition that the nearest `CngxErrorAggregator` ancestor collects. Pure DI propagation, no DOM output, no-op when no aggregator is in scope. Within the error family this is the leaf: the registry holds the root, aggregators group leaves, scopes form reveal boundaries, sources (this) report conditions, and `CngxErrorState` renders them.
+Marks the host element as a single error condition that the nearest `CngxErrorAggregator` ancestor collects. Pure DI propagation, no DOM output, no-op when no aggregator is in scope. Within the error family this is the leaf: the registry holds the root, aggregators group leaves, scopes form reveal boundaries, sources (this) report conditions. `CngxErrorState` is a separate single-host marker; it does not render collected state.
 
 ## Import
 
@@ -21,7 +21,9 @@ import { CngxErrorSource } from '@cngx/common/interactive';
 </fieldset>
 ```
 
-The directive registers each source on construction and unregisters on destroy. Bind a signal-derived boolean to `[when]`; the aggregator subscribes to that signal and recomputes on change.
+The directive registers each source on construction and unregisters on destroy; a key or label change re-registers it. Bind a signal-derived boolean to `[when]`; the aggregator subscribes to that signal and recomputes on change.
+
+Keys are unique per aggregator. A second source with a taken key replaces the first (last wins, dev mode warns [`CNGX1020`](../../../../core-concepts/error-codes/cngx1020.md)); the first stays listed and takes the key back when the second is destroyed.
 
 ## See also
 
@@ -29,4 +31,4 @@ The directive registers each source on construction and unregisters on destroy. 
 - `CngxErrorAggregator` - collects sources, exposes the aggregated state.
 - `CngxErrorRegistry` - root coordinator across aggregators and scopes.
 - `CngxErrorScope` - reveal boundary (submit, navigate, manual).
-- `CngxErrorState` - presentation atom that renders the collected state.
+- `CngxErrorState` - single-host ARIA marker; does not read sources.

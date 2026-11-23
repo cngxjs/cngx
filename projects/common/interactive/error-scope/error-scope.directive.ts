@@ -12,12 +12,12 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  * pattern.
  *
  * Provides {@link CNGX_ERROR_SCOPE} so any descendant
- * (`CngxErrorAggregator`, `CngxErrorState`, the form-field presenter in
- * Phase 6b) can read `showErrors` reactively without injecting a
- * concrete class.
+ * (`CngxErrorAggregator`, `CngxErrorState`, the form-field presenter) can
+ * read `showErrors` reactively without injecting a concrete class. Every
+ * `reveal()` bumps `revealEpoch`, so aggregators speak unchanged errors again.
  *
  * ```html
- * <form [cngxErrorScope] cngxErrorScopeName="checkout"
+ * <form cngxErrorScope cngxErrorScopeName="checkout"
  *       (submit)="scope.reveal(); save()" #scope="cngxErrorScope">
  *   <input [cngxErrorState]="email().invalid()" />
  * </form>

@@ -1,6 +1,6 @@
 # Error Registry
 
-Programmatic root of the cngx error coordination system. The four sibling directives wire up the DOM side of "when do form errors become visible": `CngxErrorScope` owns the reveal flag, `CngxErrorSource` reports one condition into a scope, `CngxErrorAggregator` rolls many sources into one count, and `CngxErrorState` renders messages once the scope is revealed. `CngxErrorRegistry` is the lookup surface that lets route guards, HTTP interceptors, and submit handlers reveal or reset those scopes by name without traversing the DOM.
+Programmatic root of the cngx error coordination system. The four sibling directives wire up the DOM side of "when do form errors become visible": `CngxErrorScope` owns the reveal flag, `CngxErrorSource` reports one condition into an aggregator, `CngxErrorAggregator` rolls many sources into one count, and `CngxErrorState` reflects one flag on one host, gated on the scope's `showErrors`. `CngxErrorRegistry` is the lookup surface that lets route guards, HTTP interceptors, and submit handlers reveal or reset those scopes by name without traversing the DOM.
 
 ## Import
 
@@ -30,7 +30,9 @@ bootstrapApplication(AppComponent, {
 });
 ```
 
-Any `[cngxErrorScope]` or `[cngxErrorAggregator]` with a name input now auto-registers and auto-deregisters on the host's `DestroyRef`. Without the registry provider, those directives keep their pure DOM behaviour and skip registration silently.
+Any `[cngxErrorScope]` or `[cngxErrorAggregator]` with a name input now registers with the first change detection of its host view, re-registers on a rename and unregisters on destroy. Without the registry provider, those directives keep their pure DOM behaviour and skip registration silently.
+
+A lookup by name works from the host component's `ngAfterViewInit` on. It finds nothing from the host's constructor or `ngOnInit`, nor from the `ngOnInit` of a component inside the same template. Code inside the subtree does not need the registry: inject `CNGX_ERROR_SCOPE` or `CNGX_ERROR_AGGREGATOR` and call the contract directly.
 
 Driving a scope by name from outside the template:
 
@@ -90,5 +92,5 @@ Registration is keyed by name and runs on `createKeyedRegistry` from `@cngx/core
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/error-registry/) for the full signal and method surface.
 - `CngxErrorScope` (`[cngxErrorScope]`) - the DOM-side reveal flag.
 - `CngxErrorAggregator` (`[cngxErrorAggregator]`) - rolls many sources into one count.
-- `CngxErrorSource` (`[cngxErrorSource]`) - reports one condition into a scope.
-- `CngxErrorState` (`[cngxErrorState]`) - renders error content gated on `showErrors`.
+- `CngxErrorSource` (`[cngxErrorSource]`) - reports one condition into an aggregator.
+- `CngxErrorState` (`[cngxErrorState]`) - reflects one flag as class and ARIA, gated on `showErrors`.

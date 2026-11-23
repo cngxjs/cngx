@@ -33,7 +33,7 @@ import { errorSourceMapEqual } from './equal-fns';
  *
  * Computed-graph derivation is delegated to
  * {@link createErrorAggregatorContract} so the directive
- * ({@link `@cngx/common/interactive`#CngxErrorAggregator}) and the
+ * ({@link CngxErrorAggregator}) and the
  * function form share a single source of truth.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-aggregator.ts
