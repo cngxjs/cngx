@@ -25,6 +25,13 @@ export const STORY: DemoSpec = {
   setup: `protected readonly message = signal('');
   protected readonly politeness = signal<'polite' | 'assertive' | 'off'>('polite');`,
   setupChrome: `protected readonly flashActive = signal(false);
+  protected readonly roleLabel = computed(() => {
+    const politeness = this.politeness();
+    if (politeness === 'off') {
+      return '(none)';
+    }
+    return politeness === 'assertive' ? 'alert' : 'status';
+  });
   protected readonly counter = signal(0);
   protected announce(): void {
     this.counter.update((n) => n + 1);
@@ -54,7 +61,7 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">role</span>
-      <span class="event-value">{{ politeness() === 'assertive' ? 'alert' : 'status' }}</span>
+      <span class="event-value">{{ roleLabel() }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">aria-atomic</span>

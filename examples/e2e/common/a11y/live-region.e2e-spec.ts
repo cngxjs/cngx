@@ -53,4 +53,16 @@ test.describe('common/a11y/live-region', () => {
     await expect(errorRegion).toContainText('Missing domain (e.g. .com)');
 
   });
+  test('polite vs assertive: the role readout matches the DOM for off', async ({ page }) => {
+    await gotoDemo(page, 'common/a11y/live-region/polite-vs-assertive');
+
+    const role = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('role', { exact: true }) })
+      .locator('.event-value');
+    await page.getByRole('button', { name: 'off', exact: true }).click();
+    await expect(page.locator('[cngxliveregion]')).toHaveAttribute('aria-live', 'off');
+    await expect(page.locator('[cngxliveregion]')).not.toHaveAttribute('role', /.*/);
+    await expect(role).toHaveText('(none)');
+  });
 });

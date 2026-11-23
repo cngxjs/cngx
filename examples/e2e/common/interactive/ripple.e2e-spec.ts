@@ -37,4 +37,21 @@ test.describe('common/interactive/ripple', () => {
     await expect(card.locator('.cngx-ripple__wave')).toHaveCount(1);
 
   });
+  test('card-with-ripple: click, Enter and Space activate the card', async ({ page }) => {
+    await gotoDemo(page, 'common/interactive/ripple/base/card-with-ripple');
+
+    const card = page.getByRole('button', { name: /Tappable card/ });
+    const activations = page
+      .locator('.event-row')
+      .filter({ has: page.getByText('Activations', { exact: true }) })
+      .locator('.event-value');
+    await expect(activations).toHaveText('0');
+    await card.click();
+    await expect(activations).toHaveText('1');
+    await card.focus();
+    await page.keyboard.press('Enter');
+    await expect(activations).toHaveText('2');
+    await page.keyboard.press(' ');
+    await expect(activations).toHaveText('3');
+  });
 });

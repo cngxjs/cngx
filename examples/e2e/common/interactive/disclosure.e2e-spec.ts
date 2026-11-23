@@ -82,4 +82,22 @@ test.describe('common/interactive/disclosure', () => {
     }
 
   });
+  test('collapsed disclosures keep their aria-controls target in the DOM', async ({ page }) => {
+    for (const route of [
+      'common/interactive/disclosure/basic-uncontrolled',
+      'common/interactive/disclosure/controlled-mode',
+      'common/interactive/disclosure/faq-accordion',
+      'common/interactive/disclosure/card-with-disclosure-expand-collapse',
+    ]) {
+      await gotoDemo(page, route);
+      const triggers = page.locator('button[cngxdisclosure]');
+      await expect(triggers.first()).toHaveAttribute('aria-expanded', 'false');
+      for (const trigger of await triggers.all()) {
+        const id = await trigger.getAttribute('aria-controls');
+        expect(id, route).toBeTruthy();
+        await expect(page.locator(`[id="${id}"]`), route).toHaveCount(1);
+        await expect(page.locator(`[id="${id}"]`), route).toBeHidden();
+      }
+    }
+  });
 });

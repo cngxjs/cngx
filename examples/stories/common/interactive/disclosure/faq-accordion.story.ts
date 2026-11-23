@@ -28,11 +28,9 @@ export const STORY: DemoSpec = {
               style="width: 100%;">
         {{ faq.opened() ? '−' : '+' }} {{ q }}
       </button>
-      @if (faq.opened()) {
-        <div [id]="'faq-' + i" class="demo-disclosure-faq-answer">
-          Answer to "{{ q }}" goes here.
-        </div>
-      }
+      <div [id]="'faq-' + i" class="demo-disclosure-faq-answer" [hidden]="!faq.opened()">
+        Answer to "{{ q }}" goes here.
+      </div>
     </div>
   }`,
 };

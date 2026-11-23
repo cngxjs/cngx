@@ -9,7 +9,8 @@ interface SpeechLog {
 
 // Headless Chromium may ship no voice, so the real synth can settle back to
 // idle at once. A recording fake makes the speak/cancel calls and the
-// speaking() flip deterministic. The utterance never ends on its own.
+// speaking() flip deterministic. The utterance never ends on its own; cancel
+// fires its error callback the way the engine reports an interrupted one.
 async function stubSpeechSynthesis(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const log = { spoken: [] as string[], cancels: 0 };
@@ -28,7 +29,11 @@ async function stubSpeechSynthesis(page: Page): Promise<void> {
       },
       cancel() {
         log.cancels++;
+        const cancelled = current;
         current = null;
+        setTimeout(() => {
+          cancelled?.onerror?.(new Event('error') as SpeechSynthesisErrorEvent);
+        });
       },
     };
     Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
@@ -41,8 +46,8 @@ function speechLog(page: Page): Promise<SpeechLog> {
 }
 
 // Story: CngxSpeak wraps the SpeechSynthesis API. The host exposes
-// `speaking()` and `toggle()`; the demo flips a button label between
-// "Read passage" and "Stop reading". Audio output is not testable, the
+// `speaking()` and `toggle()`; the demo keeps a fixed button name and
+// reports the state through aria-pressed. Audio output is not testable, the
 // speak/cancel calls against a stubbed synth are.
 
 test.describe('common/interactive/speak', () => {
@@ -50,20 +55,19 @@ test.describe('common/interactive/speak', () => {
     await stubSpeechSynthesis(page);
     await gotoDemo(page, 'common/interactive/speak/headless-read-aloud');
 
-    // Icon-only control: the accessible name is the aria-label, and it is the
-    // only thing that communicates state to AT.
-    const readBtn = page.getByRole('button', { name: 'Read passage' }).first();
+    // Icon-only toggle: a fixed name plus aria-pressed, so AT does not hear
+    // the state twice (a changing label and a pressed state).
+    const readBtn = page.getByRole('button', { name: 'Read passage', exact: true });
     await expect(readBtn).toBeVisible();
     await expect(readBtn).toHaveAttribute('aria-pressed', 'false');
     expect((await speechLog(page)).spoken).toEqual([]);
 
     await readBtn.click();
-    const stopBtn = page.getByRole('button', { name: 'Stop reading' });
-    await expect(stopBtn).toHaveAttribute('aria-pressed', 'true');
+    await expect(readBtn).toHaveAttribute('aria-pressed', 'true');
     expect((await speechLog(page)).spoken).toHaveLength(1);
 
-    await stopBtn.click();
-    await expect(page.getByRole('button', { name: 'Stop reading' })).toHaveCount(0);
+    await readBtn.click();
+    await expect(readBtn).toHaveAttribute('aria-pressed', 'false');
     expect(await speechLog(page)).toEqual(
       expect.objectContaining({ spoken: [expect.stringContaining('Welcome')], cancels: 1 }),
     );
@@ -87,5 +91,21 @@ test.describe('common/interactive/speak', () => {
     await input.fill('invalid');
     await expect(hearBtn).toBeVisible();
 
+  });
+  test('form-error-read-aloud-on-demand: fixing the field stops the read-aloud', async ({
+    page,
+  }) => {
+    await stubSpeechSynthesis(page);
+    await gotoDemo(page, 'common/interactive/speak/form-error-read-aloud-on-demand');
+
+    const hearBtn = page.getByRole('button', { name: 'hear error' });
+    await hearBtn.click();
+    await expect(hearBtn).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.demo-speak-reading-pulse')).toBeVisible();
+
+    await page.getByPlaceholder('user@example.com').fill('user@example.com');
+    await expect(hearBtn).toHaveCount(0);
+    await expect(page.locator('.demo-speak-reading-pulse')).toHaveCount(0);
+    expect((await speechLog(page)).cancels).toBe(1);
   });
 });

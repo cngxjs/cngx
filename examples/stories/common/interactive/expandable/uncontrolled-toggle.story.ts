@@ -2,7 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'CngxExpandable: Uncontrolled toggle',
-  subtitle: 'Apply <code>[cngxExpandable]</code> + <code>[controls]="contentId"</code>; the directive mirrors <code>aria-expanded</code> and <code>aria-controls</code> onto the host while the template calls <code>toggle()</code> from a sibling button.',
+  subtitle: 'Apply <code>[cngxExpandable]</code> + <code>[controls]="contentId"</code>; the directive mirrors <code>aria-expanded</code> and <code>aria-controls</code> onto the host while the button it sits on calls <code>toggle()</code>, so the focusable control carries the state.',
   description: 'Passive expand/collapse ARIA contract. The directive is intentionally interaction-free: it carries no click handler, no keyboard binding, no built-in trigger. Consumers call <code>expand()</code>, <code>collapse()</code>, or <code>toggle()</code> on the exported reference, and the directive mirrors the resolved state into <code>aria-expanded</code>. Without a controlled input the directive owns the open/closed state internally. Use this for tree-item rows or any expander where click/Enter/Space already mean something else (selection); reach for <code>CngxDisclosure</code> when the trigger element IS the toggle.',
   level: 'atom',
   audience: ['dev', 'a11y'],
@@ -21,20 +21,18 @@ export const STORY: DemoSpec = {
     { label: 'WAI-ARIA APG: Disclosure pattern', href: 'https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/' },
   ],
   template: `
-  <div role="tree" aria-label="Files">
-    <div
-      role="treeitem"
-      aria-level="1"
+  <div>
+    <button
+      type="button"
       cngxExpandable
       #e="cngxExpandable"
       [controls]="'expandable-demo-children'"
+      (click)="e.toggle()"
       style="display:flex; align-items:center; gap:8px"
     >
-      <button type="button" aria-label="Toggle children" (click)="e.toggle()">
-        {{ e.expanded() ? '▾' : '▸' }}
-      </button>
-      <span>Parent row</span>
-    </div>
+      <span aria-hidden="true">{{ e.expanded() ? '▾' : '▸' }}</span>
+      Parent row
+    </button>
     <ul
       id="expandable-demo-children"
       [hidden]="!e.expanded()"

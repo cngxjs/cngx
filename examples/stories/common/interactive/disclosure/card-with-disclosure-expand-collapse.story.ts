@@ -47,14 +47,12 @@ export const STORY: DemoSpec = {
         </h3>
         <span cngxCardSubtitle>Status: Open, {{ d1.opened() ? 'expanded' : 'collapsed' }}</span>
       </header>
-      @if (d1.opened()) {
-        <div cngxCardBody id="cngx-card-disclosure-1">
-          <p style="margin:0">
-            A/B test on the step-2 form simplification confirmed a 12% reduction in
-            drop-off. Rollout: 17.10.2025. Telemetry stable. Next review: 27.03.2026.
-          </p>
-        </div>
-      }
+      <div cngxCardBody id="cngx-card-disclosure-1" [hidden]="!d1.opened()">
+        <p style="margin:0">
+          A/B test on the step-2 form simplification confirmed a 12% reduction in
+          drop-off. Rollout: 17.10.2025. Telemetry stable. Next review: 27.03.2026.
+        </p>
+      </div>
     </cngx-card>
 
     <cngx-card>
@@ -70,14 +68,12 @@ export const STORY: DemoSpec = {
         </h3>
         <span cngxCardSubtitle>Status: Open, {{ d2.opened() ? 'expanded' : 'collapsed' }}</span>
       </header>
-      @if (d2.opened()) {
-        <div cngxCardBody id="cngx-card-disclosure-2">
-          <p style="margin:0">
-            Sharding rebalanced after the data import. p95 query latency back under 80&nbsp;ms.
-            Monitoring extended for two further weeks.
-          </p>
-        </div>
-      }
+      <div cngxCardBody id="cngx-card-disclosure-2" [hidden]="!d2.opened()">
+        <p style="margin:0">
+          Sharding rebalanced after the data import. p95 query latency back under 80&nbsp;ms.
+          Monitoring extended for two further weeks.
+        </p>
+      </div>
     </cngx-card>
   </div>`,
 };

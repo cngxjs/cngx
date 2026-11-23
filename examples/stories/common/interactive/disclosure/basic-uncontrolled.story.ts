@@ -22,11 +22,9 @@ export const STORY: DemoSpec = {
   template: `  <button type="button" cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
     {{ d.opened() ? 'Collapse' : 'Expand' }} answer
   </button>
-  @if (d.opened()) {
-    <div id="faq-1" class="demo-disclosure-panel" style="margin-top: 0.5rem;">
-      <p style="margin: 0;">This content is revealed by the disclosure trigger above.</p>
-    </div>
-  }`,
+  <div id="faq-1" class="demo-disclosure-panel" style="margin-top: 0.5rem;" [hidden]="!d.opened()">
+    <p style="margin: 0;">This content is revealed by the disclosure trigger above.</p>
+  </div>`,
   templateChrome: `<div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="d.opened()">{{ d.opened() ? 'expanded' : 'collapsed' }}</span>
   </div>`,

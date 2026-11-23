@@ -43,6 +43,8 @@ export const STORY: DemoSpec = {
     @for (fruit of typeaheadFruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
+           [attr.aria-selected]="adT.activeIndex() === $index"
+           [attr.aria-disabled]="fruit.disabled || null"
            [class.cngx-option--highlighted]="adT.activeIndex() === $index"
            class="cngx-ad-option">
         {{ fruit.label }}
@@ -55,11 +57,11 @@ export const STORY: DemoSpec = {
   templateChrome: `<div class="event-grid" style="margin-top:8px">
     <div class="event-row">
       <span class="event-label">Active id</span>
-      <span class="event-value">{{ adT.activeId() ?? '—' }}</span>
+      <span class="event-value">{{ adT.activeId() ?? 'none' }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Active value</span>
-      <span class="event-value">{{ adT.activeValue() ?? '—' }}</span>
+      <span class="event-value">{{ adT.activeValue() ?? 'none' }}</span>
     </div>
   </div>`,
 };

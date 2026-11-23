@@ -55,4 +55,12 @@ test.describe('common/a11y/focus-trap', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveCSS('border-top-style', 'solid');
   });
+  test('modal-dialog: with autoFocus off, opening focuses the dialog host', async ({ page }) => {
+    await gotoDemo(page, 'common/a11y/focus-trap/modal-dialog');
+
+    await page.getByRole('checkbox', { name: 'autoFocus' }).uncheck();
+    await page.getByRole('button', { name: 'Open modal', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Confirm action' });
+    await expect(dialog).toBeFocused();
+  });
 });
