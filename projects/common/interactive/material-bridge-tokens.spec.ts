@@ -156,6 +156,40 @@ describe('copy-block Material bridge', () => {
   it('emits only consumed token names (M3)', () => {
     expect(bridgeTokenNames('copy-block-theme')).toEqual(CONSUMED);
   });
+
+  // inherits:false tokens and the host-SET copied border land on the button
+  // through the broadcast; the two inheriting copied tokens land on the theme
+  // host and are re-asserted on the scheme scopes copy-block.css SETs.
+  it('splits the emission per token registration', () => {
+    const css = bridgeCss('copy-block-theme');
+    const blocks = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, sel, body]) => ({
+      selector: sel.trim(),
+      names: emittedTokenNames(body),
+    }));
+    const find = (pred: (selector: string) => boolean) => blocks.filter((b) => pred(b.selector));
+
+    const broadcast = find((s) => s === ':where(.cngx-copy-block, .cngx-copy-block *)');
+    expect(broadcast.map((b) => b.names)).toEqual([
+      [
+        '--cngx-copy-block-btn-bg',
+        '--cngx-copy-block-btn-border',
+        '--cngx-copy-block-btn-color',
+        '--cngx-copy-block-btn-copied-border',
+      ],
+    ]);
+    const inherited = ['--cngx-copy-block-btn-copied-bg', '--cngx-copy-block-btn-copied-color'];
+    expect(find((s) => s === ':root').map((b) => b.names)).toEqual([inherited]);
+    const schemes = find((s) => s.startsWith(':where(') && s.includes('.dark'));
+    expect(schemes.map((b) => b.names)).toEqual([inherited]);
+    for (const scope of [
+      '[data-color-scheme=dark]',
+      '.dark',
+      '[data-color-scheme=light]',
+      '.light',
+    ]) {
+      expect(schemes[0].selector, scope).toContain(scope);
+    }
+  });
 });
 
 describe('ripple Material bridge', () => {
