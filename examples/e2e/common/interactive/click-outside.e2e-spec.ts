@@ -37,6 +37,41 @@ test.describe('common/interactive/click-outside', () => {
     await expect(status).toContainText('closed');
   });
 
+  test('dropdown: Escape on the toggle closes; tabbing out of the panel closes', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/dropdown');
+
+    const toggle = page.getByRole('button', { name: /Toggle dropdown/ });
+    const status = page.locator('.output-badge');
+
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('open');
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(status).toContainText('closed');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('open');
+    await page.keyboard.press('Tab');
+    const inner = page.getByRole('button', { name: 'Inner button (does not close)' });
+    await expect(inner).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(status).toContainText('closed');
+    await expect(toggle).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText('open');
+    await page.keyboard.press('Tab');
+    await expect(inner).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(status).toContainText('closed');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('enabled-toggle: outside clicks bump the counter; disabled stops emissions', async ({
     page,
   }) => {
