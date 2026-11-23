@@ -40,10 +40,8 @@ class AsyncClickHosts {
  * no test target.
  */
 
-function bridgeCss(bridge: string, themeVersion: 'v1' | 'v0'): string {
-  const entry =
-    themeVersion === 'v1'
-      ? `
+function bridgeCss(bridge: string): string {
+  return compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/${bridge}' as bridge;
 
@@ -52,22 +50,11 @@ $theme: mat.define-theme((
 ));
 
 @include bridge.theme($theme);
-`
-      : `
-@use '@angular/material' as mat;
-@use 'material/${bridge}' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`;
-  return compileThemeEntry(entry);
+`);
 }
 
-function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
-  return emittedTokenNames(bridgeCss(bridge, themeVersion));
+function bridgeTokenNames(bridge: string): readonly string[] {
+  return emittedTokenNames(bridgeCss(bridge));
 }
 
 describe('interactive-controls Material bridge', () => {
@@ -87,17 +74,13 @@ describe('interactive-controls Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('interactive-controls-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('interactive-controls-theme')).toEqual(CONSUMED);
   });
 
-  it('maps the checkbox box onto the fixed 2px mat-checkbox corner (M3 and M2)', () => {
+  it('maps the checkbox box onto the fixed 2px mat-checkbox corner (M3)', () => {
     // The cngx default reads --cngx-radius-sm, which the system bridge maps
-    // to corner-extra-small (4px); mat-checkbox draws 2px in both versions.
-    for (const version of ['v1', 'v0'] as const) {
-      expect(bridgeCss('interactive-controls-theme', version), version).toContain(
-        '--cngx-checkbox-radius: 2px',
-      );
-    }
+    // to corner-extra-small (4px); mat-checkbox draws 2px.
+    expect(bridgeCss('interactive-controls-theme')).toContain('--cngx-checkbox-radius: 2px');
   });
 
   it('state-scopes the checked thumb to on-primary (M3)', () => {
@@ -118,28 +101,6 @@ $theme: mat.define-theme((
     expect(css).toContain('--cngx-toggle-thumb-bg: var(--mat-sys-outline)');
   });
 
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('interactive-controls-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
-  });
-
-  it('maps the idle radio ring to the secondary-text foreground (M2)', () => {
-    const css = compileThemeEntry(`
-@use '@angular/material' as mat;
-@use 'material/interactive-controls-theme' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`);
-    expect(css).toContain('--cngx-radio-indicator-color: rgba(0, 0, 0, 0.54)');
-  });
-
   it('maps the check skin mark onto on-primary (M3)', () => {
     const css = compileThemeEntry(`
 @use '@angular/material' as mat;
@@ -152,20 +113,6 @@ $theme: mat.define-theme((
 @include bridge.theme($theme);
 `);
     expect(css).toContain('--cngx-radio-indicator-mark-color: var(--mat-sys-on-primary)');
-  });
-
-  it('maps the check skin mark onto the primary contrast colour (M2)', () => {
-    const css = compileThemeEntry(`
-@use '@angular/material' as mat;
-@use 'material/interactive-controls-theme' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`);
-    expect(css).toContain('--cngx-radio-indicator-mark-color: white');
   });
 });
 
@@ -188,15 +135,7 @@ describe('menu Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('menu-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('menu-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+    expect(bridgeTokenNames('menu-theme')).toEqual(CONSUMED);
   });
 
   it('is read by cngx-menu.css', () => {
@@ -209,27 +148,17 @@ describe('menu Material bridge', () => {
     }
   });
 
-  it('drops the border and derives the M3 row metrics from the space scale, M3 only', () => {
-    const entry = (version: 'v1' | 'v0') =>
-      version === 'v1'
-        ? `@use '@angular/material' as mat;
+  it('drops the border and derives the M3 row metrics from the space scale', () => {
+    const m3 = compileThemeEntry(`@use '@angular/material' as mat;
 @use 'material/menu-theme' as bridge;
 $theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette)));
-@include bridge.theme($theme);`
-        : `@use '@angular/material' as mat;
-@use 'material/menu-theme' as bridge;
-$p: mat.m2-define-palette(mat.$m2-indigo-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $p, accent: $p)));
-@include bridge.theme($theme);`;
-    const m3 = compileThemeEntry(entry('v1'));
+@include bridge.theme($theme);`);
     expect(m3).toContain('--cngx-menu-border: none');
     expect(m3).toContain('--cngx-menu-bg: var(--mat-sys-surface-container)');
     expect(m3).toContain('--cngx-menu-item-padding: calc(var(--cngx-space-sm, 8px) * 1.75) calc(var(--cngx-space-sm, 8px) * 1.5)');
     expect(m3).toContain('font-size: var(--mat-sys-label-large-size, 0.875rem)');
     expect(m3).toContain('-webkit-font-smoothing: antialiased');
     expect(m3).not.toMatch(/@layer\s+(?!cngx\.components)/);
-    const m2 = compileThemeEntry(entry('v0'));
-    expect(m2).not.toContain('--cngx-menu-item-padding');
   });
 });
 
@@ -245,15 +174,7 @@ describe('copy-block Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('copy-block-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('copy-block-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+    expect(bridgeTokenNames('copy-block-theme')).toEqual(CONSUMED);
   });
 });
 
@@ -262,15 +183,7 @@ describe('ripple Material bridge', () => {
   const CONSUMED = ['--cngx-ripple-color', '--cngx-ripple-duration', '--cngx-ripple-opacity'];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('ripple-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('ripple-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+    expect(bridgeTokenNames('ripple-theme')).toEqual(CONSUMED);
   });
 
   it('layers the bridge on the .cngx-ripple host class', () => {
@@ -315,15 +228,7 @@ describe('button-toggle Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('button-toggle-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('button-toggle-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+    expect(bridgeTokenNames('button-toggle-theme')).toEqual(CONSUMED);
   });
 
   it('assigns on the group hosts and the toggle button, layered and zero-specificity', () => {
@@ -353,11 +258,10 @@ $theme: mat.define-theme((
     // group radius token is inherits:false and never reaches them.
     const hosts =
       /:where\(cngx-button-toggle-group, cngx-button-multi-toggle-group, button\[cngxButtonToggle\]\)\s*\{[^}]*\}/;
-    expect(bridgeCss('button-toggle-theme', 'v1').match(hosts)![0]).toContain(
+    expect(bridgeCss('button-toggle-theme').match(hosts)![0]).toContain(
       '--cngx-radius-md: var(--mat-sys-corner-extra-large, 28px)',
     );
-    expect(bridgeCss('button-toggle-theme', 'v0').match(hosts)![0]).toContain('--cngx-radius-md: 4px');
-    expect(bridgeCss('button-toggle-theme', 'v1')).not.toContain('--cngx-button-toggle-group-radius');
+    expect(bridgeCss('button-toggle-theme')).not.toContain('--cngx-button-toggle-group-radius');
   });
 });
 
@@ -366,18 +270,12 @@ describe('divider Material bridge', () => {
   const CONSUMED = ['--cngx-divider-color', '--cngx-divider-spacing'];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('divider-theme', 'v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('divider-theme')).toEqual(CONSUMED);
   });
 
-  it('emits the same names (M2)', () => {
-    expect(bridgeTokenNames('divider-theme', 'v0')).toEqual(CONSUMED);
-  });
-
-  it('drops the spacing to the zero margin of mat-divider (M3 and M2)', () => {
+  it('drops the spacing to the zero margin of mat-divider (M3)', () => {
     // The cngx default reads --cngx-space-sm (8px at density 0).
-    for (const version of ['v1', 'v0'] as const) {
-      expect(bridgeCss('divider-theme', version), version).toContain('--cngx-divider-spacing: 0');
-    }
+    expect(bridgeCss('divider-theme')).toContain('--cngx-divider-spacing: 0');
   });
 });
 
@@ -394,11 +292,7 @@ describe('async-click Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('async-click-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits the same names (M2)', () => {
-    expect(bridgeTokenNames('async-click-theme', 'v0')).toEqual(CONSUMED);
+    expect(bridgeTokenNames('async-click-theme')).toEqual(CONSUMED);
   });
 
   // `[cngxAsyncClick]="fn"` is a property binding and leaves no attribute, so

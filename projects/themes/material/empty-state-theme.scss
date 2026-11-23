@@ -16,10 +16,6 @@
     --cngx-empty-color: var(--mat-sys-on-surface-variant);
     --cngx-empty-icon-color: var(--mat-sys-on-surface-variant);
     --cngx-empty-title-color: var(--mat-sys-on-surface);
-  } @else {
-    --cngx-empty-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-empty-title-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-empty-icon-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
   }
 }
 

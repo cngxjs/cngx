@@ -23,31 +23,17 @@
     --cngx-field-error-color: var(--mat-sys-error);
     --cngx-field-required-color: var(--mat-sys-error);
     @include skin-color($theme);
-  } @else {
-    --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
-    --cngx-field-hint-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-field-char-count-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-field-char-count-over-color: #{bridge.m2-warn-text($theme)};
-    --cngx-field-error-color: #{bridge.m2-warn-text($theme)};
-    --cngx-field-required-color: #{bridge.m2-warn-text($theme)};
-    @include skin-color($theme);
   }
 }
 
 // mat-hint and the end hint mat-form-field uses as a counter carry no colour
-// in M2 or M3 and inherit the page text, so hint and char-count take the text
+// and inherit the page text, so hint and char-count take the text
 // role, not the muted one the label rests in. Over the limit the counter is
 // an error.
-//
-// M2 error, underline and invalid outline share one token, and the required
-// asterisk is label text: all read the warn text colour from the bridge
-// module (4.5:1 on page and card, which covers the 3:1 the lines need).
 
 // The fill surface, the underline in both its resting and focus colour, the
 // outline and bare focus ring (the outlined twin's focus outline), and the
-// affix glyph tint. M2 mirrors mat-form-field appearance="fill": the
-// container is the M2 `surface-variant`, the hover the 4% `on-surface` state
-// layer over it, and the placeholder holds 4.5:1 on both. Shared by the field scope and the bare-control scope
+// affix glyph tint. Shared by the field scope and the bare-control scope
 // below, because a `bare` or `fill` control can sit outside any
 // `cngx-form-field` - a table filter cell has no label, hint or error block.
 @mixin skin-color($theme) {
@@ -59,15 +45,6 @@
     --cngx-field-ring-color: var(--mat-sys-primary);
     --cngx-field-affix-color: var(--mat-sys-on-surface-variant);
     --cngx-field-placeholder-color: var(--mat-sys-on-surface-variant);
-  } @else {
-    --cngx-field-fill-bg: #{bridge.m2-field-fill($theme)};
-    --cngx-field-fill-bg-hover: #{bridge.m2-field-fill-hover($theme)};
-    --cngx-field-placeholder-color: #{bridge.m2-field-placeholder($theme)};
-    // The resting line of mat-form-field fill: 54% light, 70% dark.
-    --cngx-field-underline-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-field-underline-focus-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-field-ring-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-field-affix-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
   }
 }
 
@@ -202,9 +179,6 @@ $-affix-box: '.cngx-field-box.cngx-field-box:is([data-skin="fill"], [data-skin="
   @if mat.get-theme-version($theme) == 1 {
     --cngx-form-errors-color: var(--mat-sys-error);
     --cngx-field-error-color: var(--mat-sys-error);
-  } @else {
-    --cngx-form-errors-color: #{bridge.m2-warn-text($theme)};
-    --cngx-field-error-color: #{bridge.m2-warn-text($theme)};
   }
 }
 

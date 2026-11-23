@@ -6,12 +6,10 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  * Phase 0 baseline for the Material bridge mixin in
  * `projects/themes/material/stepper-theme.scss`. Pins the resolved
  * `--cngx-step-*` declarations produced by the `color($theme)` mixin
- * against both theme versions:
+ * for an M3 theme:
  *
  *   - v1 (M3): `mat.define-theme(...)` with the `--mat-sys-*` token
  *     branch active.
- *   - v0 (M2): `mat.m2-define-light-theme(...)` with the
- *     `get-theme-color($theme, primary)` branch active.
  *
  * Phase B Commit 6 and Phase C Commit 6 will EXTEND the mixin with
  * additional `--cngx-step-*` overrides for new skin / variant
@@ -28,13 +26,11 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  */
 
 interface CompileOptions {
-  themeVersion: 'v1' | 'v0';
   variant: 'light' | 'dark';
 }
 
 function buildEntry(opts: CompileOptions): string {
-  if (opts.themeVersion === 'v1') {
-    return `
+  return `
 @use '@angular/material' as mat;
 @use 'material/stepper-theme' as stepper;
 
@@ -43,28 +39,6 @@ $theme: mat.define-theme((
     theme-type: ${opts.variant},
     primary: mat.$violet-palette,
     tertiary: mat.$cyan-palette,
-  ),
-));
-
-.cngx-stepper-test {
-  @include stepper.color($theme);
-  @include stepper.dot-color($theme);
-}
-`;
-  }
-  return `
-@use '@angular/material' as mat;
-@use 'material/stepper-theme' as stepper;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$warn: mat.m2-define-palette(mat.$m2-red-palette);
-
-$theme: mat.m2-define-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    warn: $warn,
   ),
 ));
 
@@ -142,19 +116,13 @@ function pickPhase0Baseline(declarations: Record<string, string>): Record<string
 describe('Material stepper-theme mixin baseline', () => {
   it('v1 light: resolved --cngx-step-* declarations match the baseline', () => {
     expect(
-      pickPhase0Baseline(compileAndExtract({ themeVersion: 'v1', variant: 'light' })),
+      pickPhase0Baseline(compileAndExtract({ variant: 'light' })),
     ).toMatchSnapshot();
   });
 
   it('v1 dark: resolved --cngx-step-* declarations match the baseline', () => {
     expect(
-      pickPhase0Baseline(compileAndExtract({ themeVersion: 'v1', variant: 'dark' })),
-    ).toMatchSnapshot();
-  });
-
-  it('v0 light: resolved --cngx-step-* declarations match the baseline', () => {
-    expect(
-      pickPhase0Baseline(compileAndExtract({ themeVersion: 'v0', variant: 'light' })),
+      pickPhase0Baseline(compileAndExtract({ variant: 'dark' })),
     ).toMatchSnapshot();
   });
 
@@ -165,17 +133,12 @@ describe('Material stepper-theme mixin baseline', () => {
     // below are the only NEW blocks Phase B's mixin growth adds.
     for (const [skin, prefixes] of Object.entries(SKIN_PROPERTY_PREFIXES)) {
       it(`${skin}: v1 light overrides`, () => {
-        const all = compileAndExtract({ themeVersion: 'v1', variant: 'light' });
+        const all = compileAndExtract({ variant: 'light' });
         expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
       });
 
       it(`${skin}: v1 dark overrides`, () => {
-        const all = compileAndExtract({ themeVersion: 'v1', variant: 'dark' });
-        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
-      });
-
-      it(`${skin}: v0 light overrides`, () => {
-        const all = compileAndExtract({ themeVersion: 'v0', variant: 'light' });
+        const all = compileAndExtract({ variant: 'dark' });
         expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
       });
     }
@@ -190,17 +153,12 @@ describe('Material stepper-theme mixin baseline', () => {
     // inherits surrounding text color via CSS inheritance.
     for (const [variant, prefixes] of Object.entries(VARIANT_PROPERTY_PREFIXES)) {
       it(`${variant}: v1 light overrides`, () => {
-        const all = compileAndExtract({ themeVersion: 'v1', variant: 'light' });
+        const all = compileAndExtract({ variant: 'light' });
         expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
       });
 
       it(`${variant}: v1 dark overrides`, () => {
-        const all = compileAndExtract({ themeVersion: 'v1', variant: 'dark' });
-        expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
-      });
-
-      it(`${variant}: v0 light overrides`, () => {
-        const all = compileAndExtract({ themeVersion: 'v0', variant: 'light' });
+        const all = compileAndExtract({ variant: 'dark' });
         expect(pickByPrefix(all, prefixes)).toMatchSnapshot();
       });
     }

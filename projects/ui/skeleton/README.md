@@ -83,4 +83,4 @@ The theme mixin provides:
 - Base animation timing (`--cngx-spin-duration`, `--cngx-pulse-duration`)
 - Color tokens derived from Material palette
 - Reduced-motion respecting animations
-- Support for both M3 and M2 themes
+- M3 themes only; an M2 theme is not bridged

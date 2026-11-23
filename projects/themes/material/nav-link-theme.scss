@@ -1,7 +1,7 @@
 @use '@angular/material' as mat;
 @use './bridge' as bridge;
 
-// Provides M3/M2 tokens for the nav atoms of `@cngx/common/interactive`
+// Provides M3 tokens for the nav atoms of `@cngx/common/interactive`
 // (`cngxNavLink` rows, header and footer slots) in any container.
 // Included automatically by `sidenav.theme()` - no separate import needed.
 
@@ -39,24 +39,11 @@
     // M3 has no bar: the activated list item is the secondary-container
     // pill; aria-current carries the state to assistive technology.
     --cngx-nav-link-active-indicator-color: transparent;
-  } @else {
-    $_primary: mat.get-theme-color($theme, primary);
-    // Text and bar take the primary as a text colour: the raw 500 fails
-    // 4.5:1 on a dark card (indigo on #424242). The fills stay raw primary.
-    $_primary-text: bridge.m2-primary-text($theme);
-
-    --cngx-nav-link-hover-bg: #{rgba($_primary, 0.04)};
-    --cngx-nav-link-pressed-bg: #{rgba($_primary, 0.06)};
-    --cngx-nav-link-active-color: #{$_primary-text};
-    --cngx-nav-link-active-bg: #{rgba($_primary, 0.08)};
-    --cngx-nav-link-active-hover-bg: #{rgba($_primary, 0.12)};
-    --cngx-nav-link-active-indicator-color: #{$_primary-text};
   }
 }
 
 // Row type. M3: the list item of mat-nav-list, body-large at the same
-// weight when activated. M2: 14px, 500 when active. SET on the row: the type
-// tokens are inherits:false.
+// weight when activated. SET on the row: the type tokens are inherits:false.
 @mixin typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-nav-link-font-size: var(--mat-sys-body-large-size, 1rem);
@@ -64,18 +51,13 @@
     --cngx-nav-link-letter-spacing: var(--mat-sys-body-large-tracking, 0.031rem);
     --cngx-nav-link-font-weight: var(--mat-sys-body-large-weight, 400);
     --cngx-nav-link-active-font-weight: var(--mat-sys-body-large-weight, 400);
-  } @else {
-    --cngx-nav-link-font-size: 0.875rem;
-    --cngx-nav-link-active-font-weight: 500;
   }
 }
 
-// Row shape. M3: the active indicator is a full pill. M2: 8px corners.
+// Row shape. M3: the active indicator is a full pill.
 @mixin shape($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-nav-link-radius: var(--mat-sys-corner-full, 9999px);
-  } @else {
-    --cngx-nav-link-radius: 8px;
   }
 }
 
@@ -110,13 +92,6 @@
     --cngx-nav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
     --cngx-nav-header-border-color: var(--mat-sys-outline-variant, #{$_outline});
     --cngx-nav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
-  } @else {
-    --cngx-nav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
-    --cngx-nav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
-    $_divider: mat.get-theme-color($theme, foreground, divider);
-
-    --cngx-nav-header-border-color: #{$_divider};
-    --cngx-nav-footer-border-color: #{$_divider};
   }
 }
 

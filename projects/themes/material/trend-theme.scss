@@ -16,10 +16,6 @@
     --cngx-trend-color: var(--mat-sys-on-surface-variant);
     --cngx-trend-up-color: var(--mat-sys-tertiary);
     --cngx-trend-down-color: var(--mat-sys-error);
-  } @else {
-    --cngx-trend-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-trend-up-color: #{mat.get-theme-color($theme, accent)};
-    --cngx-trend-down-color: #{mat.get-theme-color($theme, warn)};
   }
 }
 
@@ -28,8 +24,6 @@
     --cngx-trend-size: var(--mat-sys-label-medium-size);
     --cngx-trend-weight: var(--mat-sys-label-medium-weight);
   }
-  // M2 lacks first-class label-scale tokens; the component initial
-  // values stand in for M2 consumers.
 }
 
 @mixin theme($theme) {

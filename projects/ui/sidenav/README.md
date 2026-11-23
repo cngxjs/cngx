@@ -280,9 +280,8 @@ The theme mixin provides:
 
 - Base spacing and timing tokens
 - Material 3 system color tokens (`--mat-sys-*`) with fallback RGB values
-- Material 2 palette color mappings
 - Backdrop, header, and footer styling
-- Support for both M3 and M2 themes (auto-detected)
+- M3 themes only; an M2 theme is not bridged
 
 ### Brand rail under the bridge
 
@@ -313,4 +312,4 @@ cngx-sidenav.brand :is(.cngx-nav-header, .cngx-nav-footer) {
 }
 ```
 
-That is the M3 set. Under an M2 theme the bridge leaves the rest text to the rail ink and sets `--cngx-nav-link-hover-bg`, `--cngx-nav-link-pressed-bg`, `--cngx-nav-link-active-color`, `--cngx-nav-link-active-bg`, `--cngx-nav-link-active-hover-bg` and `--cngx-nav-link-active-indicator-color` on the rows, plus the same four slot tokens. Without the bridge none of this is needed: the rail host derives the row fills from `--cngx-color-primary` and the rows inherit the rail ink.
+Without the bridge none of this is needed: the rail host derives the row fills from `--cngx-color-primary` and the rows inherit the rail ink.

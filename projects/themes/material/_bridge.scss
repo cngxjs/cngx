@@ -1,7 +1,4 @@
-@use 'sass:color';
 @use 'sass:list';
-@use 'sass:math';
-@use '@angular/material' as mat;
 
 // Private conventions module for the Material bridges. Every bridge routes
 // its token emission through `on()` so the two placement conventions the
@@ -33,8 +30,7 @@
 //
 // Deliberate non-adopters (each documents why in place): system-bridge
 // and density-bridge emit declarations on the consumer's theme host inside
-// `@layer cngx.components` without the `:where()` wrapper (system-bridge
-// still reads `m2-warn-text()` from here);
+// `@layer cngx.components` without the `:where()` wrapper;
 // nav-link-theme emits bare declarations consumed inside sidenav's `on()`
 // block; icon-theme's `mat-icon()` sizes a wrapped `.mat-icon`
 // unlayered because Material's own `.mat-icon` rule is unlayered and beats
@@ -65,128 +61,4 @@
     $out: list.append($out, '#{$host} *', $separator: comma);
   }
   @return $out;
-}
-
-/// Mixes `$color` toward `$toward` in oklab, one percent at a time, until it
-/// clears `$ratio` (WCAG 2 contrast) against every one of `$surfaces`. The
-/// compile-time counterpart of the core `--cngx-color-danger-text` rung: an M2
-/// palette hands the bridge a literal, and the raw 500 shade of most warn
-/// palettes misses 4.5:1 as text (red 3.7:1 on white, 2.7:1 on the dark
-/// card). Stepping instead of a fixed weight keeps the hue as close to the
-/// palette as the surfaces allow, and returns a colour that already passes
-/// unchanged. `$toward` should be the opaque text colour of the scheme.
-@function readable-on($color, $toward, $surfaces, $ratio: 4.5) {
-  $weight: 100%;
-  $mixed: $color;
-  @while $weight > 0% and _min-contrast($mixed, $surfaces) < $ratio {
-    $weight: $weight - 1%;
-    $mixed: _rgb8(color.mix($color, $toward, $weight, $method: oklab));
-  }
-  @return $mixed;
-}
-
-/// The M2 warn colour as a text colour. The warn 500 is a fill colour: red
-/// sits at 3.7:1 on white and 2.7:1 on the dark card, under 4.5:1 for text.
-/// Every M2 bridge token that paints warn as text (error lines, the required
-/// asterisk, the error summary, the danger text rung, a remove glyph) reads
-/// this instead of the raw palette colour, so all of them derive the same
-/// hex. Surfaces are the page and the card (the M2 panel colour); the fill
-/// and its hover are darker than both in light and lighter in dark, where
-/// the text floor still leaves the error line its 3:1 (pinned per palette in
-/// the field bridge spec). The mix target is the opaque scheme text colour. M3 needs none of this:
-/// its error role is already a text tone.
-@function m2-warn-text($theme) {
-  $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
-  $surfaces: (
-    mat.get-theme-color($theme, background, background),
-    mat.get-theme-color($theme, background, card)
-  );
-  @return readable-on(mat.get-theme-color($theme, warn), $text, $surfaces);
-}
-
-/// The M2 primary as a text colour, the compile-time counterpart of the core
-/// `--cngx-color-primary-text` rung. Same surfaces and mix target as
-/// `m2-warn-text`; a primary 500 that already clears 4.5:1 (indigo on white)
-/// returns unchanged. M3 needs none of this: its primary role is a text tone.
-@function m2-primary-text($theme) {
-  $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
-  $surfaces: (
-    mat.get-theme-color($theme, background, background),
-    mat.get-theme-color($theme, background, card)
-  );
-  @return readable-on(mat.get-theme-color($theme, primary), $text, $surfaces);
-}
-
-/// The M2 fill field container, as `mat-form-field appearance="fill"` paints
-/// it: Material maps `form-field-filled-container-color` to the M2 system
-/// `surface-variant` (`form-field/_m2-form-field.scss`), a literal per theme
-/// type in `core/tokens/m2/_md-sys-color.scss`. The public API exposes no
-/// system role on an M2 theme, so the bridge restates the two literals; a
-/// spec pins them against Material's own map.
-@function m2-field-fill($theme) {
-  @if mat.get-theme-type($theme) == dark {
-    @return #4a4a4a;
-  } @else {
-    @return #f6f6f6;
-  }
-}
-
-/// The M2 fill field hover surface: Material lays the `on-surface` (M2
-/// foreground text) state layer at the 4% hover opacity over the container.
-/// Flattened to one opaque hex, so the contrast specs measure what ships.
-@function m2-field-fill-hover($theme) {
-  $layer: mat.get-theme-color($theme, foreground, text);
-  @return _rgb8(
-    color.mix(
-      color.change($layer, $alpha: 1),
-      m2-field-fill($theme),
-      color.channel($layer, 'alpha') * 4%
-    )
-  );
-}
-
-/// The M2 field and select placeholder colour: the foreground text at the
-/// secondary-text alpha, raised in light to the lowest alpha that clears
-/// 4.5:1 on the hover fill (0.54 measures 4.42:1 on `#ededed`). The alphas
-/// are computed in `material-bridge-tokens.spec.ts`, which pins both.
-@function m2-field-placeholder($theme) {
-  $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
-  @if mat.get-theme-type($theme) == dark {
-    @return rgba($text, 0.7);
-  } @else {
-    @return rgba($text, 0.55);
-  }
-}
-
-// Rounded 8-bit sRGB, so the value the contrast loop checks is the hex that
-// ships (an oklab mix otherwise emits fractional rgb() channels).
-@function _rgb8($c) {
-  $rgb: color.to-gamut(color.to-space($c, rgb), $method: local-minde);
-  @return color.change(
-    $rgb,
-    $red: math.round(color.channel($rgb, 'red', $space: rgb)),
-    $green: math.round(color.channel($rgb, 'green', $space: rgb)),
-    $blue: math.round(color.channel($rgb, 'blue', $space: rgb))
-  );
-}
-
-@function _min-contrast($color, $surfaces) {
-  $min: 21;
-  @each $surface in $surfaces {
-    $min: math.min($min, _contrast($color, $surface));
-  }
-  @return $min;
-}
-
-@function _contrast($a, $b) {
-  $la: _luminance($a);
-  $lb: _luminance($b);
-  @return math.div(math.max($la, $lb) + 0.05, math.min($la, $lb) + 0.05);
-}
-
-@function _luminance($c) {
-  $lin: color.to-space($c, srgb-linear);
-  @return 0.2126 * color.channel($lin, 'red', $space: srgb-linear) + 0.7152 *
-    color.channel($lin, 'green', $space: srgb-linear) + 0.0722 *
-    color.channel($lin, 'blue', $space: srgb-linear);
 }

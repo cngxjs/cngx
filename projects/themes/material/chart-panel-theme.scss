@@ -23,17 +23,6 @@
     --cngx-chart-panel-border: var(--mat-sys-outline-variant);
     --cngx-chart-panel-subtitle-color: var(--mat-sys-on-surface-variant);
     --cngx-chart-panel-footer-color: var(--mat-sys-on-surface-variant);
-  } @else {
-    $surface: mat.get-theme-color($theme, background, card);
-    $text: mat.get-theme-color($theme, foreground, text);
-    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
-    $divider: mat.get-theme-color($theme, foreground, divider);
-
-    --cngx-chart-panel-text: #{$text};
-    --cngx-chart-panel-surface: #{$surface};
-    --cngx-chart-panel-border: #{rgba($divider, 0.42)};
-    --cngx-chart-panel-subtitle-color: #{$secondary};
-    --cngx-chart-panel-footer-color: #{$secondary};
   }
 }
 

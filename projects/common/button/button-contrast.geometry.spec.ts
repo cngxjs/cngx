@@ -14,9 +14,8 @@ import { CngxButton } from './button.component';
 
 const TEXT_VARIANTS = ['outline', 'ghost', 'link'] as const;
 
-// M2 and M3 themes typed dark and light, each under both schemes
-// (button-contrast-m2 / -m3.spec-host.scss compile the bridge for both types).
-const M2_TONES = ['primary', 'danger'] as const;
+// M3 themes typed dark and light, each under both schemes
+// (button-contrast-m3.spec-host.scss compiles the bridge for both types).
 const SCHEME_MISMATCHES = [
   { theme: 'dark', scheme: 'light' },
   { theme: 'light', scheme: 'dark' },
@@ -32,7 +31,6 @@ const SCHEME_MISMATCHES = [
     '../../core/theming/reset.css',
     '../../core/theming/base.css',
     '../theming/components/cngx-button.css',
-    './button-contrast-m2.spec-host.scss',
     './button-contrast-m3.spec-host.scss',
   ],
   encapsulation: ViewEncapsulation.None,
@@ -42,19 +40,6 @@ const SCHEME_MISMATCHES = [
         <div [attr.data-color-scheme]="scheme">
           <p class="m3-{{ theme }} m3-{{ theme }}-{{ scheme }}" style="padding: 8px">
             <button cngxButton class="m3-neutral-{{ theme }}-{{ scheme }}">Close</button>
-          </p>
-        </div>
-        <div [attr.data-color-scheme]="scheme">
-          <p class="m2-{{ theme }} m2-{{ theme }}-{{ scheme }}" style="padding: 8px">
-            @for (tone of m2Tones; track tone) {
-              <button
-                cngxButton="secondary"
-                [tone]="tone"
-                class="m2-{{ tone }}-{{ theme }}-{{ scheme }}"
-              >
-                Archive
-              </button>
-            }
           </p>
         </div>
       }
@@ -91,7 +76,6 @@ class ContrastHost {
   protected readonly schemes = ['light', 'dark'] as const;
   protected readonly textVariants = TEXT_VARIANTS;
   protected readonly tones = ['neutral', 'primary', 'danger'] as const;
-  protected readonly m2Tones = M2_TONES;
 }
 
 let mountedRoot: HTMLElement | null = null;
@@ -299,56 +283,6 @@ describe('secondary button label contrast at rest, hover and press (default pale
       4.5,
     );
   });
-});
-
-// A typed M2 theme pins its scheme knobs, so the secondary label shifts the
-// way the theme's own scheme does, whatever the OS or data-color-scheme says.
-async function m2Secondary(
-  tone: (typeof M2_TONES)[number],
-  theme: 'light' | 'dark',
-  scheme: 'light' | 'dark',
-  state: 'rest' | 'hover' | 'pressed',
-): Promise<{ color: string; ratio: number }> {
-  const root = mount();
-  const page = computedValue(query(root, `.m2-${theme}-${scheme}`), 'background-color');
-  const button = query(root, `.m2-${tone}-${theme}-${scheme}`);
-  button.style.transition = 'none';
-  if (state === 'hover') {
-    await userEvent.hover(button);
-  }
-  if (state === 'pressed') {
-    button.classList.add('cngx-pressed');
-  }
-  const color = computedValue(button, 'color');
-  const ratio = contrastRatio(color, flatten(computedValue(button, 'background-color'), page));
-  button.classList.remove('cngx-pressed');
-  await parkPointer();
-  mountedRoot?.remove();
-  mountedRoot = null;
-  return { color, ratio };
-}
-
-describe('secondary button label on an M2 theme', () => {
-  const cases = (['light', 'dark'] as const).flatMap((theme) =>
-    (['light', 'dark'] as const).flatMap((scheme) =>
-      M2_TONES.flatMap((tone) =>
-        (['rest', 'hover', 'pressed'] as const).map(
-          (state) => [tone, theme, scheme, state] as const,
-        ),
-      ),
-    ),
-  );
-
-  it.each(cases)(
-    'secondary %s on M2 %s under a %s scheme clears 4.5:1 at %s',
-    async (tone, theme, scheme, state) => {
-      const { ratio } = await m2Secondary(tone, theme, scheme, state);
-      expect(
-        ratio,
-        `${tone} / M2 ${theme} / ${state}: ${ratio.toFixed(2)}:1`,
-      ).toBeGreaterThanOrEqual(4.5);
-    },
-  );
 });
 
 // A typed M3 theme pins its scheme knobs too: the neutral solid fill is the

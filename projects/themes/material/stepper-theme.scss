@@ -110,63 +110,6 @@
 
     // Skin: breadcrumb
     --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
-  } @else {
-    --cngx-step-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-completed-color: var(--cngx-color-success, oklch(0.6 0.15 145));
-    --cngx-step-errored-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-color-danger-strong: #{mat.get-theme-color($theme, warn)};
-    --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
-    --cngx-step-pending-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-indicator-active-color: oklch(1 0 0);
-    --cngx-step-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
-
-    // Group-header chip (resting tones keep their currentColor mixes).
-    --cngx-stepper-group-chip-active-border: #{mat.get-theme-color($theme, primary)};
-    --cngx-stepper-group-chip-active-bg: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, primary)} 14%,
-      transparent
-    );
-    --cngx-stepper-group-chip-active-color: #{mat.get-theme-color($theme, primary)};
-
-    --cngx-step-error-badge-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-step-refused-color: #{mat.get-theme-color($theme, accent)};
-
-    // Skin: linear-minimal
-    --cngx-step-linear-dot-fill: #{mat.get-theme-color($theme, primary)};
-
-    // Skin: stripe-status-rich
-    --cngx-step-status-pill-bg-upcoming: color-mix(in srgb, currentColor 8%, transparent);
-    --cngx-step-status-pill-bg-in-progress: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-status-pill-bg-done: var(--cngx-color-success, oklch(0.6 0.15 145));
-    --cngx-step-status-pill-bg-errored: #{mat.get-theme-color($theme, warn)};
-    --cngx-step-status-pill-color: oklch(1 0 0);
-
-    // Skin: path-chevron
-    --cngx-step-chevron-tile-active: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-chevron-tile-completed: var(--cngx-color-success, oklch(0.6 0.15 145));
-    --cngx-step-chevron-tile-errored: #{mat.get-theme-color($theme, warn)};
-    --cngx-step-chevron-tile-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
-    --cngx-step-chevron-tile-color: oklch(1 0 0);
-
-    // Skin: pill-segment (active filled; completed stays flat, green disc only)
-    --cngx-step-pill-segment-fill-active: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-pill-segment-color-active: oklch(1 0 0);
-    --cngx-step-pill-segment-indicator-active-bg: oklch(1 0 0);
-    --cngx-step-pill-segment-indicator-active-color: #{mat.get-theme-color($theme, primary)};
-
-    // Skin: chips
-    --cngx-step-chips-fill-active: #{mat.get-theme-color($theme, primary)};
-    --cngx-step-chips-color-active: oklch(1 0 0);
-    --cngx-step-chips-bg-completed: color-mix(
-      in srgb,
-      var(--cngx-color-success, oklch(0.6 0.15 145)) 14%,
-      transparent
-    );
-    --cngx-step-chips-color-completed: var(--cngx-color-success-text, oklch(0.46 0.15 145));
-
-    // Skin: breadcrumb
-    --cngx-step-breadcrumb-check-color: var(--cngx-color-success, oklch(0.6 0.15 145));
   }
 }
 
@@ -181,12 +124,6 @@
     --cngx-dot-step-upcoming-bg: var(--mat-sys-surface-variant);
     --cngx-color-danger-strong: var(--mat-sys-error);
     --cngx-color-on-danger-strong: var(--mat-sys-on-error);
-  } @else {
-    --cngx-dot-step-active-fill: #{mat.get-theme-color($theme, primary)};
-    --cngx-dot-step-completed-fill: var(--cngx-color-success, oklch(0.6 0.15 145));
-    --cngx-dot-step-upcoming-bg: color-mix(in srgb, currentColor 25%, transparent);
-    --cngx-color-danger-strong: #{mat.get-theme-color($theme, warn)};
-    --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
   }
 }
 
@@ -198,8 +135,6 @@
 @mixin progress-color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-color-primary: var(--mat-sys-primary);
-  } @else {
-    --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -254,8 +189,6 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-stepper-footer-border-color: var(--mat-sys-outline-variant);
     --cngx-stepper-footer-center-color: var(--mat-sys-on-surface-variant);
-  } @else {
-    --cngx-stepper-footer-border-color: color-mix(in srgb, currentColor 20%, transparent);
   }
 }
 

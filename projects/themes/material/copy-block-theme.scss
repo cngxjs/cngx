@@ -16,15 +16,6 @@
     --cngx-copy-block-btn-copied-bg: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
     --cngx-copy-block-btn-copied-border: var(--mat-sys-tertiary);
     --cngx-copy-block-btn-copied-color: var(--mat-sys-tertiary);
-  } @else {
-    --cngx-copy-block-btn-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-copy-block-btn-border: #{mat.get-theme-color($theme, foreground, divider)};
-    // the copied state pair is theme-owned as a whole - leaving the bg
-    // on the component's scheme-driven success tint would mix an accent
-    // fg with a green bg of foreign ownership
-    --cngx-copy-block-btn-copied-bg: #{rgba(mat.get-theme-color($theme, accent), 0.12)};
-    --cngx-copy-block-btn-copied-border: #{mat.get-theme-color($theme, accent)};
-    --cngx-copy-block-btn-copied-color: #{mat.get-theme-color($theme, accent)};
   }
 }
 

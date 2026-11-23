@@ -10,20 +10,14 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * no test target.
  */
 
-function compileBridge(themeVersion: 'v1' | 'v0'): string {
-  const theme =
-    themeVersion === 'v1'
-      ? `$theme: mat.define-theme((
-  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
-));`
-      : `$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));`;
+function compileBridge(): string {
   return compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/card-theme' as bridge;
 
-${theme}
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+));
 
 @include bridge.theme($theme);
 `);
@@ -60,26 +54,17 @@ describe('card Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(emittedTokenNames(compileBridge('v1'))).toEqual(CONSUMED);
+    expect(emittedTokenNames(compileBridge())).toEqual(CONSUMED);
   });
 
-  it('emits a consumed-name subset (M2)', () => {
-    const names = emittedTokenNames(compileBridge('v0'));
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
-  });
-
-  it('maps the corner onto the Material card shape on every read site (M3 12px, M2 4px)', () => {
+  it('maps the corner onto the Material card shape on every read site (M3 12px)', () => {
     // The cngx default reads --cngx-radius-lg, which the system bridge maps
     // to corner-large (16px). The radius is inherits:false and read on the
     // card, its selection bar and its media, so the rule names all three.
     const rule =
       /@layer cngx\.components\s*\{\s*:where\(\.cngx-card, \.cngx-card__media\),\s*:where\(\.cngx-card\)::before\s*\{([^}]*)\}/;
-    const m3 = compileBridge('v1').match(rule);
+    const m3 = compileBridge().match(rule);
     expect(m3).not.toBeNull();
     expect(m3![1]).toContain('--cngx-card-radius: var(--mat-sys-corner-medium, 12px)');
-    expect(compileBridge('v0').match(rule)![1]).toContain('--cngx-card-radius: 4px');
   });
 });

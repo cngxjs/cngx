@@ -35,24 +35,6 @@
     // M3 has no success role. Tertiary is the documented stand-in for a
     // positive-but-not-primary accent, which is what a completed event is.
     --cngx-timeline-done-color: var(--mat-sys-tertiary);
-  } @else {
-    $primary: mat.get-theme-color($theme, primary);
-    $accent: mat.get-theme-color($theme, accent);
-    $error: mat.get-theme-color($theme, warn);
-    $divider: mat.get-theme-color($theme, foreground, divider);
-    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
-    $text: mat.get-theme-color($theme, foreground, text);
-    $card: mat.get-theme-color($theme, background, card);
-
-    --cngx-timeline-connector-color: #{$divider};
-    --cngx-timeline-surface: #{$card};
-    --cngx-timeline-marker-fg: #{$card};
-    --cngx-timeline-text-color: #{$text};
-    --cngx-timeline-muted-color: #{$secondary};
-    --cngx-timeline-active-color: #{$primary};
-    --cngx-timeline-rejected-color: #{$error};
-    --cngx-timeline-upcoming-color: #{$secondary};
-    --cngx-timeline-done-color: #{$accent};
   }
 }
 

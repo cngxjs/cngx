@@ -1,4 +1,3 @@
-@use 'sass:color';
 @use 'sass:list';
 @use 'sass:map';
 @use '@angular/material' as mat;
@@ -28,10 +27,7 @@
 //   neutral boundary reads (mat-stroked-button)
 // - variant `secondary` -> the `*-container` roles through the three
 //   --cngx-button-secondary-* hooks (neutral = secondary-container, the M3
-//   tonal button; primary = primary-container; danger = error-container);
-//   on M2 light only the danger label hook, a compile-time hex derived from
-//   warn: a host-level danger re-skin moves its wash but not this label, so
-//   re-skin --cngx-button-secondary-color on the host with it
+//   tonal button; primary = primary-container; danger = error-container)
 // - shape -> corner-full: --cngx-button-radius on the host (a real-specificity
 //   rule, see `shape()`; the radius rung --cngx-radius-md stays untouched so
 //   projected children keep theirs), the group end radius, the close-button
@@ -156,10 +152,6 @@
 $_split: '.cngx-split-button.cngx-button-group:not(:has(> .cngx-button-group))';
 $_inner-radius: 'var(--mat-sys-corner-extra-small, 4px)';
 
-// The sheet's pressed secondary wash (cngx-button.css); the tokens spec pins
-// the two equal.
-$_secondary-pressed-mix: 27%;
-
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     @include bridge.on('.cngx-button') {
@@ -239,49 +231,10 @@ $_secondary-pressed-mix: 27%;
       );
       --cngx-close-button-color: var(--mat-sys-on-surface-variant);
     }
-  } @else {
-    // M2 has no container roles and no state-layer tokens: the secondary
-    // fill hooks stay unset, so the tone mix paints, and hover and pressed
-    // keep the default shade and wash. The scheme knobs follow the theme type.
-    @include bridge.on('.cngx-button') {
-      @include _scheme-knobs(mat.get-theme-type($theme));
-      --cngx-color-text: #{mat.get-theme-color($theme, foreground, text)};
-      --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
-      --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-      --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
-      --cngx-color-primary-text: #{bridge.m2-primary-text($theme)};
-      --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
-      --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
-      --cngx-color-danger: #{mat.get-theme-color($theme, warn)};
-      --cngx-color-danger-text: #{bridge.m2-warn-text($theme)};
-      --cngx-color-danger-strong: #{mat.get-theme-color($theme, warn)};
-      --cngx-color-on-danger-strong: #{mat.get-theme-color($theme, warn, default-contrast)};
-    }
-    @include bridge.on('.cngx-close-button') {
-      --cngx-close-button-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    }
-    @if mat.get-theme-type($theme) == light {
-      $warn: mat.get-theme-color($theme, warn);
-      $text: color.change(mat.get-theme-color($theme, foreground, text), $alpha: 1);
-      // The shifted warn text sits under 4.5:1 on the hover and pressed wash;
-      // 4.6 leaves the margin the browser measurement needs.
-      $pressed: ();
-      @each $surface in (background, card) {
-        $fill: mat.get-theme-color($theme, background, $surface);
-        $pressed: list.append(
-          $pressed,
-          color.mix($warn, $fill, $_secondary-pressed-mix, $method: rgb)
-        );
-      }
-      @include bridge.on(".cngx-button[data-variant='secondary'][data-tone='danger']") {
-        --cngx-button-secondary-color: #{bridge.readable-on($warn, $text, $pressed, 4.6)};
-      }
-    }
   }
 }
 
 @mixin shape($theme) {
-  // M2 buttons keep the cngx radius rung (4px corners are what M2 paints).
   @if mat.get-theme-version($theme) == 1 {
     // The sheet SETs --cngx-button-radius in `@scope (.cngx-button) :scope`,
     // which beats a zero-specificity `:where()`, so this rule carries (0,2,0)

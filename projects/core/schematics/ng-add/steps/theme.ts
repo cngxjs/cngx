@@ -205,8 +205,7 @@ function materialBridge(facts: ProjectFacts): Bridge {
   if (themeShape === 'map-api' && themePath !== undefined) {
     return { kind: 'map-api', themePath, density };
   }
-  const isObject = themeShape === 'define-theme' || themeShape === 'm2';
-  if (isObject && themePath?.endsWith('.scss') === true && themeVariable !== undefined) {
+  if (themeShape === 'define-theme' && themePath?.endsWith('.scss') === true && themeVariable !== undefined) {
     return { kind: 'object', themePath, variable: themeVariable };
   }
   return { kind: 'none', reason: `no Material theme map or object to bridge (${themeShape})` };
@@ -234,8 +233,9 @@ function unwiredStylesheet(missing: readonly string[], provenance: Provenance): 
  * Loads `@cngx/themes/cngx.css` ahead of everything cngx and adds a theme:
  * the cngx default (every system token, commented, with what it controls)
  * or the Angular Material bridge. A `mat.theme()` map gets its own
- * `cngx-theme.scss`; a `define-theme` or M2 object is bridged in the file
- * that defines it, since a separate file cannot see the variable. Every
+ * `cngx-theme.scss`; a `define-theme` object is bridged in the file that
+ * defines it, since a separate file cannot see the variable. An M2 theme is
+ * not bridged and gets the cngx default with a note saying why. Every
  * global entry it adds follows the stylesheet that imports `cngx.css`, so
  * the layer order `cngx.css` declares is in place before any cngx layer. A
  * Tailwind v4 app also gets `cngx-layers.css`, imported first in the first

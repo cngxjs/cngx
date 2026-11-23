@@ -17,11 +17,6 @@
     --cngx-segmented-progress-done-color: var(--mat-sys-primary);
     --cngx-segmented-progress-active-color: var(--mat-sys-primary);
     --cngx-segmented-progress-error-color: var(--mat-sys-error);
-  } @else {
-    --cngx-segmented-progress-todo-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.12)};
-    --cngx-segmented-progress-done-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-segmented-progress-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-segmented-progress-error-color: #{mat.get-theme-color($theme, warn)};
   }
 }
 

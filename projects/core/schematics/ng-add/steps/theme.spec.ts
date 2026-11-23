@@ -328,9 +328,14 @@ describe('planTheme', () => {
       expect(edit(edited)).toBe(edited);
     });
 
-    it('bridges an M2 theme object the same way', () => {
+    it('writes no bridge for an M2 theme object and says why', () => {
       const facts = createFacts({ material: material({ themeShape: 'm2', themeVariable: 'theme' }) });
-      expect(byId(planTheme(facts, createAnswers({ theme: 'material' }), VERSIONS), 'theme:bridge')).toBeDefined();
+      const result = planTheme(facts, createAnswers({ theme: 'material' }), VERSIONS);
+      expect(byId(result, 'theme:bridge')).toBeUndefined();
+      expect(byId(result, 'theme:material')).toMatchObject({
+        kind: 'note',
+        reason: 'no Material theme map or object to bridge (m2); the Material bridge needs one',
+      });
     });
 
     it('falls back to the default theme when there is nothing to bridge', () => {

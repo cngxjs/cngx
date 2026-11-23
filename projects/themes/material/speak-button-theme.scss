@@ -35,11 +35,6 @@
     --cngx-speak-btn-bg: var(--mat-sys-surface-container-low);
     --cngx-speak-btn-hover-bg: var(--mat-sys-surface-container);
     --cngx-speak-btn-speaking-bg: var(--mat-sys-primary);
-  } @else {
-    // M2 - derive from palette
-    --cngx-speak-btn-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-speak-btn-hover-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
-    --cngx-speak-btn-speaking-bg: #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -50,11 +45,6 @@
     --cngx-speak-btn-active-color: var(--mat-sys-primary);
     --cngx-speak-btn-speaking-color: var(--mat-sys-on-primary);
     --cngx-border: var(--mat-sys-outline-variant);
-  } @else {
-    --cngx-speak-btn-color: rgba(0, 0, 0, 0.54);
-    --cngx-speak-btn-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-speak-btn-speaking-color: #fff;
-    --cngx-border: rgba(0, 0, 0, 0.12);
   }
 }
 

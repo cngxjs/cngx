@@ -44,12 +44,6 @@
     // the system bridge is absent.
     --cngx-color-primary-strong: var(--mat-sys-primary);
     --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
-  } @else {
-    --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
-    --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
-    --cngx-breadcrumb-link-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-breadcrumb-current-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-breadcrumb-separator-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
   }
 }
 
@@ -79,29 +73,6 @@
       var(--mat-sys-on-surface) 8%,
       transparent
     );
-  } @else {
-    --cngx-breadcrumb-overflow-trigger-color: #{rgba(
-        mat.get-theme-color($theme, foreground, text),
-        0.6
-      )};
-    --cngx-breadcrumb-overflow-trigger-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-breadcrumb-overflow-trigger-border: #{rgba(
-        mat.get-theme-color($theme, foreground, divider),
-        0.12
-      )};
-    --cngx-breadcrumb-overflow-trigger-hover-bg: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, primary)} 12%,
-      transparent
-    );
-    --cngx-breadcrumb-overflow-trigger-hover-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-breadcrumb-overflow-trigger-hover-border: #{mat.get-theme-color($theme, primary)};
-    --cngx-breadcrumb-overflow-item-color: #{rgba(
-        mat.get-theme-color($theme, foreground, text),
-        0.6
-      )};
-    --cngx-breadcrumb-overflow-item-hover-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-breadcrumb-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
   }
 }
 
@@ -135,31 +106,6 @@
     );
     --cngx-breadcrumb-siblings-item-current-color: var(--mat-sys-primary);
     --cngx-breadcrumb-siblings-link-color: var(--mat-sys-primary);
-  } @else {
-    --cngx-breadcrumb-siblings-trigger-color: #{rgba(
-        mat.get-theme-color($theme, foreground, text),
-        0.6
-      )};
-    --cngx-breadcrumb-siblings-trigger-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
-    --cngx-breadcrumb-siblings-trigger-hover-color: #{mat.get-theme-color(
-        $theme,
-        foreground,
-        text
-      )};
-    --cngx-breadcrumb-siblings-trigger-open-bg: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, primary)} 12%,
-      transparent
-    );
-    --cngx-breadcrumb-siblings-trigger-open-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-breadcrumb-siblings-item-color: #{rgba(
-        mat.get-theme-color($theme, foreground, text),
-        0.6
-      )};
-    --cngx-breadcrumb-siblings-item-hover-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-breadcrumb-siblings-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
-    --cngx-breadcrumb-siblings-item-current-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-breadcrumb-siblings-link-color: #{mat.get-theme-color($theme, primary)};
   }
 }
 

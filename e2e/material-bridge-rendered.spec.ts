@@ -941,63 +941,6 @@ cngx-icon {
   });
 });
 
-test.describe('material-bridge rendered values: M2 dark text', () => {
-  // mat-input paints the M2 dark foreground text as plain white, its disabled
-  // text at 38% and the disabled fill at 4%. Both cngx rungs derive from the
-  // text token, so a second alpha on it dimmed all three.
-  const FIELD_CSS = [
-    'projects/core/theming/system-tokens.css',
-    'projects/core/theming/density-tokens.css',
-    'projects/core/theming/reset.css',
-    'projects/core/theming/base.css',
-    'projects/forms/theming/components/cngx-field-skin.css',
-  ] as const;
-
-  const BRIDGE_CSS = compileEntry(`
-@use '@angular/material' as mat;
-@use 'material/system-bridge' as cngx-system;
-@use 'material/field-theme' as field;
-
-$theme: mat.m2-define-dark-theme((color: (
-  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
-  accent: mat.m2-define-palette(mat.$m2-pink-palette),
-)));
-
-html {
-  @include cngx-system.theme($theme);
-}
-@include field.theme($theme);
-`);
-
-  const HTML = `
-<cngx-form-field><input id="live" data-skin="fill" value="Ada" /></cngx-form-field>
-<cngx-form-field><input id="off" data-skin="fill" value="Ada" disabled /></cngx-form-field>`;
-
-  // Alpha of a computed colour: `rgb(...)` is opaque, `oklab(... / a)` and
-  // `rgba(..., a)` carry it last.
-  const alpha = async (page: Page, id: string, prop: 'color' | 'background-color') => {
-    const value = await computedValue(page, id, prop);
-    const slash = /\/\s*([\d.]+)\)$/.exec(value);
-    const comma = /^rgba\(.*,\s*([\d.]+)\)$/.exec(value);
-    const a = slash?.[1] ?? comma?.[1];
-    return a === undefined ? 1 : Math.round(Number(a) * 1000) / 1000;
-  };
-
-  test.beforeEach(async ({ page }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
-    await renderFixture(page, { componentCss: FIELD_CSS, bridgeCss: BRIDGE_CSS, html: HTML });
-  });
-
-  test('the value paints plain white', async ({ page }) => {
-    expect(await computedValue(page, '#live', 'color')).toBe('rgb(255, 255, 255)');
-  });
-
-  test('the disabled value paints white at 38%, the disabled fill at 4%', async ({ page }) => {
-    expect(await alpha(page, '#off', 'color')).toBe(0.38);
-    expect(await alpha(page, '#off', 'background-color')).toBe(0.04);
-  });
-});
-
 /**
  * Resolves a CSS color expression (a `color-mix()` over stand-ins) the way the
  * browser serializes it, so a mixed bridge token is compared against the same

@@ -12,11 +12,6 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-bottom-sheet-handle-color: var(--mat-sys-outline-variant);
-  } @else {
-    --cngx-bottom-sheet-handle-color: #{rgba(
-        mat.get-theme-color($theme, foreground, divider),
-        0.4
-      )};
   }
 }
 

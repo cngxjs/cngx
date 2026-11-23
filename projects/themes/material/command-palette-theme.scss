@@ -63,24 +63,6 @@
     // Failure chrome + focus.
     --cngx-command-error-color: var(--mat-sys-error);
     --cngx-command-focus-outline: 2px solid var(--mat-sys-primary);
-  } @else {
-    // M2 subset: the readable core (surface / text / primary / danger).
-    $text: mat.get-theme-color($theme, foreground, text);
-    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
-
-    --cngx-command-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-command-color: #{$text};
-    --cngx-command-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-    --cngx-command-input-color: #{$text};
-    --cngx-command-placeholder-color: #{$secondary};
-    --cngx-command-header-color: #{$secondary};
-    --cngx-command-footer-color: #{$secondary};
-    --cngx-command-state-color: #{$secondary};
-    --cngx-command-row-color: #{$text};
-    --cngx-command-row-active-bg: #{mat.get-theme-color($theme, background, hover)};
-    --cngx-command-row-active-color: #{$text};
-    --cngx-command-error-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-command-focus-outline: 2px solid #{mat.get-theme-color($theme, primary)};
   }
 }
 

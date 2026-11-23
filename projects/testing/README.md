@@ -275,7 +275,7 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 const css = compileThemeEntry(`
   @use '@angular/material' as mat;
   @use 'material/nav-link-theme' as bridge;
-  $theme: mat.m2-define-light-theme(...);
+  $theme: mat.define-theme(...);
   .probe { @include bridge.theme($theme); }
 `);
 emittedTokenNames(css); // declared --cngx-* names, sorted, no duplicates

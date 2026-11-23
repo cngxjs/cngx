@@ -104,26 +104,6 @@
       var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
       transparent
     );
-  } @else {
-    --cngx-select-panel-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-select-panel-color: #{mat.get-theme-color($theme, foreground, text)};
-
-    --cngx-select-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-select-placeholder-color: #{bridge.m2-field-placeholder($theme)};
-
-    --cngx-select-check-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-select-error-color: #{bridge.m2-warn-text($theme)};
-    --cngx-select-option-error-color: #{bridge.m2-warn-text($theme)};
-    --cngx-select-spinner-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-select-loading-bar-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-select-refreshing-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-select-skeleton-shimmer: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-select-option-spinner-track: color-mix(
-      in srgb,
-      #{mat.get-theme-color($theme, foreground, text)} 15%,
-      transparent
-    );
-    --cngx-select-shell-focus-ring: #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -260,21 +240,20 @@ $-trigger-focus: ':is(:focus-within, [aria-expanded="true"], :has([aria-expanded
 $-trigger-invalid: ':is([aria-invalid="true"], :has(> [role="combobox"][aria-invalid="true"]))';
 
 @mixin -focus-ring($theme) {
-  $ring: var(--mat-sys-primary);
-  @if mat.get-theme-version($theme) != 1 {
-    $ring: mat.get-theme-color($theme, primary);
-  }
-  @layer cngx.components {
-    #{$-outlined-trigger}#{$-trigger-focus} {
-      outline: 2px solid #{$ring};
-      outline-offset: -2px;
-    }
-    #{$-outlined-trigger}#{$-trigger-focus}#{$-trigger-invalid} {
-      outline-color: var(
-        --cngx-select-trigger-invalid-outline-color,
-        var(--cngx-color-danger, #{$ring})
-      );
-      box-shadow: none;
+  @if mat.get-theme-version($theme) == 1 {
+    $ring: var(--mat-sys-primary);
+    @layer cngx.components {
+      #{$-outlined-trigger}#{$-trigger-focus} {
+        outline: 2px solid #{$ring};
+        outline-offset: -2px;
+      }
+      #{$-outlined-trigger}#{$-trigger-focus}#{$-trigger-invalid} {
+        outline-color: var(
+          --cngx-select-trigger-invalid-outline-color,
+          var(--cngx-color-danger, #{$ring})
+        );
+        box-shadow: none;
+      }
     }
   }
 }

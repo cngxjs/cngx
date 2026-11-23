@@ -1,36 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Material tabs-theme bridge baseline > v0 light: resolved --cngx-* declarations match the baseline 1`] = `
-{
-  "--cngx-color-border": "rgba(0, 0, 0, 0.12)",
-  "--cngx-color-on-primary-strong": "white",
-  "--cngx-color-primary": "#3f51b5",
-  "--cngx-color-primary-strong": "#3f51b5",
-  "--cngx-color-surface": "white",
-  "--cngx-mat-tab-error-color": "#f44336",
-  "--cngx-mat-tab-has-errors-color": "#f44336",
-  "--cngx-mat-tab-refused-color": "#e91e63",
-  "--cngx-mat-tab-refused-text-color": "#e91e63",
-  "--cngx-tab-active-color": "#3f51b5",
-  "--cngx-tab-busy-spinner-color": "#3f51b5",
-  "--cngx-tab-error-badge-color": "#f44336",
-  "--cngx-tab-failed-text-color": "#f44336",
-  "--cngx-tab-overflow-item-active-bg": "color-mix(in srgb, currentColor 12%, transparent)",
-  "--cngx-tab-overflow-item-active-outline": "2px solid #3f51b5",
-  "--cngx-tab-overflow-item-hover-bg": "color-mix(in srgb, currentColor 8%, transparent)",
-  "--cngx-tab-overflow-item-padding": "0.5rem 1rem",
-  "--cngx-tab-overflow-popover-bg": "white",
-  "--cngx-tab-overflow-popover-border": "0",
-  "--cngx-tab-overflow-popover-color": "rgba(0, 0, 0, 0.87)",
-  "--cngx-tab-overflow-popover-padding": "0.5rem 0",
-  "--cngx-tab-overflow-popover-radius": "4px",
-  "--cngx-tab-padding": "0.5rem 0.75rem",
-  "--cngx-tab-refused-color": "#e91e63",
-  "--cngx-tab-refused-text-color": "#e91e63",
-  "--cngx-tab-rejection-icon-color": "#f44336",
-}
-`;
-
 exports[`Material tabs-theme bridge baseline > v1 dark: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-color-border": "var(--mat-sys-outline-variant)",

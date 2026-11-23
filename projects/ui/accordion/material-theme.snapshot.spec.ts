@@ -6,12 +6,10 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  * Baseline for the Material bridge in
  * `projects/themes/material/accordion-theme.scss` (base organism + skin
  * presets, one file). Pins the resolved `--cngx-*` declarations the
- * `theme($theme)` mixin produces across both theme versions:
+ * `theme($theme)` mixin produces for an M3 theme:
  *
  *   - v1 (M3): `mat.define-theme(...)` with the `--mat-sys-*` token branch
  *     active (light and dark).
- *   - v0 (M2): `mat.m2-define-light-theme(...)` with the
- *     `get-theme-color($theme, ...)` branch active.
  *
  * Split across two mixins: `theme()` pins the lean base (group/item/header/
  * region tokens + dim-text / subtitle tone) that ships on every accordion, and
@@ -28,7 +26,6 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  */
 
 interface CompileOptions {
-  themeVersion: 'v1' | 'v0';
   variant: 'light' | 'dark';
   // `theme` = the lean base bridge (ships on every accordion); `skins` = the
   // per-skin refinements the full theme.scss aggregation adds on top.
@@ -36,8 +33,7 @@ interface CompileOptions {
 }
 
 function buildEntry(opts: CompileOptions): string {
-  if (opts.themeVersion === 'v1') {
-    return `
+  return `
 @use '@angular/material' as mat;
 @use 'material/accordion-theme' as accordion;
 
@@ -46,25 +42,6 @@ $theme: mat.define-theme((
     theme-type: ${opts.variant},
     primary: mat.$azure-palette,
     tertiary: mat.$blue-palette,
-  ),
-));
-
-@include accordion.${opts.mixin}($theme);
-`;
-  }
-  return `
-@use '@angular/material' as mat;
-@use 'material/accordion-theme' as accordion;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$warn: mat.m2-define-palette(mat.$m2-red-palette);
-
-$theme: mat.m2-define-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    warn: $warn,
   ),
 ));
 
@@ -94,43 +71,29 @@ describe('Material accordion-theme bridge baseline', () => {
   describe('theme() - base organism (ships on every accordion)', () => {
     it('v1 light: resolved --cngx-* declarations match the baseline', () => {
       expect(
-        compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'theme' }),
+        compileAndExtract({ variant: 'light', mixin: 'theme' }),
       ).toMatchSnapshot();
     });
 
     it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
       expect(
-        compileAndExtract({ themeVersion: 'v1', variant: 'dark', mixin: 'theme' }),
-      ).toMatchSnapshot();
-    });
-
-    it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-      expect(
-        compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' }),
+        compileAndExtract({ variant: 'dark', mixin: 'theme' }),
       ).toMatchSnapshot();
     });
   });
 
-  // The system bridge maps the foundation muted text (on-surface-variant in M3,
-  // secondary-text in M2); a scoped copy here would only drift from it.
+  // The system bridge maps the foundation muted text (on-surface-variant);
+  // a scoped copy here would only drift from it.
   it('leaves the foundation muted text to the system bridge', () => {
-    for (const themeVersion of ['v1', 'v0'] as const) {
-      expect(
-        compileAndExtract({ themeVersion, variant: 'light', mixin: 'theme' }),
-      ).not.toHaveProperty('--cngx-color-text-muted');
-    }
+    expect(compileAndExtract({ variant: 'light', mixin: 'theme' })).not.toHaveProperty(
+      '--cngx-color-text-muted',
+    );
   });
 
   describe('skins() - per-skin refinements (full aggregation only)', () => {
     it('v1 light: resolved --cngx-* declarations match the baseline', () => {
       expect(
-        compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'skins' }),
-      ).toMatchSnapshot();
-    });
-
-    it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-      expect(
-        compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'skins' }),
+        compileAndExtract({ variant: 'light', mixin: 'skins' }),
       ).toMatchSnapshot();
     });
   });

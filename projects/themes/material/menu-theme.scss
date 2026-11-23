@@ -47,17 +47,6 @@ $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngx
         transparent
       );
     }
-  } @else {
-    @include bridge.on('[cngxMenu]') {
-      --cngx-menu-bg: #{mat.get-theme-color($theme, background, card)};
-      --cngx-menu-color: #{mat.get-theme-color($theme, foreground, text)};
-      --cngx-menu-border: none;
-      --cngx-menu-radius: 4px;
-      --cngx-menu-separator-color: #{mat.get-theme-color($theme, foreground, divider)};
-      --cngx-menu-item-checked-color: #{mat.get-theme-color($theme, primary, default)};
-      --cngx-menu-item-kbd-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-      --cngx-menu-item-highlight-bg: #{mat.get-theme-color($theme, background, hover)};
-    }
   }
 }
 

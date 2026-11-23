@@ -20,10 +20,8 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * test target.
  */
 
-function compiledTheme(themeVersion: 'v1' | 'v0'): string {
-  const entry =
-    themeVersion === 'v1'
-      ? `
+function compiledTheme(): string {
+  const entry = `
 @use '@angular/material' as mat;
 @use 'material/feedback-theme' as feedback;
 
@@ -32,22 +30,12 @@ $theme: mat.define-theme((
 ));
 
 @include feedback.theme($theme);
-`
-      : `
-@use '@angular/material' as mat;
-@use 'material/feedback-theme' as feedback;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include feedback.theme($theme);
 `;
   return compileThemeEntry(entry);
 }
 
-function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
-  return emittedTokenNames(compiledTheme(themeVersion));
+function bridgeTokenNames(): readonly string[] {
+  return emittedTokenNames(compiledTheme());
 }
 
 describe('feedback Material bridge', () => {
@@ -153,86 +141,22 @@ describe('feedback Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames()).toEqual(CONSUMED);
   });
 
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
-  });
-
-  it('pins the alert, banner and toast action to the pure severity accent (M3 only)', () => {
+  it('pins the alert, banner and toast action to the pure severity accent (M3)', () => {
     // The cngx default mixes the accent into the text colour for 4.5:1 on the
     // light tint; the M3 accents already clear it, so the bridge keeps the
-    // Material look. The M2 warn 500 misses 4.5:1 on its tint, so M2 keeps
-    // the cngx default.
-    const m3 = compiledTheme('v1');
+    // Material look.
+    const m3 = compiledTheme();
     expect(m3).toContain('--cngx-alert-action-color: var(--cngx-alert-icon-color)');
     expect(m3).toContain('--cngx-banner-action-color: var(--cngx-banner-accent)');
     expect(m3).toContain('--cngx-toast-action-color: var(--cngx-toast-accent)');
-    const m2 = compiledTheme('v0');
-    expect(m2).not.toContain('--cngx-alert-action-color');
-    expect(m2).not.toContain('--cngx-banner-action-color');
-    expect(m2).not.toContain('--cngx-toast-action-color');
-  });
-
-  it('leaves the M2 alert and banner success / warning to the derived cngx defaults', () => {
-    // M2 has no success / warning role. The base hex palette (#22c55e /
-    // #f59e0b at 2.2-2.3:1, plus its pale tints) is gone; the cngx defaults
-    // derive those tokens from the core semantic colours.
-    const css = compiledTheme('v0');
-    expect(css).not.toMatch(/--cngx-(alert|banner)-(success|warning)-/);
-    const family = css
-      .split('\n')
-      .filter((line) => /--cngx-(alert|banner)-/.test(line))
-      .join('\n');
-    for (const hex of ['#22c55e', '#f59e0b', '#3b82f6', '#ef4444', '#eff6ff', '#fef2f2']) {
-      expect(family).not.toContain(hex);
-    }
-    expect(css).toContain('--cngx-alert-info-bg: color-mix(in srgb, #3f51b5 8%, white)');
-    expect(css).toContain('--cngx-banner-error-bg: color-mix(in srgb, #f44336 8%, white)');
-  });
-
-  it('lifts the M2 banner inline error to 4.5:1 on the card and the info / error tints', () => {
-    const css = compiledTheme('v0');
-    const value = /--cngx-banner-error-color: (#[0-9a-f]{6});/.exec(css)?.[1];
-    expect(value).toBeDefined();
-    expect(value).not.toBe('#f44336');
-    const rgb = (hex: string): number[] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-    const lum = (c: number[]): number => {
-      const [r, g, b] = c.map((v) => {
-        const x = v / 255;
-        return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
-      });
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    };
-    const tint = (hex: string): number[] =>
-      rgb(hex).map((v, i) => Math.round(v * 0.08 + [255, 255, 255][i] * 0.92));
-    const ink = lum(rgb(value ?? '#000000'));
-    for (const ground of [[255, 255, 255], tint('#f44336'), tint('#3f51b5')]) {
-      const g = lum(ground);
-      expect((Math.max(ink, g) + 0.05) / (Math.min(ink, g) + 0.05)).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it('maps the M2 toast success and warning accents to the cngx semantic colours', () => {
-    // M2 has no success / warning role; the base hex (#22c55e / #f59e0b)
-    // missed 3:1 on the card. The last declaration in the rule wins.
-    const css = compiledTheme('v0');
-    const last = (name: string): string | undefined =>
-      [...css.matchAll(new RegExp(`${name}: ([^;]+);`, 'g'))].map((m) => m[1]).at(-1);
-    expect(last('--cngx-toast-success-accent')).toBe('var(--cngx-color-success)');
-    expect(last('--cngx-toast-warning-accent')).toBe('var(--cngx-color-warning)');
   });
 
   it('does not resurrect the dead dismiss families', () => {
-    for (const themeVersion of ['v1', 'v0'] as const) {
-      for (const name of bridgeTokenNames(themeVersion)) {
-        expect(name).not.toMatch(/-dismiss-/);
-      }
+    for (const name of bridgeTokenNames()) {
+      expect(name).not.toMatch(/-dismiss-/);
     }
   });
 });
@@ -254,7 +178,7 @@ describe('feedback Material bridge placement', () => {
   ];
 
   it('broadcasts every family block to host + descendants', () => {
-    const css = compiledTheme('v1');
+    const css = compiledTheme();
     for (const host of BROADCAST_HOSTS) {
       expect(css).toMatch(new RegExp(`:where\\(\\${host}, \\${host} \\*\\)\\s*\\{`));
     }

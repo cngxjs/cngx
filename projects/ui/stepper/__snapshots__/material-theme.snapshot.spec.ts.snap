@@ -1,11 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > breadcrumb: v0 light overrides 1`] = `
-{
-  "--cngx-step-breadcrumb-check-color": "var(--cngx-color-success, oklch(0.6 0.15 145))",
-}
-`;
-
 exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > breadcrumb: v1 dark overrides 1`] = `
 {
   "--cngx-step-breadcrumb-check-color": "var(--cngx-color-success, oklch(0.6 0.15 145))",
@@ -15,15 +9,6 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > breadcrumb: v1 light overrides 1`] = `
 {
   "--cngx-step-breadcrumb-check-color": "var(--cngx-color-success, oklch(0.6 0.15 145))",
-}
-`;
-
-exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > chips: v0 light overrides 1`] = `
-{
-  "--cngx-step-chips-bg-completed": "color-mix( in srgb, var(--cngx-color-success, oklch(0.6 0.15 145)) 14%, transparent )",
-  "--cngx-step-chips-color-active": "oklch(1 0 0)",
-  "--cngx-step-chips-color-completed": "var(--cngx-color-success-text, oklch(0.46 0.15 145))",
-  "--cngx-step-chips-fill-active": "#3f51b5",
 }
 `;
 
@@ -45,12 +30,6 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 }
 `;
 
-exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > linear-minimal: v0 light overrides 1`] = `
-{
-  "--cngx-step-linear-dot-fill": "#3f51b5",
-}
-`;
-
 exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > linear-minimal: v1 dark overrides 1`] = `
 {
   "--cngx-step-linear-dot-fill": "var(--mat-sys-primary)",
@@ -60,16 +39,6 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > linear-minimal: v1 light overrides 1`] = `
 {
   "--cngx-step-linear-dot-fill": "var(--mat-sys-primary)",
-}
-`;
-
-exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > path-chevron: v0 light overrides 1`] = `
-{
-  "--cngx-step-chevron-tile-active": "#3f51b5",
-  "--cngx-step-chevron-tile-color": "oklch(1 0 0)",
-  "--cngx-step-chevron-tile-completed": "var(--cngx-color-success, oklch(0.6 0.15 145))",
-  "--cngx-step-chevron-tile-errored": "#f44336",
-  "--cngx-step-chevron-tile-upcoming-bg": "color-mix(in srgb, currentColor 25%, transparent)",
 }
 `;
 
@@ -93,15 +62,6 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
 }
 `;
 
-exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > pill-segment: v0 light overrides 1`] = `
-{
-  "--cngx-step-pill-segment-color-active": "oklch(1 0 0)",
-  "--cngx-step-pill-segment-fill-active": "#3f51b5",
-  "--cngx-step-pill-segment-indicator-active-bg": "oklch(1 0 0)",
-  "--cngx-step-pill-segment-indicator-active-color": "#3f51b5",
-}
-`;
-
 exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > pill-segment: v1 dark overrides 1`] = `
 {
   "--cngx-step-pill-segment-color-active": "var(--mat-sys-on-primary)",
@@ -117,16 +77,6 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
   "--cngx-step-pill-segment-fill-active": "var(--mat-sys-primary)",
   "--cngx-step-pill-segment-indicator-active-bg": "var(--mat-sys-on-primary)",
   "--cngx-step-pill-segment-indicator-active-color": "var(--mat-sys-primary)",
-}
-`;
-
-exports[`Material stepper-theme mixin baseline > skin-specific Material overrides (Phase B Commit 6) > stripe-status-rich: v0 light overrides 1`] = `
-{
-  "--cngx-step-status-pill-bg-done": "var(--cngx-color-success, oklch(0.6 0.15 145))",
-  "--cngx-step-status-pill-bg-errored": "#f44336",
-  "--cngx-step-status-pill-bg-in-progress": "#3f51b5",
-  "--cngx-step-status-pill-bg-upcoming": "color-mix(in srgb, currentColor 8%, transparent)",
-  "--cngx-step-status-pill-color": "oklch(1 0 0)",
 }
 `;
 
@@ -147,19 +97,6 @@ exports[`Material stepper-theme mixin baseline > skin-specific Material override
   "--cngx-step-status-pill-bg-in-progress": "var(--mat-sys-primary)",
   "--cngx-step-status-pill-bg-upcoming": "color-mix( in srgb, var(--mat-sys-on-surface) 8%, transparent )",
   "--cngx-step-status-pill-color": "var(--mat-sys-on-primary)",
-}
-`;
-
-exports[`Material stepper-theme mixin baseline > v0 light: resolved --cngx-step-* declarations match the baseline 1`] = `
-{
-  "--cngx-step-active-color": "#3f51b5",
-  "--cngx-step-busy-spinner-color": "#3f51b5",
-  "--cngx-step-completed-color": "var(--cngx-color-success, oklch(0.6 0.15 145))",
-  "--cngx-step-error-badge-color": "#f44336",
-  "--cngx-step-errored-color": "#f44336",
-  "--cngx-step-indicator-active-color": "oklch(1 0 0)",
-  "--cngx-step-pending-color": "#3f51b5",
-  "--cngx-step-refused-color": "#e91e63",
 }
 `;
 
@@ -194,14 +131,6 @@ exports[`Material stepper-theme mixin baseline > v1 light: resolved --cngx-step-
   "--cngx-step-indicator-disabled-bg": "color-mix( in srgb, var(--mat-sys-on-surface) 12%, transparent )",
   "--cngx-step-pending-color": "var(--mat-sys-primary)",
   "--cngx-step-refused-color": "var(--mat-sys-tertiary)",
-}
-`;
-
-exports[`Material stepper-theme mixin baseline > variant-specific Material overrides (Phase C Commit 6) > dot-stepper: v0 light overrides 1`] = `
-{
-  "--cngx-dot-step-active-fill": "#3f51b5",
-  "--cngx-dot-step-completed-fill": "var(--cngx-color-success, oklch(0.6 0.15 145))",
-  "--cngx-dot-step-upcoming-bg": "color-mix(in srgb, currentColor 25%, transparent)",
 }
 `;
 

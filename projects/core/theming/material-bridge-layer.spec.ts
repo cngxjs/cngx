@@ -13,10 +13,6 @@ import { compileThemeEntry } from '@cngx/testing/sass';
 
 const THEMES = [
   ['M3', 'mat.define-theme()'],
-  [
-    'M2',
-    'mat.m2-define-light-theme((color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette))))',
-  ],
 ] as const;
 
 const ENTRIES = [

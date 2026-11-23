@@ -12,10 +12,9 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * `projects/common/interactive/material-bridge-tokens.spec.ts`.
  */
 
-function bridgeTokenNames(bridge: string, themeVersion: 'v1' | 'v0'): readonly string[] {
-  const entry =
-    themeVersion === 'v1'
-      ? `
+function bridgeTokenNames(bridge: string): readonly string[] {
+  return emittedTokenNames(
+    compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/${bridge}' as bridge;
 
@@ -24,18 +23,8 @@ $theme: mat.define-theme((
 ));
 
 @include bridge.theme($theme);
-`
-      : `
-@use '@angular/material' as mat;
-@use 'material/${bridge}' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`;
-  return emittedTokenNames(compileThemeEntry(entry));
+`),
+  );
 }
 
 describe('rating Material bridge', () => {
@@ -48,15 +37,7 @@ describe('rating Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('rating-theme', 'v1')).toEqual(CONSUMED);
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('rating-theme', 'v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
+    expect(bridgeTokenNames('rating-theme')).toEqual(CONSUMED);
   });
 });
 
@@ -64,7 +45,7 @@ describe('phone-input Material bridge', () => {
   // an intentional no-op: gap (space-derived) and number-min-width (content
   // geometry) have no Material counterpart, and the disabled parts fade by
   // the system-bridged field recipe
-  it.each(['v1', 'v0'] as const)('emits no token names (%s)', (version) => {
-    expect(bridgeTokenNames('phone-input-theme', version)).toEqual([]);
+  it('emits no token names (M3)', () => {
+    expect(bridgeTokenNames('phone-input-theme')).toEqual([]);
   });
 });

@@ -25,15 +25,10 @@ const CONSUMER_STYLESHEETS = [
   'projects/ui/command-palette/panel/command-panel.component.css',
 ];
 
-function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
-  const theme =
-    themeVersion === 'v1'
-      ? `$theme: mat.define-theme((
+function bridgeTokenNames(): readonly string[] {
+  const theme = `$theme: mat.define-theme((
   color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
-));`
-      : `$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));`;
+));`;
   const entry = `
 @use '@angular/material' as mat;
 @use 'material/command-palette-theme' as bridge;
@@ -85,21 +80,13 @@ describe('command-palette Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames()).toEqual(CONSUMED);
   });
 
   it('every emitted name has a read site in the two consumer stylesheets (M3)', () => {
     const consumed = consumedTokenNames();
-    for (const name of bridgeTokenNames('v1')) {
+    for (const name of bridgeTokenNames()) {
       expect(consumed).toContain(name);
-    }
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
     }
   });
 

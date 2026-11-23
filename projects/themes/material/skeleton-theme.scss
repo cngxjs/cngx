@@ -13,9 +13,6 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-skeleton-bg: var(--mat-sys-surface-container);
     --cngx-skeleton-shimmer-color: var(--mat-sys-surface-container-high);
-  } @else {
-    --cngx-skeleton-bg: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-    --cngx-skeleton-shimmer-color: #{rgba(mat.get-theme-color($theme, background, card), 0.8)};
   }
 }
 

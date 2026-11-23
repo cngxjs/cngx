@@ -28,10 +28,6 @@
     --cngx-rating-color: var(--mat-sys-on-surface-variant);
     --cngx-rating-color-active: var(--mat-sys-primary);
     --cngx-rating-focus-ring: var(--mat-sys-primary);
-  } @else {
-    --cngx-rating-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-rating-color-active: #{mat.get-theme-color($theme, primary)};
-    --cngx-rating-focus-ring: #{mat.get-theme-color($theme, primary)};
   }
 }
 

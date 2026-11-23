@@ -37,19 +37,6 @@
     // dot reads punched out of the avatar plate even when the page sits
     // on a tonal Material surface.
     --cngx-avatar-status-border: var(--mat-sys-surface);
-  } @else {
-    --cngx-avatar-bg: #{mat.get-theme-color($theme, background, hover)};
-    --cngx-avatar-color: #{mat.get-theme-color($theme, foreground, text)};
-
-    // Material 2 has no semantic success/warning tones. Map onto the
-    // closest palette roles: primary for online, warn for busy, accent
-    // for away. Offline rides the divider tone so it reads as muted.
-    --cngx-avatar-status-online: #{mat.get-theme-color($theme, primary)};
-    --cngx-avatar-status-busy: #{mat.get-theme-color($theme, warn)};
-    --cngx-avatar-status-away: #{mat.get-theme-color($theme, accent)};
-    --cngx-avatar-status-offline: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-avatar-status-bg: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-avatar-status-border: #{mat.get-theme-color($theme, background, card)};
   }
 }
 
@@ -73,9 +60,6 @@
     // pill default; M3's corner-full token (9999px) matches exactly.
     --cngx-avatar-circle-radius: var(--mat-sys-corner-full, 9999px);
     --cngx-avatar-square-radius: var(--mat-sys-corner-medium, 12px);
-  } @else {
-    --cngx-avatar-circle-radius: 9999px;
-    --cngx-avatar-square-radius: 4px;
   }
 }
 

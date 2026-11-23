@@ -16,12 +16,6 @@
     --cngx-chart-grid-color: var(--mat-sys-outline-variant);
     --cngx-chart-primary: var(--mat-sys-primary);
     --cngx-chart-danger: var(--mat-sys-error);
-  } @else {
-    --cngx-chart-text-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-chart-axis-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
-    --cngx-chart-grid-color: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-chart-primary: #{mat.get-theme-color($theme, primary)};
-    --cngx-chart-danger: #{mat.get-theme-color($theme, warn)};
   }
 }
 

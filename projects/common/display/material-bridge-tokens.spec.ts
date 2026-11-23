@@ -16,10 +16,8 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
 
 const REPO_ROOT = resolve(__dirname, '../../..');
 
-function compileBridge(themeVersion: 'v1' | 'v0'): string {
-  const entry =
-    themeVersion === 'v1'
-      ? `
+function compileBridge(): string {
+  return compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/segmented-progress-theme' as bridge;
 
@@ -28,22 +26,11 @@ $theme: mat.define-theme((
 ));
 
 @include bridge.theme($theme);
-`
-      : `
-@use '@angular/material' as mat;
-@use 'material/segmented-progress-theme' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`;
-  return compileThemeEntry(entry);
+`);
 }
 
-function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
-  return emittedTokenNames(compileBridge(themeVersion));
+function bridgeTokenNames(): readonly string[] {
+  return emittedTokenNames(compileBridge());
 }
 
 describe('segmented-progress Material bridge', () => {
@@ -56,15 +43,11 @@ describe('segmented-progress Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
-  });
-
-  it('emits the same names (M2)', () => {
-    expect(bridgeTokenNames('v0')).toEqual(CONSUMED);
+    expect(bridgeTokenNames()).toEqual(CONSUMED);
   });
 
   it('maps todo, done, active and error onto surface-variant, primary and error (M3)', () => {
-    const css = compileBridge('v1');
+    const css = compileBridge();
     expect(css).toContain('--cngx-segmented-progress-todo-color: var(--mat-sys-surface-variant)');
     expect(css).toContain('--cngx-segmented-progress-done-color: var(--mat-sys-primary)');
     expect(css).toContain('--cngx-segmented-progress-active-color: var(--mat-sys-primary)');
