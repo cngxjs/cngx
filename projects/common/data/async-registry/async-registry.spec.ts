@@ -90,10 +90,7 @@ describe('CngxAsyncRegistry', () => {
     expect(registry.activeOperations()).toHaveLength(0);
   });
 
-  // B6 probe: register() reads the operations map tracked, so an effect that
-  // registers subscribes to the signal it writes and re-runs. Flipped to a
-  // plain it() by the fix that reads the map untracked.
-  it.fails('register inside an effect runs the effect once', () => {
+  it('register inside an effect runs the effect once', () => {
     const registry = setupRegistry();
     let runs = 0;
     TestBed.runInInjectionContext(() =>
@@ -107,8 +104,27 @@ describe('CngxAsyncRegistry', () => {
     for (let i = 0; i < 10; i++) {
       TestBed.tick();
     }
-    console.log(`PROBE P0.5 | effect runs after one register per run: ${runs}`);
     expect(runs).toBe(1);
+    expect(registry.activeOperations()).toHaveLength(1);
+  });
+
+  it('unregister inside an effect runs the effect once', () => {
+    const registry = setupRegistry();
+    const ids = Array.from({ length: 6 }, () => registry.register(createManualState<number>()));
+    let runs = 0;
+    TestBed.runInInjectionContext(() =>
+      effect(() => {
+        runs++;
+        if (runs <= 5) {
+          registry.unregister(ids[runs - 1]);
+        }
+      }),
+    );
+    for (let i = 0; i < 10; i++) {
+      TestBed.tick();
+    }
+    expect(runs).toBe(1);
+    expect(registry.activeOperations()).toHaveLength(5);
   });
 
   it('registers via injectAsyncState({ register: true }) and cleans up on destroy', () => {

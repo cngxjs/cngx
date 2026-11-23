@@ -1,4 +1,4 @@
-import { computed, Injectable, signal, type Signal } from '@angular/core';
+import { computed, Injectable, signal, type Signal, untracked } from '@angular/core';
 import { nextUid, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 
 /** @internal One registered async operation: its display label and its state. */
@@ -115,7 +115,8 @@ export class CngxAsyncRegistry {
    */
   register(state: CngxAsyncState<unknown>, label?: string): string {
     const id = nextUid('cngx-async-op');
-    const next = new Map(this.entriesState());
+    // Untracked: a register() inside an effect must not subscribe it to the map it writes.
+    const next = new Map(untracked(this.entriesState));
     next.set(id, { label, state });
     this.entriesState.set(next);
     return id;
@@ -123,7 +124,7 @@ export class CngxAsyncRegistry {
 
   /** Removes the operation with the given uid. No-op if absent. */
   unregister(id: string): void {
-    const current = this.entriesState();
+    const current = untracked(this.entriesState);
     if (!current.has(id)) {
       return;
     }
