@@ -6,56 +6,59 @@
 // (`--cngx-copy-block-btn-*`) with its copied confirmation state.
 //
 // `--cngx-copy-block-btn-copied-bg` and `-copied-color` inherit, so they land
-// on the include host and an ancestor SET wins over them. Include the bridge
-// in the selector that carries `mat.theme`; a nested Material sub-theme needs
-// it included on that container too. The other four tokens land on every copy
-// block and its button.
+// on the include host. Include the bridge in the selector that carries
+// `mat.theme`; a nested Material sub-theme needs it included on that
+// container too, or its copied fill and text keep the outer roles while the
+// copied border, set on every copy block, follows the container. An ancestor
+// SET of the two tokens wins, except across a `.dark` / `.light` /
+// `[data-color-scheme]` scope: copy-block.css SETs scheme literals there and
+// the bridge re-asserts its values on those scopes. The other four tokens
+// land on every copy block and its button.
 //
 //   @use '@cngx/themes/material/copy-block-theme' as copy-block;
 //   html { @include copy-block.theme($theme); }
 
+// btn-bg / -color / -border are registered inherits:false and read on the
+// __button descendant. copied-border inherits, but copy-block.css SETs it on
+// `.cngx-copy-block`, so it has to land there too.
 @mixin _element($theme) {
-  --cngx-copy-block-btn-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
-  --cngx-copy-block-btn-color: var(--mat-sys-on-surface);
-  --cngx-copy-block-btn-border: var(--mat-sys-outline-variant);
-  --cngx-copy-block-btn-copied-border: var(--mat-sys-tertiary);
-}
-
-@mixin _inherited($theme) {
-  --cngx-copy-block-btn-copied-bg: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
-  --cngx-copy-block-btn-copied-color: var(--mat-sys-tertiary);
-}
-
-@mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    @include _element($theme);
-    @include _inherited($theme);
+    --cngx-copy-block-btn-bg: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+    --cngx-copy-block-btn-color: var(--mat-sys-on-surface);
+    --cngx-copy-block-btn-border: var(--mat-sys-outline-variant);
+    --cngx-copy-block-btn-copied-border: var(--mat-sys-tertiary);
   }
 }
 
-@mixin theme($theme) {
+// copied-bg / -color inherit and land on the theme host.
+@mixin _inherited($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // btn-bg / -color / -border are registered inherits:false and read on
-    // the __button descendant (copy-block.css:65-89), so they broadcast onto
-    // it. copied-border inherits, but copy-block.css:185-187 SETs it on the
-    // host, so a theme-host value would never reach the button.
-    @include bridge.on(bridge.broadcast('.cngx-copy-block')) {
-      @include _element($theme);
-    }
-    // copied-bg / -color inherit (copy-block.css:130-157) and land on the
-    // theme host. copy-block.css:169-178 SETs scheme literals on these
-    // scopes, which would shadow the inherited value, so the bridge
-    // re-asserts it there.
-    @include bridge.host() {
-      @include _inherited($theme);
-    }
-    @include bridge.on(
-      "[data-color-scheme='dark']",
-      '.dark',
-      "[data-color-scheme='light']",
-      '.light'
-    ) {
-      @include _inherited($theme);
-    }
+    --cngx-copy-block-btn-copied-bg: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
+    --cngx-copy-block-btn-copied-color: var(--mat-sys-tertiary);
+  }
+}
+
+@mixin color($theme) {
+  @include _element($theme);
+  @include _inherited($theme);
+}
+
+@mixin theme($theme) {
+  @include bridge.on(bridge.broadcast('.cngx-copy-block')) {
+    @include _element($theme);
+  }
+  @include bridge.host() {
+    @include _inherited($theme);
+  }
+  // The scheme scopes of copy-block.css SET the copied literals and would
+  // shadow the inherited bridge value; material-bridge-tokens.spec.ts pins
+  // this list to them.
+  @include bridge.on(
+    "[data-color-scheme='dark']",
+    '.dark',
+    "[data-color-scheme='light']",
+    '.light'
+  ) {
+    @include _inherited($theme);
   }
 }

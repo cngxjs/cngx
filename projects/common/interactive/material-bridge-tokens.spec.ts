@@ -190,6 +190,32 @@ describe('copy-block Material bridge', () => {
       expect(schemes[0].selector, scope).toContain(scope);
     }
   });
+
+  // The scheme-scope re-assertion mirrors the scopes copy-block.css SETs the
+  // copied literals on; a scope added or renamed there must fail here, not
+  // silently shadow the bridge.
+  it('re-asserts on exactly the scheme scopes copy-block.css SETs', () => {
+    const sheet = readFileSync(
+      resolve(process.cwd(), 'projects/common/interactive/copy/copy-block.css'),
+      'utf-8',
+    );
+    const normalize = (list: string): string[] =>
+      list
+        .split(',')
+        .map((sel) => sel.trim().replace(/['"]/g, ''))
+        .filter(Boolean);
+    const componentScopes = [...sheet.matchAll(/([^{}]+)\{[^{}]*--cngx-copy-block-btn-copied-bg:/g)]
+      .map(([, sel]) => sel.replace(/\/\*[\s\S]*?\*\//g, '').trim())
+      .filter((sel) => !sel.startsWith(':root'))
+      .flatMap(normalize)
+      .sort();
+    const css = bridgeCss('copy-block-theme');
+    const bridgeScopes = [...css.matchAll(/:where\(([^)]*\.dark[^)]*)\)\s*\{/g)]
+      .flatMap(([, list]) => normalize(list))
+      .sort();
+    expect(componentScopes.length).toBeGreaterThan(0);
+    expect(bridgeScopes).toEqual(componentScopes);
+  });
 });
 
 describe('ripple Material bridge', () => {
