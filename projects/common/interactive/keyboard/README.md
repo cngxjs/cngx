@@ -250,7 +250,12 @@ readonly groups = computed(() => this.registry.liveGroupsFor(null));
 
 Provide `CNGX_HOTKEY_REGISTRY` with a factory to swap the keymap for the app or isolate a subtree. `createHotkeyRegistry(deps)` needs no injection context (its deps come in as arguments), so a replacement can wrap it; `injectHotkeyRegistryDeps()` supplies the default `DOCUMENT` and macOS flag. The replacement implements `CngxHotkeyRegistry` (`isMac`, `register`, `liveGroupsFor`, `destroy`), resolves scopes through `resolveHotkeyScopeChain`, and calls `destroy()` on teardown so its document listener does not outlive the injector.
 
+`CngxHotkeyRegistryFactory` is the factory signature `createHotkeyRegistry` satisfies; type a replacement against it.
+
 ```typescript
+// Wrap or replace the default; the type pins the contract.
+const myRegistry: CngxHotkeyRegistryFactory = (deps) => createHotkeyRegistry(deps);
+
 providers: [
   {
     provide: CNGX_HOTKEY_REGISTRY,
