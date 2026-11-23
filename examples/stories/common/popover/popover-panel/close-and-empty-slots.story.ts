@@ -71,6 +71,8 @@ export const STORY: DemoSpec = {
     this.srBusy.set(host.getAttribute('aria-busy') ?? '-');
   }
 
+  // Hand-built, not mirrorScreenReader: the fixture runs list items together
+  // in the name and does not track where focus lands after close.
   private readonly listen = afterNextRender(() => {
     const host = this.panelHost()?.nativeElement as HTMLElement | undefined;
     const onFocusIn = () => this.refreshSr();

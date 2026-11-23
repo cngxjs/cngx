@@ -59,6 +59,8 @@ export const STORY: DemoSpec = {
 
   // Logs the real DOM writes into the live region next to each async button
   // and into the page-level announcer region a closed panel speaks through.
+  // Hand-built, not mirrorScreenReader: the fixture watches the story host
+  // only, so it misses that body-level region, and it logs no source prefix.
   private readonly srMirror = afterNextRender(() => {
     const host = this.hostEl.nativeElement;
     const body = host.ownerDocument.body;
