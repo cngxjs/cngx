@@ -33,10 +33,10 @@
 
 @mixin typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // Badge text follows Material's label-small scale so a count next to
-    // a <mat-chip> shares the same character class. Weight stays at the
-    // library default (600) for legibility on the smallest surface.
+    // Badge text follows Material's label-small scale, size and weight,
+    // like <mat-badge>. The line height has no token; metrics() writes it.
     --cngx-badge-font-size: var(--mat-sys-label-small-size, 0.6875rem);
+    --cngx-badge-font-weight: var(--mat-sys-label-small-weight, 500);
   }
 }
 
@@ -45,6 +45,45 @@
     // Pill radius adopts Material's full-corner token so the indicator
     // matches <mat-badge>, which uses the same radius.
     --cngx-badge-radius: var(--mat-sys-corner-full, 999px);
+  }
+}
+
+// The indicator writes a literal line height and translates its corner
+// anchor half out (cngx-badge.css, inside `@scope`, (0,1,0) and (0,2,0)),
+// with no token for either. These raw rules write the PROPERTIES one class
+// above: label-small line height, and the mat-badge overhang of one `xs`
+// rung (4px at density 0) instead of the half-size translate. Consumer
+// override: an unlayered property rule on the indicator.
+$_indicator: '.cngx-badge-host > .cngx-badge-indicator';
+$_overhang: calc(-1 * var(--cngx-space-xs, 4px));
+
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      #{$_indicator} {
+        line-height: var(--mat-sys-label-small-line-height, 16px);
+      }
+      #{$_indicator}.cngx-badge-indicator--above-start {
+        transform: none;
+        top: $_overhang;
+        inset-inline-start: $_overhang;
+      }
+      #{$_indicator}.cngx-badge-indicator--above-end {
+        transform: none;
+        top: $_overhang;
+        inset-inline-end: $_overhang;
+      }
+      #{$_indicator}.cngx-badge-indicator--below-start {
+        transform: none;
+        bottom: $_overhang;
+        inset-inline-start: $_overhang;
+      }
+      #{$_indicator}.cngx-badge-indicator--below-end {
+        transform: none;
+        bottom: $_overhang;
+        inset-inline-end: $_overhang;
+      }
+    }
   }
 }
 
@@ -61,4 +100,5 @@
     @include typography($theme);
     @include base($theme);
   }
+  @include metrics($theme);
 }

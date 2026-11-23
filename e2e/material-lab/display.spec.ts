@@ -59,7 +59,26 @@ for (const scheme of ['light', 'dark'] as const) {
         'border-top-left-radius',
         'padding-left',
         'font-size',
+        'font-weight',
+        'line-height',
       ]);
+    });
+
+    test('badge: the indicator overhangs its host like mat-badge', async ({ page }) => {
+      // mat-badge sits 4px outside the top end corner; cngx translated half
+      // its size out before the bridge wrote the offset.
+      const overhang = (host: string, indicator: string) =>
+        page.evaluate(
+          ([h, i]) => {
+            const hostRect = document.querySelector(h)!.getBoundingClientRect();
+            const rect = document.querySelector(i)!.getBoundingClientRect();
+            return { top: rect.top - hostRect.top, end: rect.right - hostRect.right };
+          },
+          [host, indicator] as const,
+        );
+      expect(await overhang(cngx('badge'), cngx('badge', '.cngx-badge-indicator'))).toEqual(
+        await overhang(mat('badge'), mat('badge', '.mat-badge-content')),
+      );
     });
 
     test('button-toggle: the visible outer corner matches mat-button-toggle-group', async ({ page }) => {
