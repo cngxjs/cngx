@@ -131,10 +131,7 @@ export class CngxAsync<T> {
     if (!this.contentViewRef) {
       return;
     }
-    const data = s.data();
-    if (data === undefined) {
-      return;
-    }
+    const data = s.data() as T;
     this.contentViewRef.context.$implicit = data;
     this.contentViewRef.context.cngxAsync = data;
     this.contentViewRef.markForCheck();

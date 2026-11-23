@@ -1,5 +1,6 @@
-import { Component, resource } from '@angular/core';
+import { Component, resource, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { type AsyncStatus, buildAsyncStateView } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { ManualAsyncState } from '../async-state/create-manual-state';
@@ -151,5 +152,37 @@ describe('CngxAsync over fromResource', () => {
 
     expect(el.querySelector('.error')?.textContent).toBe('ERRORTPL');
     expect(el.textContent).not.toContain('CONTENT');
+  });
+});
+
+describe('CngxAsync content context', () => {
+  @Component({
+    template: `<div *cngxAsync="state; let data">[{{ data }}]</div>`,
+    imports: [CngxAsync],
+  })
+  class ViewHost {
+    readonly status = signal<AsyncStatus>('success');
+    readonly data = signal<string[] | undefined>(['a']);
+    readonly state = buildAsyncStateView<string[]>({
+      status: this.status,
+      data: this.data,
+      error: signal(undefined),
+      isFirstLoad: signal(false),
+    });
+  }
+
+  it('passes undefined data through while the content view stays', () => {
+    const fixture = TestBed.createComponent(ViewHost);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('[a]');
+
+    fixture.componentInstance.status.set('refreshing');
+    fixture.componentInstance.data.set(undefined);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(el.textContent).toContain('[]');
+    expect(el.textContent).not.toContain('a');
   });
 });
