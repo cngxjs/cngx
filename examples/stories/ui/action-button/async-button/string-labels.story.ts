@@ -35,6 +35,8 @@ export const STORY: DemoSpec = {
   protected readonly ariaBusy = signal('-');
 
   // Logs the real DOM writes into the live region next to each async button.
+  // Hand-built, not mirrorScreenReader: each entry names the button its region
+  // belongs to, and the fixture logs region text without a source.
   private readonly srMirror = afterNextRender(() => {
     const host = this.hostEl.nativeElement;
     const lastText = new WeakMap<Element, string>();
