@@ -76,8 +76,7 @@ html {
 The theme mixin provides:
 
 - Material 3 system color tokens (`--mat-sys-*`) with fallback defaults
-- Material 2 palette color mappings
-- Automatic theme version detection (M3 vs M2)
+- No declarations for an M2 theme (M3 only)
 - Icon and text color alignment with Material palette
 
 ## See Also

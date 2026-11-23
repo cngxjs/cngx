@@ -24,17 +24,6 @@
     --cngx-toc-color-trail: var(--mat-sys-on-surface);
     --cngx-toc-rail-active: var(--mat-sys-primary);
     --cngx-toc-focus-ring: var(--mat-sys-primary);
-  } @else {
-    $primary: mat.get-theme-color($theme, primary);
-    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
-    $text: mat.get-theme-color($theme, foreground, text);
-
-    --cngx-toc-color: #{$secondary};
-    --cngx-toc-color-hover: #{$text};
-    --cngx-toc-color-active: #{$primary};
-    --cngx-toc-color-trail: #{$text};
-    --cngx-toc-rail-active: #{$primary};
-    --cngx-toc-focus-ring: #{$primary};
   }
 }
 

@@ -64,21 +64,6 @@
     // error and keeps the error role above.
     --cngx-tab-refused-color: var(--mat-sys-tertiary);
     --cngx-tab-refused-text-color: var(--mat-sys-tertiary);
-  } @else {
-    --cngx-color-primary: #{mat.get-theme-color($theme, primary)};
-    --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
-    --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
-    --cngx-color-surface: #{mat.get-theme-color($theme, background, card)};
-    --cngx-color-border: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-
-    --cngx-tab-active-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-tab-busy-spinner-color: #{mat.get-theme-color($theme, primary)};
-
-    --cngx-tab-error-badge-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-tab-rejection-icon-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-tab-failed-text-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-tab-refused-color: #{mat.get-theme-color($theme, accent)};
-    --cngx-tab-refused-text-color: #{mat.get-theme-color($theme, accent)};
   }
 }
 
@@ -118,13 +103,6 @@
     --cngx-tab-overflow-popover-padding: 0.5rem 0;
     --cngx-tab-overflow-popover-color: var(--mat-sys-on-surface);
     box-shadow: var(--mat-sys-level2, 0 2px 6px rgb(0 0 0 / 0.2));
-  } @else {
-    --cngx-tab-overflow-popover-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-tab-overflow-popover-border: 0;
-    --cngx-tab-overflow-popover-radius: 4px;
-    --cngx-tab-overflow-popover-padding: 0.5rem 0;
-    --cngx-tab-overflow-popover-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.87)};
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
   }
 
   background: var(--cngx-tab-overflow-popover-bg);
@@ -154,10 +132,6 @@
       transparent
     );
     --cngx-tab-overflow-item-active-outline: 2px solid var(--mat-sys-primary);
-  } @else {
-    --cngx-tab-overflow-item-hover-bg: color-mix(in srgb, currentColor 8%, transparent);
-    --cngx-tab-overflow-item-active-bg: color-mix(in srgb, currentColor 12%, transparent);
-    --cngx-tab-overflow-item-active-outline: 2px solid #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -178,11 +152,6 @@
     --cngx-mat-tab-refused-text-color: var(--mat-sys-tertiary);
     --cngx-mat-tab-has-errors-color: var(--mat-sys-error);
     --cngx-mat-tabs-more-bg: var(--mat-sys-surface);
-  } @else {
-    --cngx-mat-tab-error-color: #{mat.get-theme-color($theme, warn)};
-    --cngx-mat-tab-refused-color: #{mat.get-theme-color($theme, accent)};
-    --cngx-mat-tab-refused-text-color: #{mat.get-theme-color($theme, accent)};
-    --cngx-mat-tab-has-errors-color: #{mat.get-theme-color($theme, warn)};
   }
 }
 

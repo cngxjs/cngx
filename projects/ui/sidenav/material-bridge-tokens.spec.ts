@@ -14,15 +14,10 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * values stay the rendered-value harness's job.
  */
 
-function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
-  const theme =
-    themeVersion === 'v1'
-      ? `$theme: mat.define-theme((
+function bridgeTokenNames(): readonly string[] {
+  const theme = `$theme: mat.define-theme((
   color: (theme-type: light, primary: mat.$azure-palette, tertiary: mat.$blue-palette),
-));`
-      : `$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));`;
+));`;
   // theme() emits bare declarations (sidenav-theme provides the selector)
   const entry = `
 @use '@angular/material' as mat;
@@ -58,7 +53,7 @@ describe('nav-link Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames()).toEqual(CONSUMED);
   });
 
   it('maps the M3 list item: body-large at one weight, on-surface label, on-surface-variant icon, full pill', () => {
@@ -78,27 +73,6 @@ $theme: mat.define-theme((color: (theme-type: light, primary: mat.$azure-palette
     expect(css).toContain('--cngx-nav-link-ink: var(--mat-sys-on-surface-variant,');
     expect(css).toContain('--cngx-nav-link-radius: var(--mat-sys-corner-full');
     expect(css).not.toContain('--cngx-nav-link-radius: 8px');
-  });
-
-  it('maps shape and type per axis under M2: 8px corners, 14px, 500 when active', () => {
-    const css = compileThemeEntry(`
-@use '@angular/material' as mat;
-@use 'material/nav-link-theme' as bridge;
-$theme: mat.m2-define-light-theme((color: (primary: mat.m2-define-palette(mat.$m2-indigo-palette), accent: mat.m2-define-palette(mat.$m2-pink-palette))));
-.shape { @include bridge.shape($theme); }
-.type { @include bridge.typography($theme); }
-`);
-    expect(css).toMatch(/\.shape\s*\{\s*--cngx-nav-link-radius: 8px;\s*\}/);
-    expect(css).toContain('--cngx-nav-link-font-size: 0.875rem');
-    expect(css).toContain('--cngx-nav-link-active-font-weight: 500');
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
   });
 });
 
@@ -168,34 +142,6 @@ $theme: mat.define-theme((
     expect(body![0]).not.toMatch(/\bgap:/);
   });
 
-  it('emits no list item metrics for an M2 theme', () => {
-    const css = compileThemeEntry(`
-@use '@angular/material' as mat;
-@use 'material/sidenav-theme' as sidenav;
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $primary)));
-@include sidenav.theme($theme);
-`);
-    expect(css).not.toContain('--cngx-nav-icon-size');
-    expect(css).not.toContain('.cngx-sidenav__body');
-  });
-
-  it('reads the M2 rail ink from the theme foreground, so a dark theme stays readable', () => {
-    const css = compileThemeEntry(`
-@use '@angular/material' as mat;
-@use 'material/sidenav-theme' as sidenav;
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$theme: mat.m2-define-dark-theme((color: (primary: $primary, accent: $primary)));
-@include sidenav.theme($theme);
-`);
-    expect(css).toContain('--cngx-sidenav-color:');
-    expect(css).not.toContain('--cngx-sidenav-color: rgba(0, 0, 0, 0.87)');
-    expect(css).not.toContain('--cngx-sidenav-border-color: rgba(0, 0, 0, 0.12)');
-    // the row ink inherits the rail ink (currentColor); a fixed M2 row colour
-    // would stay dark on the dark surface
-    expect(css).not.toMatch(/--cngx-nav-link-(hover-)?color:/);
-  });
-
   it('emits the nav-link tokens on the row hosts (link and group head), not nested under the layout', () => {
     const css = compiledTheme();
     const navLink = css.match(/:where\(\.cngx-nav-link, \[cngxNavGroup\]\)\s*\{[^}]*\}/);
@@ -209,72 +155,5 @@ $theme: mat.m2-define-dark-theme((color: (primary: $primary, accent: $primary)))
     for (const block of layoutBlocks) {
       expect(block).not.toContain('--cngx-nav-link-');
     }
-  });
-});
-
-describe('nav-link Material bridge M2 dark contrast', () => {
-  function m2Dark(primary: string): Record<string, string> {
-    const css = compileThemeEntry(`
-@use 'sass:color';
-@use '@angular/material' as mat;
-@use 'material/nav-link-theme' as bridge;
-
-$theme: mat.m2-define-dark-theme((color: (
-  primary: mat.m2-define-palette(mat.$m2-${primary}-palette),
-  accent: mat.m2-define-palette(mat.$m2-pink-palette),
-)));
-
-.row { @include bridge.color($theme); }
-.slot { @include bridge.slot-color($theme); }
-probe {
-  --primary: #{color.ie-hex-str(mat.get-theme-color($theme, primary))};
-  --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
-  --divider: #{mat.get-theme-color($theme, foreground, divider)};
-}
-`);
-    const pick = (pattern: RegExp): string => {
-      const hit = css.match(pattern);
-      if (!hit) {
-        throw new Error(`no match for ${pattern}`);
-      }
-      return hit[1];
-    };
-    const probe = (name: string): string =>
-      `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
-    return {
-      active: pick(/--cngx-nav-link-active-color: (#[0-9a-f]{6})/),
-      indicator: pick(/--cngx-nav-link-active-indicator-color: (#[0-9a-f]{6})/),
-      headerBorder: pick(/--cngx-nav-header-border-color: ([^;]+);/),
-      footerBorder: pick(/--cngx-nav-footer-border-color: ([^;]+);/),
-      divider: pick(/--divider: ([^;]+);/),
-      primary: probe('primary'),
-      card: probe('card'),
-    };
-  }
-
-  function luminance(hex: string): number {
-    const [r, g, b] = [1, 3, 5]
-      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-      .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-
-  function contrast(a: string, b: string): number {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  }
-
-  it('lifts the active colour and indicator off the raw primary to 4.5:1 on the card', () => {
-    const t = m2Dark('indigo');
-    for (const token of [t['active'], t['indicator']]) {
-      expect(token).not.toBe(t['primary']);
-      expect(contrast(token, t['card'])).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it('draws the header and footer border in the theme divider', () => {
-    const t = m2Dark('indigo');
-    expect(t['headerBorder']).toBe(t['divider']);
-    expect(t['footerBorder']).toBe(t['divider']);
   });
 });

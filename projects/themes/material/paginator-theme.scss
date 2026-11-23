@@ -98,39 +98,6 @@
     // Lift shadow under the `segmented` active page - the Material level-1 card
     // elevation.
     --cngx-paginator-active-shadow: var(--mat-sys-level1, 0 1px 2px rgb(0 0 0 / 0.12));
-  } @else {
-    $primary: mat.get-theme-color($theme, primary);
-    $surface: mat.get-theme-color($theme, background, card);
-    $text: mat.get-theme-color($theme, foreground, text);
-    $divider: mat.get-theme-color($theme, foreground, divider);
-
-    --cngx-color-primary: #{$primary};
-    --cngx-color-primary-strong: #{$primary};
-    --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
-    --cngx-color-surface: #{$surface};
-    --cngx-color-border: #{rgba($divider, 0.12)};
-
-    --cngx-paginator-range-color: #{rgba($text, 0.7)};
-    --cngx-paginator-goto-border-color: #{rgba($divider, 0.42)};
-    --cngx-paginator-load-more-count-color: #{rgba($text, 0.6)};
-    --cngx-paginator-infinite-color: #{rgba($text, 0.6)};
-    --cngx-paginator-dot-color: #{rgba($text, 0.35)};
-
-    --cngx-paginator-rail-knob-bg: #{$surface};
-    --cngx-paginator-rail-knob-border-color: #{$primary};
-
-    --cngx-paginator-panel-bg: #{$surface};
-    --cngx-paginator-panel-color: #{rgba($text, 0.87)};
-    --cngx-paginator-panel-border-color: #{rgba($divider, 0.42)};
-    --cngx-paginator-panel-radius: 4px;
-    --cngx-paginator-panel-shadow: 0 2px 6px rgb(0 0 0 / 0.2);
-    --cngx-paginator-option-hover-bg: #{rgba($text, 0.08)};
-    --cngx-paginator-option-selected-bg: #{rgba($primary, 0.14)};
-    --cngx-paginator-option-selected-color: #{$primary};
-
-    --cngx-paginator-bar-border-color: #{rgba($divider, 0.42)};
-    --cngx-paginator-button-radius: 4px;
-    --cngx-paginator-active-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
   }
 }
 
@@ -149,8 +116,6 @@
     );
     --cngx-paginator-font-size: var(--mat-sys-body-medium-size, 0.875rem);
   }
-  // M2 exposes no first-class type-scale system vars worth bridging (same call
-  // the metric / card bridges make); the cngx system-font default stands.
 }
 
 @mixin density($theme) {

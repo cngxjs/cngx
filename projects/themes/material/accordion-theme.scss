@@ -38,10 +38,6 @@
     --cngx-accordion-border-color: var(--mat-sys-outline-variant);
     --cngx-accordion-header-color: var(--mat-sys-on-surface);
     --cngx-accordion-focus-color: var(--mat-sys-primary);
-  } @else {
-    --cngx-accordion-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-    --cngx-accordion-header-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-accordion-focus-color: #{mat.get-theme-color($theme, primary)};
   }
 }
 
@@ -63,8 +59,6 @@
 @mixin _skin-text($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-accordion-subtitle-color: var(--mat-sys-on-surface-variant);
-  } @else {
-    --cngx-accordion-subtitle-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.6)};
   }
 }
 
@@ -75,33 +69,24 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-accordion-item-bg: var(--mat-sys-surface-container);
     --cngx-accordion-group-bg: var(--mat-sys-surface-container-low);
-  } @else {
-    --cngx-accordion-item-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-accordion-group-bg: #{mat.get-theme-color($theme, background, card)};
   }
 }
 
 @mixin _skin-bento($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-accordion-bento-tile-bg: var(--mat-sys-primary-container);
-  } @else {
-    --cngx-accordion-bento-tile-bg: #{rgba(mat.get-theme-color($theme, primary), 0.12)};
   }
 }
 
 @mixin _skin-plus-minus($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-accordion-pm-box-bg: var(--mat-sys-surface-container-highest);
-  } @else {
-    --cngx-accordion-pm-box-bg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
   }
 }
 
 @mixin _skin-spine($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-accordion-spine-color: var(--mat-sys-primary);
-  } @else {
-    --cngx-accordion-spine-color: #{mat.get-theme-color($theme, primary)};
   }
 }
 

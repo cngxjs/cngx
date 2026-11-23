@@ -24,16 +24,6 @@
     --cngx-stat-card-stale-color: var(--mat-sys-error);
     --cngx-stat-card-skeleton-color: var(--mat-sys-surface-variant);
     --cngx-stat-card-stale-glyph-color: var(--mat-sys-on-error);
-  } @else {
-    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
-    $divider: mat.get-theme-color($theme, foreground, divider);
-    $error: mat.get-theme-color($theme, warn);
-
-    --cngx-stat-card-footer-color: #{$secondary};
-    --cngx-stat-card-error-color: #{$error};
-    --cngx-stat-card-stale-color: #{$error};
-    --cngx-stat-card-skeleton-color: #{rgba($divider, 0.42)};
-    --cngx-stat-card-stale-glyph-color: #{mat.get-theme-color($theme, background, card)};
   }
 }
 

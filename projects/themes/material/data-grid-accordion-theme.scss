@@ -32,12 +32,6 @@
     // The mono column heads / dimmed cells read --cngx-color-text-muted, which the
     // system bridge does not map. Align it here, scoped to the data-grid.
     --cngx-color-text-muted: var(--mat-sys-on-surface-variant);
-  } @else {
-    --cngx-dga-border-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
-    --cngx-dga-surface-alt: #{rgba(mat.get-theme-color($theme, foreground, text), 0.03)};
-    --cngx-dga-surface-strong: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
-    --cngx-dga-focus-color: #{mat.get-theme-color($theme, primary)};
-    --cngx-color-text-muted: #{rgba(mat.get-theme-color($theme, foreground, text), 0.62)};
   }
 }
 
@@ -82,9 +76,6 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-dga-surface-alt-mat: var(--mat-sys-surface-container-low);
     --cngx-dga-surface-strong-mat: var(--mat-sys-surface-container-high);
-  } @else {
-    --cngx-dga-surface-alt-mat: #{rgba(mat.get-theme-color($theme, foreground, text), 0.03)};
-    --cngx-dga-surface-strong-mat: #{rgba(mat.get-theme-color($theme, foreground, text), 0.06)};
   }
 }
 
@@ -112,9 +103,6 @@
     @if mat.get-theme-version($theme) == 1 {
       --cngx-color-primary-strong: var(--mat-sys-primary);
       --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
-    } @else {
-      --cngx-color-primary-strong: #{mat.get-theme-color($theme, primary)};
-      --cngx-color-on-primary-strong: #{mat.get-theme-color($theme, primary, default-contrast)};
     }
   }
 }

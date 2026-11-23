@@ -1,19 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Material timeline-theme bridge baseline > v0 light: resolved --cngx-* declarations match the baseline 1`] = `
-{
-  "--cngx-timeline-active-color": "#3f51b5",
-  "--cngx-timeline-connector-color": "rgba(0, 0, 0, 0.12)",
-  "--cngx-timeline-done-color": "#e91e63",
-  "--cngx-timeline-marker-fg": "white",
-  "--cngx-timeline-muted-color": "rgba(0, 0, 0, 0.54)",
-  "--cngx-timeline-rejected-color": "#f44336",
-  "--cngx-timeline-surface": "white",
-  "--cngx-timeline-text-color": "rgba(0, 0, 0, 0.87)",
-  "--cngx-timeline-upcoming-color": "rgba(0, 0, 0, 0.54)",
-}
-`;
-
 exports[`Material timeline-theme bridge baseline > v1 dark: resolved --cngx-* declarations match the baseline 1`] = `
 {
   "--cngx-timeline-active-color": "var(--mat-sys-primary)",

@@ -7,7 +7,7 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  * `projects/themes/material/nav-rail-theme.scss`. Pins the resolved
  * `--cngx-*` declarations of `theme($theme)` (rail surface, stacked label
  * size, group flyout, plus the rows, header and footer through the nav-link
- * bridge) for M3 light and dark and for M2, and the `surface($theme)` subset
+ * bridge) for M3 light and dark, and the `surface($theme)` subset
  * the aggregate theme includes.
  *
  * Co-located with CngxNavRail because `projects/themes/material/` is not
@@ -15,15 +15,13 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  */
 
 interface CompileOptions {
-  themeVersion: 'v1' | 'v0';
   variant: 'light' | 'dark';
   mixin: 'theme' | 'surface';
 }
 
 function buildEntry(opts: CompileOptions): string {
   const include = `@include nav-rail.${opts.mixin}($theme);`;
-  if (opts.themeVersion === 'v1') {
-    return `
+  return `
 @use '@angular/material' as mat;
 @use 'material/nav-rail-theme' as nav-rail;
 
@@ -32,25 +30,6 @@ $theme: mat.define-theme((
     theme-type: ${opts.variant},
     primary: mat.$azure-palette,
     tertiary: mat.$blue-palette,
-  ),
-));
-
-${include}
-`;
-  }
-  return `
-@use '@angular/material' as mat;
-@use 'material/nav-rail-theme' as nav-rail;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$warn: mat.m2-define-palette(mat.$m2-red-palette);
-
-$theme: mat.m2-define-${opts.variant}-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    warn: $warn,
   ),
 ));
 
@@ -76,39 +55,19 @@ function compileAndExtract(opts: CompileOptions): Record<string, string> {
 describe('Material nav-rail-theme bridge baseline', () => {
   it('v1 light: resolved --cngx-* declarations match the baseline', () => {
     expect(
-      compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'theme' }),
+      compileAndExtract({ variant: 'light', mixin: 'theme' }),
     ).toMatchSnapshot();
   });
 
   it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
     expect(
-      compileAndExtract({ themeVersion: 'v1', variant: 'dark', mixin: 'theme' }),
+      compileAndExtract({ variant: 'dark', mixin: 'theme' }),
     ).toMatchSnapshot();
-  });
-
-  it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-    expect(
-      compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' }),
-    ).toMatchSnapshot();
-  });
-
-  it('v0 dark: rail and flyout ink and borders come from the theme foreground', () => {
-    const light = compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'theme' });
-    const dark = compileAndExtract({ themeVersion: 'v0', variant: 'dark', mixin: 'theme' });
-    for (const token of [
-      '--cngx-nav-rail-color',
-      '--cngx-nav-rail-border-color',
-      '--cngx-nav-flyout-color',
-      '--cngx-nav-flyout-border-color',
-    ]) {
-      expect(dark[token], token).toBeDefined();
-      expect(dark[token], token).not.toBe(light[token]);
-    }
   });
 
   it('surface() bridges the rail, the flyout and the rail metrics, the row colours stay with sidenav.theme', () => {
     const tokens = Object.keys(
-      compileAndExtract({ themeVersion: 'v1', variant: 'light', mixin: 'surface' }),
+      compileAndExtract({ variant: 'light', mixin: 'surface' }),
     );
     expect(tokens.length).toBeGreaterThan(0);
     for (const token of tokens) {
@@ -120,19 +79,11 @@ describe('Material nav-rail-theme bridge baseline', () => {
 
   it('paints the labelled look indicator as a pill behind the icon, outside forced colours', () => {
     const css = compileThemeEntry(
-      buildEntry({ themeVersion: 'v1', variant: 'light', mixin: 'surface' }),
+      buildEntry({ variant: 'light', mixin: 'surface' }),
     );
     expect(css).toMatch(/@media \(forced-colors: none\)/);
     expect(css).toContain(
       'cngx-nav-rail.cngx-nav-rail[data-label-placement=below] :is(.cngx-nav-link, .cngx-nav-group):not(.cngx-nav-group-content *).cngx-nav-link--active::after',
     );
-  });
-
-  it('emits no rail metrics for an M2 theme', () => {
-    const tokens = Object.keys(
-      compileAndExtract({ themeVersion: 'v0', variant: 'light', mixin: 'surface' }),
-    );
-    expect(tokens).not.toContain('--cngx-nav-icon-size');
-    expect(tokens).not.toContain('--cngx-nav-rail-border-width');
   });
 });

@@ -5,13 +5,11 @@ import { compileThemeEntry } from '@cngx/testing/sass';
 /**
  * Baseline for the Material bridge in
  * `projects/themes/material/breadcrumb-theme.scss`. Pins the resolved
- * `--cngx-*` declarations the `theme($theme)` mixin produces across both
- * theme versions:
+ * `--cngx-*` declarations the `theme($theme)` mixin produces for an M3
+ * theme:
  *
  *   - v1 (M3): `mat.define-theme(...)` with the `--mat-sys-*` token
  *     branch active (light and dark).
- *   - v0 (M2): `mat.m2-define-light-theme(...)` with the
- *     `get-theme-color($theme, ...)` branch active.
  *
  * The bridge themes the bar's link / current / separator colours and the
  * overflow + siblings trigger / row-hover knobs. The gap now derives from the
@@ -29,13 +27,11 @@ import { compileThemeEntry } from '@cngx/testing/sass';
  */
 
 interface CompileOptions {
-  themeVersion: 'v1' | 'v0';
   variant: 'light' | 'dark';
 }
 
 function buildEntry(opts: CompileOptions): string {
-  if (opts.themeVersion === 'v1') {
-    return `
+  return `
 @use '@angular/material' as mat;
 @use 'material/breadcrumb-theme' as breadcrumb;
 
@@ -44,25 +40,6 @@ $theme: mat.define-theme((
     theme-type: ${opts.variant},
     primary: mat.$azure-palette,
     tertiary: mat.$blue-palette,
-  ),
-));
-
-@include breadcrumb.theme($theme);
-`;
-  }
-  return `
-@use '@angular/material' as mat;
-@use 'material/breadcrumb-theme' as breadcrumb;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$warn: mat.m2-define-palette(mat.$m2-red-palette);
-
-$theme: mat.m2-define-light-theme((
-  color: (
-    primary: $primary,
-    accent: $accent,
-    warn: $warn,
   ),
 ));
 
@@ -92,14 +69,10 @@ function compileAndExtract(opts: CompileOptions): Record<string, string> {
 
 describe('Material breadcrumb-theme bridge baseline', () => {
   it('v1 light: resolved --cngx-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v1', variant: 'light' })).toMatchSnapshot();
+    expect(compileAndExtract({ variant: 'light' })).toMatchSnapshot();
   });
 
   it('v1 dark: resolved --cngx-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v1', variant: 'dark' })).toMatchSnapshot();
-  });
-
-  it('v0 light: resolved --cngx-* declarations match the baseline', () => {
-    expect(compileAndExtract({ themeVersion: 'v0', variant: 'light' })).toMatchSnapshot();
+    expect(compileAndExtract({ variant: 'dark' })).toMatchSnapshot();
   });
 });

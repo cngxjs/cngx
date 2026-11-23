@@ -30,11 +30,6 @@
       0 1px 2px 0 rgb(0 0 0 / 0.3),
       0 1px 3px 1px rgb(0 0 0 / 0.15)
     );
-  } @else {
-    --cngx-sidenav-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-sidenav-color: #{mat.get-theme-color($theme, foreground, text)};
-    --cngx-sidenav-border-color: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-sidenav-backdrop-bg: rgba(0, 0, 0, 1);
   }
 }
 

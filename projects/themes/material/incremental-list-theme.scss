@@ -25,21 +25,6 @@
     --cngx-incremental-list-surface: var(--mat-sys-surface);
     --cngx-incremental-list-button-fg: var(--mat-sys-primary);
     --cngx-incremental-list-button-border: var(--mat-sys-outline);
-  } @else {
-    $primary: mat.get-theme-color($theme, primary);
-    $surface: mat.get-theme-color($theme, background, card);
-    $text: mat.get-theme-color($theme, foreground, text);
-    $secondary: mat.get-theme-color($theme, foreground, secondary-text);
-    $divider: mat.get-theme-color($theme, foreground, divider);
-    $error: mat.get-theme-color($theme, warn);
-
-    --cngx-incremental-list-text: #{$text};
-    --cngx-incremental-list-message-color: #{$secondary};
-    --cngx-incremental-list-error-color: #{$error};
-    --cngx-incremental-list-divider: #{rgba($divider, 0.42)};
-    --cngx-incremental-list-surface: #{$surface};
-    --cngx-incremental-list-button-fg: #{$primary};
-    --cngx-incremental-list-button-border: #{rgba($divider, 0.42)};
   }
 }
 
