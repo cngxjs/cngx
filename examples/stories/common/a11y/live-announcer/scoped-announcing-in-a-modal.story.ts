@@ -10,7 +10,7 @@ export const STORY: DemoSpec = {
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
   focus: ['a11y-pattern', 'composition'],
-  apiComponents: ['injectScopedLiveRegion', 'CngxFocusTrap'],
+  apiComponents: ['injectScopedLiveRegion', 'CngxFocusTrap', 'CngxFocusRestore'],
   moduleImports: [
     "import { CngxFocusRestore, CngxFocusTrap } from '@cngx/common/a11y';",
     "import { ScopedStatusPanel } from './_scoped-status-panel.component';",

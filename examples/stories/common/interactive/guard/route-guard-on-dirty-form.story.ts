@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'canDeactivateWhenClean: Route guard on dirty form',
   subtitle: 'Wire <code>canDeactivateWhenClean((page: EditPage) =&gt; page.isDirty())</code> into a route\'s <code>canDeactivate</code> array. The Router passes the component it leaves; the guard shows a <code>confirm()</code> when that component is dirty and lets the navigation through when it is clean. Type a draft, then press "Try to leave".',
-  description: 'Functional route guard factory. <code>isDirty</code> receives the routed component on every navigation attempt; when it returns <code>true</code> the guard opens the browser <code>confirm()</code> with the message and gates the navigation on the reply. <code>inject(DOCUMENT)</code> at call time keeps it SSR-safe (allow when no window exists). In an app the guard sits in the route config: <code>&#123; path: \'edit\', component: EditPage, canDeactivate: [canDeactivateWhenClean((page: EditPage) =&gt; page.isDirty())] &#125;</code>. The examples app generates its routes, so the demo chrome registers the same guard on this demo\'s own route at runtime; the navigation runs through the real Router. Pair with <code>CngxBeforeUnload</code> to also cover tab close and reload.',
+  description: 'Functional route guard factory. <code>isDirty</code> receives the routed component on every navigation attempt; when it returns <code>true</code> the guard opens the browser <code>confirm()</code> and gates the navigation on the reply. <code>inject(DOCUMENT)</code> at call time keeps it SSR-safe (allow when no window exists). The message defaults to <code>unsavedChanges</code> of the interactive i18n pack, so <code>provideInteractiveI18n(withInteractiveI18nLabels(...))</code> changes it app-wide; the optional second argument overrides it per guard. In an app the guard sits in the route config: <code>&#123; path: \'edit\', component: EditPage, canDeactivate: [canDeactivateWhenClean((page: EditPage) =&gt; page.isDirty())] &#125;</code>. The examples app generates its routes, so the demo chrome registers the same guard on this demo\'s own route at runtime; the navigation runs through the real Router. Pair with <code>CngxBeforeUnload</code> to also cover tab close and reload.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -27,7 +27,6 @@ export const STORY: DemoSpec = {
   /** The guard as it goes into a route config; the Router calls it with this component. */
   protected readonly canLeave = canDeactivateWhenClean(
     (page: { isDirty(): boolean }) => page.isDirty(),
-    'You have unsaved changes. Leave anyway?',
   );
 
   protected handleInput(event: Event): void {
@@ -49,9 +48,10 @@ export const STORY: DemoSpec = {
 
   constructor() {
     // The generated route has no canDeactivate, so register the guard on it
-    // here; the readout records each decision.
+    // here and take it off again on destroy; the readout records each decision.
     const route = inject(ActivatedRoute).routeConfig;
     if (route) {
+      inject(DestroyRef).onDestroy(() => (route.canDeactivate = undefined));
       route.canDeactivate = [
         (page: { isDirty(): boolean }) => {
           const allowed = this.canLeave(page);

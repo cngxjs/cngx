@@ -51,6 +51,13 @@ export const STORY: DemoSpec = {
         const t = e.target as HTMLElement | null;
         this.focusedId.set(t?.id || (t?.tagName.toLowerCase() ?? 'none'));
       });
+      host.addEventListener('focusout', () => {
+        setTimeout(() => {
+          if (!host.contains(document.activeElement)) {
+            this.focusedId.set('none');
+          }
+        }, 0);
+      });
     });
   }`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">

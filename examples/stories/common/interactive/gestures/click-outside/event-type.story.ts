@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxClickOutside'],
   setup: `protected readonly eventTypes = ['pointerdown', 'click', 'mousedown', 'touchstart'] as const;
-  protected readonly eventType = signal<'pointerdown' | 'click' | 'mousedown' | 'touchstart'>('pointerdown');
+  protected readonly eventType = signal<(typeof this.eventTypes)[number]>('pointerdown');
   protected readonly count = signal(0);
   protected readonly lastEvent = signal('none');
   protected handleOutside(event: Event): void {

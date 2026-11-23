@@ -37,7 +37,11 @@ test.describe('common/interactive/swipe', () => {
     await expect(card).toContainText('Page 2 of 3');
     await page.keyboard.press('Enter');
     await expect(card).toContainText('Page 3 of 3');
-    await expect(next).toBeDisabled();
+    // At the end the button stays focusable and reports aria-disabled.
+    await expect(next).toHaveAttribute('aria-disabled', 'true');
+    await page.keyboard.press('Enter');
+    await expect(card).toContainText('Page 3 of 3');
+    await expect(next).toBeFocused();
     await page.getByRole('button', { name: 'Previous' }).click();
     await expect(card).toContainText('Page 2 of 3');
   });

@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxLongPress'],
   setup: `protected pressCount = signal(0);
-  protected clickCount = signal(0);
+  protected readonly clickCount = signal(0);
   protected lastEvent = signal<string>('none');
   protected handleLongPress(event: PointerEvent): void {
     this.pressCount.update(n => n + 1);

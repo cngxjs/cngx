@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Notifications slide in by default, or appear instantly when <code>prefersReducedMotion()</code> is <code>true</code>. The signal drives the conditional class binding directly from the template, which is the path to take when CSS alone cannot decide.',
   description:
-    'Same directive, signal-in-TypeScript variant: the toast row gets the <code>cngx-ex-toast--animate</code> class only when motion is allowed. The conditional is on the binding, not in CSS, because a real consumer might also use the signal to skip a confetti effect, shorten an auto-dismiss timer, or refuse to autoplay video. The CSS-hook sibling shows the simpler path for pure-style cases. The list sits in a polite <code>cngxLiveRegion</code> that reads additions only, and removing a toast that holds focus moves focus to the next dismiss button, or back to "Add notification" when the list is empty.',
+    'Same directive, signal-in-TypeScript variant: the toast row gets the <code>cngx-ex-toast--animate</code> class only when motion is allowed. The conditional is on the binding, not in CSS, because a real consumer might also use the signal to skip a confetti effect, shorten an auto-dismiss timer, or refuse to autoplay video. The CSS-hook sibling shows the simpler path for pure-style cases. A polite <code>cngxLiveRegion</code> next to the list speaks the text of each new toast, so the region holds no controls and no empty-state text, and removing a toast that holds focus moves focus to the next dismiss button, or back to "Add notification" when the list is empty.',
   level: 'atom',
   audience: ['a11y', 'dev'],
   artifact: 'building-block',
@@ -23,9 +23,15 @@ export const STORY: DemoSpec = {
     },
   ],
   setup: `protected readonly notifications = signal<{ id: number; text: string }[]>([]);
+  protected readonly latest = signal('');
   private nextId = 0;
-  private readonly host = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+  private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
+  private readonly timers = new Set<ReturnType<typeof setTimeout>>();
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.timers.forEach((timer) => clearTimeout(timer)));
+  }
   protected addNotification(): void {
     const id = this.nextId++;
     const texts = [
@@ -35,8 +41,14 @@ export const STORY: DemoSpec = {
       'Backup completed',
       'Profile updated',
     ];
-    this.notifications.update((list) => [...list, { id, text: texts[id % texts.length] }]);
-    setTimeout(() => this.removeNotification(id), 4000);
+    const text = texts[id % texts.length];
+    this.notifications.update((list) => [...list, { id, text }]);
+    this.latest.set(text);
+    const timer = setTimeout(() => {
+      this.timers.delete(timer);
+      this.removeNotification(id);
+    }, 4000);
+    this.timers.add(timer);
   }
   protected removeNotification(id: number): void {
     const index = this.notifications().findIndex((n) => n.id === id);
@@ -65,20 +77,19 @@ export const STORY: DemoSpec = {
   template: `  <div cngxReducedMotion #rm="cngxReducedMotion">
     <button type="button" class="chip" data-toast-add (click)="addNotification()">Add notification</button>
 
-    <div cngxLiveRegion politeness="polite" [atomic]="false" relevant="additions">
-      <ul class="cngx-ex-toast-list">
-        @for (n of notifications(); track n.id) {
-          <li class="cngx-ex-toast" [attr.data-toast-id]="n.id" [class.cngx-ex-toast--animate]="!rm.prefersReducedMotion()">
-            <span>{{ n.text }}</span>
-            <button type="button" class="chip" data-toast-dismiss [attr.aria-label]="'Dismiss: ' + n.text" (click)="removeNotification(n.id)">dismiss</button>
-          </li>
-        } @empty {
-          <li class="cngx-ex-toast-list__empty">
-            No notifications. Click the button above to add one.
-          </li>
-        }
-      </ul>
-    </div>
+    <p cngxLiveRegion politeness="polite" class="cngx-sr-only">{{ latest() }}</p>
+    <ul class="cngx-ex-toast-list">
+      @for (n of notifications(); track n.id) {
+        <li class="cngx-ex-toast" [attr.data-toast-id]="n.id" [class.cngx-ex-toast--animate]="!rm.prefersReducedMotion()">
+          <span>{{ n.text }}</span>
+          <button type="button" class="chip" data-toast-dismiss [attr.aria-label]="'Dismiss: ' + n.text" (click)="removeNotification(n.id)">dismiss</button>
+        </li>
+      } @empty {
+        <li class="cngx-ex-toast-list__empty">
+          No notifications. Click the button above to add one.
+        </li>
+      }
+    </ul>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">

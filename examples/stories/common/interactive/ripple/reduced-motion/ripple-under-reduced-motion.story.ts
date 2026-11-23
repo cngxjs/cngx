@@ -24,7 +24,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxRipple', 'CngxMotionScope'],
   setup: `protected readonly reduce = signal(true);`,
-  template: `  <div class="button-row">
+  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px">
     <button type="button" class="chip" cngxRipple>Full motion</button>
     <div [cngxMotionScope]="reduce() ? 'reduced' : undefined" style="display:contents">
       <button type="button" class="chip" cngxRipple>Scoped motion</button>

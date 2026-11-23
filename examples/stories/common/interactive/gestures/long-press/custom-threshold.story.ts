@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxLongPress: custom threshold',
   subtitle: '<code>[threshold]="1000"</code> requires a one-second hold before <code>(longPressed)</code> fires. Useful for destructive actions where a fast tap should not commit.',
-  description: 'The directive is an input trigger; it raises events but adds no semantics. A long press has no keyboard equivalent (WCAG 2.1.1, 2.5.1), so the action gets a second path: the "Delete now" button runs the same confirmation for keyboard and switch users. A click on the hold button does nothing on purpose, so a fast tap never deletes.',
+  description: 'The directive is an input trigger; it raises events but adds no semantics. A long press has no keyboard equivalent (WCAG 2.1.1, 2.5.1), so the action gets a second path: the "Delete now" button runs the same action for keyboard and switch users. It skips the hold, so a real app puts its own confirm step (a dialog, an undo toast) behind it. A click on the hold button does nothing on purpose, so a fast tap never deletes.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -16,7 +16,7 @@ export const STORY: DemoSpec = {
   ],
   imports: ['CngxLongPress'],
   setup: `protected pressCount = signal(0);`,
-  template: `  <div class="button-row">
+  template: `  <div style="display:flex;flex-wrap:wrap;gap:8px">
     <button
       type="button"
       cngxLongPress

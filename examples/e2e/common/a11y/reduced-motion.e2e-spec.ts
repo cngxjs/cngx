@@ -54,7 +54,7 @@ test.describe('common/a11y/reduced-motion', () => {
     await expect(count).toHaveText('1');
 
   });
-  test('toast notifications: the list is a polite region and dismiss keeps focus in it', async ({
+  test('toast notifications: a polite region speaks new toasts and dismiss keeps focus', async ({
     page,
   }) => {
     await gotoDemo(page, 'common/a11y/reduced-motion/toast-notifications-motion-aware');
@@ -62,13 +62,15 @@ test.describe('common/a11y/reduced-motion', () => {
     const addBtn = page.getByRole('button', { name: 'Add notification' });
     const region = page.getByRole('status');
     await expect(region).toHaveAttribute('aria-live', 'polite');
-    await expect(region).toHaveAttribute('aria-relevant', 'additions');
 
     await addBtn.click();
+    await expect(region).toHaveText('Order shipped successfully');
     await addBtn.click();
+    await expect(region).toHaveText('New comment on your post');
+    // The region carries text only: no controls, no empty-state row.
+    await expect(region.getByRole('button')).toHaveCount(0);
     const dismiss = page.locator('[data-toast-dismiss]');
     await expect(dismiss).toHaveCount(2);
-    await expect(region.getByRole('listitem')).toHaveCount(2);
 
     await dismiss.first().focus();
     await page.keyboard.press('Enter');
