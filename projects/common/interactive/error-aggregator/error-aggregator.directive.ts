@@ -18,6 +18,7 @@ import { injectLocale } from '@cngx/core/utils';
 import { createErrorAggregatorContract } from '../error-registry/aggregator-contract';
 import { errorSourceMapEqual } from '../error-registry/equal-fns';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
+import { registerByName } from '../error-registry/register-by-name';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import {
@@ -272,33 +273,10 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     if (!registry) {
       return;
     }
-    const registryInjector = inject(Injector);
-    // Registration reacts to name changes: a renamed aggregator unregisters
-    // its old key and registers the new one. Deferred behind afterNextRender
-    // so registration stays browser-only.
-    afterNextRender(() => {
-      let registered: string | null = null;
-      effect(
-        () => {
-          const name = this.aggregatorName();
-          untracked(() => {
-            if (registered && registered !== name) {
-              registry.unregisterAggregator(registered, this);
-              registered = null;
-            }
-            if (name && registered !== name) {
-              registry.registerAggregator(name, this);
-              registered = name;
-            }
-          });
-        },
-        { injector: registryInjector },
-      );
-      destroyRef.onDestroy(() => {
-        if (registered) {
-          registry.unregisterAggregator(registered, this);
-        }
-      });
-    });
+    registerByName(
+      this.aggregatorName,
+      (name) => registry.registerAggregator(name, this),
+      (name) => registry.unregisterAggregator(name, this),
+    );
   }
 }

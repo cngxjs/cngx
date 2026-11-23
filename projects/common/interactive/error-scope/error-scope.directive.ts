@@ -1,15 +1,6 @@
-import {
-  afterNextRender,
-  DestroyRef,
-  Directive,
-  effect,
-  inject,
-  Injector,
-  input,
-  signal,
-  untracked,
-} from '@angular/core';
+import { Directive, inject, input, signal } from '@angular/core';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
+import { registerByName } from '../error-registry/register-by-name';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.token';
 
 /**
@@ -80,34 +71,10 @@ export class CngxErrorScope implements CngxErrorScopeContract {
     if (!registry) {
       return;
     }
-    const destroyRef = inject(DestroyRef);
-    const injector = inject(Injector);
-    // Registration reacts to name changes: a renamed scope unregisters its
-    // old key and registers the new one. Deferred behind afterNextRender so
-    // registration stays browser-only.
-    afterNextRender(() => {
-      let registered: string | null = null;
-      effect(
-        () => {
-          const name = this.scopeName();
-          untracked(() => {
-            if (registered && registered !== name) {
-              registry.unregisterScope(registered, this);
-              registered = null;
-            }
-            if (name && registered !== name) {
-              registry.registerScope(name, this);
-              registered = name;
-            }
-          });
-        },
-        { injector },
-      );
-      destroyRef.onDestroy(() => {
-        if (registered) {
-          registry.unregisterScope(registered, this);
-        }
-      });
-    });
+    registerByName(
+      this.scopeName,
+      (name) => registry.registerScope(name, this),
+      (name) => registry.unregisterScope(name, this),
+    );
   }
 }

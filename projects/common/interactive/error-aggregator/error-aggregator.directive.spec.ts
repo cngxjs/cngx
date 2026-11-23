@@ -1,4 +1,12 @@
-import { Component, effect, signal, viewChild, type Signal } from '@angular/core';
+import {
+  type AfterViewInit,
+  Component,
+  effect,
+  inject,
+  signal,
+  viewChild,
+  type Signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { stripBidiIsolates } from '@cngx/testing';
@@ -137,6 +145,21 @@ class EpochlessScopeHost {
     reveal: () => this.show.set(true),
     reset: () => this.show.set(false),
   };
+}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator [cngxErrorAggregatorName]="name()"></div>
+  `,
+  imports: [CngxErrorAggregator],
+})
+class AggregatorLookupHost implements AfterViewInit {
+  private readonly registry = inject(CngxErrorRegistry);
+  readonly name = signal<string | undefined>('billing');
+  seenAfterViewInit = false;
+  ngAfterViewInit(): void {
+    this.seenAfterViewInit = this.registry.getAggregator('billing') !== undefined;
+  }
 }
 
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
@@ -430,6 +453,33 @@ describe('CngxErrorAggregator', () => {
 });
 
 describe('CngxErrorAggregator registry registration', () => {
+  it('resolves by name from the host ngAfterViewInit', () => {
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(AggregatorLookupHost);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.seenAfterViewInit).toBe(true);
+  });
+
+  it('re-registers under the new name when cngxErrorAggregatorName changes', () => {
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(AggregatorLookupHost);
+    fixture.detectChanges();
+    const registry = TestBed.inject(CngxErrorRegistry);
+    const agg = aggregatorOf(fixture);
+    expect(registry.getAggregator('billing')).toBe(agg);
+
+    fixture.componentInstance.name.set('shipping');
+    fixture.detectChanges();
+    expect(registry.getAggregator('billing')).toBeUndefined();
+    expect(registry.getAggregator('shipping')).toBe(agg);
+
+    fixture.componentInstance.name.set(undefined);
+    fixture.detectChanges();
+    expect(registry.getAggregator('shipping')).toBeUndefined();
+
+    fixture.destroy();
+  });
+
   it('hands a shared name to the waiting aggregator once the holder is destroyed', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
