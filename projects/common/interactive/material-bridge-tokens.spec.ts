@@ -213,11 +213,13 @@ describe('button-toggle Material bridge', () => {
   // component-level color token - every tone derives from the foundation
   // knobs, so the bridge routes those (tabs-theme precedent): the primary
   // for the unchecked hover tint, the strong pair for the checked segment.
-  // The spacing tokens are deliberately absent: SET from --cngx-space-* at
-  // the toggle host, density-bridge territory. The shape rides the
-  // --cngx-radius-md knob, read by the first and last segment corners and by
-  // the group radius derivation.
+  // The padding tokens are SET per segment inside @scope, so metrics()
+  // assigns them in a raw rule on the --cngx-space-sm rung. The shape rides
+  // the --cngx-radius-md knob, read by the first and last segment corners
+  // and by the group radius derivation.
   const CONSUMED = [
+    '--cngx-button-toggle-padding-block',
+    '--cngx-button-toggle-padding-inline',
     '--cngx-color-border',
     '--cngx-color-on-primary-strong',
     '--cngx-color-primary',
@@ -249,8 +251,19 @@ $theme: mat.define-theme((
     );
     expect(block).not.toBeNull();
     expect(block![0]).toContain('--cngx-color-primary: var(--mat-sys-primary)');
-    // no spacing fork - the padding tokens ride the SET-from-scale rule
-    expect(css).not.toContain('--cngx-button-toggle-padding');
+    expect(block![0]).toContain('--cngx-color-primary-strong: var(--mat-sys-secondary-container)');
+    expect(block![0]).toContain('--cngx-color-border: var(--mat-sys-outline)');
+  });
+
+  it('assigns the padding on the density rungs in a raw rule above the @scope SET (M3)', () => {
+    const css = bridgeCss('button-toggle-theme');
+    const segment = css.match(/\n\s*button\.cngx-button-toggle\s*\{[^}]*\}/);
+    expect(segment).not.toBeNull();
+    expect(segment![0]).toContain('--cngx-button-toggle-padding-block: calc(var(--cngx-space-sm, 8px) * 1.25)');
+    expect(segment![0]).toContain('--cngx-button-toggle-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5)');
+    expect(segment![0]).toContain('line-height: var(--mat-sys-label-large-line-height, 1.25rem)');
+    expect(segment![0]).not.toContain('letter-spacing');
+    expect(css).not.toMatch(/--cngx-button-toggle-padding-(block|inline): \d+px/);
   });
 
   it('routes the Material group corner through the radius knob on hosts and segments', () => {

@@ -108,6 +108,51 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
+    test('button-toggle: the group height and edge match mat-button-toggle-group', async ({ page }) => {
+      // mat draws one 1px outline around 40px segments; cngx draws it on each
+      // segment, so the group box is 42px on both sides.
+      const height = (sel: string) => page.locator(sel).evaluate((el) => el.getBoundingClientRect().height);
+      expect(await height(cngx('button-toggle'))).toBe(await height(mat('button-toggle')));
+      await expectSame(
+        page,
+        mat('button-toggle'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['border-top-color'],
+      );
+    });
+
+    test('button-toggle: the checked segment paints the mat secondary-container pair', async ({ page }) => {
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle-checked'),
+        cngx('button-toggle', 'button[aria-checked=true]'),
+        ['background-color', 'color'],
+      );
+      await expectSame(
+        page,
+        mat('button-toggle'),
+        cngx('button-toggle', 'button[aria-checked=true]'),
+        ['border-top-color'],
+      );
+    });
+
+    test('button-toggle: the label sits at the mat inset in label-large type', async ({ page }) => {
+      // mat pads the label content, cngx the segment; the text paints in
+      // both with the tracking the inner button resets to normal.
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle:not(.mat-button-toggle-checked) .mat-button-toggle-label-content'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['padding-left', 'font-size', 'font-weight', 'letter-spacing'],
+      );
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle:not(.mat-button-toggle-checked) button'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['line-height'],
+      );
+    });
+
     test('card: the surface, corner and body type match the raised mat-card', async ({ page }) => {
       await expectSame(page, mat('card'), cngx('card'), ['background-color', 'color', 'border-top-left-radius']);
       await expectSame(page, mat('card', '.mat-mdc-card-title'), cngx('card', '[cngxCardTitle]'), ['color']);

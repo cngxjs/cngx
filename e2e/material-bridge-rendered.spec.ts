@@ -170,9 +170,9 @@ test.describe('material-bridge rendered values: button-toggle', () => {
   ] as const;
 
   // The bridge routes the cngx foundation knobs (the leaf chrome reads no
-  // component-level color token); the density chain runs through
-  // density-bridge -> --cngx-space-* -> the SET-from-scale rule at the
-  // toggle host. density: -2 maps sm -> 6px and md -> 12px.
+  // component-level color token); the padding tokens ride the bridge's raw
+  // rule on the --cngx-space-sm rung, which density-bridge rescales.
+  // density: -2 maps sm -> 6px, so block 6 * 1.25 and inline 6 * 1.5.
   const BRIDGE_CSS = compileBridge('button-toggle-theme');
   const DENSITY_CSS = compileEntry(`
 @use '@angular/material' as mat;
@@ -203,19 +203,24 @@ html { @include cngx-density.density($theme); }
   test('the routed foundation knobs paint the idle segment', async ({ page }) => {
     expect(await computedValue(page, '#toggle-idle', 'background-color')).toBe(matSys('surface'));
     expect(await computedValue(page, '#toggle-idle', 'color')).toBe(matSys('on-surface'));
-    expect(await computedValue(page, '#toggle-idle', 'border-top-color')).toBe(
-      matSys('outline-variant'),
-    );
+    expect(await computedValue(page, '#toggle-idle', 'border-top-color')).toBe(matSys('outline'));
   });
 
-  test('the checked segment paints the primary pair', async ({ page }) => {
+  test('the checked segment paints the secondary-container pair inside the outline', async ({
+    page,
+  }) => {
     expect(await computedValue(page, '#toggle-checked', 'background-color')).toBe(
-      matSys('primary'),
+      matSys('secondary-container'),
     );
-    expect(await computedValue(page, '#toggle-checked', 'color')).toBe(matSys('on-primary'));
-    expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(
-      matSys('primary'),
+    expect(await computedValue(page, '#toggle-checked', 'color')).toBe(
+      matSys('on-secondary-container'),
     );
+    expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(matSys('outline'));
+  });
+
+  test('a hovered checked segment keeps the outline edge', async ({ page }) => {
+    await page.hover('#toggle-checked');
+    expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(matSys('outline'));
   });
 
   test('the outer segment corners paint the Material group corner', async ({ page }) => {
@@ -231,16 +236,11 @@ html { @include cngx-density.density($theme); }
     // The class of proof compileString structurally cannot give: the
     // registered (inherits: false, @property in cngx-button-toggle.css)
     // padding token must compute on the toggle itself - density-bridge sets
-    // --cngx-space-sm/-md on html, the SET-from-scale rule at the toggle
-    // host derives the padding token from it, and the paint carries it.
-    // A bridged density fork would never land here (the :scope SET rule
-    // out-specifies :where in the same layer), which is why the bridge
-    // ships none.
-    expect(await computedValue(page, '#toggle-idle', '--cngx-button-toggle-padding-block')).toBe(
-      '6px',
-    );
-    expect(await computedValue(page, '#toggle-idle', 'padding-top')).toBe('6px');
-    expect(await computedValue(page, '#toggle-idle', 'padding-left')).toBe('12px');
+    // --cngx-space-sm on html, the bridge's raw rule (0,1,1) derives the
+    // padding tokens from it over the :scope SET rule (0,1,0), and the paint
+    // carries them.
+    expect(await computedValue(page, '#toggle-idle', 'padding-top')).toBe('7.5px');
+    expect(await computedValue(page, '#toggle-idle', 'padding-left')).toBe('9px');
   });
 });
 

@@ -27,12 +27,19 @@
 // the group/toggle hosts themselves, where any consumer selector wins
 // against this block's zero-specificity :where().
 //
-// Spacing is deliberately absent. Both registered padding tokens
-// (--cngx-button-toggle-padding-block/-inline, inherits: false) are SET
-// from --cngx-space-* at the toggle host, which density-bridge.scss
-// already maps onto the Material density scale - and a :where() density
-// fork here would lose to that :scope SET rule anyway (same layer, higher
-// specificity). The group gap (0) is neither tone- nor density-specific.
+// Metrics and type: the segment SETs both padding tokens
+// (--cngx-button-toggle-padding-block/-inline, inherits: false) from
+// --cngx-space-* inside `@scope (.cngx-button-toggle)` `:scope` (0,1,0), so
+// metrics() assigns them in a raw rule one element above (0,1,1), on the
+// rungs: 10px block and 12px inline at density 0, so a 20px label line
+// plus the 1px border gives the 42px M3 group. The segment sets
+// `font: inherit` and a literal font size and has no type tokens, so the
+// label-large size, line height and weight are PROPERTIES there; the
+// tracking stays `normal` like the text mat-button-toggle paints. Consumer
+// override: an unlayered property rule on the segment.
+// Checked: M3 fills the checked segment with secondary-container and keeps
+// the outline divider, so the strong pair is routed to the secondary roles
+// and the checked border rules (0,2,1) / hover (0,4,1) put the outline back.
 // The shape is routed through the --cngx-radius-md knob for the same
 // reason as the colours: the visible corners are painted by the first and
 // last segment from that knob, and the group radius token derives from it
@@ -46,10 +53,10 @@
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-color-primary: var(--mat-sys-primary);
-    --cngx-color-primary-strong: var(--mat-sys-primary);
-    --cngx-color-on-primary-strong: var(--mat-sys-on-primary);
+    --cngx-color-primary-strong: var(--mat-sys-secondary-container);
+    --cngx-color-on-primary-strong: var(--mat-sys-on-secondary-container);
     --cngx-color-surface: var(--mat-sys-surface);
-    --cngx-color-border: var(--mat-sys-outline-variant);
+    --cngx-color-border: var(--mat-sys-outline);
     --cngx-color-text: var(--mat-sys-on-surface);
   }
 }
@@ -57,6 +64,29 @@
 @mixin base($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-radius-md: var(--mat-sys-corner-extra-large, 28px);
+  }
+}
+
+$_segment: 'button.cngx-button-toggle';
+$_checked: '#{$_segment}.cngx-button-toggle--checked';
+
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      #{$_segment} {
+        --cngx-button-toggle-padding-block: calc(var(--cngx-space-sm, 8px) * 1.25);
+        --cngx-button-toggle-padding-inline: calc(var(--cngx-space-sm, 8px) * 1.5);
+        font-size: var(--mat-sys-label-large-size, 0.875rem);
+        line-height: var(--mat-sys-label-large-line-height, 1.25rem);
+        font-weight: var(--mat-sys-label-large-weight, 500);
+      }
+      // The component paints the checked edge in the fill colour; M3 keeps
+      // the outline divider between and around the segments.
+      #{$_checked},
+      #{$_checked}:hover:not(.cngx-button-toggle--disabled) {
+        border-color: var(--mat-sys-outline);
+      }
+    }
   }
 }
 
@@ -69,4 +99,5 @@
     @include color($theme);
     @include base($theme);
   }
+  @include metrics($theme);
 }
