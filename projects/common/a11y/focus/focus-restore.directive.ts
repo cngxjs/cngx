@@ -40,6 +40,7 @@ export const CNGX_FOCUSABLE_SELECTOR =
  * `self: true`, because the composer constructs after its host directives.
  * `CngxDrawerSurface` is the in-library composer.
  *
+ * @relatedTo CngxFocusRestore, CNGX_FOCUS_RESTORE_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
  * @since 0.1.0
  */
@@ -60,6 +61,7 @@ export interface CngxFocusRestoreDriver {
  * and `[fallback]` of its `CngxFocusRestore` host directive. Used by
  * `CngxDrawerSurface`.
  *
+ * @relatedTo CngxFocusRestore
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
  * @since 0.1.0
  */

@@ -65,7 +65,7 @@ protected handleCopied(): void {
 #### Notes
 
 - Both body regions are created with the service, so they are in the DOM before the first message.
-- Each write clears the region and sets the text a frame later, so an identical message is re-read; written text is cleared again after 7 s.
+- Each write clears the region and sets the text 16 ms later, so an identical message is re-read; written text is cleared again after 7 s. The first write into a newly created modal region waits longer, so the screen reader registers the region first.
 - Pass the announcing element as `scope` inside a modal: the message goes to a region pair inside the topmost open `[aria-modal="true"]` container, because the modal hides the body regions. Without a modal ancestor it goes to the body regions.
 - No-op on the server.
 

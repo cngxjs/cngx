@@ -68,6 +68,8 @@ Because the directive has no keyboard path, never gate content behind `active()`
 providers: [{ provide: CNGX_HOVER_INTENT_DEFAULTS, useValue: { enterDelay: 200 } }]
 ```
 
+The nearest provider wins. `CngxSidenav` and `CngxMenuItemSubmenu` provide the token on their own element from their configs (`provideSidenavConfig` `hover`, `provideMenuConfig` `submenuOpenDelay` / `submenuCloseDelay`), so a root value does not reach their hover intent; configure those through their own config.
+
 ### As a hostDirective
 
 ```typescript

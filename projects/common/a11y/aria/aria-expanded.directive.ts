@@ -17,6 +17,7 @@ import {
  * constructs after its host directives. `CngxExpandable` is the in-library
  * composer.
  *
+ * @relatedTo CngxAriaExpanded, CNGX_ARIA_EXPANDED_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
  * @since 0.1.0
  */
@@ -34,6 +35,7 @@ export interface CngxAriaExpandedDriver {
  * `CngxAriaExpanded` host directive; `aria-controls` still follows
  * `[controls]`. Used by `CngxExpandable`.
  *
+ * @relatedTo CngxAriaExpanded
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
  * @since 0.1.0
  */

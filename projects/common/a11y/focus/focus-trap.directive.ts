@@ -20,6 +20,7 @@ import {
  * `self: true`, because the composer constructs after its host directives.
  * `CngxDrawerSurface` and `CngxPopoverSheet` are the in-library composers.
  *
+ * @relatedTo CngxFocusTrap, CNGX_FOCUS_TRAP_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
  * @since 0.1.0
  */
@@ -36,6 +37,7 @@ export interface CngxFocusTrapDriver {
  * its `CngxFocusTrap` host directive. Used by `CngxDrawerSurface` and
  * `CngxPopoverSheet`.
  *
+ * @relatedTo CngxFocusTrap
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
  * @since 0.1.0
  */
