@@ -23,7 +23,8 @@
  * The group container is a zero-gap flex row, so adjacent toggles
  * share an edge:
  *
- * - `:scope + :scope` - collapses the inner border
+ * - `.cngx-button-toggle + :scope` in a horizontal group - collapses the
+ *   inner border
  * - `:first-child` - rounded start corners only
  * - `:last-child` - rounded end corners only
  *
