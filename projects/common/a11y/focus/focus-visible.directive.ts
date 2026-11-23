@@ -42,6 +42,13 @@ export class CngxFocusVisible {
   private pointerActive = false;
   private pointerClearTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // pointercancel (touch scroll start, OS gesture) ends a press without a
+  // pointerup; either release clears the flag and drops both listeners.
+  private readonly releasePointer = (): void => {
+    this.removeReleaseListeners();
+    this.schedulePointerClear();
+  };
+
   private readonly schedulePointerClear = (): void => {
     // One macrotask of grace: on touch, the compat mousedown and the focusin
     // fire AFTER pointerup, so a synchronous clear here would misread a tap
@@ -58,7 +65,7 @@ export class CngxFocusVisible {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => {
-      this.doc.removeEventListener('pointerup', this.schedulePointerClear, true);
+      this.removeReleaseListeners();
       if (this.pointerClearTimer !== null) {
         clearTimeout(this.pointerClearTimer);
       }
@@ -77,10 +84,13 @@ export class CngxFocusVisible {
     // (disabled child, text selection, drag released off-host) would
     // otherwise suppress the ring on the NEXT keyboard Tab-in. Document-level
     // capture catches the release wherever it lands.
-    this.doc.addEventListener('pointerup', this.schedulePointerClear, {
-      once: true,
-      capture: true,
-    });
+    this.doc.addEventListener('pointerup', this.releasePointer, true);
+    this.doc.addEventListener('pointercancel', this.releasePointer, true);
+  }
+
+  private removeReleaseListeners(): void {
+    this.doc.removeEventListener('pointerup', this.releasePointer, true);
+    this.doc.removeEventListener('pointercancel', this.releasePointer, true);
   }
 
   /** @internal Sets focus-visible state; clears pointer flag. */

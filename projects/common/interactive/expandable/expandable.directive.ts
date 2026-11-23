@@ -1,10 +1,17 @@
-import { computed, Directive, input, output, signal } from '@angular/core';
+import { booleanAttribute, computed, Directive, input, model } from '@angular/core';
+import {
+  CNGX_ARIA_EXPANDED_DRIVER,
+  CngxAriaExpanded,
+  type CngxAriaExpandedDriver,
+} from '@cngx/common/a11y';
 
 /**
  * Passive expand/collapse contract for elements whose open state is driven
  * from the outside - typically a `CngxTreeController` or any component that
- * manages a shared expansion set. Mirrors `aria-expanded` and (optionally)
- * `aria-controls` into the host; carries no interaction of its own.
+ * manages a shared expansion set. Composes `CngxAriaExpanded` for
+ * `aria-expanded` and (optionally) `aria-controls`; carries no interaction of
+ * its own. `[(expanded)]` binds the state two-way; `[leaf]` drops
+ * `aria-expanded` for a row with nothing to expand.
  *
  * Use `CngxDisclosure` instead for self-triggering expanders (FAQ, accordion
  * headings). The distinction is deliberate: a tree-item row is a selection
@@ -18,7 +25,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *     role="treeitem"
  *     aria-level="1"
  *     cngxExpandable
- *     [cngxExpandableOpen]="ctrl.isExpanded(id)()"
+ *     [expanded]="ctrl.isExpanded(id)()"
  *     [controls]="childrenId"
  *   >
  *     <button
@@ -42,50 +49,30 @@ import { computed, Directive, input, output, signal } from '@angular/core';
   selector: '[cngxExpandable]',
   exportAs: 'cngxExpandable',
   standalone: true,
-  host: {
-    '[attr.aria-expanded]': 'expanded()',
-    '[attr.aria-controls]': 'controls() ?? null',
-  },
+  hostDirectives: [{ directive: CngxAriaExpanded, inputs: ['controls'] }],
+  providers: [{ provide: CNGX_ARIA_EXPANDED_DRIVER, useExisting: CngxExpandable }],
 })
-export class CngxExpandable {
-  /** Controlled expanded state. When bound, wins over internal state. */
-  readonly expandedInput = input<boolean | undefined>(undefined, {
-    alias: 'cngxExpandableOpen',
-  });
-
-  /** `id` of the controlled content element, bound to `aria-controls`. */
-  readonly controls = input<string | undefined>(undefined);
-
-  private readonly expandedState = signal(false);
-
-  /** Resolved expanded state (controlled input wins over internal state). */
-  readonly expanded = computed(() => this.expandedInput() ?? this.expandedState());
-
-  /** Emitted when the expanded state changes. */
-  readonly expandedChange = output<boolean>();
-
+export class CngxExpandable implements CngxAriaExpandedDriver {
   /**
-   * Sets the internal state to expanded and emits `expandedChange` with `true`. No-op when
-   * already expanded; a bound `cngxExpandableOpen` still decides the resolved `expanded()`.
+   * Expanded state, two-way bindable as `[(expanded)]`; `expandedChange` emits
+   * on every change made through `expand()`, `collapse()` or `toggle()`.
    */
+  readonly expanded = model<boolean>(false);
+
+  /** Marks a row with nothing to expand: `aria-expanded` is omitted. */
+  readonly leaf = input<boolean, unknown>(false, { transform: booleanAttribute });
+
+  /** The `aria-expanded` value the composed `CngxAriaExpanded` writes: `null` on a leaf. */
+  readonly ariaExpanded = computed(() => (this.leaf() ? null : this.expanded()));
+
+  /** Expands and emits `expandedChange` with `true`. No-op when already expanded. */
   expand(): void {
-    if (this.expanded()) {
-      return;
-    }
-    this.expandedState.set(true);
-    this.expandedChange.emit(true);
+    this.expanded.set(true);
   }
 
-  /**
-   * Sets the internal state to collapsed and emits `expandedChange` with `false`. No-op when
-   * already collapsed; a bound `cngxExpandableOpen` still decides the resolved `expanded()`.
-   */
+  /** Collapses and emits `expandedChange` with `false`. No-op when already collapsed. */
   collapse(): void {
-    if (!this.expanded()) {
-      return;
-    }
-    this.expandedState.set(false);
-    this.expandedChange.emit(false);
+    this.expanded.set(false);
   }
 
   /**

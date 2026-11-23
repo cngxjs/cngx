@@ -269,6 +269,50 @@ describe('CngxFocusTrap with the CDK factory', () => {
     expect(sentinels()).toBe(2);
   });
 
+  // jsdom has no sequential focus navigation: a Tab press is modelled as
+  // the browser moving focus onto the next tabbable node, the sentinel.
+  function enableAndGetSentinels(fixture: ReturnType<typeof setup>['fixture'], el: HTMLElement) {
+    fixture.componentInstance.enabled.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const [start, end] = Array.from(el.querySelectorAll<HTMLElement>('.cdk-focus-trap-anchor'));
+    return { start, end };
+  }
+
+  it('wraps Tab from the last element back to the first', () => {
+    const { fixture, el } = setup();
+    const { end } = enableAndGetSentinels(fixture, el);
+    (el.querySelector('.last') as HTMLElement).focus();
+
+    end.focus();
+
+    expect(document.activeElement).toBe(el.querySelector('.first'));
+  });
+
+  it('wraps Shift+Tab from the first element to the last', () => {
+    const { fixture, el } = setup();
+    const { start } = enableAndGetSentinels(fixture, el);
+    (el.querySelector('.first') as HTMLElement).focus();
+
+    start.focus();
+
+    expect(document.activeElement).toBe(el.querySelector('.last'));
+  });
+
+  it('keeps the sentinels in the tab order only while enabled', () => {
+    const { fixture, el } = setup();
+    const { start, end } = enableAndGetSentinels(fixture, el);
+    expect(start.getAttribute('tabindex')).toBe('0');
+    expect(end.getAttribute('tabindex')).toBe('0');
+
+    fixture.componentInstance.enabled.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(start.hasAttribute('tabindex')).toBe(false);
+    expect(end.hasAttribute('tabindex')).toBe(false);
+  });
+
   it('focuses the first and last tabbable element before the first enable without sentinels', async () => {
     const { el, dir, sentinels } = setup();
     dir.focusFirst();

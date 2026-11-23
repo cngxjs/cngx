@@ -114,7 +114,7 @@ describe('mountLiveRegionAnnouncer', () => {
       TestBed.flushEffects();
       vi.advanceTimersByTime(20);
       expect(document.querySelector('span[aria-live="assertive"]')?.textContent).toBe('Load failed');
-      expect(document.querySelector('span[aria-live="polite"]')).toBeNull();
+      expect(document.querySelector('span[aria-live="polite"]')?.textContent).toBe('');
     } finally {
       vi.useRealTimers();
       live.ngOnDestroy();

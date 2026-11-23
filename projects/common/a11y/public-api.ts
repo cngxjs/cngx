@@ -1,7 +1,11 @@
 /**
  * @module `@cngx/common/a11y`
  */
-export { CngxAriaExpanded } from './aria/aria-expanded.directive';
+export {
+  CngxAriaExpanded,
+  CNGX_ARIA_EXPANDED_DRIVER,
+  type CngxAriaExpandedDriver,
+} from './aria/aria-expanded.directive';
 export { CngxLiveRegion } from './aria/live-region.directive';
 export { CngxLiveAnnouncer, type AriaLivePoliteness } from './aria/live-announcer';
 export { injectScopedLiveRegion, type CngxScopedLiveRegion } from './aria/scoped-live-region';

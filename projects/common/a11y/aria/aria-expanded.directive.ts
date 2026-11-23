@@ -1,4 +1,34 @@
-import { Directive, input } from '@angular/core';
+import {
+  booleanAttribute,
+  computed,
+  Directive,
+  inject,
+  InjectionToken,
+  Injector,
+  input,
+  type Signal,
+} from '@angular/core';
+
+/**
+ * @internal Lets a directive that composes `CngxAriaExpanded` as a host
+ * directive drive `aria-expanded` from its own state instead of
+ * `[cngxAriaExpanded]`. Provided by the composer on the same element
+ * (`useExisting`); the ARIA directive resolves it lazily with `self: true`,
+ * because the composer constructs after its host directives. `CngxExpandable`
+ * is the in-library composer.
+ */
+export interface CngxAriaExpandedDriver {
+  /**
+   * The `aria-expanded` value; wins over `[cngxAriaExpanded]`. `null` omits
+   * the attribute, for a host that has nothing to expand (a leaf tree item).
+   */
+  readonly ariaExpanded: Signal<boolean | null>;
+}
+
+/** @internal See {@link CngxAriaExpandedDriver}. */
+export const CNGX_ARIA_EXPANDED_DRIVER = new InjectionToken<CngxAriaExpandedDriver>(
+  'CngxAriaExpandedDriver',
+);
 
 /**
  * Manages `aria-expanded` and optionally `aria-controls` on the host element.
@@ -44,13 +74,31 @@ import { Directive, input } from '@angular/core';
   exportAs: 'cngxAriaExpanded',
   standalone: true,
   host: {
-    '[attr.aria-expanded]': 'expanded()',
+    '[attr.aria-expanded]': 'ariaExpanded()',
     '[attr.aria-controls]': 'controls() ?? null',
   },
 })
 export class CngxAriaExpanded {
   /** Whether the controlled element is currently expanded. Sets `aria-expanded`. */
-  readonly expanded = input<boolean>(false, { alias: 'cngxAriaExpanded' });
+  readonly expanded = input<boolean, unknown>(false, {
+    alias: 'cngxAriaExpanded',
+    transform: booleanAttribute,
+  });
   /** The `id` of the controlled element. Sets `aria-controls`. */
   readonly controls = input<string | undefined>(undefined);
+
+  private readonly injector = inject(Injector);
+  private resolvedDriver: CngxAriaExpandedDriver | null | undefined = undefined;
+  private driver(): CngxAriaExpandedDriver | null {
+    if (this.resolvedDriver === undefined) {
+      this.resolvedDriver = this.injector.get(CNGX_ARIA_EXPANDED_DRIVER, null, { self: true });
+    }
+    return this.resolvedDriver;
+  }
+
+  /** @internal The written attribute value: the driver's when composed, else the input. */
+  protected readonly ariaExpanded = computed(() => {
+    const driver = this.driver();
+    return driver ? driver.ariaExpanded() : this.expanded();
+  });
 }

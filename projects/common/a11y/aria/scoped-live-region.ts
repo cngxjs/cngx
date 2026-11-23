@@ -34,7 +34,7 @@ export interface CngxScopedLiveRegion {
  * clobbers a polite status.
  *
  * Must run in an injection context; the regions are removed when that context
- * is destroyed. No-op on the server.
+ * is destroyed, and later calls are no-ops. No-op on the server.
  *
  * ```typescript
  * private readonly region = injectScopedLiveRegion(inject(ElementRef).nativeElement);
@@ -55,6 +55,10 @@ export function injectScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion 
   const doc = inject(DOCUMENT);
   const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   let pair: CngxLiveRegionPair | null = null;
+  // A manual destroy() may be followed by a new ensure() (an overlay that
+  // reopens); a destroyed host never takes regions again.
+  let hostDestroyed = false;
+  const usable = () => isBrowser && !hostDestroyed;
   const ensurePair = (): CngxLiveRegionPair => {
     pair ??= createLiveRegionPair(host, doc);
     return pair;
@@ -62,13 +66,13 @@ export function injectScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion 
 
   const region: CngxScopedLiveRegion = {
     announce(message, politeness = 'polite') {
-      if (!isBrowser) {
+      if (!usable()) {
         return;
       }
       ensurePair().announce(message, politeness);
     },
     ensure() {
-      if (!isBrowser) {
+      if (!usable()) {
         return;
       }
       ensurePair().ensure();
@@ -81,6 +85,9 @@ export function injectScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion 
       pair = null;
     },
   };
-  inject(DestroyRef).onDestroy(() => region.destroy());
+  inject(DestroyRef).onDestroy(() => {
+    hostDestroyed = true;
+    region.destroy();
+  });
   return region;
 }

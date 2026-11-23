@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLiveRegionPair } from './live-region-pair';
 
 const CLEAR_DELAY_MS = 16;
+// Mirrors HOLD_MS in live-region-pair.ts.
+const HOLD_MS = 7000;
 
 describe('createLiveRegionPair', () => {
   let container: HTMLElement;
@@ -50,6 +52,26 @@ describe('createLiveRegionPair', () => {
     expect(region('polite')?.textContent).toBe('');
     vi.advanceTimersByTime(CLEAR_DELAY_MS);
     expect(region('polite')?.textContent).toBe('Saved');
+  });
+
+  it('clears a written message after the hold, so no stale text stays behind', () => {
+    const pair = createLiveRegionPair(container, document);
+    pair.announce('Saved', 'polite');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS + HOLD_MS - 1);
+    expect(region('polite')?.textContent).toBe('Saved');
+    vi.advanceTimersByTime(1);
+    expect(region('polite')?.textContent).toBe('');
+  });
+
+  it('restarts the hold for a newer message of the same politeness', () => {
+    const pair = createLiveRegionPair(container, document);
+    pair.announce('First', 'polite');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS + HOLD_MS - 100);
+    pair.announce('Second', 'polite');
+    vi.advanceTimersByTime(CLEAR_DELAY_MS + 100);
+    expect(region('polite')?.textContent).toBe('Second');
+    vi.advanceTimersByTime(HOLD_MS - 100);
+    expect(region('polite')?.textContent).toBe('');
   });
 
   it('takePending() returns and cancels unwritten messages only', () => {

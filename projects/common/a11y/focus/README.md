@@ -16,7 +16,7 @@ Tests using `CngxAutofocus` must use `vi.useFakeTimers()` when a delay is specif
 
 ### CngxFocusRestore
 
-Captures the currently focused element on initialization and restores focus when the host element is destroyed. Prevents focus from falling to `<body>` when dynamic content closes (dialogs, panels, tabs).
+Captures the currently focused element on initialization and restores focus when the host element is destroyed while focus is inside it or on `<body>`; focus the user moved elsewhere stays put. Prevents focus from falling to `<body>` when dynamic content closes (dialogs, panels, tabs).
 
 #### Fallback Resolution
 
