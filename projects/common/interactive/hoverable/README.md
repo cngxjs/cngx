@@ -76,8 +76,9 @@ export class TableRowComponent {
 CngxHoverable has no built-in styling. Use the `hovered()` signal to style as needed:
 
 ```scss
-// Bind to CSS class
-div[cngxHoverable][class.highlighted] {
+// The directive writes no class or attribute; bind one from hovered():
+// <div cngxHoverable #h="cngxHoverable" [class.highlighted]="h.hovered()">
+div.highlighted {
   background: rgba(0, 0, 0, 0.1);
   transition: background 0.2s;
 }
@@ -99,8 +100,8 @@ div[cngxHoverable][class.highlighted] {
   template: `
     <div class="card" cngxHoverable #hover="cngxHoverable"
          [class.elevated]="hover.hovered()">
-      <h3>{{ title }}</h3>
-      <p>{{ description }}</p>
+      <h3>{{ title() }}</h3>
+      <p>{{ description() }}</p>
     </div>
   `,
   imports: [CngxHoverable],
@@ -118,8 +119,8 @@ div[cngxHoverable][class.highlighted] {
   `],
 })
 export class CardComponent {
-  @Input() title = '';
-  @Input() description = '';
+  readonly title = input('');
+  readonly description = input('');
 }
 ```
 
@@ -130,7 +131,7 @@ export class CardComponent {
   selector: 'app-list-item',
   template: `
     <div class="list-item" cngxHoverable #hover="cngxHoverable">
-      <span class="label">{{ label }}</span>
+      <span class="label">{{ label() }}</span>
 
       <!-- Actions visible only on hover -->
       @if (hover.hovered()) {
@@ -164,9 +165,9 @@ export class CardComponent {
   `],
 })
 export class ListItemComponent {
-  @Input() label = '';
-  @Output() edited = new EventEmitter<void>();
-  @Output() deleted = new EventEmitter<void>();
+  readonly label = input('');
+  readonly edited = output<void>();
+  readonly deleted = output<void>();
 
   edit() { this.edited.emit(); }
   delete() { this.deleted.emit(); }
@@ -181,9 +182,9 @@ export class ListItemComponent {
   template: `
     <tr cngxHoverable #row="cngxHoverable"
         [class.highlighted]="row.hovered()">
-      <td>{{ item.id }}</td>
-      <td>{{ item.name }}</td>
-      <td>{{ item.email }}</td>
+      <td>{{ item().id }}</td>
+      <td>{{ item().name }}</td>
+      <td>{{ item().email }}</td>
     </tr>
   `,
   imports: [CngxHoverable],
@@ -194,7 +195,7 @@ export class ListItemComponent {
   `],
 })
 export class TableRowComponent {
-  @Input() item: any;
+  readonly item = input.required<{ id: string; name: string; email: string }>();
 }
 ```
 
@@ -205,9 +206,9 @@ export class TableRowComponent {
   selector: 'app-gallery-item',
   template: `
     <img cngxHoverable #img="cngxHoverable"
-         [src]="imageUrl"
+         [src]="imageUrl()"
          [class.zoomed]="img.hovered()"
-         alt="{{ alt }}" />
+         [alt]="alt()" />
   `,
   imports: [CngxHoverable],
   styles: [`
@@ -224,8 +225,8 @@ export class TableRowComponent {
   `],
 })
 export class GalleryItemComponent {
-  @Input() imageUrl = '';
-  @Input() alt = '';
+  readonly imageUrl = input('');
+  readonly alt = input('');
 }
 ```
 
@@ -236,7 +237,7 @@ export class GalleryItemComponent {
   selector: 'app-button-group',
   template: `
     <div class="group">
-      @for (btn of buttons; track btn.id) {
+      @for (btn of buttons(); track btn.id) {
         <button cngxHoverable #hover="cngxHoverable"
                 [class.active]="btn.active"
                 [class.dimmed]="groupHovered() && !hover.hovered()"
@@ -261,15 +262,16 @@ export class GalleryItemComponent {
       opacity: 0.5;
     }
   `],
-  hostDirectives: [
-    {
-      directive: CngxHoverable,
-      outputs: ['hovered'],
-    }
-  ],
+  // hovered is a signal, not an output: nothing to forward.
+  hostDirectives: [CngxHoverable],
 })
 export class ButtonGroupComponent {
-  @Input() buttons: any[] = [];
+  readonly buttons = input<readonly { id: string; label: string; active: boolean }[]>([]);
+  readonly selected = output<string>();
+
+  selectButton(btn: { id: string }) {
+    this.selected.emit(btn.id);
+  }
 
   readonly groupHovered = inject(CngxHoverable, { host: true }).hovered;
 }
@@ -320,7 +322,7 @@ export class RowComponent {
 
       @if (hover.hovered()) {
         <div class="tooltip">
-          {{ helpText }}
+          {{ helpText() }}
         </div>
       }
     </div>
@@ -367,7 +369,7 @@ export class RowComponent {
   `],
 })
 export class HelpIconComponent {
-  @Input() helpText = '';
+  readonly helpText = input('');
 }
 ```
 

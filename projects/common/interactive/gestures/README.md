@@ -51,15 +51,49 @@ export class GesturesComponent {
 Both gesture directives are low-level interaction atoms:
 
 - **ARIA roles:** None (gestures are supplementary interactions)
-- **Keyboard interaction:**
-  - Long press: Can be triggered via keyboard if the element is focusable and the consumer adds keyboard event listeners
-  - Swipe: No standard keyboard equivalent (native alternative: escape key to dismiss)
+- **Keyboard interaction:** none. The directives listen to pointer events only.
+  - Long press: the consumer owns the keyboard path (a button, a menu entry or a key binding, see [Keyboard alternative](#accessibility-first-keyboard-alternative)).
+  - Swipe and swipe-dismiss: WCAG 2.5.1 (Pointer Gestures) needs a single-pointer and keyboard alternative, and providing it is the consumer's job: a visible dismiss button next to a swipe-dismiss surface, prev/next buttons next to a swipe carousel.
 - **Screen reader:**
   - Announce the action (e.g., "Press and hold for options") via visible text or aria-label
   - Gesture-triggered actions should announce their result via toast/alert
 - **Focus management:**
   - Both directives preserve focus on the element
   - No focus traps or modal management
+
+## Inputs
+
+Gestures start on the primary button only (`button === 0`). Setting `enabled` to `false` mid-gesture cancels it: long press drops the timer, swipe stops reporting moves and settles without emitting.
+
+### CngxLongPress
+
+| Input | Type | Default | |
+|-|-|-|-|
+| `threshold` | `number` | `500` | Hold time in ms before `longPressed` fires. |
+| `moveThreshold` | `number` | `10` | Pointer movement in px that cancels the press. |
+| `enabled` | `boolean` | `true` | Turns the directive off; `false` mid-press cancels. |
+
+A press also cancels on pointer up, `pointercancel` and `pointerleave`. After a completed long press the pointer `click` that follows the release is cancelled on the host, so a host `(click)` does not run on top of the long-press action. A short tap clicks as usual; keyboard and programmatic clicks (`detail === 0`) are never cancelled.
+
+### CngxSwipe
+
+| Input | Type | Default | |
+|-|-|-|-|
+| `threshold` | `number` | `50` | Distance in px on the dominant axis to register a swipe. |
+| `axis` | `'x' \| 'y' \| 'both'` | `'both'` | Axis the gesture registers on; also sets `touch-action` (`pan-y`, `pan-x`, `none`). |
+| `enabled` | `boolean` | `true` | Turns the directive off; `false` mid-drag cancels. |
+
+### CngxSwipeDismiss
+
+| Input | Type | Default | |
+|-|-|-|-|
+| `cngxSwipeDismiss` | `'left' \| 'right' \| 'up' \| 'down'` | required | The one direction that dismisses. |
+| `threshold` | `number` | `50` | Distance in px to register a completed swipe. |
+| `enabled` | `boolean` | `true` | Turns the directive off; `false` mid-drag cancels. |
+
+### Directions are physical
+
+`swiped` reports physical directions: `left` is always a leftward drag, regardless of `dir`. A consumer that maps a swipe to next/previous flips the mapping under `rtl`, as the stepper's `CngxStepperSwipeNav` does with `injectDirection()` from `@cngx/core` (forward is `left` under `ltr`, `right` under `rtl`).
 
 ## Composition
 
@@ -154,9 +188,12 @@ the panel toward the incoming slide while the finger is down:
 
 ### Long Press Context Menu
 
+`cngxLongPress` reacts to the primary button only, so a right-click never
+fires `longPressed`. Bind `(contextmenu)` next to it for the mouse path:
+
 ```typescript
 <div cngxLongPress (longPressed)="openMenu($event)"
-     role="button" tabindex="0">
+     (contextmenu)="$event.preventDefault(); openMenu($event)">
   Right-click or long-press for options
 </div>
 
@@ -168,7 +205,7 @@ the panel toward the incoming slide while the finger is down:
   </div>
 }
 
-openMenu(event: PointerEvent) {
+openMenu(event: MouseEvent) {
   this.menuX.set(event.clientX);
   this.menuY.set(event.clientY);
   this.menuOpen.set(true);
@@ -209,11 +246,15 @@ openMenu(event: PointerEvent) {
 ```typescript
 <div cngxSwipeDismiss="left" #swipe="cngxSwipeDismiss"
      (swiped)="dismiss()"
+     [class.swiping]="swipe.swiping()"
      [style.opacity]="1 - (swipe.swipeProgress() * 0.3)"
      [style.transform]="'translateX(-' + (swipe.swipeProgress() * 100) + '%)'">
   <span>Notification message</span>
-  <span class="hint" *ngIf="!swipe.swiping()">Swipe left to dismiss</span>
+  @if (!swipe.swiping()) {
+    <span class="hint">Swipe left to dismiss</span>
+  }
 </div>
+<button type="button" (click)="dismiss()">Dismiss</button>
 
 <style>
   div {
@@ -231,7 +272,10 @@ openMenu(event: PointerEvent) {
 
 Use `CngxSwipe`, not `CngxSwipeDismiss`: navigation is not a dismiss. One
 host reports the direction in the event, so it covers both ways. Pin it to
-the x-axis so a vertical scroll never registers as a slide change.
+the x-axis so a vertical scroll never registers as a slide change. The
+mapping below is for `ltr`; flip it under `rtl` (see
+[Directions are physical](#directions-are-physical)). Keep prev/next buttons
+as the single-pointer and keyboard path.
 
 ```typescript
 readonly index = signal(0);
@@ -240,6 +284,8 @@ readonly slides = ['Slide 1', 'Slide 2', 'Slide 3'];
 <section cngxSwipe axis="x" (swiped)="onSwipe($event)">
   {{ slides[index()] }}
 </section>
+<button type="button" (click)="onSwipe('right')">Previous</button>
+<button type="button" (click)="onSwipe('left')">Next</button>
 
 onSwipe(direction: SwipeDirection) {
   if (direction === 'left') {
@@ -255,6 +301,7 @@ onSwipe(direction: SwipeDirection) {
 ```typescript
 <div cngxSwipeDismiss="down" #swipe="cngxSwipeDismiss"
      (swiped)="closeBottomSheet()"
+     [class.swiping]="swipe.swiping()"
      [style.transform]="'translateY(' + (swipe.swipeProgress() * 100) + '%)'">
   <div class="sheet-header">
     <div class="drag-handle" />
@@ -264,6 +311,7 @@ onSwipe(direction: SwipeDirection) {
     <!-- content -->
   </div>
 </div>
+<button type="button" (click)="closeBottomSheet()">Close</button>
 
 <style>
   div {
@@ -325,8 +373,8 @@ isSelected(id: string) {
 // Provide keyboard shortcut as alternative to gesture
 <div cngxLongPress #lp="cngxLongPress"
      [cngxKeyboardShortcut]="'m'"
-     (longPressed)="openMenu($event)"
-     (shortcutTriggered)="openMenu($event)"
+     (longPressed)="openMenu()"
+     (shortcutTriggered)="openMenu()"
      role="button"
      tabindex="0"
      aria-label="Open menu (press M or long-press)">
@@ -338,5 +386,5 @@ isSelected(id: string) {
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/gestures/)
 - [CngxKeyboardShortcut](../keyboard/) - Pair with gestures for keyboard alternatives
-- Demo: `examples/stories/common/gestures-demo/`
+- Demo: `examples/stories/common/interactive/gestures/`
 - Tests: `projects/common/interactive/gestures/long-press.directive.spec.ts`

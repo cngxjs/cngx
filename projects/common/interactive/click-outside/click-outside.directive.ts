@@ -14,18 +14,31 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { EMPTY, fromEvent, switchMap } from 'rxjs';
 
 /**
- * @internal Lets a directive that composes `CngxClickOutside` as a host
- * directive drive it from its own state instead of `[enabled]`. Provided by
- * the composer on the same element (`useExisting`); the atom resolves it
- * lazily with `self: true`, because the composer constructs after its host
- * directives.
+ * Contract for a directive that composes `CngxClickOutside` as a host
+ * directive and drives it from its own state instead of `[enabled]`.
+ * `CngxDrawerSurface` implements it. Provided by the composer on the same
+ * element (`useExisting`); the atom resolves it lazily with `self: true`,
+ * because the composer constructs after its host directives.
+ *
+ * @relatedTo CngxClickOutside, CNGX_CLICK_OUTSIDE_DRIVER
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/click-outside/click-outside.directive.ts
+ * @since 0.1.0
  */
 export interface CngxClickOutsideDriver {
   /** Whether outside interactions emit; wins over `[enabled]`. */
   readonly clickOutsideEnabled: Signal<boolean>;
 }
 
-/** @internal See {@link CngxClickOutsideDriver}. */
+/**
+ * Lets a composing directive (`CngxDrawerSurface`) decide whether
+ * `CngxClickOutside` emits; when provided, it wins over `[enabled]`. Provide it
+ * with `useExisting: <composer>` on the element that hosts the atom; see
+ * {@link CngxClickOutsideDriver}.
+ *
+ * @relatedTo CngxClickOutside
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/click-outside/click-outside.directive.ts
+ * @since 0.1.0
+ */
 export const CNGX_CLICK_OUTSIDE_DRIVER = new InjectionToken<CngxClickOutsideDriver>(
   'CngxClickOutsideDriver',
 );
@@ -57,6 +70,9 @@ function controlledIdsOf(target: EventTarget | null): readonly string[] {
  * host's `id`, nothing is emitted. The trigger of a panel toggles it itself,
  * so an outside dismissal on the same press would close and reopen it.
  * A host without an `id` has no controller and gets no exemption.
+ *
+ * Pointer-only: focus leaving the host by Tab emits nothing. Pair it with a
+ * `(focusout)` check and an Escape binding so keyboard users can dismiss too.
  *
  * ### Dropdown dismiss
  * ```html

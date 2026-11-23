@@ -16,6 +16,7 @@ import {
  * atom with, without touching the per-instance input surface. Every key is
  * optional - an unset key keeps the atom's literal (120 / 0).
  *
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
  * @since 0.1.0
  */
 export interface CngxHoverIntentDefaults {
@@ -33,7 +34,12 @@ export interface CngxHoverIntentDefaults {
  * hover-to-reveal organism uses to set app-wide dwell defaults. `optional`, so
  * standalone `[cngxHoverIntent]` stays byte-identical when the token is absent.
  *
+ * ```ts
+ * providers: [{ provide: CNGX_HOVER_INTENT_DEFAULTS, useValue: { enterDelay: 200 } }]
+ * ```
+ *
  * @relatedTo CngxHoverIntent
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
  * @since 0.1.0
  */
 export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefaults>(
@@ -41,12 +47,16 @@ export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefa
 );
 
 /**
- * @internal Lets a directive that composes `CngxHoverIntent` as a host
- * directive feed the dwell from its own inputs instead of re-exposing
+ * Contract for a directive that composes `CngxHoverIntent` as a host
+ * directive and feeds the dwell from its own inputs instead of re-exposing
  * `enterDelay` / `leaveDelay` (a composer of that composer could not expose
- * them further). Provided by the composer on the same element
- * (`useExisting`), resolved lazily with `self: true`. An `undefined` delay
- * falls back to the atom's own input.
+ * them further). `CngxSidebar` implements it. Provided by the composer on the
+ * same element (`useExisting`), resolved lazily with `self: true`. An
+ * `undefined` delay falls back to the atom's own input.
+ *
+ * @relatedTo CngxHoverIntent, CNGX_HOVER_INTENT_DRIVER
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
+ * @since 0.1.0
  */
 export interface CngxHoverIntentDriver {
   /** Dwell in ms before `active` settles to `true`; wins over `[enterDelay]`. */
@@ -55,7 +65,16 @@ export interface CngxHoverIntentDriver {
   readonly hoverLeaveDelay: Signal<number | undefined>;
 }
 
-/** @internal See {@link CngxHoverIntentDriver}. */
+/**
+ * Lets a composing directive (`CngxSidebar`) override `CngxHoverIntent`'s
+ * `enterDelay` / `leaveDelay` from its own state. Provide it with
+ * `useExisting: <composer>` on the element that hosts the atom; see
+ * {@link CngxHoverIntentDriver}.
+ *
+ * @relatedTo CngxHoverIntent
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
+ * @since 0.1.0
+ */
 export const CNGX_HOVER_INTENT_DRIVER = new InjectionToken<CngxHoverIntentDriver>(
   'CngxHoverIntentDriver',
 );
@@ -74,7 +93,10 @@ export const CNGX_HOVER_INTENT_DRIVER = new InjectionToken<CngxHoverIntentDriver
  * The `active` signal is read-only - it is derived from pointer events and is
  * never consumer-writable, so it is exposed via `asReadonly()` plus an
  * `intentChange` output rather than a two-way `model()`. Pointer-only, no
- * keyboard surface: hover intent is a mouse concept and carries no ARIA.
+ * keyboard surface: hover intent is a mouse concept and carries no ARIA. A
+ * consumer that reveals content on `active()` owns the keyboard path to the
+ * same content, e.g. `(focusin)` / `(focusout)` forwarded to
+ * `notifyEnter()` / `notifyLeave()`, or a separate focus flag.
  *
  * ### Hover to reveal
  * ```html

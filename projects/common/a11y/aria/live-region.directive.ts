@@ -10,9 +10,9 @@ import { Directive, input } from '@angular/core';
  * Sets `role="alert"` for assertive regions and `role="status"` for polite regions
  * via a host binding - no manual attribute wiring needed.
  *
- * Unlike CDK's `LiveAnnouncer` service (which creates a hidden DOM element and
- * requires imperative `announce()` calls), this directive decorates your own
- * element declaratively - the content you render IS the announcement.
+ * Unlike `CngxLiveAnnouncer` (hidden regions it owns, imperative
+ * `announce()` calls), this directive decorates your own element
+ * declaratively - the content you render IS the announcement.
  *
  * ### Status message
  * ```html
@@ -32,7 +32,7 @@ import { Directive, input } from '@angular/core';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-region.directive.ts
  * @since 0.1.0
- * @relatedTo CngxAriaExpanded
+ * @relatedTo CngxLiveAnnouncer
  * <example-url>/#/common/a11y/live-region/form-validation-assertive-error-announcements</example-url>
  * <example-url>/#/common/a11y/live-region/polite-vs-assertive</example-url>
  * @axis level atom

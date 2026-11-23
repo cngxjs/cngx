@@ -84,6 +84,10 @@ export class EditComponent {
 
 Unload guards have no styling - they show the browser's native confirmation dialog.
 
+## i18n
+
+Without a `message`, `canDeactivateWhenClean` reads `unsavedChanges` from `CNGX_INTERACTIVE_I18N` each time the guard runs, so the text follows the active language: English `'You have unsaved changes. Leave anyway?'`, German pack (`@cngx/core/i18n/de`) `'Es gibt ungespeicherte Änderungen. Trotzdem verlassen?'`. Override it app-wide with `provideInteractiveI18n(withInteractiveI18nLabels({ unsavedChanges: '...' }))`, or per route with `message`. `CngxBeforeUnload` has no text: browsers show their own unload dialog.
+
 ## Examples
 
 ### Form with Browser Protection
@@ -92,24 +96,22 @@ Unload guards have no styling - they show the browser's native confirmation dial
 @Component({
   selector: 'app-profile-form',
   template: `
-    <form [cngxBeforeUnload]="form.dirty">
+    <form #form="ngForm" [cngxBeforeUnload]="!!form.dirty">
       <input type="text" [(ngModel)]="name" name="name" />
       <input type="email" [(ngModel)]="email" name="email" />
-      <button type="submit" (click)="save()">Save</button>
+      <button type="submit" (click)="save(form)">Save</button>
     </form>
   `,
   imports: [CngxBeforeUnload, FormsModule],
 })
 export class ProfileFormComponent {
-  @ViewChild('form') form: NgForm | undefined;
-
   name = '';
   email = '';
 
-  save() {
-    if (this.form?.valid) {
+  save(form: NgForm) {
+    if (form.valid) {
       // Save logic
-      this.form.resetForm();
+      form.resetForm();
     }
   }
 }
@@ -152,15 +154,12 @@ const routes: Routes = [
   imports: [CngxBeforeUnload, ReactiveFormsModule],
 })
 export class SettingsComponent {
-  readonly form = this.fb.group({
+  private readonly http = inject(HttpClient);
+
+  readonly form = inject(FormBuilder).group({
     theme: ['light'],
     language: ['en'],
   });
-
-  constructor(
-    private fb: FormBuilder,
-    private http: HttpClient
-  ) {}
 
   save() {
     this.http.put('/api/settings', this.form.value).subscribe(() => {
@@ -239,5 +238,5 @@ This ensures SSR doesn't throw errors.
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/guard/)
 - [Angular Route Guards](https://angular.io/guide/router-tutorial-toh#preventing-unsaved-changes)
 - [MDN: beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
-- Demo: `examples/stories/common/guard-demo/`
+- Demo: `examples/stories/common/interactive/guard/`
 - Tests: `projects/common/interactive/guard/before-unload.directive.spec.ts`

@@ -33,32 +33,41 @@ Pair `CngxAriaExpanded` with `CngxRovingTabindex` for accessible accordion/menu 
 
 - The directive only sets ARIA attributes; visibility logic (`[hidden]`) is the consumer's responsibility
 - The controlled element must exist in the DOM for the reference to be semantically valid
-- Both `aria-expanded` and `aria-controls` are always present on the host
+- `aria-expanded` is always present; `aria-controls` is omitted while `controls` is unbound
+- A composing directive can drive `aria-expanded` through `CNGX_ARIA_EXPANDED_DRIVER` (`CngxExpandable` does); `aria-controls` still follows `[controls]`
 
 
 ### CngxLiveRegion
 
 Configures the host element as an ARIA live region. Screen readers monitor live regions and announce content changes automatically without user action.
 
-#### Comparison to CDK LiveAnnouncer
-
-Unlike `LiveAnnouncer` from `@angular/cdk/a11y`:
-
-| Aspect | CngxLiveRegion | LiveAnnouncer |
-|-|-|-|
-| DOM element | Your own, visible | Hidden element created by service |
-| API | Declarative, input binding | Imperative `announce()` call |
-| Content source | Template rendering | String argument |
-| Lifecycle | Directive lifecycle | Service lifetime |
-| Overhead | Minimal | Creates hidden `<div>` |
-
-Use `CngxLiveRegion` when the announcement content is part of your template; use `LiveAnnouncer` for programmatic announcements with custom messaging.
+Use `CngxLiveRegion` when the announcement content is part of your template; use `CngxLiveAnnouncer` for programmatic announcements from code.
 
 #### Notes
 
 - The region should always be in the DOM (not conditionally rendered), but its content changes reactively
-- For hidden announcements (e.g., dialog title on open), hide the region via CSS, not `*ngIf`
+- For hidden announcements (e.g., dialog title on open), hide the region visually via CSS, not with `@if` or `display: none`
 - `aria-atomic="false"` is not recommended for mutable regions; keep it `true` (default) for clarity
+
+
+### CngxLiveAnnouncer
+
+```typescript
+private readonly announcer = inject(CngxLiveAnnouncer);
+
+protected handleCopied(): void {
+  this.announcer.announce('Copied');
+}
+```
+
+`announce(message: string, politeness: AriaLivePoliteness = 'polite', scope?: Element | null): void`. Root service that owns two visually hidden regions on `document.body`, one polite and one assertive, so an assertive message never clobbers a polite one.
+
+#### Notes
+
+- Both body regions are created with the service, so they are in the DOM before the first message.
+- Each write clears the region and sets the text 16 ms later, so an identical message is re-read; written text is cleared again after 7 s. The first write into a newly created modal region waits longer, so the screen reader registers the region first.
+- Pass the announcing element as `scope` inside a modal: the message goes to a region pair inside the topmost open `[aria-modal="true"]` container, because the modal hides the body regions. Without a modal ancestor it goes to the body regions.
+- No-op on the server.
 
 
 ### injectScopedLiveRegion
@@ -71,11 +80,12 @@ protected handleSaveFailed(): void {
 }
 ```
 
-Polite and assertive live regions inside a host element instead of `document.body`, with the same clear-then-set timing as `CngxLiveAnnouncer` (both run on one engine). Use it in modal overlays: under `aria-modal`, VoiceOver drops body-level regions and reads them late, after the overlay closes, while a region inside the modal is spoken on every platform.
+`injectScopedLiveRegion(host: HTMLElement): CngxScopedLiveRegion` creates polite and assertive live regions inside a host element instead of `document.body`, with the same clear-then-set timing as `CngxLiveAnnouncer` (both run on one engine). Use it in modal overlays: under `aria-modal`, VoiceOver drops body-level regions and reads them late, after the overlay closes, while a region inside the modal is spoken on every platform.
 
 #### Notes
 
-- Must run in an injection context; the regions are removed on destroy. No-op on the server.
+- Must run in an injection context; the regions are removed on destroy and later calls are no-ops. No-op on the server.
+- `CngxScopedLiveRegion` is `announce(message, politeness?)`, `ensure()`, `takePending()` and `destroy()`.
 - `ensure()` creates both regions up front, so they are in the DOM before the first message.
 - `takePending()` cancels writes that have not landed and returns them, so a closing overlay can hand them to `CngxLiveAnnouncer`.
 
@@ -127,10 +137,11 @@ readonly state = injectAsyncState(() => this.loadData$);
 
 ### Form Errors
 
-```typescript
-<div cngxLiveRegion politeness="assertive" [style.display]="error() ? 'block' : 'none'">
-  @if (error()) {
-    <strong>{{ error().message }}</strong>
+```html
+<!-- Always rendered: empty while there is no error -->
+<div cngxLiveRegion politeness="assertive">
+  @if (error(); as err) {
+    <strong>{{ err.message }}</strong>
   }
 </div>
 ```

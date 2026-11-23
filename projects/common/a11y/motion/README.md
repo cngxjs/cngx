@@ -8,6 +8,15 @@ Reactive signal reflecting `prefers-reduced-motion`. Surfaces `.cngx-reduced-mot
 
 Reflects the user's `prefers-reduced-motion: reduce` media query as a reactive signal. Updates reactively when the OS preference changes (e.g., if the user toggles accessibility settings).
 
+It reads the OS query only. An in-app pick through `provideMotion()` / `injectMotion()` (`CNGX_MOTION`, `<html data-motion>`) is not seen here. To decide in JS on the motion the user actually gets, read `injectEffectiveMotion()` from `@cngx/core`: the `CNGX_MOTION` pick when it is `'reduced'` or `'full'`, else the OS query.
+
+```typescript
+import { injectEffectiveMotion } from '@cngx/core';
+
+private readonly motion = injectEffectiveMotion();
+protected readonly duration = computed(() => (this.motion() === 'reduced' ? 0 : 300));
+```
+
 ## CSS Integration
 
 Use the `cngx-reduced-motion` class for motion-specific styling:
@@ -95,18 +104,15 @@ WCAG 2.1 Success Criterion 2.3.3 (Animation from Interactions) requires:
 
 `CngxReducedMotion` enables compliance:
 
-```typescript
-// Bad: Motion is required for feedback
-@if (saved) {
-  <div class="success-check" [@spinIn]>Saved!</div>
+```html
+<!-- Bad: motion is the only feedback -->
+@if (saved()) {
+  <div class="success-check spin-in"></div>
 }
 
-// Good: Respect motion preference
-@if (saved) {
-  <div class="success-check"
-       [@spinIn]="!rm.prefersReducedMotion() ? 'in' : 'none'">
-    Saved!
-  </div>
+<!-- Good: text carries the feedback, motion is opt-out -->
+@if (saved()) {
+  <div class="success-check" [class.spin-in]="!rm.prefersReducedMotion()">Saved</div>
 }
 ```
 
@@ -128,43 +134,19 @@ Support:
 
 ## Animation Frameworks
 
-### With Angular Animations (`@angular/animations`)
-
-```typescript
-import { trigger, state, style, animate, transition } from '@angular/animations';
-
-export const slideAnimation = [
-  transition(':enter', [
-    style({ opacity: 0, transform: 'translateX(-20px)' }),
-    animate('300ms ease-out', style({ opacity: 1, transform: 'translateX(0)' })),
-  ]),
-];
-
-@Component({
-  template: `
-    <div
-      cngxReducedMotion
-      #rm="cngxReducedMotion"
-      [@slide]="rm.prefersReducedMotion() ? null : 'in'"
-    >
-      Animated content
-    </div>
-  `,
-  animations: [trigger('slide', slideAnimation)],
-})
-export class MyComponent {}
-```
-
 ### With GSAP
+
+JS-driven animation reads the effective motion, so an in-app pick wins over the OS query:
 
 ```typescript
 import gsap from 'gsap';
+import { injectEffectiveMotion } from '@cngx/core';
 
 export class MyComponent {
-  protected readonly rm = inject(CngxReducedMotion);
+  private readonly motion = injectEffectiveMotion();
 
   animate(): void {
-    if (this.rm.prefersReducedMotion()) {
+    if (this.motion() === 'reduced') {
       // Instant state
       gsap.to(this.element, { opacity: 1, duration: 0 });
     } else {
@@ -177,16 +159,21 @@ export class MyComponent {
 
 ## Testing
 
-Mock the media query in tests:
+Stub `matchMedia` in tests. Inside this repo, `createMatchMediaMock(initialMatches)` from the repo-internal test kit `@cngx/testing` (not published) does it:
 
 ```typescript
 import { createMatchMediaMock } from '@cngx/testing';
 
 it('respects reduced motion', () => {
-  const matchMediaMock = createMatchMediaMock({ 'prefers-reduced-motion: reduce': true });
-  // Component should skip animations
+  const mock = createMatchMediaMock(true); // every query matches initially
+  mock.install(window);
+  // ... create the fixture, assert prefersReducedMotion() is true
+  mock.trigger(false); // OS preference switched off
+  mock.restore(window);
 });
 ```
+
+Outside the repo, stub `window.matchMedia` with an object whose `matches` is `true` and whose `addEventListener` records the change listener.
 
 ## Composition
 
@@ -201,9 +188,10 @@ it('respects reduced motion', () => {
   </div>
 </dialog>
 
-// Toast with motion control
-<cngx-toast-outlet 
-  cngxReducedMotion
-  [animationDuration]="rm.prefersReducedMotion() ? 0 : 300">
-</cngx-toast-outlet>
+// Toast list with motion control
+<ul cngxReducedMotion #rm="cngxReducedMotion">
+  @for (n of notifications(); track n.id) {
+    <li class="toast" [class.toast--animate]="!rm.prefersReducedMotion()">{{ n.text }}</li>
+  }
+</ul>
 ```

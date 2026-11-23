@@ -25,10 +25,10 @@ export interface CngxControlValue<T = unknown> {
 }
 
 /**
- * DI token every cngx interactive atom registers via `useExisting:
+ * DI token every value-bearing cngx atom registers via `useExisting:
  * <self>` so its host element doubles as a value-shape contract for
- * `CngxFormBridge` and any future Reactive-Forms / Signal-Forms
- * integration in `@cngx/forms/controls`.
+ * `CngxFormBridge` (`@cngx/forms/controls`, Reactive Forms) and the
+ * `CngxFormField` value sync (`@cngx/forms/field`, Signal Forms).
  *
  * No `providedIn`, no factory: providing the token is the atom's
  * responsibility. A surrounding consumer that wants a sane fallback

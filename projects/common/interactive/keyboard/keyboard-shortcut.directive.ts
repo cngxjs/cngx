@@ -41,10 +41,11 @@ function sameBinding(
  * modal scope (an open modal dialog) sits between focus and the host;
  * `'self'` fires only while focus is inside the host.
  *
- * Inside a text field (`input` of a text type, `textarea`, `select`,
- * `contenteditable`) only combos with `ctrl`, `meta` or `mod`, function keys
- * and `escape` fire, in both scopes: `'mod+k'` works while typing, a bare
- * `'/'` does not.
+ * Inside a text-entry target (`isTextEntryTarget` from `@cngx/core/utils`:
+ * `textarea`, `select`, an `input` other than the button-like types,
+ * `contenteditable`, `role="textbox"` / `role="searchbox"`) only combos with
+ * `ctrl`, `meta` or `mod`, function keys and `escape` fire, in both scopes:
+ * `'mod+k'` works while typing, a bare `'/'` does not.
  *
  * Name the shortcut with `shortcutId` to make it remappable, and give it a
  * `shortcutDescription` (and optionally a `shortcutGroup`) to list it in the

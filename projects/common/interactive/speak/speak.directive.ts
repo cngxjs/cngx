@@ -21,9 +21,9 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * `CngxLiveRegion` for ARIA live regions).
  *
  * The directive is purely behavioral: it exposes the `speaking()` signal, the
- * `supported` flag and `speak()` / `cancel()` / `toggle()` methods. The
- * consumer renders their own UI (button, icon, link) and calls the methods via
- * the template reference.
+ * plain boolean `supported` property (not a signal) and `speak()` /
+ * `cancel()` / `toggle()` methods. The consumer renders their own UI (button,
+ * icon, link) and calls the methods via the template reference.
  *
  * Pair with `CngxSpeakButton` (`@cngx/ui`) for a ready-made speaker button.
  *
@@ -63,9 +63,8 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * @relatedTo CngxSpeakButton, CngxLiveRegion
  * <example-url>/#/common/interactive/speak/form-error-read-aloud-on-demand</example-url>
  * <example-url>/#/common/interactive/speak/headless-read-aloud</example-url>
- * <example-url>/#/ui/speak/speak-button/material-integration-theme-scss-mat-icon-button</example-url>
  * <example-url>/#/ui/speak/speak-button/styled-speaker-icon</example-url>
- * <example-url>/#/ui/speak/speak-button/theming-css-custom-properties</example-url>
+ * <example-url>/#/ui/speak/speak-button/card-with-speak-badge</example-url>
  * @axis level atom
  */
 @Directive({

@@ -24,6 +24,8 @@ Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practi
 | `End` | Jump to last enabled item |
 | `Tab` | Leave the group (standard tab order) |
 
+Under a right-to-left document direction (`<html dir="rtl">`, or `provideDirection()`) the horizontal arrows flip: `ArrowLeft` moves to the next item, `ArrowRight` to the previous. `CngxActiveDescendant` follows the same rule.
+
 ### Notes
 
 - Disabled items are skipped during arrow-key navigation.
@@ -33,7 +35,7 @@ Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practi
 
 ## CngxFocusRestore
 
-Captures the previously focused element on init and restores focus when the host is destroyed. Prevents focus from falling to `<body>` when dynamic content is removed.
+Captures the previously focused element on init and restores focus when the host is destroyed while focus is inside it or on `<body>`; focus the user moved elsewhere stays put. Prevents focus from falling to `<body>` when dynamic content is removed.
 
 ```html
 @if (panelOpen()) {
@@ -71,4 +73,15 @@ Reactive autofocus for dynamically inserted elements. The native `autofocus` att
 
 ## Other Exports
 
-`CngxAriaExpanded`, `CngxFocusTrap`, `CngxFocusVisible`, `CngxLiveRegion`, `CngxReducedMotion`
+| Export | Kind |
+|-|-|
+| `CngxAriaExpanded`, `CngxFocusTrap`, `CngxFocusVisible`, `CngxLiveRegion`, `CngxReducedMotion` | Directives |
+| `CngxRovingItem` | Item marker for `CngxRovingTabindex` |
+| `CngxActiveDescendant` | Directive: `aria-activedescendant` navigation for listbox-like hosts |
+| `CngxLiveAnnouncer`, `AriaLivePoliteness` | Root service for imperative announcements, its politeness type |
+| `injectScopedLiveRegion`, `CngxScopedLiveRegion`, `CngxPendingAnnouncement` | Live-region pair inside a host element (modal overlays) |
+| `CNGX_FOCUSABLE_SELECTOR` | CSS selector of natively focusable elements |
+| `CNGX_AD_ITEM`, `ActiveDescendantItem`, `CngxAdItemHandle` | Item registration token and shapes for `CngxActiveDescendant` |
+| `CNGX_FOCUS_TRAP_DRIVER`, `CNGX_FOCUS_RESTORE_DRIVER`, `CNGX_ARIA_EXPANDED_DRIVER` (+ `Cngx*Driver` types) | Let a composing directive drive the host directive from its own state |
+
+Details: [focus/README.md](focus/README.md), [aria/README.md](aria/README.md).

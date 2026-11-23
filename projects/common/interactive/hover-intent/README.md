@@ -49,13 +49,26 @@ CngxHoverIntent is pointer-only by design:
 - **Screen reader:** No announcements.
 - **Focus management:** No focus changes.
 
-Because the directive has no keyboard path, never gate content behind `active()` alone - pair it with a focus path (`:focus-within` or a `focusin` handler) so the same content is reachable without a mouse. WCAG 2.1.1 (Keyboard): `@if (hi.active() || focused())`. The `hover-to-reveal` demo shows this pattern.
+Because the directive has no keyboard path, never gate content behind `active()` alone - pair it with a focus path (`:focus-within` or a `focusin` handler) so the same content is reachable without a mouse. WCAG 2.1.1 (Keyboard): `@if (hi.active() || focused())`. The `hover-to-reveal` demo shows this pattern. Alternatively forward `(focusin)` / `(focusout)` to `hi.notifyEnter()` / `hi.notifyLeave()` so focus runs through the same debounce.
 
 ## Composition
 
 - **Host directives:** None (but usable as a `hostDirective` composition primitive, like `CngxHoverable`).
 - **Combines with:** any element that should react to *settled* hover rather than instant `mouseenter`. Pair with a focus-state directive for the keyboard path.
-- **Provides:** No injectable tokens.
+- **Provides:** No injectable tokens. Consumes two optional ones, see [Tokens](#tokens).
+
+## Tokens
+
+| Token | Purpose |
+|-|-|
+| `CNGX_HOVER_INTENT_DEFAULTS` | App-wide fallback for `enterDelay` / `leaveDelay` (`CngxHoverIntentDefaults`, both keys optional). Resolution: bound input, then token, then `120` / `0`. |
+| `CNGX_HOVER_INTENT_DRIVER` | Lets a composing directive feed the dwell from its own state (`CngxHoverIntentDriver`: `hoverEnterDelay`, `hoverLeaveDelay` signals). Provided with `useExisting` on the same element; a non-`undefined` value wins over the input. `CngxSidebar` composes it this way. |
+
+```typescript
+providers: [{ provide: CNGX_HOVER_INTENT_DEFAULTS, useValue: { enterDelay: 200 } }]
+```
+
+The nearest provider wins. `CngxSidenav` and `CngxMenuItemSubmenu` provide the token on their own element from their configs (`provideSidenavConfig` `hover`, `provideMenuConfig` `submenuOpenDelay` / `submenuCloseDelay`), so a root value does not reach their hover intent; configure those through their own config.
 
 ### As a hostDirective
 

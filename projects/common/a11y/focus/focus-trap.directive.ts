@@ -14,11 +14,15 @@ import {
 } from '@angular/core';
 
 /**
- * @internal Lets a directive that composes `CngxFocusTrap` as a host
- * directive drive it from its own state instead of the inputs. Provided by
- * the composer on the same element (`useExisting`); the trap resolves it
- * lazily with `self: true`, because the composer constructs after its host
- * directives.
+ * Lets a directive that composes `CngxFocusTrap` as a host directive drive it
+ * from its own state instead of the inputs. Provided by the composer on the
+ * same element (`useExisting`); the trap resolves it lazily with
+ * `self: true`, because the composer constructs after its host directives.
+ * `CngxDrawerSurface` and `CngxPopoverSheet` are the in-library composers.
+ *
+ * @relatedTo CngxFocusTrap, CNGX_FOCUS_TRAP_DRIVER
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
+ * @since 0.1.0
  */
 export interface CngxFocusTrapDriver {
   /** Whether the trap is active; wins over `[enabled]`. */
@@ -27,7 +31,16 @@ export interface CngxFocusTrapDriver {
   readonly focusTrapAutoFocus: boolean;
 }
 
-/** @internal See {@link CngxFocusTrapDriver}. */
+/**
+ * Injection token for a {@link CngxFocusTrapDriver}. A composer provides it on
+ * its own element (`useExisting`) to override `[enabled]` and `[autoFocus]` of
+ * its `CngxFocusTrap` host directive. Used by `CngxDrawerSurface` and
+ * `CngxPopoverSheet`.
+ *
+ * @relatedTo CngxFocusTrap
+ * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
+ * @since 0.1.0
+ */
 export const CNGX_FOCUS_TRAP_DRIVER = new InjectionToken<CngxFocusTrapDriver>(
   'CngxFocusTrapDriver',
 );

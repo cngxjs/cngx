@@ -11,8 +11,8 @@ import {
   injectHotkey,
   injectHotkeys,
   CngxSearch,
-  type KeyCombo,
 } from '@cngx/common/interactive';
+import { type KeyCombo } from '@cngx/core/utils';
 ```
 
 ## Quick Start
@@ -94,15 +94,15 @@ save() {
 
 ### Scoped Escape Handler
 
+`'self'` fires only while focus is inside the host, so the shortcut sits on the dialog itself: Escape closes it from any control inside and stays free everywhere else. `#modal` without a value is the `HTMLDialogElement`.
+
 ```typescript
-<dialog #modal="dialog">
+<dialog #modal [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
+        (shortcutTriggered)="modal.close()">
   <h2>Confirm Action</h2>
   <p>Are you sure?</p>
 
-  <button [cngxKeyboardShortcut]="'escape'" [shortcutScope]="'self'"
-          (shortcutTriggered)="modal.close()">
-    Cancel
-  </button>
+  <button (click)="modal.close()">Cancel</button>
   <button (click)="confirm(); modal.close()">Confirm</button>
 </dialog>
 ```
@@ -128,24 +128,35 @@ save() {
 ### Search with Results
 
 ```typescript
-readonly searchQuery = signal('');
-private readonly [applySearch, searchState] = optimistic(
-  this.searchQuery,
-  (query) => this.http.get(`/api/search?q=${query}`)
+readonly query = signal('');
+// No request while the query is empty.
+readonly results = httpResource<readonly Item[]>(() =>
+  this.query() ? `/api/search?q=${encodeURIComponent(this.query())}` : undefined,
 );
 
-<input cngxSearch #search="cngxSearch" placeholder="Search..." />
+<input cngxSearch (searchChange)="query.set($event)" placeholder="Search..." />
 
 <ul>
-  @for (item of filteredResults(); track item.id) {
+  @for (item of results.value() ?? []; track item.id) {
     <li>{{ item.name }}</li>
   }
 </ul>
+```
 
-// Auto-update results as user types
-effect(() => {
-  this.searchQuery.set(search.term());
-});
+### Debounce, flush and cancel
+
+`debounceMs` (default `300`) is the delay between the last `input` event and the `term` / `searchChange` update; `0` or less updates synchronously on every `input` event. A host that handles keys while a term is pending settles it explicitly:
+
+- `flush()` emits the pending term at once, e.g. on Enter so the pick runs against what the user typed.
+- `cancel()` drops the pending term, e.g. when a panel closes and must not receive a late write. The input keeps its text.
+- `clear()` drops a pending term, empties `term` and the input, and emits `searchChange('')` only when the term was not empty.
+
+`flush()` and `cancel()` return whether a term was pending.
+
+```typescript
+<input cngxSearch #search="cngxSearch" [debounceMs]="150"
+       (keydown.enter)="search.flush()"
+       (keydown.escape)="search.cancel()" />
 ```
 
 ### Accessibility-First: Keyboard Shortcuts with Labels
@@ -226,6 +237,37 @@ readonly save = injectHotkey({
 
 The binding `id` is the stable identity; a binding with a `description` is listed by the hotkey help, one without it fires but stays unlisted. `CngxKeyboardShortcut` takes the same fields as `shortcutId`, `shortcutDescription` and `shortcutGroup`.
 
+### Help List
+
+`registry.liveGroupsFor(context)` returns the bindings that would fire for a focus context (`null` = the document) as `CngxHotkeyGroup[]`: grouped by `group` (`null` for ungrouped), deduped by `id` with the deeper scope winning, without bindings that lack a `description`, are disabled, sit in a muted scope or are cut off by a modal. Read inside a `computed()` it is reactive, and it returns the previous array while the listing is structurally unchanged.
+
+```typescript
+private readonly registry = injectHotkeyRegistry();
+readonly groups = computed(() => this.registry.liveGroupsFor(null));
+```
+
+### Replacing the Registry
+
+Provide `CNGX_HOTKEY_REGISTRY` with a factory to swap the keymap for the app or isolate a subtree. `createHotkeyRegistry(deps)` needs no injection context (its deps come in as arguments), so a replacement can wrap it; `injectHotkeyRegistryDeps()` supplies the default `DOCUMENT` and macOS flag. The replacement implements `CngxHotkeyRegistry` (`isMac`, `register`, `liveGroupsFor`, `destroy`), resolves scopes through `resolveHotkeyScopeChain`, and calls `destroy()` on teardown so its document listener does not outlive the injector.
+
+`CngxHotkeyRegistryFactory` is the factory signature `createHotkeyRegistry` satisfies; type a replacement against it.
+
+```typescript
+// Wrap or replace the default; the type pins the contract.
+const myRegistry: CngxHotkeyRegistryFactory = (deps) => createHotkeyRegistry(deps);
+
+providers: [
+  {
+    provide: CNGX_HOTKEY_REGISTRY,
+    useFactory: () => {
+      const registry = myRegistry(injectHotkeyRegistryDeps());
+      inject(DestroyRef).onDestroy(() => registry.destroy());
+      return registry;
+    },
+  },
+]
+```
+
 ### Scopes
 
 A press resolves from the focused element outwards through the hotkey scopes that contain it:
@@ -237,7 +279,7 @@ A press resolves from the focused element outwards through the hotkey scopes tha
 
 ### Text Entry
 
-Inside an `input` of type text, search, email, url, tel, password or number, a `textarea`, a `select`, `contenteditable` or an element with `role="textbox"` / `role="searchbox"` (also inside shadow DOM), only combos with `ctrl`, `meta` or `mod`, function keys (`f1`-`f24`) and `escape` fire, for every scope. Bare keys, Shift-only and Alt-only combos never fire there, so `'mod+k'` works while typing and `'/'` types a slash. Escape is exempt so "Escape cancels an inline edit" keeps working; note that an `<input type="search">` also clears itself on Escape.
+Inside a text-entry target (`isTextEntryTarget` from `@cngx/core/utils`: a `textarea`, a `select`, an `input` of any type except button, submit, reset, checkbox, radio, range, color, file, image and hidden, so date, time, month, week and number count; an editable `contenteditable` region; an element with `role="textbox"` / `role="searchbox"`; also inside shadow DOM), only combos with `ctrl`, `meta` or `mod`, function keys (`f1`-`f24`) and `escape` fire, for every scope. Bare keys, Shift-only and Alt-only combos never fire there, so `'mod+k'` works while typing and `'/'` types a slash. Escape is exempt so "Escape cancels an inline edit" keeps working; note that an `<input type="search">` also clears itself on Escape.
 
 The rule is fixed by design and has no per-binding switch: one rule keeps WCAG 2.1.4 behaviour the same for every shortcut. To keep a modifier combo quiet in a field, gate it with `enabled` or register it in a scope the field is not part of.
 
@@ -245,7 +287,7 @@ The rule is fixed by design and has no per-binding switch: one rule keeps WCAG 2
 
 - AltGr is reported as Ctrl+Alt on Windows and Linux. A press with AltGr held is character input and never matches a `ctrl`, `alt` or `mod` combo, so `ctrl+alt+*` and `mod+alt+*` cannot be pressed on layouts that type through AltGr (German `€`, `@`); registering one warns [`CNGX1079`](../../../../core-concepts/error-codes/cngx1079.md). Prefer `mod+shift+*`.
 - `alt` and `shift` combos on letters and digits match the physical key when the layout transformed the character (Option+B is `∫` on macOS, Shift+1 is `!`).
-- Browser-reserved combos (`mod+w`, `mod+t`, `mod+n`, `mod+q`, `ctrl+tab`, `alt+f4` and their Shift variants) reach the browser first; registering one warns [`CNGX1078`](../../../../core-concepts/error-codes/cngx1078.md). A malformed combo (`ctrl+`, `hyper+k`) never fires and warns [`CNGX1080`](../../../../core-concepts/error-codes/cngx1080.md).
+- Browser-reserved combos (`mod+w`, `mod+shift+w`, `mod+t`, `mod+shift+t`, `mod+n`, `mod+shift+n`, `mod+q`, `ctrl+tab`, `ctrl+shift+tab`, `ctrl+pagedown`, `ctrl+pageup`, `alt+f4`) reach the browser first; registering one warns [`CNGX1078`](../../../../core-concepts/error-codes/cngx1078.md). A malformed combo (`ctrl+`, `hyper+k`) never fires and warns [`CNGX1080`](../../../../core-concepts/error-codes/cngx1080.md).
 
 ## Keyboard Shortcut Syntax
 
