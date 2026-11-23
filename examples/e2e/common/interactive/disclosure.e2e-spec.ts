@@ -93,8 +93,9 @@ test.describe('common/interactive/disclosure', () => {
       const triggers = page.locator('button[cngxdisclosure]');
       await expect(triggers.first()).toHaveAttribute('aria-expanded', 'false');
       for (const trigger of await triggers.all()) {
+        // Retrying read: right after the hash navigation the binding may not have painted yet.
+        await expect(trigger, route).toHaveAttribute('aria-controls', /.+/);
         const id = await trigger.getAttribute('aria-controls');
-        expect(id, route).toBeTruthy();
         await expect(page.locator(`[id="${id}"]`), route).toHaveCount(1);
         await expect(page.locator(`[id="${id}"]`), route).toBeHidden();
       }
