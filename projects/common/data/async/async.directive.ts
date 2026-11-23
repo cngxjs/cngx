@@ -130,9 +130,10 @@ export class CngxAsync<T> {
   private currentView: AsyncView = 'none';
   private currentTemplate: TemplateRef<unknown> | undefined = undefined;
   private contentViewRef: EmbeddedViewRef<CngxAsyncContext<T>> | null = null;
-  // Set when a view switch destroyed the focused element; cleared once a later
-  // view takes focus or the user moved focus elsewhere.
-  private focusPending = false;
+  // View switches left in which focus lost by a destroyed view may be handed
+  // on: the switch that lost it plus one more, so a short skeleton in between
+  // is bridged but a much later refresh never pulls focus back.
+  private focusSwitchesLeft = 0;
 
   constructor() {
     effect(() => {
@@ -146,7 +147,7 @@ export class CngxAsync<T> {
       }
 
       if (this.renderedViewHoldsFocus()) {
-        this.focusPending = true;
+        this.focusSwitchesLeft = 2;
       }
       this.vcr.clear();
       this.contentViewRef = null;
@@ -154,7 +155,8 @@ export class CngxAsync<T> {
       this.currentTemplate = tpl;
 
       this.renderView(view, tpl, s);
-      if (this.focusPending) {
+      if (this.focusSwitchesLeft > 0) {
+        this.focusSwitchesLeft--;
         untracked(() => afterNextRender(() => this.restoreFocus(), { injector: this.injector }));
       }
     });
@@ -178,19 +180,16 @@ export class CngxAsync<T> {
   }
 
   // Restores focus only when it was lost to the body; a view without a
-  // focusable element keeps the request pending for the next one.
+  // focusable element leaves the remaining switch budget to the next one.
   private restoreFocus(): void {
-    if (!this.focusPending) {
-      return;
-    }
     const active = this.doc.activeElement;
     if (active && active !== this.doc.body) {
-      this.focusPending = false;
+      this.focusSwitchesLeft = 0;
       return;
     }
     const target = this.firstFocusable();
     if (target) {
-      this.focusPending = false;
+      this.focusSwitchesLeft = 0;
       target.focus();
     }
   }
@@ -200,10 +199,12 @@ export class CngxAsync<T> {
       if (!(node instanceof HTMLElement)) {
         continue;
       }
-      if (node.matches(CNGX_FOCUSABLE_SELECTOR)) {
+      if (node.matches(CNGX_FOCUSABLE_SELECTOR) && !node.closest('[inert]')) {
         return node;
       }
-      const inner = node.querySelector<HTMLElement>(CNGX_FOCUSABLE_SELECTOR);
+      const inner = Array.from(node.querySelectorAll<HTMLElement>(CNGX_FOCUSABLE_SELECTOR)).find(
+        (el) => !el.closest('[inert]'),
+      );
       if (inner) {
         return inner;
       }

@@ -304,6 +304,21 @@ describe('CngxAsync focus across a view switch', () => {
     expect(document.activeElement).toBe(outside);
   });
 
+  it('drops the hand-off after one more view without a focusable element', async () => {
+    const { fixture, el } = await setup();
+    el.querySelector<HTMLButtonElement>('.retry')!.focus();
+
+    fixture.componentInstance.state.set('loading');
+    await render(fixture);
+    fixture.componentInstance.state.set('idle');
+    await render(fixture);
+    fixture.componentInstance.state.setError('late');
+    await render(fixture);
+
+    expect(el.querySelector('.retry')).not.toBeNull();
+    expect(document.activeElement).toBe(document.body);
+  });
+
   it('does not pull back focus the user moved elsewhere during the skeleton', async () => {
     const { fixture, el } = await setup();
     el.querySelector<HTMLButtonElement>('.retry')!.focus();
@@ -312,5 +327,44 @@ describe('CngxAsync focus across a view switch', () => {
     await errorAgain(fixture, () => outside.focus());
 
     expect(document.activeElement).toBe(outside);
+  });
+});
+
+describe('CngxAsync focus target selection', () => {
+  @Component({
+    template: `
+      <div *cngxAsync="state; skeleton: skel; error: err">CONTENT</div>
+      <ng-template #skel><span class="skeleton">Loading</span></ng-template>
+      <ng-template #err>
+        <div inert><button class="inert-btn">Hidden</button></div>
+        <button class="retry">Retry</button>
+      </ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class InertHost {
+    readonly state = createManualState<string>();
+  }
+
+  it('skips focusable elements inside an inert subtree', async () => {
+    const fixture = TestBed.createComponent(InertHost);
+    const state = fixture.componentInstance.state;
+    const el: HTMLElement = fixture.nativeElement;
+    const render = async () => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    state.setError('boom');
+    await render();
+    el.querySelector<HTMLButtonElement>('.retry')!.focus();
+
+    state.set('loading');
+    await render();
+    state.setError('again');
+    await render();
+
+    expect(document.activeElement).toBe(el.querySelector('.retry'));
   });
 });
