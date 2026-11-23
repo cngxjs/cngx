@@ -34,10 +34,10 @@ test.describe('Tree primitives demo', () => {
     const panel = artifact(page).locator('#row-b-content');
     await expect(panel).toBeHidden();
 
-    // The demo's toggle button drives state externally.
-    await artifact(page)
-      .getByRole('button', { name: 'Toggle row-b' })
-      .click();
+    // The directive sits on the row's toggle button, which drives the
+    // consumer signal externally.
+    await expect(host).toHaveRole('button');
+    await host.click();
     await expect(host).toHaveAttribute('aria-expanded', 'true');
     await expect(panel).toBeVisible();
   });
