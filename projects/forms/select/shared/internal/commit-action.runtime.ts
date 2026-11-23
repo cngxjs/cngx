@@ -1,18 +1,9 @@
 import { isObservable, type Observable, type Subscription } from 'rxjs';
 
+import type { CngxCommitHandle } from '@cngx/common/data';
 import { CngxRuntimeError } from '@cngx/utils';
 
 import type { CngxSelectCommitAction } from '../commit-action.types';
-
-/**
- * Cancel marks the commit superseded. Observable subscriptions tear down;
- * sync/Promise resolutions become no-ops.
- *
- * @internal
- */
-export interface CngxCommitHandle {
-  readonly cancel: () => void;
-}
 
 /**
  * Invokes a {@link CngxSelectCommitAction} and routes the outcome to

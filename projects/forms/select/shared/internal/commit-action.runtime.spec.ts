@@ -1,6 +1,8 @@
 import { BehaviorSubject, config, EMPTY, finalize, NEVER, of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { CngxCommitHandle } from '@cngx/common/data';
+
 import { runCommitAction } from './commit-action.runtime';
 
 function flushMacrotasks(): Promise<void> {
@@ -151,5 +153,20 @@ describe('runCommitAction', () => {
 
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(onError).not.toHaveBeenCalled();
+  });
+
+  it('returns the CngxCommitHandle of @cngx/common/data whose cancel drops a late emission', () => {
+    const onSuccess = vi.fn();
+    const source = new Subject<number>();
+
+    const handle: CngxCommitHandle = runCommitAction<number>(() => source, 1, {
+      onSuccess,
+      onError: vi.fn(),
+    });
+    handle.cancel();
+    source.next(1);
+
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(source.observed).toBe(false);
   });
 });
