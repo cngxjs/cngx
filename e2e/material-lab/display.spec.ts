@@ -155,6 +155,36 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
+    test('button-toggle: hover lays the mat on-surface state layer over the segment', async ({ page }) => {
+      // mat paints its hover as a translucent overlay on the segment. cngx
+      // must lay the same layer over its own resting segment colour; the
+      // unchecked rest itself (surface vs transparent) is an open roadmap
+      // rest, the checked rest is pinned equal above.
+      for (const [toggle, segment] of [
+        ['.mat-button-toggle:not(.mat-button-toggle-checked)', 'button[aria-checked=false]'],
+        ['.mat-button-toggle-checked', 'button[aria-checked=true]'],
+      ] as const) {
+        const cngxSegment = page.locator(cngx('button-toggle', segment)).first();
+        const rest = await cngxSegment.evaluate((el) => getComputedStyle(el).backgroundColor);
+        await page.locator(mat('button-toggle', `${toggle} button`)).first().hover();
+        const overlay = page.locator(mat('button-toggle', `${toggle} .mat-button-toggle-focus-overlay`)).first();
+        await expect.poll(() => overlay.evaluate((el) => getComputedStyle(el).opacity)).not.toBe('0');
+        const expected = await overlay.evaluate((el, base) => {
+          const style = getComputedStyle(el);
+          const probe = document.createElement('div');
+          probe.style.background = `color-mix(in srgb, ${style.backgroundColor} ${Number(style.opacity) * 100}%, ${base})`;
+          document.body.append(probe);
+          const value = getComputedStyle(probe).backgroundColor;
+          probe.remove();
+          return value;
+        }, rest);
+        await cngxSegment.hover();
+        await expect
+          .poll(() => cngxSegment.evaluate((el) => getComputedStyle(el).backgroundColor), { message: segment })
+          .toBe(expected);
+      }
+    });
+
     test('button-toggle: the label sits at the mat inset in label-large type', async ({ page }) => {
       // mat pads the label content, cngx the segment; the text paints in
       // both with the tracking the inner button resets to normal.

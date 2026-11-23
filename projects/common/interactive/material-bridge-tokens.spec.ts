@@ -266,6 +266,16 @@ $theme: mat.define-theme((
     expect(css).not.toMatch(/--cngx-button-toggle-padding-(block|inline): \d+px/);
   });
 
+  it('lays the on-surface hover state layer over both segment states (M3)', () => {
+    const css = bridgeCss('button-toggle-theme');
+    expect(css).toContain(
+      'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-surface))',
+    );
+    expect(css).toContain(
+      'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-secondary-container))',
+    );
+  });
+
   it('routes the Material group corner through the radius knob on hosts and segments', () => {
     // The segments paint the visible corners from --cngx-radius-md; the
     // group radius token is inherits:false and never reaches them.

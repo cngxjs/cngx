@@ -40,6 +40,8 @@
 // Checked: M3 fills the checked segment with secondary-container and keeps
 // the outline divider, so the strong pair is routed to the secondary roles
 // and the checked border rules (0,2,1) / hover (0,4,1) put the outline back.
+// Hover: an on-surface state layer at 8% over the unchecked surface and the
+// checked fill, written as a background in raw rules (0,4,1).
 // The shape is routed through the --cngx-radius-md knob for the same
 // reason as the colours: the visible corners are painted by the first and
 // last segment from that knob, and the group radius token derives from it
@@ -85,6 +87,15 @@ $_checked: '#{$_segment}.cngx-button-toggle--checked';
       #{$_checked},
       #{$_checked}:hover:not(.cngx-button-toggle--disabled) {
         border-color: var(--mat-sys-outline);
+      }
+      // M3 hover is an on-surface state layer at 8% over the segment, not
+      // the component's primary tint (unchecked, (0,4,0)) or its shade away
+      // from the ink (checked, (0,4,0)); one element above each.
+      #{$_segment}:hover:not(.cngx-button-toggle--disabled):not(.cngx-button-toggle--checked) {
+        background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-surface));
+      }
+      #{$_checked}:hover:not(.cngx-button-toggle--disabled) {
+        background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-secondary-container));
       }
     }
   }
