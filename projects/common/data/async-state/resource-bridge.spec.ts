@@ -1,7 +1,7 @@
-import { resource, signal, type Resource, type ResourceStatus } from '@angular/core';
+import { Component, resource, signal, type Resource, type ResourceStatus } from '@angular/core';
 import { httpResource, provideHttpClient, type HttpResourceRef } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { describe, expect, it } from 'vitest';
 
@@ -220,6 +220,91 @@ describe('fromResource over a real resource()', () => {
 
     expect(state.status()).toBe('error');
     expect(state.data()).toBe(first);
+  });
+});
+
+describe('fromResource read by a template that skips the latch-backed signals', () => {
+  abstract class ResourceHost {
+    readonly fail = { on: false };
+    readonly params = signal(1);
+    readonly ref = resource({
+      params: () => this.params(),
+      loader: async ({ params: p }) => {
+        if (this.fail.on) {
+          throw new Error(`fail-${p}`);
+        }
+        return [`v${p}`];
+      },
+    });
+    readonly state = fromResource(this.ref);
+  }
+
+  @Component({
+    template: `@if (state.status() === 'loading') {
+        <span class="skel">SKEL</span>
+      } @else {
+        <span class="data">{{ state.data()?.join(',') }}</span>
+      }`,
+  })
+  class StatusGatedHost extends ResourceHost {}
+
+  @Component({
+    template: `@if (state.isLoading()) {
+        <span class="skel">SKEL</span>
+      } @else {
+        <span class="data">{{ state.data()?.join(',') }}</span>
+      }`,
+  })
+  class LoadingGatedHost extends ResourceHost {}
+
+  async function render(fixture: ComponentFixture<unknown>): Promise<void> {
+    for (let i = 0; i < 5; i++) {
+      fixture.detectChanges();
+      await new Promise((r) => setTimeout(r, 0));
+    }
+  }
+
+  function text(fixture: ComponentFixture<unknown>): string {
+    return (fixture.nativeElement as HTMLElement).textContent?.trim() ?? '';
+  }
+
+  it('drops the old data when a params change fails behind a status gate', async () => {
+    const fixture = TestBed.createComponent(StatusGatedHost);
+    const host = fixture.componentInstance;
+    await render(fixture);
+    expect(text(fixture)).toBe('v1');
+
+    host.fail.on = true;
+    host.ref.reload();
+    fixture.detectChanges();
+    expect(host.ref.status()).toBe('reloading');
+    expect(text(fixture)).toBe('v1');
+
+    host.params.set(2);
+    fixture.detectChanges();
+    expect(text(fixture)).toBe('SKEL');
+    await render(fixture);
+
+    expect(host.state.status()).toBe('error');
+    expect(viewOf(host.state)).toBe('error');
+    expect(text(fixture)).toBe('');
+  });
+
+  it('keeps the data when a reload fails behind an isLoading gate', async () => {
+    const fixture = TestBed.createComponent(LoadingGatedHost);
+    const host = fixture.componentInstance;
+    await render(fixture);
+    expect(text(fixture)).toBe('v1');
+
+    host.fail.on = true;
+    host.ref.reload();
+    fixture.detectChanges();
+    expect(text(fixture)).toBe('SKEL');
+    await render(fixture);
+
+    expect(host.state.status()).toBe('error');
+    expect(viewOf(host.state)).toBe('content+error');
+    expect(text(fixture)).toBe('v1');
   });
 });
 

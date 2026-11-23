@@ -47,7 +47,12 @@ export function buildResourceBridge<T>(
     equal: resourceLatchEqual,
   });
 
+  // Every signal the bridge hands out reads the latch first, so a consumer of
+  // any of them (status, isLoading, error, data, ...) keeps the request chain
+  // observed; a template that gates on status alone would otherwise skip the
+  // steps the reducer needs to tell a reload from a params change.
   const status = computed((): AsyncStatus => {
+    latch();
     switch (ref.status()) {
       case 'idle':
         return 'idle';
@@ -66,14 +71,23 @@ export function buildResourceBridge<T>(
   return buildAsyncStateView<T>({
     status,
     data: computed(() => {
-      // Read the latch first so every data reader keeps the request chain observed.
       const last = latch();
       return ref.hasValue() ? ref.value() : last.value;
     }),
-    error: computed(() => ref.error()),
-    progress,
+    error: computed(() => {
+      latch();
+      return ref.error();
+    }),
+    progress: progress
+      ? computed(() => {
+          latch();
+          return progress();
+        })
+      : undefined,
     // Idle and a new request count as "before the first load", never as empty.
     isFirstLoad: computed(() => !latch().has),
+    // Stamped inside the lazy latch computation: the time of the first read
+    // after a successful load, not of the load itself.
     lastUpdated: computed(() => latch().at, {
       equal: (a, b) => a?.getTime() === b?.getTime(),
     }),
