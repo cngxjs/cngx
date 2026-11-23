@@ -55,7 +55,8 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  * checks, typeahead labels) map absolute indices onto the rendered subset.
  * Targets outside the window surface as `pendingHighlight`; the consumer
  * scrolls them into view (`connectRecyclerToActiveDescendant`) and the
- * directive clears the pending state once the target renders.
+ * directive clears the pending state once the target renders; no
+ * `clearPendingHighlight()` call is needed.
  *
  * ### Material/CDK equivalent
  *
@@ -484,7 +485,11 @@ export class CngxActiveDescendant {
     }
   }
 
-  /** Called by recycler bridges after scrolling the pending index into view. */
+  /**
+   * Drops `pendingHighlight` without waiting for the row to render. Optional:
+   * the directive clears it on its own once the target row renders, and
+   * `connectRecyclerToActiveDescendant` never calls this.
+   */
   clearPendingHighlight(): void {
     this.pendingHighlightState.set(null);
   }

@@ -50,9 +50,31 @@ Counterpart to `CngxRovingTabindex` - use AD when options should not be individu
 | Enter / Space | activate current | activate current |
 | printable character | typeahead (debounced) | typeahead (debounced) |
 
-Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around.
+Under `dir="rtl"` the horizontal arrows flip: `ArrowLeft` highlights the next item, `ArrowRight` the previous one.
+
+Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around. Keys with Ctrl, Cmd or Alt, keys already `preventDefault()`ed and every key of an IME composition (`isComposing`, including the commit Enter) pass through untouched. Keys from a text field inside the host belong to that field.
+
+### Editable host
+
+When the host itself takes text (a combobox `<input>`, a `<textarea>`, a contenteditable element), only the arrows and Enter drive the list. Home / End stay with the caret, and Space and printable characters type into the field: no typeahead runs.
 
 Enter / Space from a focused nested control inside the host belong to that control: a button, link, `input`, `select`, `textarea` or `summary`, or an element with role `button`, `checkbox`, `switch`, `menuitem`, `menuitemcheckbox` or `menuitemradio`. The directive neither prevents them nor activates the current item. An element that renders one of the host's own items (its `id` is an item id) is not a nested control: Enter / Space on it still activate. With no active item, Space is prevented so the page does not scroll, unless the host itself takes text (text input, textarea, contenteditable). Enter with no active item passes through.
+
+## Inputs
+
+| Input | Default | Purpose |
+|-|-|-|
+| `items` | `undefined` | Explicit item list; wins over items registered via `CNGX_AD_ITEM`. |
+| `orientation` | `'vertical'` | Arrow axis, `'vertical'` or `'horizontal'`. |
+| `loop` | `true` | Wrap from last to first and back. |
+| `typeahead` | `true` | Printable keys search item labels. |
+| `typeaheadDebounce` | `300` | Typeahead buffer reset window in ms. |
+| `autoHighlightFirst` | `false` | Highlight the first item whenever nothing is highlighted, from the first render on. |
+| `skipDisabled` | `true` | Skip disabled items during navigation and value lookup. |
+| `virtualCount` | `undefined` | Treat `[0, virtualCount)` as the item space when only a window is rendered. |
+| `windowStart` | `0` | Absolute index of the first rendered item (recycler window start); ignored without `virtualCount`. |
+| `typeaheadItems` | `undefined` | Full list in absolute index space for a windowed list; typeahead searches it instead of the rendered window. Read for `label` and `disabled` only. |
+| `compareWith` | `Object.is` | Equality used to find the active value again after the item list changes. |
 
 ## Outputs
 
@@ -67,4 +89,4 @@ Enter / Space from a focused nested control inside the host belong to that contr
 - **`@angular/cdk/overlay` / `CngxPopoverTrigger`** - The trigger implements its own keymap and calls `highlightFirst/Last/Next/Prev` + `activateCurrent` on the AD hostDirective. AD does not implement open/close.
 - **`CngxRovingTabindex`** - Do not nest an AD inside a roving group. They model different focus strategies.
 - **Re-fetched items** - When the item list changes, the active value is looked up again with `compareWith` (default `Object.is`), so a reorder keeps the highlight and a vanished value drops it. Pass the listbox / select comparator when refreshed options arrive as new objects.
-- **Recycler / virtual scroll** - With `virtualCount`, out-of-range targets surface as `pendingHighlight`. Consumers scroll the index into view, then call `clearPendingHighlight()`.
+- **Recycler / virtual scroll** - With `virtualCount`, out-of-range targets surface as `pendingHighlight`. The consumer scrolls the index into view (`connectRecyclerToActiveDescendant` from `@cngx/common/data` does this); the directive clears `pendingHighlight` on its own once the row renders. `clearPendingHighlight()` drops it early, without waiting for the render.

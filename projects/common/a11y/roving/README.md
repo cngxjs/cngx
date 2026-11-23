@@ -18,6 +18,10 @@ Container directive implementing the roving tabindex pattern. Only the active it
 - `End`: Jump to last enabled item
 - `Tab`: Leave the group (browser default)
 
+Under `dir="rtl"` the horizontal arrows flip: `ArrowLeft` moves to the next item, `ArrowRight` to the previous one. Vertical arrows, Home and End are unaffected.
+
+The group leaves a key alone when it carries Ctrl, Cmd or Alt, arrives already `preventDefault()`ed, belongs to an IME composition, comes from a text field (an `<input>` item or a field inside an item), or comes from a nested widget that owns its arrows (range input, slider, spinbutton, listbox, grid, menu, tablist and similar roles).
+
 #### Example
 
 ```typescript
@@ -38,7 +42,7 @@ Container directive implementing the roving tabindex pattern. Only the active it
 // Card grid with wrapping and loop
 <div cngxRovingTabindex orientation="both" [loop]="true">
   @for (card of cards(); track card.id) {
-    <div cngxRovingItem role="article" tabindex="-1">
+    <div cngxRovingItem role="article">
       {{ card.title }}
     </div>
   }
@@ -110,12 +114,16 @@ The consumer is responsible for providing semantically correct roles:
 
 ```typescript
 readonly roving = viewChild(CngxRovingTabindex);
+readonly rovingItems = viewChildren(CngxRovingItem);
 
 selectItemAt(index: number): void {
+  // Moves the tab stop only; writing activeIndex does not move focus.
   this.roving()?.activeIndex.set(index);
-  // Item is automatically focused
+  this.rovingItems()[index]?.focus();
 }
 ```
+
+Only arrow / Home / End presses move focus; a programmatic write updates `tabindex` and leaves focus where it is.
 
 ### Two-Way Binding
 
@@ -143,11 +151,39 @@ protected readonly selectedIdx = signal(0);
 </div>
 ```
 
-When items are added or removed, the `activeIndex` is automatically clamped to the valid range.
+When the list changes and `activeIndex` did not, the item that held the tab stop is looked up again by element: a removal or reorder before it keeps the stop on that item and rewrites `activeIndex` to its new position. If the item is gone, the index is clamped to the list; a disabled target falls back to the first enabled item. An empty list leaves `activeIndex` untouched, so a repopulated list restores it.
+
+### Virtual Mode
+
+Bind `virtualCount` to the full item count when only a window of items is rendered (recycler / virtual scroll). `activeIndex` then ranges over `[0, virtualCount)`, items are matched by their `data-cngx-recycle-index` attribute (written by `CngxVirtualItem` / `CngxMeasure`), and disabled items are not skipped. While the active index is outside the rendered window, the nearest rendered item keeps the tab stop.
+
+An arrow press to an unrendered index sets the read-only `pendingFocus` signal. `connectRecyclerToRoving(recycler, roving)` from `@cngx/common/data` scrolls that index into view, focuses the item and calls `clearPendingFocus()`.
+
+```html
+<div cngxRovingTabindex orientation="vertical" [virtualCount]="recycler.ariaSetSize()">
+  @for (item of visibleItems(); track item.id; let i = $index) {
+    <div cngxRovingItem [cngxVirtualItem]="recycler" [cngxVirtualItemIndex]="recycler.start() + i">
+      {{ item.name }}
+    </div>
+  }
+</div>
+```
+
+### Navigation-Key Handshake
+
+`consumeNavigationKey()` returns `true` once when the last focus move came from an arrow / Home / End press, then resets. A group that auto-selects on arrow (radio group, button-toggle group) calls it from the newly focused item's `(focus)` handler, so Tab into the group does not select.
 
 ## Styling
 
 Roving tabindex manages `tabindex` attributes only; styling is the consumer's responsibility.
+
+`CngxRovingItem` writes no attribute or class for `cngxRovingItemDisabled`. Bind one yourself to expose the state to assistive tech and CSS:
+
+```html
+<button cngxRovingItem [cngxRovingItemDisabled]="item.disabled" [attr.aria-disabled]="item.disabled || null">
+  {{ item.label }}
+</button>
+```
 
 ```scss
 // Highlight the active item
@@ -157,7 +193,7 @@ Roving tabindex manages `tabindex` attributes only; styling is the consumer's re
 }
 
 // Disabled items
-[cngxRovingItem][cngxRovingItemDisabled] {
+[cngxRovingItem][aria-disabled='true'] {
   opacity: 0.5;
   cursor: not-allowed;
 }

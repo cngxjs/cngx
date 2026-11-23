@@ -50,13 +50,6 @@ const DOC_PATH = join(REPO_ROOT, '.compodoc/documentation.json');
 const KNOWN_FAILURES = [
   {
     slice: '1 primitives',
-    file: 'projects/common/a11y/motion/README.md',
-    line: 205,
-    kind: 'unknown-binding',
-    ref: 'cngx-toast-outlet [animationDuration]',
-  },
-  {
-    slice: '1 primitives',
     file: 'projects/common/interactive/gestures/README.md',
     line: 341,
     kind: 'missing-path',
