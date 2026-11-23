@@ -179,7 +179,8 @@
     transition:
       background-color var(--cngx-async-transition, 0.2s ease),
       color var(--cngx-async-transition, 0.2s ease),
-      border-color var(--cngx-async-transition, 0.2s ease);
+      border-color var(--cngx-async-transition, 0.2s ease),
+      opacity var(--cngx-async-transition, 0.2s ease);
   }
 
   :where(.cngx-async--error) {
@@ -198,7 +199,8 @@
     transition:
       background-color var(--cngx-async-transition, 0.2s ease),
       color var(--cngx-async-transition, 0.2s ease),
-      border-color var(--cngx-async-transition, 0.2s ease);
+      border-color var(--cngx-async-transition, 0.2s ease),
+      opacity var(--cngx-async-transition, 0.2s ease);
   }
 }
 
