@@ -48,7 +48,7 @@ test.describe('common/a11y/focus-restore', () => {
 
     const hideToggle = page.getByRole('button', { name: 'Hide Details' });
     await hideToggle.click();
-    // Details are gone — focus should return to the (now-renamed) toggle.
+    // Details are gone - focus should return to the (now-renamed) toggle.
     const showAgain = page.getByRole('button', { name: 'Show Details' });
     await expect(showAgain).toBeFocused();
 
