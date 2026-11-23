@@ -1,12 +1,4 @@
-import {
-  computed,
-  DestroyRef,
-  Directive,
-  ElementRef,
-  inject,
-  input,
-  type OnInit,
-} from '@angular/core';
+import { computed, Directive, effect, ElementRef, inject, input, untracked } from '@angular/core';
 
 import { CNGX_ACTION_STATUS, type CngxActionStatusCellKind } from './action-status.token';
 
@@ -46,23 +38,25 @@ import { CNGX_ACTION_STATUS, type CngxActionStatusCellKind } from './action-stat
     '[attr.aria-hidden]': 'active() ? null : "true"',
   },
 })
-export class CngxActionStatusCell implements OnInit {
+export class CngxActionStatusCell {
   private readonly status = inject(CNGX_ACTION_STATUS);
   private readonly element = inject<ElementRef<Element>>(ElementRef).nativeElement;
-  private readonly destroyRef = inject(DestroyRef);
 
   /** Which cell this element is. */
   readonly kind = input.required<CngxActionStatusCellKind>({ alias: 'cngxActionStatusCell' });
 
   protected readonly active = computed(() => this.status.activeCell() === this.kind());
 
-  ngOnInit(): void {
-    // The kind is an input, so it is known from here on, not at construction.
-    const kind = this.kind();
-    if (kind !== 'success' && kind !== 'error') {
-      return;
-    }
-    this.status.registerCell(kind, this.element);
-    this.destroyRef.onDestroy(() => this.status.unregisterCell(kind, this.element));
+  constructor() {
+    // Follows the bound kind: a change unregisters the old result cell
+    // before the new one registers; destroy runs the same cleanup.
+    effect((onCleanup) => {
+      const kind = this.kind();
+      if (kind !== 'success' && kind !== 'error') {
+        return;
+      }
+      untracked(() => this.status.registerCell(kind, this.element));
+      onCleanup(() => this.status.unregisterCell(kind, this.element));
+    });
   }
 }

@@ -116,4 +116,39 @@ describe('CngxActionStatusCell', () => {
     expect(stub.registerCell).toHaveBeenCalledTimes(1);
     expect(stub.registerCell).toHaveBeenCalledWith('success', cell('cell'));
   });
+  it('re-registers when the bound kind changes from success to error', () => {
+    const { fixture, stub, cell } = setup(BoundCell);
+    const el = cell('cell');
+    fixture.componentInstance.kind.set('error');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(stub.unregisterCell).toHaveBeenCalledTimes(1);
+    expect(stub.unregisterCell).toHaveBeenCalledWith('success', el);
+    expect(stub.registerCell).toHaveBeenCalledTimes(2);
+    expect(stub.registerCell).toHaveBeenLastCalledWith('error', el);
+  });
+
+  it('unregisters and registers nothing when the kind changes to idle', () => {
+    const { fixture, stub, cell } = setup(BoundCell);
+    const el = cell('cell');
+    fixture.componentInstance.kind.set('error');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.componentInstance.kind.set('idle');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(stub.unregisterCell).toHaveBeenLastCalledWith('error', el);
+    expect(stub.registerCell).toHaveBeenCalledTimes(2);
+    fixture.destroy();
+    expect(stub.unregisterCell).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not re-register when the same kind is set again', () => {
+    const { fixture, stub } = setup(BoundCell);
+    fixture.componentInstance.kind.set('success');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(stub.registerCell).toHaveBeenCalledTimes(1);
+    expect(stub.unregisterCell).not.toHaveBeenCalled();
+  });
 });
