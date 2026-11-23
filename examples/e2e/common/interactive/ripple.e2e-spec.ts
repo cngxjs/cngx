@@ -54,4 +54,27 @@ test.describe('common/interactive/ripple', () => {
     await page.keyboard.press(' ');
     await expect(activations).toHaveText('3');
   });
+  test('ripple-under-reduced-motion: the scoped button carries the reduced motion axis', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/ripple/reduced-motion/ripple-under-reduced-motion');
+
+    const scoped = page.getByRole('button', { name: 'Scoped motion' });
+    const full = page.getByRole('button', { name: 'Full motion' });
+    await expect(scoped.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(1);
+    await expect(full.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(0);
+
+    // The scope wins over the class rule: the wave gets the fade keyframes.
+    await scoped.evaluate((el) => {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }));
+    });
+    const waveName = await scoped.evaluate((el) => {
+      const wave = el.querySelector('.cngx-ripple__wave');
+      return wave ? getComputedStyle(wave).animationName : 'no wave';
+    });
+    expect(waveName).toBe('cngx-ripple-fade');
+
+    await page.getByRole('button', { name: 'Reduce motion on the right' }).click();
+    await expect(scoped.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(0);
+  });
 });

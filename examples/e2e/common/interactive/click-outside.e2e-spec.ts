@@ -103,4 +103,33 @@ test.describe('common/interactive/click-outside', () => {
     expect(afterClicksCount).toBe(afterDisableCount);
 
   });
+  test('event-type: pointerdown counts on press, click only on release', async ({ page }) => {
+    await gotoDemo(page, 'common/interactive/gestures/click-outside/event-type');
+
+    const valueOf = (label: string) =>
+      page
+        .locator('.event-row')
+        .filter({ has: page.getByText(label, { exact: true }) })
+        .locator('.event-value');
+    const presses = valueOf('Outside presses');
+
+    await page.mouse.move(10, 10);
+    await page.mouse.down();
+    await expect(presses).toHaveText('1');
+    await expect(valueOf('Last event')).toHaveText('pointerdown');
+    await page.mouse.up();
+
+    // The press on the switch is itself outside and still counts as a
+    // pointerdown; the click listener attaches after the switch.
+    const clickType = page.getByRole('button', { name: 'click', exact: true });
+    await clickType.click();
+    await expect(clickType).toHaveAttribute('aria-pressed', 'true');
+    await expect(presses).toHaveText('2');
+    await page.mouse.move(10, 10);
+    await page.mouse.down();
+    await expect(presses).toHaveText('2');
+    await page.mouse.up();
+    await expect(presses).toHaveText('3');
+    await expect(valueOf('Last event')).toHaveText('click');
+  });
 });

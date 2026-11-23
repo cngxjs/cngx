@@ -105,4 +105,28 @@ test.describe('common/interactive/long-press', () => {
     await page.keyboard.press('Enter');
     await expect(confirmations).toHaveText('1');
   });
+  test('trailing-click-suppression: a hold runs longPressed only, a tap runs click only', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/gestures/long-press/trailing-click-suppression');
+
+    const button = page.getByRole('button', { name: /Tap to select/ });
+    const log = page.getByRole('list', { name: 'Event log' }).getByRole('listitem');
+
+    const box = (await button.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await expect(log.first()).toHaveText('longPressed: open the menu', { timeout: 2000 });
+    await page.mouse.up();
+    await expect(log).toHaveCount(1);
+
+    await button.click();
+    await expect(log.first()).toHaveText('click: select the item');
+    await expect(log).toHaveCount(2);
+
+    await button.focus();
+    await page.keyboard.press('Enter');
+    await expect(log).toHaveCount(3);
+    await expect(log.first()).toHaveText('click: select the item');
+  });
 });
