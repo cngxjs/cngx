@@ -16,11 +16,6 @@
     --cngx-file-drop-active-border: var(--mat-sys-primary);
     --cngx-file-drop-active-bg: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
     --cngx-file-drop-success-border: var(--mat-sys-tertiary);
-  } @else {
-    --cngx-file-drop-border-color: #{mat.get-theme-color($theme, foreground, divider)};
-    --cngx-file-drop-active-border: #{mat.get-theme-color($theme, primary)};
-    --cngx-file-drop-active-bg: #{rgba(mat.get-theme-color($theme, primary), 0.05)};
-    --cngx-file-drop-success-border: #{mat.get-theme-color($theme, accent)};
   }
 }
 

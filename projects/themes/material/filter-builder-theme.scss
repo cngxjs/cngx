@@ -23,15 +23,6 @@
     --cngx-filter-builder-action-hover-bg: var(--mat-sys-surface-container);
     --cngx-filter-builder-action-border: var(--mat-sys-outline-variant);
     --cngx-filter-builder-incomplete-border-color: var(--mat-sys-tertiary);
-  } @else {
-    --cngx-filter-builder-border-color: rgba(0, 0, 0, 0.12);
-    --cngx-filter-builder-empty-fg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
-    --cngx-filter-builder-error-fg: #{bridge.m2-warn-text($theme)};
-    --cngx-filter-builder-action-fg: #{mat.get-theme-color($theme, primary)};
-    --cngx-filter-builder-action-bg: #{mat.get-theme-color($theme, background, card)};
-    --cngx-filter-builder-action-hover-bg: rgba(0, 0, 0, 0.04);
-    --cngx-filter-builder-action-border: rgba(0, 0, 0, 0.12);
-    --cngx-filter-builder-incomplete-border-color: #{mat.get-theme-color($theme, accent)};
   }
 }
 

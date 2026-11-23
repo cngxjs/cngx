@@ -33,9 +33,6 @@
     // selected fill so a listbox sitting next to a chip set reads as
     // visually consistent committed state.
     --cngx-option-selected-bg: var(--mat-sys-secondary-container);
-  } @else {
-    --cngx-option-highlight-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
-    --cngx-option-selected-bg: #{rgba(mat.get-theme-color($theme, primary), 0.16)};
   }
 }
 
@@ -54,8 +51,6 @@
     // a flatter look; aligning here lets options nest inside mat-card
     // surfaces without visual mismatch.
     --cngx-option-radius: var(--mat-sys-corner-small, 8px);
-  } @else {
-    --cngx-option-radius: 4px;
   }
 }
 

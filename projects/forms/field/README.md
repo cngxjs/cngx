@@ -433,7 +433,7 @@ control; its leaves follow the group.
 
 ## Optional Material Theme
 
-`@cngx/themes/material/field-theme.scss` maps Material M3/M2 design tokens to
+`@cngx/themes/material/field-theme.scss` maps Material M3 design tokens to
 cngx-form-field CSS custom properties:
 
 ```scss

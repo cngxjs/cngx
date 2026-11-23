@@ -12,10 +12,8 @@ import { compileThemeEntry, emittedTokenNames } from '@cngx/testing/sass';
  * the consumer because `projects/themes/material/` has no test target.
  */
 
-function compiledCss(themeVersion: 'v1' | 'v0'): string {
-  const entry =
-    themeVersion === 'v1'
-      ? `
+function compiledCss(): string {
+  return compileThemeEntry(`
 @use '@angular/material' as mat;
 @use 'material/field-theme' as bridge;
 
@@ -24,22 +22,11 @@ $theme: mat.define-theme((
 ));
 
 @include bridge.theme($theme);
-`
-      : `
-@use '@angular/material' as mat;
-@use 'material/field-theme' as bridge;
-
-$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent: mat.m2-define-palette(mat.$m2-pink-palette);
-$theme: mat.m2-define-light-theme((color: (primary: $primary, accent: $accent)));
-
-@include bridge.theme($theme);
-`;
-  return compileThemeEntry(entry);
+`);
 }
 
-function bridgeTokenNames(themeVersion: 'v1' | 'v0'): readonly string[] {
-  return emittedTokenNames(compiledCss(themeVersion));
+function bridgeTokenNames(): readonly string[] {
+  return emittedTokenNames(compiledCss());
 }
 
 describe('field Material bridge', () => {
@@ -69,17 +56,17 @@ describe('field Material bridge', () => {
   ];
 
   it('emits only consumed token names (M3)', () => {
-    expect(bridgeTokenNames('v1')).toEqual(CONSUMED);
+    expect(bridgeTokenNames()).toEqual(CONSUMED);
   });
 
   it('reaches a skinned control that sits outside any cngx-form-field (M3)', () => {
-    const css = compiledCss('v1');
+    const css = compiledCss();
     expect(css).toContain(':where(input[data-skin]');
     expect(css).toContain('--cngx-field-underline-focus-color');
   });
 
   it('reaches every select-family trigger, which carries the attribute on its host (M3)', () => {
-    const css = compiledCss('v1');
+    const css = compiledCss();
     for (const host of [
       'cngx-select',
       'cngx-multi-select',
@@ -96,38 +83,26 @@ describe('field Material bridge', () => {
   });
 
   it('maps the field ring to the primary in the field and skinned-control scopes', () => {
-    const v1 = compiledCss('v1');
+    const v1 = compiledCss();
     expect(v1).toMatch(
       /:where\(input\[data-skin\][^{]*\{[^}]*--cngx-field-ring-color: var\(--mat-sys-primary\)/,
     );
     expect(v1).toMatch(
       /cngx-form-field\)\s*\{[^}]*--cngx-field-ring-color: var\(--mat-sys-primary\)/,
     );
-    // the outlined M2 twin draws its focus outline in the primary 500 (indigo)
-    expect(compiledCss('v0')).toMatch(
-      /:where\(input\[data-skin\][^{]*\{[^}]*--cngx-field-ring-color: #3f51b5/,
-    );
   });
 
   it('maps the field placeholder to on-surface-variant, as the M3 select bridge does (M3)', () => {
-    expect(compiledCss('v1')).toMatch(
+    expect(compiledCss()).toMatch(
       /cngx-form-field\)\s*\{[^}]*--cngx-field-placeholder-color: var\(--mat-sys-on-surface-variant\)/,
     );
-  });
-
-  it('emits a consumed-name subset (M2)', () => {
-    const names = bridgeTokenNames('v0');
-    expect(names.length).toBeGreaterThan(0);
-    for (const name of names) {
-      expect(CONSUMED).toContain(name);
-    }
   });
 
   // mat-form-field appearance="outline", density 0: 24px line + 2 * 15px
   // padding + 2 * 1px edge = 56px, 4px corners, body-large in the control,
   // body-small on the subscript line inset 16px.
   it('brings the outlined control and the subscript line onto the M3 metrics (M3)', () => {
-    const css = compiledCss('v1');
+    const css = compiledCss();
     expect(css).toMatch(
       /:where\(cngx-form-field :is\(input[^{]*\{[^}]*padding-block: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*padding-inline: calc\(var\(--cngx-space-md, 16px\) - 1px\);\s*border-radius: 4px;/,
     );
@@ -150,7 +125,7 @@ describe('field Material bridge', () => {
   });
 
   it('sizes the box affixes like matIconPrefix and a matIconButton suffix', () => {
-    const css = compiledCss('v1');
+    const css = compiledCss();
     expect(css).toMatch(
       /\.cngx-field-box\.cngx-field-box:is\(\[data-skin=["']?fill["']?\], \[data-skin=["']?outline["']?\]\)\s*\{\s*--cngx-field-affix-icon-size: 1\.5em;\s*--cngx-field-affix-target: 2\.5rem;/,
     );
@@ -165,215 +140,18 @@ describe('field Material bridge', () => {
   // mat-hint and the counter end hint carry no colour and inherit the page
   // text, so the bridge maps both to the text role, never the muted one.
   it('paints hint and char-count in the text role, the over-limit count in the error role', () => {
-    const v1 = compiledCss('v1');
+    const v1 = compiledCss();
     expect(v1).toContain('--cngx-field-hint-color: var(--mat-sys-on-surface);');
     expect(v1).toContain('--cngx-field-char-count-color: var(--mat-sys-on-surface);');
     expect(v1).toContain('--cngx-field-char-count-over-color: var(--mat-sys-error);');
-    const v0 = compiledCss('v0');
-    expect(v0).toContain('--cngx-field-hint-color: rgba(0, 0, 0, 0.87);');
-    expect(v0).toContain('--cngx-field-char-count-color: rgba(0, 0, 0, 0.87);');
-    expect(v0).toMatch(/--cngx-field-char-count-over-color: #[0-9a-f]{6};/);
-  });
-
-  // mat-form-field fill draws its resting line in secondary-text, which is
-  // not the same alpha in both theme types.
-  it('draws the M2 resting underline at 54% light and 70% dark', () => {
-    const underline = (scheme: 'light' | 'dark'): string | undefined =>
-      compileThemeEntry(`
-@use '@angular/material' as mat;
-@use 'material/field-theme' as bridge;
-$theme: mat.m2-define-${scheme}-theme((color: (
-  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
-  accent: mat.m2-define-palette(mat.$m2-pink-palette),
-)));
-@include bridge.theme($theme);
-`).match(/--cngx-field-underline-color: ([^;]+);/)?.[1];
-    expect(underline('light')).toBe('rgba(0, 0, 0, 0.54)');
-    expect(underline('dark')).toBe('rgba(255, 255, 255, 0.7)');
   });
 
   // The box class is the stable hook; the affix-row class only survives as a
   // deprecated alias and must not be what the bridge depends on.
   it('keys the skin tokens on the field box class', () => {
-    const css = compiledCss('v1');
+    const css = compiledCss();
     expect(css).toContain('.cngx-field-box[data-skin]');
     expect(css).not.toContain('.cngx-field-affix-row');
-  });
-});
-
-// The M2 warn 500 is a fill colour: red sits at 3.7:1 on white and 2.7:1 on
-// the dark card. The bridge derives the error colour so the error text clears
-// 4.5:1 on the page and the card, and the error line (same token) 3:1 on the
-// fill and hover surfaces of mat-form-field appearance="fill", for every warn
-// palette in either scheme.
-describe('field Material bridge M2 error contrast', () => {
-  function m2(scheme: 'light' | 'dark', warn: string): Record<string, string> {
-    const css = compileThemeEntry(
-      `
-@use 'sass:color';
-@use 'sass:map';
-@use '@angular/material' as mat;
-@use 'material/field-theme' as bridge;
-@use 'material/select-theme' as select;
-
-$theme: mat.m2-define-${scheme}-theme((color: (
-  primary: mat.m2-define-palette(mat.$m2-indigo-palette),
-  accent: mat.m2-define-palette(mat.$m2-pink-palette),
-  warn: mat.m2-define-palette(mat.$m2-${warn}-palette),
-)));
-
-@include bridge.theme($theme);
-@include select.theme($theme);
-probe {
-  --warn: #{color.ie-hex-str(mat.get-theme-color($theme, warn))};
-  --page: #{color.ie-hex-str(mat.get-theme-color($theme, background, background))};
-  --card: #{color.ie-hex-str(mat.get-theme-color($theme, background, card))};
-  --surface-variant: #{color.ie-hex-str(map.get($theme, _mat-system, surface-variant))};
-}
-`,
-    );
-    const pick = (pattern: RegExp): string => {
-      const hit = css.match(pattern);
-      if (!hit) {
-        throw new Error(`no match for ${pattern}`);
-      }
-      return hit[1];
-    };
-    const probe = (name: string): string =>
-      `#${pick(new RegExp(`--${name}: #FF([0-9A-F]{6})`)).toLowerCase()}`;
-    return {
-      error: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
-      formErrorsScope: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-field-error-color: (#[0-9a-f]{6})/),
-      required: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-required-color: (#[0-9a-f]{6})/),
-      summary: pick(/cngx-form-errors\)\s*\{[^}]*--cngx-form-errors-color: (#[0-9a-f]{6})/),
-      fill: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-fill-bg: (#[0-9a-f]{6})/),
-      hover: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-fill-bg-hover: (#[0-9a-f]{6})/),
-      underline: pick(/cngx-form-field\)\s*\{[^}]*--cngx-field-underline-color: (rgba\([^)]*\))/),
-      placeholder: pick(
-        /cngx-form-field\)\s*\{[^}]*--cngx-field-placeholder-color: (rgba\([^)]*\))/,
-      ),
-      selectPlaceholder: pick(/--cngx-select-placeholder-color: (rgba\([^)]*\))/),
-      warn: probe('warn'),
-      page: probe('page'),
-      card: probe('card'),
-      surfaceVariant: probe('surface-variant'),
-    };
-  }
-
-  function luminance(hex: string): number {
-    const [r, g, b] = [1, 3, 5]
-      .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-      .map((v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-
-  function contrast(a: string, b: string): number {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  }
-
-  // An rgba() token composited over an opaque surface, as the browser paints it.
-  function flatten(rgba: string, surface: string): string {
-    const [r, g, b, a] = rgba
-      .slice(rgba.indexOf('(') + 1, -1)
-      .split(',')
-      .map(Number);
-    return `#${[r, g, b]
-      .map((c, i) => {
-        const under = parseInt(surface.slice(1 + i * 2, 3 + i * 2), 16);
-        return Math.round(c * a + under * (1 - a))
-          .toString(16)
-          .padStart(2, '0');
-      })
-      .join('')}`;
-  }
-
-  function withAlpha(rgba: string, alpha: number): string {
-    return rgba.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
-  }
-
-  for (const scheme of ['light', 'dark'] as const) {
-    for (const warn of ['red', 'deep-orange', 'pink', 'orange']) {
-      it(`${scheme} ${warn}: error text 4.5:1 and error line 3:1 on page and fill`, () => {
-        const t = m2(scheme, warn);
-        for (const surface of [t['page'], t['card']]) {
-          // one token paints text and line, so the text floor covers the line's 3:1
-          expect(contrast(t['error'], surface)).toBeGreaterThanOrEqual(4.5);
-        }
-        expect(t['formErrorsScope']).toBe(t['error']);
-      });
-
-      it(`${scheme} ${warn}: error line 3:1 on the M2 fill and hover surfaces`, () => {
-        const t = m2(scheme, warn);
-        for (const surface of [t['fill'], t['hover']]) {
-          expect(contrast(t['error'], surface)).toBeGreaterThanOrEqual(3);
-        }
-      });
-
-      it(`${scheme} ${warn}: required asterisk and error summary read as 4.5:1 text`, () => {
-        const t = m2(scheme, warn);
-        for (const surface of [t['page'], t['card']]) {
-          expect(contrast(t['required'], surface)).toBeGreaterThanOrEqual(4.5);
-          expect(contrast(t['summary'], surface)).toBeGreaterThanOrEqual(4.5);
-        }
-      });
-    }
-  }
-
-  // mat-form-field appearance="fill" paints the M2 system surface-variant and
-  // lays the 4% on-surface hover state layer over it.
-  const M2_FILL = {
-    light: { fill: '#f6f6f6', hover: '#ededed' },
-    dark: { fill: '#4a4a4a', hover: '#515151' },
-  };
-
-  for (const scheme of ['light', 'dark'] as const) {
-    it(`${scheme}: fill and hover match the mat-form-field fill twin`, () => {
-      const t = m2(scheme, 'red');
-      expect(t['fill']).toBe(M2_FILL[scheme].fill);
-      expect(t['hover']).toBe(M2_FILL[scheme].hover);
-      // drift pin: the bridge literal is Material's own surface-variant
-      expect(t['fill']).toBe(t['surfaceVariant']);
-    });
-
-    it(`${scheme}: resting underline 3:1 on the M2 fill`, () => {
-      const t = m2(scheme, 'red');
-      expect(contrast(flatten(t['underline'], t['fill']), t['fill'])).toBeGreaterThanOrEqual(3);
-    });
-
-    it(`${scheme}: field and select placeholder 4.5:1 on M2 fill and hover`, () => {
-      const t = m2(scheme, 'red');
-      expect(t['selectPlaceholder']).toBe(t['placeholder']);
-      for (const surface of [t['fill'], t['hover']]) {
-        expect(contrast(flatten(t['placeholder'], surface), surface)).toBeGreaterThanOrEqual(4.5);
-      }
-    });
-  }
-
-  // Light raises the secondary-text alpha (0.54 sits at 4.42:1 on the hover
-  // fill) to the lowest alpha that clears 4.5:1; dark keeps its 0.7.
-  it('light: placeholder alpha is the lowest that clears 4.5:1 on the hover fill', () => {
-    const t = m2('light', 'red');
-    const lower = withAlpha(t['placeholder'], 0.54);
-    expect(t['placeholder']).toBe('rgba(0, 0, 0, 0.55)');
-    expect(contrast(flatten(lower, t['hover']), t['hover'])).toBeLessThan(4.5);
-  });
-
-  it('dark: placeholder keeps the secondary-text alpha, which already clears 4.5:1', () => {
-    expect(m2('dark', 'red')['placeholder']).toBe('rgba(255, 255, 255, 0.7)');
-  });
-
-  it('keeps the default red recognisably red (hue shift only toward the text colour)', () => {
-    const t = m2('light', 'red');
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(t['error'].slice(i, i + 2), 16));
-    expect(r).toBeGreaterThan(g * 2);
-    expect(r).toBeGreaterThan(b * 2);
-    expect(t['error']).not.toBe(t['warn']);
-  });
-
-  it('leaves a warn that already clears 4.5:1 untouched', () => {
-    const t = m2('dark', 'orange');
-    expect(t['error']).toBe(t['warn']);
   });
 });
 
