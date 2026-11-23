@@ -162,6 +162,26 @@ class AggregatorLookupHost implements AfterViewInit {
   }
 }
 
+@Component({
+  template: `
+    <form cngxErrorScope>
+      <div cngxErrorAggregator [scope]="override">
+        <span [cngxErrorSource]="'a'" [when]="true" [label]="'A'"></span>
+      </div>
+    </form>
+  `,
+  imports: [CngxErrorScope, CngxErrorAggregator, CngxErrorSource],
+})
+class ScopeOverrideHost {
+  readonly shown = signal(false);
+  readonly override: CngxErrorScopeContract = {
+    showErrors: this.shown.asReadonly(),
+    reveal: () => this.shown.set(true),
+    reset: () => this.shown.set(false),
+  };
+  readonly ancestor = viewChild.required(CngxErrorScope);
+}
+
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
   const de = fixture.debugElement.query(By.directive(CngxErrorAggregator));
   return de.injector.get(CngxErrorAggregator);
@@ -668,5 +688,38 @@ describe('CngxErrorAggregator re-voice on reveal', () => {
     fixture.componentInstance.scope.reveal();
     fixture.detectChanges();
     expect(regionOf(fixture).textContent).toBe('A');
+  });
+});
+
+describe('CngxErrorAggregator scope override and region ownership', () => {
+  it('lets the [scope] input win over the ancestor scope', () => {
+    const fixture = TestBed.createComponent(ScopeOverrideHost);
+    fixture.detectChanges();
+    const agg = aggregatorOf(fixture);
+    const host = fixture.componentInstance;
+
+    host.ancestor().reveal();
+    fixture.detectChanges();
+    expect(agg.shouldShow()).toBe(false);
+
+    host.override.reveal();
+    fixture.detectChanges();
+    expect(agg.shouldShow()).toBe(true);
+
+    host.ancestor().reset();
+    fixture.detectChanges();
+    expect(agg.shouldShow()).toBe(true);
+  });
+
+  it('renders exactly one live region by default and none with [autoAnnounce]="false"', () => {
+    const fixture = TestBed.createComponent(AutoAnnounceHost);
+    fixture.detectChanges();
+    const host = fixture.debugElement.query(By.directive(CngxErrorAggregator))
+      .nativeElement as HTMLElement;
+    expect(host.querySelectorAll('[aria-live]').length).toBe(1);
+
+    fixture.componentInstance.auto.set(false);
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[aria-live]').length).toBe(0);
   });
 });

@@ -57,6 +57,18 @@ class DuplicateKeyHost {
   firstLabel = signal('First');
 }
 
+@Component({
+  template: `
+    <div cngxErrorAggregator>
+      <span [cngxErrorSource]="key()" [when]="true" [label]="'Key'"></span>
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class RenameKeyHost {
+  key = signal('old');
+}
+
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
   const de = fixture.debugElement.query(By.directive(CngxErrorAggregator));
   return de.injector.get(CngxErrorAggregator);
@@ -102,6 +114,18 @@ describe('CngxErrorSource', () => {
       fixture.detectChanges();
       fixture.destroy();
     }).not.toThrow();
+  });
+
+  it('moves its entry to the new key on a key rename', () => {
+    const fixture = TestBed.createComponent(RenameKeyHost);
+    fixture.detectChanges();
+    const agg = aggregatorOf(fixture);
+    expect(agg.activeErrors()).toEqual(['old']);
+
+    fixture.componentInstance.key.set('new');
+    fixture.detectChanges();
+    expect(agg.activeErrors()).toEqual(['new']);
+    expect(agg.errorCount()).toBe(1);
   });
 
   describe('duplicate keys', () => {
