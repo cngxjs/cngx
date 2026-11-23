@@ -48,9 +48,8 @@ export const STORY: DemoSpec = {
   ];
   protected readonly nodeId = (value: string): string => value;
 
-  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');
-  protected readonly dir = signal<'ltr' | 'rtl'>('ltr');`,
-  template: `<div [attr.dir]="dir()" style="display: grid; gap: 16px; max-inline-size: 24rem">
+  protected readonly presentation = signal<'auto' | 'sheet' | 'fullscreen'>('auto');`,
+  template: `<div style="display: grid; gap: 16px; max-inline-size: 24rem">
     <cngx-select label="City" [options]="cities" [presentation]="presentation()" />
     <cngx-multi-select label="Cities" [options]="cities" [presentation]="presentation()" />
     <cngx-combobox label="Cities (combobox)" [options]="cities" [presentation]="presentation()" />
@@ -79,6 +78,31 @@ export const STORY: DemoSpec = {
       }
     </cngx-select-shell>
   </div>`,
+  setupChrome: `private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
+
+  // The panels place themselves and read their arrow keys from the document
+  // direction, so the RTL radio flips <html dir>. It starts from the page's
+  // direction and, once used, puts the page's own value back on destroy.
+  private readonly root = this.hostEl.nativeElement.ownerDocument.documentElement;
+  private readonly rootDir = this.root.getAttribute('dir');
+  private dirTouched = false;
+  protected readonly dir = signal<'ltr' | 'rtl'>(this.rootDir === 'rtl' ? 'rtl' : 'ltr');
+  protected setDir(value: 'ltr' | 'rtl'): void {
+    this.dirTouched = true;
+    this.dir.set(value);
+    this.root.setAttribute('dir', value);
+  }
+  private readonly restoreDir = this.destroyRef.onDestroy(() => {
+    if (!this.dirTouched) {
+      return;
+    }
+    if (this.rootDir === null) {
+      this.root.removeAttribute('dir');
+    } else {
+      this.root.setAttribute('dir', this.rootDir);
+    }
+  });`,
   templateChrome: `<div class="button-row" role="radiogroup" aria-label="Presentation">
     @for (mode of ['auto', 'sheet', 'fullscreen']; track mode) {
       <label>
@@ -91,11 +115,11 @@ export const STORY: DemoSpec = {
   </div>
   <div class="button-row" role="radiogroup" aria-label="Direction">
     <label>
-      <input type="radio" name="select-sheet-dir" value="ltr" [checked]="dir() === 'ltr'" (change)="dir.set('ltr')" />
+      <input type="radio" name="select-sheet-dir" value="ltr" [checked]="dir() === 'ltr'" (change)="setDir('ltr')" />
       LTR
     </label>
     <label>
-      <input type="radio" name="select-sheet-dir" value="rtl" [checked]="dir() === 'rtl'" (change)="dir.set('rtl')" />
+      <input type="radio" name="select-sheet-dir" value="rtl" [checked]="dir() === 'rtl'" (change)="setDir('rtl')" />
       RTL
     </label>
   </div>`,
