@@ -1,4 +1,4 @@
-import { Component, resource, signal } from '@angular/core';
+import { Component, resource, signal, type TemplateRef, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { type AsyncStatus, buildAsyncStateView } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -184,5 +184,63 @@ describe('CngxAsync content context', () => {
 
     expect(el.textContent).toContain('[]');
     expect(el.textContent).not.toContain('a');
+  });
+});
+
+describe('CngxAsync slot template swap', () => {
+  @Component({
+    template: `
+      <div *cngxAsync="state; skeleton: skel(); error: err()">CONTENT</div>
+      <ng-template #skelA><span class="skel-a">SKEL A</span></ng-template>
+      <ng-template #skelB><span class="skel-b">SKEL B</span></ng-template>
+      <ng-template #errA><span class="err-a">ERR A</span></ng-template>
+      <ng-template #errB><span class="err-b">ERR B</span></ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class SwapHost {
+    readonly state = createManualState<string>();
+    readonly skelA = viewChild.required<TemplateRef<unknown>>('skelA');
+    readonly skelB = viewChild.required<TemplateRef<unknown>>('skelB');
+    readonly errA = viewChild.required<TemplateRef<{ $implicit: unknown }>>('errA');
+    readonly errB = viewChild.required<TemplateRef<{ $implicit: unknown }>>('errB');
+    readonly useB = signal(false);
+    readonly skel = (): TemplateRef<unknown> => (this.useB() ? this.skelB() : this.skelA());
+    readonly err = (): TemplateRef<{ $implicit: unknown }> =>
+      this.useB() ? this.errB() : this.errA();
+  }
+
+  function render(fixture: { detectChanges(): void }): void {
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  }
+
+  it('re-renders the error view with the swapped template', () => {
+    const fixture = TestBed.createComponent(SwapHost);
+    const el: HTMLElement = fixture.nativeElement;
+    fixture.componentInstance.state.setError('boom');
+    render(fixture);
+    expect(el.querySelector('.err-a')).not.toBeNull();
+
+    fixture.componentInstance.useB.set(true);
+    render(fixture);
+
+    expect(el.querySelector('.err-a')).toBeNull();
+    expect(el.querySelector('.err-b')).not.toBeNull();
+  });
+
+  it('re-renders the skeleton view with the swapped template', () => {
+    const fixture = TestBed.createComponent(SwapHost);
+    const el: HTMLElement = fixture.nativeElement;
+    fixture.componentInstance.state.set('loading');
+    render(fixture);
+    expect(el.querySelector('.skel-a')).not.toBeNull();
+
+    fixture.componentInstance.useB.set(true);
+    render(fixture);
+
+    expect(el.querySelector('.skel-a')).toBeNull();
+    expect(el.querySelector('.skel-b')).not.toBeNull();
   });
 });

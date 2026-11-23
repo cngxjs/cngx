@@ -96,34 +96,51 @@ export class CngxAsync<T> {
   /** Optional error template shown on error during first load. Context: `{ $implicit: error }`. */
   readonly cngxAsyncError = input<TemplateRef<{ $implicit: unknown }> | undefined>(undefined);
 
-  private readonly view = computed(() => {
+  // content+error → content (structural directive has no dual-render)
+  private readonly view = computed((): AsyncView => {
     const s = this.cngxAsync();
-    return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+    const resolved = resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+    return resolved === 'content+error' ? 'content' : resolved;
   });
 
-  // Plain field, not a signal: it is only ever read and written inside the
-  // render effect - as a signal it fed the effect's own dependency graph and
+  // The slot template of the current view; the content template is fixed.
+  private readonly slotTemplate = computed((): TemplateRef<unknown> | undefined => {
+    switch (this.view()) {
+      case 'skeleton':
+        return this.cngxAsyncSkeleton();
+      case 'empty':
+        return this.cngxAsyncEmpty();
+      case 'error':
+        return this.cngxAsyncError();
+      default:
+        return undefined;
+    }
+  });
+
+  // Plain fields, not signals: they are only ever read and written inside the
+  // render effect - as signals they fed the effect's own dependency graph and
   // caused one spurious re-run per view switch.
   private currentView: AsyncView = 'none';
+  private currentTemplate: TemplateRef<unknown> | undefined = undefined;
   private contentViewRef: EmbeddedViewRef<CngxAsyncContext<T>> | null = null;
 
   constructor() {
     effect(() => {
       const view = this.view();
+      const tpl = this.slotTemplate();
       const s = this.cngxAsync();
-      // content+error → show content (structural directive has no dual-render)
-      const effective = view === 'content+error' ? 'content' : view;
 
-      if (effective === this.currentView) {
+      if (view === this.currentView && tpl === this.currentTemplate) {
         this.updateContentContext(s);
         return;
       }
 
       this.vcr.clear();
       this.contentViewRef = null;
-      this.currentView = effective;
+      this.currentView = view;
+      this.currentTemplate = tpl;
 
-      this.renderView(effective, s);
+      this.renderView(view, tpl, s);
     });
   }
 
@@ -137,10 +154,15 @@ export class CngxAsync<T> {
     this.contentViewRef.markForCheck();
   }
 
-  private renderView(view: AsyncView, s: CngxAsyncState<T>): void {
+  private renderView(
+    view: AsyncView,
+    tpl: TemplateRef<unknown> | undefined,
+    s: CngxAsyncState<T>,
+  ): void {
     switch (view) {
       case 'skeleton':
-        this.renderTemplate(this.cngxAsyncSkeleton());
+      case 'empty':
+        this.renderTemplate(tpl);
         break;
       case 'content':
       case 'content+error': {
@@ -151,11 +173,8 @@ export class CngxAsync<T> {
         });
         break;
       }
-      case 'empty':
-        this.renderTemplate(this.cngxAsyncEmpty());
-        break;
       case 'error':
-        this.renderTemplate(this.cngxAsyncError(), { $implicit: s.error() });
+        this.renderTemplate(tpl, { $implicit: s.error() });
         break;
     }
   }
