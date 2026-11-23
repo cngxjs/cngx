@@ -45,6 +45,7 @@ import { computed, DestroyRef, Directive, ElementRef, inject, input, signal } fr
  * @relatedTo CngxPressable, CngxPressRipple, CngxHoverable
  * <example-url>/#/common/interactive/ripple/base/button-ripples</example-url>
  * <example-url>/#/common/interactive/ripple/base/card-with-ripple</example-url>
+ * <example-url>/#/common/interactive/ripple/reduced-motion/ripple-under-reduced-motion</example-url>
  * @axis level atom
  */
 @Directive({

@@ -90,6 +90,7 @@ function controlledIdsOf(target: EventTarget | null): readonly string[] {
  * @relatedTo CngxKeyboardShortcut, CngxPopover
  * <example-url>/#/common/interactive/gestures/click-outside/dropdown</example-url>
  * <example-url>/#/common/interactive/gestures/click-outside/enabled-toggle</example-url>
+ * <example-url>/#/common/interactive/gestures/click-outside/event-type</example-url>
  * @axis level atom
  */
 @Directive({

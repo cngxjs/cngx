@@ -69,6 +69,7 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  * @relatedTo CngxRovingTabindex, CngxListbox, CngxMenu
  * <example-url>/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
  * <example-url>/#/common/a11y/active-descendant/typeahead</example-url>
+ * <example-url>/#/common/a11y/active-descendant/horizontal-option-row</example-url>
  * @axis level atom
  */
 @Directive({
