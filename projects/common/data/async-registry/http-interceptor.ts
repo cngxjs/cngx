@@ -5,7 +5,7 @@ import {
   provideHttpClient,
   withInterceptors,
 } from '@angular/common/http';
-import { finalize, tap } from 'rxjs';
+import { defer, finalize, tap } from 'rxjs';
 import { createManualState } from '../async-state/create-manual-state';
 import { CngxAsyncRegistry } from './async-registry';
 import { CNGX_ASYNC_LABEL, CNGX_ASYNC_SKIP } from './http-context';
@@ -20,10 +20,11 @@ import { CNGX_ASYNC_LABEL, CNGX_ASYNC_SKIP } from './http-context';
  *   request straight through when no registry is provided - zero behaviour
  *   change for consumers who do not opt in.
  * - Passes through without registering when `CNGX_ASYNC_SKIP` is set.
- * - Otherwise registers a fresh `createManualState` (set `loading`) under a
- *   per-request uid, maps the final response / error onto it, and
- *   `unregister`s in a `finalize` that fires on success **and** error (and on
- *   unsubscribe), so a request can never pin the global loading state.
+ * - Otherwise registers a fresh `createManualState` (set `loading`) per
+ *   subscription, under its own uid, maps the final response / error onto it,
+ *   and `unregister`s in a `finalize` that fires on success **and** error (and
+ *   on unsubscribe). Every retry attempt is tracked for exactly its own
+ *   lifetime, and a request nobody subscribes to is never registered.
  *
  * Per-request uid identity (from `CngxAsyncRegistry`) means concurrent requests
  * sharing a label never evict one another - completing one leaves the other
@@ -36,21 +37,23 @@ export const cngxAsyncInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const state = createManualState<unknown>();
-  state.set('loading');
-  const operationId = registry.register(state, req.context.get(CNGX_ASYNC_LABEL));
+  return defer(() => {
+    const state = createManualState<unknown>();
+    state.set('loading');
+    const operationId = registry.register(state, req.context.get(CNGX_ASYNC_LABEL));
 
-  return next(req).pipe(
-    tap({
-      next: (event) => {
-        if (event.type === HttpEventType.Response) {
-          state.setSuccess(event.body);
-        }
-      },
-      error: (err: unknown) => state.setError(err),
-    }),
-    finalize(() => registry.unregister(operationId)),
-  );
+    return next(req).pipe(
+      tap({
+        next: (event) => {
+          if (event.type === HttpEventType.Response) {
+            state.setSuccess(event.body);
+          }
+        },
+        error: (err: unknown) => state.setError(err),
+      }),
+      finalize(() => registry.unregister(operationId)),
+    );
+  });
 };
 
 /**
