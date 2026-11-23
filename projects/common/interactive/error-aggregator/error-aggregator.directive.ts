@@ -182,6 +182,37 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
       const renderer = inject(Renderer2);
 
       let span: HTMLSpanElement | null = null;
+      let spanPoliteness: 'polite' | 'assertive' | 'off' | null = null;
+
+      const removeSpan = (): void => {
+        if (span?.parentNode === hostEl) {
+          renderer.removeChild(hostEl, span);
+        }
+        span = null;
+        spanPoliteness = null;
+      };
+
+      // role and aria-live are set before insertion and never swapped on a
+      // live node; a politeness change replaces the region instead.
+      const createSpan = (politeness: 'polite' | 'assertive' | 'off', text: string): void => {
+        const el = renderer.createElement('span') as HTMLSpanElement;
+        renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
+        renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+        renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+        renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+        renderer.setAttribute(el, 'aria-atomic', 'true');
+        renderer.setAttribute(el, 'aria-relevant', 'additions text');
+        if (politeness !== 'off') {
+          renderer.setAttribute(el, 'role', politeness === 'assertive' ? 'alert' : 'status');
+        }
+        renderer.setAttribute(el, 'aria-live', politeness);
+        el.textContent = text;
+        renderer.appendChild(hostEl, el);
+        span = el;
+        spanPoliteness = politeness;
+      };
 
       effect(() => {
         const enabled = this.autoAnnounce();
@@ -190,43 +221,21 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
 
         untracked(() => {
           if (!enabled) {
-            if (span?.parentNode === hostEl) {
-              renderer.removeChild(hostEl, span);
-            }
-            span = null;
+            removeSpan();
             return;
           }
-
+          if (span && spanPoliteness !== politeness) {
+            removeSpan();
+          }
           if (!span) {
-            const el = renderer.createElement('span') as HTMLSpanElement;
-            renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
-            renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
-            renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
-            renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
-            renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
-            renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
-            renderer.setAttribute(el, 'aria-atomic', 'true');
-            renderer.setAttribute(el, 'aria-relevant', 'additions text');
-            renderer.appendChild(hostEl, el);
-            span = el;
+            createSpan(politeness, text);
+            return;
           }
-
-          if (politeness === 'off') {
-            renderer.removeAttribute(span, 'role');
-          } else {
-            renderer.setAttribute(span, 'role', politeness === 'assertive' ? 'alert' : 'status');
-          }
-          renderer.setAttribute(span, 'aria-live', politeness);
           span.textContent = text;
         });
       });
 
-      destroyRef.onDestroy(() => {
-        if (span?.parentNode === hostEl) {
-          renderer.removeChild(hostEl, span);
-        }
-        span = null;
-      });
+      destroyRef.onDestroy(removeSpan);
     }
 
     const registry = inject(CngxErrorRegistry, { optional: true });

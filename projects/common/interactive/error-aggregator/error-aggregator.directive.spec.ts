@@ -323,6 +323,45 @@ describe('CngxErrorAggregator', () => {
       expect(span.getAttribute('aria-live')).toBe('assertive');
     });
 
+    it('replaces the region when the politeness changes, with role and aria-live set before insertion', async () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.componentInstance.aOn.set(true);
+      fixture.detectChanges();
+      const host = hostOf(fixture);
+      const before = spanOf(fixture)!;
+      expect(before.getAttribute('role')).toBe('status');
+
+      const records: MutationRecord[] = [];
+      const observer = new MutationObserver((list) => records.push(...list));
+      observer.observe(host, { childList: true, subtree: true, attributes: true });
+
+      fixture.componentInstance.politeness.set('assertive');
+      fixture.detectChanges();
+      await Promise.resolve();
+      records.push(...observer.takeRecords());
+      observer.disconnect();
+
+      const after = spanOf(fixture)!;
+      expect(after).not.toBe(before);
+      expect(before.isConnected).toBe(false);
+      expect(host.querySelectorAll('span[aria-live]').length).toBe(1);
+      expect(after.getAttribute('role')).toBe('alert');
+      expect(after.getAttribute('aria-live')).toBe('assertive');
+      expect(after.textContent).toBe('A failed');
+      expect(records.filter((r) => r.type === 'attributes')).toEqual([]);
+    });
+
+    it('renders a region without role when the politeness is off', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.detectChanges();
+      fixture.componentInstance.politeness.set('off');
+      fixture.detectChanges();
+
+      const span = spanOf(fixture)!;
+      expect(span.hasAttribute('role')).toBe(false);
+      expect(span.getAttribute('aria-live')).toBe('off');
+    });
+
     it('removes the span from the host element on destroy', () => {
       const fixture = TestBed.createComponent(AutoAnnounceHost);
       fixture.detectChanges();
