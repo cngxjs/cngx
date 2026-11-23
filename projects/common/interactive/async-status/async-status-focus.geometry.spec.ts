@@ -83,8 +83,9 @@ describe('CngxAsyncStatus pending gate, real browser', () => {
     await nextFrames();
     await userEvent.keyboard('{Enter}');
     await userEvent.keyboard(' ');
-    // Playwright's actionability check treats aria-disabled as not enabled;
-    // force skips the check, the pointer click is still real.
+    // Playwright waits for an "enabled" target and the host is aria-disabled,
+    // so force skips that wait: the case checks that activation is refused
+    // (count stays 0), not that the host is clickable.
     await userEvent.click(btn, { force: true });
     expect(host.count).toBe(0);
     expect(document.activeElement).toBe(btn);
