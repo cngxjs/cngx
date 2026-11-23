@@ -87,7 +87,7 @@ export function createSelectCommitController<T>(): CngxSelectCommitController<T>
 /**
  * @deprecated Use {@link CngxSelectCommitController}. The unprefixed name is
  * also exported by `@cngx/common/data` with a different `begin` signature;
- * the alias remains for compatibility and will be removed in a future major.
+ * this name is removed at the v1.0 cut.
  * @since 0.1.0
  */
 export type CngxCommitController<T> = CngxSelectCommitController<T>;
@@ -96,8 +96,8 @@ export type CngxCommitController<T> = CngxSelectCommitController<T>;
  * Alias of {@link createSelectCommitController} under the pre-rename name.
  *
  * @deprecated Use `createSelectCommitController`. The unprefixed name is also
- * exported by `@cngx/common/data` with a different contract; the alias
- * remains for compatibility and will be removed in a future major.
+ * exported by `@cngx/common/data` with a different contract; this name is
+ * removed at the v1.0 cut.
  * @since 0.1.0
  */
 export const createCommitController = createSelectCommitController;
