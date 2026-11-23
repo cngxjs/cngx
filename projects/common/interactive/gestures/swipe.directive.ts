@@ -21,7 +21,13 @@ interface SwipeReading {
  * Exposes `swiping`, `swipeProgress`, and `swipeDirection` signals for
  * real-time feedback mid-gesture.
  *
- * ### Carousel: route left/right into a presenter
+ * Directions are physical: `left` is a leftward drag under any `dir`. The
+ * example maps `left` to next for `ltr`; under `rtl` flip the mapping, as
+ * `CngxStepperSwipeNav` does via `injectDirection()`. A swipe is a path
+ * gesture (WCAG 2.5.1): give the same action a single-pointer and keyboard
+ * path, such as prev/next buttons.
+ *
+ * ### Carousel: route left/right into a presenter (ltr)
  * ```html
  * <section cngxSwipe axis="x" (swiped)="onSwipe($event)">…</section>
  * ```
@@ -62,7 +68,11 @@ interface SwipeReading {
 export class CngxSwipe {
   /** Minimum distance in px on the dominant axis to register a swipe. */
   readonly threshold = input<number>(50);
-  /** Axis the gesture is allowed to register on. */
+  /**
+   * Axis the gesture is allowed to register on: `'x'` (left/right), `'y'`
+   * (up/down) or `'both'` (dominant axis). Also sets the host `touch-action`
+   * so the orthogonal axis keeps native scrolling.
+   */
   readonly axis = input<SwipeAxis>('both');
   /** Whether the directive is active. */
   readonly enabled = input<boolean>(true);

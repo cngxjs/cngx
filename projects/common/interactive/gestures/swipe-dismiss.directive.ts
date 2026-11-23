@@ -12,6 +12,10 @@ import { createSwipeEngine } from './swipe-engine';
  * completes past the threshold. Exposes `swiping` and `swipeProgress`
  * signals for real-time visual feedback during the gesture.
  *
+ * A swipe is a path gesture (WCAG 2.5.1): the consumer provides a
+ * single-pointer and keyboard path to the same action, such as a visible
+ * dismiss or close button.
+ *
  * ### Close drawer on swipe-left
  * ```html
  * <nav [cngxDrawerPanel]="drawer"

@@ -32,7 +32,8 @@ import { describe, expect, it } from 'vitest';
  * names host directives forward.
  *
  * Known failures are tagged with the review slice that owns the folder (see
- * the common review roadmap); each slice's docs PR removes its rows. A new
+ * the common review roadmap); each slice's docs PR removes its rows, and its
+ * folders join `REVIEWED_FOLDERS`, which may carry no row. A new
  * mismatch fails the guard; a row that no longer reproduces fails it too.
  *
  * Needs a fresh `.compodoc/documentation.json`; CI builds it before
@@ -43,25 +44,27 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const COMMON = join(REPO_ROOT, 'projects/common');
 const DOC_PATH = join(REPO_ROOT, '.compodoc/documentation.json');
 
+/** Folders whose review slice is done (slice 1 primitives): no known-failure row allowed. */
+const REVIEWED_FOLDERS = [
+  'projects/common/a11y/',
+  'projects/common/interactive/keyboard/',
+  'projects/common/interactive/click-outside/',
+  'projects/common/interactive/gestures/',
+  'projects/common/interactive/hover-intent/',
+  'projects/common/interactive/hoverable/',
+  'projects/common/interactive/ripple/',
+  'projects/common/interactive/trigger-guard/',
+  'projects/common/interactive/guard/',
+  'projects/common/interactive/expandable/',
+  'projects/common/interactive/control-value/',
+  'projects/common/interactive/speak/',
+];
+
 /**
  * `{ slice, file, line, kind, ref }`; the slice is documentation, the diff key
  * is file:line + kind + ref.
  */
 const KNOWN_FAILURES = [
-  {
-    slice: '1 primitives',
-    file: 'projects/common/interactive/gestures/README.md',
-    line: 341,
-    kind: 'missing-path',
-    ref: 'examples/stories/common/gestures-demo/',
-  },
-  {
-    slice: '1 primitives',
-    file: 'projects/common/interactive/hoverable/README.md',
-    line: 266,
-    kind: 'unknown-host-binding',
-    ref: 'CngxHoverable hovered',
-  },
   {
     slice: '2 async-state',
     file: 'projects/common/data/async-state/README.md',
@@ -1096,6 +1099,12 @@ describe('common docs references (repo)', () => {
     expect(
       subtract(KNOWN_FAILURES, result.rows).map(key),
       'regenerate with npm run docs:json first; still listed means the doc was fixed - drop the row',
+    ).toEqual([]);
+  });
+
+  it('carries no known failure in a reviewed folder', () => {
+    expect(
+      KNOWN_FAILURES.filter((row) => REVIEWED_FOLDERS.some((p) => row.file.startsWith(p))).map(key),
     ).toEqual([]);
   });
 });

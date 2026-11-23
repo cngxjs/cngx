@@ -46,7 +46,8 @@ Ripple and Pressable are low-level feedback atoms - no ARIA management required:
 - **ARIA roles:** None (visual feedback only, not semantic)
 - **Keyboard interaction:**
   - Native button behavior - no intervention
-  - Ripple fires on both pointer and keyboard activation
+  - `CngxRipple` fires on primary-button pointer down only; keyboard activation draws no wave
+  - `CngxPressable` applies `cngx-pressed` on pointer down and on an activation key (Enter / Space) pressed on the host itself
 - **Screen reader:**
   - No announcements (purely visual feedback)
   - Keyboard navigation unaffected
@@ -100,9 +101,11 @@ Override in your component:
 button {
   --cngx-ripple-color: rgba(255, 0, 0, 0.4);
   --cngx-ripple-duration: 0.8s;
-  --cngx-ripple-easing: ease-out;
+  --cngx-ripple-opacity: 0.2;
 }
 ```
+
+Color precedence: `[rippleColor]` (written inline on the wave, only when bound) > `--cngx-ripple-color` on the host > the theme value (the Material bridge sets it on every `.cngx-ripple` host) > the `currentColor` default. With the bridge loaded, an override must sit on the host itself; an ancestor value is shadowed there. The easing is fixed (`ease-out`) and has no token.
 
 ### CngxPressable
 
@@ -122,12 +125,11 @@ button.cngx-pressed {
 
 ### Respecting Reduced Motion
 
-Both directives respect `prefers-reduced-motion`:
+CngxRipple follows the app motion axis, decided in `cngx-ripple.css`, not in the directive: under a `[data-motion='reduced']` ancestor (`provideMotion`, `cngxMotionScope`), or under `prefers-reduced-motion: reduce` unless the root carries `data-motion='full'`, the wave does not expand and only fades. With the reduced-motion safety net of `@cngx/themes/cngx.css` loaded that fade collapses to 0.01ms. The wave element is still created, so `active()` still flips.
 
-- CngxRipple: Skips animation entirely if reduced motion is preferred
-- CngxPressable: Still applies the class (instant visual feedback is usually okay)
+CngxPressable still applies the class (instant visual feedback is usually okay).
 
-No configuration needed - the directives detect motion preference automatically.
+No configuration needed beyond loading the stylesheet.
 
 ## Examples
 

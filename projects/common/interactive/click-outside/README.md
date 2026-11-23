@@ -57,7 +57,7 @@ export class ActionsComponent {
 ## Accessibility
 
 - **ARIA roles:** None (behavioural).
-- **Keyboard interaction:** None. An outside press is a pointer gesture, so pair it with a keyboard close path, usually `(keydown.escape)` on the host (WCAG 2.1.1).
+- **Keyboard interaction:** None. An outside press is a pointer gesture, so pair it with a keyboard close path, usually `(keydown.escape)` on the host (WCAG 2.1.1). Focus leaving the host by Tab is not an outside interaction and emits nothing; pair it with a `(focusout)` check when Tab-away should close too.
 - **Screen reader:** No announcements. The surface that closes announces its own state (`aria-expanded` on the trigger).
 - **Focus management:** None. Restoring focus to the trigger after a close is the consumer's job.
 
@@ -65,7 +65,8 @@ export class ActionsComponent {
 
 - **Host directives:** None. Composed as a host directive by `CngxDrawerSurface`, which drives it from its own state.
 - **Combines with:** popovers, menus, drawers, any dismissible surface.
-- **Provides:** No public tokens.
+- **Provides:** No public tokens. Consumes one optional token:
+  - `CNGX_CLICK_OUTSIDE_DRIVER` (`CngxClickOutsideDriver`: a `clickOutsideEnabled` signal). A composing directive provides it with `useExisting` on the same element to decide whether the atom emits; it then wins over `[enabled]`. `CngxDrawerSurface` composes it this way.
 
 ### Example: Composition Pattern
 
