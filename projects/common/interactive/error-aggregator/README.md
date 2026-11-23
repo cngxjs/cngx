@@ -29,23 +29,29 @@ import {
           label="Password too weak"></span>
 
     @if (signup.shouldShow()) {
-      <ul role="list">
+      <ul>
         @for (label of signup.errorLabels(); track label) {
           <li>{{ label }}</li>
         }
       </ul>
     }
 
-    <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
-      {{ signup.announcement() }}
-    </span>
-
     <button type="submit">Submit</button>
   </fieldset>
 </form>
 ```
 
-The aggregator owns no template. Render the visible list and the live region in your own markup; the directive only exposes the signals and reflects the rolled-up state on its host.
+The visible list is yours. The live region is the directive's: it appends a visually hidden polite region to the host and writes `announcement()` into it. Do not render a second one.
+
+## Inputs
+
+| Input | Type | Default | Notes |
+|-|-|-|-|
+| `scope` | `CngxErrorScopeContract \| undefined` | `undefined` | Overrides the ancestor `CNGX_ERROR_SCOPE`. |
+| `cngxErrorAggregatorName` | `string \| undefined` | `undefined` | Registers the aggregator in `CngxErrorRegistry` under this name. |
+| `autoAnnounce` | `boolean` | `true` | `false` removes the directive's live region; you own the announcement. |
+| `announcePoliteness` | `'polite' \| 'assertive' \| 'off'` | `'polite'` | A change replaces the region; `'off'` renders it without `role`. |
+| `errorCountAnnouncement` | `((count: number) => string) \| undefined` | `undefined` | Text when no active source has a label. Falls back to `CNGX_INTERACTIVE_I18N` (`1 error` / `2 errors`). |
 
 ## `CNGX_ERROR_AGGREGATOR` contract
 
@@ -60,9 +66,9 @@ The directive provides itself via `useExisting`, so any descendant (`CngxErrorSo
 | `activeErrors` | `Signal<readonly string[]>` | Active source keys, registration order. |
 | `errorLabels` | `Signal<readonly string[]>` | Active source labels (skips null labels). |
 | `shouldShow` | `Signal<boolean>` | Gated by ambient scope's `showErrors()`. |
-| `announcement` | `Signal<string>` | SR-friendly joined labels, empty when hidden. |
-| `addSource(entry: CngxErrorAggregatorSourceEntry)` | `void` | Idempotent on `key`. |
-| `removeSource(key: string)` | `void` | No-op if absent. |
+| `announcement` | `Signal<string>` | Joined labels, or the count message when no active source has a label; empty when hidden. |
+| `addSource(entry: CngxErrorAggregatorSourceEntry)` | `void` | Last wins on `key`; the replaced source stays listed (CNGX1020). |
+| `removeSource(key: string, entry?: CngxErrorAggregatorSourceEntry)` | `void` | No-op if absent. With `entry` only that source leaves and a replaced one takes the key back. |
 
 ### `CngxErrorAggregatorSourceEntry`
 
@@ -74,20 +80,24 @@ The directive provides itself via `useExisting`, so any descendant (`CngxErrorSo
 
 ## Accessibility
 
-The directive does not render an SR live region itself - it exposes `announcement()` and lets the consumer place the region wherever the surrounding semantic context fits (next to the form, inside the dialog, at the page root). The canonical wiring:
+Each aggregator speaks through one region. By default that is the directive's own: a visually hidden `role="status"` / `aria-live="polite"` span inside the host, filled from `announcement()`.
+
+- `announcement()` is `''` whenever `shouldShow()` is `false`, so a scope that has not been revealed yet stays silent.
+- Active sources without a label still speak: the count message (`1 error`, `2 errors`) from `errorCountAnnouncement` or `CNGX_INTERACTIVE_I18N`. With at least one label, the labels are spoken.
+- Every `reveal()` of the scope speaks the errors again, even when they did not change: the region is emptied and written after render.
+- A language flip does not re-speak a shown announcement; the next error change speaks the new copy.
+- The host carries `aria-invalid="true"` only when `shouldShow()` is `true`, so AT focus on the host element reflects the same reveal-state as the live region.
+
+To place the region yourself (next to the form, at the page root, through `LiveAnnouncer`), switch the directive's off:
 
 ```html
-<fieldset cngxErrorAggregator #agg="cngxErrorAggregator">...</fieldset>
+<fieldset cngxErrorAggregator [autoAnnounce]="false" #agg="cngxErrorAggregator">...</fieldset>
 <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
   {{ agg.announcement() }}
 </span>
 ```
 
-Three properties make this safe:
-
-- `announcement()` is `''` whenever `shouldShow()` is `false`, so a scope that has not been revealed yet stays silent.
-- `errorLabels()` is structurally compared, so flipping an unrelated signal upstream does not re-emit the same labels and does not re-announce.
-- The host carries `aria-invalid="true"` only when `shouldShow()` is `true`, so AT focus on the host element reflects the same reveal-state as the live region.
+A consumer region does not get the re-voice on `reveal()` for free; read the scope's `revealEpoch` for that.
 
 If the aggregator host is itself a form control (e.g. a `<fieldset>` with one input child), the `aria-invalid` host binding is announced together with the field. If the aggregator is just a layout host, the binding is still valid HTML and benign.
 

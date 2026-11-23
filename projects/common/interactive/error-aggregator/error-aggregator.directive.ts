@@ -54,19 +54,30 @@ import {
  * to `'assertive'` for safety-critical errors or `'off'` to suppress
  * announcements entirely while keeping the visual error surface.
  *
+ * The region speaks the joined labels, or the `errorCountAnnouncement` count
+ * message when no active source has a label, and speaks again on every
+ * `reveal()` of the scope. A politeness change replaces the region.
+ *
  * ```html
  * <fieldset cngxErrorAggregator #agg="cngxErrorAggregator">
  *   <span cngxErrorSource="format" [when]="email().invalid()" label="Format"></span>
  *   <span cngxErrorSource="taken"  [when]="taken()"          label="Already used"></span>
  *
  *   @if (agg.shouldShow()) {
- *     <ul role="alert">
+ *     <ul>
  *       @for (label of agg.errorLabels(); track label) {
  *         <li>{{ label }}</li>
  *       }
  *     </ul>
  *   }
  * </fieldset>
+ * ```
+ *
+ * Owning the region instead:
+ *
+ * ```html
+ * <fieldset cngxErrorAggregator [autoAnnounce]="false" #agg="cngxErrorAggregator">...</fieldset>
+ * <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">{{ agg.announcement() }}</span>
  * ```
  *
  * @wcag AA

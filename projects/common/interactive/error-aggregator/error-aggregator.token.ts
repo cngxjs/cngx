@@ -33,7 +33,10 @@ export interface CngxErrorAggregatorContract {
   readonly errorLabels: Signal<readonly string[]>;
   /** `true` when errors should be visible - `hasError` AND scope reveal-state. */
   readonly shouldShow: Signal<boolean>;
-  /** SR-friendly announcement text - joins active labels into one phrase. */
+  /**
+   * SR-friendly announcement text: the active labels joined into one phrase, or
+   * the count message when no active source has a label; empty while hidden.
+   */
   readonly announcement: Signal<string>;
   /** Registers (or replaces) a source by `key`. */
   addSource(entry: CngxErrorAggregatorSourceEntry): void;
