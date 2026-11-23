@@ -7,8 +7,8 @@ import { CngxHoverable } from '@cngx/common/interactive';
  * component composes `CngxHoverable` into its own host via the
  * `hostDirectives` config and reads the hover signal back through
  * `inject(CngxHoverable, { host: true })`. The card paints itself
- * differently when hovered without any consumer-side
- * `mouseenter` / `mouseleave` wiring.
+ * differently when hovered without any consumer-side pointer
+ * event wiring.
  */
 @Component({
   selector: 'demo-hover-card',
