@@ -687,6 +687,34 @@ describe('CngxActionSelect - keyboard collapse onto the clear button', () => {
     flush(fixture);
     expect(select.panelOpen()).toBe(true);
   });
+
+  // The popover reads its Escape gate at keydown time, so no change
+  // detection has to run between the dirty flip and the next Escape.
+  it('closes on a second Escape right after the first one cancelled the dirty slot', () => {
+    const { fixture, select, input } = setupClearable();
+    select.open();
+    flush(fixture);
+    select.actionCallbacks().setDirty(true);
+    flush(fixture);
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(select.actionDirty()).toBe(false);
+    expect(select.panelOpen()).toBe(true);
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('keeps the panel open on an Escape right after the slot turned dirty', () => {
+    const { fixture, select } = setupClearable();
+    select.open();
+    flush(fixture);
+
+    select.actionCallbacks().setDirty(true);
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    flush(fixture);
+    expect(select.panelOpen()).toBe(true);
+  });
 });
 
 describeFieldSkinHost(

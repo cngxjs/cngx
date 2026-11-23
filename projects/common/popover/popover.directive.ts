@@ -18,6 +18,7 @@ import { fromEvent } from 'rxjs';
 
 import { injectDirection } from '@cngx/core';
 import {
+  coerceSignal,
   createSlotRegistry,
   hasTransition,
   nextUid,
@@ -105,7 +106,7 @@ function installGlobalEscapeListener(doc: Document): void {
     }
     // most-recently-opened wins (relies on Set's insertion-order iteration)
     const last = [...openPopovers].at(-1);
-    if (last?.closeOnEscape()) {
+    if (last?.escapeEnabled()) {
       e.stopPropagation();
       last.hide();
     }
@@ -370,8 +371,19 @@ export class CngxPopover {
    */
   readonly offset = input(8);
 
-  /** Whether Escape key dismisses the popover. */
-  readonly closeOnEscape = input(true);
+  /**
+   * Whether Escape key dismisses the popover. Bind a `Signal<boolean>` (not
+   * its value) when the gate flips inside an event handler: the popover then
+   * reads it at keydown time, so an Escape right after the flip, before the
+   * next change detection, already sees the new value.
+   */
+  readonly closeOnEscape = input<boolean | Signal<boolean>>(true);
+
+  /**
+   * Current Escape gate, resolved from {@link closeOnEscape}. Read it instead
+   * of the input: a bound signal is read live.
+   */
+  readonly escapeEnabled: Signal<boolean> = computed(() => coerceSignal(this.closeOnEscape())());
 
   /**
    * Whether a `pointerdown` outside both the popover and its anchor (trigger)

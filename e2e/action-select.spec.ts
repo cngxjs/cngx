@@ -160,8 +160,8 @@ test.describe('CngxActionSelect demo', () => {
     await expect(artifact(page).locator('.demo-mini-form-marker')).toBeVisible();
 
     // The first Escape cancels: the note clears and the unsaved marker goes.
-    // Wait for that render before the second press; the panel's Escape gate
-    // is a template binding that follows the dirty flag on the same render.
+    // Wait for that render before the second press so the test reads the
+    // cleared state the user sees.
     await descInput.press('Escape');
     await expect(descInput).toHaveValue('');
     await expect(artifact(page).locator('.demo-mini-form-marker')).toHaveCount(0);

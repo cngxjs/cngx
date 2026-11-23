@@ -965,6 +965,7 @@ describe('CngxListboxTrigger - reset on a popover close event', () => {
         isVisible: () => open(),
         show: () => open.set(true),
         hide: () => open.set(false),
+        escapeEnabled: () => true,
         ...(withClosed ? { closed } : {}),
       },
       // A close the trigger did not start (an outside click, a light dismiss).

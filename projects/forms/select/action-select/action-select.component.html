@@ -116,7 +116,7 @@
     [autoPresentation]="sheetFill"
     [restoreFocus]="false"
     [closeOnRequest]="false"
-    [closeOnEscape]="sheetWiring.escapeEnabled()"
+    [closeOnEscape]="sheetWiring.escapeEnabled"
     (closeRequested)="sheetWiring.handleSheetClose($event)"
     (closing)="hostFocus.refocusOwnerBeforeRemoval()"
   >

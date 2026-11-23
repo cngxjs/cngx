@@ -36,10 +36,10 @@ interface PopoverController {
   show(): void;
   hide(): void;
   /**
-   * Escape policy of the popover (`CngxPopover.closeOnEscape`). When it
-   * reports `false` the trigger leaves Escape alone.
+   * Escape policy of the popover (`CngxPopover.escapeEnabled`), read at
+   * keydown time. When it reports `false` the trigger leaves Escape alone.
    */
-  readonly closeOnEscape?: () => boolean;
+  readonly escapeEnabled: () => boolean;
   /**
    * Close event of the popover (`CngxPopover.closed`). When present, every
    * close resets the highlight, also one the trigger did not start.
@@ -375,7 +375,7 @@ export class CngxListboxTrigger<T = unknown> {
     }
     switch (key) {
       case 'Escape':
-        if (this.popover().closeOnEscape?.() === false) {
+        if (!this.popover().escapeEnabled()) {
           return;
         }
         event?.preventDefault();
