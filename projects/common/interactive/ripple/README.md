@@ -105,7 +105,7 @@ button {
 }
 ```
 
-Color precedence: `[rippleColor]` (written inline on the wave, only when bound) > `--cngx-ripple-color` on the host > the theme value (the Material bridge sets it on every `.cngx-ripple` host) > the `currentColor` default. With the bridge loaded, an override must sit on the host itself; an ancestor value is shadowed there. The easing is fixed (`ease-out`) and has no token.
+Color precedence: `[rippleColor]` (written inline on the wave, only when bound) > `--cngx-ripple-color` from the cascade (the token inherits, so the host or an ancestor) > the `currentColor` default, so the wave takes the host's content colour. The Material bridge sets no colour. The easing is fixed (`ease-out`) and has no token.
 
 ### CngxPressable
 
@@ -220,7 +220,7 @@ html {
 }
 ```
 
-The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-surface`, M3 themes only) and applies base defaults for `--cngx-ripple-opacity` (`0.12`) and `--cngx-ripple-duration` (`0.5s`).
+The `theme()` mixin sets `--cngx-ripple-opacity` to `0.1` (the matRipple peak) and `--cngx-ripple-duration` to `0.5s`. It sets no colour: the wave keeps the content colour of its host, the M3 state-layer rule.
 
 ## See Also
 

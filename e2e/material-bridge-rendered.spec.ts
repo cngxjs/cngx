@@ -1213,6 +1213,32 @@ test.describe('material-bridge rendered values: empty-state', () => {
   });
 });
 
+test.describe('material-bridge rendered values: ripple', () => {
+  const RIPPLE_CSS = ['projects/common/theming/components/cngx-ripple.css'] as const;
+  const BRIDGE_CSS = compileBridge('ripple-theme');
+
+  const RIPPLE_HTML = `
+<button id="ripple-host" type="button" class="cngx-ripple" style="color: rgb(201, 32, 77)">
+  <span class="cngx-ripple__container"><span id="ripple-wave" class="cngx-ripple__wave"></span></span>
+</button>`;
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: RIPPLE_CSS,
+      bridgeCss: BRIDGE_CSS,
+      html: RIPPLE_HTML,
+    });
+  });
+
+  test('the wave paints the content colour of its host, not on-surface', async ({ page }) => {
+    expect(await computedValue(page, '#ripple-wave', 'background-color')).toBe('rgb(201, 32, 77)');
+  });
+
+  test('the wave peaks at the matRipple 10% opacity', async ({ page }) => {
+    expect(await computedValue(page, '#ripple-wave', '--cngx-ripple-opacity')).toBe('0.1');
+  });
+});
+
 test.describe('material-bridge rendered values: copy-block', () => {
   const COPY_CSS = ['projects/common/interactive/copy/copy-block.css'] as const;
   const BRIDGE_CSS = compileBridge('copy-block-theme');
