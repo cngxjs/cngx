@@ -157,8 +157,14 @@ test.describe('CngxActionSelect demo', () => {
       .locator('.cngx-select__action--bottom input[type="text"]')
       .first();
     await descInput.fill('important text');
+    await expect(artifact(page).locator('.demo-mini-form-marker')).toBeVisible();
 
+    // The first Escape cancels: the note clears and the unsaved marker goes.
+    // Wait for that render before the second press; the panel's Escape gate
+    // is a template binding that follows the dirty flag on the same render.
     await descInput.press('Escape');
+    await expect(descInput).toHaveValue('');
+    await expect(artifact(page).locator('.demo-mini-form-marker')).toHaveCount(0);
     await expect(input).toHaveAttribute('aria-expanded', 'true');
 
     await descInput.press('Escape');
