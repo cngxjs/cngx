@@ -82,6 +82,23 @@ describe('CngxAsyncBoundary', () => {
     expect(directive.failures()).toBe(first);
   });
 
+  it('follows a changed label of an errored source', () => {
+    const { fixture, host, directive } = setup();
+
+    host.perms.setError('perms-down');
+    TestBed.flushEffects();
+    expect(directive.failures()[0].label).toBe('Permissions');
+
+    host.sources.set([
+      { key: 'user', label: 'User', state: host.user },
+      { key: 'perms', label: 'Access rights', state: host.perms },
+      { key: 'flags', label: 'Feature flags', state: host.flags },
+    ]);
+    fixture.detectChanges();
+
+    expect(directive.failures()[0].label).toBe('Access rights');
+  });
+
   it('reflects aggregate busy through host aria-busy', () => {
     const { fixture, host, debugEl } = setup();
 
@@ -94,5 +111,55 @@ describe('CngxAsyncBoundary', () => {
     host.flags.setSuccess('f');
     fixture.detectChanges();
     expect(debugEl.nativeElement.getAttribute('aria-busy')).toBeNull();
+  });
+
+  it('follows a swapped source list and keeps the state object identity', () => {
+    const { fixture, host, directive, debugEl } = setup();
+    const state = directive.state;
+    host.user.setSuccess('u');
+    host.perms.setSuccess('p');
+    host.flags.setSuccess('f');
+    fixture.detectChanges();
+    expect(directive.state.status()).toBe('success');
+    expect(debugEl.nativeElement.getAttribute('aria-busy')).toBeNull();
+
+    const orders = createManualState<string>();
+    const stock = createManualState<string>();
+    orders.set('loading');
+    stock.setError('stock-down');
+    host.sources.set([
+      { key: 'orders', label: 'Orders', state: orders },
+      { key: 'stock', label: 'Stock', state: stock },
+    ]);
+    fixture.detectChanges();
+
+    expect(directive.state).toBe(state);
+    expect(directive.state.status()).toBe('error');
+    expect(directive.failures()).toEqual([{ key: 'stock', label: 'Stock', error: 'stock-down' }]);
+
+    stock.setSuccess('s');
+    fixture.detectChanges();
+    expect(directive.state.status()).toBe('loading');
+    expect(directive.failures()).toEqual([]);
+    expect(debugEl.nativeElement.getAttribute('aria-busy')).toBe('true');
+
+    orders.setSuccess('o');
+    fixture.detectChanges();
+    expect(directive.state.status()).toBe('success');
+    expect(debugEl.nativeElement.getAttribute('aria-busy')).toBeNull();
+  });
+
+  it('does not throw when a source mutates after the host is destroyed while busy', () => {
+    const { fixture, host } = setup();
+    host.perms.set('loading');
+    fixture.detectChanges();
+
+    fixture.destroy();
+
+    expect(() => {
+      host.perms.setSuccess('p');
+      host.user.setError('late');
+      TestBed.flushEffects();
+    }).not.toThrow();
   });
 });

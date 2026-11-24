@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { Component, resource, signal, type TemplateRef, viewChild } from '@angular/core';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
+import { type AsyncStatus, buildAsyncStateView } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { ManualAsyncState } from '../async-state/create-manual-state';
 import { createManualState } from '../async-state/create-manual-state';
+import { fromResource } from '../async-state/from-resource';
 import { CngxAsync } from './async.directive';
 
 @Component({
@@ -120,5 +122,249 @@ describe('CngxAsync', () => {
     // content+error resolves to content in structural directive
     expect(el.querySelector('.error')).toBeNull();
     expect(el.textContent).toContain('existing data');
+  });
+});
+
+describe('CngxAsync over fromResource', () => {
+  @Component({
+    template: `
+      <div *cngxAsync="state; let items; error: errTpl">CONTENT {{ $any(items).length }}</div>
+      <ng-template #errTpl><span class="error">ERRORTPL</span></ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class ResourceHost {
+    readonly ref = resource<string[], unknown>({
+      loader: async (): Promise<string[]> => {
+        throw new Error('first-fail');
+      },
+    });
+    readonly state = fromResource(this.ref);
+  }
+
+  it('renders the error template for a failed first load', async () => {
+    const fixture = TestBed.createComponent(ResourceHost);
+    for (let i = 0; i < 5; i++) {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    }
+    const el: HTMLElement = fixture.nativeElement;
+
+    expect(el.querySelector('.error')?.textContent).toBe('ERRORTPL');
+    expect(el.textContent).not.toContain('CONTENT');
+  });
+});
+
+describe('CngxAsync content context', () => {
+  @Component({
+    template: `<div *cngxAsync="state; let data">[{{ data }}]</div>`,
+    imports: [CngxAsync],
+  })
+  class ViewHost {
+    readonly status = signal<AsyncStatus>('success');
+    readonly data = signal<string[] | undefined>(['a']);
+    readonly state = buildAsyncStateView<string[]>({
+      status: this.status,
+      data: this.data,
+      error: signal(undefined),
+      isFirstLoad: signal(false),
+    });
+  }
+
+  it('passes undefined data through while the content view stays', () => {
+    const fixture = TestBed.createComponent(ViewHost);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('[a]');
+
+    fixture.componentInstance.status.set('refreshing');
+    fixture.componentInstance.data.set(undefined);
+    TestBed.flushEffects();
+    fixture.detectChanges();
+
+    expect(el.textContent).toContain('[]');
+    expect(el.textContent).not.toContain('a');
+  });
+});
+
+describe('CngxAsync slot template swap', () => {
+  @Component({
+    template: `
+      <div *cngxAsync="state; skeleton: skel(); error: err()">CONTENT</div>
+      <ng-template #skelA><span class="skel-a">SKEL A</span></ng-template>
+      <ng-template #skelB><span class="skel-b">SKEL B</span></ng-template>
+      <ng-template #errA><span class="err-a">ERR A</span></ng-template>
+      <ng-template #errB><span class="err-b">ERR B</span></ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class SwapHost {
+    readonly state = createManualState<string>();
+    readonly skelA = viewChild.required<TemplateRef<unknown>>('skelA');
+    readonly skelB = viewChild.required<TemplateRef<unknown>>('skelB');
+    readonly errA = viewChild.required<TemplateRef<{ $implicit: unknown }>>('errA');
+    readonly errB = viewChild.required<TemplateRef<{ $implicit: unknown }>>('errB');
+    readonly useB = signal(false);
+    readonly skel = (): TemplateRef<unknown> => (this.useB() ? this.skelB() : this.skelA());
+    readonly err = (): TemplateRef<{ $implicit: unknown }> =>
+      this.useB() ? this.errB() : this.errA();
+  }
+
+  function render(fixture: { detectChanges(): void }): void {
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+  }
+
+  it('re-renders the error view with the swapped template', () => {
+    const fixture = TestBed.createComponent(SwapHost);
+    const el: HTMLElement = fixture.nativeElement;
+    fixture.componentInstance.state.setError('boom');
+    render(fixture);
+    expect(el.querySelector('.err-a')).not.toBeNull();
+
+    fixture.componentInstance.useB.set(true);
+    render(fixture);
+
+    expect(el.querySelector('.err-a')).toBeNull();
+    expect(el.querySelector('.err-b')).not.toBeNull();
+  });
+
+  it('re-renders the skeleton view with the swapped template', () => {
+    const fixture = TestBed.createComponent(SwapHost);
+    const el: HTMLElement = fixture.nativeElement;
+    fixture.componentInstance.state.set('loading');
+    render(fixture);
+    expect(el.querySelector('.skel-a')).not.toBeNull();
+
+    fixture.componentInstance.useB.set(true);
+    render(fixture);
+
+    expect(el.querySelector('.skel-a')).toBeNull();
+    expect(el.querySelector('.skel-b')).not.toBeNull();
+  });
+});
+
+describe('CngxAsync focus across a view switch', () => {
+  @Component({
+    template: `
+      <button class="outside">Outside</button>
+      <div *cngxAsync="state; skeleton: skel; error: err">CONTENT</div>
+      <ng-template #skel><span class="skeleton">Loading</span></ng-template>
+      <ng-template #err><button class="retry">Retry</button></ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class FocusHost {
+    readonly state = createManualState<string>();
+  }
+
+  async function render(fixture: ComponentFixture<FocusHost>): Promise<void> {
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  async function setup(): Promise<{ fixture: ComponentFixture<FocusHost>; el: HTMLElement }> {
+    const fixture = TestBed.createComponent(FocusHost);
+    fixture.componentInstance.state.setError('boom');
+    await render(fixture);
+    return { fixture, el: fixture.nativeElement };
+  }
+
+  async function errorAgain(fixture: ComponentFixture<FocusHost>, between?: () => void) {
+    fixture.componentInstance.state.set('loading');
+    await render(fixture);
+    between?.();
+    fixture.componentInstance.state.setError('boom again');
+    await render(fixture);
+  }
+
+  it('moves focus from a destroyed Retry button into the next view that has one', async () => {
+    const { fixture, el } = await setup();
+    const first = el.querySelector<HTMLButtonElement>('.retry')!;
+    first.focus();
+    expect(document.activeElement).toBe(first);
+
+    await errorAgain(fixture);
+
+    const next = el.querySelector<HTMLButtonElement>('.retry')!;
+    expect(next).not.toBe(first);
+    expect(document.activeElement).toBe(next);
+  });
+
+  it('never moves focus that sits outside the directive', async () => {
+    const { fixture, el } = await setup();
+    const outside = el.querySelector<HTMLButtonElement>('.outside')!;
+    outside.focus();
+
+    await errorAgain(fixture);
+
+    expect(document.activeElement).toBe(outside);
+  });
+
+  it('drops the hand-off after one more view without a focusable element', async () => {
+    const { fixture, el } = await setup();
+    el.querySelector<HTMLButtonElement>('.retry')!.focus();
+
+    fixture.componentInstance.state.set('loading');
+    await render(fixture);
+    fixture.componentInstance.state.set('idle');
+    await render(fixture);
+    fixture.componentInstance.state.setError('late');
+    await render(fixture);
+
+    expect(el.querySelector('.retry')).not.toBeNull();
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  it('does not pull back focus the user moved elsewhere during the skeleton', async () => {
+    const { fixture, el } = await setup();
+    el.querySelector<HTMLButtonElement>('.retry')!.focus();
+    const outside = el.querySelector<HTMLButtonElement>('.outside')!;
+
+    await errorAgain(fixture, () => outside.focus());
+
+    expect(document.activeElement).toBe(outside);
+  });
+});
+
+describe('CngxAsync focus target selection', () => {
+  @Component({
+    template: `
+      <div *cngxAsync="state; skeleton: skel; error: err">CONTENT</div>
+      <ng-template #skel><span class="skeleton">Loading</span></ng-template>
+      <ng-template #err>
+        <div inert><button class="inert-btn">Hidden</button></div>
+        <button class="retry">Retry</button>
+      </ng-template>
+    `,
+    imports: [CngxAsync],
+  })
+  class InertHost {
+    readonly state = createManualState<string>();
+  }
+
+  it('skips focusable elements inside an inert subtree', async () => {
+    const fixture = TestBed.createComponent(InertHost);
+    const state = fixture.componentInstance.state;
+    const el: HTMLElement = fixture.nativeElement;
+    const render = async () => {
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    state.setError('boom');
+    await render();
+    el.querySelector<HTMLButtonElement>('.retry')!.focus();
+
+    state.set('loading');
+    await render();
+    state.setError('again');
+    await render();
+
+    expect(document.activeElement).toBe(el.querySelector('.retry'));
   });
 });

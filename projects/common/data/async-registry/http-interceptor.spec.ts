@@ -1,6 +1,12 @@
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HttpClient,
+  type HttpInterceptorFn,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { of, retry } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { CngxAsyncRegistry } from './async-registry';
 import { provideAsyncRegistry } from './provide-async-registry';
@@ -115,9 +121,62 @@ describe('cngxAsyncInterceptor', () => {
     expect(registry.activeOperations()).toHaveLength(0);
   });
 
+  it('tracks every attempt behind an upstream retry for exactly its own lifetime', () => {
+    const upstream: HttpInterceptorFn = (req, next) => next(req).pipe(retry(2));
+    TestBed.configureTestingModule({
+      providers: [
+        provideAsyncRegistry(),
+        provideHttpClient(withInterceptors([upstream, cngxAsyncInterceptor])),
+        provideHttpClientTesting(),
+      ],
+    });
+    const http = TestBed.inject(HttpClient);
+    const httpMock = TestBed.inject(HttpTestingController);
+    const registry = TestBed.inject(CngxAsyncRegistry);
+    let result = 'none';
+
+    http.get('/api/r').subscribe({ next: () => (result = 'ok') });
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      expect(registry.isAnythingLoading()).toBe(true);
+      expect(registry.activeOperations()).toHaveLength(1);
+      httpMock.expectOne('/api/r').flush('x', { status: 500, statusText: 'e' });
+    }
+    expect(registry.isAnythingLoading()).toBe(true);
+    expect(registry.activeOperations()).toHaveLength(1);
+    httpMock.expectOne('/api/r').flush({ ok: 1 });
+
+    expect(result).toBe('ok');
+    expect(registry.isAnythingLoading()).toBe(false);
+    expect(registry.activeOperations()).toHaveLength(0);
+  });
+
+  it('registers nothing when an upstream interceptor never subscribes', () => {
+    const cache: HttpInterceptorFn = (req, next) => {
+      next(req);
+      return of();
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideAsyncRegistry(),
+        provideHttpClient(withInterceptors([cache, cngxAsyncInterceptor])),
+        provideHttpClientTesting(),
+      ],
+    });
+    const registry = TestBed.inject(CngxAsyncRegistry);
+
+    TestBed.inject(HttpClient).get('/api/c').subscribe();
+
+    expect(registry.isAnythingLoading()).toBe(false);
+    expect(registry.activeOperations()).toHaveLength(0);
+  });
+
   it('provideAsyncHttpObservability wires the interceptor end-to-end', () => {
     TestBed.configureTestingModule({
-      providers: [provideAsyncRegistry(), provideAsyncHttpObservability(), provideHttpClientTesting()],
+      providers: [
+        provideAsyncRegistry(),
+        provideAsyncHttpObservability(),
+        provideHttpClientTesting(),
+      ],
     });
     const http = TestBed.inject(HttpClient);
     const httpMock = TestBed.inject(HttpTestingController);
@@ -132,7 +191,10 @@ describe('cngxAsyncInterceptor', () => {
 
   it('passes the request through untouched when no registry is provided', () => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(withInterceptors([cngxAsyncInterceptor])), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(withInterceptors([cngxAsyncInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     const http = TestBed.inject(HttpClient);
     const httpMock = TestBed.inject(HttpTestingController);

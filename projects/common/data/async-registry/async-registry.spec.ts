@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { createManualState } from '../async-state/create-manual-state';
@@ -88,6 +88,43 @@ describe('CngxAsyncRegistry', () => {
 
     registry.unregister(id);
     expect(registry.activeOperations()).toHaveLength(0);
+  });
+
+  it('register inside an effect runs the effect once', () => {
+    const registry = setupRegistry();
+    let runs = 0;
+    TestBed.runInInjectionContext(() =>
+      effect(() => {
+        runs++;
+        if (runs <= 5) {
+          registry.register(createManualState<number>());
+        }
+      }),
+    );
+    for (let i = 0; i < 10; i++) {
+      TestBed.tick();
+    }
+    expect(runs).toBe(1);
+    expect(registry.activeOperations()).toHaveLength(1);
+  });
+
+  it('unregister inside an effect runs the effect once', () => {
+    const registry = setupRegistry();
+    const ids = Array.from({ length: 6 }, () => registry.register(createManualState<number>()));
+    let runs = 0;
+    TestBed.runInInjectionContext(() =>
+      effect(() => {
+        runs++;
+        if (runs <= 5) {
+          registry.unregister(ids[runs - 1]);
+        }
+      }),
+    );
+    for (let i = 0; i < 10; i++) {
+      TestBed.tick();
+    }
+    expect(runs).toBe(1);
+    expect(registry.activeOperations()).toHaveLength(5);
   });
 
   it('registers via injectAsyncState({ register: true }) and cleans up on destroy', () => {
