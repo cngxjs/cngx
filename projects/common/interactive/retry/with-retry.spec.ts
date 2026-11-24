@@ -147,6 +147,23 @@ describe('createRetry', () => {
     expect(state.state.error()).toBeUndefined();
   });
 
+  it('maxAttempts NaN falls back to three attempts', async () => {
+    const action = vi.fn().mockRejectedValue(new Error('x'));
+    const [retryable, state] = createRetry(action, { maxAttempts: Number.NaN, delay: 0 });
+    expect(state.maxAttempts()).toBe(3);
+    await expect(retryable()).rejects.toThrow('x');
+    expect(action).toHaveBeenCalledTimes(3);
+    expect(state.exhausted()).toBe(true);
+  });
+
+  it('a fractional maxAttempts is floored', async () => {
+    const action = vi.fn().mockRejectedValue(new Error('x'));
+    const [retryable, state] = createRetry(action, { maxAttempts: 2.5, delay: 0 });
+    expect(state.maxAttempts()).toBe(2);
+    await expect(retryable()).rejects.toThrow('x');
+    expect(action).toHaveBeenCalledTimes(2);
+  });
+
   describe('abort signal and cancellation', () => {
     it('passes the action a run signal linked to the runner signal', async () => {
       let received: AbortSignal | undefined;

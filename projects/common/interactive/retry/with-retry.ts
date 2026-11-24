@@ -8,7 +8,11 @@ import { CNGX_ASYNC_CANCELLED, type AsyncAction } from '../async-click/async-cli
  * Configuration for `createRetry()`.
  */
 export interface RetryConfig {
-  /** Maximum number of attempts (including the first); values below 1 count as 1. Default: `3`. */
+  /**
+   * Maximum number of attempts (including the first). Fractions are floored,
+   * values below 1 count as 1, `NaN` counts as the default, `Infinity` retries
+   * without a bound. Default: `3`.
+   */
   maxAttempts?: number;
   /** Base delay in ms between retries. Default: `1000`. */
   delay?: number;
@@ -87,8 +91,12 @@ export interface RetryState {
  * the signal of the runner that owns the run.
  */
 export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
-  // At least one attempt: the loop below ends only through a return or a throw.
-  const maxAttempts = Math.max(1, config?.maxAttempts ?? 3);
+  // At least one whole attempt: the loop below ends only through a return or a
+  // throw, so NaN (which never compares true) falls back to the default.
+  const requestedAttempts = config?.maxAttempts ?? 3;
+  const maxAttempts = Number.isNaN(requestedAttempts)
+    ? 3
+    : Math.max(1, Math.floor(requestedAttempts));
   const baseDelay = config?.delay ?? 1000;
   const backoff = config?.backoff ?? 'exponential';
 
