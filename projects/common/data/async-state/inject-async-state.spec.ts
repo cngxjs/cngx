@@ -238,7 +238,7 @@ describe('injectAsyncState', () => {
       expect(source.observed).toBe(false);
     });
 
-    it('a synchronous throw of fn in refresh() escapes and leaves the status loading', () => {
+    it('a synchronous throw of fn in refresh() settles error and does not escape', () => {
       let shouldThrow = false;
       @Component({ template: '' })
       class ThrowHost {
@@ -255,8 +255,9 @@ describe('injectAsyncState', () => {
       const state = fixture.componentInstance.state;
 
       shouldThrow = true;
-      expect(() => state.refresh()).toThrow('sync');
-      expect(state.status()).toBe('loading');
+      expect(() => state.refresh()).not.toThrow();
+      expect(state.status()).toBe('error');
+      expect((state.error() as Error).message).toBe('sync');
     });
   });
 

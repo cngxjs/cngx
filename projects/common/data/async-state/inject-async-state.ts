@@ -110,7 +110,14 @@ export function injectAsyncState<T>(
     const status = untracked(state.isFirstLoad) ? 'loading' : 'refreshing';
     state.set(status);
 
-    const result$ = computation();
+    let result$: Promise<T> | Observable<T>;
+    try {
+      result$ = computation();
+    } catch (err: unknown) {
+      // Same outcome as a synchronous throw on the effect path.
+      state.setError(err);
+      return;
+    }
 
     if (isObservable(result$)) {
       let hasEmitted = false;
