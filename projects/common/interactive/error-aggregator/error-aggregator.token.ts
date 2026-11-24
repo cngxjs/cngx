@@ -33,12 +33,20 @@ export interface CngxErrorAggregatorContract {
   readonly errorLabels: Signal<readonly string[]>;
   /** `true` when errors should be visible - `hasError` AND scope reveal-state. */
   readonly shouldShow: Signal<boolean>;
-  /** SR-friendly announcement text - joins active labels into one phrase. */
+  /**
+   * SR-friendly announcement text: the active labels joined into one phrase, or
+   * the count message when no active source has a label; empty while hidden.
+   */
   readonly announcement: Signal<string>;
   /** Registers (or replaces) a source by `key`. */
   addSource(entry: CngxErrorAggregatorSourceEntry): void;
-  /** Deregisters the source with `key` (no-op if absent). */
-  removeSource(key: string): void;
+  /**
+   * Deregisters a source (no-op if absent). Without `entry` the key and every
+   * shadowed duplicate go. With `entry` only that source goes, matched by
+   * `condition` identity: if it owns the key, the newest shadowed duplicate
+   * takes the key back; if it is shadowed, it leaves the list.
+   */
+  removeSource(key: string, entry?: CngxErrorAggregatorSourceEntry): void;
 }
 
 /**

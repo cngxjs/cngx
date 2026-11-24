@@ -1,10 +1,11 @@
-import { DestroyRef, inject, signal, type Signal } from '@angular/core';
+import { DestroyRef, inject, signal, untracked, type Signal } from '@angular/core';
 import { injectLocale } from '@cngx/core/utils';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
 } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import { createErrorAggregatorContract } from './aggregator-contract';
 import { CngxErrorRegistry } from './error-registry';
 import { errorSourceMapEqual } from './equal-fns';
@@ -26,13 +27,16 @@ import { errorSourceMapEqual } from './equal-fns';
  *                 collapses to `hasError`.
  * @param labels   Optional human-readable labels by source key, used in
  *                 `errorLabels` and `announcement`.
+ * @param countAnnouncement Optional text when no active source has a label.
+ *                 Falls back to `CNGX_INTERACTIVE_I18N`, like the directive's
+ *                 `errorCountAnnouncement` input.
  *
  * Must be called in an injection context (constructor, factory provider,
  * `runInInjectionContext`).
  *
  * Computed-graph derivation is delegated to
  * {@link createErrorAggregatorContract} so the directive
- * ({@link `@cngx/common/interactive`#CngxErrorAggregator}) and the
+ * ({@link CngxErrorAggregator}) and the
  * function form share a single source of truth.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-aggregator.ts
@@ -45,6 +49,7 @@ export function injectErrorAggregator(
   sources?: Record<string, Signal<boolean>>,
   scope?: CngxErrorScopeContract,
   labels?: Record<string, string>,
+  countAnnouncement?: (count: number) => string,
 ): CngxErrorAggregatorContract {
   const sourcesState = signal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>(
     buildInitialSources(sources, labels),
@@ -52,10 +57,13 @@ export function injectErrorAggregator(
   );
   const scopeSignal = signal<CngxErrorScopeContract | null | undefined>(scope);
 
+  const i18n = injectResolvedInteractiveI18n();
   const contract = createErrorAggregatorContract({
     sourcesState,
     scope: scopeSignal.asReadonly(),
     locale: injectLocale(),
+    countAnnouncement: (count) =>
+      untracked(() => (countAnnouncement ?? i18n().errorCountAnnouncement)(count)),
   });
 
   if (name) {

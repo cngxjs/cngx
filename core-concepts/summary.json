@@ -550,6 +550,11 @@
                 "file": "error-codes/cngx1083.md"
             },
             {
+                "title": "CNGX1084",
+                "label": "CNGX1084: Error state on a form-field control",
+                "file": "error-codes/cngx1084.md"
+            },
+            {
                 "title": "CNGX2001",
                 "label": "CNGX2001: Unknown filter operator",
                 "file": "error-codes/cngx2001.md"

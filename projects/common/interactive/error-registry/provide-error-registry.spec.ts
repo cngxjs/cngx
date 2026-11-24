@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
@@ -93,6 +94,37 @@ describe('withGlobalRevealOnSubmit', () => {
     void registry;
     submit();
     expect(revealCalls()).toBe(1);
+  });
+});
+
+describe('withGlobalRevealOnSubmit with an injected DOCUMENT', () => {
+  it('listens on the injected document, not the global one', () => {
+    const doc = document.implementation.createHTMLDocument('probe');
+
+    // No component: a fixture would look for its root node in the probe
+    // document.
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: DOCUMENT, useValue: doc },
+        provideErrorRegistry(withGlobalRevealOnSubmit()),
+      ],
+    });
+    const registry = TestBed.inject(CngxErrorRegistry);
+    TestBed.runInInjectionContext(() => injectErrorScope('a'));
+
+    const submitIn = (target: Document): void => {
+      const form = target.createElement('form');
+      form.addEventListener('submit', (e) => e.preventDefault());
+      target.body.appendChild(form);
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form.remove();
+    };
+
+    submitIn(document);
+    expect(registry.getScope('a')?.showErrors()).toBe(false);
+
+    submitIn(doc);
+    expect(registry.getScope('a')?.showErrors()).toBe(true);
   });
 });
 

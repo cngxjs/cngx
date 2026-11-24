@@ -18,7 +18,9 @@ import { injectLocale } from '@cngx/core/utils';
 import { createErrorAggregatorContract } from '../error-registry/aggregator-contract';
 import { errorSourceMapEqual } from '../error-registry/equal-fns';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
+import { registerByName } from '../error-registry/register-by-name';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '../error-scope/error-scope.token';
+import { injectResolvedInteractiveI18n } from '../i18n/interactive-i18n';
 import {
   CNGX_ERROR_AGGREGATOR,
   type CngxErrorAggregatorContract,
@@ -52,19 +54,30 @@ import {
  * to `'assertive'` for safety-critical errors or `'off'` to suppress
  * announcements entirely while keeping the visual error surface.
  *
+ * The region speaks the joined labels, or the `errorCountAnnouncement` count
+ * message when no active source has a label, and speaks again on every
+ * `reveal()` of the scope. A politeness change replaces the region.
+ *
  * ```html
  * <fieldset cngxErrorAggregator #agg="cngxErrorAggregator">
  *   <span cngxErrorSource="format" [when]="email().invalid()" label="Format"></span>
  *   <span cngxErrorSource="taken"  [when]="taken()"          label="Already used"></span>
  *
  *   @if (agg.shouldShow()) {
- *     <ul role="alert">
+ *     <ul>
  *       @for (label of agg.errorLabels(); track label) {
  *         <li>{{ label }}</li>
  *       }
  *     </ul>
  *   }
  * </fieldset>
+ * ```
+ *
+ * Owning the region instead:
+ *
+ * ```html
+ * <fieldset cngxErrorAggregator [autoAnnounce]="false" #agg="cngxErrorAggregator">...</fieldset>
+ * <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">{{ agg.announcement() }}</span>
  * ```
  *
  * @wcag AA
@@ -115,6 +128,15 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
    */
   readonly announcePoliteness = input<'polite' | 'assertive' | 'off'>('polite');
 
+  /**
+   * Live-region text while errors show but no active source has a label;
+   * receives the active error count. Falls back to `errorCountAnnouncement`
+   * of `CNGX_INTERACTIVE_I18N` (English: `1 error` / `2 errors`).
+   */
+  readonly errorCountAnnouncement = input<((count: number) => string) | undefined>(undefined);
+
+  private readonly i18n = injectResolvedInteractiveI18n();
+
   private readonly ancestorScope = inject<CngxErrorScopeContract | null>(CNGX_ERROR_SCOPE, {
     optional: true,
   });
@@ -133,6 +155,8 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     sourcesState: this.sourcesState,
     scope: this.effectiveScope,
     locale: injectLocale(),
+    countAnnouncement: (count) =>
+      untracked(() => (this.errorCountAnnouncement() ?? this.i18n().errorCountAnnouncement)(count)),
   });
 
   readonly hasError = this.contract.hasError;
@@ -152,12 +176,13 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   }
 
   /**
-   * Removes the error source registered under `key`; no-op when the key is absent.
+   * Removes an error source; no-op when the key is absent. With `entry` only that
+   * source leaves and a shadowed duplicate of the key takes over again.
    * Implements `removeSource` of `CngxErrorAggregatorContract` (`CNGX_ERROR_AGGREGATOR`),
    * called by `CngxErrorSource` on teardown.
    */
-  removeSource(key: string): void {
-    this.contract.removeSource(key);
+  removeSource(key: string, entry?: CngxErrorAggregatorSourceEntry): void {
+    this.contract.removeSource(key, entry);
   }
 
   constructor() {
@@ -169,50 +194,97 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
       const renderer = inject(Renderer2);
 
       let span: HTMLSpanElement | null = null;
+      let spanPoliteness: 'polite' | 'assertive' | 'off' | null = null;
+
+      const removeSpan = (): void => {
+        if (span?.parentNode === hostEl) {
+          renderer.removeChild(hostEl, span);
+        }
+        span = null;
+        spanPoliteness = null;
+      };
+
+      // role and aria-live are set before insertion and never swapped on a
+      // live node; a politeness change replaces the region instead. The region
+      // goes in empty: text present on insertion is not reliably spoken.
+      const createSpan = (politeness: 'polite' | 'assertive' | 'off'): HTMLSpanElement => {
+        const el = renderer.createElement('span') as HTMLSpanElement;
+        renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
+        renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
+        renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+        renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+        renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+        renderer.setAttribute(el, 'aria-atomic', 'true');
+        renderer.setAttribute(el, 'aria-relevant', 'additions text');
+        if (politeness !== 'off') {
+          renderer.setAttribute(el, 'role', politeness === 'assertive' ? 'alert' : 'status');
+        }
+        renderer.setAttribute(el, 'aria-live', politeness);
+        renderer.appendChild(hostEl, el);
+        span = el;
+        spanPoliteness = politeness;
+        return el;
+      };
+
+      const injector = inject(Injector);
+      let destroyed = false;
+      let lastEpoch = 0;
+
+      // Writes the current announcement into an empty region after render, so
+      // the reader sees a change on the live node and speaks it.
+      const writeAfterRender = (region: HTMLSpanElement): void => {
+        afterNextRender(
+          {
+            write: () => {
+              if (!destroyed && span === region) {
+                region.textContent = untracked(this.announcement);
+              }
+            },
+          },
+          { injector },
+        );
+      };
 
       effect(() => {
         const enabled = this.autoAnnounce();
         const politeness = this.announcePoliteness();
         const text = this.announcement();
+        const epoch = this.effectiveScope()?.revealEpoch?.() ?? 0;
 
         untracked(() => {
+          const revealedAgain = epoch !== lastEpoch;
+          lastEpoch = epoch;
           if (!enabled) {
-            if (span?.parentNode === hostEl) {
-              renderer.removeChild(hostEl, span);
-            }
-            span = null;
+            removeSpan();
             return;
           }
-
+          if (span && spanPoliteness !== politeness) {
+            removeSpan();
+          }
           if (!span) {
-            const el = renderer.createElement('span') as HTMLSpanElement;
-            renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
-            renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
-            renderer.setStyle(el, 'height', 'var(--cngx-sr-only-size, 1px)');
-            renderer.setStyle(el, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
-            renderer.setStyle(el, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
-            renderer.setStyle(el, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
-            renderer.setAttribute(el, 'aria-atomic', 'true');
-            renderer.setAttribute(el, 'aria-relevant', 'additions text');
-            renderer.appendChild(hostEl, el);
-            span = el;
+            const region = createSpan(politeness);
+            if (text !== '') {
+              writeAfterRender(region);
+            }
+            return;
           }
-
-          if (politeness === 'off') {
-            renderer.removeAttribute(span, 'role');
-          } else {
-            renderer.setAttribute(span, 'role', politeness === 'assertive' ? 'alert' : 'status');
+          if (span.textContent !== text) {
+            span.textContent = text;
+            return;
           }
-          renderer.setAttribute(span, 'aria-live', politeness);
-          span.textContent = text;
+          if (!revealedAgain || text === '') {
+            return;
+          }
+          // Same text on a new reveal: clear now, write after render.
+          span.textContent = '';
+          writeAfterRender(span);
         });
       });
 
       destroyRef.onDestroy(() => {
-        if (span?.parentNode === hostEl) {
-          renderer.removeChild(hostEl, span);
-        }
-        span = null;
+        destroyed = true;
+        removeSpan();
       });
     }
 
@@ -220,33 +292,10 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     if (!registry) {
       return;
     }
-    const injector = inject(Injector);
-    // Registration reacts to name changes: a renamed aggregator unregisters
-    // its old key and registers the new one. Deferred behind afterNextRender
-    // so registration stays browser-only.
-    afterNextRender(() => {
-      let registered: string | null = null;
-      effect(
-        () => {
-          const name = this.aggregatorName();
-          untracked(() => {
-            if (registered && registered !== name) {
-              registry.unregisterAggregator(registered, this);
-              registered = null;
-            }
-            if (name && registered !== name) {
-              registry.registerAggregator(name, this);
-              registered = name;
-            }
-          });
-        },
-        { injector },
-      );
-      destroyRef.onDestroy(() => {
-        if (registered) {
-          registry.unregisterAggregator(registered, this);
-        }
-      });
-    });
+    registerByName(
+      this.aggregatorName,
+      (name) => registry.registerAggregator(name, this),
+      (name) => registry.unregisterAggregator(name, this),
+    );
   }
 }

@@ -2,8 +2,8 @@ import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 // Story: CngxErrorState toggles `.cngx-error` plus reactive aria-invalid
-// and aria-errormessage on its host. The IDs stay in the DOM; the linked
-// message element gates its own aria-hidden.
+// and aria-errormessage on its host. aria-invalid stays in the DOM; the
+// message id is referenced only while the flag is true.
 
 test.describe('common/interactive/error-state', () => {
   test('basic: toggle flips aria-invalid and surfaces aria-errormessage', async ({ page }) => {
@@ -16,11 +16,11 @@ test.describe('common/interactive/error-state', () => {
     const toggle = page.getByRole('button', { name: 'Toggle invalid state' });
 
     await expect(input).toHaveAttribute('aria-invalid', 'false');
-    // aria-errormessage is always wired per cngx convention.
-    await expect(input).toHaveAttribute('aria-errormessage', 'cngx-error-state-basic-email');
+    await expect(input).not.toHaveAttribute('aria-errormessage');
 
     await toggle.click();
     await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAttribute('aria-errormessage', 'cngx-error-state-basic-email');
     await expect(input).toHaveClass(/cngx-error/);
 
     // The linked error message reveals via display:block when invalid.
@@ -31,7 +31,7 @@ test.describe('common/interactive/error-state', () => {
     await toggle.click();
     await expect(input).toHaveAttribute('aria-invalid', 'false');
     await expect(input).not.toHaveClass(/cngx-error/);
-
+    await expect(input).not.toHaveAttribute('aria-errormessage');
   });
 
   test('without-message-id: class hook and aria-invalid alone', async ({ page }) => {

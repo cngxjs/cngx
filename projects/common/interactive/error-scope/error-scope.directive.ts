@@ -1,15 +1,6 @@
-import {
-  afterNextRender,
-  DestroyRef,
-  Directive,
-  effect,
-  inject,
-  Injector,
-  input,
-  signal,
-  untracked,
-} from '@angular/core';
+import { Directive, inject, input, signal } from '@angular/core';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
+import { registerByName } from '../error-registry/register-by-name';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.token';
 
 /**
@@ -21,12 +12,12 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  * pattern.
  *
  * Provides {@link CNGX_ERROR_SCOPE} so any descendant
- * (`CngxErrorAggregator`, `CngxErrorState`, the form-field presenter in
- * Phase 6b) can read `showErrors` reactively without injecting a
- * concrete class.
+ * (`CngxErrorAggregator`, `CngxErrorState`, the form-field presenter) can
+ * read `showErrors` reactively without injecting a concrete class. Every
+ * `reveal()` bumps `revealEpoch`, so aggregators speak unchanged errors again.
  *
  * ```html
- * <form [cngxErrorScope] cngxErrorScopeName="checkout"
+ * <form cngxErrorScope cngxErrorScopeName="checkout"
  *       (submit)="scope.reveal(); save()" #scope="cngxErrorScope">
  *   <input [cngxErrorState]="email().invalid()" />
  * </form>
@@ -56,12 +47,18 @@ export class CngxErrorScope implements CngxErrorScopeContract {
 
   private readonly showErrorsState = signal(false);
 
+  private readonly revealEpochState = signal(0);
+
   /** Reactive flag consumed by descendants. */
   readonly showErrors = this.showErrorsState.asReadonly();
 
-  /** Reveals errors in this scope (idempotent). */
+  /** Count of `reveal()` calls; an aggregator speaks its errors again on each. */
+  readonly revealEpoch = this.revealEpochState.asReadonly();
+
+  /** Reveals errors in this scope; a repeated call speaks the errors again. */
   reveal(): void {
     this.showErrorsState.set(true);
+    this.revealEpochState.update((n) => n + 1);
   }
 
   /** Resets the scope to hidden (idempotent). */
@@ -74,34 +71,10 @@ export class CngxErrorScope implements CngxErrorScopeContract {
     if (!registry) {
       return;
     }
-    const destroyRef = inject(DestroyRef);
-    const injector = inject(Injector);
-    // Registration reacts to name changes: a renamed scope unregisters its
-    // old key and registers the new one. Deferred behind afterNextRender so
-    // registration stays browser-only.
-    afterNextRender(() => {
-      let registered: string | null = null;
-      effect(
-        () => {
-          const name = this.scopeName();
-          untracked(() => {
-            if (registered && registered !== name) {
-              registry.unregisterScope(registered, this);
-              registered = null;
-            }
-            if (name && registered !== name) {
-              registry.registerScope(name, this);
-              registered = name;
-            }
-          });
-        },
-        { injector },
-      );
-      destroyRef.onDestroy(() => {
-        if (registered) {
-          registry.unregisterScope(registered, this);
-        }
-      });
-    });
+    registerByName(
+      this.scopeName,
+      (name) => registry.registerScope(name, this),
+      (name) => registry.unregisterScope(name, this),
+    );
   }
 }

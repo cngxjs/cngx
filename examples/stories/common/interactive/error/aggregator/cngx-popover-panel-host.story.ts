@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'The aggregator binds to a popover-panel body. Click the trigger to open the popover; inside the panel, the aggregator rolls up its sources just like any other host.',
   description:
-    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive is template-free; render the SR live region yourself.',
+    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. Here the aggregator sets <code>[autoAnnounce]="false"</code> and the visible <code>role="alert"</code> list is the one announcement path; without it the directive renders its own polite region inside the host.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -44,7 +44,7 @@ export const STORY: DemoSpec = {
   </button>
   <cngx-popover-panel #billingPanel>
     <span cngxPopoverHeader>Billing</span>
-    <div cngxPopoverBody cngxErrorAggregator #billing="cngxErrorAggregator">
+    <div cngxPopoverBody cngxErrorAggregator [autoAnnounce]="false" #billing="cngxErrorAggregator">
       <span cngxErrorSource="declined" [when]="billingDeclined()" label="Last charge declined"></span>
       <p>Recent activity for this account.</p>
       @if (billing.shouldShow()) {

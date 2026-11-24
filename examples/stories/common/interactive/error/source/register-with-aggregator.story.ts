@@ -33,7 +33,7 @@ export const STORY: DemoSpec = {
     <span cngxErrorSource="email-business-rule" [when]="conflictsWithBusinessRule()" label="Conflicts with another contact"></span>
 
     @if (agg.shouldShow()) {
-      <ul role="alert" class="demo-error-list" style="margin:0">
+      <ul class="demo-error-list" style="margin:0">
         @for (label of agg.errorLabels(); track label) {
           <li>{{ label }}</li>
         }

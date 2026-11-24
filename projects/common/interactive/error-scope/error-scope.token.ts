@@ -11,16 +11,27 @@ import { InjectionToken, type Signal } from '@angular/core';
  * Descendant directives (`CngxErrorAggregator`, `CngxErrorState`) read
  * the scope's `showErrors` signal to gate their own visibility, so a
  * single `reveal()` propagates atomically through the subtree.
+ * `CngxErrorAggregator` also reads `revealEpoch` to speak again on a
+ * repeated reveal.
  */
 export interface CngxErrorScopeContract {
   /** Reactive flag - `true` when errors should be visible to the user. */
   readonly showErrors: Signal<boolean>;
-  /** Reveals errors in this scope (idempotent). */
+  /**
+   * Reveals errors in this scope. `showErrors` stays `true` on a repeated
+   * call, but each call bumps `revealEpoch`, so aggregators speak again.
+   */
   reveal(): void;
-  /** Resets the scope to hidden (idempotent). */
+  /** Resets the scope to hidden. A repeated call changes nothing. */
   reset(): void;
   /** Optional name for programmatic registry lookup via {@link CngxErrorRegistry}. */
   readonly scopeName?: Signal<string | undefined>;
+  /**
+   * Count of `reveal()` calls, a repeated one included; `reset()` leaves it.
+   * `CngxErrorAggregator` reads it to speak unchanged errors again on every
+   * reveal. Optional so contracts written before it keep compiling.
+   */
+  readonly revealEpoch?: Signal<number>;
 }
 
 /**

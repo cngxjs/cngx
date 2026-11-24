@@ -1,11 +1,26 @@
-import { Component, effect, signal, type Signal } from '@angular/core';
+import {
+  type AfterViewInit,
+  Component,
+  effect,
+  inject,
+  signal,
+  viewChild,
+  type Signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { stripBidiIsolates } from '@cngx/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { provideErrorRegistry } from '../error-registry/provide-error-registry';
 import { CngxErrorScope } from '../error-scope/error-scope.directive';
+import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { CngxErrorSource } from '../error-source/error-source.directive';
+import {
+  provideInteractiveI18n,
+  withInteractiveI18nLabels,
+  type CngxInteractiveI18n,
+} from '../i18n/interactive-i18n';
 import { CngxErrorAggregator } from './error-aggregator.directive';
 
 @Component({
@@ -79,6 +94,92 @@ class AutoAnnounceHost {
   aOn = signal(false);
   auto = signal(true);
   politeness = signal<'polite' | 'assertive' | 'off'>('polite');
+}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator [errorCountAnnouncement]="countFn()">
+      <span [cngxErrorSource]="'a'" [when]="aOn()"></span>
+      <span [cngxErrorSource]="'b'" [when]="bOn()"></span>
+      <span [cngxErrorSource]="'c'" [when]="cOn()" [label]="'C failed'"></span>
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class CountHost {
+  aOn = signal(false);
+  bOn = signal(false);
+  cOn = signal(false);
+  countFn = signal<((count: number) => string) | undefined>(undefined);
+}
+
+@Component({
+  template: `
+    <form cngxErrorScope #scope="cngxErrorScope">
+      <fieldset cngxErrorAggregator>
+        <span [cngxErrorSource]="'a'" [when]="aOn()" [label]="'A'"></span>
+      </fieldset>
+      <span>{{ unrelated() }}</span>
+    </form>
+  `,
+  imports: [CngxErrorScope, CngxErrorAggregator, CngxErrorSource],
+})
+class RevoiceHost {
+  aOn = signal(true);
+  unrelated = signal(0);
+  readonly scope = viewChild.required(CngxErrorScope);
+}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator [scope]="scope">
+      <span [cngxErrorSource]="'a'" [when]="true" [label]="'A'"></span>
+    </div>
+  `,
+  imports: [CngxErrorAggregator, CngxErrorSource],
+})
+class EpochlessScopeHost {
+  readonly show = signal(false);
+  readonly scope: CngxErrorScopeContract = {
+    showErrors: this.show.asReadonly(),
+    reveal: () => this.show.set(true),
+    reset: () => this.show.set(false),
+  };
+}
+
+@Component({
+  template: `
+    <div cngxErrorAggregator [cngxErrorAggregatorName]="name()"></div>
+  `,
+  imports: [CngxErrorAggregator],
+})
+class AggregatorLookupHost implements AfterViewInit {
+  private readonly registry = inject(CngxErrorRegistry);
+  readonly name = signal<string | undefined>('billing');
+  seenAfterViewInit = false;
+  ngAfterViewInit(): void {
+    this.seenAfterViewInit = this.registry.getAggregator('billing') !== undefined;
+  }
+}
+
+@Component({
+  template: `
+    <form cngxErrorScope>
+      <div cngxErrorAggregator [scope]="override">
+        <span [cngxErrorSource]="'a'" [when]="true" [label]="'A'"></span>
+      </div>
+    </form>
+  `,
+  imports: [CngxErrorScope, CngxErrorAggregator, CngxErrorSource],
+})
+class ScopeOverrideHost {
+  readonly shown = signal(false);
+  readonly override: CngxErrorScopeContract = {
+    showErrors: this.shown.asReadonly(),
+    reveal: () => this.shown.set(true),
+    reset: () => this.shown.set(false),
+  };
+  readonly ancestor = viewChild.required(CngxErrorScope);
 }
 
 function aggregatorOf(fixture: ReturnType<typeof TestBed.createComponent>): CngxErrorAggregator {
@@ -300,6 +401,51 @@ describe('CngxErrorAggregator', () => {
       expect(span.getAttribute('aria-live')).toBe('assertive');
     });
 
+    it('replaces the region when the politeness changes, inserts it empty and writes the errors after render', async () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.componentInstance.aOn.set(true);
+      fixture.detectChanges();
+      const host = hostOf(fixture);
+      const before = spanOf(fixture)!;
+      expect(before.getAttribute('role')).toBe('status');
+
+      const records: MutationRecord[] = [];
+      const observer = new MutationObserver((list) => records.push(...list));
+      observer.observe(host, { childList: true, subtree: true, attributes: true });
+
+      fixture.componentInstance.politeness.set('assertive');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      records.push(...observer.takeRecords());
+      observer.disconnect();
+
+      const after = spanOf(fixture)!;
+      expect(after).not.toBe(before);
+      expect(before.isConnected).toBe(false);
+      expect(host.querySelectorAll('span[aria-live]').length).toBe(1);
+      expect(after.getAttribute('role')).toBe('alert');
+      expect(after.getAttribute('aria-live')).toBe('assertive');
+      expect(after.textContent).toBe('A failed');
+      expect(records.filter((r) => r.type === 'attributes')).toEqual([]);
+      // Text that is already there on insertion is not reliably spoken by a
+      // status region; the errors must arrive as a change of the live node.
+      const textWrites = records.filter(
+        (r) => r.type === 'childList' && r.target === after && r.addedNodes.length > 0,
+      );
+      expect(textWrites.length).toBe(1);
+    });
+
+    it('renders a region without role when the politeness is off', () => {
+      const fixture = TestBed.createComponent(AutoAnnounceHost);
+      fixture.detectChanges();
+      fixture.componentInstance.politeness.set('off');
+      fixture.detectChanges();
+
+      const span = spanOf(fixture)!;
+      expect(span.hasAttribute('role')).toBe(false);
+      expect(span.getAttribute('aria-live')).toBe('off');
+    });
+
     it('removes the span from the host element on destroy', () => {
       const fixture = TestBed.createComponent(AutoAnnounceHost);
       fixture.detectChanges();
@@ -333,6 +479,33 @@ describe('CngxErrorAggregator', () => {
 });
 
 describe('CngxErrorAggregator registry registration', () => {
+  it('resolves by name from the host ngAfterViewInit', () => {
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(AggregatorLookupHost);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.seenAfterViewInit).toBe(true);
+  });
+
+  it('re-registers under the new name when cngxErrorAggregatorName changes', () => {
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(AggregatorLookupHost);
+    fixture.detectChanges();
+    const registry = TestBed.inject(CngxErrorRegistry);
+    const agg = aggregatorOf(fixture);
+    expect(registry.getAggregator('billing')).toBe(agg);
+
+    fixture.componentInstance.name.set('shipping');
+    fixture.detectChanges();
+    expect(registry.getAggregator('billing')).toBeUndefined();
+    expect(registry.getAggregator('shipping')).toBe(agg);
+
+    fixture.componentInstance.name.set(undefined);
+    fixture.detectChanges();
+    expect(registry.getAggregator('shipping')).toBeUndefined();
+
+    fixture.destroy();
+  });
+
   it('hands a shared name to the waiting aggregator once the holder is destroyed', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
@@ -362,5 +535,197 @@ describe('CngxErrorAggregator registry registration', () => {
     expect(registry.getAggregator('shared')).toBe(aggregators[waitingIndex]);
     expect(registry.hasAnyError()).toBe(true);
     warn.mockRestore();
+  });
+});
+
+describe('CngxErrorAggregator count announcement', () => {
+  function setupCount() {
+    const fixture = TestBed.createComponent(CountHost);
+    fixture.detectChanges();
+    const agg = aggregatorOf(fixture);
+    const region = (): string =>
+      stripBidiIsolates(
+        (fixture.debugElement.query(By.directive(CngxErrorAggregator)).nativeElement as HTMLElement)
+          .querySelector('span[aria-live]')?.textContent ?? '',
+      );
+    return { fixture, host: fixture.componentInstance, agg, region };
+  }
+
+  it('speaks the count when no active source has a label', () => {
+    const { fixture, host, agg, region } = setupCount();
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(stripBidiIsolates(agg.announcement())).toBe('1 error');
+    expect(region()).toBe('1 error');
+
+    host.bOn.set(true);
+    fixture.detectChanges();
+    expect(stripBidiIsolates(agg.announcement())).toBe('2 errors');
+    expect(region()).toBe('2 errors');
+  });
+
+  it('speaks the labels only when at least one active source has a label', () => {
+    const { fixture, host, region } = setupCount();
+    host.aOn.set(true);
+    host.cOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('C failed');
+  });
+
+  it('lets a bound [errorCountAnnouncement] win over the token', () => {
+    const { fixture, host, region } = setupCount();
+    host.countFn.set((count) => `Bound ${count}`);
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('Bound 1');
+  });
+
+  it('lets a provideInteractiveI18n override win over the default', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideInteractiveI18n(
+          withInteractiveI18nLabels({ errorCountAnnouncement: (count) => `Token ${count}` }),
+        ),
+      ],
+    });
+    const { fixture, host, region } = setupCount();
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('Token 1');
+  });
+
+  it('does not re-announce on a language flip', () => {
+    const labels = signal<Partial<CngxInteractiveI18n>>({
+      errorCountAnnouncement: (count) => `First ${count}`,
+    });
+    TestBed.configureTestingModule({
+      providers: [provideInteractiveI18n(withInteractiveI18nLabels(labels))],
+    });
+    const { fixture, host, region } = setupCount();
+    host.aOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('First 1');
+
+    labels.set({ errorCountAnnouncement: (count) => `Second ${count}` });
+    fixture.detectChanges();
+    expect(region()).toBe('First 1');
+
+    host.bOn.set(true);
+    fixture.detectChanges();
+    expect(region()).toBe('Second 2');
+  });
+});
+
+describe('CngxErrorAggregator re-voice on reveal', () => {
+  function regionOf(fixture: ReturnType<typeof TestBed.createComponent>): HTMLSpanElement {
+    return (
+      fixture.debugElement.query(By.directive(CngxErrorAggregator)).nativeElement as HTMLElement
+    ).querySelector('span[aria-live]')!;
+  }
+
+  function observe(target: Node): () => MutationRecord[] {
+    const records: MutationRecord[] = [];
+    const observer = new MutationObserver((list) => records.push(...list));
+    observer.observe(target, { childList: true, characterData: true, subtree: true });
+    return () => {
+      records.push(...observer.takeRecords());
+      observer.disconnect();
+      return records;
+    };
+  }
+
+  it('empties the region and writes the same text again after render on a second reveal()', async () => {
+    const fixture = TestBed.createComponent(RevoiceHost);
+    fixture.detectChanges();
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const region = regionOf(fixture);
+    expect(region.textContent).toBe('A');
+
+    const stop = observe(region);
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const records = stop().filter((r) => r.type === 'childList');
+
+    expect(records.map((r) => [r.removedNodes.length > 0, r.addedNodes.length > 0])).toEqual([
+      [true, false],
+      [false, true],
+    ]);
+    expect(region.textContent).toBe('A');
+  });
+
+  it('leaves the region alone on an unrelated signal change', async () => {
+    const fixture = TestBed.createComponent(RevoiceHost);
+    fixture.detectChanges();
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const stop = observe(regionOf(fixture));
+    fixture.componentInstance.unrelated.set(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(stop()).toEqual([]);
+  });
+
+  it('writes nothing when destroyed between the clear and the write', async () => {
+    const fixture = TestBed.createComponent(RevoiceHost);
+    fixture.detectChanges();
+    fixture.componentInstance.scope().reveal();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const region = regionOf(fixture);
+
+    fixture.componentInstance.scope().reveal();
+    fixture.componentRef.changeDetectorRef.detectChanges();
+    expect(region.textContent).toBe('');
+    fixture.destroy();
+    await Promise.resolve();
+    expect(region.textContent).toBe('');
+  });
+
+  it('keeps working with a scope contract without revealEpoch', () => {
+    const fixture = TestBed.createComponent(EpochlessScopeHost);
+    fixture.detectChanges();
+    expect(regionOf(fixture).textContent).toBe('');
+
+    fixture.componentInstance.scope.reveal();
+    fixture.detectChanges();
+    expect(regionOf(fixture).textContent).toBe('A');
+  });
+});
+
+describe('CngxErrorAggregator scope override and region ownership', () => {
+  it('lets the [scope] input win over the ancestor scope', () => {
+    const fixture = TestBed.createComponent(ScopeOverrideHost);
+    fixture.detectChanges();
+    const agg = aggregatorOf(fixture);
+    const host = fixture.componentInstance;
+
+    host.ancestor().reveal();
+    fixture.detectChanges();
+    expect(agg.shouldShow()).toBe(false);
+
+    host.override.reveal();
+    fixture.detectChanges();
+    expect(agg.shouldShow()).toBe(true);
+
+    host.ancestor().reset();
+    fixture.detectChanges();
+    expect(agg.shouldShow()).toBe(true);
+  });
+
+  it('renders exactly one live region by default and none with [autoAnnounce]="false"', () => {
+    const fixture = TestBed.createComponent(AutoAnnounceHost);
+    fixture.detectChanges();
+    const host = fixture.debugElement.query(By.directive(CngxErrorAggregator))
+      .nativeElement as HTMLElement;
+    expect(host.querySelectorAll('[aria-live]').length).toBe(1);
+
+    fixture.componentInstance.auto.set(false);
+    fixture.detectChanges();
+    expect(host.querySelectorAll('[aria-live]').length).toBe(0);
   });
 });

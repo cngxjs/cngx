@@ -97,18 +97,6 @@ const KNOWN_FAILURES = [
   },
   {
     slice: '2 async-state',
-    file: 'projects/common/interactive/error-scope/README.md',
-    kind: 'unknown-binding',
-    ref: 'form [cngxErrorScope]',
-  },
-  {
-    slice: '2 async-state',
-    file: 'projects/common/interactive/error-scope/error-scope.directive.ts',
-    kind: 'unknown-binding',
-    ref: 'form [cngxErrorScope]',
-  },
-  {
-    slice: '2 async-state',
     file: 'projects/common/interactive/error-state/README.md',
     kind: 'missing-path',
     ref: 'examples/stories/common/interactive/error-state/',

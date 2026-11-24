@@ -44,12 +44,23 @@ export interface ErrorAggregatorContractDeps {
   readonly scope: Signal<CngxErrorScopeContract | null | undefined>;
   /** Locale of the announcement list joiner (`injectLocale()` at the call site). */
   readonly locale: Signal<string>;
+  /**
+   * Announcement when no active source has a label. Reads its copy untracked,
+   * so a language flip never re-speaks a shown announcement.
+   */
+  readonly countAnnouncement: (count: number) => string;
 }
 
 /**
  * Builds the canonical error-aggregator computed graph (six derived
  * signals + `addSource`/`removeSource` mutators) over a caller-owned
  * source-entry signal and a caller-owned scope signal.
+ *
+ * A second source with a registered key replaces the first (last-wins) but
+ * the first stays listed: when the owner is removed with its entry, the
+ * newest listed entry takes the key back. Ownership compares `condition`
+ * identity, because an equal map write is dropped and the stored entry
+ * object can be an older one.
  *
  * Single source of truth for the aggregator surface: `CngxErrorAggregator`
  * (directive form, ARIA host bindings) and `injectErrorAggregator`
@@ -72,6 +83,17 @@ export function createErrorAggregatorContract(
   deps: ErrorAggregatorContractDeps,
 ): CngxErrorAggregatorContract {
   const { sourcesState, scope } = deps;
+
+  // Entries replaced by a later source with the same key, oldest first. The
+  // newest one re-surfaces when the current owner leaves (CNGX1020).
+  const shadowed = new Map<string, CngxErrorAggregatorSourceEntry[]>();
+  const setShadowed = (key: string, listed: CngxErrorAggregatorSourceEntry[]): void => {
+    if (listed.length === 0) {
+      shadowed.delete(key);
+      return;
+    }
+    shadowed.set(key, listed);
+  };
 
   const hasError: Signal<boolean> = computed(() => {
     for (const entry of sourcesState().values()) {
@@ -126,14 +148,17 @@ export function createErrorAggregatorContract(
     return resolved ? resolved.showErrors() : true;
   });
 
-  // Live-region text: the locale is read untracked, so a locale flip never
-  // re-speaks a shown announcement; the next error change speaks it.
+  // Live-region text: locale and copy are read untracked, so a language flip
+  // never re-speaks a shown announcement; the next error change speaks it.
   const announcement: Signal<string> = computed(() => {
     if (!shouldShow()) {
       return '';
     }
     const labels = errorLabels();
-    return untracked(() => errorListFormatFor(deps.locale()).format(labels));
+    if (labels.length > 0) {
+      return untracked(() => errorListFormatFor(deps.locale()).format(labels));
+    }
+    return deps.countAnnouncement(errorCount());
   });
 
   return {
@@ -145,11 +170,12 @@ export function createErrorAggregatorContract(
     announcement,
     addSource(entry) {
       const current = sourcesState();
+      const owner = current.get(entry.key);
       if (
         typeof ngDevMode !== 'undefined' &&
         ngDevMode &&
-        current.has(entry.key) &&
-        current.get(entry.key) !== entry
+        owner !== undefined &&
+        owner.condition !== entry.condition
       ) {
         cngxDevWarn(
           'CNGX1020',
@@ -157,17 +183,43 @@ export function createErrorAggregatorContract(
             'registered; the new entry replaces it (last-wins). Use unique keys per source.',
         );
       }
+      const listed = (shadowed.get(entry.key) ?? []).filter(
+        (e) => e.condition !== entry.condition,
+      );
+      if (owner !== undefined && owner.condition !== entry.condition) {
+        listed.push(owner);
+      }
+      setShadowed(entry.key, listed);
       const next = new Map(current);
       next.set(entry.key, entry);
       sourcesState.set(next);
     },
-    removeSource(key) {
+    removeSource(key, entry) {
       const current = sourcesState();
-      if (!current.has(key)) {
+      const owner = current.get(key);
+      if (entry === undefined) {
+        shadowed.delete(key);
+      }
+      if (entry !== undefined && owner?.condition !== entry.condition) {
+        const listed = shadowed.get(key) ?? [];
+        setShadowed(
+          key,
+          listed.filter((e) => e.condition !== entry.condition),
+        );
+        return;
+      }
+      if (owner === undefined) {
         return;
       }
       const next = new Map(current);
-      next.delete(key);
+      const listed = shadowed.get(key) ?? [];
+      const resurfaced = listed.pop();
+      setShadowed(key, listed);
+      if (resurfaced === undefined) {
+        next.delete(key);
+      } else {
+        next.set(key, resurfaced);
+      }
       sourcesState.set(next);
     },
   };

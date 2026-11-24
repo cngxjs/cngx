@@ -1,4 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  type AfterViewInit,
+  Component,
+  inject,
+  signal,
+  type Signal,
+  type Type,
+  viewChild,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it, vi } from 'vitest';
@@ -49,6 +57,31 @@ class Probe {
 })
 class TestHost {}
 
+@Component({
+  template: `<form cngxErrorScope cngxErrorScopeName="checkout"></form>`,
+  imports: [CngxErrorScope],
+})
+class AfterViewRevealStaticHost implements AfterViewInit {
+  private readonly registry = inject(CngxErrorRegistry);
+  readonly scope = viewChild.required(CngxErrorScope);
+  ngAfterViewInit(): void {
+    this.registry.reveal('checkout');
+  }
+}
+
+@Component({
+  template: `<form cngxErrorScope [cngxErrorScopeName]="name"></form>`,
+  imports: [CngxErrorScope],
+})
+class AfterViewRevealBoundHost implements AfterViewInit {
+  private readonly registry = inject(CngxErrorRegistry);
+  readonly name = 'checkout';
+  readonly scope = viewChild.required(CngxErrorScope);
+  ngAfterViewInit(): void {
+    this.registry.reveal('checkout');
+  }
+}
+
 function setup() {
   const fixture = TestBed.createComponent(TestHost);
   fixture.detectChanges();
@@ -88,7 +121,31 @@ describe('CngxErrorScope', () => {
   });
 });
 
+describe('CngxErrorScope revealEpoch', () => {
+  it('counts every reveal(), a repeated one included, and ignores reset()', () => {
+    const { dir } = setup();
+    expect(dir.revealEpoch()).toBe(0);
+    dir.reveal();
+    dir.reveal();
+    expect(dir.revealEpoch()).toBe(2);
+    dir.reset();
+    expect(dir.revealEpoch()).toBe(2);
+    dir.reveal();
+    expect(dir.revealEpoch()).toBe(3);
+  });
+});
+
 describe('CngxErrorScope registry registration', () => {
+  it.each([
+    ['static', AfterViewRevealStaticHost as Type<{ scope: Signal<CngxErrorScope> }>],
+    ['bound', AfterViewRevealBoundHost as Type<{ scope: Signal<CngxErrorScope> }>],
+  ] as const)('applies a reveal by name from the host ngAfterViewInit (%s name)', (_, host) => {
+    TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
+    const fixture = TestBed.createComponent(host);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.scope().showErrors()).toBe(true);
+  });
+
   it('re-registers under the new name when cngxErrorScopeName changes', async () => {
     TestBed.configureTestingModule({ providers: [provideErrorRegistry()] });
     const fixture = TestBed.createComponent(RenameHost);

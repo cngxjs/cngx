@@ -319,6 +319,7 @@ export const CNGX_LANGUAGE_DE = {
     breadcrumb: 'Pfadnavigation',
     unsavedChanges: 'Es gibt ungespeicherte Änderungen. Trotzdem verlassen?',
     rangeValue: '{start}–{end}',
+    errorCountAnnouncement: { one: '{count} Fehler', other: '{count} Fehler' },
   },
   kpi: {
     deltaLabel: '{value} {sentiment}',

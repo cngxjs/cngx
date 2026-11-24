@@ -3,9 +3,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxErrorState: Boolean flag flips aria-invalid and aria-errormessage',
   subtitle:
-    'Toggle the button to flip the boolean. The input border, the <code>aria-invalid</code> attribute, and the <code>aria-errormessage</code> id all read directly from the directive host bindings. Both ARIA attributes stay in the DOM with explicit values; the message element\'s own <code>aria-hidden</code> gates whether the text is announced.',
+    'Toggle the button to flip the boolean. The input border, the <code>aria-invalid</code> attribute, and the <code>aria-errormessage</code> id all read directly from the directive host bindings. <code>aria-invalid</code> stays in the DOM with an explicit value; the <code>aria-errormessage</code> id reference is emitted only while the flag is true.',
   description:
-    '<code>[cngxErrorState]</code> is a generic host-element marker. Toggles <code>.cngx-error</code> + reactive <code>aria-invalid</code> + <code>aria-errormessage</code> on any DOM element (cngx, Material, CDK, native, third-party). Works without an aggregator; pair with <code>cngxErrorScope</code> when reveal-on-submit semantics are needed. Both ARIA attributes stay in the DOM with explicit values per cngx convention; visibility of the linked message is the consumer\'s <code>aria-hidden</code> to wire.',
+    '<code>[cngxErrorState]</code> is a generic host-element marker. Toggles <code>.cngx-error</code> + reactive <code>aria-invalid</code> + <code>aria-errormessage</code> on any DOM element (cngx, Material, CDK, native, third-party). Works without an aggregator; pair with <code>cngxErrorScope</code> when reveal-on-submit semantics are needed. <code>aria-invalid</code> stays in the DOM with an explicit value per cngx convention; the <code>aria-errormessage</code> id reference is emitted only while the flag is true.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
