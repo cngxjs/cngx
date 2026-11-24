@@ -1,4 +1,4 @@
-import { BehaviorSubject, EMPTY, Observable, Subject, of, throwError } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, Subject, of, range, tap, throwError } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 
 import { settleAction, type SettleActionHandlers } from './settle-action';
@@ -67,6 +67,14 @@ describe('settleAction', () => {
     });
     settleAction(() => source, r);
     expect(r.calls).toEqual(['value:one']);
+  });
+
+  it('stops a synchronous source at its first emission', () => {
+    const r = recorder();
+    let pulled = 0;
+    settleAction(() => range(1, 100_000).pipe(tap(() => pulled++)), r);
+    expect(pulled).toBe(1);
+    expect(r.calls).toEqual(['value:1']);
   });
 
   it('unsubscribes an asynchronous source after its first emission', () => {

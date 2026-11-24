@@ -1,4 +1,4 @@
-import { isObservable, type Observable, type Subscription } from 'rxjs';
+import { isObservable, take, type Observable, type Subscription } from 'rxjs';
 
 /**
  * The three routes of {@link settleAction}. Exactly one of them is called per
@@ -35,11 +35,11 @@ export interface SettleActionHandle {
  * Observable. `run` is called inside the helper, so a synchronous throw goes to
  * `onError` instead of leaving the call.
  *
- * An Observable settles on its first emission and is unsubscribed right
- * after, also when it emits synchronously inside `subscribe()` (`of`,
- * `BehaviorSubject`). A completion without an emission is its own route,
- * `onEmpty`, so each caller decides what an empty action means. A plain value
- * settles synchronously.
+ * An Observable settles on its first emission and the source is stopped
+ * from inside that emission, so a synchronous source (`of`, `range`,
+ * `BehaviorSubject`) emits exactly one value. A completion without an
+ * emission is its own route, `onEmpty`, so each caller decides what an empty
+ * action means. A plain value settles synchronously.
  *
  * The helper knows no signals, no status and no Angular; the async-state
  * factories map the three routes onto their state.
@@ -81,14 +81,13 @@ export function settleAction<T>(
   }
 
   if (isObservable(result)) {
-    const sub = result.subscribe({
+    // take(1) ends the source from inside its first `next`, so a synchronous
+    // source is not drained.
+    const sub = result.pipe(take(1)).subscribe({
       next: (value) => {
-        if (!claim()) {
-          return;
+        if (claim()) {
+          handlers.onValue(value);
         }
-        subscription?.unsubscribe();
-        subscription = undefined;
-        handlers.onValue(value);
       },
       error: (err: unknown) => {
         if (claim()) {
@@ -101,11 +100,7 @@ export function settleAction<T>(
         }
       },
     });
-    // A synchronous source settles before `subscribe()` returns, so the
-    // teardown of its subscription can only run here.
-    if (done) {
-      sub.unsubscribe();
-    } else {
+    if (!done) {
       subscription = sub;
     }
     return handle;
