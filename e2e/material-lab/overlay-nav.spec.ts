@@ -265,6 +265,22 @@ for (const scheme of ['light', 'dark'] as const) {
       expect(await rgba(page, cngxScrim)).toBe(matScrim);
     });
 
+    // Body-large is bottom-sheet type; the anchored presentation is a popover
+    // next to its anchor and keeps the font of its DOM parent.
+    test('popover-sheet: the anchored presentation keeps the inherited font', async ({ page }) => {
+      const anchored = '.probe-cngx-anchored:popover-open';
+      await page.click(pair('popover-sheet', '.probe-cngx-anchored-trigger'));
+      await expect(page.locator(anchored)).toBeVisible();
+      await expect(page.locator(anchored)).toHaveAttribute('data-cngx-presentation', 'anchored');
+      await settle(page);
+      await expectSame(page, '[data-pair=popover-sheet]', anchored, [
+        'font-family',
+        'font-size',
+        'line-height',
+        'letter-spacing',
+      ]);
+    });
+
     test('nav-link: rows match the mat-nav-list item in fill, ink, height, shape and type', async ({
       page,
     }) => {

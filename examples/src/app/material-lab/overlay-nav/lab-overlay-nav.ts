@@ -163,6 +163,14 @@ import { LabPages } from '../lab-pages';
           >
             Open cngx sheet
           </button>
+          <button
+            type="button"
+            class="probe-cngx-anchored-trigger lab-trigger"
+            [cngxPopoverTrigger]="anchoredPop"
+            (click)="anchoredPop.show()"
+          >
+            Open cngx anchored popover
+          </button>
         </div>
         <ng-template #matSheetTpl>
           <div class="lab-sheet-body">
@@ -185,6 +193,14 @@ import { LabPages } from '../lab-pages';
             <p class="lab-sheet-text">Send the report to the team.</p>
             <button type="button" class="lab-trigger" (click)="pop.hide()">Close</button>
           </div>
+        </div>
+        <div
+          cngxPopover
+          #anchoredPop="cngxPopover"
+          class="probe-cngx-anchored"
+          [cngxPopoverSheet]="'anchored'"
+        >
+          <p>Send the report to the team.</p>
         </div>
       </section>
 

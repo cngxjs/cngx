@@ -62,6 +62,12 @@
   @include bridge.on('.cngx-popover-sheet') {
     @include color($theme);
     @include shape($theme);
+  }
+  // body-large is bottom-sheet type: only the modal forms take it, an
+  // anchored popover keeps the page font.
+  @include bridge.on(
+    ".cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])"
+  ) {
     @include typography($theme);
   }
   @include metrics($theme);
