@@ -401,7 +401,7 @@ describe('CngxErrorAggregator', () => {
       expect(span.getAttribute('aria-live')).toBe('assertive');
     });
 
-    it('replaces the region when the politeness changes, with role and aria-live set before insertion', async () => {
+    it('replaces the region when the politeness changes, inserts it empty and writes the errors after render', async () => {
       const fixture = TestBed.createComponent(AutoAnnounceHost);
       fixture.componentInstance.aOn.set(true);
       fixture.detectChanges();
@@ -415,7 +415,7 @@ describe('CngxErrorAggregator', () => {
 
       fixture.componentInstance.politeness.set('assertive');
       fixture.detectChanges();
-      await Promise.resolve();
+      await fixture.whenStable();
       records.push(...observer.takeRecords());
       observer.disconnect();
 
@@ -427,6 +427,12 @@ describe('CngxErrorAggregator', () => {
       expect(after.getAttribute('aria-live')).toBe('assertive');
       expect(after.textContent).toBe('A failed');
       expect(records.filter((r) => r.type === 'attributes')).toEqual([]);
+      // Text that is already there on insertion is not reliably spoken by a
+      // status region; the errors must arrive as a change of the live node.
+      const textWrites = records.filter(
+        (r) => r.type === 'childList' && r.target === after && r.addedNodes.length > 0,
+      );
+      expect(textWrites.length).toBe(1);
     });
 
     it('renders a region without role when the politeness is off', () => {

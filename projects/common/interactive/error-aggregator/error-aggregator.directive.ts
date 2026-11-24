@@ -205,8 +205,9 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
       };
 
       // role and aria-live are set before insertion and never swapped on a
-      // live node; a politeness change replaces the region instead.
-      const createSpan = (politeness: 'polite' | 'assertive' | 'off', text: string): void => {
+      // live node; a politeness change replaces the region instead. The region
+      // goes in empty: text present on insertion is not reliably spoken.
+      const createSpan = (politeness: 'polite' | 'assertive' | 'off'): HTMLSpanElement => {
         const el = renderer.createElement('span') as HTMLSpanElement;
         renderer.setStyle(el, 'position', 'var(--cngx-sr-only-position, absolute)');
         renderer.setStyle(el, 'width', 'var(--cngx-sr-only-size, 1px)');
@@ -220,15 +221,30 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
           renderer.setAttribute(el, 'role', politeness === 'assertive' ? 'alert' : 'status');
         }
         renderer.setAttribute(el, 'aria-live', politeness);
-        el.textContent = text;
         renderer.appendChild(hostEl, el);
         span = el;
         spanPoliteness = politeness;
+        return el;
       };
 
       const injector = inject(Injector);
       let destroyed = false;
       let lastEpoch = 0;
+
+      // Writes the current announcement into an empty region after render, so
+      // the reader sees a change on the live node and speaks it.
+      const writeAfterRender = (region: HTMLSpanElement): void => {
+        afterNextRender(
+          {
+            write: () => {
+              if (!destroyed && span === region) {
+                region.textContent = untracked(this.announcement);
+              }
+            },
+          },
+          { injector },
+        );
+      };
 
       effect(() => {
         const enabled = this.autoAnnounce();
@@ -247,7 +263,10 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
             removeSpan();
           }
           if (!span) {
-            createSpan(politeness, text);
+            const region = createSpan(politeness);
+            if (text !== '') {
+              writeAfterRender(region);
+            }
             return;
           }
           if (span.textContent !== text) {
@@ -257,20 +276,9 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
           if (!revealedAgain || text === '') {
             return;
           }
-          // Same text on a new reveal: clear now, write after render, so the
-          // reader sees a change and speaks the errors again.
-          const region = span;
-          region.textContent = '';
-          afterNextRender(
-            {
-              write: () => {
-                if (!destroyed && span === region) {
-                  region.textContent = untracked(this.announcement);
-                }
-              },
-            },
-            { injector },
-          );
+          // Same text on a new reveal: clear now, write after render.
+          span.textContent = '';
+          writeAfterRender(span);
         });
       });
 
