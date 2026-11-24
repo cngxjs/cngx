@@ -314,6 +314,17 @@ describe('injectAsyncState', () => {
       expect(sources.at(-1)?.observed).toBe(true);
     });
 
+    it('refresh() after destroy never calls fn', () => {
+      const fn = vi.fn(() => new Subject<string>());
+      const fixture = streamHost(fn);
+      const state = fixture.componentInstance.state;
+      fixture.destroy();
+      fn.mockClear();
+      state.refresh();
+      expect(fn).not.toHaveBeenCalled();
+      expect(state.status()).toBe('loading');
+    });
+
     it('a synchronous throw in the effect path settles error after the debounce', () => {
       @Component({ template: '' })
       class ThrowingHost {

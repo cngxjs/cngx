@@ -40,7 +40,8 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
    * `undefined` data. Supersedes any in-flight execution. An Observable action is unsubscribed
    * on supersede, `reset()` and destroy, so an `HttpClient` request is
    * cancelled; a Promise action keeps running and its result is dropped. The
-   * returned promise resolves when the run settles or is cancelled.
+   * returned promise resolves when the run settles or is cancelled. After the
+   * owner is destroyed, `execute()` resolves at once without calling `fn`.
    */
   execute(fn: () => Promise<T> | Observable<T>): Promise<void>;
 
@@ -78,6 +79,7 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
   const state: ManualAsyncState<T> = createManualState<T>();
 
   let active: ActiveRun | undefined;
+  let destroyed = false;
 
   const cancelActive = (): void => {
     const run = active;
@@ -86,7 +88,10 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
     run?.finish();
   };
 
-  destroyRef.onDestroy(cancelActive);
+  destroyRef.onDestroy(() => {
+    destroyed = true;
+    cancelActive();
+  });
 
   // Same opt-in observability injectAsyncState offers: without it, mutations
   // built here are invisible to CngxAsyncRegistry.isAnythingLoading.
@@ -114,6 +119,9 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
     lastUpdated: state.lastUpdated,
 
     execute(fn: () => Promise<T> | Observable<T>): Promise<void> {
+      if (destroyed) {
+        return Promise.resolve();
+      }
       cancelActive();
 
       state.set('pending');

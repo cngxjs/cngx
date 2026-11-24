@@ -207,6 +207,18 @@ describe('createAsyncState cancellation', () => {
     expect(state.status()).toBe('idle');
   });
 
+  it('execute() after destroy never calls the action and leaves the status alone', async () => {
+    const injector = createEnvironmentInjector([], TestBed.inject(EnvironmentInjector));
+    const state = injector.runInContext(() => createAsyncState<string>());
+    await state.execute(() => Promise.resolve('before'));
+    injector.destroy();
+    const action = vi.fn(() => Promise.resolve('post'));
+    await state.execute(action);
+    expect(action).not.toHaveBeenCalled();
+    expect(state.status()).toBe('success');
+    expect(state.data()).toBe('before');
+  });
+
   it('the promise of a superseded execute() resolves although its source never emits', async () => {
     const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
     const silent = new Subject<string>();
