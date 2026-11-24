@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { Subject, of, delay, timer, switchMap, throwError } from 'rxjs';
+import { EMPTY, Subject, of, delay, timer, switchMap, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { createOptimistic, optimistic } from './optimistic';
 
@@ -141,6 +141,30 @@ describe('optimistic', () => {
       expect(name()).toBe('B');
       expect(state.rolledBack()).toBe(true);
       expect(state.state.status()).toBe('error');
+    });
+  });
+
+  describe('settle on empty completion and synchronous throw', () => {
+    it('an action that completes empty confirms the applied value and settles success', () => {
+      const name = signal('A');
+      const [update, state] = createOptimistic(name, () => EMPTY);
+      update('B');
+      expect(state.state.status()).toBe('success');
+      expect(state.state.isBusy()).toBe(false);
+      expect(name()).toBe('B');
+      expect(state.rolledBack()).toBe(false);
+    });
+
+    it('an action that throws synchronously rolls back, settles error and does not throw', () => {
+      const name = signal('A');
+      const [update, state] = createOptimistic<string>(name, () => {
+        throw new Error('sync');
+      });
+      expect(() => update('B')).not.toThrow();
+      expect(state.state.status()).toBe('error');
+      expect(state.rolledBack()).toBe(true);
+      expect(name()).toBe('A');
+      expect((state.error() as Error).message).toBe('sync');
     });
   });
 });

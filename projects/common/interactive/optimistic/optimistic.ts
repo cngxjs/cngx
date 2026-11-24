@@ -1,6 +1,7 @@
 import { computed, signal, untracked, type WritableSignal, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import { type Observable, type Subscription, take } from 'rxjs';
+import type { Observable } from 'rxjs';
+import { settleAction, type SettleActionHandle } from '@cngx/utils/rxjs-interop';
 
 /**
  * State exposed by the optimistic action.
@@ -27,7 +28,10 @@ export interface OptimisticState {
  * On success, applies the server-confirmed value. On failure, rolls back to the
  * value the signal held right before the apply. While an earlier apply is still
  * in flight, the rollback target stays the last value that was confirmed or held
- * before that earlier apply, never an unconfirmed optimistic value.
+ * before that earlier apply, never an unconfirmed optimistic value. An action
+ * that completes without a value confirms the applied value (`'success'`); one
+ * that throws synchronously rolls back like a failed one, and `apply` never
+ * throws.
  *
  * This is a utility function, not a directive - it composes with any signal.
  *
@@ -78,15 +82,31 @@ export function createOptimistic<T>(
   // optimistic value.
   let confirmedValue = untracked(current);
   let inFlight = false;
-  let activeSub: Subscription | undefined;
+  let active: SettleActionHandle | undefined;
+
+  const confirm = (value: T): void => {
+    inFlight = false;
+    active = undefined;
+    current.set(value);
+    statusState.set('success');
+  };
+
+  const rollBack = (err: unknown): void => {
+    inFlight = false;
+    active = undefined;
+    current.set(confirmedValue);
+    rolledBackState.set(true);
+    errorState.set(err);
+    statusState.set('error');
+  };
 
   const apply = (newValue: T): void => {
     if (!inFlight) {
       confirmedValue = untracked(current);
     }
     inFlight = true;
-    // Cancel in-flight subscription - prevents stale closure rollback
-    activeSub?.unsubscribe();
+    // Cancel the superseded run, so its late outcome cannot roll back.
+    active?.cancel();
 
     rolledBackState.set(false);
     errorState.set(undefined);
@@ -94,24 +114,13 @@ export function createOptimistic<T>(
 
     current.set(newValue);
 
-    activeSub = action(newValue)
-      .pipe(take(1))
-      .subscribe({
-        next: (confirmed) => {
-          inFlight = false;
-          current.set(confirmed);
-          statusState.set('success');
-          activeSub = undefined;
-        },
-        error: (err: unknown) => {
-          inFlight = false;
-          current.set(confirmedValue);
-          rolledBackState.set(true);
-          errorState.set(err);
-          statusState.set('error');
-          activeSub = undefined;
-        },
-      });
+    const handle = settleAction(() => action(newValue), {
+      onValue: confirm,
+      // An empty completion confirms the optimistic value as applied.
+      onEmpty: () => confirm(newValue),
+      onError: rollBack,
+    });
+    active = inFlight ? handle : undefined;
   };
 
   return [apply, state];
