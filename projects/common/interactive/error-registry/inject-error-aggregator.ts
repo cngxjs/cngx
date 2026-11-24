@@ -27,6 +27,9 @@ import { errorSourceMapEqual } from './equal-fns';
  *                 collapses to `hasError`.
  * @param labels   Optional human-readable labels by source key, used in
  *                 `errorLabels` and `announcement`.
+ * @param countAnnouncement Optional text when no active source has a label.
+ *                 Falls back to `CNGX_INTERACTIVE_I18N`, like the directive's
+ *                 `errorCountAnnouncement` input.
  *
  * Must be called in an injection context (constructor, factory provider,
  * `runInInjectionContext`).
@@ -46,6 +49,7 @@ export function injectErrorAggregator(
   sources?: Record<string, Signal<boolean>>,
   scope?: CngxErrorScopeContract,
   labels?: Record<string, string>,
+  countAnnouncement?: (count: number) => string,
 ): CngxErrorAggregatorContract {
   const sourcesState = signal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>(
     buildInitialSources(sources, labels),
@@ -58,7 +62,8 @@ export function injectErrorAggregator(
     sourcesState,
     scope: scopeSignal.asReadonly(),
     locale: injectLocale(),
-    countAnnouncement: (count) => untracked(() => i18n().errorCountAnnouncement(count)),
+    countAnnouncement: (count) =>
+      untracked(() => (countAnnouncement ?? i18n().errorCountAnnouncement)(count)),
   });
 
   if (name) {

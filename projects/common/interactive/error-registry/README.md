@@ -73,7 +73,7 @@ const checkoutAggregator = injectErrorAggregator(
 inject(CngxErrorRegistry).reveal('checkout');
 ```
 
-`injectErrorScope(name?)` returns a `CngxErrorScopeContract` with `showErrors`, `reveal()`, `reset()`. `injectErrorAggregator(name?, sources?, scope?, labels?)` returns a `CngxErrorAggregatorContract` sharing the same computed graph as `[cngxErrorAggregator]`. Arguments are positional by design (Pillar 3: Komposition statt Konfiguration).
+`injectErrorScope(name?)` returns a `CngxErrorScopeContract` with `showErrors`, `reveal()`, `reset()`. `injectErrorAggregator(name?, sources?, scope?, labels?, countAnnouncement?)` returns a `CngxErrorAggregatorContract` sharing the same computed graph as `[cngxErrorAggregator]`; `countAnnouncement` is the text when no active source has a label and falls back to `CNGX_INTERACTIVE_I18N`. Arguments are positional by design (Pillar 3: Komposition statt Konfiguration).
 
 ## Registry signals
 

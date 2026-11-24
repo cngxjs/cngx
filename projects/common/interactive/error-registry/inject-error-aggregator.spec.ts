@@ -103,6 +103,41 @@ describe('injectErrorAggregator', () => {
     });
   });
 
+  describe('count announcement', () => {
+    it('speaks the default count when no active source has a label', () => {
+      const a = signal(true);
+
+      @Component({ template: '', standalone: true })
+      class Host {
+        readonly agg = injectErrorAggregator(undefined, { a: a.asReadonly() });
+      }
+      TestBed.configureTestingModule({});
+      const { agg } = TestBed.createComponent(Host).componentInstance;
+
+      expect(agg.announcement()).toBe('1 error');
+    });
+
+    it('lets the countAnnouncement argument win over the default', () => {
+      const a = signal(true);
+      const b = signal(true);
+
+      @Component({ template: '', standalone: true })
+      class Host {
+        readonly agg = injectErrorAggregator(
+          undefined,
+          { a: a.asReadonly(), b: b.asReadonly() },
+          undefined,
+          undefined,
+          (count) => `${count} fields need attention`,
+        );
+      }
+      TestBed.configureTestingModule({});
+      const { agg } = TestBed.createComponent(Host).componentInstance;
+
+      expect(agg.announcement()).toBe('2 fields need attention');
+    });
+  });
+
   describe('scope override gating', () => {
     it('shouldShow gates on the supplied scope contract', () => {
       const a = signal(true);
