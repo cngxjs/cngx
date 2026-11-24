@@ -1,6 +1,6 @@
 import { EnvironmentInjector, createEnvironmentInjector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createAsyncState, type MutableAsyncState } from './create-async-state';
@@ -157,6 +157,54 @@ describe('createAsyncState action shapes and lifetime', () => {
     await run;
     expect(state.status()).toBe('pending');
     expect(state.data()).toBeUndefined();
+  });
+});
+
+describe('createAsyncState cancellation', () => {
+  async function isResolved(promise: Promise<void>): Promise<boolean> {
+    let resolved = false;
+    void promise.then(() => (resolved = true));
+    await new Promise((r) => setTimeout(r, 0));
+    return resolved;
+  }
+
+  it('a second execute() unsubscribes the first Observable action', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    const first = new Subject<string>();
+    const second = new Subject<string>();
+    void state.execute(() => first);
+    void state.execute(() => second);
+    expect(first.observed).toBe(false);
+    expect(second.observed).toBe(true);
+    second.next('two');
+    expect(state.data()).toBe('two');
+  });
+
+  it('destroy unsubscribes the in-flight Observable and resolves its execute() promise', async () => {
+    const injector = createEnvironmentInjector([], TestBed.inject(EnvironmentInjector));
+    const state = injector.runInContext(() => createAsyncState<string>());
+    const source = new Subject<string>();
+    const run = state.execute(() => source);
+    injector.destroy();
+    expect(source.observed).toBe(false);
+    expect(await isResolved(run)).toBe(true);
+  });
+
+  it('reset() mid-flight unsubscribes the Observable action', () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    const source = new Subject<string>();
+    void state.execute(() => source);
+    state.reset();
+    expect(source.observed).toBe(false);
+    expect(state.status()).toBe('idle');
+  });
+
+  it('the promise of a superseded execute() resolves although its source never emits', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    const silent = new Subject<string>();
+    const superseded = state.execute(() => silent);
+    void state.execute(() => new Promise<string>(() => undefined));
+    expect(await isResolved(superseded)).toBe(true);
   });
 });
 

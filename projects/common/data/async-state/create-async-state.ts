@@ -1,6 +1,7 @@
 import { DestroyRef, inject } from '@angular/core';
 import { CNGX_DEV_DESCRIPTORS, type CngxAsyncState } from '@cngx/core/utils';
-import { firstValueFrom, isObservable, type Observable } from 'rxjs';
+import { EmptyError, type Observable } from 'rxjs';
+import { settleAction, type SettleActionHandle } from '@cngx/utils/rxjs-interop';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
 import { injectAsyncRegistry } from '../async-registry/provide-async-registry';
@@ -35,8 +36,10 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
    * Execute an async action.
    *
    * Sets status to `pending`, then `success` or `error` on completion.
-   * Supersedes any in-flight execution - the previous result is discarded
-   * but the underlying network request is not aborted.
+   * Supersedes any in-flight execution. An Observable action is unsubscribed
+   * on supersede, `reset()` and destroy, so an `HttpClient` request is
+   * cancelled; a Promise action keeps running and its result is dropped. The
+   * returned promise resolves when the run settles or is cancelled.
    */
   execute(fn: () => Promise<T> | Observable<T>): Promise<void>;
 
@@ -45,6 +48,12 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
 
   /** Reset to `idle`, clear data, error, and progress. */
   reset(): void;
+}
+
+/** The in-flight run of `execute()`: its settle handle and the resolver of its promise. */
+interface ActiveRun {
+  handle?: SettleActionHandle;
+  readonly finish: () => void;
 }
 
 /**
@@ -67,12 +76,16 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
   const destroyRef = inject(DestroyRef);
   const state: ManualAsyncState<T> = createManualState<T>();
 
-  let abortController: AbortController | undefined;
+  let active: ActiveRun | undefined;
 
-  destroyRef.onDestroy(() => {
-    abortController?.abort();
-    abortController = undefined;
-  });
+  const cancelActive = (): void => {
+    const run = active;
+    active = undefined;
+    run?.handle?.cancel();
+    run?.finish();
+  };
+
+  destroyRef.onDestroy(cancelActive);
 
   // Same opt-in observability injectAsyncState offers: without it, mutations
   // built here are invisible to CngxAsyncRegistry.isAnythingLoading.
@@ -99,33 +112,31 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
     isSettled: state.isSettled,
     lastUpdated: state.lastUpdated,
 
-    async execute(fn: () => Promise<T> | Observable<T>): Promise<void> {
-      abortController?.abort();
-      const controller = new AbortController();
-      abortController = controller;
+    execute(fn: () => Promise<T> | Observable<T>): Promise<void> {
+      cancelActive();
 
       state.set('pending');
       state.setProgress(undefined);
 
-      try {
-        const result$ = fn();
-        const result = isObservable(result$) ? await firstValueFrom(result$) : await result$;
-
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        state.setSuccess(result);
-      } catch (err: unknown) {
-        if (controller.signal.aborted) {
-          return;
-        }
-        state.setError(err);
-      } finally {
-        if (abortController === controller) {
-          abortController = undefined;
-        }
-      }
+      return new Promise<void>((resolve) => {
+        const run: ActiveRun = { finish: resolve };
+        active = run;
+        // A superseded, reset or destroyed run is no longer `active`; its
+        // handle is cancelled, so these writes only reach the current run.
+        const settle = (write: () => void): void => {
+          if (active !== run) {
+            return;
+          }
+          active = undefined;
+          write();
+          resolve();
+        };
+        run.handle = settleAction(fn, {
+          onValue: (value) => settle(() => state.setSuccess(value)),
+          onEmpty: () => settle(() => state.setError(new EmptyError())),
+          onError: (err) => settle(() => state.setError(err)),
+        });
+      });
     },
 
     reportProgress(value: number): void {
@@ -133,8 +144,7 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
     },
 
     reset(): void {
-      abortController?.abort();
-      abortController = undefined;
+      cancelActive();
       state.reset();
     },
   };
