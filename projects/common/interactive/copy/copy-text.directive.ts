@@ -68,6 +68,7 @@ export class CngxCopyText {
 
   private readonly state = signal<'idle' | 'copied' | 'failed'>('idle');
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
+  private destroyed = false;
 
   /** `true` for `resetDelay` ms after a successful copy. Never true together with `failed`. */
   readonly copied: Signal<boolean> = computed(() => this.state() === 'copied');
@@ -93,6 +94,7 @@ export class CngxCopyText {
 
   constructor() {
     this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
       if (this.resetTimer != null) {
         clearTimeout(this.resetTimer);
       }
@@ -139,11 +141,17 @@ export class CngxCopyText {
   }
 
   private handleCopied(value: string): void {
+    if (this.destroyed) {
+      return;
+    }
     this.settle('copied');
     this.didCopy.emit(value);
   }
 
   private handleFailed(reason: unknown): void {
+    if (this.destroyed) {
+      return;
+    }
     this.settle('failed');
     this.copyFailed.emit(reason);
   }

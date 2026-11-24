@@ -145,6 +145,58 @@ describe('CngxCopyText', () => {
     });
   });
 
+  describe('after destroy', () => {
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+    });
+
+    function deferredWrite() {
+      let settle!: { resolve: () => void; reject: (reason: unknown) => void };
+      writeTextSpy.mockImplementationOnce(
+        () => new Promise<void>((resolve, reject) => (settle = { resolve, reject })),
+      );
+      return () => settle;
+    }
+
+    it('drops a write that resolves after destroy', async () => {
+      const settle = deferredWrite();
+      const { fixture, dir } = setup();
+      const didCopy = vi.fn();
+      dir.didCopy.subscribe(didCopy);
+
+      const pending = dir.copy();
+      fixture.destroy();
+      settle().resolve();
+      await pending;
+
+      expect(didCopy).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+
+    it('drops a write that rejects after destroy', async () => {
+      const settle = deferredWrite();
+      const { fixture, dir } = setup();
+      const copyFailed = vi.fn();
+      dir.copyFailed.subscribe(copyFailed);
+
+      const pending = dir.copy();
+      fixture.destroy();
+      settle().reject(new Error('denied'));
+      await pending;
+
+      expect(copyFailed).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('fallback', () => {
     const execDescriptor = Object.getOwnPropertyDescriptor(document, 'execCommand');
     let execResult: boolean;
