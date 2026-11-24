@@ -63,7 +63,9 @@ export interface OptimisticState {
  *
  * A plain factory: it needs no injection context. Pass the owner's `destroyRef`
  * to bind the lifetime: on destroy the in-flight action is unsubscribed, its
- * late outcome is dropped, and later applies do nothing. Without it the caller
+ * late outcome is dropped, and later applies do nothing. The unconfirmed
+ * optimistic value stays in `current` and the status stays `'pending'`, so
+ * a `current` signal that outlives the owner (a store signal) keeps it. Without it the caller
  * owns the lifetime: an action still in flight after the owner is gone keeps
  * its subscription, and a late emission writes the signal.
  *
