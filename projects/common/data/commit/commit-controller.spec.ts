@@ -360,12 +360,21 @@ describe('createCommitController', () => {
     expect(staleCancel).toBe(false);
   });
 
-  test('state exposes the writable manual state, so a cast caller can settle it without begin()', () => {
+  test('state is a read-only view whose signals still follow begin()', () => {
     const ctrl = createCommitController<string>();
-    expect('setSuccess' in ctrl.state).toBe(true);
-    (ctrl.state as unknown as { setSuccess(v: string): void }).setSuccess('forged');
+    for (const writer of ['set', 'setSuccess', 'setError', 'setIdle', 'setProgress', 'reset']) {
+      expect(writer in ctrl.state).toBe(false);
+    }
+    ctrl.begin((h) => (h.onSuccess('done'), noopHandle()), 'done', undefined, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
     expect(ctrl.state.status()).toBe('success');
-    expect(CNGX_DEV_DESCRIPTORS.read(ctrl.state)?.kind).toBe('cngx-dev:factory');
+    expect(ctrl.state.data()).toBe('done');
+    const descriptor = CNGX_DEV_DESCRIPTORS.read(ctrl.state);
+    expect(descriptor).toMatchObject({ kind: 'cngx-dev:factory', factory: 'createCommitController' });
+    const inner = descriptor?.kind === 'cngx-dev:factory' ? descriptor.inputs['state'] : undefined;
+    expect(CNGX_DEV_DESCRIPTORS.read(inner)).toMatchObject({ factory: 'createManualState' });
   });
 });
 

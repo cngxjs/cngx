@@ -1,7 +1,7 @@
 import { computed, signal, type Signal } from '@angular/core';
 
 import { createManualState, type ManualAsyncState } from '../async-state';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_DEV_DESCRIPTORS, type CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Cancel handle returned by a {@link CngxCommitRunner}. The controller
@@ -137,8 +137,34 @@ export interface CngxCommitController<T> {
  * See `reference_api_prefix_convention.md`.
  */
 export function createCommitController<T>(): CngxCommitController<T> {
-  // read-only `state` view; consumers can't flip status directly
   const slot: ManualAsyncState<T | undefined> = createManualState<T | undefined>();
+
+  // Read-only `state` view: the slot's signals without its write methods, so
+  // consumers can't flip status directly.
+  const state: CngxAsyncState<T | undefined> = {
+    status: slot.status,
+    data: slot.data,
+    error: slot.error,
+    progress: slot.progress,
+    isLoading: slot.isLoading,
+    isPending: slot.isPending,
+    isRefreshing: slot.isRefreshing,
+    isBusy: slot.isBusy,
+    isFirstLoad: slot.isFirstLoad,
+    isEmpty: slot.isEmpty,
+    hasData: slot.hasData,
+    isSettled: slot.isSettled,
+    lastUpdated: slot.lastUpdated,
+  };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    // The view hides the slot; listing it here is how an inspector reaches
+    // the slot's own descriptor.
+    CNGX_DEV_DESCRIPTORS.tag(state, {
+      kind: 'cngx-dev:factory',
+      factory: 'createCommitController',
+      inputs: { state: slot },
+    });
+  }
 
   // monotonic supersede id; stale callbacks compare captured id against this
   let commitId = 0;
@@ -149,7 +175,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
   const intendedState = signal<T | undefined>(undefined);
 
   return {
-    state: slot,
+    state,
     isCommitting: computed(
       () => slot.isPending(),
       typeof ngDevMode !== 'undefined' && ngDevMode
