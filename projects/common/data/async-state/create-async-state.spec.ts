@@ -1,4 +1,6 @@
+import { EnvironmentInjector, createEnvironmentInjector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createAsyncState, type MutableAsyncState } from './create-async-state';
@@ -88,6 +90,73 @@ describe('createAsyncState', () => {
 
     await vi.runAllTimersAsync();
     await promise;
+  });
+});
+
+describe('createAsyncState action shapes and lifetime', () => {
+  function inOwnInjector(): { state: MutableAsyncState<string>; destroy: () => void } {
+    const injector = createEnvironmentInjector([], TestBed.inject(EnvironmentInjector));
+    const state = injector.runInContext(() => createAsyncState<string>());
+    return { state, destroy: () => injector.destroy() };
+  }
+
+  it('settles an Observable action with its value and an erroring one with its error', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    await state.execute(() => of('obs'));
+    expect(state.status()).toBe('success');
+    expect(state.data()).toBe('obs');
+
+    await state.execute(() => throwError(() => new Error('te')));
+    expect(state.status()).toBe('error');
+    expect((state.error() as Error).message).toBe('te');
+  });
+
+  it('settles a BehaviorSubject action once and unsubscribes it', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    const bs = new BehaviorSubject('first');
+    await state.execute(() => bs);
+    bs.next('second');
+    expect(state.data()).toBe('first');
+    expect(bs.observed).toBe(false);
+  });
+
+  it('an action that throws synchronously settles error', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    await state.execute(() => {
+      throw new Error('sync');
+    });
+    expect(state.status()).toBe('error');
+    expect((state.error() as Error).message).toBe('sync');
+  });
+
+  it('two rejections in a row keep the error state with the latest error', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    await state.execute(() => Promise.reject(new Error('one')));
+    await state.execute(() => Promise.reject(new Error('two')));
+    expect(state.status()).toBe('error');
+    expect((state.error() as Error).message).toBe('two');
+  });
+
+  it('a Promise that resolves after reset() writes nothing', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    let resolve!: (v: string) => void;
+    const run = state.execute(() => new Promise<string>((r) => (resolve = r)));
+    state.reset();
+    resolve('late');
+    await run;
+    expect(state.status()).toBe('idle');
+    expect(state.data()).toBeUndefined();
+  });
+
+  it('a Promise that resolves after destroy writes nothing', async () => {
+    const { state, destroy } = inOwnInjector();
+    let resolve!: (v: string) => void;
+    const run = state.execute(() => new Promise<string>((r) => (resolve = r)));
+    destroy();
+    resolve('late');
+    await run;
+    expect(state.status()).toBe('pending');
+    expect(state.data()).toBeUndefined();
   });
 });
 

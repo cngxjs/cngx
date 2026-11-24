@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { Subject } from 'rxjs';
+import { EMPTY, Subject, of, throwError, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -257,6 +257,77 @@ describe('injectAsyncState', () => {
       shouldThrow = true;
       expect(() => state.refresh()).toThrow('sync');
       expect(state.status()).toBe('loading');
+    });
+  });
+
+  describe('Observable fn and lifetime', () => {
+    function streamHost<T>(fn: () => Observable<T>) {
+      @Component({ template: '' })
+      class ObsHost {
+        readonly dep = signal(0);
+        readonly state = injectAsyncState<T>(() => {
+          this.dep();
+          return fn();
+        });
+      }
+      TestBed.configureTestingModule({ imports: [ObsHost] });
+      const fixture = TestBed.createComponent(ObsHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(50);
+      return fixture;
+    }
+
+    it('settles an Observable fn with its value and an erroring one with its error', () => {
+      expect(streamHost(() => of('v')).componentInstance.state.data()).toBe('v');
+      TestBed.resetTestingModule();
+      const failed = streamHost(() => throwError(() => new Error('te'))).componentInstance.state;
+      expect(failed.status()).toBe('error');
+      expect((failed.error() as Error).message).toBe('te');
+    });
+
+    it('an EMPTY fn settles success with undefined data', () => {
+      const state = streamHost(() => EMPTY).componentInstance.state;
+      expect(state.status()).toBe('success');
+      expect(state.data()).toBeUndefined();
+    });
+
+    it('destroy mid-flight unsubscribes the source', () => {
+      const source = new Subject<string>();
+      const fixture = streamHost(() => source);
+      expect(source.observed).toBe(true);
+      fixture.destroy();
+      expect(source.observed).toBe(false);
+    });
+
+    it('a dependency change unsubscribes the superseded Observable', () => {
+      const sources: Subject<string>[] = [];
+      const fixture = streamHost(() => {
+        const s = new Subject<string>();
+        sources.push(s);
+        return s;
+      });
+      fixture.componentInstance.dep.set(1);
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(50);
+      expect(sources[0].observed).toBe(false);
+      expect(sources.at(-1)?.observed).toBe(true);
+    });
+
+    it('a synchronous throw in the effect path settles error after the debounce', () => {
+      @Component({ template: '' })
+      class ThrowingHost {
+        readonly state = injectAsyncState<string>(() => {
+          throw new Error('effect-sync');
+        });
+      }
+      TestBed.configureTestingModule({ imports: [ThrowingHost] });
+      const fixture = TestBed.createComponent(ThrowingHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      expect(fixture.componentInstance.state.status()).toBe('idle');
+      vi.advanceTimersByTime(50);
+      expect(fixture.componentInstance.state.status()).toBe('error');
     });
   });
 });
