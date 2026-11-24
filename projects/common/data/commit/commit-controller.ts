@@ -94,6 +94,11 @@ export interface CngxCommitController<T> {
    * previous runner's cancel handle fires synchronously, and the
    * previous outcome callbacks become no-ops if they fire late.
    *
+   * A runner that throws synchronously before any outcome settles the
+   * commit as `'error'` with the thrown value and calls
+   * `handlers.onError`; `begin()` does not throw. A throw after the
+   * runner already settled is rethrown unchanged.
+   *
    * @param runner   variant-specific action runner (closes over the
    *                 action and the intended value)
    * @param intended the value the user clicked
@@ -133,8 +138,7 @@ export interface CngxCommitController<T> {
  */
 export function createCommitController<T>(): CngxCommitController<T> {
   // read-only `state` view; consumers can't flip status directly
-  const slot: ManualAsyncState<T | undefined> =
-    createManualState<T | undefined>();
+  const slot: ManualAsyncState<T | undefined> = createManualState<T | undefined>();
 
   // monotonic supersede id; stale callbacks compare captured id against this
   let commitId = 0;
@@ -160,6 +164,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
       // and fire its callbacks after all
       const id = ++commitId;
       active?.cancel();
+      active = null;
       intendedState.set(intended);
       slot.set('pending');
 
@@ -168,36 +173,51 @@ export function createCommitController<T>(): CngxCommitController<T> {
       // `active`, so a later begin()/cancel() never calls cancel() on a
       // completed runner (CngxCommitHandle does not require idempotence).
       let settled = false;
-      const handle = runner({
-        onSuccess: (committed) => {
-          if (id !== commitId) {
-            return;
-          }
-          settled = true;
-          slot.setSuccess(committed);
-          active = null;
-          handlers.onSuccess(committed);
-        },
-        onError: (err) => {
-          if (id !== commitId) {
-            return;
-          }
+      let handle: CngxCommitHandle;
+      try {
+        handle = runner({
+          onSuccess: (committed) => {
+            if (id !== commitId) {
+              return;
+            }
+            settled = true;
+            slot.setSuccess(committed);
+            active = null;
+            handlers.onSuccess(committed);
+          },
+          onError: (err) => {
+            if (id !== commitId) {
+              return;
+            }
+            settled = true;
+            slot.setError(err);
+            active = null;
+            handlers.onError(err, previous);
+          },
+          onRefused: () => {
+            if (id !== commitId) {
+              return;
+            }
+            settled = true;
+            slot.setIdle();
+            intendedState.set(undefined);
+            active = null;
+            handlers.onRefused?.(previous);
+          },
+        });
+      } catch (err: unknown) {
+        // A throw after the runner already settled is the runner's own bug:
+        // rethrow it unchanged. A throw before any outcome is the outcome.
+        if (settled) {
+          throw err;
+        }
+        if (id === commitId) {
           settled = true;
           slot.setError(err);
-          active = null;
           handlers.onError(err, previous);
-        },
-        onRefused: () => {
-          if (id !== commitId) {
-            return;
-          }
-          settled = true;
-          slot.setIdle();
-          intendedState.set(undefined);
-          active = null;
-          handlers.onRefused?.(previous);
-        },
-      });
+        }
+        return;
+      }
       active = settled ? null : handle;
     },
 

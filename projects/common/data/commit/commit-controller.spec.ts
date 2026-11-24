@@ -261,6 +261,77 @@ describe('createCommitController', () => {
     expect(ctrl.state.status()).not.toBe('error');
   });
 
+  test('a runner that throws synchronously after a pending one settles error and cancels the first handle once', () => {
+    const ctrl = createCommitController<string>();
+    const cancels: string[] = [];
+    ctrl.begin(() => ({ cancel: () => cancels.push('r1') }), 'one', undefined, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    const errors: [unknown, string | undefined][] = [];
+    const boom = new Error('sync');
+    expect(() =>
+      ctrl.begin(
+        () => {
+          throw boom;
+        },
+        'two',
+        'prev',
+        { onSuccess: () => {}, onError: (err, previous) => errors.push([err, previous]) },
+      ),
+    ).not.toThrow();
+
+    expect(ctrl.state.status()).toBe('error');
+    expect(ctrl.state.error()).toBe(boom);
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(errors).toEqual([[boom, 'prev']]);
+    expect(cancels).toEqual(['r1']);
+
+    ctrl.begin((h) => (h.onSuccess('three'), noopHandle()), 'three', undefined, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    ctrl.cancel();
+    expect(ctrl.state.status()).toBe('success');
+    expect(cancels).toEqual(['r1']);
+  });
+
+  test('a throwing first runner followed by cancel() stays settled', () => {
+    const ctrl = createCommitController<string>();
+    ctrl.begin(
+      () => {
+        throw new Error('sync');
+      },
+      'one',
+      undefined,
+      { onSuccess: () => {}, onError: () => {} },
+    );
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(ctrl.state.status()).toBe('error');
+    ctrl.cancel();
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(ctrl.state.status()).toBe('error');
+    ctrl.cancel({ settle: true });
+    expect(ctrl.state.status()).toBe('idle');
+  });
+
+  test('a throw after the runner already settled is rethrown unchanged', () => {
+    const ctrl = createCommitController<string>();
+    const late = new Error('after settle');
+    expect(() =>
+      ctrl.begin(
+        (h) => {
+          h.onSuccess('done');
+          throw late;
+        },
+        'done',
+        undefined,
+        { onSuccess: () => {}, onError: () => {} },
+      ),
+    ).toThrow(late);
+    expect(ctrl.state.status()).toBe('success');
+  });
+
   test('a runner that succeeds synchronously never has its handle cancelled later', () => {
     const ctrl = createCommitController<number>();
     let staleCancel = false;

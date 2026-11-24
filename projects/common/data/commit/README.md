@@ -70,6 +70,7 @@ Two contracts to honour. The runner closes over the async source and returns wha
 | Runner calls `onSuccess` (current commit) | `success`, data is the committed value |
 | Runner calls `onError` (current commit) | `error` |
 | Runner calls `onRefused` (current commit) | `idle`; error and intended value cleared, `data`, `lastUpdated` and `isFirstLoad()` kept |
+| Runner throws synchronously before any outcome | `error` with the thrown value, `handlers.onError` fires, `begin(...)` does not throw |
 | `begin(...)` called again before settle | previous runner's `cancel()` fires; status stays `pending`, `commitId` advances |
 | Runner of a superseded commit calls back late | ignored, no state change, no handler fires |
 | `cancel()` | runner's cancel fires, `commitId` advances, status untouched |
