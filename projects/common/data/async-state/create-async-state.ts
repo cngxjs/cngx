@@ -1,6 +1,6 @@
 import { DestroyRef, inject } from '@angular/core';
 import { CNGX_DEV_DESCRIPTORS, type CngxAsyncState } from '@cngx/core/utils';
-import { EmptyError, type Observable } from 'rxjs';
+import type { Observable } from 'rxjs';
 import { settleAction, type SettleActionHandle } from '@cngx/utils/rxjs-interop';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
@@ -35,8 +35,9 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
   /**
    * Execute an async action.
    *
-   * Sets status to `pending`, then `success` or `error` on completion.
-   * Supersedes any in-flight execution. An Observable action is unsubscribed
+   * Sets status to `pending`, then `success` or `error` on completion. An
+   * Observable that completes without a value settles `success` with
+   * `undefined` data. Supersedes any in-flight execution. An Observable action is unsubscribed
    * on supersede, `reset()` and destroy, so an `HttpClient` request is
    * cancelled; a Promise action keeps running and its result is dropped. The
    * returned promise resolves when the run settles or is cancelled.
@@ -133,7 +134,7 @@ export function createAsyncState<T>(options?: CreateAsyncStateOptions): MutableA
         };
         run.handle = settleAction(fn, {
           onValue: (value) => settle(() => state.setSuccess(value)),
-          onEmpty: () => settle(() => state.setError(new EmptyError())),
+          onEmpty: () => settle(() => state.setSuccess(undefined as T)),
           onError: (err) => settle(() => state.setError(err)),
         });
       });

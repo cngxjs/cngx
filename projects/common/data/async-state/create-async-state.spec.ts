@@ -1,6 +1,6 @@
 import { EnvironmentInjector, createEnvironmentInjector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
+import { BehaviorSubject, EMPTY, Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { createAsyncState, type MutableAsyncState } from './create-async-state';
@@ -109,6 +109,14 @@ describe('createAsyncState action shapes and lifetime', () => {
     await state.execute(() => throwError(() => new Error('te')));
     expect(state.status()).toBe('error');
     expect((state.error() as Error).message).toBe('te');
+  });
+
+  it('an Observable action that completes empty settles success with undefined data', async () => {
+    const state = TestBed.runInInjectionContext(() => createAsyncState<string>());
+    await state.execute(() => EMPTY);
+    expect(state.status()).toBe('success');
+    expect(state.data()).toBeUndefined();
+    expect(state.error()).toBeUndefined();
   });
 
   it('settles a BehaviorSubject action once and unsubscribes it', async () => {
