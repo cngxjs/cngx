@@ -71,6 +71,7 @@ export class CngxCopyText {
   private readonly state = signal<'idle' | 'copied' | 'failed'>('idle');
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
   private destroyed = false;
+  private attempt = 0;
 
   /** `true` for `resetDelay` ms after a successful copy. Never true together with `failed`. */
   readonly copied: Signal<boolean> = computed(() => this.state() === 'copied');
@@ -122,6 +123,8 @@ export class CngxCopyText {
       this.state.set('idle');
     }
 
+    // Overlapping writes settle in any order; only the latest attempt reports.
+    const attempt = ++this.attempt;
     let done: boolean;
     try {
       if (this.supported) {
@@ -131,10 +134,15 @@ export class CngxCopyText {
         done = this.fallbackCopy(value);
       }
     } catch (err: unknown) {
-      this.handleFailed(err);
+      if (attempt === this.attempt) {
+        this.handleFailed(err);
+      }
       return;
     }
 
+    if (attempt !== this.attempt) {
+      return;
+    }
     if (done) {
       this.handleCopied(value);
     } else {

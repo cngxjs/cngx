@@ -145,6 +145,32 @@ describe('CngxCopyText', () => {
     });
   });
 
+  describe('overlapping attempts', () => {
+    it('lets only the latest attempt settle the state and emit', async () => {
+      let rejectFirst!: (reason: unknown) => void;
+      writeTextSpy.mockImplementationOnce(
+        () => new Promise<void>((_, reject) => (rejectFirst = reject)),
+      );
+      const { dir } = setup();
+      const copyFailed = vi.fn();
+      const didCopy = vi.fn();
+      dir.copyFailed.subscribe(copyFailed);
+      dir.didCopy.subscribe(didCopy);
+
+      const first = dir.copy();
+      await dir.copy();
+      expect(dir.copied()).toBe(true);
+
+      rejectFirst(new Error('stale'));
+      await first;
+
+      expect(dir.copied()).toBe(true);
+      expect(dir.failed()).toBe(false);
+      expect(copyFailed).not.toHaveBeenCalled();
+      expect(didCopy).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('after destroy', () => {
     let warnSpy: ReturnType<typeof vi.spyOn>;
 
