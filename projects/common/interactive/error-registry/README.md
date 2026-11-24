@@ -50,7 +50,7 @@ registry.revealAll();         // every registered scope
 
 | Feature | Effect |
 |-|-|
-| `withGlobalRevealOnSubmit()` | Capture-phase document listener calls `revealAll()` on any `submit` event. Coarse-grained, fires for every form in the document. |
+| `withGlobalRevealOnSubmit()` | Capture-phase document listener calls `revealAll()` on any `submit` event. Coarse-grained, fires for every form in the document, and every aggregator that shows errors speaks them again. |
 | `withRevealOnNavigate()` | Subscribes to `Router.NavigationStart` and calls `revealAll()`. Requires `provideRouter()`; no-op when no `Router` is provided. Fires before `CanActivate`/`CanDeactivate` guards run. |
 
 For finer-grained behaviour (reveal one scope on one submit) skip these features and call `registry.reveal(name)` from the consumer's own handler. Both features can coexist with explicit per-form reveals.

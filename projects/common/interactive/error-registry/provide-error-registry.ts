@@ -118,6 +118,10 @@ export function provideErrorRegistry(
  * Appropriate when the application treats every submit as a "show all
  * errors now" trigger.
  *
+ * Every reveal also speaks again: each `CngxErrorAggregator` under a
+ * revealed scope that shows errors re-announces them, so one submit can
+ * queue one announcement per form on the page.
+ *
  * For finer-grained reveals (per-form, per-flow), skip this feature and
  * call `registry.reveal(name)` from the consumer's submit handler
  * instead - the scope-name registration path stays available without
