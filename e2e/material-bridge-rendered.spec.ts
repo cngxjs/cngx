@@ -1307,7 +1307,7 @@ test.describe('material-bridge rendered values: copy-block', () => {
   test('the idle button paints the on-surface tint and the outline-variant edge', async ({
     page,
   }) => {
-    // inherits:false tokens: the broadcast assignment puts them on the button.
+    // The idle tokens inherit from the theme host to the button.
     expect(await computedValue(page, '#copy-idle', 'background-color')).toBe(
       await resolvedColor(page, `color-mix(in srgb, ${matSys('on-surface')} 6%, transparent)`),
     );
