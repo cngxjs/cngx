@@ -177,7 +177,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 91,
+      "line": 99,
       "member": "resolvedButtonLabel",
       "enclosing": "computed",
       "tiers": [
@@ -188,7 +188,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 93,
+      "line": 101,
       "member": "resolvedCopiedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -199,7 +199,23 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 102,
+      "line": 104,
+      "member": "resolvedFailedLabel",
+      "enclosing": "computed",
+      "tiers": [
+        { "kind": "input", "field": "failedLabel" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["copyFailed"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxCopyBlock",
+      "file": "projects/common/interactive/copy/copy-block.ts",
+      "line": 126,
       "member": "liveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -208,6 +224,22 @@
           "kind": "bundle",
           "field": "i18n",
           "path": ["copiedAnnouncement"],
+          "token": "CNGX_INTERACTIVE_I18N"
+        }
+      ]
+    },
+    {
+      "class": "CngxCopyBlock",
+      "file": "projects/common/interactive/copy/copy-block.ts",
+      "line": 129,
+      "member": "liveAnnouncement",
+      "enclosing": "untracked",
+      "tiers": [
+        { "kind": "input", "field": "failedAnnouncement" },
+        {
+          "kind": "bundle",
+          "field": "i18n",
+          "path": ["copyFailedAnnouncement"],
           "token": "CNGX_INTERACTIVE_I18N"
         }
       ]

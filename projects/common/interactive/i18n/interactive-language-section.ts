@@ -20,6 +20,10 @@ export interface CngxInteractiveLanguageSection {
   readonly copied: string;
   /** Announced after a copy. */
   readonly copiedAnnouncement: string;
+  /** Label of the copy-block button after a failed copy. */
+  readonly copyFailed: string;
+  /** Announced after a failed copy. */
+  readonly copyFailedAnnouncement: string;
   /** Accessible name of the range slider's start thumb. */
   readonly rangeMinimum: string;
   /** Accessible name of the range slider's end thumb. */
@@ -50,6 +54,8 @@ export const CNGX_INTERACTIVE_LANGUAGE_EN: CngxInteractiveLanguageSection = {
   copy: 'Copy',
   copied: 'Copied!',
   copiedAnnouncement: 'Copied to clipboard',
+  copyFailed: 'Copy failed',
+  copyFailedAnnouncement: 'Copy failed',
   rangeMinimum: 'Minimum',
   rangeMaximum: 'Maximum',
   breadcrumb: 'Breadcrumb',
