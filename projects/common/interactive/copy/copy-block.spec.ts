@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { provideInteractiveI18n, withInteractiveI18nLabels } from '../i18n/interactive-i18n';
 import { CngxCopyBlock } from './copy-block';
@@ -17,7 +17,21 @@ class Host {
 
 const lang = signal<'en' | 'de'>('en');
 
+// `isolate: false` shares one environment per project and the setup file
+// only unstubs `vi.stubGlobal`, so a defineProperty on navigator survives.
+const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+
+function restoreClipboard(): void {
+  if (clipboardDescriptor) {
+    Object.defineProperty(navigator, 'clipboard', clipboardDescriptor);
+  } else {
+    delete (navigator as unknown as Record<string, unknown>)['clipboard'];
+  }
+}
+
 describe('CngxCopyBlock', () => {
+  afterEach(restoreClipboard);
+
   beforeEach(() => {
     vi.useFakeTimers();
     lang.set('en');
