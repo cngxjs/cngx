@@ -19,7 +19,9 @@
 // `.prettierrc` `ng new` writes: the Angular CLI runs the app's Prettier over
 // every file a schematic edits, so both forms are what an app can hold. The
 // project name, its class-cased form and the root selector are placeholders;
-// detection substitutes them before comparing.
+// detection substitutes them before comparing. An option a variant does not
+// set takes the default of its schematic's `schema.json`, as `ng new` does
+// without the flag.
 
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -161,11 +163,35 @@ function fingerprint(body) {
 // @angular-devkit/core that package resolves (an alias brings its own).
 // `utils` stands in for `strings` of @angular-devkit/core: `classify` turns
 // the name into the title placeholder, so detection substitutes the
-// classified name.
-function render(text, options, root) {
+// classified name. The schema defaults go in first, so a variable a template
+// reads that no variant sets is defined, and every variant option wins.
+function render(text, options, root, path) {
   const { template } = createRequire(resolve(root, 'package.json'))('@angular-devkit/core');
   const utils = { classify: (name) => (name === NAME_PLACEHOLDER ? TITLE_PLACEHOLDER : name) };
-  return template(text, {})({ suffix: '', name: NAME_PLACEHOLDER, selector: SELECTOR_PLACEHOLDER, utils, ...options });
+  return template(text, {})({
+    ...schemaDefaults(root, path),
+    suffix: '',
+    name: NAME_PLACEHOLDER,
+    selector: SELECTOR_PLACEHOLDER,
+    utils,
+    ...options,
+  });
+}
+
+const defaultsCache = new Map();
+
+/**
+ * Every option of the schematic a template belongs to (the first segment of
+ * its path, `application` or `component`), each at the `default` of its
+ * `schema.json`; an option without one is `undefined`.
+ */
+export function schemaDefaults(root, template) {
+  const schema = resolve(root, template.split('/')[0], 'schema.json');
+  if (!defaultsCache.has(schema)) {
+    const { properties = {} } = JSON.parse(readFileSync(schema, 'utf8'));
+    defaultsCache.set(schema, Object.fromEntries(Object.entries(properties).map(([key, { default: value }]) => [key, value])));
+  }
+  return defaultsCache.get(schema);
 }
 
 async function format(body, path, prettierrc) {
@@ -185,7 +211,7 @@ export async function collectEntries(root = schematicsRoot()) {
   for (const { file, dir = 'src/app', app, template, variants } of TEMPLATES) {
     const text = readFileSync(resolve(root, template), 'utf8');
     for (const { variant, options } of variants) {
-      const raw = normalize(render(text, options, root));
+      const raw = normalize(render(text, options, root, template));
       const formatted = normalize(await format(raw, posix.join(dir, file), prettierrc));
       const bodies = formatted === raw ? [['raw', raw]] : [['raw', raw], ['prettier', formatted]];
       for (const [form, body] of bodies) {
