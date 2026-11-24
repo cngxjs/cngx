@@ -338,15 +338,16 @@ The NgModule spec is edited only where `@angular/build` 21, or 22.3.0 or
 later on major 22, is installed, or, before the install, where
 `package.json` declares a range that admits one major alone and whose
 lowest version is such a version (`^21.2.0`, `~21.2.3`, `^22.3.0`,
-`~22.3.1`, `22.3.0`). From 22.0 to 22.2, and on 22.3 prereleases, its
+`~22.3.1`, `22.3.0`). On 22.2, and on 22.3 prereleases, its
 unit-test builder compiles only the specs and what they import, so `App`
 compiles without `AppModule` and every element from it, `<router-outlet>`
 and the outlets alike, is unknown
 ([angular/angular-cli#34231](https://github.com/angular/angular-cli/issues/34231),
-fixed in 22.3.0). Anywhere else, an installed manifest it cannot read, a
+fixed in 22.3.0). 22.0 and 22.1 do not have that bug, but cngx has proven
+the outlets on major 22 only from 22.3.0, so they stay closed too. Anywhere else, an installed manifest it cannot read, a
 range that spans majors and major 23 included, the NgModule spec gets no
 outlet, a custom one too, and the note reads
-`<file> belongs to an NgModule app without @angular/build 21.x or 22.x at 22.3.0 or later installed; on 22.0 to 22.2 and on 22.3 prereleases its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231, fixed in 22.3.0), so cngx places no outlet`,
+`<file> belongs to an NgModule app without @angular/build 21.x or 22.x at 22.3.0 or later installed; on 22.2 and on 22.3 prereleases its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231, fixed in 22.3.0), and cngx proves the outlets on 22.x only from 22.3.0, so cngx places no outlet`,
 followed by the snippet, what the TestBed needs and the import of the root
 NgModule to add to the spec (`import './app-module';`), which lets the test
 build compile `App` with it.

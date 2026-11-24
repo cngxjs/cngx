@@ -572,7 +572,7 @@ describe('planAppShell next to the ng new NgModule spec', () => {
     expect(text).toContain("import { CngxBannerOutlet, CngxToastOutlet } from '@cngx/ui/feedback'");
     expect(text).toContain("and add `import './app-module';` to src/app/app.spec.ts");
     expect(readFileSync(join(__dirname, '../../../../../core-concepts/install.md'), 'utf8')).toContain(specUnscopedReason('<file>'));
-    expect(specUnscopedReason('<file>')).toContain('without @angular/build 21.x or 22.x at 22.3.0 or later installed;');
+    expect(specUnscopedReason('<file>')).toContain('without @angular/build 21.x or 22.x at 22.3.0 or later installed; on 22.2 and on 22.3 prereleases');
   });
 
   it('holds the NgModule spec back where cngx cannot read the @angular/build version', async () => {

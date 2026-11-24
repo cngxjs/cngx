@@ -699,11 +699,12 @@ function isBlocked(root: Bootstrapped | AppShellBlocked): root is AppShellBlocke
 }
 
 // The @angular/build versions whose unit-test builder compiles the root
-// NgModule with the specs: major 21, and 22.3.0 or later on major 22. From
-// 22.0 to 22.2 it compiles only what the specs import, so the root component
-// of the stock spec compiles without its NgModule and every outlet is an
-// unknown element (angular/angular-cli#34231, fixed in 22.3.0). A 22.3
-// prerelease sorts below 22.3.0 and stays closed; major 23 is unproven.
+// NgModule with the specs and that cngx has proven: major 21, and 22.3.0 or
+// later on major 22. On 22.2 it compiles only what the specs import, so the
+// root component of the stock spec compiles without its NgModule and every
+// outlet is an unknown element (angular/angular-cli#34231, fixed in 22.3.0).
+// A 22.3 prerelease sorts below 22.3.0 and stays closed; 22.0 and 22.1 lack
+// the bug but are unproven for the outlets and stay closed, as does major 23.
 const FIRST_SCOPED_22 = '22.3.0';
 
 /** The `@angular/build` versions `testsCompileModule` admits, as the refusal note names them. */

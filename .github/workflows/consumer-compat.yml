@@ -174,9 +174,9 @@ jobs:
           # The same path on an ng new --standalone=false app with routing:
           # the outlets go into the root NgModule and the stock spec gets
           # the outlet classes and the providers, so ng test still passes.
-          # 21 and 22 (22.3 or later): on 22.0 to 22.2 the unit-test builder
-          # compiles App without AppModule, and ng add leaves the outlets out
-          # there; --angular 22 resolves to the newest 22, and 22.3.0 pins the
+          # 21 and 22 (22.3 or later): on 22.2 the unit-test builder compiles
+          # App without AppModule, and ng add leaves the outlets out below
+          # 22.3.0 on major 22; --angular 22 resolves to the newest 22, and 22.3.0 pins the
           # lowest release the ng add gate opens on.
           - { angular: '21', variant: ngmodule, args: '--preset full' }
           - { angular: '22', variant: ngmodule, args: '--preset full' }

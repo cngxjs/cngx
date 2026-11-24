@@ -244,8 +244,8 @@ rewrites every literal of it in the bundles.
   spec, which declares `App` in its own TestBed, also gets both outlet
   classes in the TestBed `imports`, only where `@angular/build` 21.x, or
   22.x at 22.3.0 or later, is installed or a single-major range starting
-  there is declared (22.0 to 22.2 compile `App` without `AppModule`, major
-  23 is unproven). Next to any other
+  there is declared (22.2 compiles `App` without `AppModule`, 22.0, 22.1
+  and major 23 are unproven). Next to any other
   spec, and next to any NgModule spec without that build, no outlet
   is placed and one note names the outlets and what the spec needs, so
   `ng add` never leaves a red `ng test`. An outlet this project's record placed that
