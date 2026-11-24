@@ -168,6 +168,15 @@ describe('createRetry', () => {
       expect(state.lastError()).toEqual(new Error('fail'));
     });
 
+    it('resolves CNGX_ASYNC_CANCELLED and settles idle when the action reports cancellation', async () => {
+      const action = vi.fn().mockResolvedValue(CNGX_ASYNC_CANCELLED);
+      const [retryable, state] = createRetry(action);
+      await expect(retryable()).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(state.state.status()).toBe('idle');
+      expect(state.attempt()).toBe(0);
+    });
+
     it('a direct call without a signal keeps its backoff timer after the host is destroyed', async () => {
       vi.useFakeTimers();
       const action = vi.fn().mockRejectedValue(new Error('fail'));

@@ -73,8 +73,9 @@ export interface RetryState {
  * already owns the state. A dropped Observable attempt is unsubscribed, so
  * an `HttpClient` request is cancelled. A dropped Promise attempt keeps
  * running unless the action passes the signal on (`fetch`); its late
- * outcome is ignored. A run that ends without an outcome (superseded, `reset()`, or
- * aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct
+ * outcome is ignored. A run that ends without an outcome (superseded, `reset()`,
+ * aborted, or an attempt that itself resolves `CNGX_ASYNC_CANCELLED`) resolves
+ * `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct
  * call without a signal (`saveWithRetry()`) has no destroy binding, but
  * `reset()` and a newer call still end it.
  *
@@ -175,8 +176,10 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
               defaultValue: undefined,
             })
           : Promise.resolve(result$);
-        await untilSettledOrAborted(work, run);
-        if (cancelled()) {
+        const outcome = await untilSettledOrAborted(work, run);
+        // An inner action that reports its own cancellation ends the run
+        // the same way, never as a success.
+        if (cancelled() || outcome === CNGX_ASYNC_CANCELLED) {
           return cancel();
         }
         retryingState.set(false);
