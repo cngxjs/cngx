@@ -8,7 +8,7 @@ import type {
   CngxArrayCommitHandlerFactory,
 } from '../../shared/array-commit-handler';
 import type { CngxSelectCommitAction } from '../../shared/commit-action.types';
-import { createCommitController } from '../../shared/commit-controller.token';
+import { createSelectCommitController } from '../../shared/commit-controller.token';
 import {
   cngxSelectDefaultCompare,
   type CngxSelectCompareFn,
@@ -31,7 +31,7 @@ function setup(
   };
   const factory = vi.fn(() => clearHandler) as unknown as CngxArrayCommitHandlerFactory;
   const core = {
-    commitController: createCommitController<Item[]>(),
+    commitController: createSelectCommitController<Item[]>(),
     announce: vi.fn(),
     createCommitErrorAnnouncer: () => vi.fn(),
     bindCommitRetry: (retry: () => void) => signal({ retry }),

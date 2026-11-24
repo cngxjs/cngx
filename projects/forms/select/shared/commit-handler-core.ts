@@ -1,6 +1,6 @@
 import type { WritableSignal } from '@angular/core';
 
-import type { CngxCommitController } from './commit-controller.token';
+import type { CngxSelectCommitController } from './commit-controller.token';
 import type { CngxSelectOptionDef } from './option.model';
 
 /**
@@ -22,7 +22,7 @@ import type { CngxSelectOptionDef } from './option.model';
  */
 export interface CngxCommitHandlerCore<T, TCommit> {
   /** Commit state machine of the composite, from `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`. */
-  readonly commitController: CngxCommitController<TCommit>;
+  readonly commitController: CngxSelectCommitController<TCommit>;
   /**
    * Option whose commit is pending; drives the row spinner and names the
    * option in the commit-error slot. Set it before a begin, `null` it on

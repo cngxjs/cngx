@@ -3,9 +3,9 @@ import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createArrayCommitHandler } from './array-commit-handler';
-import { createCommitController } from './commit-controller.token';
+import { createSelectCommitController } from './commit-controller.token';
 import { commitLedgerFor } from './internal/commit-ledger';
-import type { CngxCommitController } from './commit-controller.token';
+import type { CngxSelectCommitController } from './commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn, CngxSelectCore } from './internal/select-core';
@@ -17,7 +17,7 @@ function opt(value: T, label = value): CngxSelectOptionDef<T> {
 }
 
 interface CoreMock {
-  readonly commitController: CngxCommitController<T[]>;
+  readonly commitController: CngxSelectCommitController<T[]>;
   readonly togglingOption: WritableSignal<CngxSelectOptionDef<T> | null>;
   readonly announceCalls: Array<{
     option: CngxSelectOptionDef<T> | null;
@@ -37,7 +37,7 @@ function makeCore(): CoreMock {
   const togglingOption = signal<CngxSelectOptionDef<T> | null>(null);
   const announceCalls: CoreMock['announceCalls'] = [];
   return {
-    commitController: createCommitController<T[]>(),
+    commitController: createSelectCommitController<T[]>(),
     togglingOption,
     announceCalls,
     announce(option, action, count, assertive): void {

@@ -1,4 +1,4 @@
-import type { CngxCommitController } from '../commit-controller.token';
+import type { CngxSelectCommitController } from '../commit-controller.token';
 import { commitLedgerFor } from './commit-ledger';
 
 /**
@@ -36,7 +36,7 @@ export interface CommitRetryRouter {
 }
 
 function createCommitRetryRouter<TCommit>(
-  controller: CngxCommitController<TCommit>,
+  controller: CngxSelectCommitController<TCommit>,
 ): CommitRetryRouter {
   let owner: CngxCommitRetryOwner | null = null;
 
@@ -77,7 +77,7 @@ const ROUTERS = new WeakMap<object, CommitRetryRouter>();
  * @internal
  */
 export function commitRetryFor<TCommit>(
-  controller: CngxCommitController<TCommit>,
+  controller: CngxSelectCommitController<TCommit>,
 ): CommitRetryRouter {
   const existing = ROUTERS.get(controller);
   if (existing) {

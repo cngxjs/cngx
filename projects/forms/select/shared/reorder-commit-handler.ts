@@ -4,7 +4,7 @@ import type { AsyncStatus } from '@cngx/core/utils';
 import { arrayEqual } from '@cngx/utils';
 
 import type { CngxSelectCommitAction, CngxSelectCommitMode } from './commit-action.types';
-import type { CngxCommitController } from './commit-controller.token';
+import type { CngxSelectCommitController } from './commit-controller.token';
 import type { CngxSelectOptionDef } from './option.model';
 import { commitLedgerFor } from './internal/commit-ledger';
 
@@ -31,7 +31,7 @@ export interface ReorderCommitHandlerOptions<T> {
    * same-membership writes) but run on the same controller, so a reorder
    * supersedes a pending toggle and vice versa.
    */
-  readonly commitController: CngxCommitController<T[]>;
+  readonly commitController: CngxSelectCommitController<T[]>;
   /**
    * Emit `selectionChange` + `reordered` payload. Consumer controls the
    * shape. With a bound commit it fires on success only (both modes), so a

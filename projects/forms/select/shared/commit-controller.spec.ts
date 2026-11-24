@@ -10,6 +10,9 @@ import {
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   createCommitController,
+  createSelectCommitController,
+  type CngxCommitController,
+  type CngxSelectCommitController,
 } from './commit-controller.token';
 import type { CngxSelectCommitAction } from './commit-action.types';
 
@@ -24,9 +27,9 @@ function record(): Recorder {
   return { successes: [], errors: [] };
 }
 
-describe('createCommitController (select-side adapter)', () => {
+describe('createSelectCommitController (select-side adapter)', () => {
   it('routes a synchronous action to onSuccess and settles state to success', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     const rec = record();
     const action: CngxSelectCommitAction<T> = (next) => next;
     ctrl.begin(action, 'a', undefined, {
@@ -39,7 +42,7 @@ describe('createCommitController (select-side adapter)', () => {
   });
 
   it('routes a synchronous throw to onError with the previous value as rollback', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     const rec = record();
     const boom = new Error('boom');
     const action: CngxSelectCommitAction<T> = () => {
@@ -54,7 +57,7 @@ describe('createCommitController (select-side adapter)', () => {
   });
 
   it('tracks the intended value the user clicked', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     ctrl.begin((next) => next, 'clicked', undefined, {
       onSuccess: () => undefined,
       onError: () => undefined,
@@ -63,7 +66,7 @@ describe('createCommitController (select-side adapter)', () => {
   });
 
   it('flips isCommitting while an Observable action is in flight and clears on emit', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     const rec = record();
     const source = new Subject<T>();
     ctrl.begin(() => source.asObservable(), 'a', undefined, {
@@ -82,7 +85,7 @@ describe('createCommitController (select-side adapter)', () => {
   });
 
   it('supersedes an in-flight commit: a stale emission after a fresh begin is ignored', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     const rec = record();
     const stale = new Subject<T>();
     ctrl.begin(() => stale.asObservable(), 'first', undefined, {
@@ -99,7 +102,7 @@ describe('createCommitController (select-side adapter)', () => {
   });
 
   it('cancel() marks the active commit superseded', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     const rec = record();
     const source = new Subject<T>();
     ctrl.begin(() => source.asObservable(), 'a', undefined, {
@@ -112,7 +115,7 @@ describe('createCommitController (select-side adapter)', () => {
   });
 
   it('cancel({ settle: true }) forwards the settle option and returns the state to idle', () => {
-    const ctrl = createCommitController<T>();
+    const ctrl = createSelectCommitController<T>();
     ctrl.begin(() => new Subject<T>().asObservable(), 'a', undefined, {
       onSuccess: () => undefined,
       onError: () => undefined,
@@ -121,6 +124,19 @@ describe('createCommitController (select-side adapter)', () => {
     ctrl.cancel({ settle: true });
     expect(ctrl.state.status()).toBe('idle');
     expect(ctrl.intendedValue()).toBeUndefined();
+  });
+});
+
+describe('deprecated select commit controller aliases', () => {
+  it('createCommitController is the same function as createSelectCommitController', () => {
+    expect(createCommitController).toBe(createSelectCommitController);
+  });
+
+  it('CngxCommitController and CngxSelectCommitController are assignable both ways', () => {
+    const prefixed: CngxSelectCommitController<T> = createSelectCommitController<T>();
+    const legacy: CngxCommitController<T> = prefixed;
+    const back: CngxSelectCommitController<T> = legacy;
+    expect(back).toBe(prefixed);
   });
 });
 

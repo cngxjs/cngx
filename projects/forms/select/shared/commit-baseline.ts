@@ -1,4 +1,4 @@
-import type { CngxCommitController } from './commit-controller.token';
+import type { CngxSelectCommitController } from './commit-controller.token';
 import { commitLedgerFor } from './internal/commit-ledger';
 
 /**
@@ -59,7 +59,7 @@ export interface CngxCommitBaseline<TCommit> {
  * @relatedTo CngxCommitBaseline, CngxCommitHandlerCore
  */
 export function createCommitBaseline<TCommit>(
-  controller: CngxCommitController<TCommit>,
+  controller: CngxSelectCommitController<TCommit>,
 ): CngxCommitBaseline<TCommit> {
   const ledger = commitLedgerFor<TCommit>(controller);
   return {

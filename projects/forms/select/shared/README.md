@@ -76,7 +76,7 @@ Public type aliases for `[commitAction]` consumers:
 ### `commit-action.runtime.ts`
 
 Internal runtime that subscribes/awaits the value returned from a `CngxSelectCommitAction<T>` and dispatches `onSuccess` / `onError` callbacks.
-Callable as `runCommitAction<T>(action, intended, handlers)`; returns a `CngxCommitHandle` with a `cancel()` method. Used internally by `createCommitController`. Not exported.
+Callable as `runCommitAction<T>(action, intended, handlers)`; returns the `CngxCommitHandle` of `@cngx/common/data`, a `cancel()` method. Used internally by `createSelectCommitController`. Not exported.
 
 ### `commit-controller.token.ts`
 
@@ -84,8 +84,10 @@ Low-level state machine for the async-commit lifecycle. Owns the `ManualAsyncSta
 
 | Symbol | Purpose |
 |-|-|
-| `createCommitController<T>()`           | Default factory                           |
-| `CngxCommitController<T>`               | Return shape                              |
+| `createSelectCommitController<T>()`     | Default factory                           |
+| `CngxSelectCommitController<T>`         | Return shape                              |
+| `createCommitController<T>()`           | Deprecated alias of `createSelectCommitController` |
+| `CngxCommitController<T>`               | Deprecated alias of `CngxSelectCommitController`   |
 | `CngxCommitBeginHandlers<T>`            | `{ onSuccess, onError }` outcome handlers |
 | `CngxSelectCommitControllerFactory`     | DI factory type                           |
 | `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | DI token                                  |

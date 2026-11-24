@@ -4,7 +4,7 @@ import type { AsyncStatus } from '@cngx/core/utils';
 import { CngxRuntimeError } from '@cngx/utils';
 import { isObservable, map, type Observable } from 'rxjs';
 
-import type { CngxCommitController } from './commit-controller.token';
+import type { CngxSelectCommitController } from './commit-controller.token';
 import type { CngxSelectCreateAction } from './create-action.types';
 import type { LocalItemsBuffer } from './local-items-buffer';
 import type { CngxSelectOptionDef } from './option.model';
@@ -44,7 +44,7 @@ export interface CreateCommitHandlerOptions<T, Prev = unknown> {
    * `begin(...)` so supersede, state-machine, and intended-value
    * tracking match every other select-family commit path.
    */
-  readonly commitController: CngxCommitController<T>;
+  readonly commitController: CngxSelectCommitController<T>;
   /**
    * Persistent local-items buffer. On success the handler patches a
    * `CngxSelectOptionDef<T>` with the server-returned value and the

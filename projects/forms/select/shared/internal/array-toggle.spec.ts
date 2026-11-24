@@ -2,7 +2,10 @@ import { signal, type WritableSignal } from '@angular/core';
 import { Subject } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createCommitController, type CngxCommitController } from '../commit-controller.token';
+import {
+  createSelectCommitController,
+  type CngxSelectCommitController,
+} from '../commit-controller.token';
 import { createArrayToggleDispatch, type ArrayToggleChange } from './array-toggle';
 import { commitLedgerFor } from './commit-ledger';
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
@@ -16,7 +19,7 @@ function opt(value: T): CngxSelectOptionDef<T> {
 }
 
 interface CoreMock {
-  readonly commitController: CngxCommitController<T[]>;
+  readonly commitController: CngxSelectCommitController<T[]>;
   readonly togglingOption: WritableSignal<CngxSelectOptionDef<T> | null>;
   readonly announceCalls: Array<{
     option: CngxSelectOptionDef<T> | null;
@@ -52,7 +55,7 @@ interface Harness {
 function makeHarness(initial: T[] = []): Harness {
   const values = signal<T[]>(initial);
   const coreMock: CoreMock = {
-    commitController: createCommitController<T[]>(),
+    commitController: createSelectCommitController<T[]>(),
     togglingOption: signal<CngxSelectOptionDef<T> | null>(null),
     announceCalls: [],
     selected: [...initial],

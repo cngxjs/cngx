@@ -24,7 +24,7 @@ import { CngxSelectAnnouncer } from '../announcer';
 import { isEmptyScalar, sameArrayContents } from './compare';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
-  type CngxCommitController,
+  type CngxSelectCommitController,
 } from '../commit-controller.token';
 import type { CngxSelectCommitAction, CngxSelectCommitErrorDisplay } from '../commit-action.types';
 import {
@@ -447,7 +447,7 @@ export function createSelectCore<T, TCommit>(
   const config = resolveSelectConfig();
 
   // Built early so the field ARIA below can read commit state.
-  const commitController: CngxCommitController<TCommit> = inject(
+  const commitController: CngxSelectCommitController<TCommit> = inject(
     CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   )<TCommit>();
   // A commit that settles after the host is gone must neither write, emit

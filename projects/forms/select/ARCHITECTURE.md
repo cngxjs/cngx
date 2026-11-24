@@ -187,7 +187,7 @@ Every shared factory has a corresponding DI token - providers can swap the defau
 
 | Token | Default factory | Concern |
 |-|-|-|
-| `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | `createCommitController`       | Async-commit state machine + supersede semantics            |
+| `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | `createSelectCommitController` | Async-commit state machine + supersede semantics            |
 | `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`     | `createArrayCommitHandler`     | Multi/Combobox per-toggle + clear-all flow                  |
 | `CNGX_SCALAR_COMMIT_HANDLER_FACTORY`    | `createScalarCommitHandler`    | ActionSelect commit flow                                    |
 | `CNGX_REORDER_COMMIT_HANDLER_FACTORY`   | `createReorderCommitHandler`   | Reorderable position-move commits                           |
