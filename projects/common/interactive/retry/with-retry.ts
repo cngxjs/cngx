@@ -1,6 +1,6 @@
 import { computed, signal, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import { firstValueFrom, fromEvent, isObservable, takeUntil } from 'rxjs';
+import { settleAction } from '@cngx/utils/rxjs-interop';
 
 import { CNGX_ASYNC_CANCELLED, type AsyncAction } from '../async-click/async-click.directive';
 
@@ -181,18 +181,13 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
       attemptState.set(attempt);
 
       try {
-        const result$ = action(run);
-        // An abort unsubscribes an Observable attempt: that is its
-        // cancellation, so an HttpClient request ends with the run.
-        const work = isObservable(result$)
-          ? firstValueFrom(result$.pipe(takeUntil(fromEvent(run, 'abort'))), {
-              defaultValue: undefined,
-            })
-          : Promise.resolve(result$);
-        const outcome = await untilSettledOrAborted(work, run);
+        const settled = await settleAttempt(() => action(run), run);
+        if (settled.failed) {
+          throw settled.error;
+        }
         // An inner action that reports its own cancellation ends the run
         // the same way, never as a success.
-        if (cancelled() || outcome === CNGX_ASYNC_CANCELLED) {
+        if (cancelled() || settled.value === CNGX_ASYNC_CANCELLED) {
           return cancel();
         }
         retryingState.set(false);
@@ -247,21 +242,52 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
   return [retryableAction, retryState];
 }
 
+/** Outcome of one attempt: its value, or the error that failed it. */
+type AttemptOutcome =
+  | { readonly failed: false; readonly value: unknown }
+  | { readonly failed: true; readonly error: unknown };
+
 /**
- * Settles with `work`, or resolves at once when `abort` fires. The race
- * handles a late rejection of the dropped `work`, so it is never unhandled.
+ * Settles one attempt through `settleAction`: the first value, `undefined` for
+ * an empty completion, the error of a failure or a synchronous throw. When
+ * `abort` fires first it resolves `undefined` at once and cancels the attempt,
+ * which unsubscribes an Observable (an `HttpClient` request is cancelled) and
+ * drops a Promise outcome without leaving its rejection unhandled.
  */
-function untilSettledOrAborted(work: Promise<unknown>, abort: AbortSignal): Promise<unknown> {
-  if (abort.aborted) {
-    work.catch(() => undefined);
-    return Promise.resolve();
-  }
-  let onAbort = (): void => undefined;
-  const aborted = new Promise<void>((resolve) => {
-    onAbort = resolve;
+function settleAttempt(attempt: () => unknown, abort: AbortSignal): Promise<AttemptOutcome> {
+  return new Promise<AttemptOutcome>((resolve) => {
+    let settled = false;
+    const onAbort = (): void => {
+      handle.cancel();
+      resolve({ failed: false, value: undefined });
+    };
+    const finish = (): void => {
+      settled = true;
+      abort.removeEventListener('abort', onAbort);
+    };
+    const handle = settleAction(attempt, {
+      onValue: (value) => {
+        finish();
+        resolve({ failed: false, value });
+      },
+      onEmpty: () => {
+        finish();
+        resolve({ failed: false, value: undefined });
+      },
+      onError: (error) => {
+        finish();
+        resolve({ failed: true, error });
+      },
+    });
+    if (settled) {
+      return;
+    }
+    if (abort.aborted) {
+      onAbort();
+      return;
+    }
     abort.addEventListener('abort', onAbort, { once: true });
   });
-  return Promise.race([work, aborted]).finally(() => abort.removeEventListener('abort', onAbort));
 }
 
 /** Resolves after `ms`, or at once (timer cleared) when `abort` fires. */

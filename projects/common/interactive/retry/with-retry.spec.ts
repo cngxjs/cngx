@@ -147,6 +147,21 @@ describe('createRetry', () => {
     expect(state.state.error()).toBeUndefined();
   });
 
+  it('an attempt that throws synchronously counts as a failed attempt', async () => {
+    let calls = 0;
+    const [retryable, state] = createRetry(
+      () => {
+        calls++;
+        throw new Error('st');
+      },
+      { maxAttempts: 2, delay: 0 },
+    );
+    await expect(retryable()).rejects.toThrow('st');
+    expect(calls).toBe(2);
+    expect(state.state.status()).toBe('error');
+    expect(state.attempt()).toBe(2);
+  });
+
   it('maxAttempts NaN falls back to three attempts', async () => {
     const action = vi.fn().mockRejectedValue(new Error('x'));
     const [retryable, state] = createRetry(action, { maxAttempts: Number.NaN, delay: 0 });
