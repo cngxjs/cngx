@@ -11,6 +11,8 @@ import {
 
 import { CngxRuntimeError } from '@cngx/utils';
 
+import { progressPercent } from './progress-percent';
+
 /**
  * Minimal write interface for async state operators.
  *
@@ -116,7 +118,8 @@ const RESPONSE = 4;
  * RxJS operator that extracts upload/download progress from an
  * `HttpEvent` stream and reports it to a `ManualAsyncState`.
  *
- * Filters progress events, calculates percentage, calls `setProgress()`.
+ * Filters progress events, calculates an integer percentage clamped to
+ * 0-100, calls `setProgress()`.
  * Non-progress events pass through unchanged.
  *
  * Use with `{ observe: 'events', reportProgress: true }` on HttpClient.
@@ -140,12 +143,12 @@ export function tapAsyncProgress<E>(
 ): MonoTypeOperatorFunction<E> {
   return tap((event) => {
     const e = event as unknown as HttpProgressLike;
-    if (
-      (e.type === UPLOAD_PROGRESS || e.type === DOWNLOAD_PROGRESS) &&
-      e.total != null &&
-      e.total > 0
-    ) {
-      state.setProgress(Math.round((100 * e.loaded) / e.total));
+    if (e.type !== UPLOAD_PROGRESS && e.type !== DOWNLOAD_PROGRESS) {
+      return;
+    }
+    const percent = progressPercent(e.loaded, e.total);
+    if (percent !== undefined) {
+      state.setProgress(percent);
     }
   });
 }

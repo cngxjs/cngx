@@ -145,10 +145,10 @@ describe('tapAsyncProgress', () => {
     expect(s.calls).toEqual([]);
   });
 
-  it('reports loaded above total as a percent above 100', () => {
+  it('clamps loaded above total to 100', () => {
     const s = sink();
     of({ type: 1, loaded: 150, total: 100 }).pipe(tapAsyncProgress(s)).subscribe();
-    expect(s.calls).toEqual([150]);
+    expect(s.calls).toEqual([100]);
   });
 
   it('passes every event through unchanged', () => {
