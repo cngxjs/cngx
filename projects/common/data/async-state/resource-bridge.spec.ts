@@ -257,6 +257,15 @@ describe('fromResource read by a template that skips the latch-backed signals', 
   })
   class LoadingGatedHost extends ResourceHost {}
 
+  @Component({
+    template: `@if (shown()) {
+      <span class="data">{{ state.status() }} {{ state.data()?.join(',') }}</span>
+    }`,
+  })
+  class HiddenHost extends ResourceHost {
+    readonly shown = signal(true);
+  }
+
   async function render(fixture: ComponentFixture<unknown>): Promise<void> {
     for (let i = 0; i < 5; i++) {
       fixture.detectChanges();
@@ -305,6 +314,28 @@ describe('fromResource read by a template that skips the latch-backed signals', 
     expect(host.state.status()).toBe('error');
     expect(viewOf(host.state)).toBe('content+error');
     expect(text(fixture)).toBe('v1');
+  });
+
+  it('drops the old data when a params change fails while no view reads the state', async () => {
+    const fixture = TestBed.createComponent(HiddenHost);
+    const host = fixture.componentInstance;
+    await render(fixture);
+
+    host.fail.on = true;
+    host.ref.reload();
+    fixture.detectChanges();
+    expect(text(fixture)).toBe('refreshing v1');
+
+    host.shown.set(false);
+    fixture.detectChanges();
+    host.params.set(2);
+    await render(fixture);
+    host.shown.set(true);
+    await render(fixture);
+
+    expect(host.state.status()).toBe('error');
+    expect(host.state.data()).toBeUndefined();
+    expect(viewOf(host.state)).toBe('error');
   });
 });
 

@@ -1,4 +1,4 @@
-import { computed, linkedSignal, type Resource, type Signal } from '@angular/core';
+import { computed, effect, linkedSignal, type Resource, type Signal } from '@angular/core';
 import { type AsyncStatus, buildAsyncStateView, type CngxAsyncState } from '@cngx/core/utils';
 
 import {
@@ -17,7 +17,12 @@ import {
  *
  * "First load" is per request identity: a failed reload of the same request
  * keeps the last good value, a params change or `idle` starts over. The latch
- * is a `linkedSignal` over the pure `nextResourceLatch` reducer - no effect.
+ * is a `linkedSignal` over the pure `nextResourceLatch` reducer.
+ *
+ * A read-only effect keeps the latch observed while no view reads the state
+ * (a hidden template), so a params change that fails there is not mistaken for
+ * a failed reload of the old request. Probed in jsdom only; not probed: real
+ * browser schedulers and a loader that synchronously returns a resolved value.
  *
  * @internal
  */
@@ -45,6 +50,11 @@ export function buildResourceBridge<T>(
     source,
     computation: (current, previous) => nextResourceLatch(current, previous, new Date()),
     equal: resourceLatchEqual,
+  });
+
+  // Read-only keep-alive: reads the latch, never writes a signal.
+  effect(() => {
+    latch();
   });
 
   // Every signal the bridge hands out reads the latch first, so a consumer of
