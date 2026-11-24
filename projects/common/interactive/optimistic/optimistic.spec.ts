@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { of, delay, timer, switchMap, throwError } from 'rxjs';
+import { Subject, of, delay, timer, switchMap, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { createOptimistic, optimistic } from './optimistic';
 
@@ -65,5 +65,70 @@ describe('optimistic', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(name()).toBe('Charlie');
     vi.useRealTimers();
+  });
+
+  describe('status sequence and supersede', () => {
+    it('walks idle, pending, success on a confirmed apply', () => {
+      const name = signal('A');
+      const confirm = new Subject<string>();
+      const [update, state] = createOptimistic(name, () => confirm);
+      expect(state.state.status()).toBe('idle');
+      update('B');
+      expect(state.state.status()).toBe('pending');
+      confirm.next('B');
+      expect(state.state.status()).toBe('success');
+    });
+
+    it('walks idle, pending, error on a failed apply', () => {
+      const name = signal('A');
+      const confirm = new Subject<string>();
+      const [update, state] = createOptimistic(name, () => confirm);
+      expect(state.state.status()).toBe('idle');
+      update('B');
+      expect(state.state.status()).toBe('pending');
+      confirm.error(new Error('fail'));
+      expect(state.state.status()).toBe('error');
+    });
+
+    it('a second apply unsubscribes the first action', () => {
+      const name = signal('A');
+      const runs: Subject<string>[] = [];
+      const [update] = createOptimistic(name, () => {
+        const s = new Subject<string>();
+        runs.push(s);
+        return s;
+      });
+      update('B');
+      update('C');
+      expect(runs[0].observed).toBe(false);
+      expect(runs[1].observed).toBe(true);
+    });
+
+    it('a failure of the superseding apply rolls back to the last confirmed value', () => {
+      const name = signal('A');
+      const runs: Subject<string>[] = [];
+      const [update, state] = createOptimistic(name, () => {
+        const s = new Subject<string>();
+        runs.push(s);
+        return s;
+      });
+      update('B');
+      update('C');
+      runs[1].error(new Error('fail'));
+      expect(name()).toBe('A');
+      expect(state.rolledBack()).toBe(true);
+    });
+
+    it('two failures in a row both roll back and keep the latest error', () => {
+      const name = signal('A');
+      let n = 0;
+      const [update, state] = createOptimistic(name, () => throwError(() => new Error(`e${++n}`)));
+      update('B');
+      expect(name()).toBe('A');
+      update('C');
+      expect(name()).toBe('A');
+      expect(state.state.status()).toBe('error');
+      expect((state.error() as Error).message).toBe('e2');
+    });
   });
 });
