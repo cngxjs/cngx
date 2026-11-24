@@ -56,6 +56,20 @@
 // where no token exists) are SET per element by the component (inside its
 // `@scope`, on its element type or on its presentation class).
 
+// The MDC elevation shadows Material's overlays paint as literals, not as
+// --mat-sys-level* tokens: elevation 2 on `.mat-mdc-menu-panel` and
+// `.mat-mdc-select-panel` (`elevation.get-box-shadow(2)` in `_m3-menu.scss`,
+// `_m3-select.scss`), elevation 16 on `.mat-bottom-sheet-container`. Material
+// forwards no shadow-value function, so the values live here, once.
+$mdc-elevation-2:
+  0 3px 1px -2px rgb(0 0 0 / 0.2),
+  0 2px 2px 0 rgb(0 0 0 / 0.14),
+  0 1px 5px 0 rgb(0 0 0 / 0.12);
+$mdc-elevation-16:
+  0 8px 10px -5px rgb(0 0 0 / 0.2),
+  0 16px 24px 2px rgb(0 0 0 / 0.14),
+  0 6px 30px 5px rgb(0 0 0 / 0.12);
+
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element
 /// selectors bare (`cngx-chip`) and anything else quoted (`'.cngx-alert'`,

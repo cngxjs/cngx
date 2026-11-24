@@ -27,10 +27,8 @@
     --cngx-context-menu-surface: var(--mat-sys-surface-container);
     --cngx-context-menu-color: var(--mat-sys-on-surface);
     --cngx-context-menu-border: none;
-    // mat-menu paints the MDC elevation-2 shadow (`elevation.get-box-shadow(2)`
-    // in `_m3-menu.scss`), not --mat-sys-level2; literal like the paginator panel.
-    --cngx-context-menu-shadow:
-      0 3px 1px -2px rgb(0 0 0 / 0.2), 0 2px 2px 0 rgb(0 0 0 / 0.14), 0 1px 5px 0 rgb(0 0 0 / 0.12);
+    // The MDC elevation 2 mat-menu paints, not --mat-sys-level2.
+    --cngx-context-menu-shadow: #{bridge.$mdc-elevation-2};
     --cngx-context-menu-separator-color: var(--mat-sys-outline-variant);
     --cngx-context-menu-item-caret-color: var(--mat-sys-on-surface-variant);
     --cngx-context-menu-item-check-color: var(--mat-sys-primary);
