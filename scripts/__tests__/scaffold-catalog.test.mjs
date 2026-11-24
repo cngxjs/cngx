@@ -12,6 +12,7 @@ import {
   NAME_PLACEHOLDER,
   OUT,
   renderCatalogModule,
+  schemaDefaults,
   schematicsRoots,
   schematicsVersion,
   SELECTOR_PLACEHOLDER,
@@ -24,6 +25,12 @@ const require = createRequire(import.meta.url);
 
 // Every CLI major the catalog holds, each with its `ng new` fixtures.
 const MAJORS = [21, 22];
+
+// One template path per schematic the catalog renders from.
+const TEMPLATES_BY_SCHEMATIC = {
+  application: 'application/files/common-files/src/app/app__suffix__.html.template',
+  component: 'component/files/__name@dasherize@if-flat__/__name@dasherize__.__type@dasherize__.__style__.template',
+};
 
 function fixture(name, path) {
   return readFileSync(resolve(FIXTURES, name, path), 'utf8');
@@ -43,6 +50,28 @@ function named(body) {
 describe('scaffold catalog', () => {
   it('keeps the generated module in sync with the installed @schematics/angular templates', async () => {
     expect(readFileSync(resolve(ROOT, OUT), 'utf8')).toBe(await renderCatalogModule());
+  });
+
+  it.each(['application', 'component'])('seeds every %s schema option of each template package at its default', (schematic) => {
+    const template = TEMPLATES_BY_SCHEMATIC[schematic];
+    for (const root of schematicsRoots()) {
+      const { properties } = JSON.parse(readFileSync(resolve(root, schematic, 'schema.json'), 'utf8'));
+      const defaults = schemaDefaults(root, template);
+
+      expect({ root, keys: Object.keys(defaults) }).toEqual({ root, keys: Object.keys(properties) });
+      for (const [key, { default: value }] of Object.entries(properties)) {
+        expect({ root, key, value: defaults[key] }).toEqual({ root, key, value });
+      }
+    }
+  });
+
+  it('lets a variant option win over the schema default it seeds', async () => {
+    const entries = await collectAllEntries();
+    const noRouting = entries.filter((entry) => entry.file === 'app.html' && entry.variant === 'no-routing');
+
+    expect(schemaDefaults(schematicsRoots()[0], TEMPLATES_BY_SCHEMATIC.application).routing).toBe(true);
+    expect(noRouting.length).toBeGreaterThan(0);
+    expect(noRouting.some((entry) => entry.body.includes('<router-outlet'))).toBe(false);
   });
 
   it('renders the toolchain package and every alias, one per CLI major', () => {
