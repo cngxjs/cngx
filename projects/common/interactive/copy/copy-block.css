@@ -171,7 +171,8 @@
 
   /**
    * Border color of the failed-state button. Unset by default:
-   * `--cngx-color-danger`.
+   * `--cngx-color-danger`. Registered without an initial value and
+   * inheriting, so an ancestor SET reaches the button.
    * @group State / Failed
    * @see [[--cngx-color-danger]]
    */
@@ -182,7 +183,8 @@
 
   /**
    * Text color of the failed-state button. Unset by default:
-   * `--cngx-color-danger-text`.
+   * `--cngx-color-danger-text`. Registered without an initial value and
+   * inheriting, so an ancestor SET reaches the button.
    * @group State / Failed
    * @see [[--cngx-color-danger-text]]
    */

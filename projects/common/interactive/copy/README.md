@@ -73,32 +73,36 @@ CngxCopyText is an atom; CngxCopyBlock is a molecule that composes it:
 
 ### CngxCopyText
 
-No built-in styling. Apply CSS classes to your button based on the `copied()` signal:
+No built-in styling. Bind your own classes from the `copied()` and `failed()` signals, for example `[class.copy--copied]="cp.copied()"` and `[class.copy--failed]="cp.failed()"`:
 
 ```scss
-button {
-  border: 1px solid currentColor;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+button.copy--copied {
+  background-color: color-mix(in oklab, var(--cngx-color-success) 12%, transparent);
+  border-color: var(--cngx-color-success);
+  color: var(--cngx-color-success-text);
 }
 
-button.cngx-copy--copied {
-  background-color: #e8f5e9;
-  border-color: #2e7d32;
-  color: #2e7d32;
+button.copy--failed {
+  background-color: color-mix(in oklab, var(--cngx-color-danger) 12%, transparent);
+  border-color: var(--cngx-color-danger);
+  color: var(--cngx-color-danger-text);
 }
 ```
 
 ### CngxCopyBlock
 
-Uses CSS Custom Properties for theming. Override in your component:
+Uses CSS Custom Properties for theming. The padding and the copied and failed tokens inherit, so any ancestor can set them; the gap is read on the host, and the idle `--cngx-copy-block-btn-bg` / `-color` / `-border` do not inherit and are set on the button:
 
 ```scss
 cngx-copy-block {
   --cngx-copy-block-gap: 12px;
-  --cngx-copy-block-btn-bg: var(--color-surface);
+  --cngx-copy-block-btn-padding: 6px 12px;
   --cngx-copy-block-btn-copied-bg: var(--color-success-light);
+  --cngx-copy-block-btn-failed-bg: var(--color-danger-light);
+}
+
+.cngx-copy-block__button {
+  --cngx-copy-block-btn-bg: var(--color-surface);
 }
 ```
 
