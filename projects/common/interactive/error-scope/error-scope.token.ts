@@ -17,9 +17,12 @@ import { InjectionToken, type Signal } from '@angular/core';
 export interface CngxErrorScopeContract {
   /** Reactive flag - `true` when errors should be visible to the user. */
   readonly showErrors: Signal<boolean>;
-  /** Reveals errors in this scope (idempotent). */
+  /**
+   * Reveals errors in this scope. `showErrors` stays `true` on a repeated
+   * call, but each call bumps `revealEpoch`, so aggregators speak again.
+   */
   reveal(): void;
-  /** Resets the scope to hidden (idempotent). */
+  /** Resets the scope to hidden. A repeated call changes nothing. */
   reset(): void;
   /** Optional name for programmatic registry lookup via {@link CngxErrorRegistry}. */
   readonly scopeName?: Signal<string | undefined>;
