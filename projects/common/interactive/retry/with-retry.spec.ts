@@ -4,14 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { CNGX_ASYNC_CANCELLED } from '../async-click/async-click.directive';
 import { createRetry, withRetry } from './with-retry';
 
-describe('withRetry', () => {
+describe('createRetry', () => {
   it('exports createRetry with the old name as a deprecated alias', () => {
     expect(withRetry).toBe(createRetry);
   });
 
   it('succeeds on first attempt without retrying', async () => {
     const action = vi.fn().mockResolvedValue('ok');
-    const [retryable, state] = withRetry(action, { maxAttempts: 3 });
+    const [retryable, state] = createRetry(action, { maxAttempts: 3 });
 
     await retryable();
     expect(action).toHaveBeenCalledTimes(1);
@@ -28,7 +28,7 @@ describe('withRetry', () => {
       return Promise.resolve();
     };
 
-    const [retryable, state] = withRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
+    const [retryable, state] = createRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
 
     const promise = retryable();
     // First attempt fails, wait for delay
@@ -46,17 +46,19 @@ describe('withRetry', () => {
       throw new Error('always fails');
     });
 
-    const [retryable, state] = withRetry(action, { maxAttempts: 2, delay: 10, backoff: 'linear' });
+    const [retryable, state] = createRetry(action, { maxAttempts: 2, delay: 10, backoff: 'linear' });
 
     await expect(retryable()).rejects.toThrow('always fails');
     expect(action).toHaveBeenCalledTimes(2);
     expect(state.exhausted()).toBe(true);
     expect(state.attempt()).toBe(2);
+    expect(state.state.status()).toBe('error');
+    expect(state.state.error()).toEqual(new Error('always fails'));
   });
 
   it('reset() clears all state', async () => {
     const action = vi.fn().mockResolvedValue('ok');
-    const [retryable, state] = withRetry(action);
+    const [retryable, state] = createRetry(action);
 
     await retryable();
     expect(state.attempt()).toBe(1);
@@ -74,7 +76,7 @@ describe('withRetry', () => {
       calls++;
       return Promise.reject(new Error('fail ' + calls));
     };
-    const [retryable, state] = withRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
+    const [retryable, state] = createRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
 
     const promise = (retryable() as Promise<unknown>).catch(() => undefined);
     // First attempt failed; the loop waits out the delay before attempt 2.
@@ -102,7 +104,7 @@ describe('withRetry', () => {
       return Promise.resolve();
     };
 
-    const [retryable] = withRetry(action, { maxAttempts: 3, delay: 100 });
+    const [retryable] = createRetry(action, { maxAttempts: 3, delay: 100 });
 
     const promise = retryable();
     // First retry: 100ms * 2^0 = 100ms
