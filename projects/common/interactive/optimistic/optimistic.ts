@@ -1,4 +1,11 @@
-import { computed, signal, untracked, type WritableSignal, type Signal } from '@angular/core';
+import {
+  computed,
+  signal,
+  untracked,
+  type DestroyRef,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 import { settleAction, type SettleActionHandle } from '@cngx/utils/rxjs-interop';
@@ -48,18 +55,21 @@ export interface OptimisticState {
  * @if (nameState.rolledBack()) { <span>Reverted</span> }
  * ```
  *
- * **Note:** The internal subscription is unmanaged - there is no `DestroyRef` available
- * in a plain factory function. If the component is destroyed mid-flight, the subscription
- * completes silently. For long-running actions, ensure the component outlives the action
- * or cancel via the Observable itself.
+ * A plain factory: it needs no injection context. Pass the owner's `destroyRef`
+ * to bind the lifetime: on destroy the in-flight action is unsubscribed, its
+ * late outcome is dropped, and later applies do nothing. Without it the caller
+ * owns the lifetime: an action still in flight after the owner is gone keeps
+ * its subscription, and a late emission writes the signal.
  *
  * @param current - The writable signal to update optimistically.
  * @param action - Async action that confirms the value. Should return the confirmed value.
+ * @param destroyRef - Optional lifetime of the owner, ends the in-flight run on destroy.
  * @returns Tuple of `[applyFn, state]`.
  */
 export function createOptimistic<T>(
   current: WritableSignal<T>,
   action: (value: T) => Observable<T>,
+  destroyRef?: DestroyRef,
 ): [(newValue: T) => void, OptimisticState] {
   const rolledBackState = signal(false);
   const errorState = signal<unknown>(undefined);
@@ -83,6 +93,13 @@ export function createOptimistic<T>(
   let confirmedValue = untracked(current);
   let inFlight = false;
   let active: SettleActionHandle | undefined;
+  let destroyed = false;
+
+  destroyRef?.onDestroy(() => {
+    destroyed = true;
+    active?.cancel();
+    active = undefined;
+  });
 
   const confirm = (value: T): void => {
     inFlight = false;
@@ -101,6 +118,9 @@ export function createOptimistic<T>(
   };
 
   const apply = (newValue: T): void => {
+    if (destroyed) {
+      return;
+    }
     if (!inFlight) {
       confirmedValue = untracked(current);
     }

@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { DestroyRef, signal } from '@angular/core';
 import { EMPTY, Subject, of, delay, timer, switchMap, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { createOptimistic, optimistic } from './optimistic';
@@ -165,6 +165,63 @@ describe('optimistic', () => {
       expect(state.rolledBack()).toBe(true);
       expect(name()).toBe('A');
       expect((state.error() as Error).message).toBe('sync');
+    });
+  });
+
+  describe('destroyRef', () => {
+    function destroyRefStub(): { ref: DestroyRef; destroy: () => void } {
+      const callbacks: (() => void)[] = [];
+      let destroyed = false;
+      const ref = {
+        onDestroy: (cb: () => void) => {
+          callbacks.push(cb);
+          return () => callbacks.splice(callbacks.indexOf(cb), 1);
+        },
+        get destroyed() {
+          return destroyed;
+        },
+      } as unknown as DestroyRef;
+      return {
+        ref,
+        destroy: () => {
+          destroyed = true;
+          callbacks.splice(0).forEach((cb) => cb());
+        },
+      };
+    }
+
+    it('destroy unsubscribes the in-flight action and a late emission leaves the signal alone', () => {
+      const name = signal('A');
+      const source = new Subject<string>();
+      const owner = destroyRefStub();
+      const [update, state] = createOptimistic(name, () => source, owner.ref);
+      update('B');
+      owner.destroy();
+      expect(source.observed).toBe(false);
+      source.next('late');
+      expect(name()).toBe('B');
+      expect(state.state.status()).toBe('pending');
+    });
+
+    it('apply after destroy does nothing', () => {
+      const name = signal('A');
+      const owner = destroyRefStub();
+      const action = vi.fn((v: string) => of(v));
+      const [update, state] = createOptimistic(name, action, owner.ref);
+      owner.destroy();
+      update('B');
+      expect(action).not.toHaveBeenCalled();
+      expect(name()).toBe('A');
+      expect(state.state.status()).toBe('idle');
+    });
+
+    it('without a destroyRef the caller owns the lifetime and a late emission still writes', () => {
+      const name = signal('A');
+      const source = new Subject<string>();
+      const [update] = createOptimistic(name, () => source);
+      update('B');
+      source.next('late');
+      expect(name()).toBe('late');
     });
   });
 });
