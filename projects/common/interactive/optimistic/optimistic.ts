@@ -44,15 +44,21 @@ export interface OptimisticState {
  *
  * ```typescript
  * readonly name = signal('Alice');
- * readonly [updateName, nameState] = createOptimistic(
+ * private readonly nameUpdate = createOptimistic(
  *   this.name,
- *   (value) => this.http.put('/api/name', { name: value })
+ *   (value) => this.http.put<string>('/api/name', { name: value }),
+ *   inject(DestroyRef),
  * );
+ * protected readonly updateName = this.nameUpdate[0];
+ * protected readonly nameState = this.nameUpdate[1];
+ * ```
  *
- * // In template:
- * <input [value]="name()" (change)="updateName($event.target.value)" />
+ * ```html
+ * <input [value]="name()" (change)="updateName($any($event.target).value)" />
  * <ng-container [cngxToastOn]="nameState.state" toastError="Update failed" />
- * @if (nameState.rolledBack()) { <span>Reverted</span> }
+ * @if (nameState.rolledBack()) {
+ *   <span>Reverted</span>
+ * }
  * ```
  *
  * A plain factory: it needs no injection context. Pass the owner's `destroyRef`
