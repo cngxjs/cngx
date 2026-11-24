@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { describe, expect, test, beforeEach } from 'vitest';
 
 import {
@@ -260,6 +261,219 @@ describe('createCommitController', () => {
     expect(ctrl.state.status()).not.toBe('error');
   });
 
+  test('a runner that throws synchronously after a pending one settles error and cancels the first handle once', () => {
+    const ctrl = createCommitController<string>();
+    const cancels: string[] = [];
+    ctrl.begin(() => ({ cancel: () => cancels.push('r1') }), 'one', undefined, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    const errors: [unknown, string | undefined][] = [];
+    const boom = new Error('sync');
+    expect(() =>
+      ctrl.begin(
+        () => {
+          throw boom;
+        },
+        'two',
+        'prev',
+        { onSuccess: () => {}, onError: (err, previous) => errors.push([err, previous]) },
+      ),
+    ).not.toThrow();
+
+    expect(ctrl.state.status()).toBe('error');
+    expect(ctrl.state.error()).toBe(boom);
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(errors).toEqual([[boom, 'prev']]);
+    expect(cancels).toEqual(['r1']);
+
+    ctrl.begin((h) => (h.onSuccess('three'), noopHandle()), 'three', undefined, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    ctrl.cancel();
+    expect(ctrl.state.status()).toBe('success');
+    expect(cancels).toEqual(['r1']);
+  });
+
+  test('a throwing first runner followed by cancel() stays settled', () => {
+    const ctrl = createCommitController<string>();
+    ctrl.begin(
+      () => {
+        throw new Error('sync');
+      },
+      'one',
+      undefined,
+      { onSuccess: () => {}, onError: () => {} },
+    );
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(ctrl.state.status()).toBe('error');
+    ctrl.cancel();
+    expect(ctrl.isCommitting()).toBe(false);
+    expect(ctrl.state.status()).toBe('error');
+    ctrl.cancel({ settle: true });
+    expect(ctrl.state.status()).toBe('idle');
+  });
+
+  test('a throw after the runner already settled is rethrown unchanged', () => {
+    const ctrl = createCommitController<string>();
+    const late = new Error('after settle');
+    expect(() =>
+      ctrl.begin(
+        (h) => {
+          h.onSuccess('done');
+          throw late;
+        },
+        'done',
+        undefined,
+        { onSuccess: () => {}, onError: () => {} },
+      ),
+    ).toThrow(late);
+    expect(ctrl.state.status()).toBe('success');
+  });
+
+  describe('at most one outcome per begin()', () => {
+    type Routes = Parameters<CngxCommitRunner<string>>[0];
+
+    function track() {
+      const calls: string[] = [];
+      return {
+        calls,
+        handlers: {
+          onSuccess: (v: string | undefined) => calls.push(`success:${v}`),
+          onError: (e: unknown) => calls.push(`error:${(e as Error).message}`),
+          onRefused: () => calls.push('refused'),
+        },
+      };
+    }
+
+    function runWith(second: (routes: Routes) => void, first: (routes: Routes) => void) {
+      const ctrl = createCommitController<string>();
+      const t = track();
+      ctrl.begin(
+        (routes) => {
+          first(routes);
+          second(routes);
+          return noopHandle();
+        },
+        'v',
+        undefined,
+        t.handlers,
+      );
+      return { ctrl, calls: t.calls };
+    }
+
+    test('a second onSuccess fires no handler and keeps the first value', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onSuccess('two'),
+        (r) => r.onSuccess('one'),
+      );
+      expect(calls).toEqual(['success:one']);
+      expect(ctrl.state.data()).toBe('one');
+    });
+
+    test('onSuccess then onError keeps success', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onError(new Error('late')),
+        (r) => r.onSuccess('one'),
+      );
+      expect(calls).toEqual(['success:one']);
+      expect(ctrl.state.status()).toBe('success');
+    });
+
+    test('onError then onSuccess keeps error', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onSuccess('late'),
+        (r) => r.onError(new Error('first')),
+      );
+      expect(calls).toEqual(['error:first']);
+      expect(ctrl.state.status()).toBe('error');
+    });
+
+    test('onRefused then onSuccess keeps the refusal', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onSuccess('late'),
+        (r) => r.onRefused(),
+      );
+      expect(calls).toEqual(['refused']);
+      expect(ctrl.state.status()).toBe('idle');
+    });
+
+    test('a second call that arrives after begin() returned is ignored', () => {
+      const ctrl = createCommitController<string>();
+      const t = track();
+      let routes!: Routes;
+      ctrl.begin(
+        (r) => {
+          routes = r;
+          return noopHandle();
+        },
+        'v',
+        undefined,
+        t.handlers,
+      );
+      routes.onSuccess('one');
+      routes.onError(new Error('late'));
+      routes.onSuccess('two');
+      expect(t.calls).toEqual(['success:one']);
+      expect(ctrl.state.data()).toBe('one');
+    });
+
+    test('a runner that schedules onSuccess and then throws stays error', () => {
+      const ctrl = createCommitController<string>();
+      const t = track();
+      let scheduled!: () => void;
+      ctrl.begin(
+        (r) => {
+          scheduled = () => r.onSuccess('late');
+          throw new Error('sync');
+        },
+        'v',
+        undefined,
+        t.handlers,
+      );
+      scheduled();
+      expect(t.calls).toEqual(['error:sync']);
+      expect(ctrl.state.status()).toBe('error');
+    });
+  });
+
+  test('a begin() started from a synchronous outcome handler keeps the newer handle cancellable', () => {
+    const ctrl = createCommitController<string>();
+    const cancels: string[] = [];
+    ctrl.begin((h) => (h.onSuccess('one'), noopHandle()), 'one', undefined, {
+      onSuccess: () =>
+        ctrl.begin(() => ({ cancel: () => cancels.push('r2') }), 'two', 'one', {
+          onSuccess: () => {},
+          onError: () => {},
+        }),
+      onError: () => {},
+    });
+    expect(ctrl.isCommitting()).toBe(true);
+    ctrl.cancel();
+    expect(cancels).toEqual(['r2']);
+  });
+
+  test('a runner superseded during its own call is cancelled and never becomes active', () => {
+    const ctrl = createCommitController<string>();
+    const cancels: string[] = [];
+    ctrl.begin(
+      () => {
+        ctrl.begin(() => ({ cancel: () => cancels.push('r2') }), 'two', undefined, {
+          onSuccess: () => {},
+          onError: () => {},
+        });
+        return { cancel: () => cancels.push('r1') };
+      },
+      'one',
+      undefined,
+      { onSuccess: () => {}, onError: () => {} },
+    );
+    expect(cancels).toEqual(['r1']);
+    ctrl.cancel();
+    expect(cancels).toEqual(['r1', 'r2']);
+  });
+
   test('a runner that succeeds synchronously never has its handle cancelled later', () => {
     const ctrl = createCommitController<number>();
     let staleCancel = false;
@@ -286,6 +500,23 @@ describe('createCommitController', () => {
     ctrl.begin(() => noopHandle(), 2, 1, { onSuccess: () => {}, onError: () => {} });
     ctrl.cancel();
     expect(staleCancel).toBe(false);
+  });
+
+  test('state is a read-only view whose signals still follow begin()', () => {
+    const ctrl = createCommitController<string>();
+    for (const writer of ['set', 'setSuccess', 'setError', 'setIdle', 'setProgress', 'reset']) {
+      expect(writer in ctrl.state).toBe(false);
+    }
+    ctrl.begin((h) => (h.onSuccess('done'), noopHandle()), 'done', undefined, {
+      onSuccess: () => {},
+      onError: () => {},
+    });
+    expect(ctrl.state.status()).toBe('success');
+    expect(ctrl.state.data()).toBe('done');
+    const descriptor = CNGX_DEV_DESCRIPTORS.read(ctrl.state);
+    expect(descriptor).toMatchObject({ kind: 'cngx-dev:factory', factory: 'createCommitController' });
+    const inner = descriptor?.kind === 'cngx-dev:factory' ? descriptor.inputs['state'] : undefined;
+    expect(CNGX_DEV_DESCRIPTORS.read(inner)).toMatchObject({ factory: 'createManualState' });
   });
 });
 

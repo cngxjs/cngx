@@ -11,6 +11,8 @@ import {
 
 import { CngxRuntimeError } from '@cngx/utils';
 
+import { progressPercent } from './progress-percent';
+
 /**
  * Minimal write interface for async state operators.
  *
@@ -36,8 +38,9 @@ interface AsyncStateSink<T> {
  * read via the sink's `isFirstLoad`; an explicit `options.status` wins).
  * On next: calls `setSuccess(value)`.
  * On error: calls `setError(err)` and **re-throws** (does not swallow).
- * On teardown without a value (unsubscribe mid-flight, empty complete):
- * resets the sink to `idle` so a cancelled request never leaves it busy.
+ * On complete without a value: calls `setSuccess(undefined)`.
+ * On unsubscribe before any value: resets the sink to `idle` so a cancelled
+ * request never leaves it busy.
  *
  * The Observable passes through unchanged - `tapAsyncState` is a side-effect operator.
  *
@@ -70,10 +73,16 @@ export function tapAsyncState<T>(
             settled = true;
             state.setError(err);
           },
+          complete: () => {
+            if (!settled) {
+              settled = true;
+              state.setSuccess(undefined as T);
+            }
+          },
         }),
         finalize(() => {
-          // Torn down without ever settling (cancelled mid-flight or an
-          // empty complete) - do not leave the sink busy forever.
+          // Torn down without ever settling (cancelled mid-flight) - do not
+          // leave the sink busy forever.
           if (!settled) {
             state.set('idle');
           }
@@ -109,7 +118,8 @@ const RESPONSE = 4;
  * RxJS operator that extracts upload/download progress from an
  * `HttpEvent` stream and reports it to a `ManualAsyncState`.
  *
- * Filters progress events, calculates percentage, calls `setProgress()`.
+ * Filters progress events, calculates an integer percentage clamped to
+ * 0-100, calls `setProgress()`.
  * Non-progress events pass through unchanged.
  *
  * Use with `{ observe: 'events', reportProgress: true }` on HttpClient.
@@ -133,12 +143,12 @@ export function tapAsyncProgress<E>(
 ): MonoTypeOperatorFunction<E> {
   return tap((event) => {
     const e = event as unknown as HttpProgressLike;
-    if (
-      (e.type === UPLOAD_PROGRESS || e.type === DOWNLOAD_PROGRESS) &&
-      e.total != null &&
-      e.total > 0
-    ) {
-      state.setProgress(Math.round((100 * e.loaded) / e.total));
+    if (e.type !== UPLOAD_PROGRESS && e.type !== DOWNLOAD_PROGRESS) {
+      return;
+    }
+    const percent = progressPercent(e.loaded, e.total);
+    if (percent !== undefined) {
+      state.setProgress(percent);
     }
   });
 }

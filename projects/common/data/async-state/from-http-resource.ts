@@ -1,6 +1,7 @@
 import { computed, type Resource } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import { progressPercent } from './progress-percent';
 import { buildResourceBridge } from './resource-bridge';
 
 /**
@@ -47,13 +48,10 @@ interface HttpResourceLike<T> extends Resource<T> {
  * ```
  */
 export function fromHttpResource<T>(ref: HttpResourceLike<T>): CngxAsyncState<T> {
-  // Map loaded/total bytes to a 0-100 integer, clamped; no total = indeterminate.
+  // No event or no total = indeterminate.
   const progress = computed(() => {
     const event = ref.progress();
-    if (event?.total == null || event.total <= 0) {
-      return undefined;
-    }
-    return Math.round(Math.min(event.loaded / event.total, 1) * 100);
+    return event ? progressPercent(event.loaded, event.total) : undefined;
   });
 
   return buildResourceBridge(ref, progress);

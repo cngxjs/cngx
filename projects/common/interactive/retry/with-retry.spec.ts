@@ -1,16 +1,17 @@
+import { DestroyRef, Injector, runInInjectionContext } from '@angular/core';
 import { EMPTY, Observable, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_ASYNC_CANCELLED } from '../async-click/async-click.directive';
 import { createRetry, withRetry } from './with-retry';
 
-describe('withRetry', () => {
+describe('createRetry', () => {
   it('exports createRetry with the old name as a deprecated alias', () => {
     expect(withRetry).toBe(createRetry);
   });
 
   it('succeeds on first attempt without retrying', async () => {
     const action = vi.fn().mockResolvedValue('ok');
-    const [retryable, state] = withRetry(action, { maxAttempts: 3 });
+    const [retryable, state] = createRetry(action, { maxAttempts: 3 });
 
     await retryable();
     expect(action).toHaveBeenCalledTimes(1);
@@ -27,7 +28,7 @@ describe('withRetry', () => {
       return Promise.resolve();
     };
 
-    const [retryable, state] = withRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
+    const [retryable, state] = createRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
 
     const promise = retryable();
     // First attempt fails, wait for delay
@@ -45,17 +46,19 @@ describe('withRetry', () => {
       throw new Error('always fails');
     });
 
-    const [retryable, state] = withRetry(action, { maxAttempts: 2, delay: 10, backoff: 'linear' });
+    const [retryable, state] = createRetry(action, { maxAttempts: 2, delay: 10, backoff: 'linear' });
 
     await expect(retryable()).rejects.toThrow('always fails');
     expect(action).toHaveBeenCalledTimes(2);
     expect(state.exhausted()).toBe(true);
     expect(state.attempt()).toBe(2);
+    expect(state.state.status()).toBe('error');
+    expect(state.state.error()).toEqual(new Error('always fails'));
   });
 
   it('reset() clears all state', async () => {
     const action = vi.fn().mockResolvedValue('ok');
-    const [retryable, state] = withRetry(action);
+    const [retryable, state] = createRetry(action);
 
     await retryable();
     expect(state.attempt()).toBe(1);
@@ -73,7 +76,7 @@ describe('withRetry', () => {
       calls++;
       return Promise.reject(new Error('fail ' + calls));
     };
-    const [retryable, state] = withRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
+    const [retryable, state] = createRetry(action, { maxAttempts: 3, delay: 100, backoff: 'linear' });
 
     const promise = (retryable() as Promise<unknown>).catch(() => undefined);
     // First attempt failed; the loop waits out the delay before attempt 2.
@@ -101,7 +104,7 @@ describe('withRetry', () => {
       return Promise.resolve();
     };
 
-    const [retryable] = withRetry(action, { maxAttempts: 3, delay: 100 });
+    const [retryable] = createRetry(action, { maxAttempts: 3, delay: 100 });
 
     const promise = retryable();
     // First retry: 100ms * 2^0 = 100ms
@@ -113,6 +116,69 @@ describe('withRetry', () => {
     expect(calls).toBe(3);
     vi.useRealTimers();
   });
+  it('a success after a failed attempt leaves no error behind', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    const [retryable, state] = createRetry(
+      () => (++calls === 1 ? Promise.reject(new Error('first')) : Promise.resolve('ok')),
+      { maxAttempts: 3, delay: 10, backoff: 'linear' },
+    );
+    const run = retryable();
+    await vi.advanceTimersByTimeAsync(10);
+    await run;
+    expect(state.state.status()).toBe('success');
+    expect(state.state.error()).toBeUndefined();
+    expect(state.lastError()).toBeUndefined();
+    vi.useRealTimers();
+  });
+
+  it('a new run after an exhausted one starts without an error', async () => {
+    let fail = true;
+    const [retryable, state] = createRetry(
+      () => (fail ? Promise.reject(new Error('down')) : new Promise<void>(() => undefined)),
+      { maxAttempts: 1 },
+    );
+    await expect(retryable()).rejects.toThrow('down');
+    expect(state.lastError()).toEqual(new Error('down'));
+    fail = false;
+    void retryable();
+    expect(state.state.status()).toBe('pending');
+    expect(state.lastError()).toBeUndefined();
+    expect(state.state.error()).toBeUndefined();
+  });
+
+  it('an attempt that throws synchronously counts as a failed attempt', async () => {
+    let calls = 0;
+    const [retryable, state] = createRetry(
+      () => {
+        calls++;
+        throw new Error('st');
+      },
+      { maxAttempts: 2, delay: 0 },
+    );
+    await expect(retryable()).rejects.toThrow('st');
+    expect(calls).toBe(2);
+    expect(state.state.status()).toBe('error');
+    expect(state.attempt()).toBe(2);
+  });
+
+  it('maxAttempts NaN falls back to three attempts', async () => {
+    const action = vi.fn().mockRejectedValue(new Error('x'));
+    const [retryable, state] = createRetry(action, { maxAttempts: Number.NaN, delay: 0 });
+    expect(state.maxAttempts()).toBe(3);
+    await expect(retryable()).rejects.toThrow('x');
+    expect(action).toHaveBeenCalledTimes(3);
+    expect(state.exhausted()).toBe(true);
+  });
+
+  it('a fractional maxAttempts is floored', async () => {
+    const action = vi.fn().mockRejectedValue(new Error('x'));
+    const [retryable, state] = createRetry(action, { maxAttempts: 2.5, delay: 0 });
+    expect(state.maxAttempts()).toBe(2);
+    await expect(retryable()).rejects.toThrow('x');
+    expect(action).toHaveBeenCalledTimes(2);
+  });
+
   describe('abort signal and cancellation', () => {
     it('passes the action a run signal linked to the runner signal', async () => {
       let received: AbortSignal | undefined;
@@ -163,6 +229,65 @@ describe('withRetry', () => {
       expect(state.exhausted()).toBe(false);
       expect(state.state.status()).toBe('idle');
       expect(state.lastError()).toEqual(new Error('fail'));
+    });
+
+    it('resolves CNGX_ASYNC_CANCELLED and settles idle when the action reports cancellation', async () => {
+      const action = vi.fn().mockResolvedValue(CNGX_ASYNC_CANCELLED);
+      const [retryable, state] = createRetry(action);
+      await expect(retryable()).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(state.state.status()).toBe('idle');
+      expect(state.attempt()).toBe(0);
+    });
+
+    it('a direct call without a signal keeps its backoff timer after the host is destroyed', async () => {
+      vi.useFakeTimers();
+      const action = vi.fn().mockRejectedValue(new Error('fail'));
+      const injector = Injector.create({ providers: [] }) as Injector & { destroy(): void };
+      const [retryable] = runInInjectionContext(injector, () =>
+        createRetry(action, { maxAttempts: 3, delay: 1000 }),
+      );
+
+      const result = retryable();
+      void (result as Promise<unknown>).catch(() => undefined);
+      await vi.advanceTimersByTimeAsync(0);
+      injector.destroy();
+
+      expect(vi.getTimerCount()).toBe(1);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(action).toHaveBeenCalledTimes(3);
+    });
+
+    it('with a destroyRef, destroy during backoff clears the timer and resolves cancelled', async () => {
+      vi.useFakeTimers();
+      const action = vi.fn().mockRejectedValue(new Error('fail'));
+      const injector = Injector.create({ providers: [] }) as Injector & { destroy(): void };
+      const [retryable, state] = createRetry(
+        action,
+        { maxAttempts: 3, delay: 1000 },
+        injector.get(DestroyRef),
+      );
+
+      const result = retryable();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(vi.getTimerCount()).toBe(1);
+      injector.destroy();
+
+      expect(vi.getTimerCount()).toBe(0);
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(state.state.status()).toBe('idle');
+    });
+
+    it('with a destroyRef, a call after destroy resolves cancelled without calling the action', async () => {
+      const action = vi.fn().mockResolvedValue('ok');
+      const injector = Injector.create({ providers: [] }) as Injector & { destroy(): void };
+      const [retryable, state] = createRetry(action, undefined, injector.get(DestroyRef));
+      injector.destroy();
+      await expect(retryable()).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(action).not.toHaveBeenCalled();
+      expect(state.attempt()).toBe(0);
     });
 
     it('abort during the in-flight attempt settles idle without waiting for it', async () => {

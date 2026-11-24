@@ -72,8 +72,8 @@ createRetry composes naturally with CngxAsyncClick and the feedback system:
 
 - `cngxAsyncClick` passes an `AbortSignal` to the wrapped action, aborted when the runner is destroyed. Each run gets its own signal, linked to that one, which also aborts on `reset()` and when a newer call supersedes the run. On abort the run ends at once: the awaited attempt and the backoff timer are dropped, no further attempt starts, and the retry state settles idle (`attempt` 0, `retrying` false, `lastError` kept). A run a newer call already superseded writes nothing.
 - Your action receives the run signal. A dropped Observable attempt is unsubscribed, so an `HttpClient` request is cancelled. A dropped Promise attempt keeps running unless you pass the signal on (`fetch(url, { signal })`); its late outcome is ignored.
-- A run that ends without an outcome (superseded by a new call, `reset()`, or aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`. Compare the result with it where you `await` the action yourself.
-- A direct call without a signal (`saveWithRetry()`) has no destroy binding, but `reset()` and a newer call still end it.
+- A run that ends without an outcome (superseded by a new call, `reset()`, aborted, or an attempt that itself resolves `CNGX_ASYNC_CANCELLED`) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. `cngxAsyncClick` maps it to `idle`: no announcement, no `(settled)`. Compare the result with it where you `await` the action yourself.
+- A direct call without a signal (`saveWithRetry()`) is bound to its owner only when you pass `destroyRef` as the third argument (`createRetry(action, config, inject(DestroyRef))`): on destroy the run aborts and settles idle, and later calls resolve `CNGX_ASYNC_CANCELLED` without calling the action. Without it the backoff timer and further attempts outlive the owner; `reset()` and a newer call still end the run.
 
 ```typescript
 import { CNGX_ASYNC_CANCELLED, createRetry } from '@cngx/common/interactive';

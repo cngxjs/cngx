@@ -1,7 +1,7 @@
 import { computed, signal, type Signal } from '@angular/core';
 
 import { createManualState, type ManualAsyncState } from '../async-state';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { CNGX_DEV_DESCRIPTORS, type CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Cancel handle returned by a {@link CngxCommitRunner}. The controller
@@ -94,6 +94,15 @@ export interface CngxCommitController<T> {
    * previous runner's cancel handle fires synchronously, and the
    * previous outcome callbacks become no-ops if they fire late.
    *
+   * At most one outcome fires per call: after the runner's first
+   * `onSuccess` / `onError` / `onRefused` (or its synchronous throw),
+   * every further route call of that runner is ignored.
+   *
+   * A runner that throws synchronously before any outcome settles the
+   * commit as `'error'` with the thrown value and calls
+   * `handlers.onError`; `begin()` does not throw. A throw after the
+   * runner already settled is rethrown unchanged.
+   *
    * @param runner   variant-specific action runner (closes over the
    *                 action and the intended value)
    * @param intended the value the user clicked
@@ -132,9 +141,34 @@ export interface CngxCommitController<T> {
  * See `reference_api_prefix_convention.md`.
  */
 export function createCommitController<T>(): CngxCommitController<T> {
-  // read-only `state` view; consumers can't flip status directly
-  const slot: ManualAsyncState<T | undefined> =
-    createManualState<T | undefined>();
+  const slot: ManualAsyncState<T | undefined> = createManualState<T | undefined>();
+
+  // Read-only `state` view: the slot's signals without its write methods, so
+  // consumers can't flip status directly.
+  const state: CngxAsyncState<T | undefined> = {
+    status: slot.status,
+    data: slot.data,
+    error: slot.error,
+    progress: slot.progress,
+    isLoading: slot.isLoading,
+    isPending: slot.isPending,
+    isRefreshing: slot.isRefreshing,
+    isBusy: slot.isBusy,
+    isFirstLoad: slot.isFirstLoad,
+    isEmpty: slot.isEmpty,
+    hasData: slot.hasData,
+    isSettled: slot.isSettled,
+    lastUpdated: slot.lastUpdated,
+  };
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    // The view hides the slot; listing it here is how an inspector reaches
+    // the slot's own descriptor.
+    CNGX_DEV_DESCRIPTORS.tag(state, {
+      kind: 'cngx-dev:factory',
+      factory: 'createCommitController',
+      inputs: { state: slot },
+    });
+  }
 
   // monotonic supersede id; stale callbacks compare captured id against this
   let commitId = 0;
@@ -145,7 +179,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
   const intendedState = signal<T | undefined>(undefined);
 
   return {
-    state: slot,
+    state,
     isCommitting: computed(
       () => slot.isPending(),
       typeof ngDevMode !== 'undefined' && ngDevMode
@@ -160,6 +194,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
       // and fire its callbacks after all
       const id = ++commitId;
       active?.cancel();
+      active = null;
       intendedState.set(intended);
       slot.set('pending');
 
@@ -167,38 +202,66 @@ export function createCommitController<T>(): CngxCommitController<T> {
       // returned. The settled flag keeps such a finished handle out of
       // `active`, so a later begin()/cancel() never calls cancel() on a
       // completed runner (CngxCommitHandle does not require idempotence).
+      // It is also the once-guard: after the first outcome every further
+      // route call of this runner is ignored.
       let settled = false;
-      const handle = runner({
-        onSuccess: (committed) => {
-          if (id !== commitId) {
-            return;
-          }
-          settled = true;
-          slot.setSuccess(committed);
-          active = null;
-          handlers.onSuccess(committed);
-        },
-        onError: (err) => {
-          if (id !== commitId) {
-            return;
-          }
+      let handle: CngxCommitHandle;
+      try {
+        handle = runner({
+          onSuccess: (committed) => {
+            if (id !== commitId || settled) {
+              return;
+            }
+            settled = true;
+            slot.setSuccess(committed);
+            active = null;
+            handlers.onSuccess(committed);
+          },
+          onError: (err) => {
+            if (id !== commitId || settled) {
+              return;
+            }
+            settled = true;
+            slot.setError(err);
+            active = null;
+            handlers.onError(err, previous);
+          },
+          onRefused: () => {
+            if (id !== commitId || settled) {
+              return;
+            }
+            settled = true;
+            slot.setIdle();
+            intendedState.set(undefined);
+            active = null;
+            handlers.onRefused?.(previous);
+          },
+        });
+      } catch (err: unknown) {
+        // A throw after the runner already settled is the runner's own bug:
+        // rethrow it unchanged. A throw before any outcome is the outcome.
+        if (settled) {
+          throw err;
+        }
+        if (id === commitId) {
           settled = true;
           slot.setError(err);
-          active = null;
           handlers.onError(err, previous);
-        },
-        onRefused: () => {
-          if (id !== commitId) {
-            return;
-          }
-          settled = true;
-          slot.setIdle();
-          intendedState.set(undefined);
-          active = null;
-          handlers.onRefused?.(previous);
-        },
-      });
-      active = settled ? null : handle;
+        }
+        return;
+      }
+      if (settled) {
+        // Settled during the call: `active` is already cleared, or holds the
+        // handle of a begin() that an outcome handler started.
+        return;
+      }
+      if (id !== commitId) {
+        // Superseded during its own call, before its handle existed for the
+        // newer begin()/cancel() to tear down.
+        handle.cancel();
+        return;
+      }
+      active = handle;
     },
 
     cancel(options?: { readonly settle?: boolean }) {

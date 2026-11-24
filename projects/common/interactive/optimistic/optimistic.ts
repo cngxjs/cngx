@@ -1,6 +1,14 @@
-import { computed, signal, type WritableSignal, type Signal } from '@angular/core';
+import {
+  computed,
+  signal,
+  untracked,
+  type DestroyRef,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import { type Observable, type Subscription, take } from 'rxjs';
+import type { Observable } from 'rxjs';
+import { settleAction, type SettleActionHandle } from '@cngx/utils/rxjs-interop';
 
 /**
  * State exposed by the optimistic action.
@@ -25,35 +33,51 @@ export interface OptimisticState {
  *
  * Sets the new value immediately (optimistic), then confirms via the async action.
  * On success, applies the server-confirmed value. On failure, rolls back to the
- * previous value.
+ * value the signal held right before the apply. While an earlier apply is still
+ * in flight, the rollback target stays the last value that was confirmed or held
+ * before that earlier apply, never an unconfirmed optimistic value. An action
+ * that completes without a value confirms the applied value (`'success'`); one
+ * that throws synchronously rolls back like a failed one, and `apply` never
+ * throws.
  *
  * This is a utility function, not a directive - it composes with any signal.
  *
  * ```typescript
  * readonly name = signal('Alice');
- * readonly [updateName, nameState] = createOptimistic(
+ * private readonly nameUpdate = createOptimistic(
  *   this.name,
- *   (value) => this.http.put('/api/name', { name: value })
+ *   (value) => this.http.put<string>('/api/name', { name: value }),
+ *   inject(DestroyRef),
  * );
- *
- * // In template:
- * <input [value]="name()" (change)="updateName($event.target.value)" />
- * <ng-container [cngxToastOn]="nameState.state" toastError="Update failed" />
- * @if (nameState.rolledBack()) { <span>Reverted</span> }
+ * protected readonly updateName = this.nameUpdate[0];
+ * protected readonly nameState = this.nameUpdate[1];
  * ```
  *
- * **Note:** The internal subscription is unmanaged - there is no `DestroyRef` available
- * in a plain factory function. If the component is destroyed mid-flight, the subscription
- * completes silently. For long-running actions, ensure the component outlives the action
- * or cancel via the Observable itself.
+ * ```html
+ * <input [value]="name()" (change)="updateName($any($event.target).value)" />
+ * <ng-container [cngxToastOn]="nameState.state" toastError="Update failed" />
+ * @if (nameState.rolledBack()) {
+ *   <span>Reverted</span>
+ * }
+ * ```
+ *
+ * A plain factory: it needs no injection context. Pass the owner's `destroyRef`
+ * to bind the lifetime: on destroy the in-flight action is unsubscribed, its
+ * late outcome is dropped, and later applies do nothing. The unconfirmed
+ * optimistic value stays in `current` and the status stays `'pending'`, so
+ * a `current` signal that outlives the owner (a store signal) keeps it. Without it the caller
+ * owns the lifetime: an action still in flight after the owner is gone keeps
+ * its subscription, and a late emission writes the signal.
  *
  * @param current - The writable signal to update optimistically.
  * @param action - Async action that confirms the value. Should return the confirmed value.
+ * @param destroyRef - Optional lifetime of the owner, ends the in-flight run on destroy.
  * @returns Tuple of `[applyFn, state]`.
  */
 export function createOptimistic<T>(
   current: WritableSignal<T>,
   action: (value: T) => Observable<T>,
+  destroyRef?: DestroyRef,
 ): [(newValue: T) => void, OptimisticState] {
   const rolledBackState = signal(false);
   const errorState = signal<unknown>(undefined);
@@ -71,13 +95,46 @@ export function createOptimistic<T>(
     state: asyncState,
   };
 
-  // Last confirmed value - rollback target under concurrent calls.
-  let confirmedValue = current();
-  let activeSub: Subscription | undefined;
+  // Rollback target, read when an apply starts with none in flight. An
+  // overlapping apply keeps it, so a failure never restores an unconfirmed
+  // optimistic value.
+  let confirmedValue = untracked(current);
+  let inFlight = false;
+  let active: SettleActionHandle | undefined;
+  let destroyed = false;
+
+  destroyRef?.onDestroy(() => {
+    destroyed = true;
+    active?.cancel();
+    active = undefined;
+  });
+
+  const confirm = (value: T): void => {
+    inFlight = false;
+    active = undefined;
+    current.set(value);
+    statusState.set('success');
+  };
+
+  const rollBack = (err: unknown): void => {
+    inFlight = false;
+    active = undefined;
+    current.set(confirmedValue);
+    rolledBackState.set(true);
+    errorState.set(err);
+    statusState.set('error');
+  };
 
   const apply = (newValue: T): void => {
-    // Cancel in-flight subscription - prevents stale closure rollback
-    activeSub?.unsubscribe();
+    if (destroyed) {
+      return;
+    }
+    if (!inFlight) {
+      confirmedValue = untracked(current);
+    }
+    inFlight = true;
+    // Cancel the superseded run, so its late outcome cannot roll back.
+    active?.cancel();
 
     rolledBackState.set(false);
     errorState.set(undefined);
@@ -85,24 +142,13 @@ export function createOptimistic<T>(
 
     current.set(newValue);
 
-    activeSub = action(newValue)
-      .pipe(take(1))
-      .subscribe({
-        next: (confirmed) => {
-          confirmedValue = confirmed;
-          current.set(confirmed);
-          statusState.set('success');
-          activeSub = undefined;
-        },
-        error: (err: unknown) => {
-          // Rollback to last confirmed value (not the stale optimistic one)
-          current.set(confirmedValue);
-          rolledBackState.set(true);
-          errorState.set(err);
-          statusState.set('error');
-          activeSub = undefined;
-        },
-      });
+    const handle = settleAction(() => action(newValue), {
+      onValue: confirm,
+      // An empty completion confirms the optimistic value as applied.
+      onEmpty: () => confirm(newValue),
+      onError: rollBack,
+    });
+    active = inFlight ? handle : undefined;
   };
 
   return [apply, state];

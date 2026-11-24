@@ -53,10 +53,11 @@ describe('tapAsyncState', () => {
     expect(state.isBusy()).toBe(false);
   });
 
-  it('an empty complete resets to idle, a settled stream keeps its result', () => {
+  it('an empty complete settles success with undefined data, a settled stream keeps its result', () => {
     const state = createManualState<string>();
     EMPTY.pipe(tapAsyncState(state)).subscribe();
-    expect(state.status()).toBe('idle');
+    expect(state.status()).toBe('success');
+    expect(state.data()).toBeUndefined();
 
     of('a').pipe(tapAsyncState(state)).subscribe();
     expect(state.status()).toBe('success');
@@ -99,6 +100,13 @@ describe('tapHttpAsyncState', () => {
     sub.unsubscribe();
     expect(state.status()).toBe('idle');
   });
+
+  it('a progress event followed by a completion without a response leaves the sink idle', () => {
+    const state = createManualState<string>();
+    of({ type: 1, loaded: 10, total: 100 }).pipe(tapHttpAsyncState(state)).subscribe();
+    expect(state.status()).toBe('idle');
+    expect(state.progress()).toBe(10);
+  });
 });
 
 describe('tapAsyncProgress', () => {
@@ -135,6 +143,12 @@ describe('tapAsyncProgress', () => {
       .pipe(tapAsyncProgress(s))
       .subscribe();
     expect(s.calls).toEqual([]);
+  });
+
+  it('clamps loaded above total to 100', () => {
+    const s = sink();
+    of({ type: 1, loaded: 150, total: 100 }).pipe(tapAsyncProgress(s)).subscribe();
+    expect(s.calls).toEqual([100]);
   });
 
   it('passes every event through unchanged', () => {

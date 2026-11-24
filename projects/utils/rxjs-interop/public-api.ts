@@ -4,3 +4,4 @@
  */
 
 export * from './rxjs-interop';
+export * from './settle-action';

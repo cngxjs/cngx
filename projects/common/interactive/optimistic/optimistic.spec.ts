@@ -1,5 +1,5 @@
-import { signal } from '@angular/core';
-import { of, delay, timer, switchMap, throwError } from 'rxjs';
+import { DestroyRef, signal } from '@angular/core';
+import { EMPTY, Subject, of, delay, timer, switchMap, throwError } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { createOptimistic, optimistic } from './optimistic';
 
@@ -65,5 +65,163 @@ describe('optimistic', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(name()).toBe('Charlie');
     vi.useRealTimers();
+  });
+
+  describe('status sequence and supersede', () => {
+    it('walks idle, pending, success on a confirmed apply', () => {
+      const name = signal('A');
+      const confirm = new Subject<string>();
+      const [update, state] = createOptimistic(name, () => confirm);
+      expect(state.state.status()).toBe('idle');
+      update('B');
+      expect(state.state.status()).toBe('pending');
+      confirm.next('B');
+      expect(state.state.status()).toBe('success');
+    });
+
+    it('walks idle, pending, error on a failed apply', () => {
+      const name = signal('A');
+      const confirm = new Subject<string>();
+      const [update, state] = createOptimistic(name, () => confirm);
+      expect(state.state.status()).toBe('idle');
+      update('B');
+      expect(state.state.status()).toBe('pending');
+      confirm.error(new Error('fail'));
+      expect(state.state.status()).toBe('error');
+    });
+
+    it('a second apply unsubscribes the first action', () => {
+      const name = signal('A');
+      const runs: Subject<string>[] = [];
+      const [update] = createOptimistic(name, () => {
+        const s = new Subject<string>();
+        runs.push(s);
+        return s;
+      });
+      update('B');
+      update('C');
+      expect(runs[0].observed).toBe(false);
+      expect(runs[1].observed).toBe(true);
+    });
+
+    it('a failure of the superseding apply rolls back to the last confirmed value', () => {
+      const name = signal('A');
+      const runs: Subject<string>[] = [];
+      const [update, state] = createOptimistic(name, () => {
+        const s = new Subject<string>();
+        runs.push(s);
+        return s;
+      });
+      update('B');
+      update('C');
+      runs[1].error(new Error('fail'));
+      expect(name()).toBe('A');
+      expect(state.rolledBack()).toBe(true);
+    });
+
+    it('two failures in a row both roll back and keep the latest error', () => {
+      const name = signal('A');
+      let n = 0;
+      const [update, state] = createOptimistic(name, () => throwError(() => new Error(`e${++n}`)));
+      update('B');
+      expect(name()).toBe('A');
+      update('C');
+      expect(name()).toBe('A');
+      expect(state.state.status()).toBe('error');
+      expect((state.error() as Error).message).toBe('e2');
+    });
+  });
+
+  describe('rollback target', () => {
+    it('rolls back to the value the signal held before the apply, not the creation-time value', () => {
+      const name = signal('A');
+      const [update, state] = createOptimistic(name, () => throwError(() => new Error('fail')));
+      name.set('B');
+      update('C');
+      expect(name()).toBe('B');
+      expect(state.rolledBack()).toBe(true);
+      expect(state.state.status()).toBe('error');
+    });
+  });
+
+  describe('settle on empty completion and synchronous throw', () => {
+    it('an action that completes empty confirms the applied value and settles success', () => {
+      const name = signal('A');
+      const [update, state] = createOptimistic(name, () => EMPTY);
+      update('B');
+      expect(state.state.status()).toBe('success');
+      expect(state.state.isBusy()).toBe(false);
+      expect(name()).toBe('B');
+      expect(state.rolledBack()).toBe(false);
+    });
+
+    it('an action that throws synchronously rolls back, settles error and does not throw', () => {
+      const name = signal('A');
+      const [update, state] = createOptimistic<string>(name, () => {
+        throw new Error('sync');
+      });
+      expect(() => update('B')).not.toThrow();
+      expect(state.state.status()).toBe('error');
+      expect(state.rolledBack()).toBe(true);
+      expect(name()).toBe('A');
+      expect((state.error() as Error).message).toBe('sync');
+    });
+  });
+
+  describe('destroyRef', () => {
+    function destroyRefStub(): { ref: DestroyRef; destroy: () => void } {
+      const callbacks: (() => void)[] = [];
+      let destroyed = false;
+      const ref = {
+        onDestroy: (cb: () => void) => {
+          callbacks.push(cb);
+          return () => callbacks.splice(callbacks.indexOf(cb), 1);
+        },
+        get destroyed() {
+          return destroyed;
+        },
+      } as unknown as DestroyRef;
+      return {
+        ref,
+        destroy: () => {
+          destroyed = true;
+          callbacks.splice(0).forEach((cb) => cb());
+        },
+      };
+    }
+
+    it('destroy unsubscribes the in-flight action and a late emission leaves the signal alone', () => {
+      const name = signal('A');
+      const source = new Subject<string>();
+      const owner = destroyRefStub();
+      const [update, state] = createOptimistic(name, () => source, owner.ref);
+      update('B');
+      owner.destroy();
+      expect(source.observed).toBe(false);
+      source.next('late');
+      expect(name()).toBe('B');
+      expect(state.state.status()).toBe('pending');
+    });
+
+    it('apply after destroy does nothing', () => {
+      const name = signal('A');
+      const owner = destroyRefStub();
+      const action = vi.fn((v: string) => of(v));
+      const [update, state] = createOptimistic(name, action, owner.ref);
+      owner.destroy();
+      update('B');
+      expect(action).not.toHaveBeenCalled();
+      expect(name()).toBe('A');
+      expect(state.state.status()).toBe('idle');
+    });
+
+    it('without a destroyRef the caller owns the lifetime and a late emission still writes', () => {
+      const name = signal('A');
+      const source = new Subject<string>();
+      const [update] = createOptimistic(name, () => source);
+      update('B');
+      source.next('late');
+      expect(name()).toBe('late');
+    });
   });
 });

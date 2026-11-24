@@ -1,4 +1,4 @@
-import { computed, signal, type Signal } from '@angular/core';
+import { computed, signal, type DestroyRef, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, fromEvent, isObservable, takeUntil } from 'rxjs';
 
@@ -8,7 +8,11 @@ import { CNGX_ASYNC_CANCELLED, type AsyncAction } from '../async-click/async-cli
  * Configuration for `createRetry()`.
  */
 export interface RetryConfig {
-  /** Maximum number of attempts (including the first); values below 1 count as 1. Default: `3`. */
+  /**
+   * Maximum number of attempts (including the first). Fractions are floored,
+   * values below 1 count as 1, `NaN` counts as the default, `Infinity` retries
+   * without a bound. Default: `3`.
+   */
   maxAttempts?: number;
   /** Base delay in ms between retries. Default: `1000`. */
   delay?: number;
@@ -28,7 +32,11 @@ export interface RetryState {
   readonly retrying: Signal<boolean>;
   /** Whether all attempts have been exhausted. */
   readonly exhausted: Signal<boolean>;
-  /** The last error from a failed attempt. */
+  /**
+   * The error of the last failed attempt of the current run. Cleared when a run
+   * starts and when it succeeds; kept between attempts, after exhaustion and
+   * after an abort.
+   */
   readonly lastError: Signal<unknown>;
   /**
    * Full `CngxAsyncState` view of the retry lifecycle.
@@ -73,17 +81,34 @@ export interface RetryState {
  * already owns the state. A dropped Observable attempt is unsubscribed, so
  * an `HttpClient` request is cancelled. A dropped Promise attempt keeps
  * running unless the action passes the signal on (`fetch`); its late
- * outcome is ignored. A run that ends without an outcome (superseded, `reset()`, or
- * aborted) resolves `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct
- * call without a signal (`saveWithRetry()`) has no destroy binding, but
- * `reset()` and a newer call still end it.
+ * outcome is ignored. A run that ends without an outcome (superseded, `reset()`,
+ * aborted, or an attempt that itself resolves `CNGX_ASYNC_CANCELLED`) resolves
+ * `CNGX_ASYNC_CANCELLED` instead of `undefined`. A direct
+ * call without a signal (`saveWithRetry()`) is bound to the owner only through
+ * `destroyRef`: without it the backoff timer and further attempts outlive the
+ * owner, and only `reset()` or a newer call end the run.
  *
  * A pure factory that needs no injection context. The lifetime comes from
- * the signal of the runner that owns the run.
+ * the signal of the runner that owns the run, and from `destroyRef` when it is
+ * passed: on destroy the current run aborts (it settles idle and resolves
+ * `CNGX_ASYNC_CANCELLED`), and later calls resolve `CNGX_ASYNC_CANCELLED`
+ * without calling `action`.
+ *
+ * @param action - The action to retry; it receives the run signal.
+ * @param config - Attempts, delay and backoff.
+ * @param destroyRef - Optional lifetime of the owner, ends the run on destroy.
  */
-export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
-  // At least one attempt: the loop below ends only through a return or a throw.
-  const maxAttempts = Math.max(1, config?.maxAttempts ?? 3);
+export function createRetry(
+  action: AsyncAction,
+  config?: RetryConfig,
+  destroyRef?: DestroyRef,
+): [AsyncAction, RetryState] {
+  // At least one whole attempt: the loop below ends only through a return or a
+  // throw, so NaN (which never compares true) falls back to the default.
+  const requestedAttempts = config?.maxAttempts ?? 3;
+  const maxAttempts = Number.isNaN(requestedAttempts)
+    ? 3
+    : Math.max(1, Math.floor(requestedAttempts));
   const baseDelay = config?.delay ?? 1000;
   const backoff = config?.backoff ?? 'exponential';
 
@@ -123,6 +148,12 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
     runController = null;
   };
 
+  let destroyed = false;
+  destroyRef?.onDestroy(() => {
+    destroyed = true;
+    abortRun();
+  });
+
   const retryState: RetryState = {
     attempt: attemptState.asReadonly(),
     maxAttempts: computed(() => maxAttempts),
@@ -159,6 +190,7 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
     retryingState.set(false);
     exhaustedState.set(false);
     succeededState.set(false);
+    lastErrorState.set(undefined);
 
     for (let attempt = 1; ; attempt++) {
       if (cancelled()) {
@@ -175,11 +207,14 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
               defaultValue: undefined,
             })
           : Promise.resolve(result$);
-        await untilSettledOrAborted(work, run);
-        if (cancelled()) {
+        const outcome = await untilSettledOrAborted(work, run);
+        // An inner action that reports its own cancellation ends the run
+        // the same way, never as a success.
+        if (cancelled() || outcome === CNGX_ASYNC_CANCELLED) {
           return cancel();
         }
         retryingState.set(false);
+        lastErrorState.set(undefined);
         succeededState.set(true);
         return undefined;
       } catch (err: unknown) {
@@ -207,7 +242,7 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
   };
 
   const retryableAction: AsyncAction = async (abort?: AbortSignal): Promise<unknown> => {
-    if (abort?.aborted) {
+    if (destroyed || abort?.aborted) {
       return CNGX_ASYNC_CANCELLED;
     }
     const thisGeneration = ++generation;
@@ -269,7 +304,7 @@ function backoffDelay(ms: number, abort?: AbortSignal): Promise<void> {
  *
  * Same function, same contract: it honours the runner's `AbortSignal`,
  * resolves `CNGX_ASYNC_CANCELLED` for a cancelled run, and a direct call
- * without a signal has no destroy binding.
+ * without a signal is bound to the owner only through `destroyRef`.
  *
  * @deprecated Use `createRetry` - this name is removed at the v1.0 cut
  * (`with*` is reserved for provider feature functions).

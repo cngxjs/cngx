@@ -43,7 +43,7 @@ export interface InjectAsyncStateOptions {
  * to explicitly re-trigger the query.
  */
 export interface ReactiveAsyncState<T> extends CngxAsyncState<T> {
-  /** Explicitly re-trigger the query. */
+  /** Explicitly re-trigger the query. Does nothing after the owner is destroyed. */
   refresh(): void;
 }
 
@@ -74,6 +74,7 @@ export function injectAsyncState<T>(
   let activeSubscription: Subscription | undefined;
   let abortController: AbortController | undefined;
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  let destroyed = false;
 
   function cancelInFlight(): void {
     activeSubscription?.unsubscribe();
@@ -83,6 +84,7 @@ export function injectAsyncState<T>(
   }
 
   destroyRef.onDestroy(() => {
+    destroyed = true;
     cancelInFlight();
     if (debounceTimer !== undefined) {
       clearTimeout(debounceTimer);
@@ -108,7 +110,14 @@ export function injectAsyncState<T>(
     const status = untracked(state.isFirstLoad) ? 'loading' : 'refreshing';
     state.set(status);
 
-    const result$ = computation();
+    let result$: Promise<T> | Observable<T>;
+    try {
+      result$ = computation();
+    } catch (err: unknown) {
+      // Same outcome as a synchronous throw on the effect path.
+      state.setError(err);
+      return;
+    }
 
     if (isObservable(result$)) {
       let hasEmitted = false;
@@ -203,6 +212,9 @@ export function injectAsyncState<T>(
     lastUpdated: state.lastUpdated,
 
     refresh(): void {
+      if (destroyed) {
+        return;
+      }
       if (debounceTimer !== undefined) {
         clearTimeout(debounceTimer);
         debounceTimer = undefined;

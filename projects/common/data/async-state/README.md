@@ -65,7 +65,7 @@ async handleHeavyWork() {
 
 ### `createAsyncState<T>(): MutableAsyncState<T>`
 
-Create mutation state for explicit user-triggered actions (POST/PUT/DELETE). Sets `pending` before execution, then `success` or `error` on completion. Cancels in-flight requests if superseded.
+Create mutation state for explicit user-triggered actions (POST/PUT/DELETE). Sets `pending` before execution, then `success` or `error` on completion. A superseded, reset or destroyed run writes nothing: an Observable action is unsubscribed (an `HttpClient` request is cancelled), a Promise action keeps running and its result is dropped.
 
 **Requires:** Injection context (field initializer or constructor).
 
