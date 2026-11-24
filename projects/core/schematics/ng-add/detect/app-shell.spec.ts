@@ -608,6 +608,8 @@ describe('testsCompileModule', () => {
   it('fails closed on an installed manifest it cannot read and on no version at all', () => {
     expect(testsCompileModule({ version: '21.2.2', source: 'unreadable' }, '^21.2.2')).toBe(false);
     expect(testsCompileModule({ version: undefined, source: undefined }, undefined)).toBe(false);
+    expect(testsCompileModule(installed('latest'), undefined)).toBe(false);
+    expect(testsCompileModule({ version: undefined, source: 'range' }, 'latest')).toBe(false);
   });
 });
 

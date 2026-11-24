@@ -706,16 +706,20 @@ function isBlocked(root: Bootstrapped | AppShellBlocked): root is AppShellBlocke
 // prerelease sorts below 22.3.0 and stays closed; major 23 is unproven.
 const FIRST_SCOPED_22 = '22.3.0';
 
+/** The `@angular/build` versions `testsCompileModule` admits, as the refusal note names them. */
+export const SCOPED_TEST_BUILDS = `21.x or 22.x at ${FIRST_SCOPED_22} or later`;
+
 // A declared range that admits one major alone: `22`, `^22.3.0`, `~22.3.1`,
 // `22.3.1`, a prerelease of one of them. Its lowest version decides.
 const SINGLE_MAJOR_RANGE = /^[~^]?\d+(\.\d+){0,2}(-[0-9A-Za-z.-]+)?$/;
 
 function scopedBuild(version: string): boolean {
-  const major = parseVersion(version)?.major;
-  if (major === 21) {
-    return true;
+  const order = compareVersions(version, FIRST_SCOPED_22);
+  if (order === undefined) {
+    return false;
   }
-  return major === 22 && (compareVersions(version, FIRST_SCOPED_22) ?? -1) >= 0;
+  const major = parseVersion(version)?.major;
+  return major === 21 || (major === 22 && order >= 0);
 }
 
 /**
@@ -727,11 +731,14 @@ function scopedBuild(version: string): boolean {
  * as no (fail-closed).
  */
 export function testsCompileModule(build: AngularVersion, range: string | undefined): boolean {
+  if (build.version === undefined) {
+    return false;
+  }
   if (build.source === 'installed') {
-    return build.version !== undefined && scopedBuild(build.version);
+    return scopedBuild(build.version);
   }
   const declared = range?.trim();
-  return build.source === 'range' && declared !== undefined && SINGLE_MAJOR_RANGE.test(declared) && scopedBuild(declared);
+  return build.source === 'range' && declared !== undefined && SINGLE_MAJOR_RANGE.test(declared) && scopedBuild(build.version);
 }
 
 /**

@@ -346,7 +346,7 @@ and the outlets alike, is unknown
 fixed in 22.3.0). Anywhere else, an installed manifest it cannot read, a
 range that spans majors and major 23 included, the NgModule spec gets no
 outlet, a custom one too, and the note reads
-`<file> belongs to an NgModule app without @angular/build 21 or 22.3.0 or later installed; on 22.0 to 22.2 and on 22.3 prereleases its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231, fixed in 22.3.0), so cngx places no outlet`,
+`<file> belongs to an NgModule app without @angular/build 21.x or 22.x at 22.3.0 or later installed; on 22.0 to 22.2 and on 22.3 prereleases its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231, fixed in 22.3.0), so cngx places no outlet`,
 followed by the snippet, what the TestBed needs and the import of the root
 NgModule to add to the spec (`import './app-module';`), which lets the test
 build compile `App` with it.

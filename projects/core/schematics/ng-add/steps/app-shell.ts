@@ -25,6 +25,7 @@ import {
   outletEdits,
   moduleSpecWithFeedback,
   type ProjectFacts,
+  SCOPED_TEST_BUILDS,
 } from '../detect/detect';
 import { selectedLibs } from './dependencies';
 import { type OnboardingAnswers, type Versions } from './model';
@@ -129,7 +130,7 @@ export function specCustomReason(file: string): string {
  */
 export function specUnscopedReason(file: string): string {
   return (
-    `${file} belongs to an NgModule app without @angular/build 21 or 22.3.0 or later installed; on 22.0 to 22.2 ` +
+    `${file} belongs to an NgModule app without @angular/build ${SCOPED_TEST_BUILDS} installed; on 22.0 to 22.2 ` +
     'and on 22.3 prereleases its unit-test builder compiles the root component there without its NgModule ' +
     '(angular/angular-cli#34231, fixed in 22.3.0), so cngx places no outlet'
   );
