@@ -3,34 +3,97 @@
 
 // Material bridge for CngxContextMenu (+ item / divider shells). Default
 // visuals ship with the component (context-menu.component.css +
-// context-menu-item.component.css); this file aligns the popup surface,
-// border, elevation, and the caret / checked-indicator ink with Material.
-// Spacing stays derived from the global --cngx-space-* scale in the component
-// CSS, so Material density flows through the system density bridge - no
-// per-component density mixin here.
+// context-menu-item.component.css); this file brings the open panel and its
+// rows onto mat-menu.
 //
 //   @use '@cngx/themes/material/context-menu-theme' as context-menu;
 //   html { @include context-menu.theme($theme); }
+//
+// M3 mat-menu at comfortable, as the bridge maps it (the menu-theme values;
+// menu-theme never reaches this host, `[cngxMenu]` is a host directive):
+//
+//   panel       surface-container, no border, corner-extra-small, MDC elevation 2
+//   width       112 min (sm * 14)
+//   list        8 block (sm), 0 inline: the item state layer runs edge to edge
+//   item        48 high: 20 label line + 2 * 14 block (sm * 1.75), 12 inline
+//               (sm * 1.5), square corners, label-large, on-surface
+//   highlight   on-surface hover state layer (8%)
+//
+// Spacing derives from the --cngx-space-* scale, so a density island scales
+// the menu the way Material density scales mat-menu.
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-context-menu-surface: var(--mat-sys-surface-container);
     --cngx-context-menu-color: var(--mat-sys-on-surface);
-    --cngx-context-menu-border: 1px solid var(--mat-sys-outline-variant);
-    --cngx-context-menu-shadow: 0
-      4px
-      16px
-      color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
+    --cngx-context-menu-border: none;
+    // mat-menu paints the MDC elevation-2 shadow (`elevation.get-box-shadow(2)`
+    // in `_m3-menu.scss`), not --mat-sys-level2; literal like the paginator panel.
+    --cngx-context-menu-shadow:
+      0 3px 1px -2px rgb(0 0 0 / 0.2), 0 2px 2px 0 rgb(0 0 0 / 0.14), 0 1px 5px 0 rgb(0 0 0 / 0.12);
     --cngx-context-menu-separator-color: var(--mat-sys-outline-variant);
     --cngx-context-menu-item-caret-color: var(--mat-sys-on-surface-variant);
     --cngx-context-menu-item-check-color: var(--mat-sys-primary);
+    --cngx-menu-item-highlight-bg: color-mix(
+      in srgb,
+      var(--mat-sys-on-surface) calc(var(--mat-sys-hover-state-layer-opacity, 0.08) * 100%),
+      transparent
+    );
+  }
+}
+
+@mixin shape($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-context-menu-radius: var(--mat-sys-corner-extra-small, 4px);
+  }
+}
+
+$_items: ':is(cngx-context-menu-item, button[cngxContextMenuItem], cngx-context-menu-item-checkbox, button[cngxContextMenuItemCheckbox], cngx-context-menu-item-radio, button[cngxContextMenuItemRadio])';
+
+// The component SETs the panel padding and the item tokens per element
+// (`cngx-context-menu` (0,0,1), the item hosts up to (0,1,1)), so these raw
+// rules carry real specificity: the panel `:is()` doubling (0,0,2), the items
+// under the panel (0,1,2). The single-length --cngx-context-menu-padding
+// cannot express 8px / 0 and no min-width or type token exists, so those
+// lines write the PROPERTY; consumer override: an unlayered property rule on
+// the panel or the item. The item metrics stay TOKENS.
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      cngx-context-menu:is(cngx-context-menu) {
+        padding: var(--cngx-space-sm, 8px) 0;
+        min-inline-size: calc(var(--cngx-space-sm, 8px) * 14);
+      }
+      cngx-context-menu #{$_items} {
+        --cngx-context-menu-item-gap: calc(var(--cngx-space-sm, 8px) * 1.5);
+        --cngx-context-menu-item-padding: calc(var(--cngx-space-sm, 8px) * 1.75)
+          calc(var(--cngx-space-sm, 8px) * 1.5);
+        --cngx-context-menu-item-radius: 0px;
+        font-family: var(--mat-sys-label-large-font, inherit);
+        font-size: var(--mat-sys-label-large-size, 0.875rem);
+        line-height: var(--mat-sys-label-large-line-height, 1.25rem);
+        font-weight: var(--mat-sys-label-large-weight, 500);
+        letter-spacing: var(--mat-sys-label-large-tracking, 0.006rem);
+        // mat-menu-item renders its label with grayscale smoothing; without it
+        // the same 500 weight reads bolder on macOS.
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      // The type role above outranks the checked weight; keep the cue.
+      cngx-context-menu #{$_items}.cngx-menu-item--checked {
+        font-weight: var(--cngx-menu-item-checked-font-weight, 600);
+      }
+    }
   }
 }
 
 @mixin theme($theme) {
-  // The item colour tokens are inherits:true, so setting the whole family on
-  // the container cascades to every projected item / divider row.
+  // The colour tokens are inherits:true, so setting the whole family on the
+  // container cascades to every projected item / divider row. The radius is
+  // inherits:false and read on the container itself.
   @include bridge.on(cngx-context-menu) {
     @include color($theme);
+    @include shape($theme);
   }
+  @include metrics($theme);
 }

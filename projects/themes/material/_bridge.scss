@@ -36,10 +36,10 @@
 // unlayered because Material's own `.mat-icon` rule is unlayered and beats
 // any layer; select-theme's option row, button-theme's `metrics()` and
 // `shape()`, and the `metrics()` of badge-theme, chip-theme,
-// button-toggle-theme and card-theme emit raw `@layer cngx.components`
-// rules with real specificity, because the tokens they set (or the
-// properties they write where no token exists) are SET per element inside
-// the component's `@scope`.
+// button-toggle-theme, card-theme and context-menu-theme emit raw
+// `@layer cngx.components` rules with real specificity, because the tokens
+// they set (or the properties they write where no token exists) are SET per
+// element by the component (inside its `@scope` or on its element type).
 
 /// Emits the content block for `$selectors` inside `@layer cngx.components`
 /// wrapped in a single zero-specificity `:where(...)`. Pass plain element
