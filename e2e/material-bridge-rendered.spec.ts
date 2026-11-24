@@ -1275,7 +1275,22 @@ test.describe('material-bridge rendered values: copy-block', () => {
 <cngx-copy-block class="cngx-copy-block">
   <div class="cngx-copy-block__content"><code>npm install</code></div>
   <button id="copy-done" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
-</cngx-copy-block>`;
+</cngx-copy-block>
+<div style="--cngx-copy-block-btn-copied-bg: rgb(1, 2, 3)">
+  <cngx-copy-block class="cngx-copy-block">
+    <button id="copy-themed" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
+  </cngx-copy-block>
+</div>
+<div class="dark">
+  <cngx-copy-block class="cngx-copy-block">
+    <button id="copy-dark-class" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
+  </cngx-copy-block>
+</div>
+<div data-color-scheme="dark">
+  <cngx-copy-block class="cngx-copy-block">
+    <button id="copy-dark-attr" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
+  </cngx-copy-block>
+</div>`;
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -1305,6 +1320,23 @@ test.describe('material-bridge rendered values: copy-block', () => {
     expect(await computedValue(page, '#copy-done', 'border-top-color')).toBe(matSys('tertiary'));
     expect(await computedValue(page, '#copy-done', 'color')).toBe(matSys('tertiary'));
   });
+
+  test('an ancestor SET of the copied background wins over the bridge', async ({ page }) => {
+    expect(await computedValue(page, '#copy-themed', 'background-color')).toBe('rgb(1, 2, 3)');
+  });
+
+  test('a dark scheme scope keeps the tertiary set under the bridge', async ({ page }) => {
+    // copy-block.css SETs dark literals on these scopes; the bridge re-asserts
+    // its values there.
+    const tint = await resolvedColor(
+      page,
+      `color-mix(in srgb, ${matSys('tertiary')} 12%, transparent)`,
+    );
+    for (const id of ['#copy-dark-class', '#copy-dark-attr']) {
+      expect(await computedValue(page, id, 'background-color'), id).toBe(tint);
+      expect(await computedValue(page, id, 'color'), id).toBe(matSys('tertiary'));
+    }
+  });
 });
 
 test.describe('material-bridge rendered values: async-click', () => {
@@ -1313,7 +1345,10 @@ test.describe('material-bridge rendered values: async-click', () => {
 
   const ASYNC_HTML = `
 <button id="async-ok" type="button" class="cngx-async cngx-async--success" style="border: 1px solid">Save</button>
-<button id="async-fail" type="button" class="cngx-async cngx-async--error" style="border: 1px solid">Save</button>`;
+<button id="async-fail" type="button" class="cngx-async cngx-async--error" style="border: 1px solid">Save</button>
+<div style="--cngx-async-success-bg: rgb(1, 2, 3)">
+  <button id="async-themed" type="button" class="cngx-async cngx-async--success" style="border: 1px solid">Save</button>
+</div>`;
 
   test.beforeEach(async ({ page }) => {
     await renderFixture(page, {
@@ -1337,6 +1372,11 @@ test.describe('material-bridge rendered values: async-click', () => {
     );
     expect(await computedValue(page, '#async-fail', 'color')).toBe(matSys('error'));
     expect(await computedValue(page, '#async-fail', 'border-top-color')).toBe(matSys('error'));
+  });
+
+  test('an ancestor SET of a colour token wins over the bridge', async ({ page }) => {
+    expect(await computedValue(page, '#async-themed', 'background-color')).toBe('rgb(1, 2, 3)');
+    expect(await computedValue(page, '#async-themed', 'color')).toBe(matSys('primary'));
   });
 });
 

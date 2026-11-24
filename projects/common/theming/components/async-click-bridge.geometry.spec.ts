@@ -7,11 +7,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cdp } from 'vitest/browser';
 
 // Runs in a real Chromium (the `test-geometry` target) against the compiled
-// async-click Material bridge (async-click-bridge.spec-host.scss). The hosts
-// bind `[cngxAsyncClick]="fn"`, the only form the directive is used in: a
-// property binding with no attribute in the DOM. A bridge selector that
-// matches nothing leaves the `--cngx-async-*` tokens unset and the semantic
-// tint paints, so these probes read the bridged Material roles on the host.
+// async-click Material bridge (async-click-bridge.spec-host.scss). The bridge
+// sets the `--cngx-async-*` colour tokens on the theme host (`html`); they are
+// registered `inherits: true`, so they arrive on every state host by
+// inheritance. The hosts bind `[cngxAsyncClick]="fn"`, a property binding with
+// no attribute in the DOM, and these probes read the bridged Material roles on
+// them. An ancestor SET between the theme host and the state host wins.
 
 @Component({
   selector: 'cngx-async-click-bridge-host',
@@ -47,6 +48,17 @@ import { cdp } from 'vitest/browser';
     >
       Save
     </button>
+    <div
+      class="themed"
+      style="--cngx-async-success-bg: rgb(1, 2, 3); --cngx-async-error-color: rgb(4, 5, 6)"
+    >
+      <button type="button" class="ok" [cngxAsyncClick]="succeed" [feedbackDuration]="60000">
+        Save
+      </button>
+      <button type="button" class="fail" [cngxAsyncClick]="fail" [feedbackDuration]="60000">
+        Save
+      </button>
+    </div>
     <span class="probe-primary" style="color: var(--mat-sys-primary)"></span>
     <span
       class="probe-primary-bg"
@@ -136,6 +148,14 @@ describe('async-click Material bridge, rendered', () => {
     const error = computedValue(one(root, '.probe-error'), 'color');
     expect(computedValue(el, 'color')).toBe(error);
     expect(computedValue(el, 'border-top-color')).toBe(error);
+  });
+
+  it('lets an ancestor SET of a colour token reach the state host under the bridge', async () => {
+    const root = mount();
+    const ok = await settle(one(root, '.themed .ok'), 'cngx-async--success');
+    expect(computedValue(ok, 'background-color')).toBe('rgb(1, 2, 3)');
+    const fail = await settle(one(root, '.themed .fail'), 'cngx-async--error');
+    expect(computedValue(fail, 'color')).toBe('rgb(4, 5, 6)');
   });
 
   it('reaches a cngxButton host without repainting it', async () => {

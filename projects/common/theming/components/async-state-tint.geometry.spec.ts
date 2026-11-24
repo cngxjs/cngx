@@ -188,6 +188,16 @@ describe.each(SCHEMES)('cngx-async state tint, %s', (scheme) => {
     expect(computedValue(el, 'border-top-color')).toBe(probe(root, 'danger'));
   });
 
+  it('transitions opacity out of the pending dim on success and error', async () => {
+    const root = mount();
+    const ok = await settle(at(root, '.ok'), 'cngx-async--success');
+    const fail = await settle(at(root, '.fail'), 'cngx-async--error');
+    for (const el of [ok, fail]) {
+      const props = computedValue(el, 'transition-property').split(',').map((p) => p.trim());
+      expect(props, el.className).toContain('opacity');
+    }
+  });
+
   it('dims a pending run by the registered pending opacity', async () => {
     const root = mount();
     const el = await settle(at(root, '.busy'), 'cngx-async--pending');
