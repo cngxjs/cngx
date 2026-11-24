@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'While any source is <code>loading</code> or <code>pending</code>, the combined status is <code>loading</code> and <code>*cngxAsync</code> shows one aggregate skeleton - the screen never renders a half-loaded state.',
   description:
-    'The 5-step status rule puts loading above refreshing and success, so a single in-flight source holds the whole boundary in the skeleton view until every source settles.',
+    'The 5-step status rule puts loading above refreshing and success, so a single in-flight source holds the whole boundary in the skeleton view until every source settles. The skeleton belongs to the first load only: once every source has loaded, putting one back to <code>loading</code> keeps the content visible while the aggregate status reads <code>loading</code> and <code>aria-busy</code> is true.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -56,7 +56,7 @@ export const STORY: DemoSpec = {
   }`,
   templateChromeBefore: `<div class="button-row" style="margin-bottom:16px">
     <button type="button" class="chip" (click)="resolveFlags()">Resolve the loading source</button>
-    <button type="button" class="chip" (click)="reloadFlags()">Put it back to loading</button>
+    <button type="button" class="chip" (click)="reloadFlags()">Refresh the source (content stays)</button>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">
