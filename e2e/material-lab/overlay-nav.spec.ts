@@ -221,7 +221,7 @@ for (const scheme of ['light', 'dark'] as const) {
       }
     });
 
-    test('popover-sheet: the open sheet matches mat-bottom-sheet in surface, corner, type and scrim', async ({
+    test('popover-sheet: the open sheet matches mat-bottom-sheet in surface, corner, padding, elevation, type and scrim', async ({
       page,
     }) => {
       const matSheet = '.mat-bottom-sheet-container';
@@ -232,9 +232,14 @@ for (const scheme of ['light', 'dark'] as const) {
         'border-top-left-radius',
         'border-top-right-radius',
         'padding-left',
+        'padding-top',
+        'padding-bottom',
+        'box-shadow',
+        'font-family',
         'font-size',
         'line-height',
         'font-weight',
+        'letter-spacing',
       ];
 
       await page.click(pair('popover-sheet', '.probe-mat-trigger'));

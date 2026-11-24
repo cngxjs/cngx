@@ -3,8 +3,8 @@
 
 // Material bridge for CngxPopoverSheet. Default visuals ship with the
 // directive (projects/common/theming/components/cngx-popover-sheet.css);
-// this file maps surface, colour, shadow, radius, scrim and handle onto
-// the Material bottom-sheet anatomy.
+// this file maps surface, colour, shadow, radius, scrim, handle, padding and
+// type onto the Material bottom-sheet anatomy.
 //
 //   @use '@cngx/themes/material/popover-sheet-theme' as popover-sheet;
 //   @include popover-sheet.theme($theme);
@@ -13,10 +13,11 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-popover-sheet-surface: var(--mat-sys-surface-container-low);
     --cngx-popover-sheet-color: var(--mat-sys-on-surface);
-    --cngx-popover-sheet-shadow: 0
-      -2px
-      12px
-      color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
+    // mat-bottom-sheet paints the MDC elevation-16 shadow literally
+    // (`.mat-bottom-sheet-container`), not a --mat-sys-level* token.
+    --cngx-popover-sheet-shadow:
+      0 8px 10px -5px rgb(0 0 0 / 0.2), 0 16px 24px 2px rgb(0 0 0 / 0.14),
+      0 6px 30px 5px rgb(0 0 0 / 0.12);
     --cngx-popover-sheet-backdrop: color-mix(in srgb, var(--mat-sys-scrim) 32%, transparent);
     --cngx-popover-sheet-handle-color: color-mix(
       in srgb,
@@ -33,9 +34,38 @@
   }
 }
 
+// The sheet sets no font, so body-large lands as plain properties.
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    font-family: var(--mat-sys-body-large-font, Roboto, sans-serif);
+    font-size: var(--mat-sys-body-large-size, 1rem);
+    line-height: var(--mat-sys-body-large-line-height, 1.5rem);
+    font-weight: var(--mat-sys-body-large-weight, 400);
+    letter-spacing: var(--mat-sys-body-large-tracking, 0.031rem);
+  }
+}
+
+// mat-bottom-sheet pads 8px block, 16px inline. The one padding token feeds
+// block and inline alike and inline already matches, so this raw rule
+// (0,3,0, beats the (0,2,0) read site) writes the block PROPERTY only; the
+// bottom keeps the safe-area floor. Consumer override: the token still
+// drives inline; block via an unlayered property rule.
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      .cngx-popover-sheet.cngx-popover-sheet[data-cngx-presentation='sheet'] {
+        padding-block: var(--cngx-space-sm, 8px)
+          max(var(--cngx-space-sm, 8px), env(safe-area-inset-bottom, 0px));
+      }
+    }
+  }
+}
+
 @mixin theme($theme) {
   @include bridge.on('.cngx-popover-sheet') {
     @include color($theme);
     @include shape($theme);
+    @include typography($theme);
   }
+  @include metrics($theme);
 }
