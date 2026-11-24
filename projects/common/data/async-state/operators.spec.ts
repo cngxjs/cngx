@@ -53,10 +53,11 @@ describe('tapAsyncState', () => {
     expect(state.isBusy()).toBe(false);
   });
 
-  it('an empty complete resets to idle, a settled stream keeps its result', () => {
+  it('an empty complete settles success with undefined data, a settled stream keeps its result', () => {
     const state = createManualState<string>();
     EMPTY.pipe(tapAsyncState(state)).subscribe();
-    expect(state.status()).toBe('idle');
+    expect(state.status()).toBe('success');
+    expect(state.data()).toBeUndefined();
 
     of('a').pipe(tapAsyncState(state)).subscribe();
     expect(state.status()).toBe('success');

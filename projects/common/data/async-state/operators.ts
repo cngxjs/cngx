@@ -36,8 +36,9 @@ interface AsyncStateSink<T> {
  * read via the sink's `isFirstLoad`; an explicit `options.status` wins).
  * On next: calls `setSuccess(value)`.
  * On error: calls `setError(err)` and **re-throws** (does not swallow).
- * On teardown without a value (unsubscribe mid-flight, empty complete):
- * resets the sink to `idle` so a cancelled request never leaves it busy.
+ * On complete without a value: calls `setSuccess(undefined)`.
+ * On unsubscribe before any value: resets the sink to `idle` so a cancelled
+ * request never leaves it busy.
  *
  * The Observable passes through unchanged - `tapAsyncState` is a side-effect operator.
  *
@@ -70,10 +71,16 @@ export function tapAsyncState<T>(
             settled = true;
             state.setError(err);
           },
+          complete: () => {
+            if (!settled) {
+              settled = true;
+              state.setSuccess(undefined as T);
+            }
+          },
         }),
         finalize(() => {
-          // Torn down without ever settling (cancelled mid-flight or an
-          // empty complete) - do not leave the sink busy forever.
+          // Torn down without ever settling (cancelled mid-flight) - do not
+          // leave the sink busy forever.
           if (!settled) {
             state.set('idle');
           }
