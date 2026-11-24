@@ -152,30 +152,76 @@ for (const scheme of ['light', 'dark'] as const) {
       expect(await textRect(page, cngxSurface, cngxSurface)).toEqual(matText);
     });
 
-    test('context-menu: the open panel and its items match mat-menu in surface and ink', async ({
+    test('context-menu: the open panel and its items match mat-menu in surface, shape, metrics and type', async ({
       page,
     }) => {
       const matPanel = '.mat-mdc-menu-panel';
+      const matContent = `${matPanel} .mat-mdc-menu-content`;
+      const matItem = `${matPanel} .mat-mdc-menu-item:nth-of-type(2)`;
       const cngxPanel = 'cngx-context-menu:popover-open';
+      const cngxItem = `${cngxPanel} cngx-context-menu-item:nth-of-type(2)`;
+      // Type is read where the label paints: mat-menu sets it on the text span,
+      // the item host only carries the row.
+      const matText = `${matItem} .mat-mdc-menu-item-text`;
+      const cngxText = `${cngxItem} [cngxMenuItemLabel]`;
+      // The panel paints surface, corner, shadow and border; Material pads the
+      // list inside it (.mat-mdc-menu-content), cngx pads the panel itself.
+      const panelProps = [
+        'background-color',
+        'border-top-left-radius',
+        'border-bottom-right-radius',
+        'box-shadow',
+        'border-top-width',
+        'min-width',
+      ];
+      const padProps = ['padding-top', 'padding-bottom', 'padding-left', 'padding-right'];
+      const itemProps = [
+        'color',
+        'padding-left',
+        'padding-right',
+        'border-top-left-radius',
+        // Computed, not the box: WebKit can read the rect while the panel's
+        // scale-in is still running.
+        'height',
+      ];
+      const typeProps = [
+        'font-family',
+        'font-size',
+        'line-height',
+        'font-weight',
+        'letter-spacing',
+      ];
 
       await page.click(pair('context-menu', '.probe-mat-trigger'), { button: 'right' });
       await expect(page.locator(matPanel)).toBeVisible();
       await settle(page);
-      const matSurface = await computedValue(page, matPanel, 'background-color');
-      const matItemInk = await computedValue(page, `${matPanel} .mat-mdc-menu-item`, 'color');
+      const values = async (selector: string, props: readonly string[]): Promise<string[]> =>
+        Promise.all(props.map((p) => computedValue(page, selector, p)));
+      const matPanelValues = await values(matPanel, panelProps);
+      const matPadValues = await values(matContent, padProps);
+      const matItemValues = await values(matItem, itemProps);
+      const matTypeValues = await values(matText, typeProps);
       await page.keyboard.press('Escape');
       await expect(page.locator(matPanel)).toHaveCount(0);
 
       await page.click(pair('context-menu', '.probe-cngx-trigger'), { button: 'right' });
       await expect(page.locator(cngxPanel)).toBeVisible();
       await settle(page);
-      expect(await computedValue(page, cngxPanel, 'background-color')).toBe(matSurface);
-      expect(
-        await computedValue(page, `${cngxPanel} cngx-context-menu-item:nth-of-type(2)`, 'color'),
-      ).toBe(matItemInk);
+      for (const [i, p] of panelProps.entries()) {
+        expect(await computedValue(page, cngxPanel, p), `panel ${p}`).toBe(matPanelValues[i]);
+      }
+      for (const [i, p] of padProps.entries()) {
+        expect(await computedValue(page, cngxPanel, p), `panel ${p}`).toBe(matPadValues[i]);
+      }
+      for (const [i, p] of itemProps.entries()) {
+        expect(await computedValue(page, cngxItem, p), `item ${p}`).toBe(matItemValues[i]);
+      }
+      for (const [i, p] of typeProps.entries()) {
+        expect(await computedValue(page, cngxText, p), `label ${p}`).toBe(matTypeValues[i]);
+      }
     });
 
-    test('popover-sheet: the open sheet matches mat-bottom-sheet in surface, corner, type and scrim', async ({
+    test('popover-sheet: the open sheet matches mat-bottom-sheet in surface, corner, padding, elevation, type and scrim', async ({
       page,
     }) => {
       const matSheet = '.mat-bottom-sheet-container';
@@ -186,9 +232,14 @@ for (const scheme of ['light', 'dark'] as const) {
         'border-top-left-radius',
         'border-top-right-radius',
         'padding-left',
+        'padding-top',
+        'padding-bottom',
+        'box-shadow',
+        'font-family',
         'font-size',
         'line-height',
         'font-weight',
+        'letter-spacing',
       ];
 
       await page.click(pair('popover-sheet', '.probe-mat-trigger'));
