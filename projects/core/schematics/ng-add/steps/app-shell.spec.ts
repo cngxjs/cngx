@@ -547,7 +547,7 @@ describe('planAppShell next to the ng new NgModule spec', () => {
     expect(provideFeedbackInNgModuleSpec(spec, 'fixture-app')).toBe(spec);
   });
 
-  it('holds the NgModule spec back, with its own reason, where @angular/build 21 is not installed', async () => {
+  it('holds the NgModule spec back, with its own reason, where neither @angular/build 21 nor 22.3.0 or later is installed', async () => {
     for (const [name, overrides] of [
       ['scaffold-22-ngmodule', {}],
       ['scaffold-21-ngmodule', { 'package.json': on22(readFixture('scaffold-21-ngmodule')['package.json']) }],

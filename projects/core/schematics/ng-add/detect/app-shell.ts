@@ -4,6 +4,7 @@ import {
   addNamedImports,
   addToArrayLiteral,
   appendElements,
+  compareVersions,
   type DecoratorReading,
   declaresClass,
   ensureArrayProperty,
@@ -697,29 +698,40 @@ function isBlocked(root: Bootstrapped | AppShellBlocked): root is AppShellBlocke
   return 'reason' in root;
 }
 
-// The @angular/build major whose unit-test builder compiles the root
-// NgModule with the specs. From 22.2 it compiles only what the specs import,
-// so the root component of the stock spec compiles without its NgModule and
-// every outlet is an unknown element (angular/angular-cli#34231). The fix
-// ships with 22.3; it opens only once cngx has run the 22.3 NgModule app.
-const SCOPED_TEST_BUILD_MAJOR = 21;
+// The @angular/build versions whose unit-test builder compiles the root
+// NgModule with the specs: major 21, and 22.3.0 or later on major 22. From
+// 22.0 to 22.2 it compiles only what the specs import, so the root component
+// of the stock spec compiles without its NgModule and every outlet is an
+// unknown element (angular/angular-cli#34231, fixed in 22.3.0). A 22.3
+// prerelease sorts below 22.3.0 and stays closed; major 23 is unproven.
+const FIRST_SCOPED_22 = '22.3.0';
 
-// A declared range that admits only that major: `21`, `^21.2.0`, `~21.2.3`,
-// `21.2.3`, a prerelease of one of them.
-const SCOPED_RANGE = /^[~^]?21(\.\d+){0,2}(-[0-9A-Za-z.-]+)?$/;
+// A declared range that admits one major alone: `22`, `^22.3.0`, `~22.3.1`,
+// `22.3.1`, a prerelease of one of them. Its lowest version decides.
+const SINGLE_MAJOR_RANGE = /^[~^]?\d+(\.\d+){0,2}(-[0-9A-Za-z.-]+)?$/;
+
+function scopedBuild(version: string): boolean {
+  const major = parseVersion(version)?.major;
+  if (major === 21) {
+    return true;
+  }
+  return major === 22 && (compareVersions(version, FIRST_SCOPED_22) ?? -1) >= 0;
+}
 
 /**
  * Whether the app's unit-test build compiles the root NgModule with the
- * specs: an installed `@angular/build` on major 21, or, with none installed,
- * a declared range that admits only major 21. An installed manifest cngx
- * cannot read, a range that spans majors, a tag or nothing at all count as
- * no (fail-closed).
+ * specs: an installed `@angular/build` on major 21 or at 22.3.0 or later on
+ * major 22, or, with none installed, a declared range that admits one major
+ * alone and whose lowest version is such a version. An installed manifest
+ * cngx cannot read, a range that spans majors, a tag or nothing at all count
+ * as no (fail-closed).
  */
 export function testsCompileModule(build: AngularVersion, range: string | undefined): boolean {
   if (build.source === 'installed') {
-    return parseVersion(build.version)?.major === SCOPED_TEST_BUILD_MAJOR;
+    return build.version !== undefined && scopedBuild(build.version);
   }
-  return build.source === 'range' && range !== undefined && SCOPED_RANGE.test(range.trim());
+  const declared = range?.trim();
+  return build.source === 'range' && declared !== undefined && SINGLE_MAJOR_RANGE.test(declared) && scopedBuild(declared);
 }
 
 /**

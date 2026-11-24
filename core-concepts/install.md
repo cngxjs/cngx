@@ -334,18 +334,19 @@ provide them and `ng test` would fail. The note then reads
 followed by the outlets snippet and what the spec needs. A missing spec is
 no reason to stop.
 
-The NgModule spec is edited only where `@angular/build` 21 is installed,
-or, before the install, where `package.json` declares a range that admits
-major 21 alone (`^21.2.0`, `~21.2.3`, `21.2.3`). From 22.2 its unit-test
-builder compiles only the specs and what they import, so `App` compiles
-without `AppModule` and every element from it, `<router-outlet>` and the
-outlets alike, is unknown
-([angular/angular-cli#34231](https://github.com/angular/angular-cli/issues/34231)).
-The fix is set for 22.3; cngx keeps 22 closed until it has run that
-release. Anywhere else, an installed manifest it cannot read and a range
-that spans majors included, the NgModule spec gets no outlet, a custom one
-too, and the note reads
-`<file> belongs to an NgModule app without @angular/build 21 installed; from 22.2 its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231), so cngx places no outlet`,
+The NgModule spec is edited only where `@angular/build` 21, or 22.3.0 or
+later on major 22, is installed, or, before the install, where
+`package.json` declares a range that admits one major alone and whose
+lowest version is such a version (`^21.2.0`, `~21.2.3`, `^22.3.0`,
+`~22.3.1`, `22.3.0`). From 22.0 to 22.2, and on 22.3 prereleases, its
+unit-test builder compiles only the specs and what they import, so `App`
+compiles without `AppModule` and every element from it, `<router-outlet>`
+and the outlets alike, is unknown
+([angular/angular-cli#34231](https://github.com/angular/angular-cli/issues/34231),
+fixed in 22.3.0). Anywhere else, an installed manifest it cannot read, a
+range that spans majors and major 23 included, the NgModule spec gets no
+outlet, a custom one too, and the note reads
+`<file> belongs to an NgModule app without @angular/build 21 or 22.3.0 or later installed; on 22.0 to 22.2 and on 22.3 prereleases its unit-test builder compiles the root component there without its NgModule (angular/angular-cli#34231, fixed in 22.3.0), so cngx places no outlet`,
 followed by the snippet, what the TestBed needs and the import of the root
 NgModule to add to the spec (`import './app-module';`), which lets the test
 build compile `App` with it.

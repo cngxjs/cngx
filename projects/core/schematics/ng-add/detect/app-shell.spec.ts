@@ -586,18 +586,21 @@ describe('testsCompileModule', () => {
   const installed = (version: string) => ({ version, source: 'installed' }) as const;
   const range = (value: string) => ({ version: value.replace(/^[~^]/, ''), source: 'range' }) as const;
 
-  it('reads an installed @angular/build by its major, prereleases included', () => {
+  it('reads an installed @angular/build: major 21 with prereleases, 22.3.0 and later on major 22', () => {
     expect(testsCompileModule(installed('21.2.27'), '^22.2.3')).toBe(true);
     expect(testsCompileModule(installed('21.0.0-rc.1'), undefined)).toBe(true);
-    expect(testsCompileModule(installed('22.2.3'), '^21.2.2')).toBe(false);
-    expect(testsCompileModule(installed('22.3.0-next.2'), undefined)).toBe(false);
+    expect(testsCompileModule(installed('22.3.0'), '^22.2.3')).toBe(true);
+    expect(testsCompileModule(installed('22.4.1'), undefined)).toBe(true);
+    for (const version of ['22.2.3', '22.3.0-rc.0', '22.3.0-next.2', '23.0.0']) {
+      expect({ version, scoped: testsCompileModule(installed(version), '^21.2.2') }).toEqual({ version, scoped: false });
+    }
   });
 
-  it('reads a declared range only when it admits major 21 alone', () => {
-    for (const declared of ['^21.2.2', '~21.2.3', '21.2.3', '21', '^21.0.0-rc.0']) {
+  it('reads a declared range only when it admits one major alone and its lowest version is scoped', () => {
+    for (const declared of ['^21.2.2', '~21.2.3', '21.2.3', '21', '^21.0.0-rc.0', '^22.3.0', '~22.3.1', '22.3.0', '22.3']) {
       expect({ declared, scoped: testsCompileModule(range(declared), declared) }).toEqual({ declared, scoped: true });
     }
-    for (const declared of ['>=21.0.0 <23.0.0', '^21 || ^22', '21.x', '*', 'latest', '^22.2.3', '^210.0.0']) {
+    for (const declared of ['>=21.0.0 <23.0.0', '^21 || ^22', '21.x', '*', 'latest', '^22.2.3', '^210.0.0', '22', '^22.3.0-rc.0', '>=22.3.0', '^22.3.0 || ^23']) {
       expect({ declared, scoped: testsCompileModule(range(declared), declared) }).toEqual({ declared, scoped: false });
     }
   });
