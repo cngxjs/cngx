@@ -28,7 +28,7 @@ import { RULE_FIXTURES } from './reactive-i18n-coverage.fixtures.mjs';
 // The scanner records a direct `input ?? bundle.key` only; a side-dependent
 // fallback (`input ?? (cond ? bundle.a : bundle.b)`, CngxNavRail and
 // CngxSidenav landmark names, the role-gated CngxSidebar name) is not counted.
-const CASCADE_COUNT = 73;
+const CASCADE_COUNT = 75;
 
 // One site per inventory shape:
 //   A      input over a bundle key

@@ -318,6 +318,8 @@ export const CNGX_LANGUAGE_EN = {
     copy: 'Copy',
     copied: 'Copied!',
     copiedAnnouncement: 'Copied to clipboard',
+    copyFailed: 'Copy failed',
+    copyFailedAnnouncement: 'Copy failed',
     rangeMinimum: 'Minimum',
     rangeMaximum: 'Maximum',
     breadcrumb: 'Breadcrumb',
