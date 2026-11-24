@@ -332,6 +332,112 @@ describe('createCommitController', () => {
     expect(ctrl.state.status()).toBe('success');
   });
 
+  describe('at most one outcome per begin()', () => {
+    type Routes = Parameters<CngxCommitRunner<string>>[0];
+
+    function track() {
+      const calls: string[] = [];
+      return {
+        calls,
+        handlers: {
+          onSuccess: (v: string | undefined) => calls.push(`success:${v}`),
+          onError: (e: unknown) => calls.push(`error:${(e as Error).message}`),
+          onRefused: () => calls.push('refused'),
+        },
+      };
+    }
+
+    function runWith(second: (routes: Routes) => void, first: (routes: Routes) => void) {
+      const ctrl = createCommitController<string>();
+      const t = track();
+      ctrl.begin(
+        (routes) => {
+          first(routes);
+          second(routes);
+          return noopHandle();
+        },
+        'v',
+        undefined,
+        t.handlers,
+      );
+      return { ctrl, calls: t.calls };
+    }
+
+    test('a second onSuccess fires no handler and keeps the first value', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onSuccess('two'),
+        (r) => r.onSuccess('one'),
+      );
+      expect(calls).toEqual(['success:one']);
+      expect(ctrl.state.data()).toBe('one');
+    });
+
+    test('onSuccess then onError keeps success', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onError(new Error('late')),
+        (r) => r.onSuccess('one'),
+      );
+      expect(calls).toEqual(['success:one']);
+      expect(ctrl.state.status()).toBe('success');
+    });
+
+    test('onError then onSuccess keeps error', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onSuccess('late'),
+        (r) => r.onError(new Error('first')),
+      );
+      expect(calls).toEqual(['error:first']);
+      expect(ctrl.state.status()).toBe('error');
+    });
+
+    test('onRefused then onSuccess keeps the refusal', () => {
+      const { ctrl, calls } = runWith(
+        (r) => r.onSuccess('late'),
+        (r) => r.onRefused(),
+      );
+      expect(calls).toEqual(['refused']);
+      expect(ctrl.state.status()).toBe('idle');
+    });
+
+    test('a second call that arrives after begin() returned is ignored', () => {
+      const ctrl = createCommitController<string>();
+      const t = track();
+      let routes!: Routes;
+      ctrl.begin(
+        (r) => {
+          routes = r;
+          return noopHandle();
+        },
+        'v',
+        undefined,
+        t.handlers,
+      );
+      routes.onSuccess('one');
+      routes.onError(new Error('late'));
+      routes.onSuccess('two');
+      expect(t.calls).toEqual(['success:one']);
+      expect(ctrl.state.data()).toBe('one');
+    });
+
+    test('a runner that schedules onSuccess and then throws stays error', () => {
+      const ctrl = createCommitController<string>();
+      const t = track();
+      let scheduled!: () => void;
+      ctrl.begin(
+        (r) => {
+          scheduled = () => r.onSuccess('late');
+          throw new Error('sync');
+        },
+        'v',
+        undefined,
+        t.handlers,
+      );
+      scheduled();
+      expect(t.calls).toEqual(['error:sync']);
+      expect(ctrl.state.status()).toBe('error');
+    });
+  });
+
   test('a runner that succeeds synchronously never has its handle cancelled later', () => {
     const ctrl = createCommitController<number>();
     let staleCancel = false;

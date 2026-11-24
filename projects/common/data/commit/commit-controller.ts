@@ -94,6 +94,10 @@ export interface CngxCommitController<T> {
    * previous runner's cancel handle fires synchronously, and the
    * previous outcome callbacks become no-ops if they fire late.
    *
+   * At most one outcome fires per call: after the runner's first
+   * `onSuccess` / `onError` / `onRefused` (or its synchronous throw),
+   * every further route call of that runner is ignored.
+   *
    * A runner that throws synchronously before any outcome settles the
    * commit as `'error'` with the thrown value and calls
    * `handlers.onError`; `begin()` does not throw. A throw after the
@@ -198,12 +202,14 @@ export function createCommitController<T>(): CngxCommitController<T> {
       // returned. The settled flag keeps such a finished handle out of
       // `active`, so a later begin()/cancel() never calls cancel() on a
       // completed runner (CngxCommitHandle does not require idempotence).
+      // It is also the once-guard: after the first outcome every further
+      // route call of this runner is ignored.
       let settled = false;
       let handle: CngxCommitHandle;
       try {
         handle = runner({
           onSuccess: (committed) => {
-            if (id !== commitId) {
+            if (id !== commitId || settled) {
               return;
             }
             settled = true;
@@ -212,7 +218,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
             handlers.onSuccess(committed);
           },
           onError: (err) => {
-            if (id !== commitId) {
+            if (id !== commitId || settled) {
               return;
             }
             settled = true;
@@ -221,7 +227,7 @@ export function createCommitController<T>(): CngxCommitController<T> {
             handlers.onError(err, previous);
           },
           onRefused: () => {
-            if (id !== commitId) {
+            if (id !== commitId || settled) {
               return;
             }
             settled = true;
