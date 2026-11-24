@@ -160,9 +160,8 @@ describe('copy-block Material bridge', () => {
     expect(bridgeTokenNames('copy-block-theme')).toEqual(CONSUMED);
   });
 
-  // inherits:false tokens and the host-SET copied border land on the button
-  // through the broadcast; the inheriting copied and failed tokens land on the
-  // theme host only.
+  // inherits:false tokens land on the button through the broadcast; the
+  // inheriting copied and failed tokens land on the theme host only.
   it('splits the emission per token registration', () => {
     const css = bridgeCss('copy-block-theme');
     const blocks = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, sel, body]) => ({
@@ -177,11 +176,11 @@ describe('copy-block Material bridge', () => {
         '--cngx-copy-block-btn-bg',
         '--cngx-copy-block-btn-border',
         '--cngx-copy-block-btn-color',
-        '--cngx-copy-block-btn-copied-border',
       ],
     ]);
     const inherited = [
       '--cngx-copy-block-btn-copied-bg',
+      '--cngx-copy-block-btn-copied-border',
       '--cngx-copy-block-btn-copied-color',
       '--cngx-copy-block-btn-failed-bg',
       '--cngx-copy-block-btn-failed-border',
@@ -191,17 +190,17 @@ describe('copy-block Material bridge', () => {
     expect(blocks).toHaveLength(2);
   });
 
-  // copy-block.css derives the copied and failed palette from scheme-aware
-  // system tokens and SETs no copied or failed token on a scheme scope, so
-  // nothing below the theme host shadows the inherited bridge value. A scheme
-  // SET added there would need a bridge re-assertion; fail here instead.
-  it('has no scheme-scope SET of an inheriting copy-block token to re-assert on', () => {
+  // copy-block.css derives the copied and failed palette at the use site and
+  // SETs no copied or failed token on any selector (host or scheme scope), so
+  // nothing below the theme host shadows the inherited bridge value. A SET
+  // added there would need a bridge re-assertion; fail here instead.
+  it('has no component SET of an inheriting copy-block token to re-assert on', () => {
     const sheet = readFileSync(
       resolve(process.cwd(), 'projects/common/interactive/copy/copy-block.css'),
       'utf-8',
     );
     const setters = [
-      ...sheet.matchAll(/([^{}]+)\{[^{}]*--cngx-copy-block-btn-(?:copied-(?:bg|color)|failed-[a-z]+):/g),
+      ...sheet.matchAll(/([^{}]+)\{[^{}]*--cngx-copy-block-btn-(?:copied|failed)-[a-z]+:/g),
     ].map(([, sel]) => sel.replace(/\/\*[\s\S]*?\*\//g, '').trim());
     expect(setters).toEqual([]);
     expect(bridgeCss('copy-block-theme')).not.toMatch(/\.dark|data-color-scheme|\.light/);

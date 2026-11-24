@@ -31,6 +31,7 @@
  * - `--cngx-copy-block-gap` -> `--cngx-space-sm`
  * - `--cngx-copy-block-btn-radius` -> `--cngx-radius-sm`
  * - `--cngx-copy-block-btn-font-size` -> `--cngx-font-size-sm`
+ * - `--cngx-copy-block-btn-padding` -> `--cngx-space-xs` `--cngx-space-sm`
  * - `--cngx-copy-block-btn-copied-bg` -> 12% `--cngx-color-success`
  * - `--cngx-copy-block-btn-copied-border` -> `--cngx-color-success`
  * - `--cngx-copy-block-btn-copied-color` -> `--cngx-color-success-text`
@@ -99,14 +100,14 @@
   }
 
   /**
-   * Padding shorthand of the copy button.
+   * Padding shorthand of the copy button. Unset by default:
+   * `--cngx-space-xs` `--cngx-space-sm`. Registered without an initial
+   * value and inheriting, so an ancestor SET reaches the button.
    * @group Layout
    */
   @property --cngx-copy-block-btn-padding {
     syntax: '*';
-    /* Read on the __button descendant; inherits so the :scope SET reaches it. */
     inherits: true;
-    initial-value: 4px 8px;
   }
 
   /**
@@ -133,14 +134,15 @@
   }
 
   /**
-   * Border color of the copied-state button. Falls back to
-   * `--cngx-color-success`.
+   * Border color of the copied-state button. Unset by default:
+   * `--cngx-color-success`. Registered without an initial value and
+   * inheriting, so an ancestor SET reaches the button.
    * @group State / Copied
+   * @see [[--cngx-color-success]]
    */
   @property --cngx-copy-block-btn-copied-border {
-    syntax: '<color>';
+    syntax: '*';
     inherits: true;
-    initial-value: oklch(0.5 0.12 145);
   }
 
   /**
@@ -189,14 +191,10 @@
     inherits: true;
   }
 
-  /* Derive the button radius, font size and copied border from the theme: the
-   * registered initial defeats a use-site fallback, so the default lives in a
-   * SET. Radius and font size do not inherit and SET on the button that reads
-   * them; the copied border inherits and SETs on the host. Kept in this layer
-   * so a Material bridge and a consumer override still win. */
-  .cngx-copy-block {
-    --cngx-copy-block-btn-copied-border: var(--cngx-color-success);
-  }
+  /* Derive the button radius and font size from the theme: the registered
+   * initial defeats a use-site fallback, so the default lives in a SET on the
+   * button that reads them (they do not inherit). Kept in this layer so a
+   * Material bridge and a consumer override still win. */
   .cngx-copy-block__button {
     --cngx-copy-block-btn-radius: var(--cngx-radius-sm);
     --cngx-copy-block-btn-font-size: var(--cngx-font-size-sm, 0.75rem);
@@ -207,10 +205,9 @@
   @scope (.cngx-copy-block) {
     :scope {
       /* Derive spacing from the global scale (SET-from-scale rule). gap 8 -> sm
-         (read on host); btn-padding 4/8 -> xs/sm (read on the __button
-         descendant, inherits:true so the SET cascades). */
+         (read on host). btn-padding derives at its use site so an ancestor
+         SET reaches the button. */
       --cngx-copy-block-gap: var(--cngx-space-sm);
-      --cngx-copy-block-btn-padding: var(--cngx-space-xs) var(--cngx-space-sm);
       display: flex;
       align-items: flex-start;
       gap: var(--cngx-copy-block-gap);
@@ -238,7 +235,10 @@
       background: var(--cngx-copy-block-btn-bg, transparent);
       color: var(--cngx-copy-block-btn-color, inherit);
       border-radius: var(--cngx-copy-block-btn-radius);
-      padding: var(--cngx-copy-block-btn-padding, 4px 8px);
+      padding: var(
+        --cngx-copy-block-btn-padding,
+        var(--cngx-space-xs, 4px) var(--cngx-space-sm, 8px)
+      );
       font-size: var(--cngx-copy-block-btn-font-size);
       transition:
         background var(--cngx-duration-fast, 150ms),
@@ -250,7 +250,10 @@
         --cngx-copy-block-btn-copied-bg,
         color-mix(in oklab, var(--cngx-color-success, oklch(0.6 0.15 145)) 12%, transparent)
       );
-      border-color: var(--cngx-copy-block-btn-copied-border);
+      border-color: var(
+        --cngx-copy-block-btn-copied-border,
+        var(--cngx-color-success, oklch(0.6 0.15 145))
+      );
       color: var(
         --cngx-copy-block-btn-copied-color,
         var(
