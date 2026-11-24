@@ -70,7 +70,11 @@ export class CngxCopyText {
   /** Emitted after a successful copy with the copied text. */
   readonly didCopy = output<string>();
 
-  /** Emitted when a copy attempt fails. */
+  /**
+   * Emitted when a copy attempt fails: with the rejection reason when the
+   * Clipboard API rejects the write, with `undefined` when the
+   * `execCommand('copy')` fallback reports `false`.
+   */
   readonly copyFailed = output<unknown>();
 
   constructor() {
@@ -98,39 +102,60 @@ export class CngxCopyText {
 
     this.failedState.set(false);
 
+    let done: boolean;
     try {
       if (this.supported) {
         await navigator.clipboard.writeText(value);
+        done = true;
       } else {
-        this.fallbackCopy(value);
+        done = this.fallbackCopy(value);
       }
-
-      this.copiedState.set(true);
-      this.didCopy.emit(value);
-
-      if (this.resetTimer != null) {
-        clearTimeout(this.resetTimer);
-      }
-      this.resetTimer = setTimeout(() => {
-        this.copiedState.set(false);
-        this.resetTimer = null;
-      }, this.resetDelay());
     } catch (err: unknown) {
-      this.failedState.set(true);
-      this.copyFailed.emit(err);
+      this.handleFailed(err);
+      return;
+    }
+
+    if (done) {
+      this.handleCopied(value);
+    } else {
+      this.handleFailed(undefined);
     }
   }
 
-  /** execCommand fallback for environments without Clipboard API. */
-  private fallbackCopy(text: string): void {
+  private handleCopied(value: string): void {
+    this.copiedState.set(true);
+    this.didCopy.emit(value);
+
+    if (this.resetTimer != null) {
+      clearTimeout(this.resetTimer);
+    }
+    this.resetTimer = setTimeout(() => {
+      this.copiedState.set(false);
+      this.resetTimer = null;
+    }, this.resetDelay());
+  }
+
+  private handleFailed(reason: unknown): void {
+    this.failedState.set(true);
+    this.copyFailed.emit(reason);
+  }
+
+  /**
+   * execCommand fallback for environments without Clipboard API. Returns
+   * whether the browser reported the copy as done.
+   */
+  private fallbackCopy(text: string): boolean {
     const textarea = this.doc.createElement('textarea');
     textarea.value = text;
     textarea.style.position = 'fixed';
     textarea.style.left = '-9999px';
     textarea.style.opacity = '0';
     this.doc.body.appendChild(textarea);
-    textarea.select();
-    this.doc.execCommand('copy');
-    this.doc.body.removeChild(textarea);
+    try {
+      textarea.select();
+      return this.doc.execCommand('copy');
+    } finally {
+      textarea.remove();
+    }
   }
 }

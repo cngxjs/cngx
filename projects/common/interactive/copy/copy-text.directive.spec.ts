@@ -77,4 +77,74 @@ describe('CngxCopyText', () => {
     const { dir } = setup();
     expect(dir.supported).toBe(true);
   });
+
+  describe('fallback', () => {
+    const execDescriptor = Object.getOwnPropertyDescriptor(document, 'execCommand');
+    let execResult: boolean;
+    let textareaInBodyDuringCopy: boolean;
+
+    beforeEach(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
+      execResult = true;
+      textareaInBodyDuringCopy = false;
+      Object.defineProperty(document, 'execCommand', {
+        value: vi.fn(() => {
+          textareaInBodyDuringCopy = document.body.querySelector('textarea') !== null;
+          return execResult;
+        }),
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      if (execDescriptor) {
+        Object.defineProperty(document, 'execCommand', execDescriptor);
+      } else {
+        delete (document as unknown as Record<string, unknown>)['execCommand'];
+      }
+    });
+
+    function subscribeOutputs(dir: CngxCopyText) {
+      const didCopy = vi.fn();
+      const copyFailed = vi.fn();
+      dir.didCopy.subscribe(didCopy);
+      dir.copyFailed.subscribe(copyFailed);
+      return { didCopy, copyFailed };
+    }
+
+    it('reports a refused execCommand as failed and emits copyFailed with undefined', async () => {
+      execResult = false;
+      const { dir } = setup();
+      expect(dir.supported).toBe(false);
+      const { didCopy, copyFailed } = subscribeOutputs(dir);
+
+      await dir.copy();
+
+      expect(dir.copied()).toBe(false);
+      expect(dir.failed()).toBe(true);
+      expect(copyFailed).toHaveBeenCalledTimes(1);
+      expect(copyFailed).toHaveBeenCalledWith(undefined);
+      expect(didCopy).not.toHaveBeenCalled();
+      expect(textareaInBodyDuringCopy).toBe(true);
+      expect(document.body.querySelector('textarea')).toBeNull();
+    });
+
+    it('reports an accepted execCommand as copied', async () => {
+      const { dir } = setup();
+      const { didCopy, copyFailed } = subscribeOutputs(dir);
+
+      await dir.copy();
+
+      expect(dir.copied()).toBe(true);
+      expect(dir.failed()).toBe(false);
+      expect(didCopy).toHaveBeenCalledWith('hello world');
+      expect(copyFailed).not.toHaveBeenCalled();
+      expect(document.body.querySelector('textarea')).toBeNull();
+    });
+  });
 });
