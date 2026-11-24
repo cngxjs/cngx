@@ -23,6 +23,22 @@ class Host {
   readonly failedAnnouncement = signal<string | undefined>(undefined);
 }
 
+@Component({
+  template: `<cngx-copy-block
+    [value]="'npm i'"
+    [resetDelay]="resetDelay()"
+    (didCopy)="copied.push($event)"
+    (copyFailed)="failures.push($event)"
+    >npm i</cngx-copy-block
+  >`,
+  imports: [CngxCopyBlock],
+})
+class ForwardHost {
+  readonly resetDelay = signal(2000);
+  readonly copied: string[] = [];
+  readonly failures: unknown[] = [];
+}
+
 const lang = signal<'en' | 'de'>('en');
 let writeText: ReturnType<typeof vi.fn>;
 
@@ -184,6 +200,97 @@ describe('CngxCopyBlock', () => {
       expect(ctx.button()).toBe('Copy');
       expect(ctx.buttonEl().classList).not.toContain('cngx-copy-block__button--failed');
       expect(ctx.live()).toBe('');
+    });
+  });
+
+  describe('forwarded copy contract', () => {
+    function setupForward() {
+      const fixture = TestBed.createComponent(ForwardHost);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const copyText = fixture.debugElement
+        .query(By.directive(CngxCopyText))
+        .injector.get(CngxCopyText);
+      return {
+        fixture,
+        host: fixture.componentInstance,
+        copyText,
+        button: () => root.querySelector('button')!.textContent!.trim(),
+      };
+    }
+
+    it('emits didCopy with the copied text', async () => {
+      const ctx = setupForward();
+      await ctx.copyText.copy();
+      expect(ctx.host.copied).toEqual(['npm i']);
+      expect(ctx.host.failures).toEqual([]);
+    });
+
+    it('emits copyFailed with the rejection reason', async () => {
+      const ctx = setupForward();
+      const reason = new Error('denied');
+      writeText.mockRejectedValueOnce(reason);
+      await ctx.copyText.copy();
+      expect(ctx.host.failures).toEqual([reason]);
+      expect(ctx.host.copied).toEqual([]);
+    });
+
+    it('emits copyFailed with undefined when the execCommand fallback refuses', async () => {
+      // `supported` is read at construction: hide the Clipboard API first.
+      Object.defineProperty(navigator, 'clipboard', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
+      const execDescriptor = Object.getOwnPropertyDescriptor(document, 'execCommand');
+      Object.defineProperty(document, 'execCommand', {
+        value: () => false,
+        writable: true,
+        configurable: true,
+      });
+      try {
+        const ctx = setupForward();
+        await ctx.copyText.copy();
+        expect(ctx.host.failures).toEqual([undefined]);
+        expect(ctx.host.copied).toEqual([]);
+      } finally {
+        if (execDescriptor) {
+          Object.defineProperty(document, 'execCommand', execDescriptor);
+        } else {
+          delete (document as unknown as Record<string, unknown>)['execCommand'];
+        }
+      }
+    });
+
+    it('forwards a bound resetDelay', async () => {
+      const ctx = setupForward();
+      ctx.host.resetDelay.set(500);
+      ctx.fixture.detectChanges();
+      writeText.mockRejectedValueOnce(new Error('denied'));
+      await ctx.copyText.copy();
+      ctx.fixture.detectChanges();
+
+      vi.advanceTimersByTime(499);
+      ctx.fixture.detectChanges();
+      expect(ctx.button()).toBe('Copy failed');
+
+      vi.advanceTimersByTime(1);
+      ctx.fixture.detectChanges();
+      expect(ctx.button()).toBe('Copy');
+    });
+
+    it('keeps the 2000 ms default when resetDelay is not changed', async () => {
+      const ctx = setupForward();
+      await ctx.copyText.copy();
+      ctx.fixture.detectChanges();
+
+      vi.advanceTimersByTime(1999);
+      ctx.fixture.detectChanges();
+      expect(ctx.button()).toBe('Copied!');
+
+      vi.advanceTimersByTime(1);
+      ctx.fixture.detectChanges();
+      expect(ctx.button()).toBe('Copy');
     });
   });
 });
