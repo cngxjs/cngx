@@ -101,20 +101,16 @@ describe('withGlobalRevealOnSubmit with an injected DOCUMENT', () => {
   it('listens on the injected document, not the global one', () => {
     const doc = document.implementation.createHTMLDocument('probe');
 
-    @Component({ template: '', standalone: true })
-    class Host {
-      readonly scope = injectErrorScope('a');
-    }
-
+    // No component: a fixture would look for its root node in the probe
+    // document.
     TestBed.configureTestingModule({
-      imports: [Host],
       providers: [
         { provide: DOCUMENT, useValue: doc },
         provideErrorRegistry(withGlobalRevealOnSubmit()),
       ],
     });
     const registry = TestBed.inject(CngxErrorRegistry);
-    TestBed.createComponent(Host).detectChanges();
+    TestBed.runInInjectionContext(() => injectErrorScope('a'));
 
     const submitIn = (target: Document): void => {
       const form = target.createElement('form');
