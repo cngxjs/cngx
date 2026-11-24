@@ -169,9 +169,11 @@ export class CngxCopyText {
 
   /**
    * execCommand fallback for environments without Clipboard API. Returns
-   * whether the browser reported the copy as done.
+   * whether the browser reported the copy as done. Selecting the offscreen
+   * textarea moves focus, so the element that had focus gets it back.
    */
   private fallbackCopy(text: string): boolean {
+    const previousFocus = this.doc.activeElement;
     const textarea = this.doc.createElement('textarea');
     textarea.value = text;
     textarea.style.position = 'fixed';
@@ -183,6 +185,9 @@ export class CngxCopyText {
       return this.doc.execCommand('copy');
     } finally {
       textarea.remove();
+      if (previousFocus instanceof HTMLElement && previousFocus !== this.doc.body) {
+        previousFocus.focus();
+      }
     }
   }
 }
