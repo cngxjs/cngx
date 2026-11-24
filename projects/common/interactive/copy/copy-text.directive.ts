@@ -1,5 +1,14 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
 
 /**
  * Clipboard copy behavior - forms-free version for `@cngx/common`.
@@ -51,18 +60,23 @@ export class CngxCopyText {
   /** The text to copy to the clipboard. */
   readonly text = input.required<string>({ alias: 'cngxCopyText' });
 
-  /** Duration in ms to keep `copied` true after a successful copy. */
+  /**
+   * Duration in ms to keep `copied` or `failed` true after an attempt; the
+   * state then returns to idle.
+   */
   readonly resetDelay = input<number>(2000);
 
-  private readonly copiedState = signal(false);
-  private readonly failedState = signal(false);
+  private readonly state = signal<'idle' | 'copied' | 'failed'>('idle');
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /** `true` for `resetDelay` ms after a successful copy. */
-  readonly copied: Signal<boolean> = this.copiedState.asReadonly();
+  /** `true` for `resetDelay` ms after a successful copy. Never true together with `failed`. */
+  readonly copied: Signal<boolean> = computed(() => this.state() === 'copied');
 
-  /** `true` when the last copy attempt failed (permission denied, etc.). Resets on next attempt. */
-  readonly failed: Signal<boolean> = this.failedState.asReadonly();
+  /**
+   * `true` for `resetDelay` ms after a failed copy attempt (permission
+   * denied, refused fallback). Never true together with `copied`.
+   */
+  readonly failed: Signal<boolean> = computed(() => this.state() === 'failed');
 
   /** Whether the Clipboard API is available in this environment. */
   readonly supported = typeof navigator !== 'undefined' && !!navigator.clipboard;
@@ -100,7 +114,9 @@ export class CngxCopyText {
       return;
     }
 
-    this.failedState.set(false);
+    if (this.state() === 'failed') {
+      this.state.set('idle');
+    }
 
     let done: boolean;
     try {
@@ -123,21 +139,24 @@ export class CngxCopyText {
   }
 
   private handleCopied(value: string): void {
-    this.copiedState.set(true);
+    this.settle('copied');
     this.didCopy.emit(value);
+  }
 
+  private handleFailed(reason: unknown): void {
+    this.settle('failed');
+    this.copyFailed.emit(reason);
+  }
+
+  private settle(outcome: 'copied' | 'failed'): void {
+    this.state.set(outcome);
     if (this.resetTimer != null) {
       clearTimeout(this.resetTimer);
     }
     this.resetTimer = setTimeout(() => {
-      this.copiedState.set(false);
+      this.state.set('idle');
       this.resetTimer = null;
     }, this.resetDelay());
-  }
-
-  private handleFailed(reason: unknown): void {
-    this.failedState.set(true);
-    this.copyFailed.emit(reason);
   }
 
   /**

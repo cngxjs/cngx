@@ -78,6 +78,73 @@ describe('CngxCopyText', () => {
     expect(dir.supported).toBe(true);
   });
 
+  describe('outcome state', () => {
+    it('switches a copied state to failed when a later write rejects', async () => {
+      const { dir } = setup();
+      await dir.copy();
+      vi.advanceTimersByTime(500);
+
+      writeTextSpy.mockRejectedValueOnce(new Error('denied'));
+      await dir.copy();
+      expect(dir.copied()).toBe(false);
+      expect(dir.failed()).toBe(true);
+      expect(vi.getTimerCount()).toBe(1);
+
+      // The first copy's timer would have fired here; the failure owns the clock now.
+      vi.advanceTimersByTime(1500);
+      expect(dir.failed()).toBe(true);
+
+      vi.advanceTimersByTime(500);
+      expect(dir.copied()).toBe(false);
+      expect(dir.failed()).toBe(false);
+    });
+
+    it('switches a failed state to copied on the next successful write', async () => {
+      const { dir } = setup();
+      writeTextSpy.mockRejectedValueOnce(new Error('denied'));
+      await dir.copy();
+      expect(dir.failed()).toBe(true);
+
+      await dir.copy();
+      expect(dir.failed()).toBe(false);
+      expect(dir.copied()).toBe(true);
+      expect(vi.getTimerCount()).toBe(1);
+    });
+
+    it('carries the rejection reason and resets failed after resetDelay', async () => {
+      const { dir } = setup();
+      const reason = new Error('denied');
+      const copyFailed = vi.fn();
+      dir.copyFailed.subscribe(copyFailed);
+      writeTextSpy.mockRejectedValueOnce(reason);
+
+      await dir.copy();
+      expect(dir.failed()).toBe(true);
+      expect(dir.copied()).toBe(false);
+      expect(copyFailed).toHaveBeenCalledWith(reason);
+
+      vi.advanceTimersByTime(2000);
+      expect(dir.failed()).toBe(false);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('keeps copied through a repeat copy and restarts the delay', async () => {
+      const { dir } = setup();
+      await dir.copy();
+      vi.advanceTimersByTime(1500);
+
+      await dir.copy();
+      expect(dir.copied()).toBe(true);
+      expect(vi.getTimerCount()).toBe(1);
+
+      vi.advanceTimersByTime(1000);
+      expect(dir.copied()).toBe(true);
+
+      vi.advanceTimersByTime(1000);
+      expect(dir.copied()).toBe(false);
+    });
+  });
+
   describe('fallback', () => {
     const execDescriptor = Object.getOwnPropertyDescriptor(document, 'execCommand');
     let execResult: boolean;
