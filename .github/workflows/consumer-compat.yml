@@ -176,9 +176,11 @@ jobs:
           # the outlet classes and the providers, so ng test still passes.
           # 21 and 22 (22.3 or later): on 22.0 to 22.2 the unit-test builder
           # compiles App without AppModule, and ng add leaves the outlets out
-          # there; --angular 22 resolves to the newest 22.
+          # there; --angular 22 resolves to the newest 22, and 22.3.0 pins the
+          # lowest release the ng add gate opens on.
           - { angular: '21', variant: ngmodule, args: '--preset full' }
           - { angular: '22', variant: ngmodule, args: '--preset full' }
+          - { angular: '22.3.0', variant: ngmodule, args: '--preset full' }
     # `add` keeps the check name of a row that onboards through another
     # package apart from the core onboarding row of the same major.
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}${{ matrix.add && format('-{0}', matrix.add) || '' }}
