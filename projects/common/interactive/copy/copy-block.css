@@ -11,6 +11,8 @@
  *
  * - `__button--copied` - swaps background / border / text to the
  *   success-tinted palette for the confirmation pulse
+ * - `__button--failed` - swaps background / border / text to the
+ *   danger-tinted palette after a failed copy
  *
  * **Slots**
  *
@@ -30,6 +32,9 @@
  * - `--cngx-copy-block-btn-font-size` -> `--cngx-font-size-sm`
  * - `--cngx-copy-block-btn-copied-border` -> `--cngx-color-success`
  * - `--cngx-copy-block-btn-copied-color` -> `--cngx-color-success`
+ * - `--cngx-copy-block-btn-failed-bg` -> 12% `--cngx-color-danger`
+ * - `--cngx-copy-block-btn-failed-color` -> `--cngx-color-danger-text`
+ * - `--cngx-copy-block-btn-failed-border` -> `--cngx-color-danger`
  *
  * **Dark mode**
  *
@@ -156,6 +161,40 @@
     initial-value: oklch(0.5 0.12 145);
   }
 
+  /**
+   * Background of the failed-state button. Unset by default: 12%
+   * `--cngx-color-danger`. Registered without an initial value and
+   * inheriting, so an ancestor SET reaches the button.
+   * @group State / Failed
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-copy-block-btn-failed-bg {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Border color of the failed-state button. Unset by default:
+   * `--cngx-color-danger`.
+   * @group State / Failed
+   * @see [[--cngx-color-danger]]
+   */
+  @property --cngx-copy-block-btn-failed-border {
+    syntax: '*';
+    inherits: true;
+  }
+
+  /**
+   * Text color of the failed-state button. Unset by default:
+   * `--cngx-color-danger-text`.
+   * @group State / Failed
+   * @see [[--cngx-color-danger-text]]
+   */
+  @property --cngx-copy-block-btn-failed-color {
+    syntax: '*';
+    inherits: true;
+  }
+
   /* Dark-mode swap - copied-state surface flips from a light-green
    * tint to a dark-green tint, and the matching text color flips
    * from a mid-green hue to a light-green hue. The border stays at
@@ -237,6 +276,24 @@
       background: var(--cngx-copy-block-btn-copied-bg, oklch(0.96 0.025 145));
       border-color: var(--cngx-copy-block-btn-copied-border);
       color: var(--cngx-copy-block-btn-copied-color);
+    }
+
+    .cngx-copy-block__button--failed {
+      background: var(
+        --cngx-copy-block-btn-failed-bg,
+        color-mix(in oklab, var(--cngx-color-danger, oklch(0.6 0.18 25)) 12%, transparent)
+      );
+      border-color: var(
+        --cngx-copy-block-btn-failed-border,
+        var(--cngx-color-danger, oklch(0.6 0.18 25))
+      );
+      color: var(
+        --cngx-copy-block-btn-failed-color,
+        var(
+          --cngx-color-danger-text,
+          oklch(from var(--cngx-color-danger, oklch(0.6 0.18 25)) 0.46 c h)
+        )
+      );
     }
 
     .cngx-sr-only {

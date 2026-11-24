@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { computedValue } from '@cngx/testing/geometry';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { CngxCopyBlock } from './copy-block';
+import { CngxCopyText } from './copy-text.directive';
 
 // Runs in a real Chromium (the `test-geometry` target). The `@scope
 // (.cngx-copy-block)` block of copy-block.css lays the content payload next
@@ -22,7 +24,7 @@ let mountedRoot: HTMLElement | null = null;
 })
 class CopyHost {}
 
-function mount(): HTMLElement {
+function mountFixture() {
   const fixture = TestBed.createComponent(CopyHost);
   mountedRoot = fixture.nativeElement as HTMLElement;
   document.body.appendChild(mountedRoot);
@@ -31,7 +33,52 @@ function mount(): HTMLElement {
   if (!host) {
     throw new Error('cngx-copy-block did not render');
   }
-  return host as HTMLElement;
+  return { fixture, host: host as HTMLElement };
+}
+
+function mount(): HTMLElement {
+  return mountFixture().host;
+}
+
+// The computed colour of `background` as the engine serialises it, so a
+// color-mix() expectation compares in the engine's own notation.
+function paintedBackground(value: string): string {
+  const probe = document.createElement('div');
+  probe.style.background = value;
+  mountedRoot!.appendChild(probe);
+  const painted = computedValue(probe, 'background-color');
+  probe.remove();
+  return painted;
+}
+
+function paintedColor(value: string): string {
+  const probe = document.createElement('div');
+  probe.style.color = value;
+  mountedRoot!.appendChild(probe);
+  const painted = computedValue(probe, 'color');
+  probe.remove();
+  return painted;
+}
+
+// Runs one copy whose Clipboard API write rejects or resolves. The own
+// property shadows Navigator.prototype.clipboard and is deleted again in
+// afterEach.
+async function copyWith(
+  fixture: ReturnType<typeof mountFixture>['fixture'],
+  outcome: 'reject' | 'resolve',
+): Promise<HTMLElement> {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      writeText: () =>
+        outcome === 'reject' ? Promise.reject(new Error('denied')) : Promise.resolve(),
+    },
+    writable: true,
+    configurable: true,
+  });
+  const copyText = fixture.debugElement.query(By.directive(CngxCopyText)).injector.get(CngxCopyText);
+  await copyText.copy();
+  fixture.detectChanges();
+  return query(fixture.nativeElement as HTMLElement, '.cngx-copy-block__button');
 }
 
 function query(root: HTMLElement, selector: string): HTMLElement {
@@ -46,6 +93,7 @@ afterEach(() => {
   mountedRoot?.remove();
   mountedRoot = null;
   document.documentElement.removeAttribute('dir');
+  delete (navigator as unknown as Record<string, unknown>)['clipboard'];
 });
 
 describe('CngxCopyBlock geometry', () => {
@@ -91,3 +139,47 @@ describe('CngxCopyBlock theme-derived button tokens', () => {
     expect(computedValue(button, '--cngx-copy-block-btn-copied-border')).toBe('rgb(0, 128, 0)');
   });
 });
+
+describe('CngxCopyBlock failed tint', () => {
+  it('paints the failed fill, border and text from the danger tokens', async () => {
+    const { fixture } = mountFixture();
+    mountedRoot!.style.setProperty('--cngx-duration-fast', '0s');
+    mountedRoot!.style.setProperty('--cngx-color-danger', 'rgb(200, 0, 0)');
+    mountedRoot!.style.setProperty('--cngx-color-danger-text', 'rgb(120, 0, 0)');
+
+    const button = await copyWith(fixture, 'reject');
+
+    expect(button.classList).toContain('cngx-copy-block__button--failed');
+    expect(computedValue(button, 'background-color')).toBe(
+      paintedBackground('color-mix(in oklab, rgb(200, 0, 0) 12%, transparent)'),
+    );
+    expect(computedValue(button, 'border-top-color')).toBe('rgb(200, 0, 0)');
+    expect(computedValue(button, 'color')).toBe('rgb(120, 0, 0)');
+  });
+
+  it('lets an ancestor SET of the failed tokens win', async () => {
+    const { fixture } = mountFixture();
+    mountedRoot!.style.setProperty('--cngx-duration-fast', '0s');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-failed-bg', 'rgb(1, 2, 3)');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-failed-border', 'rgb(4, 5, 6)');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-failed-color', 'rgb(7, 8, 9)');
+
+    const button = await copyWith(fixture, 'reject');
+
+    expect(computedValue(button, 'background-color')).toBe('rgb(1, 2, 3)');
+    expect(computedValue(button, 'border-top-color')).toBe('rgb(4, 5, 6)');
+    expect(computedValue(button, 'color')).toBe('rgb(7, 8, 9)');
+  });
+
+  it('keeps the idle tokens when the copy did not fail', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-color-danger', 'rgb(200, 0, 0)');
+    mountedRoot!.style.color = 'rgb(10, 20, 30)';
+    const button = query(host, '.cngx-copy-block__button');
+
+    expect(button.classList).not.toContain('cngx-copy-block__button--failed');
+    expect(computedValue(button, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(button, 'color')).toBe(paintedColor('rgb(10, 20, 30)'));
+  });
+});
+
