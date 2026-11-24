@@ -138,6 +138,23 @@ describe('CngxCopyBlock theme-derived button tokens', () => {
     expect(computedValue(button, 'font-size')).toBe('11px');
     expect(computedValue(button, '--cngx-copy-block-btn-copied-border')).toBe('rgb(0, 128, 0)');
   });
+
+  // --cngx-color-success-text is assigned on the scheme blocks of
+  // system-tokens.css, so a subtree that re-themes success sets it too.
+  it('derives the copied fill from the success token and the text from its text rung', async () => {
+    const { fixture } = mountFixture();
+    mountedRoot!.style.setProperty('--cngx-duration-fast', '0s');
+    mountedRoot!.style.setProperty('--cngx-color-success', 'rgb(0, 0, 200)');
+    mountedRoot!.style.setProperty('--cngx-color-success-text', 'rgb(0, 0, 120)');
+
+    const button = await copyWith(fixture, 'resolve');
+
+    expect(button.classList).toContain('cngx-copy-block__button--copied');
+    expect(computedValue(button, 'background-color')).toBe(
+      paintedBackground('color-mix(in oklab, rgb(0, 0, 200) 12%, transparent)'),
+    );
+    expect(computedValue(button, 'color')).toBe('rgb(0, 0, 120)');
+  });
 });
 
 describe('CngxCopyBlock failed tint', () => {

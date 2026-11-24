@@ -1338,8 +1338,8 @@ test.describe('material-bridge rendered values: copy-block', () => {
   });
 
   test('a dark scheme scope keeps the tertiary set under the bridge', async ({ page }) => {
-    // copy-block.css SETs dark literals on these scopes; the bridge re-asserts
-    // its values there.
+    // copy-block.css SETs no copied token on a scheme scope, so the value the
+    // bridge puts on the theme host reaches a dark subtree by inheritance.
     const tint = await resolvedColor(
       page,
       `color-mix(in srgb, ${matSys('tertiary')} 12%, transparent)`,

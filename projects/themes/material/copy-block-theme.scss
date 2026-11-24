@@ -6,15 +6,13 @@
 // (`--cngx-copy-block-btn-*`) with its copied confirmation state and its
 // failed state (the Material error role).
 //
-// `--cngx-copy-block-btn-copied-bg`, `-copied-color` and the three `-failed-*`
-// tokens inherit, so they land on the include host. Include the bridge in the selector that carries
-// `mat.theme`; a nested Material sub-theme needs it included on that
-// container too, or its copied fill and text keep the outer roles while the
-// copied border, set on every copy block, follows the container. An ancestor
-// SET of the two tokens wins, except across a `.dark` / `.light` /
-// `[data-color-scheme]` scope: copy-block.css SETs scheme literals there and
-// the bridge re-asserts its values on those scopes. The other four tokens
-// land on every copy block and its button.
+// `--cngx-copy-block-btn-copied-bg`, `-copied-color` and the three
+// `-failed-*` tokens inherit, so they land on the include host. Include the
+// bridge in the selector that carries `mat.theme`; a nested Material
+// sub-theme needs it included on that container too, or its copied and
+// failed palette keeps the outer roles while the copied border, set on every
+// copy block, follows the container. An ancestor SET of the inheriting tokens
+// wins. The other four tokens land on every copy block and its button.
 //
 //   @use '@cngx/themes/material/copy-block-theme' as copy-block;
 //   html { @include copy-block.theme($theme); }
@@ -52,17 +50,6 @@
     @include _element($theme);
   }
   @include bridge.host() {
-    @include _inherited($theme);
-  }
-  // The scheme scopes of copy-block.css SET the copied literals and would
-  // shadow the inherited bridge value; material-bridge-tokens.spec.ts pins
-  // this list to them.
-  @include bridge.on(
-    "[data-color-scheme='dark']",
-    '.dark',
-    "[data-color-scheme='light']",
-    '.light'
-  ) {
     @include _inherited($theme);
   }
 }
