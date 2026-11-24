@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
@@ -66,6 +67,7 @@ import { LabPages } from '../lab-pages';
   imports: [
     LabPages,
     MatBottomSheetModule,
+    MatDividerModule,
     MatIconModule,
     MatListModule,
     MatMenuModule,
@@ -129,6 +131,7 @@ import { LabPages } from '../lab-pages';
         <mat-menu #matCtx="matMenu" class="probe-mat">
           <button mat-menu-item>Copy</button>
           <button mat-menu-item>Cut</button>
+          <mat-divider />
           <button mat-menu-item>Paste</button>
         </mat-menu>
         <cngx-context-menu
