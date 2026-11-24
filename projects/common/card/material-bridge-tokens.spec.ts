@@ -37,10 +37,12 @@ describe('card Material bridge', () => {
     '--cngx-card-selected-border',
     '--cngx-card-subtitle-color',
     '--cngx-card-subtitle-size',
+    '--cngx-card-subtitle-weight',
     '--cngx-card-timestamp-color',
     '--cngx-card-timestamp-size',
     '--cngx-card-title-color',
     '--cngx-card-title-size',
+    '--cngx-card-title-weight',
     '--cngx-metric-unit-color',
     '--cngx-metric-unit-size',
     '--cngx-metric-value-color',
@@ -66,5 +68,20 @@ describe('card Material bridge', () => {
     const m3 = compileBridge().match(rule);
     expect(m3).not.toBeNull();
     expect(m3![1]).toContain('--cngx-card-radius: var(--mat-sys-corner-medium, 12px)');
+  });
+
+  it('types the title title-large and the subtitle title-medium in on-surface (M3)', () => {
+    const css = compileBridge();
+    expect(css).toContain('--cngx-card-title-size: var(--mat-sys-title-large-size, 1.375rem)');
+    expect(css).toContain('--cngx-card-title-weight: var(--mat-sys-title-large-weight, 400)');
+    expect(css).toContain('--cngx-card-subtitle-size: var(--mat-sys-title-medium-size, 1rem)');
+    expect(css).toContain('--cngx-card-subtitle-weight: var(--mat-sys-title-medium-weight, 500)');
+    expect(css).toContain('--cngx-card-subtitle-color: var(--mat-sys-on-surface)');
+  });
+
+  it('stacks the header and body flush in raw rules above the @scope literals (M3)', () => {
+    const css = compileBridge();
+    expect(css).toMatch(/\.cngx-card \.cngx-card__header \{\s*padding-block: 0;\s*row-gap: 0;/);
+    expect(css).toMatch(/\.cngx-card \.cngx-card__body \{\s*padding-block: 0;/);
   });
 });

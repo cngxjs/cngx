@@ -23,7 +23,8 @@
  * The group container is a zero-gap flex row, so adjacent toggles
  * share an edge:
  *
- * - `:scope + :scope` - collapses the inner border
+ * - `.cngx-button-toggle + :scope` in a horizontal group - collapses the
+ *   inner border
  * - `:first-child` - rounded start corners only
  * - `:last-child` - rounded end corners only
  *
@@ -85,8 +86,12 @@
     /* Segmented-control geometry: collapse adjacent borders inside the
      * group so the row reads as one control. The group container is a
      * flex row with zero gap (its default), so adjacent buttons share
-     * an edge. */
-    :scope + :scope {
+     * an edge. The previous sibling sits outside this scope: `:scope +
+     * :scope` would need the root to be its own sibling and never matched.
+     * Row groups only; a column group stacks on the block axis. */
+    :is(.cngx-button-toggle-group--horizontal, .cngx-button-multi-toggle-group--horizontal)
+      > .cngx-button-toggle
+      + :scope {
       border-inline-start-width: 0;
     }
     :scope:first-child {

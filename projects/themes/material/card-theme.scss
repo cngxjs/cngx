@@ -16,7 +16,8 @@
     --cngx-card-bg: var(--mat-sys-surface-container-low);
     --cngx-card-color: var(--mat-sys-on-surface);
     --cngx-card-title-color: var(--mat-sys-on-surface);
-    --cngx-card-subtitle-color: var(--mat-sys-on-surface-variant);
+    // mat-card paints its subtitle in on-surface, like the title.
+    --cngx-card-subtitle-color: var(--mat-sys-on-surface);
     --cngx-card-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-card-focus-color: var(--mat-sys-primary);
     --cngx-card-selected-border: var(--mat-sys-primary);
@@ -33,8 +34,11 @@
 
 @mixin typography($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    --cngx-card-title-size: var(--mat-sys-title-medium-size, 1rem);
-    --cngx-card-subtitle-size: var(--mat-sys-body-medium-size, 0.875rem);
+    // mat-card: title-large title, title-medium subtitle.
+    --cngx-card-title-size: var(--mat-sys-title-large-size, 1.375rem);
+    --cngx-card-title-weight: var(--mat-sys-title-large-weight, 400);
+    --cngx-card-subtitle-size: var(--mat-sys-title-medium-size, 1rem);
+    --cngx-card-subtitle-weight: var(--mat-sys-title-medium-weight, 500);
     --cngx-metric-value-size: var(--mat-sys-headline-medium-size, 1.75rem);
     --cngx-metric-value-weight: var(--mat-sys-headline-medium-weight, 600);
     --cngx-metric-unit-size: var(--mat-sys-body-medium-size, 0.875rem);
@@ -47,7 +51,37 @@
 // Card padding derives from the global --cngx-space-* scale (the un-registered
 // --cngx-card-padding lets the var(..., var(--cngx-space-md)) use-site fallback
 // fire), so Material density reaches it through density-bridge.scss - no
-// per-component density() map here anymore.
+// per-component density() map here anymore. The host inset (16px at density
+// 0) already equals the mat-card part inset.
+//
+// The parts write literal rungs and line heights inside `@scope (.cngx-card)`
+// (0,1,0) with no token: header and body pad their block by `xs`, the header
+// wraps the subtitle with an `sm` row gap. mat-card parts stack flush inside
+// the 16px inset, so these raw rules (0,2,0) zero them and write the
+// title-large / title-medium line height and tracking. Surface, border and
+// shadow stay (raised vs outlined is parked). Consumer override: an
+// unlayered property rule on the part.
+@mixin metrics($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    @layer cngx.components {
+      .cngx-card .cngx-card__header {
+        padding-block: 0;
+        row-gap: 0;
+      }
+      .cngx-card .cngx-card__body {
+        padding-block: 0;
+      }
+      .cngx-card .cngx-card__title {
+        line-height: var(--mat-sys-title-large-line-height, 1.75rem);
+        letter-spacing: var(--mat-sys-title-large-tracking, 0);
+      }
+      .cngx-card .cngx-card__subtitle {
+        line-height: var(--mat-sys-title-medium-line-height, 1.5rem);
+        letter-spacing: var(--mat-sys-title-medium-tracking, 0.0094rem);
+      }
+    }
+  }
+}
 
 // The cngx default reads --cngx-radius-lg, which the system bridge maps to
 // corner-large (16px); M3 cards use corner-medium (12px).
@@ -72,4 +106,5 @@
       @include base($theme);
     }
   }
+  @include metrics($theme);
 }

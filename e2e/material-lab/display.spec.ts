@@ -59,7 +59,26 @@ for (const scheme of ['light', 'dark'] as const) {
         'border-top-left-radius',
         'padding-left',
         'font-size',
+        'font-weight',
+        'line-height',
       ]);
+    });
+
+    test('badge: the indicator overhangs its host like mat-badge', async ({ page }) => {
+      // mat-badge sits 4px outside the top end corner; cngx translated half
+      // its size out before the bridge wrote the offset.
+      const overhang = (host: string, indicator: string) =>
+        page.evaluate(
+          ([h, i]) => {
+            const hostRect = document.querySelector(h)!.getBoundingClientRect();
+            const rect = document.querySelector(i)!.getBoundingClientRect();
+            return { top: rect.top - hostRect.top, end: rect.right - hostRect.right };
+          },
+          [host, indicator] as const,
+        );
+      expect(await overhang(cngx('badge'), cngx('badge', '.cngx-badge-indicator'))).toEqual(
+        await overhang(mat('badge'), mat('badge', '.mat-badge-content')),
+      );
     });
 
     test('button-toggle: the visible outer corner matches mat-button-toggle-group', async ({ page }) => {
@@ -89,6 +108,100 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
+    test('button-toggle: the group height and edge match mat-button-toggle-group', async ({ page }) => {
+      // mat draws one 1px outline around 40px segments; cngx draws it on each
+      // segment, so the group box is 42px on both sides.
+      const height = (sel: string) => page.locator(sel).evaluate((el) => el.getBoundingClientRect().height);
+      expect(await height(cngx('button-toggle'))).toBe(await height(mat('button-toggle')));
+      await expectSame(
+        page,
+        mat('button-toggle'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['border-top-color'],
+      );
+    });
+
+    test('button-toggle: each seam paints one line like mat-button-toggle-group', async ({ page }) => {
+      // mat draws the group outline plus a start divider per later segment,
+      // cngx draws the segment borders with every shared seam collapsed; the
+      // vertical lines across the row add up to the same width.
+      const lines = (group: string, parts: string) =>
+        page.evaluate(
+          ([g, p]) => {
+            const width = (el: Element, side: 'Left' | 'Right') =>
+              parseFloat(getComputedStyle(el)[`border${side}Width`]);
+            const els = [document.querySelector(g)!, ...Array.from(document.querySelectorAll(p))];
+            return els.reduce((sum, el) => sum + width(el, 'Left') + width(el, 'Right'), 0);
+          },
+          [group, parts] as const,
+        );
+      expect(await lines(cngx('button-toggle'), cngx('button-toggle', 'button'))).toBe(
+        await lines(mat('button-toggle'), mat('button-toggle', '.mat-button-toggle')),
+      );
+    });
+
+    test('button-toggle: the checked segment paints the mat secondary-container pair', async ({ page }) => {
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle-checked'),
+        cngx('button-toggle', 'button[aria-checked=true]'),
+        ['background-color', 'color'],
+      );
+      await expectSame(
+        page,
+        mat('button-toggle'),
+        cngx('button-toggle', 'button[aria-checked=true]'),
+        ['border-top-color'],
+      );
+    });
+
+    test('button-toggle: hover lays the mat on-surface state layer over the segment', async ({ page }) => {
+      // mat paints its hover as a translucent overlay on the segment. cngx
+      // must lay the same layer over its own resting segment colour; the
+      // unchecked rest itself (surface vs transparent) is an open roadmap
+      // rest, the checked rest is pinned equal above.
+      for (const [toggle, segment] of [
+        ['.mat-button-toggle:not(.mat-button-toggle-checked)', 'button[aria-checked=false]'],
+        ['.mat-button-toggle-checked', 'button[aria-checked=true]'],
+      ] as const) {
+        const cngxSegment = page.locator(cngx('button-toggle', segment)).first();
+        const rest = await cngxSegment.evaluate((el) => getComputedStyle(el).backgroundColor);
+        await page.locator(mat('button-toggle', `${toggle} button`)).first().hover();
+        const overlay = page.locator(mat('button-toggle', `${toggle} .mat-button-toggle-focus-overlay`)).first();
+        await expect.poll(() => overlay.evaluate((el) => getComputedStyle(el).opacity)).not.toBe('0');
+        const expected = await overlay.evaluate((el, base) => {
+          const style = getComputedStyle(el);
+          const probe = document.createElement('div');
+          probe.style.background = `color-mix(in srgb, ${style.backgroundColor} ${Number(style.opacity) * 100}%, ${base})`;
+          document.body.append(probe);
+          const value = getComputedStyle(probe).backgroundColor;
+          probe.remove();
+          return value;
+        }, rest);
+        await cngxSegment.hover();
+        await expect
+          .poll(() => cngxSegment.evaluate((el) => getComputedStyle(el).backgroundColor), { message: segment })
+          .toBe(expected);
+      }
+    });
+
+    test('button-toggle: the label sits at the mat inset in label-large type', async ({ page }) => {
+      // mat pads the label content, cngx the segment; the text paints in
+      // both with the tracking the inner button resets to normal.
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle:not(.mat-button-toggle-checked) .mat-button-toggle-label-content'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['padding-left', 'font-size', 'font-weight', 'letter-spacing'],
+      );
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle:not(.mat-button-toggle-checked) button'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['line-height'],
+      );
+    });
+
     test('card: the surface, corner and body type match the raised mat-card', async ({ page }) => {
       await expectSame(page, mat('card'), cngx('card'), ['background-color', 'color', 'border-top-left-radius']);
       await expectSame(page, mat('card', '.mat-mdc-card-title'), cngx('card', '[cngxCardTitle]'), ['color']);
@@ -98,6 +211,23 @@ for (const scheme of ['light', 'dark'] as const) {
         'line-height',
         'font-weight',
       ]);
+    });
+
+    test('card: the parts stack flush inside the mat-card inset', async ({ page }) => {
+      // clientHeight excludes the border: the cngx 1px border belongs to the
+      // parked raised vs outlined decision, mat-card raised has none.
+      const inner = (sel: string) => page.locator(sel).evaluate((el) => el.clientHeight);
+      expect(await inner(cngx('card'))).toBe(await inner(mat('card')));
+      for (const property of ['padding-top', 'padding-bottom', 'row-gap']) {
+        expect(await computedValue(page, cngx('card', '[cngxCardHeader]'), property), property).toBe('0px');
+      }
+      expect(await computedValue(page, cngx('card', '[cngxCardBody]'), 'padding-top')).toBe('0px');
+    });
+
+    test('card: title and subtitle take the mat-card type and colour', async ({ page }) => {
+      const type = ['color', 'font-size', 'line-height', 'font-weight', 'letter-spacing'];
+      await expectSame(page, mat('card', '.mat-mdc-card-title'), cngx('card', '[cngxCardTitle]'), type);
+      await expectSame(page, mat('card', '.mat-mdc-card-subtitle'), cngx('card', '[cngxCardSubtitle]'), type);
     });
 
     test('divider: the rule paints the mat-divider colour at 1px with no block margin', async ({ page }) => {
@@ -110,10 +240,42 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
-    test('chip: the corner and label size match mat-chip', async ({ page }) => {
-      await expectSame(page, mat('chip'), cngx('chip'), ['border-top-left-radius']);
+    test('chip: height, corner and surface match mat-chip', async ({ page }) => {
+      await expectSame(page, mat('chip'), cngx('chip'), ['height', 'border-top-left-radius', 'background-color']);
+    });
+
+    test('chip: the edge paints the mat-chip outline', async ({ page }) => {
+      // mat-chip draws its outline on the primary action's ::before.
+      const outline = await page
+        .locator(mat('chip', '.mdc-evolution-chip__action--primary'))
+        .evaluate((el) => {
+          const before = getComputedStyle(el, '::before');
+          return [before.borderTopWidth, before.borderTopColor];
+        });
+      expect([
+        await computedValue(page, cngx('chip'), 'border-top-width'),
+        await computedValue(page, cngx('chip'), 'border-top-color'),
+      ]).toEqual(outline);
+    });
+
+    test('chip: the label sits at the mat-chip inset in its colour and type', async ({ page }) => {
+      const inset = (host: string, label: string) =>
+        page.evaluate(
+          ([h, l]) =>
+            document.querySelector(l)!.getBoundingClientRect().left -
+            document.querySelector(h)!.getBoundingClientRect().left,
+          [host, label] as const,
+        );
+      expect(await inset(cngx('chip'), cngx('chip', '.cngx-chip__label'))).toBe(
+        await inset(mat('chip'), mat('chip', '.mdc-evolution-chip__text-label')),
+      );
       await expectSame(page, mat('chip', '.mdc-evolution-chip__text-label'), cngx('chip', '.cngx-chip__label'), [
+        'color',
+        'font-family',
         'font-size',
+        'line-height',
+        'font-weight',
+        'letter-spacing',
       ]);
     });
 
