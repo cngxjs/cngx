@@ -116,6 +116,37 @@ describe('createRetry', () => {
     expect(calls).toBe(3);
     vi.useRealTimers();
   });
+  it('a success after a failed attempt leaves no error behind', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    const [retryable, state] = createRetry(
+      () => (++calls === 1 ? Promise.reject(new Error('first')) : Promise.resolve('ok')),
+      { maxAttempts: 3, delay: 10, backoff: 'linear' },
+    );
+    const run = retryable();
+    await vi.advanceTimersByTimeAsync(10);
+    await run;
+    expect(state.state.status()).toBe('success');
+    expect(state.state.error()).toBeUndefined();
+    expect(state.lastError()).toBeUndefined();
+    vi.useRealTimers();
+  });
+
+  it('a new run after an exhausted one starts without an error', async () => {
+    let fail = true;
+    const [retryable, state] = createRetry(
+      () => (fail ? Promise.reject(new Error('down')) : new Promise<void>(() => undefined)),
+      { maxAttempts: 1 },
+    );
+    await expect(retryable()).rejects.toThrow('down');
+    expect(state.lastError()).toEqual(new Error('down'));
+    fail = false;
+    void retryable();
+    expect(state.state.status()).toBe('pending');
+    expect(state.lastError()).toBeUndefined();
+    expect(state.state.error()).toBeUndefined();
+  });
+
   describe('abort signal and cancellation', () => {
     it('passes the action a run signal linked to the runner signal', async () => {
       let received: AbortSignal | undefined;

@@ -28,7 +28,11 @@ export interface RetryState {
   readonly retrying: Signal<boolean>;
   /** Whether all attempts have been exhausted. */
   readonly exhausted: Signal<boolean>;
-  /** The last error from a failed attempt. */
+  /**
+   * The error of the last failed attempt of the current run. Cleared when a run
+   * starts and when it succeeds; kept between attempts, after exhaustion and
+   * after an abort.
+   */
   readonly lastError: Signal<unknown>;
   /**
    * Full `CngxAsyncState` view of the retry lifecycle.
@@ -160,6 +164,7 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
     retryingState.set(false);
     exhaustedState.set(false);
     succeededState.set(false);
+    lastErrorState.set(undefined);
 
     for (let attempt = 1; ; attempt++) {
       if (cancelled()) {
@@ -183,6 +188,7 @@ export function createRetry(action: AsyncAction, config?: RetryConfig): [AsyncAc
           return cancel();
         }
         retryingState.set(false);
+        lastErrorState.set(undefined);
         succeededState.set(true);
         return undefined;
       } catch (err: unknown) {
