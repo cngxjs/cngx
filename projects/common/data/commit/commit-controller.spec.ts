@@ -438,6 +438,42 @@ describe('createCommitController', () => {
     });
   });
 
+  test('a begin() started from a synchronous outcome handler keeps the newer handle cancellable', () => {
+    const ctrl = createCommitController<string>();
+    const cancels: string[] = [];
+    ctrl.begin((h) => (h.onSuccess('one'), noopHandle()), 'one', undefined, {
+      onSuccess: () =>
+        ctrl.begin(() => ({ cancel: () => cancels.push('r2') }), 'two', 'one', {
+          onSuccess: () => {},
+          onError: () => {},
+        }),
+      onError: () => {},
+    });
+    expect(ctrl.isCommitting()).toBe(true);
+    ctrl.cancel();
+    expect(cancels).toEqual(['r2']);
+  });
+
+  test('a runner superseded during its own call is cancelled and never becomes active', () => {
+    const ctrl = createCommitController<string>();
+    const cancels: string[] = [];
+    ctrl.begin(
+      () => {
+        ctrl.begin(() => ({ cancel: () => cancels.push('r2') }), 'two', undefined, {
+          onSuccess: () => {},
+          onError: () => {},
+        });
+        return { cancel: () => cancels.push('r1') };
+      },
+      'one',
+      undefined,
+      { onSuccess: () => {}, onError: () => {} },
+    );
+    expect(cancels).toEqual(['r1']);
+    ctrl.cancel();
+    expect(cancels).toEqual(['r1', 'r2']);
+  });
+
   test('a runner that succeeds synchronously never has its handle cancelled later', () => {
     const ctrl = createCommitController<number>();
     let staleCancel = false;

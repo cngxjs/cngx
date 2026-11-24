@@ -250,7 +250,18 @@ export function createCommitController<T>(): CngxCommitController<T> {
         }
         return;
       }
-      active = settled ? null : handle;
+      if (settled) {
+        // Settled during the call: `active` is already cleared, or holds the
+        // handle of a begin() that an outcome handler started.
+        return;
+      }
+      if (id !== commitId) {
+        // Superseded during its own call, before its handle existed for the
+        // newer begin()/cancel() to tear down.
+        handle.cancel();
+        return;
+      }
+      active = handle;
     },
 
     cancel(options?: { readonly settle?: boolean }) {
