@@ -65,10 +65,10 @@ test.describe('common/interactive/ripple', () => {
     await expect(full.locator('xpath=ancestor::*[@data-motion="reduced"]')).toHaveCount(0);
 
     // The scope wins over the class rule: the wave gets the fade keyframes.
-    await scoped.evaluate((el) => {
-      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }));
-    });
+    // Press and read in one task: the reduced-motion net shortens the fade to
+    // 0.01ms, so `animationend` can remove the wave before a second evaluate.
     const waveName = await scoped.evaluate((el) => {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 5, clientY: 5 }));
       const wave = el.querySelector('.cngx-ripple__wave');
       return wave ? getComputedStyle(wave).animationName : 'no wave';
     });
