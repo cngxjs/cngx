@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { CngxCopyBlock } from './copy-block';
 
 // Runs in a real Chromium (the `test-geometry` target). The `@scope
-// (.cngx-copy-block)` block (copy-block.css:182) lays the content payload next
+// (.cngx-copy-block)` block of copy-block.css lays the content payload next
 // to the copy button on one flex row: the content grows and may shrink past
 // its intrinsic width (min-width:0) while the button stays intrinsic and its
 // tap area floors off `--cngx-target-min`. jsdom reports `''` for every read.
