@@ -24,11 +24,14 @@
  *
  * **Inheritance**
  *
- * Layout, typography, and surface tokens cascade through the
- * foundation; the copied-state palette delegates to the semantic
- * success token:
+ * Every token is registered without an initial value and inherits,
+ * so the block or any ancestor can set it. Unset, each derives at its
+ * use site:
  *
  * - `--cngx-copy-block-gap` -> `--cngx-space-sm`
+ * - `--cngx-copy-block-btn-bg` -> `transparent`
+ * - `--cngx-copy-block-btn-border` -> `currentColor`
+ * - `--cngx-copy-block-btn-color` -> `currentColor`
  * - `--cngx-copy-block-btn-radius` -> `--cngx-radius-sm`
  * - `--cngx-copy-block-btn-font-size` -> `--cngx-font-size-sm`
  * - `--cngx-copy-block-btn-padding` -> `--cngx-space-xs` `--cngx-space-sm`
@@ -49,54 +52,58 @@
 
 @layer cngx.tokens {
   /**
-   * Gap between the content block and the copy button. Falls back
-   * to `--cngx-space-sm`.
+   * Gap between the content block and the copy button. Unset by default:
+   * `--cngx-space-sm`. Registered without an initial value and inheriting,
+   * so an ancestor SET reaches the block.
    * @group Layout
    */
   @property --cngx-copy-block-gap {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 8px;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Border color of the idle copy button.
+   * Border color of the idle copy button. Unset by default: `currentColor`.
+   * Registered without an initial value and inheriting, so an ancestor
+   * SET reaches the button.
    * @group Surface
    */
   @property --cngx-copy-block-btn-border {
     syntax: '*';
-    inherits: false;
-    initial-value: currentColor;
+    inherits: true;
   }
 
   /**
-   * Background of the idle copy button.
+   * Background of the idle copy button. Unset by default: `transparent`.
+   * Registered without an initial value and inheriting, so an ancestor
+   * SET reaches the button.
    * @group Surface
    */
   @property --cngx-copy-block-btn-bg {
-    syntax: '<color>';
-    inherits: false;
-    initial-value: transparent;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
-   * Text color of the idle copy button.
+   * Text color of the idle copy button. Unset by default: `currentColor`.
+   * Registered without an initial value and inheriting, so an ancestor
+   * SET reaches the button.
    * @group Surface
    */
   @property --cngx-copy-block-btn-color {
     syntax: '*';
-    inherits: false;
-    initial-value: currentColor;
+    inherits: true;
   }
 
   /**
-   * Corner radius of the copy button. Defaults to `--cngx-radius-sm`.
+   * Corner radius of the copy button. Unset by default: `--cngx-radius-sm`.
+   * Registered without an initial value and inheriting, so an ancestor
+   * SET reaches the button.
    * @group Layout
    */
   @property --cngx-copy-block-btn-radius {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 4px;
+    syntax: '*';
+    inherits: true;
   }
 
   /**
@@ -111,14 +118,15 @@
   }
 
   /**
-   * Font-size of the copy-button label. Falls back to
+   * Font-size of the copy-button label. Unset by default:
    * `--cngx-font-size-sm`.
+   * Registered without an initial value and inheriting, so an ancestor
+   * SET reaches the button.
    * @group Typography
    */
   @property --cngx-copy-block-btn-font-size {
     syntax: '*';
-    inherits: false;
-    initial-value: 0.75rem;
+    inherits: true;
   }
 
   /**
@@ -192,27 +200,16 @@
     syntax: '*';
     inherits: true;
   }
-
-  /* Derive the button radius and font size from the theme: the registered
-   * initial defeats a use-site fallback, so the default lives in a SET on the
-   * button that reads them (they do not inherit). Kept in this layer so a
-   * Material bridge and a consumer override still win. */
-  .cngx-copy-block__button {
-    --cngx-copy-block-btn-radius: var(--cngx-radius-sm);
-    --cngx-copy-block-btn-font-size: var(--cngx-font-size-sm, 0.75rem);
-  }
 }
 
 @layer cngx.components {
   @scope (.cngx-copy-block) {
     :scope {
-      /* Derive spacing from the global scale (SET-from-scale rule). gap 8 -> sm
-         (read on host). btn-padding derives at its use site so an ancestor
-         SET reaches the button. */
-      --cngx-copy-block-gap: var(--cngx-space-sm);
+      /* Every token derives at its use site from the global scale, so an
+         ancestor SET reaches the block and its button. */
       display: flex;
       align-items: flex-start;
-      gap: var(--cngx-copy-block-gap);
+      gap: var(--cngx-copy-block-gap, var(--cngx-space-sm, 8px));
     }
 
     .cngx-copy-block__content {
@@ -235,13 +232,13 @@
       cursor: pointer;
       border: 1px solid var(--cngx-copy-block-btn-border, currentColor);
       background: var(--cngx-copy-block-btn-bg, transparent);
-      color: var(--cngx-copy-block-btn-color);
-      border-radius: var(--cngx-copy-block-btn-radius);
+      color: var(--cngx-copy-block-btn-color, currentColor);
+      border-radius: var(--cngx-copy-block-btn-radius, var(--cngx-radius-sm, 4px));
       padding: var(
         --cngx-copy-block-btn-padding,
         var(--cngx-space-xs, 4px) var(--cngx-space-sm, 8px)
       );
-      font-size: var(--cngx-copy-block-btn-font-size);
+      font-size: var(--cngx-copy-block-btn-font-size, var(--cngx-font-size-sm, 0.75rem));
       transition:
         background var(--cngx-duration-fast, 150ms),
         border-color var(--cngx-duration-fast, 150ms);
