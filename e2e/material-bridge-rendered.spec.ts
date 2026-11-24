@@ -1276,6 +1276,10 @@ test.describe('material-bridge rendered values: copy-block', () => {
   <div class="cngx-copy-block__content"><code>npm install</code></div>
   <button id="copy-done" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
 </cngx-copy-block>
+<cngx-copy-block class="cngx-copy-block">
+  <div class="cngx-copy-block__content"><code>npm install</code></div>
+  <button id="copy-failed" type="button" class="cngx-copy-block__button cngx-copy-block__button--failed">Copy failed</button>
+</cngx-copy-block>
 <div style="--cngx-copy-block-btn-copied-bg: rgb(1, 2, 3)">
   <cngx-copy-block class="cngx-copy-block">
     <button id="copy-themed" type="button" class="cngx-copy-block__button cngx-copy-block__button--copied">Copied</button>
@@ -1321,13 +1325,21 @@ test.describe('material-bridge rendered values: copy-block', () => {
     expect(await computedValue(page, '#copy-done', 'color')).toBe(matSys('tertiary'));
   });
 
+  test('the failed button paints the error set', async ({ page }) => {
+    expect(await computedValue(page, '#copy-failed', 'background-color')).toBe(
+      await resolvedColor(page, `color-mix(in srgb, ${matSys('error')} 12%, transparent)`),
+    );
+    expect(await computedValue(page, '#copy-failed', 'border-top-color')).toBe(matSys('error'));
+    expect(await computedValue(page, '#copy-failed', 'color')).toBe(matSys('error'));
+  });
+
   test('an ancestor SET of the copied background wins over the bridge', async ({ page }) => {
     expect(await computedValue(page, '#copy-themed', 'background-color')).toBe('rgb(1, 2, 3)');
   });
 
   test('a dark scheme scope keeps the tertiary set under the bridge', async ({ page }) => {
-    // copy-block.css SETs dark literals on these scopes; the bridge re-asserts
-    // its values there.
+    // copy-block.css SETs no copied token on a scheme scope, so the value the
+    // bridge puts on the theme host reaches a dark subtree by inheritance.
     const tint = await resolvedColor(
       page,
       `color-mix(in srgb, ${matSys('tertiary')} 12%, transparent)`,

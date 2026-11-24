@@ -15,8 +15,11 @@ import { CngxCopyText } from './copy-text.directive';
  * Molecule: code/text block with a built-in copy button.
  *
  * Renders content in a container with a "Copy" button that uses `CngxCopyText`
- * internally. Shows "Copied!" feedback automatically. The copy button includes
- * an `aria-live` region for screen reader announcements.
+ * internally. Shows "Copied!" after a copy and "Copy failed" (with the
+ * `--failed` modifier) after a failed one; both return to the idle label after
+ * the reset delay. One always-present polite `aria-live` region next to the
+ * button announces either outcome. Every label and announcement follows
+ * `CNGX_INTERACTIVE_I18N` unless its input is bound.
  *
  * ### Copy a code snippet
  * ```html
@@ -60,8 +63,9 @@ import { CngxCopyText } from './copy-text.directive';
       [cngxCopyText]="value()"
       #cp="cngxCopyText"
       [class.cngx-copy-block__button--copied]="cp.copied()"
+      [class.cngx-copy-block__button--failed]="cp.failed()"
     >
-      {{ cp.copied() ? resolvedCopiedLabel() : resolvedButtonLabel() }}
+      {{ buttonText() }}
     </button>
     <!-- Outside the button: a child of a button lands in its accessible
          name, so the announcement text would rename the control. -->
@@ -85,6 +89,13 @@ export class CngxCopyBlock {
    * `CNGX_INTERACTIVE_I18N.copiedAnnouncement`.
    */
   readonly srAnnouncement = input<string | undefined>(undefined);
+  /** Label shown after a failed copy. Unbound, it follows `CNGX_INTERACTIVE_I18N.copyFailed`. */
+  readonly failedLabel = input<string | undefined>(undefined);
+  /**
+   * Screen reader announcement on a failed copy. Unbound, it follows
+   * `CNGX_INTERACTIVE_I18N.copyFailedAnnouncement`.
+   */
+  readonly failedAnnouncement = input<string | undefined>(undefined);
 
   private readonly copyText = viewChild(CngxCopyText);
 
@@ -92,14 +103,34 @@ export class CngxCopyBlock {
   protected readonly resolvedCopiedLabel = computed(
     () => this.copiedLabel() ?? this.i18n().copied,
   );
+  protected readonly resolvedFailedLabel = computed(
+    () => this.failedLabel() ?? this.i18n().copyFailed,
+  );
+
+  protected readonly buttonText = computed(() => {
+    const copyText = this.copyText();
+    if (copyText?.copied()) {
+      return this.resolvedCopiedLabel();
+    }
+    if (copyText?.failed()) {
+      return this.resolvedFailedLabel();
+    }
+    return this.resolvedButtonLabel();
+  });
 
   /**
-   * Live-region text. Only the copied state is tracked: a language switch
-   * never re-voices the region; the next copy speaks the new language.
+   * Live-region text. Only the copied and failed states are tracked: a
+   * language switch never re-voices the region; the next copy speaks the new
+   * language.
    */
-  protected readonly liveAnnouncement = computed(() =>
-    this.copyText()?.copied()
-      ? untracked(() => this.srAnnouncement() ?? this.i18n().copiedAnnouncement)
-      : '',
-  );
+  protected readonly liveAnnouncement = computed(() => {
+    const copyText = this.copyText();
+    if (copyText?.copied()) {
+      return untracked(() => this.srAnnouncement() ?? this.i18n().copiedAnnouncement);
+    }
+    if (copyText?.failed()) {
+      return untracked(() => this.failedAnnouncement() ?? this.i18n().copyFailedAnnouncement);
+    }
+    return '';
+  });
 }

@@ -125,7 +125,7 @@ describe('createFixtureTree', () => {
   });
 
   it('reads every scaffold variant as a workspace', async () => {
-    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss', 'scaffold-22', 'scaffold-22-routing-off', 'scaffold-22-zone', 'scaffold-22-scss', 'scaffold-21-ngmodule', 'scaffold-22-ngmodule'] as const) {
+    for (const name of ['scaffold-21', 'scaffold-21-routing-off', 'scaffold-21-zone', 'scaffold-21-scss', 'scaffold-22', 'scaffold-22-routing-off', 'scaffold-22-zone', 'scaffold-22-scss', 'scaffold-21-ngmodule', 'scaffold-22-ngmodule', 'scaffold-22-3-ngmodule'] as const) {
       const workspace = await readWorkspace(createFixtureTree(name));
 
       expect([...workspace.projects.keys()]).toEqual(['fixture-app']);

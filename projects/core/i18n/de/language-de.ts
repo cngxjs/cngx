@@ -314,6 +314,8 @@ export const CNGX_LANGUAGE_DE = {
     copy: 'Kopieren',
     copied: 'Kopiert!',
     copiedAnnouncement: 'In die Zwischenablage kopiert',
+    copyFailed: 'Kopieren fehlgeschlagen',
+    copyFailedAnnouncement: 'Kopieren fehlgeschlagen',
     rangeMinimum: 'Minimum',
     rangeMaximum: 'Maximum',
     breadcrumb: 'Pfadnavigation',

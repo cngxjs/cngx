@@ -1,13 +1,24 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  output,
+  signal,
+  type Signal,
+} from '@angular/core';
 
 /**
  * Clipboard copy behavior - forms-free version for `@cngx/common`.
  *
- * Place on a button or any clickable element. Copies the provided text to the
- * clipboard. Shows a `copied` signal for visual feedback (auto-resets after
- * `resetDelay`). Falls back to `execCommand('copy')` when Clipboard API is
- * unavailable.
+ * Place on a `<button>`. Copies the provided text to the clipboard and
+ * exposes `copied` and `failed` (never both true, each resets after
+ * `resetDelay`). Falls back to `execCommand('copy')` when the Clipboard API
+ * is unavailable; a `false` result counts as a failure and focus returns to
+ * the element that had it. The directive binds `click` only: on a non-button
+ * host the consumer supplies `role`, `tabindex` and key handling.
  *
  * Unlike `CngxCopyValue` from `@cngx/forms/input`, this has no forms dependency
  * and lives at Level 2 (`@cngx/common`), making it available to any consumer.
@@ -22,9 +33,9 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  *
  * ### Copy with SR announcement
  * ```html
- * <button [cngxCopyText]="shareUrl()">Copy Link</button>
+ * <button [cngxCopyText]="shareUrl()" #cp="cngxCopyText">Copy Link</button>
  * <span aria-live="polite" class="sr-only">
- *   {{ cp.copied() ? 'Link copied to clipboard' : '' }}
+ *   {{ cp.copied() ? 'Link copied to clipboard' : cp.failed() ? 'Copy failed' : '' }}
  * </span>
  * ```
  *
@@ -51,18 +62,25 @@ export class CngxCopyText {
   /** The text to copy to the clipboard. */
   readonly text = input.required<string>({ alias: 'cngxCopyText' });
 
-  /** Duration in ms to keep `copied` true after a successful copy. */
+  /**
+   * Duration in ms to keep `copied` or `failed` true after an attempt; the
+   * state then returns to idle.
+   */
   readonly resetDelay = input<number>(2000);
 
-  private readonly copiedState = signal(false);
-  private readonly failedState = signal(false);
+  private readonly state = signal<'idle' | 'copied' | 'failed'>('idle');
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
+  private destroyed = false;
+  private attempt = 0;
 
-  /** `true` for `resetDelay` ms after a successful copy. */
-  readonly copied: Signal<boolean> = this.copiedState.asReadonly();
+  /** `true` for `resetDelay` ms after a successful copy. Never true together with `failed`. */
+  readonly copied: Signal<boolean> = computed(() => this.state() === 'copied');
 
-  /** `true` when the last copy attempt failed (permission denied, etc.). Resets on next attempt. */
-  readonly failed: Signal<boolean> = this.failedState.asReadonly();
+  /**
+   * `true` for `resetDelay` ms after a failed copy attempt (permission
+   * denied, refused fallback). Never true together with `copied`.
+   */
+  readonly failed: Signal<boolean> = computed(() => this.state() === 'failed');
 
   /** Whether the Clipboard API is available in this environment. */
   readonly supported = typeof navigator !== 'undefined' && !!navigator.clipboard;
@@ -70,11 +88,16 @@ export class CngxCopyText {
   /** Emitted after a successful copy with the copied text. */
   readonly didCopy = output<string>();
 
-  /** Emitted when a copy attempt fails. */
+  /**
+   * Emitted when a copy attempt fails: with the rejection reason when the
+   * Clipboard API rejects the write, with `undefined` when the
+   * `execCommand('copy')` fallback reports `false`.
+   */
   readonly copyFailed = output<unknown>();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
       if (this.resetTimer != null) {
         clearTimeout(this.resetTimer);
       }
@@ -96,41 +119,85 @@ export class CngxCopyText {
       return;
     }
 
-    this.failedState.set(false);
+    if (this.state() === 'failed') {
+      this.state.set('idle');
+    }
 
+    // Overlapping writes settle in any order; only the latest attempt reports.
+    const attempt = ++this.attempt;
+    let done: boolean;
     try {
       if (this.supported) {
         await navigator.clipboard.writeText(value);
+        done = true;
       } else {
-        this.fallbackCopy(value);
+        done = this.fallbackCopy(value);
       }
-
-      this.copiedState.set(true);
-      this.didCopy.emit(value);
-
-      if (this.resetTimer != null) {
-        clearTimeout(this.resetTimer);
-      }
-      this.resetTimer = setTimeout(() => {
-        this.copiedState.set(false);
-        this.resetTimer = null;
-      }, this.resetDelay());
     } catch (err: unknown) {
-      this.failedState.set(true);
-      this.copyFailed.emit(err);
+      if (attempt === this.attempt) {
+        this.handleFailed(err);
+      }
+      return;
+    }
+
+    if (attempt !== this.attempt) {
+      return;
+    }
+    if (done) {
+      this.handleCopied(value);
+    } else {
+      this.handleFailed(undefined);
     }
   }
 
-  /** execCommand fallback for environments without Clipboard API. */
-  private fallbackCopy(text: string): void {
+  private handleCopied(value: string): void {
+    if (this.destroyed) {
+      return;
+    }
+    this.settle('copied');
+    this.didCopy.emit(value);
+  }
+
+  private handleFailed(reason: unknown): void {
+    if (this.destroyed) {
+      return;
+    }
+    this.settle('failed');
+    this.copyFailed.emit(reason);
+  }
+
+  private settle(outcome: 'copied' | 'failed'): void {
+    this.state.set(outcome);
+    if (this.resetTimer != null) {
+      clearTimeout(this.resetTimer);
+    }
+    this.resetTimer = setTimeout(() => {
+      this.state.set('idle');
+      this.resetTimer = null;
+    }, this.resetDelay());
+  }
+
+  /**
+   * execCommand fallback for environments without Clipboard API. Returns
+   * whether the browser reported the copy as done. Selecting the offscreen
+   * textarea moves focus, so the element that had focus gets it back.
+   */
+  private fallbackCopy(text: string): boolean {
+    const previousFocus = this.doc.activeElement;
     const textarea = this.doc.createElement('textarea');
     textarea.value = text;
     textarea.style.position = 'fixed';
     textarea.style.left = '-9999px';
     textarea.style.opacity = '0';
     this.doc.body.appendChild(textarea);
-    textarea.select();
-    this.doc.execCommand('copy');
-    this.doc.body.removeChild(textarea);
+    try {
+      textarea.select();
+      return this.doc.execCommand('copy');
+    } finally {
+      textarea.remove();
+      if (previousFocus instanceof HTMLElement && previousFocus !== this.doc.body) {
+        previousFocus.focus();
+      }
+    }
   }
 }

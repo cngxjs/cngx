@@ -174,9 +174,13 @@ jobs:
           # The same path on an ng new --standalone=false app with routing:
           # the outlets go into the root NgModule and the stock spec gets
           # the outlet classes and the providers, so ng test still passes.
-          # CLI 21 only: from 22.2 the stock NgModule app fails ng test on
-          # its own, and ng add leaves the outlets out there.
+          # 21 and 22 (22.3 or later): on 22.2 the unit-test builder compiles
+          # App without AppModule, and ng add leaves the outlets out below
+          # 22.3.0 on major 22; --angular 22 resolves to the newest 22, and 22.3.0 pins the
+          # lowest release the ng add gate opens on.
           - { angular: '21', variant: ngmodule, args: '--preset full' }
+          - { angular: '22', variant: ngmodule, args: '--preset full' }
+          - { angular: '22.3.0', variant: ngmodule, args: '--preset full' }
     # `add` keeps the check name of a row that onboards through another
     # package apart from the core onboarding row of the same major.
     name: angular-${{ matrix.angular }}-${{ matrix.variant }}${{ matrix.add && format('-{0}', matrix.add) || '' }}

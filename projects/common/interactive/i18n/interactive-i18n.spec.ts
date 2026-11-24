@@ -7,8 +7,9 @@ import {
   type CngxActiveLanguagePack,
 } from '@cngx/core/i18n';
 import { provideLocale } from '@cngx/core/utils';
+import { CNGX_LANGUAGE_DE } from '@cngx/core/i18n/de';
 import { stripBidiIsolates } from '@cngx/testing';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxAsyncClick } from '../async-click/async-click.directive';
 import { CngxBreadcrumb } from '../breadcrumb/breadcrumb.directive';
@@ -46,6 +47,8 @@ describe('CNGX_INTERACTIVE_I18N', () => {
       copy: 'Copy',
       copied: 'Copied!',
       copiedAnnouncement: 'Copied to clipboard',
+      copyFailed: 'Copy failed',
+      copyFailedAnnouncement: 'Copy failed',
       rangeMinimum: 'Minimum',
       rangeMaximum: 'Maximum',
       breadcrumb: 'Breadcrumb',
@@ -204,6 +207,45 @@ describe('CNGX_INTERACTIVE_I18N', () => {
       'Maximum (de)',
     ]);
     expect(root.querySelector('nav')?.getAttribute('aria-label')).toBe('Brotkrumen');
+  });
+
+  describe('copy-block failure copy', () => {
+    const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+
+    afterEach(() => {
+      if (clipboardDescriptor) {
+        Object.defineProperty(navigator, 'clipboard', clipboardDescriptor);
+      } else {
+        delete (navigator as unknown as Record<string, unknown>)['clipboard'];
+      }
+    });
+
+    it('renders the German failure label and announcement from the German pack', async () => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+        writable: true,
+        configurable: true,
+      });
+      TestBed.configureTestingModule({
+        imports: [StringInputsHost],
+        providers: [
+          provideCngxI18n(withPartialPack(signal(CNGX_LANGUAGE_DE)), withDocumentLanguage('off')),
+        ],
+      });
+      const fixture = TestBed.createComponent(StringInputsHost);
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const button = root.querySelector('cngx-copy-block button') as HTMLButtonElement;
+
+      button.click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(button.textContent?.trim()).toBe('Kopieren fehlgeschlagen');
+      expect(
+        root.querySelector('cngx-copy-block [aria-live="polite"]')?.textContent?.trim(),
+      ).toBe('Kopieren fehlgeschlagen');
+    });
   });
 
   it('formats the default slider aria-valuetext in the app locale, live on a flip', () => {

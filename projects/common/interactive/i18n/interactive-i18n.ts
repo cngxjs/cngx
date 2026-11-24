@@ -33,6 +33,10 @@ export interface CngxInteractiveI18n {
   readonly copied?: string;
   /** Default of the `CngxCopyBlock` `srAnnouncement` input (live region). */
   readonly copiedAnnouncement?: string;
+  /** Default of the `CngxCopyBlock` `failedLabel` input. */
+  readonly copyFailed?: string;
+  /** Default of the `CngxCopyBlock` `failedAnnouncement` input (live region). */
+  readonly copyFailedAnnouncement?: string;
   /** Default of the `CngxRangeSlider` `startLabel` input. */
   readonly rangeMinimum?: string;
   /** Default of the `CngxRangeSlider` `endLabel` input. */
@@ -64,6 +68,8 @@ function interactiveBundleFrom(
     copy: section.copy,
     copied: section.copied,
     copiedAnnouncement: section.copiedAnnouncement,
+    copyFailed: section.copyFailed,
+    copyFailedAnnouncement: section.copyFailedAnnouncement,
     rangeMinimum: section.rangeMinimum,
     rangeMaximum: section.rangeMaximum,
     breadcrumb: section.breadcrumb,

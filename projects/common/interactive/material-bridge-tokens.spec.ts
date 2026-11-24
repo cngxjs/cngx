@@ -151,15 +151,17 @@ describe('copy-block Material bridge', () => {
     '--cngx-copy-block-btn-copied-bg',
     '--cngx-copy-block-btn-copied-border',
     '--cngx-copy-block-btn-copied-color',
+    '--cngx-copy-block-btn-failed-bg',
+    '--cngx-copy-block-btn-failed-border',
+    '--cngx-copy-block-btn-failed-color',
   ];
 
   it('emits only consumed token names (M3)', () => {
     expect(bridgeTokenNames('copy-block-theme')).toEqual(CONSUMED);
   });
 
-  // inherits:false tokens and the host-SET copied border land on the button
-  // through the broadcast; the two inheriting copied tokens land on the theme
-  // host and are re-asserted on the scheme scopes copy-block.css SETs.
+  // inherits:false tokens land on the button through the broadcast; the
+  // inheriting copied and failed tokens land on the theme host only.
   it('splits the emission per token registration', () => {
     const css = bridgeCss('copy-block-theme');
     const blocks = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, sel, body]) => ({
@@ -174,47 +176,34 @@ describe('copy-block Material bridge', () => {
         '--cngx-copy-block-btn-bg',
         '--cngx-copy-block-btn-border',
         '--cngx-copy-block-btn-color',
-        '--cngx-copy-block-btn-copied-border',
       ],
     ]);
-    const inherited = ['--cngx-copy-block-btn-copied-bg', '--cngx-copy-block-btn-copied-color'];
+    const inherited = [
+      '--cngx-copy-block-btn-copied-bg',
+      '--cngx-copy-block-btn-copied-border',
+      '--cngx-copy-block-btn-copied-color',
+      '--cngx-copy-block-btn-failed-bg',
+      '--cngx-copy-block-btn-failed-border',
+      '--cngx-copy-block-btn-failed-color',
+    ];
     expect(find((s) => s === ':root').map((b) => b.names)).toEqual([inherited]);
-    const schemes = find((s) => s.startsWith(':where(') && s.includes('.dark'));
-    expect(schemes.map((b) => b.names)).toEqual([inherited]);
-    for (const scope of [
-      '[data-color-scheme=dark]',
-      '.dark',
-      '[data-color-scheme=light]',
-      '.light',
-    ]) {
-      expect(schemes[0].selector, scope).toContain(scope);
-    }
+    expect(blocks).toHaveLength(2);
   });
 
-  // The scheme-scope re-assertion mirrors the scopes copy-block.css SETs the
-  // copied literals on; a scope added or renamed there must fail here, not
-  // silently shadow the bridge.
-  it('re-asserts on exactly the scheme scopes copy-block.css SETs', () => {
+  // copy-block.css derives the copied and failed palette at the use site and
+  // SETs no copied or failed token on any selector (host or scheme scope), so
+  // nothing below the theme host shadows the inherited bridge value. A SET
+  // added there would need a bridge re-assertion; fail here instead.
+  it('has no component SET of an inheriting copy-block token to re-assert on', () => {
     const sheet = readFileSync(
       resolve(process.cwd(), 'projects/common/interactive/copy/copy-block.css'),
       'utf-8',
     );
-    const normalize = (list: string): string[] =>
-      list
-        .split(',')
-        .map((sel) => sel.trim().replace(/['"]/g, ''))
-        .filter(Boolean);
-    const componentScopes = [...sheet.matchAll(/([^{}]+)\{[^{}]*--cngx-copy-block-btn-copied-bg:/g)]
-      .map(([, sel]) => sel.replace(/\/\*[\s\S]*?\*\//g, '').trim())
-      .filter((sel) => !sel.startsWith(':root'))
-      .flatMap(normalize)
-      .sort();
-    const css = bridgeCss('copy-block-theme');
-    const bridgeScopes = [...css.matchAll(/:where\(([^)]*\.dark[^)]*)\)\s*\{/g)]
-      .flatMap(([, list]) => normalize(list))
-      .sort();
-    expect(componentScopes.length).toBeGreaterThan(0);
-    expect(bridgeScopes).toEqual(componentScopes);
+    const setters = [
+      ...sheet.matchAll(/([^{}]+)\{[^{}]*--cngx-copy-block-btn-(?:copied|failed)-[a-z]+:/g),
+    ].map(([, sel]) => sel.replace(/\/\*[\s\S]*?\*\//g, '').trim());
+    expect(setters).toEqual([]);
+    expect(bridgeCss('copy-block-theme')).not.toMatch(/\.dark|data-color-scheme|\.light/);
   });
 });
 
