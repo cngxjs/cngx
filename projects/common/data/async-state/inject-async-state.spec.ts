@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { Subject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -213,5 +214,49 @@ describe('injectAsyncState', () => {
 
     expect(host.state.status()).toBe('success');
     expect(host.state.data()).toBe('fresh');
+  });
+
+  describe('stream and refresh premises', () => {
+    it('follows every emission of an Observable fn and stays subscribed until destroy', async () => {
+      const source = new Subject<string>();
+      @Component({ template: '' })
+      class StreamHost {
+        readonly state = injectAsyncState(() => source);
+      }
+      TestBed.configureTestingModule({ imports: [StreamHost] });
+      const fixture = TestBed.createComponent(StreamHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(50);
+
+      source.next('one');
+      source.next('two');
+      expect(fixture.componentInstance.state.data()).toBe('two');
+      expect(source.observed).toBe(true);
+
+      fixture.destroy();
+      expect(source.observed).toBe(false);
+    });
+
+    it('a synchronous throw of fn in refresh() escapes and leaves the status loading', () => {
+      let shouldThrow = false;
+      @Component({ template: '' })
+      class ThrowHost {
+        readonly state = injectAsyncState<string>(() => {
+          if (shouldThrow) {
+            throw new Error('sync');
+          }
+          return new Promise<string>(() => undefined);
+        });
+      }
+      TestBed.configureTestingModule({ imports: [ThrowHost] });
+      const fixture = TestBed.createComponent(ThrowHost);
+      fixture.detectChanges();
+      const state = fixture.componentInstance.state;
+
+      shouldThrow = true;
+      expect(() => state.refresh()).toThrow('sync');
+      expect(state.status()).toBe('loading');
+    });
   });
 });

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { SIGNAL, type ReactiveNode } from '@angular/core/primitives/signals';
+import { CNGX_DEV_DESCRIPTORS } from '@cngx/core/utils';
 import { describe, expect, test, beforeEach } from 'vitest';
 
 import {
@@ -286,6 +287,14 @@ describe('createCommitController', () => {
     ctrl.begin(() => noopHandle(), 2, 1, { onSuccess: () => {}, onError: () => {} });
     ctrl.cancel();
     expect(staleCancel).toBe(false);
+  });
+
+  test('state exposes the writable manual state, so a cast caller can settle it without begin()', () => {
+    const ctrl = createCommitController<string>();
+    expect('setSuccess' in ctrl.state).toBe(true);
+    (ctrl.state as unknown as { setSuccess(v: string): void }).setSuccess('forged');
+    expect(ctrl.state.status()).toBe('success');
+    expect(CNGX_DEV_DESCRIPTORS.read(ctrl.state)?.kind).toBe('cngx-dev:factory');
   });
 });
 

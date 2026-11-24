@@ -1,3 +1,4 @@
+import { Injector, runInInjectionContext } from '@angular/core';
 import { EMPTY, Observable, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_ASYNC_CANCELLED } from '../async-click/async-click.directive';
@@ -163,6 +164,24 @@ describe('withRetry', () => {
       expect(state.exhausted()).toBe(false);
       expect(state.state.status()).toBe('idle');
       expect(state.lastError()).toEqual(new Error('fail'));
+    });
+
+    it('a direct call without a signal keeps its backoff timer after the host is destroyed', async () => {
+      vi.useFakeTimers();
+      const action = vi.fn().mockRejectedValue(new Error('fail'));
+      const injector = Injector.create({ providers: [] }) as Injector & { destroy(): void };
+      const [retryable] = runInInjectionContext(injector, () =>
+        createRetry(action, { maxAttempts: 3, delay: 1000 }),
+      );
+
+      const result = retryable();
+      void (result as Promise<unknown>).catch(() => undefined);
+      await vi.advanceTimersByTimeAsync(0);
+      injector.destroy();
+
+      expect(vi.getTimerCount()).toBe(1);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(action).toHaveBeenCalledTimes(3);
     });
 
     it('abort during the in-flight attempt settles idle without waiting for it', async () => {
