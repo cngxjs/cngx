@@ -233,7 +233,7 @@
       cursor: pointer;
       border: 1px solid var(--cngx-copy-block-btn-border, currentColor);
       background: var(--cngx-copy-block-btn-bg, transparent);
-      color: var(--cngx-copy-block-btn-color, inherit);
+      color: var(--cngx-copy-block-btn-color);
       border-radius: var(--cngx-copy-block-btn-radius);
       padding: var(
         --cngx-copy-block-btn-padding,
