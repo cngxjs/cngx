@@ -110,6 +110,7 @@ export {
   FEEDBACK_SPEC_PROVIDERS,
   moduleSpecWithFeedback,
   outletEdits,
+  SCOPED_TEST_BUILDS,
   testsCompileModule,
 } from './app-shell';
 export {

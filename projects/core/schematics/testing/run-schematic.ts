@@ -16,7 +16,9 @@ const FIXTURES = join(__dirname, 'fixtures');
  * `scaffold-21*` and `scaffold-22*` apps are untouched `ng new` output of
  * `@angular/cli` 21.2.2 and 22.2.3, one folder per variant (zoneless with
  * routing, routing off, zone, SCSS, and `--standalone=false` as `-ngmodule`),
- * the stock `app.html`, `app.spec.ts` and `src/index.html` included.
+ * the stock `app.html`, `app.spec.ts` and `src/index.html` included;
+ * `scaffold-22-3-ngmodule` is the same for `@angular/cli` 22.3.0
+ * (`--standalone=false`, zoneless with routing).
  */
 export type FixtureName =
   | 'standalone-app'
@@ -36,7 +38,8 @@ export type FixtureName =
   | 'scaffold-22-ngmodule'
   | 'scaffold-22-ngmodule-routing-off'
   | 'scaffold-22-ngmodule-zone'
-  | 'scaffold-22-ngmodule-routing-off-zone';
+  | 'scaffold-22-ngmodule-routing-off-zone'
+  | 'scaffold-22-3-ngmodule';
 
 function walk(dir: string): readonly string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

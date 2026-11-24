@@ -151,7 +151,7 @@ interface Shape {
    * `spec-custom`, the outlets left out in front of a spec cngx cannot
    * provide (fail-closed, so `ng test` never turns red); or
    * `spec-unscoped`, the outlets left out in front of an NgModule spec
-   * where @angular/build 21 is not installed.
+   * where neither @angular/build 21 nor 22.3.0 or later is installed.
    */
   readonly outcome: 'placed' | AppShellBlockedReason | 'spec-custom' | 'spec-unscoped';
 }
@@ -199,6 +199,15 @@ const CORPUS: readonly Shape[] = [
   { name: 'ng new NgModule app 21 with @angular/build 22 installed', fixture: 'scaffold-21-ngmodule', files: { [BUILD_MANIFEST]: buildManifest('22.2.3') }, outcome: 'spec-unscoped' },
   { name: 'ng new NgModule app 22 with @angular/build 21 installed', fixture: 'scaffold-22-ngmodule', files: { 'src/app/app.spec.ts': NGMODULE_SPEC, [BUILD_MANIFEST]: buildManifest('21.2.27') }, outcome: 'placed' },
   { name: 'ng new NgModule app 22 without its spec', fixture: 'scaffold-22-ngmodule', remove: ['src/app/app.spec.ts'], outcome: 'placed' },
+  { name: 'ng new NgModule app 22.3 with its spec', fixture: 'scaffold-22-3-ngmodule', outcome: 'placed' },
+  { name: 'Prettier-formatted ng new NgModule app 22.3', fixture: 'scaffold-22-3-ngmodule', prettierFirst: true, outcome: 'placed' },
+  { name: 'ng add again on the ng new NgModule app 22.3', fixture: 'scaffold-22-3-ngmodule', installedFirst: true, outcome: 'placed' },
+  { name: 'ng new NgModule app 22.3 with a custom spec', fixture: 'scaffold-22-3-ngmodule', files: { 'src/app/app.spec.ts': `${readFixture('scaffold-22-3-ngmodule')['src/app/app.spec.ts']}// mine\n` }, outcome: 'spec-custom' },
+  { name: 'ng new NgModule app 22 with @angular/build 22.3.0 installed', fixture: 'scaffold-22-ngmodule', files: { [BUILD_MANIFEST]: buildManifest('22.3.0') }, outcome: 'placed' },
+  { name: 'ng new NgModule app 22 zone with @angular/build 22.3.0 installed', fixture: 'scaffold-22-ngmodule-zone', files: { [BUILD_MANIFEST]: buildManifest('22.3.0') }, outcome: 'placed' },
+  { name: 'ng new NgModule app 22 routing off with @angular/build 22.3.0 installed', fixture: 'scaffold-22-ngmodule-routing-off', files: { [BUILD_MANIFEST]: buildManifest('22.3.0') }, outcome: 'placed' },
+  { name: 'ng new NgModule app 22 routing off zone with @angular/build 22.3.0 installed', fixture: 'scaffold-22-ngmodule-routing-off-zone', files: { [BUILD_MANIFEST]: buildManifest('22.3.0') }, outcome: 'placed' },
+  { name: 'ng new NgModule app 22 with @angular/build 22.2.3 installed', fixture: 'scaffold-22-ngmodule', files: { [BUILD_MANIFEST]: buildManifest('22.2.3') }, outcome: 'spec-unscoped' },
   { name: "NgModule 'imports' key", files: ngModuleApp(`'imports': [\n    BrowserModule\n  ],`), outcome: 'placed' },
   { name: 'NgModule without imports', files: ngModuleApp(''), outcome: 'placed' },
   { name: 'NgModule identifier imports', files: ngModuleApp('imports: MODULES,'), outcome: 'imports-not-array' },
