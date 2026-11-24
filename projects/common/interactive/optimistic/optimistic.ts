@@ -1,4 +1,4 @@
-import { computed, signal, type WritableSignal, type Signal } from '@angular/core';
+import { computed, signal, untracked, type WritableSignal, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { type Observable, type Subscription, take } from 'rxjs';
 
@@ -25,7 +25,9 @@ export interface OptimisticState {
  *
  * Sets the new value immediately (optimistic), then confirms via the async action.
  * On success, applies the server-confirmed value. On failure, rolls back to the
- * previous value.
+ * value the signal held right before the apply. While an earlier apply is still
+ * in flight, the rollback target stays the last value that was confirmed or held
+ * before that earlier apply, never an unconfirmed optimistic value.
  *
  * This is a utility function, not a directive - it composes with any signal.
  *
@@ -71,11 +73,18 @@ export function createOptimistic<T>(
     state: asyncState,
   };
 
-  // Last confirmed value - rollback target under concurrent calls.
-  let confirmedValue = current();
+  // Rollback target, read when an apply starts with none in flight. An
+  // overlapping apply keeps it, so a failure never restores an unconfirmed
+  // optimistic value.
+  let confirmedValue = untracked(current);
+  let inFlight = false;
   let activeSub: Subscription | undefined;
 
   const apply = (newValue: T): void => {
+    if (!inFlight) {
+      confirmedValue = untracked(current);
+    }
+    inFlight = true;
     // Cancel in-flight subscription - prevents stale closure rollback
     activeSub?.unsubscribe();
 
@@ -89,13 +98,13 @@ export function createOptimistic<T>(
       .pipe(take(1))
       .subscribe({
         next: (confirmed) => {
-          confirmedValue = confirmed;
+          inFlight = false;
           current.set(confirmed);
           statusState.set('success');
           activeSub = undefined;
         },
         error: (err: unknown) => {
-          // Rollback to last confirmed value (not the stale optimistic one)
+          inFlight = false;
           current.set(confirmedValue);
           rolledBackState.set(true);
           errorState.set(err);

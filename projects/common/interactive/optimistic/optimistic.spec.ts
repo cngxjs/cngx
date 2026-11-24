@@ -131,4 +131,16 @@ describe('optimistic', () => {
       expect((state.error() as Error).message).toBe('e2');
     });
   });
+
+  describe('rollback target', () => {
+    it('rolls back to the value the signal held before the apply, not the creation-time value', () => {
+      const name = signal('A');
+      const [update, state] = createOptimistic(name, () => throwError(() => new Error('fail')));
+      name.set('B');
+      update('C');
+      expect(name()).toBe('B');
+      expect(state.rolledBack()).toBe(true);
+      expect(state.state.status()).toBe('error');
+    });
+  });
 });
