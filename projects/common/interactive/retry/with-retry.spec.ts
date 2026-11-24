@@ -1,4 +1,4 @@
-import { Injector, runInInjectionContext } from '@angular/core';
+import { DestroyRef, Injector, runInInjectionContext } from '@angular/core';
 import { EMPTY, Observable, of } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { CNGX_ASYNC_CANCELLED } from '../async-click/async-click.directive';
@@ -256,6 +256,38 @@ describe('createRetry', () => {
       expect(vi.getTimerCount()).toBe(1);
       await vi.advanceTimersByTimeAsync(5000);
       expect(action).toHaveBeenCalledTimes(3);
+    });
+
+    it('with a destroyRef, destroy during backoff clears the timer and resolves cancelled', async () => {
+      vi.useFakeTimers();
+      const action = vi.fn().mockRejectedValue(new Error('fail'));
+      const injector = Injector.create({ providers: [] }) as Injector & { destroy(): void };
+      const [retryable, state] = createRetry(
+        action,
+        { maxAttempts: 3, delay: 1000 },
+        injector.get(DestroyRef),
+      );
+
+      const result = retryable();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(vi.getTimerCount()).toBe(1);
+      injector.destroy();
+
+      expect(vi.getTimerCount()).toBe(0);
+      await expect(result).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(state.state.status()).toBe('idle');
+    });
+
+    it('with a destroyRef, a call after destroy resolves cancelled without calling the action', async () => {
+      const action = vi.fn().mockResolvedValue('ok');
+      const injector = Injector.create({ providers: [] }) as Injector & { destroy(): void };
+      const [retryable, state] = createRetry(action, undefined, injector.get(DestroyRef));
+      injector.destroy();
+      await expect(retryable()).resolves.toBe(CNGX_ASYNC_CANCELLED);
+      expect(action).not.toHaveBeenCalled();
+      expect(state.attempt()).toBe(0);
     });
 
     it('abort during the in-flight attempt settles idle without waiting for it', async () => {
