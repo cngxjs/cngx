@@ -151,6 +151,9 @@ describe('copy-block Material bridge', () => {
     '--cngx-copy-block-btn-copied-bg',
     '--cngx-copy-block-btn-copied-border',
     '--cngx-copy-block-btn-copied-color',
+    '--cngx-copy-block-btn-failed-bg',
+    '--cngx-copy-block-btn-failed-border',
+    '--cngx-copy-block-btn-failed-color',
   ];
 
   it('emits only consumed token names (M3)', () => {
@@ -177,7 +180,13 @@ describe('copy-block Material bridge', () => {
         '--cngx-copy-block-btn-copied-border',
       ],
     ]);
-    const inherited = ['--cngx-copy-block-btn-copied-bg', '--cngx-copy-block-btn-copied-color'];
+    const inherited = [
+      '--cngx-copy-block-btn-copied-bg',
+      '--cngx-copy-block-btn-copied-color',
+      '--cngx-copy-block-btn-failed-bg',
+      '--cngx-copy-block-btn-failed-border',
+      '--cngx-copy-block-btn-failed-color',
+    ];
     expect(find((s) => s === ':root').map((b) => b.names)).toEqual([inherited]);
     const schemes = find((s) => s.startsWith(':where(') && s.includes('.dark'));
     expect(schemes.map((b) => b.names)).toEqual([inherited]);

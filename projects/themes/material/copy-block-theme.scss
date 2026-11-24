@@ -3,10 +3,11 @@
 
 // Material bridge for CngxCopyBlock. The host projects consumer content
 // and owns no surface tokens - the themed surface is the copy button
-// (`--cngx-copy-block-btn-*`) with its copied confirmation state.
+// (`--cngx-copy-block-btn-*`) with its copied confirmation state and its
+// failed state (the Material error role).
 //
-// `--cngx-copy-block-btn-copied-bg` and `-copied-color` inherit, so they land
-// on the include host. Include the bridge in the selector that carries
+// `--cngx-copy-block-btn-copied-bg`, `-copied-color` and the three `-failed-*`
+// tokens inherit, so they land on the include host. Include the bridge in the selector that carries
 // `mat.theme`; a nested Material sub-theme needs it included on that
 // container too, or its copied fill and text keep the outer roles while the
 // copied border, set on every copy block, follows the container. An ancestor
@@ -30,11 +31,14 @@
   }
 }
 
-// copied-bg / -color inherit and land on the theme host.
+// copied-bg / -color and the failed tokens inherit and land on the theme host.
 @mixin _inherited($theme) {
   @if mat.get-theme-version($theme) == 1 {
     --cngx-copy-block-btn-copied-bg: color-mix(in srgb, var(--mat-sys-tertiary) 12%, transparent);
     --cngx-copy-block-btn-copied-color: var(--mat-sys-tertiary);
+    --cngx-copy-block-btn-failed-bg: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+    --cngx-copy-block-btn-failed-border: var(--mat-sys-error);
+    --cngx-copy-block-btn-failed-color: var(--mat-sys-error);
   }
 }
 
