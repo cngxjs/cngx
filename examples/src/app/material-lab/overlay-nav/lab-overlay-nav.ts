@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
@@ -66,6 +67,7 @@ import { LabPages } from '../lab-pages';
   imports: [
     LabPages,
     MatBottomSheetModule,
+    MatDividerModule,
     MatIconModule,
     MatListModule,
     MatMenuModule,
@@ -129,6 +131,7 @@ import { LabPages } from '../lab-pages';
         <mat-menu #matCtx="matMenu" class="probe-mat">
           <button mat-menu-item>Copy</button>
           <button mat-menu-item>Cut</button>
+          <mat-divider />
           <button mat-menu-item>Paste</button>
         </mat-menu>
         <cngx-context-menu
@@ -163,6 +166,14 @@ import { LabPages } from '../lab-pages';
           >
             Open cngx sheet
           </button>
+          <button
+            type="button"
+            class="probe-cngx-anchored-trigger lab-trigger"
+            [cngxPopoverTrigger]="anchoredPop"
+            (click)="anchoredPop.show()"
+          >
+            Open cngx anchored popover
+          </button>
         </div>
         <ng-template #matSheetTpl>
           <div class="lab-sheet-body">
@@ -185,6 +196,14 @@ import { LabPages } from '../lab-pages';
             <p class="lab-sheet-text">Send the report to the team.</p>
             <button type="button" class="lab-trigger" (click)="pop.hide()">Close</button>
           </div>
+        </div>
+        <div
+          cngxPopover
+          #anchoredPop="cngxPopover"
+          class="probe-cngx-anchored"
+          [cngxPopoverSheet]="'anchored'"
+        >
+          <p>Send the report to the team.</p>
         </div>
       </section>
 

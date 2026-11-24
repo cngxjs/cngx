@@ -121,8 +121,8 @@
   }
 
   /**
-   * Block margin above and below the separator hairline. Derived from
-   * `--cngx-space-xs` at the host.
+   * Block margin above and below the separator hairline. SET from
+   * `--cngx-space-xs` on the divider itself (`inherits: false`).
    * @group Layout
    */
   @property --cngx-context-menu-separator-inset {
@@ -140,6 +140,13 @@
     --cngx-context-menu-shadow: var(--cngx-shadow-md, 0 4px 16px oklch(0 0 0 / 0.12));
     --cngx-context-menu-separator-color: var(--cngx-color-border, oklch(0.88 0.005 250));
   }
+
+  /* SET on the read site: the token does not inherit, so a host SET never
+     reaches the divider and density would stop at the initial value. */
+  cngx-context-menu-divider,
+  hr[cngxContextMenuDivider] {
+    --cngx-context-menu-separator-inset: var(--cngx-space-xs);
+  }
 }
 
 @layer cngx.components {
@@ -147,7 +154,6 @@
     /* SET-from-scale so a root [data-density] compacts the popup (the
        registered pixel initials defeat the use-site fallbacks). */
     --cngx-context-menu-padding: var(--cngx-space-xs);
-    --cngx-context-menu-separator-inset: var(--cngx-space-xs);
     box-sizing: border-box;
     /* The organism IS the popover surface; CngxPopover promotes it to the top
        layer. position:fixed + inset:unset lets CSS anchor positioning place it

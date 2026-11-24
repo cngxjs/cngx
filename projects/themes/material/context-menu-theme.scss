@@ -18,6 +18,7 @@
 //   item        48 high: 20 label line + 2 * 14 block (sm * 1.75), 12 inline
 //               (sm * 1.5), square corners, label-large, on-surface
 //   highlight   on-surface hover state layer (8%)
+//   separator   surface-variant, 8 block margin (sm), full bleed
 //
 // Spacing derives from the --cngx-space-* scale, so a density island scales
 // the menu the way Material density scales mat-menu.
@@ -27,11 +28,10 @@
     --cngx-context-menu-surface: var(--mat-sys-surface-container);
     --cngx-context-menu-color: var(--mat-sys-on-surface);
     --cngx-context-menu-border: none;
-    // mat-menu paints the MDC elevation-2 shadow (`elevation.get-box-shadow(2)`
-    // in `_m3-menu.scss`), not --mat-sys-level2; literal like the paginator panel.
-    --cngx-context-menu-shadow:
-      0 3px 1px -2px rgb(0 0 0 / 0.2), 0 2px 2px 0 rgb(0 0 0 / 0.14), 0 1px 5px 0 rgb(0 0 0 / 0.12);
-    --cngx-context-menu-separator-color: var(--mat-sys-outline-variant);
+    // The MDC elevation 2 mat-menu paints, not --mat-sys-level2.
+    --cngx-context-menu-shadow: #{bridge.$mdc-elevation-2};
+    // The ink the mat-menu divider paints as its top border (`_m3-menu.scss`).
+    --cngx-context-menu-separator-color: var(--mat-sys-surface-variant);
     --cngx-context-menu-item-caret-color: var(--mat-sys-on-surface-variant);
     --cngx-context-menu-item-check-color: var(--mat-sys-primary);
     --cngx-menu-item-highlight-bg: color-mix(
@@ -82,6 +82,15 @@ $_items: ':is(cngx-context-menu-item, button[cngxContextMenuItem], cngx-context-
       // The type role above outranks the checked weight; keep the cue.
       cngx-context-menu #{$_items}.cngx-menu-item--checked {
         font-weight: var(--cngx-menu-item-checked-font-weight, 600);
+      }
+      // The mat-menu divider runs full width with 8px block margins. The
+      // component writes the inline margin as a literal rung, so (0,1,2)
+      // beats its (0,1,1) read rule and writes the PROPERTY; the block
+      // margin stays the TOKEN. Consumer override: an unlayered rule on the
+      // divider.
+      cngx-context-menu :is(cngx-context-menu-divider, hr[cngxContextMenuDivider]) {
+        --cngx-context-menu-separator-inset: var(--cngx-space-sm, 8px);
+        margin-inline: 0;
       }
     }
   }

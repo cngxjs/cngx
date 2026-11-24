@@ -13,11 +13,8 @@
   @if mat.get-theme-version($theme) == 1 {
     --cngx-popover-sheet-surface: var(--mat-sys-surface-container-low);
     --cngx-popover-sheet-color: var(--mat-sys-on-surface);
-    // mat-bottom-sheet paints the MDC elevation-16 shadow literally
-    // (`.mat-bottom-sheet-container`), not a --mat-sys-level* token.
-    --cngx-popover-sheet-shadow:
-      0 8px 10px -5px rgb(0 0 0 / 0.2), 0 16px 24px 2px rgb(0 0 0 / 0.14),
-      0 6px 30px 5px rgb(0 0 0 / 0.12);
+    // The MDC elevation 16 mat-bottom-sheet paints, not a --mat-sys-level* token.
+    --cngx-popover-sheet-shadow: #{bridge.$mdc-elevation-16};
     --cngx-popover-sheet-backdrop: color-mix(in srgb, var(--mat-sys-scrim) 32%, transparent);
     --cngx-popover-sheet-handle-color: color-mix(
       in srgb,
@@ -65,6 +62,12 @@
   @include bridge.on('.cngx-popover-sheet') {
     @include color($theme);
     @include shape($theme);
+  }
+  // body-large is bottom-sheet type: only the modal forms take it, an
+  // anchored popover keeps the page font.
+  @include bridge.on(
+    ".cngx-popover-sheet:is([data-cngx-presentation='sheet'], [data-cngx-presentation='fullscreen'])"
+  ) {
     @include typography($theme);
   }
   @include metrics($theme);

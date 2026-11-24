@@ -164,6 +164,9 @@ for (const scheme of ['light', 'dark'] as const) {
       // the item host only carries the row.
       const matText = `${matItem} .mat-mdc-menu-item-text`;
       const cngxText = `${cngxItem} [cngxMenuItemLabel]`;
+      const matDivider = `${matPanel} .mat-divider`;
+      const cngxDivider = `${cngxPanel} cngx-context-menu-divider`;
+      const marginProps = ['margin-top', 'margin-bottom', 'margin-left', 'margin-right'];
       // The panel paints surface, corner, shadow and border; Material pads the
       // list inside it (.mat-mdc-menu-content), cngx pads the panel itself.
       const panelProps = [
@@ -201,6 +204,13 @@ for (const scheme of ['light', 'dark'] as const) {
       const matPadValues = await values(matContent, padProps);
       const matItemValues = await values(matItem, itemProps);
       const matTypeValues = await values(matText, typeProps);
+      const matDividerMargins = await values(matDivider, marginProps);
+      // mat-divider paints a top border, the cngx hairline a 1px background.
+      const matDividerInk = await rgba(
+        page,
+        await computedValue(page, matDivider, 'border-top-color'),
+      );
+      const matDividerWidth = await computedValue(page, matDivider, 'border-top-width');
       await page.keyboard.press('Escape');
       await expect(page.locator(matPanel)).toHaveCount(0);
 
@@ -219,6 +229,18 @@ for (const scheme of ['light', 'dark'] as const) {
       for (const [i, p] of typeProps.entries()) {
         expect(await computedValue(page, cngxText, p), `label ${p}`).toBe(matTypeValues[i]);
       }
+      for (const [i, p] of marginProps.entries()) {
+        expect(await computedValue(page, cngxDivider, p), `divider ${p}`).toBe(
+          matDividerMargins[i],
+        );
+      }
+      expect(
+        await rgba(page, await computedValue(page, cngxDivider, 'background-color')),
+        'divider ink',
+      ).toBe(matDividerInk);
+      expect(await computedValue(page, cngxDivider, 'height'), 'divider thickness').toBe(
+        matDividerWidth,
+      );
     });
 
     test('popover-sheet: the open sheet matches mat-bottom-sheet in surface, corner, padding, elevation, type and scrim', async ({
@@ -263,6 +285,22 @@ for (const scheme of ['light', 'dark'] as const) {
         .locator(cngxSheet)
         .evaluate((el) => getComputedStyle(el, '::backdrop').backgroundColor);
       expect(await rgba(page, cngxScrim)).toBe(matScrim);
+    });
+
+    // Body-large is bottom-sheet type; the anchored presentation is a popover
+    // next to its anchor and keeps the font of its DOM parent.
+    test('popover-sheet: the anchored presentation keeps the inherited font', async ({ page }) => {
+      const anchored = '.probe-cngx-anchored:popover-open';
+      await page.click(pair('popover-sheet', '.probe-cngx-anchored-trigger'));
+      await expect(page.locator(anchored)).toBeVisible();
+      await expect(page.locator(anchored)).toHaveAttribute('data-cngx-presentation', 'anchored');
+      await settle(page);
+      await expectSame(page, '[data-pair=popover-sheet]', anchored, [
+        'font-family',
+        'font-size',
+        'line-height',
+        'letter-spacing',
+      ]);
     });
 
     test('nav-link: rows match the mat-nav-list item in fill, ink, height, shape and type', async ({

@@ -242,10 +242,11 @@ const SPACING_TOKEN_REF = /--cngx-[a-z0-9-]+/g;
 // and is deliberately NOT matched: it is not compactness, per the pillar CSS
 // density rule. Naming convention that keeps this correct by construction -
 // compactness spacing is named `-gap` / `-padding` / `-margin` (all guarded);
-// `-inset` is reserved for affordance. The one margin-inset in the tree
-// (`--cngx-divider-inset-amount`) predates the convention and already derives,
-// so nothing regresses; a new compactness value must not take the `-inset`
-// suffix, and review catches it if it does.
+// `-inset` is reserved for affordance. The two margin-insets in the tree
+// (`--cngx-divider-inset-amount`, `--cngx-context-menu-separator-inset`)
+// predate the convention and both derive from the scale on their read
+// element, so nothing regresses; a new compactness value must not take the
+// `-inset` suffix, and review catches it if it does.
 const IS_SPACING = /-(gap|padding)(-|$)/;
 const SCALE_SET = /--[a-z][a-z0-9-]*\s*:\s*[^;{}]*var\(\s*--cngx-space-/g;
 // A gap / padding / margin declaration that reads a spacing token whose own

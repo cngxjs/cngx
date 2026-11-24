@@ -10,7 +10,7 @@
 //
 // M3 mat-menu at comfortable, as the bridge maps it:
 //
-//   panel       surface-container, no border, corner-extra-small, level2
+//   panel       surface-container, no border, corner-extra-small, MDC elevation 2
 //   width       112 min (sm * 14), 280 max (sm * 35)
 //   list        8 block (sm), 0 inline: the item state layer runs edge to edge
 //   item        48 high: 20 label line + 2 * 14 block (sm * 1.75), 12 inline
@@ -37,7 +37,7 @@ $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngx
       --cngx-menu-color: var(--mat-sys-on-surface);
       --cngx-menu-border: none;
       --cngx-menu-radius: var(--mat-sys-corner-extra-small);
-      --cngx-menu-shadow: var(--mat-sys-level2);
+      --cngx-menu-shadow: #{bridge.$mdc-elevation-2};
       --cngx-menu-separator-color: var(--mat-sys-outline-variant);
       --cngx-menu-item-checked-color: var(--mat-sys-primary);
       --cngx-menu-item-kbd-color: var(--mat-sys-on-surface-variant);
