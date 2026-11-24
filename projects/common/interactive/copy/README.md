@@ -31,21 +31,21 @@ export class ApiKeyComponent {
 ## Accessibility
 
 - **ARIA roles:** Button carries native semantics; no extra roles needed
+- **Host requirement:** `cngxCopyText` binds `click` only. Put it on a `<button>`; on any other host the consumer supplies `role`, `tabindex` and the `Enter` / `Space` handling
 - **Keyboard interaction:**
   - `Enter`: Activates copy (native button behavior)
   - `Space`: Activates copy (native button behavior)
-  - Focus remains on button after copy
+  - Focus remains on button after copy, also on the `execCommand` fallback: the element that had focus before the copy gets it back
 - **Screen reader:**
-  - Success/failure emitted via aria-live region (see examples)
-  - CngxCopyBlock includes an always-present aria-live polite region
-  - Copy success is announced: "Copied to clipboard"
+  - `CngxCopyBlock` has one always-present `aria-live="polite"` region. It announces "Copied to clipboard" after a copy and "Copy failed" after a failed one (`copyFailedAnnouncement`); a language switch does not re-voice it
+  - `CngxCopyText` has no live region of its own: wire one from `copied()` / `failed()` (see the manual SR region example)
 - **Focus management:**
   - Focus stays on the copy button throughout the lifecycle
   - No focus trap
 
 ## Composition
 
-CngxCopyText and CngxCopyBlock are orthogonal atoms:
+CngxCopyText is an atom; CngxCopyBlock is a molecule that composes it:
 
 - **Host directives:** None
 - **Combines with:** Any state management system (can emit custom output)
@@ -123,6 +123,8 @@ export class TokenComponent {
 
 ### Copy with Error Handling
 
+`copied()` and `failed()` are never true together. Each stays true for `resetDelay` ms (default 2000) after its attempt, then both are `false` again. `copyFailed` emits the rejection reason of the Clipboard API, or `undefined` when the `execCommand('copy')` fallback reports `false`.
+
 ```typescript
 <button [cngxCopyText]="text" #cp="cngxCopyText">
   @if (cp.failed()) {
@@ -145,7 +147,18 @@ export class TokenComponent {
 <cngx-copy-block [value]="apiKey()" buttonLabel="Copy Key" copiedLabel="Copied!">
   <span class="mono">{{ apiKey() }}</span>
 </cngx-copy-block>
+
+// Own failure copy (unbound, both follow the interactive language section)
+<cngx-copy-block
+  [value]="apiKey()"
+  failedLabel="Copy blocked"
+  failedAnnouncement="The browser blocked clipboard access"
+>
+  <span class="mono">{{ apiKey() }}</span>
+</cngx-copy-block>
 ```
+
+A failed copy sets `.cngx-copy-block__button--failed` and paints `--cngx-copy-block-btn-failed-bg` / `-failed-border` / `-failed-color` (12% `--cngx-color-danger`, `--cngx-color-danger`, `--cngx-color-danger-text`).
 
 ### Accessibility-First: Manual SR Region
 
@@ -168,13 +181,15 @@ export class TokenComponent {
 
 ### Fallback for Older Browsers
 
-CngxCopyText automatically uses `document.execCommand('copy')` fallback when the Clipboard API is unavailable. You can check `supported` to warn users:
+CngxCopyText automatically uses the `document.execCommand('copy')` fallback when the Clipboard API is unavailable. A `false` result counts as a failure. `supported` tells whether the Clipboard API is there; keep the button enabled when it is `false`, or the fallback never runs:
 
 ```typescript
-<button [cngxCopyText]="text" #cp="cngxCopyText"
-        [disabled]="!cp.supported">
-  {{ !cp.supported ? 'Copy not supported' : 'Copy' }}
+<button [cngxCopyText]="text" #cp="cngxCopyText">
+  {{ cp.failed() ? 'Copy failed' : 'Copy' }}
 </button>
+@if (!cp.supported) {
+  <small>Your browser copies through the legacy fallback.</small>
+}
 ```
 
 ## See Also

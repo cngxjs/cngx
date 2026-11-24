@@ -15,8 +15,11 @@ import { CngxCopyText } from './copy-text.directive';
  * Molecule: code/text block with a built-in copy button.
  *
  * Renders content in a container with a "Copy" button that uses `CngxCopyText`
- * internally. Shows "Copied!" feedback automatically. The copy button includes
- * an `aria-live` region for screen reader announcements.
+ * internally. Shows "Copied!" after a copy and "Copy failed" (with the
+ * `--failed` modifier) after a failed one; both return to the idle label after
+ * the reset delay. One always-present polite `aria-live` region next to the
+ * button announces either outcome. Every label and announcement follows
+ * `CNGX_INTERACTIVE_I18N` unless its input is bound.
  *
  * ### Copy a code snippet
  * ```html

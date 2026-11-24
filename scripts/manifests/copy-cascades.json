@@ -177,7 +177,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 99,
+      "line": 102,
       "member": "resolvedButtonLabel",
       "enclosing": "computed",
       "tiers": [
@@ -188,7 +188,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 101,
+      "line": 104,
       "member": "resolvedCopiedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -199,7 +199,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 104,
+      "line": 107,
       "member": "resolvedFailedLabel",
       "enclosing": "computed",
       "tiers": [
@@ -215,7 +215,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 126,
+      "line": 129,
       "member": "liveAnnouncement",
       "enclosing": "untracked",
       "tiers": [
@@ -231,7 +231,7 @@
     {
       "class": "CngxCopyBlock",
       "file": "projects/common/interactive/copy/copy-block.ts",
-      "line": 129,
+      "line": 132,
       "member": "liveAnnouncement",
       "enclosing": "untracked",
       "tiers": [

@@ -13,10 +13,12 @@ import {
 /**
  * Clipboard copy behavior - forms-free version for `@cngx/common`.
  *
- * Place on a button or any clickable element. Copies the provided text to the
- * clipboard. Shows a `copied` signal for visual feedback (auto-resets after
- * `resetDelay`). Falls back to `execCommand('copy')` when Clipboard API is
- * unavailable.
+ * Place on a `<button>`. Copies the provided text to the clipboard and
+ * exposes `copied` and `failed` (never both true, each resets after
+ * `resetDelay`). Falls back to `execCommand('copy')` when the Clipboard API
+ * is unavailable; a `false` result counts as a failure and focus returns to
+ * the element that had it. The directive binds `click` only: on a non-button
+ * host the consumer supplies `role`, `tabindex` and key handling.
  *
  * Unlike `CngxCopyValue` from `@cngx/forms/input`, this has no forms dependency
  * and lives at Level 2 (`@cngx/common`), making it available to any consumer.
@@ -31,9 +33,9 @@ import {
  *
  * ### Copy with SR announcement
  * ```html
- * <button [cngxCopyText]="shareUrl()">Copy Link</button>
+ * <button [cngxCopyText]="shareUrl()" #cp="cngxCopyText">Copy Link</button>
  * <span aria-live="polite" class="sr-only">
- *   {{ cp.copied() ? 'Link copied to clipboard' : '' }}
+ *   {{ cp.copied() ? 'Link copied to clipboard' : cp.failed() ? 'Copy failed' : '' }}
  * </span>
  * ```
  *
