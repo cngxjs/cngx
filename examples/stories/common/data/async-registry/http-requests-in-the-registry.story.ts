@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     '<code>provideAsyncRegistry()</code> plus <code>cngxAsyncInterceptor</code> in the app\'s own <code>withInterceptors</code> registers each request while it is in flight, so one app-shell indicator reads <code>isAnythingLoading()</code>.',
   description:
-    'The interceptor registers a request with <code>CngxAsyncRegistry</code> when it starts and unregisters it when it settles, success or error. <code>isAnythingLoading()</code> is the aggregate busy flag an app shell binds to a top progress bar or a status line; <code>activeOperations()</code> lists what is in flight. Add the interceptor to your own <code>provideHttpClient(withInterceptors([...]))</code>: <code>provideAsyncHttpObservability()</code> sets up a second <code>HttpClient</code> and is only for apps where cngx owns that setup. The indicator is a status region that speaks once when loading starts and empties when it ends. The demo backend answers without a network call; the chrome switch makes it fail.',
+    'The interceptor registers a request with <code>CngxAsyncRegistry</code> when it starts and unregisters it when it settles, success or error. <code>isAnythingLoading()</code> is the aggregate busy flag an app shell binds to a top progress bar or a status line; <code>activeOperations()</code> lists what is in flight. Add the interceptor to your own <code>provideHttpClient(withInterceptors([...]))</code>: <code>provideAsyncHttpObservability()</code> sets up a second <code>HttpClient</code> and is only for apps where cngx owns that setup. The indicator is a status region that speaks once when loading starts, empties when it ends and says so when a request failed. It carries no <code>aria-busy</code>: a busy region holds back the very text it is meant to speak. The demo backend answers without a network call; the chrome switch makes it fail.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -37,7 +37,16 @@ export const STORY: DemoSpec = {
   protected readonly users = signal<string[]>([]);
   protected readonly teams = signal<string[]>([]);
 
+  protected readonly lastError = signal<unknown>(undefined);
+  protected readonly statusText = computed(() => {
+    if (this.registry.isAnythingLoading()) {
+      return 'Loading data...';
+    }
+    return this.lastError() === undefined ? '' : 'Loading failed. Try again.';
+  });
+
   protected handleLoad(): void {
+    this.lastError.set(undefined);
     this.load('/api/users', this.users);
     this.load('/api/teams', this.teams);
   }
@@ -47,9 +56,7 @@ export const STORY: DemoSpec = {
       .get<string[]>(url)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ next: (rows) => target.set(rows), error: (err: unknown) => this.lastError.set(err) });
-  }
-
-  protected readonly lastError = signal<unknown>(undefined);`,
+  }`,
   setupChrome: `  // The demo backend's fail switch, for the checkbox below.
   protected readonly serverFails = this.backend.fail;
   protected readonly errorText = computed(() => {
@@ -60,9 +67,7 @@ export const STORY: DemoSpec = {
   <div class="demo-inline-actions">
     <button type="button" class="chip" (click)="handleLoad()">Load users and teams</button>
   </div>
-  <p role="status" [attr.aria-busy]="registry.isAnythingLoading()">{{
-    registry.isAnythingLoading() ? 'Loading data...' : ''
-  }}</p>`,
+  <p role="status">{{ statusText() }}</p>`,
   templateChrome: `<label class="event-row" style="margin-top:12px;gap:6px;align-items:center">
     <input type="checkbox" [checked]="serverFails()" (change)="serverFails.set($any($event.target).checked)" />
     <span>Server fails</span>

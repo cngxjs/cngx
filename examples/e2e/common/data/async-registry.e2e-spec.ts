@@ -25,6 +25,7 @@ test.describe('common/data/async-registry', () => {
     await expect(readout(page, 'isAnythingLoading()')).toHaveText('true');
     await expect(readout(page, 'activeOperations()')).toHaveText('2');
     await expect(indicator).toHaveText('Loading data...');
+    await expect(indicator).not.toHaveAttribute('aria-busy');
     await expect(readout(page, 'activeOperations()')).toHaveText('1', { timeout: 4000 });
     await expect(readout(page, 'isAnythingLoading()')).toHaveText('true');
     await expect(readout(page, 'isAnythingLoading()')).toHaveText('false', { timeout: 4000 });
@@ -32,7 +33,9 @@ test.describe('common/data/async-registry', () => {
     await expect(readout(page, 'users')).toHaveText('3');
   });
 
-  test('http-requests-in-the-registry: a failing request also ends busy', async ({ page }) => {
+  test('http-requests-in-the-registry: a failing request ends busy and is announced', async ({
+    page,
+  }) => {
     await gotoDemo(page, HTTP);
     await page.getByLabel('Server fails').check();
     await page.getByRole('button', { name: 'Load users and teams' }).click();
@@ -40,6 +43,9 @@ test.describe('common/data/async-registry', () => {
     await expect(readout(page, 'isAnythingLoading()')).toHaveText('false', { timeout: 4000 });
     await expect(readout(page, 'activeOperations()')).toHaveText('0');
     await expect(readout(page, 'last error')).toHaveText('503 Service Unavailable');
+    await expect(page.locator('.cngx-ex-artifact [role="status"]')).toHaveText(
+      'Loading failed. Try again.',
+    );
   });
 
   test('label-and-skip-requests: a labelled request is listed by its label', async ({ page }) => {
