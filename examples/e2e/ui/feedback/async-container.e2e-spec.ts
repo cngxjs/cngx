@@ -70,4 +70,14 @@ test.describe('ui/feedback/async-container', () => {
       page.getByRole('region', { name: 'Notifications' }).getByRole('alert'),
     ).toContainText('Save failed');
   });
+
+  test('cngxasync-with-custom-templates: a failed first load renders one alert with the error', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'ui/feedback/async-container/cngxasync-with-custom-templates');
+    await page.getByRole('button', { name: 'First load fails' }).click();
+    const alert = page.locator('.cngx-ex-artifact [role="alert"]');
+    await expect(alert).toHaveCount(1, { timeout: 4000 });
+    await expect(alert).toHaveText('Network error');
+  });
 });

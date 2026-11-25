@@ -70,7 +70,7 @@ export const STORY: DemoSpec = {
   </ng-template>
 
   <ng-template #errTpl let-err>
-    <p class="demo-error-text-small">{{ err }}</p>
+    <p class="demo-error-text-small" role="alert">{{ err }}</p>
   </ng-template>`,
   templateChrome: `<div class="button-row" style="margin-top:12px">
     <button (click)="firstLoad()" class="chip" type="button">First load</button>
