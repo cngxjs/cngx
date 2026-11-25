@@ -44,7 +44,10 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const COMMON = join(REPO_ROOT, 'projects/common');
 const DOC_PATH = join(REPO_ROOT, '.compodoc/documentation.json');
 
-/** Folders whose review slice is done (slice 1 primitives): no known-failure row allowed. */
+/**
+ * Folders whose review slice is done (slice 1 primitives, slice 2 async-state):
+ * no known-failure row allowed.
+ */
 const REVIEWED_FOLDERS = [
   'projects/common/a11y/',
   'projects/common/interactive/keyboard/',
@@ -58,6 +61,20 @@ const REVIEWED_FOLDERS = [
   'projects/common/interactive/expandable/',
   'projects/common/interactive/control-value/',
   'projects/common/interactive/speak/',
+  'projects/common/data/async/',
+  'projects/common/data/async-state/',
+  'projects/common/data/async-registry/',
+  'projects/common/data/commit/',
+  'projects/common/interactive/async-status/',
+  'projects/common/interactive/action-status/',
+  'projects/common/interactive/retry/',
+  'projects/common/interactive/optimistic/',
+  'projects/common/interactive/copy/',
+  'projects/common/interactive/error-aggregator/',
+  'projects/common/interactive/error-registry/',
+  'projects/common/interactive/error-scope/',
+  'projects/common/interactive/error-source/',
+  'projects/common/interactive/error-state/',
 ];
 
 /**
