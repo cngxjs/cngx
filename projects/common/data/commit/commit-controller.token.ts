@@ -20,11 +20,15 @@ export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
  *
  * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`
  * (`@cngx/forms/select`); the select-side token's default factory
- * delegates to this one, so a single override here cascades into
- * every select variant transparently.
+ * delegates to this one in the root injector, so an app-level override
+ * here cascades into every select variant. A subtree override reaches
+ * the stepper and tabs presenters, not the select family: override
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` there.
  *
- * A custom factory usually wraps the default one, here to time each commit
- * (`reportCommit` stands for your telemetry call):
+ * A replacement must honour `cancel({ settle: true })`, or `busy` stays
+ * latched where the surface lives on. A custom factory usually wraps the
+ * default one, here to time each commit that settles (`reportCommit`
+ * stands for your telemetry call):
  *
  * ```ts
  * function createTimedCommitController<T>(): CngxCommitController<T> {

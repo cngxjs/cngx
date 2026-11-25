@@ -150,7 +150,7 @@ const refusedPhrase = createRefusedPhrase({
 
 `InjectionToken<CngxCommitControllerFactory>` with `providedIn: 'root'`. Default factory is `createCommitController`. Override globally or per component-subtree to inject retry-with-backoff, offline queueing, telemetry, or any other enterprise-specific commit lifecycle without forking the features that consume it.
 
-A custom factory usually wraps the default one. This one times every commit and reports its outcome (`reportCommit` stands for your telemetry call):
+A custom factory usually wraps the default one. This one times each commit that settles and reports its outcome (`reportCommit` stands for your telemetry call). A superseded commit or one ended by `cancel()` fires no handler, so the wrapper reports nothing for it:
 
 ```ts
 function createTimedCommitController<T>(): CngxCommitController<T> {
@@ -183,9 +183,11 @@ bootstrapApplication(App, {
 });
 ```
 
+A replacement must honour `cancel({ settle: true })`: the stepper presenter and the select family's scalar commit handler (on clear) call it when the surface lives on, and a controller that ignores it leaves `busy` latched (the stepper warns with [`CNGX1040`](../../../../core-concepts/error-codes/cngx1040.md) in dev mode). A wrapper that spreads the default controller keeps it.
+
 A custom controller must hand its runner an `onRefused` route and forward it to `handlers.onRefused`; one written before the refusal outcome existed does not compile against the runner type. `@cngx/forms/select` re-exports `CngxCommitController` and `CngxCommitBeginHandlers`, so the same change shows there.
 
-The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) delegates to this one by default, so a single override here cascades into every select variant transparently.
+The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) delegates to this one by default. It is `providedIn: 'root'` and reads this token in the root injector, so an app-level override here cascades into every select variant; an override in a component subtree reaches the stepper and tabs presenters there, but not the select family. For select in a subtree, override `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` itself.
 
 ## See also
 
