@@ -21,4 +21,38 @@ test.describe('common/interactive/error-registry', () => {
     await expect(input).toHaveAttribute('aria-invalid', 'false');
     await expect(input).not.toHaveAttribute('aria-errormessage');
   });
+
+  test('inject-error-aggregator-programmatic: the injected aggregator lists its active labels', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/error/registry/inject-error-aggregator-programmatic');
+    const region = page.getByRole('region', { name: 'Email validation' });
+    const list = region.getByRole('alert');
+
+    await expect(list.getByRole('listitem')).toHaveText(['Format invalid']);
+    await page.getByLabel('Server says taken').check();
+    await expect(list.getByRole('listitem')).toHaveText(['Format invalid', 'Already in use']);
+
+    await page.getByLabel('Format invalid').uncheck();
+    await page.getByLabel('Server says taken').uncheck();
+    await expect(list).toHaveCount(0);
+    await expect(region).toContainText('No active errors.');
+  });
+
+  test('provider-and-reveal-features: manual reveal and reset drive the named scope', async ({
+    page,
+  }) => {
+    await gotoDemo(page, 'common/interactive/error/registry/provider-and-reveal-features');
+    const region = page.getByRole('region', { name: 'Checkout flow' });
+
+    await expect(region.getByRole('alert')).toHaveCount(0);
+    await expect(region).toContainText('No errors visible yet.');
+
+    await page.getByRole('button', { name: 'Manual reveal' }).click();
+    await expect(region.getByRole('alert')).toHaveText('Validate the cart before continuing.');
+
+    await page.getByRole('button', { name: 'Manual reset' }).click();
+    await expect(region.getByRole('alert')).toHaveCount(0);
+    await expect(region).toContainText('No errors visible yet.');
+  });
 });
