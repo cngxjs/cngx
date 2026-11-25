@@ -49,18 +49,36 @@ export function reflectAsyncDisplayStatus(
  * the read-only sibling of `CngxAsyncClick`. Where `CngxAsyncClick`
  * *runs* an action and owns its own lifecycle, `CngxAsyncStatus` *reads*
  * a state someone else produces (a presenter's `commitState`, a resource)
- * and surfaces it as `aria-busy`, an optional disabled gate, and the
- * pending / succeeded / failed slot markers.
+ * and surfaces it as `aria-busy`, an optional gate (`disableWhilePending`:
+ * `aria-disabled` plus a swallowed activation, never the native `disabled`
+ * attribute), and the pending / succeeded / failed slot markers.
  *
  * One responsibility - reflection - kept distinct from running an action
  * (Pillar 3). `aria-busy` lives in the `computed()` graph (Pillar 2) and
  * is owned here exclusively: never co-place this with `CngxAsyncClick` on
  * the same element, since both bind `aria-busy` (dev mode warns).
  *
+ * The directive has no template of its own; the host reads it through its
+ * `exportAs`. Switch on `status()`:
+ *
  * ```html
- * <button [cngxAsyncStatus]="presenter.commitState" disableWhilePending>
+ * <button [cngxAsyncStatus]="presenter.commitState" disableWhilePending
+ *         #status="cngxAsyncStatus">
+ *   @switch (status.status()) {
+ *     @case ('pending') { Saving... }
+ *     @case ('error') { Retry }
+ *     @default { Continue }
+ *   }
+ * </button>
+ * ```
+ *
+ * Or project slot markers and render the active one through an outlet:
+ *
+ * ```html
+ * <button [cngxAsyncStatus]="presenter.commitState" #status="cngxAsyncStatus">
  *   Continue
- *   <ng-template cngxPending>Saving…</ng-template>
+ *   <ng-container *ngTemplateOutlet="status.activeTemplate()" />
+ *   <ng-template cngxPending><span class="spinner" aria-hidden="true"></span></ng-template>
  * </button>
  * ```
  *
