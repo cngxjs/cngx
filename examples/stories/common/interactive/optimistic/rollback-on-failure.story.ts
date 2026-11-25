@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'createOptimistic(): Rollback on failure',
   subtitle: 'When the async action throws, the signal rolls back to the last confirmed value and <code>rolledBack()</code> flips true.',
-  description: 'Same factory as the happy-path demo, but the async action fails when the "Server fails" flag is set. Watch the UI: the signal still flips immediately on click (optimistic write), then after the delay the value snaps back to whichever value the server last confirmed. <code>nameState.error()</code> exposes the rejection reason, <code>nameState.state.status()</code> goes to <code>"error"</code>, and <code>nameState.rolledBack()</code> stays true until the next successful confirm. Concurrent calls cancel the previous in-flight subscription so a rapid click sequence never rolls back to a stale optimistic value. The rollback changes the visible name without user action, so an always-present polite region announces it.',
+  description: 'Same factory as the happy-path demo, but the chrome switch "Server fails" makes the save fail. Watch the UI: the signal still flips immediately on click (optimistic write), then after the delay the value snaps back to whichever value the server last confirmed. <code>nameState.error()</code> exposes the rejection reason, <code>nameState.state.status()</code> goes to <code>"error"</code>, and <code>nameState.rolledBack()</code> stays true until the next successful confirm. Concurrent calls cancel the previous in-flight subscription so a rapid click sequence never rolls back to a stale optimistic value. The rollback changes the visible name without user action, so an always-present polite region announces it.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -13,28 +13,34 @@ export const STORY: DemoSpec = {
   ],
   moduleImports: [
     'import { createOptimistic } from \'@cngx/common/interactive\';',
-    'import { delay, of, switchMap, throwError, timer } from \'rxjs\';',
+    "import { map, timer, type Observable } from 'rxjs';",
+    "import { failDemoActionWhen } from '../../../../fixtures';",
   ],
   imports: [],
   setup: `
   protected readonly name = signal<string>('Alice');
 
-  private readonly nameTuple = createOptimistic<string>(
-    this.name,
-    (value) => this.shouldFail()
-      ? timer(700).pipe(switchMap(() => throwError(() => new Error('Server rejected the update'))))
-      : of(value).pipe(delay(700)),
-  );
+  // The server call. Emits the value it stored.
+  private readonly saveName = (value: string): Observable<string> =>
+    timer(700).pipe(map(() => value));
+
+  private readonly nameTuple = createOptimistic<string>(this.name, (value) => this.saveName(value));
 
   protected readonly applyName = this.nameTuple[0];
   protected readonly nameState = this.nameTuple[1];
 
   protected setName(value: string): void {
     this.applyName(value);
-  }
-
-  protected readonly shouldFail = signal<boolean>(true);`,
-  setupChrome: `protected readonly errorMessage = computed<string>(() => {
+  }`,
+  setupChrome: `  protected readonly shouldFail = signal<boolean>(true);
+  // Makes saveName fail while the switch below is on.
+  private readonly failSwitch = failDemoActionWhen(
+    this,
+    'saveName',
+    () => this.shouldFail(),
+    () => new Error('Server rejected the update'),
+  );
+  protected readonly errorMessage = computed<string>(() => {
     const err = this.nameState.error();
     if (err instanceof Error) return err.message;
     if (err === undefined) return '-';
