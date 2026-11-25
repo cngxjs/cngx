@@ -1,6 +1,6 @@
 # Async State System
 
-The canonical system for managing async operation lifecycle across `@cngx`. Every async operation-data loading, mutations, HTTP requests, Web Worker tasks-flows through these unified factories and interfaces.
+The canonical system for managing async operation lifecycle across `@cngx`. Data loading, mutations, HTTP requests and Web Worker tasks all run through these factories and the one `CngxAsyncState<T>` interface.
 
 ## Import
 
@@ -35,7 +35,7 @@ import { createAggregateAsyncState, type CngxAsyncState } from '@cngx/core/utils
 
 **All async state is Signal-first.** The system cannot become inconsistent because every derived value (loading, pending, refreshing, empty, error) is `computed()` from a single source of truth: the `status` signal.
 
-**All state changes are communicated.** Status transitions (loading → success, success → error) automatically update ARIA attributes, focus management, and SR announcements for any consuming component.
+**The state is a bundle of signals, the reaction is the consumer's.** A status transition (loading → success, success → error) changes the signals of the state object. The ARIA attributes, focus moves and announcements that follow it come from the unit that reads the state, such as `CngxAsyncBoundary` or `*cngxAsync`, not from the factory.
 
 **No manual synchronization.** The contract is single-direction: the consumer creates a state factory, reads from it, and (for mutations) calls methods on it. Everything else is derived.
 
@@ -66,13 +66,17 @@ async handleHeavyWork() {
 }
 ```
 
-### `createAsyncState<T>(): MutableAsyncState<T>`
+### `createAsyncState<T>(options?): MutableAsyncState<T>`
 
-Create mutation state for explicit user-triggered actions (POST/PUT/DELETE). Sets `pending` before execution, then `success` or `error` on completion. A superseded, reset or destroyed run writes nothing: an Observable action is unsubscribed (an `HttpClient` request is cancelled), a Promise action keeps running and its result is dropped.
+Create mutation state for explicit user-triggered actions (POST/PUT/DELETE). Sets `pending` before execution, then `success` or `error` on completion. An Observable action settles on its first emission; one that completes without a value settles `success` with `undefined` data. A superseded, reset or destroyed run writes nothing: an Observable action is unsubscribed (an `HttpClient` request is cancelled), a Promise action keeps running and its result is dropped.
 
 **Requires:** Injection context (field initializer or constructor).
 
-**Returns:** `MutableAsyncState<T>` with `execute()` method plus `reportProgress()` and `reset()`.
+**Returns:** `MutableAsyncState<T>` with `execute()` method plus `reportProgress()` and `reset()`. After the injector is destroyed, `execute()` resolves without calling the action.
+
+**Options (`CreateAsyncStateOptions`):**
+- `register?: boolean` (default `false`) - register the state in the `CngxAsyncRegistry` provided by `provideAsyncRegistry()`, unregistered on destroy. A no-op without a registry.
+- `label?: string` - display label in `CngxAsyncRegistry.activeOperations`. Ignored unless `register` is set.
 
 ```typescript
 readonly saveResident = createAsyncState<Resident>();
@@ -91,10 +95,14 @@ Create reactive query state that auto-loads when signal dependencies change. Set
 
 **Requires:** Injection context. The function `fn` is tracked by Angular's `effect()` - any signal read inside triggers a reload.
 
-**Returns:** `ReactiveAsyncState<T>` with `refresh()` method.
+**Returns:** `ReactiveAsyncState<T>` with `refresh()` method. `refresh()` does nothing after the injector is destroyed.
 
-**Options:**
+A promise-returning `fn` still runs once per dependency change (the call is what tracks its signals), but only the freshest result is consumed. An Observable that completes without a value settles `success` with `undefined` data.
+
+**Options (`InjectAsyncStateOptions`):**
 - `debounce?: number` (default 50) - ms delay before executing the query after dependencies change
+- `register?: boolean` (default `false`) - register the state in the `CngxAsyncRegistry` provided by `provideAsyncRegistry()`, unregistered on destroy. A no-op without a registry.
+- `label?: string` - display label in `CngxAsyncRegistry.activeOperations`. Ignored unless `register` is set.
 
 ```typescript
 readonly residents = injectAsyncState(
@@ -150,12 +158,12 @@ All operators work with `ManualAsyncState` - they only need the write interface 
 
 ### `tapAsyncState<T>(state, options?): MonoTypeOperatorFunction<T>`
 
-Wires an Observable's lifecycle to async state. On subscribe: sets loading (or refreshing if data loaded). On next: calls `setSuccess`. On error: calls `setError` and re-throws.
+Wires an Observable's lifecycle to async state. On subscribe: sets `options.status`, or without it `refreshing` when the sink's `isFirstLoad()` is `false` and `loading` otherwise. On next: calls `setSuccess`. On error: calls `setError` and re-throws. A completion without a value calls `setSuccess(undefined)`; an unsubscribe before any value sets the sink back to `idle`.
 
 The Observable passes through unchanged - side-effect operator.
 
 **Options:**
-- `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`)
+- `status?: 'loading' | 'refreshing' | 'pending'` (default: `refreshing` or `loading`, see above)
 
 ```typescript
 readonly residents = createManualState<Resident[]>();
@@ -196,10 +204,10 @@ handleUpload(file: File) {
 
 Combines `tapAsyncState` + `tapAsyncProgress`. Pipe onto HttpClient with `{ observe: 'events', reportProgress: true }`. Extracts response body, calls `setSuccess(body)`, re-throws on error.
 
-Output Observable emits response body (not HttpEvents).
+Output Observable emits response body (not HttpEvents). A `null` response body throws `CngxRuntimeError` [`CNGX1054`](../../../../core-concepts/error-codes/cngx1054.md), which reaches the sink through `setError`. A stream torn down before a response, or one that completes without a response, sets the sink to `idle`.
 
 **Options:**
-- `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`)
+- `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`, always: unlike `tapAsyncState` it does not read `isFirstLoad()`)
 
 ```typescript
 readonly upload = createManualState<UploadResult>();
@@ -290,13 +298,13 @@ All factories return this read-only interface. Every field is a `Signal`.
 
 | Signal | Meaning |
 |-|-|
-| `isLoading()` | First load in progress (status = `'loading'`). |
+| `isLoading()` | Any operation running: status is `'loading'`, `'pending'` or `'refreshing'`. |
 | `isPending()` | Mutation in progress (status = `'pending'`). |
 | `isRefreshing()` | Reload with cached data visible (status = `'refreshing'`). |
-| `isBusy()` | Any operation running (loading OR pending OR refreshing). |
+| `isBusy()` | The same signal as `isLoading()`. |
 | `isFirstLoad()` | First load never completed yet. |
-| `isEmpty()` | Data is null/undefined/empty array AND no busy operation. |
-| `hasData()` | Data exists AND not empty. |
+| `isEmpty()` | Data is `null`, `undefined` or an empty array. No busy condition. |
+| `hasData()` | The inverse of `isEmpty()`. |
 | `isSettled()` | Status is `'success'` or `'error'` (operation complete). |
 
 ## Accessibility

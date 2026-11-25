@@ -60,7 +60,9 @@ export interface ReactiveAsyncState<T> extends CngxAsyncState<T> {
  * );
  * // Loads automatically when filter() changes.
  * // Caches last result during refresh (refreshing state).
- * // Deduplicates parallel requests.
+ * // A newer run cancels the one in flight (an Observable is unsubscribed,
+ * // a Promise result is dropped). Of several changes inside the debounce
+ * // window (50 ms by default) only the last result is consumed.
  * ```
  */
 export function injectAsyncState<T>(
