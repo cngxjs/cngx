@@ -292,5 +292,19 @@ describe('CngxCopyBlock', () => {
       ctx.fixture.detectChanges();
       expect(ctx.button()).toBe('Copy');
     });
+
+    it('falls back to its own 2000 ms default when resetDelay is unbound', async () => {
+      const ctx = setup();
+      await ctx.copyText.copy();
+      ctx.fixture.detectChanges();
+
+      vi.advanceTimersByTime(1999);
+      ctx.fixture.detectChanges();
+      expect(ctx.button()).toBe('Copied!');
+
+      vi.advanceTimersByTime(1);
+      ctx.fixture.detectChanges();
+      expect(ctx.button()).toBe('Copy');
+    });
   });
 });
