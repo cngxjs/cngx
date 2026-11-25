@@ -3,20 +3,19 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncContainer: createAsyncState mutation',
   subtitle: 'For POST/PUT/DELETE. Uses <code>execute(fn)</code> which sets status to <code>pending</code>. Tick the fail switch to see the error branch.',
-  description: 'Mutation factory variant: <code>createAsyncState()</code> exposes <code>execute(fn)</code> for write paths. The chrome readout exposes <code>status</code>, <code>isPending</code>, <code>data</code> and <code>error</code> live, so the success/error branches are observable without UI templating.',
+  description: 'Mutation factory variant: <code>createAsyncState()</code> exposes <code>execute(fn)</code> for write paths. The chrome readout exposes <code>status</code>, <code>isPending</code>, <code>data</code> and <code>error</code> live, so the success/error branches are observable without UI templating. The Save button reflects the state through <code>[cngxAsyncStatus]</code> with <code>[disableWhilePending]</code>: it gets <code>aria-disabled</code> instead of <code>disabled</code>, so a keyboard user keeps focus on it, and <code>[cngxToastOn]</code> announces the outcome.',
   level: 'molecule',
   audience: ['dev', 'design', 'a11y'],
   artifact: 'standalone',
   focus: ['async-state', 'error-handling', 'composition'],
-  apiComponents: [
-    'CngxAsyncContainer',
-    'CngxAsync',
-  ],
+  apiComponents: ['createAsyncState', 'CngxAsyncStatus', 'CngxToastOn'],
   moduleImports: [
-    'import { CngxAsync, createAsyncState } from \'@cngx/common/data\';',
+    "import { createAsyncState } from '@cngx/common/data';",
+    "import { CngxAsyncStatus } from '@cngx/common/interactive';",
+    "import { CngxToastOn } from '@cngx/ui/feedback';",
     "import { failDemoActionWhen } from '../../../../fixtures';",
   ],
-  imports: ['CngxAsync'],
+  imports: ['CngxAsyncStatus', 'CngxToastOn'],
   setup: `protected readonly saveAction = createAsyncState<string>();
   private readonly save = (): Promise<string> =>
     new Promise((resolve) => setTimeout(() => resolve('OK'), 1500));
@@ -31,8 +30,17 @@ export const STORY: DemoSpec = {
     () => this.failNext(),
     () => new Error('Server error'),
   );`,
-  template: `  <div class="button-row" style="margin-bottom:16px;align-items:center">
-    <button (click)="handleSave()" class="chip" type="button" [disabled]="saveAction.isPending()">
+  template: `  <div class="demo-inline-actions" style="margin-bottom:16px">
+    <button
+      (click)="handleSave()"
+      class="chip"
+      type="button"
+      [cngxAsyncStatus]="saveAction"
+      [disableWhilePending]="true"
+      [cngxToastOn]="saveAction"
+      toastSuccess="Saved"
+      toastError="Save failed"
+    >
       {{ saveAction.isPending() ? 'Saving...' : 'Save' }}
     </button>
     <button (click)="saveAction.reset()" class="chip" type="button">Reset</button>

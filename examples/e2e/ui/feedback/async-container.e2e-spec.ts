@@ -5,6 +5,11 @@ import { routesIn } from '../../_routes';
 
 const MUTATION = 'ui/feedback/async-container/createasyncstate-mutation';
 
+// Scoped to rendered toasts: the code panel quotes the same strings.
+function toast(page: Page, text: string) {
+  return page.getByRole('region', { name: 'Notifications' }).getByText(text, { exact: true });
+}
+
 function readout(page: Page, label: string) {
   return page
     .locator('.cngx-ex-chrome .event-row')
@@ -36,5 +41,33 @@ test.describe('ui/feedback/async-container', () => {
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(readout(page, 'Status')).toHaveText('error', { timeout: 4000 });
     await expect(readout(page, 'Error')).toContainText('Server error');
+  });
+
+  test('createasyncstate-mutation: the Save button keeps focus through a save', async ({ page }) => {
+    await gotoDemo(page, MUTATION);
+    const save = page.locator('.cngx-ex-artifact button').first();
+    await save.focus();
+    await page.keyboard.press('Enter');
+    await expect(readout(page, 'Status')).toHaveText('pending');
+    await expect(save).toHaveAttribute('aria-disabled', 'true');
+    await expect(save).not.toHaveAttribute('disabled');
+    await expect(save).toBeFocused();
+    await expect(readout(page, 'Status')).toHaveText('success', { timeout: 4000 });
+    await expect(save).toBeFocused();
+    await expect(save).not.toHaveAttribute('aria-disabled');
+    await expect(toast(page, 'Saved')).toBeVisible();
+  });
+
+  test('createasyncstate-mutation: a rejected save is announced as an error toast', async ({
+    page,
+  }) => {
+    await gotoDemo(page, MUTATION);
+    await page.getByLabel('Fail next save').check();
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(readout(page, 'Status')).toHaveText('error', { timeout: 4000 });
+    await expect(toast(page, 'Save failed')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Notifications' }).getByRole('alert'),
+    ).toContainText('Save failed');
   });
 });
