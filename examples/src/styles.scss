@@ -1989,6 +1989,13 @@ button.chip.demo-chip--copied {
   margin: -1px;
 }
 
+// createRetry demo: the chip keeps one width across its idle, attempt,
+// success and failure labels, so the layout does not shift mid-run.
+button.chip.demo-retry-chip {
+  min-inline-size: var(--demo-retry-chip-min-size, 10rem);
+  text-align: center;
+}
+
 // Combobox-typeahead demo. Built from raw <li role="option"> nodes (not
 // the cngx-option directive), so the highlight chrome lives here. Every
 // color reads from a cngx token first, with a safe ASCII-only fallback.

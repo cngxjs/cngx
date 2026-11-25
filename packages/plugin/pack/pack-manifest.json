@@ -74,7 +74,7 @@
     {
       "artifact": "pack/recipes/common-interactive-retry.md",
       "source": "examples/stories/common/interactive/retry/createretry-cngxasyncclick.story.ts",
-      "contentHash": "sha256:2a757264de5ffdab803a85e1259f74f454aac3748e3bcee02fea4b0ec4387c95"
+      "contentHash": "sha256:439e83b5805c8bdde26bd689b6062d87383654782705504368dd50fde9be00cb"
     },
     {
       "artifact": "pack/recipes/forms-filter-builder-filter-builder-async-state.md",

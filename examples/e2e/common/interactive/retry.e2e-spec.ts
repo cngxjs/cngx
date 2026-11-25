@@ -37,9 +37,24 @@ test.describe('common/interactive/retry', () => {
 
   test('createRetry: three failures exhaust the retries', async ({ page }) => {
     await gotoDemo(page, RETRY);
+    const button = retryButton(page);
+    const attemptRegion = page.locator('.cngx-ex-artifact .demo-sr-only[aria-live="polite"]');
+    // The polite region CngxAsyncClick renders as the host's next sibling.
+    const settleRegion = button.locator('xpath=following-sibling::span[@role="status"][1]');
+    await expect(attemptRegion).toHaveText('');
+    const idleWidth = (await button.boundingBox())?.width;
+
     await page.getByRole('button', { name: 'Fail 3 times' }).click();
-    await retryButton(page).click();
-    await expect(retryButton(page)).toHaveText('All retries failed', { timeout: 8000 });
+    await button.click();
+    await expect(attemptRegion).toHaveText('Retrying, attempt 2 of 3', { timeout: 4000 });
+    await expect(button).toHaveText('Attempt 2/3...');
+    expect((await button.boundingBox())?.width).toBe(idleWidth);
+    await expect(attemptRegion).toHaveText('Retrying, attempt 3 of 3', { timeout: 4000 });
+
+    await expect(button).toHaveText('All retries failed', { timeout: 8000 });
+    await expect(settleRegion).toHaveText('All retries failed');
+    await expect(attemptRegion).toHaveText('');
+    expect((await button.boundingBox())?.width).toBe(idleWidth);
     await expect(readout(page, 'Attempt')).toHaveText('3 / 3');
     await expect(readout(page, 'Exhausted')).toHaveText('true');
   });

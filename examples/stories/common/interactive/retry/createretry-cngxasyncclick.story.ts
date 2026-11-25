@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxAsyncClick: createRetry helper',
   subtitle: 'Wrap a flaky action with <code>createRetry</code>, then bind it through <code>[cngxAsyncClick]</code>. The directive surfaces <code>pending</code> / <code>succeeded</code> / <code>failed</code>; the retry state exposes <code>attempt</code> and <code>retrying</code> so the label can count attempts mid-flight.',
-  description: '<code>createRetry()</code> wraps any <code>AsyncAction</code> with bounded retries (defaults: 3 attempts, exponential backoff). The returned tuple is <code>[retryableAction, retryState]</code>; bind the action to <code>[cngxAsyncClick]</code> for the directive\'s pending / succeeded / failed signals, and the retry state for the live attempt counter and the <code>retrying</code> flag that flips true during back-off delays. <code>retryState.state</code> is a full <code>CngxAsyncState</code> view so the same setup also feeds <code>cngxToastOn</code> / <code>cngxAlertOn</code> consumers without a translator. A successful attempt clears <code>lastError</code> and <code>retrying</code> and keeps <code>attempt</code> at the attempt that succeeded; the next click resets all of it. An exhausted run leaves <code>exhausted()</code> true until the next click. The chrome buttons queue failures so each path can be replayed.',
+  description: '<code>createRetry()</code> wraps any <code>AsyncAction</code> with bounded retries (defaults: 3 attempts, exponential backoff). The returned tuple is <code>[retryableAction, retryState]</code>; bind the action to <code>[cngxAsyncClick]</code> for the directive\'s pending / succeeded / failed signals, and the retry state for the live attempt counter and the <code>retrying</code> flag that flips true during back-off delays. <code>retryState.state</code> is a full <code>CngxAsyncState</code> view so the same setup also feeds <code>cngxToastOn</code> / <code>cngxAlertOn</code> consumers without a translator. A successful attempt clears <code>lastError</code> and <code>retrying</code> and keeps <code>attempt</code> at the attempt that succeeded; the next click resets all of it. An exhausted run leaves <code>exhausted()</code> true until the next click. The button binds <code>failedAnnouncement</code> and <code>succeededAnnouncement</code> to its visible wording, and a polite region next to it speaks each retry attempt. The chrome buttons queue failures so each path can be replayed.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -47,8 +47,10 @@ export const STORY: DemoSpec = {
     <button
       [cngxAsyncClick]="retryAction"
       #btn="cngxAsyncClick"
+      [failedAnnouncement]="'All retries failed'"
+      [succeededAnnouncement]="'Success!'"
       type="button"
-      class="chip"
+      class="chip demo-retry-chip"
       [style.background]="btn.succeeded() ? 'var(--cngx-color-success)' : btn.failed() ? 'var(--cngx-color-danger)' : ''"
     >
       @if (btn.pending()) {
@@ -61,6 +63,11 @@ export const STORY: DemoSpec = {
         Flaky Save
       }
     </button>
+    <span class="demo-sr-only" aria-live="polite">{{
+      btn.pending() && retryState.attempt() > 1
+        ? 'Retrying, attempt ' + retryState.attempt() + ' of ' + retryState.maxAttempts()
+        : ''
+    }}</span>
   </div>`,
   templateChrome: `
   <div class="button-row" style="margin-top:12px">
