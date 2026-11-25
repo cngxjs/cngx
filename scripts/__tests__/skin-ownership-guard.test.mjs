@@ -215,7 +215,14 @@ const SKIN_OPT_IN_EXEMPT = [
  *
  * @type {{ file: string; symbol: string; reason: string }[]}
  */
-const STORY_OWNERSHIP_EXEMPT = [];
+const STORY_OWNERSHIP_EXEMPT = [
+  {
+    file: 'examples/stories/common/data/commit-controller/begin-supersede-cancel.story.ts',
+    symbol: 'createCommitController',
+    reason:
+      'the story teaches the common/data factory; the symbol index keys by name and @cngx/forms/select still exports a deprecated alias of the same name',
+  },
+];
 
 /** Blank comments, keeping every newline so line numbers stay true. */
 function blank(text) {
