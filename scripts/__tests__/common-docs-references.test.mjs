@@ -67,18 +67,6 @@ const REVIEWED_FOLDERS = [
 const KNOWN_FAILURES = [
   {
     slice: '2 async-state',
-    file: 'projects/common/data/async-state/async-boundary.directive.ts',
-    kind: 'unknown-tag',
-    ref: 'cngx-toast-on',
-  },
-  {
-    slice: '2 async-state',
-    file: 'projects/common/data/async-state/async-boundary.directive.ts',
-    kind: 'unknown-tag',
-    ref: 'cngx-banner',
-  },
-  {
-    slice: '2 async-state',
     file: 'projects/common/interactive/error-aggregator/README.md',
     kind: 'missing-path',
     ref: 'examples/stories/common/interactive/error-aggregator/',

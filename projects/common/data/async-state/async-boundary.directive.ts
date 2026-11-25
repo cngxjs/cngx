@@ -50,11 +50,11 @@ export interface AggregateFailure {
  * component. `state.error` stays the first error for the single-error path.
  *
  * ```html
- * <div [cngxAsyncBoundary]="sources" #b="cngxAsyncBoundary">
+ * <div [cngxAsyncBoundary]="sources" #b="cngxAsyncBoundary"
+ *      cngxToastOn [toastError]="'Loading failed'">
  *   <cngx-async-container [state]="b.state"> ... </cngx-async-container>
- *   <cngx-toast-on />
  *   @for (f of b.failures(); track f.key) {
- *     <cngx-banner>{{ f.label }} failed</cngx-banner>
+ *     <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
  *   }
  * </div>
  * ```
