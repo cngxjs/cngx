@@ -39,10 +39,18 @@ test.describe('common/interactive/error-aggregator', () => {
       .locator('.event-value');
     const form = page.locator('form[cngxErrorScope]');
 
-    await page.locator('#cngx-error-signup-email').fill('not-an-email');
+    const email = page.locator('#cngx-error-signup-email');
+    await email.fill('not-an-email');
     await expect(shouldShow).toHaveText('false');
+    await expect(email).toHaveAttribute('aria-invalid', 'false');
+    await expect(email).not.toHaveAttribute('aria-errormessage');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(shouldShow).toHaveText('true');
+
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    const messageId = await email.getAttribute('aria-errormessage');
+    expect(messageId).toBeTruthy();
+    await expect(page.locator(`[id="${messageId}"]`)).toContainText('Email format invalid');
 
     await expect(form.locator('[role="alert"]')).toHaveCount(0);
     const region = form.locator('[role="status"]');

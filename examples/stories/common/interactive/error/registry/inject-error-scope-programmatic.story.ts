@@ -41,9 +41,11 @@ export const STORY: DemoSpec = {
       type="text"
       [value]="email()"
       (input)="handleInput($event)"
+      [attr.aria-invalid]="scope.showErrors() && emailInvalid() ? 'true' : 'false'"
+      [attr.aria-errormessage]="scope.showErrors() && emailInvalid() ? 'ies-email-error' : null"
     />
     @if (scope.showErrors() && emailInvalid()) {
-      <span role="alert" style="font-size:0.875em">Email must contain @.</span>
+      <span id="ies-email-error" role="alert" style="font-size:0.875em">Email must contain @.</span>
     }
     <div style="display:flex; gap:8px; align-self:flex-start">
       <button type="button" (click)="handleSubmit()">Validate</button>

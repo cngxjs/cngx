@@ -836,6 +836,11 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   padding-inline-start: 24px;
   color: var(--cngx-color-danger, #b00020);
 }
+// The list stays in the DOM as an aria-errormessage target; with no items
+// it takes no space.
+.demo-error-list:empty {
+  margin-block: 0;
+}
 .demo-error-message {
   margin: 4px 0 12px;
   color: var(--cngx-color-danger, #b00020);

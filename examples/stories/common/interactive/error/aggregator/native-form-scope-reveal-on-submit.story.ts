@@ -5,16 +5,16 @@ export const STORY: DemoSpec = {
   subtitle:
     'A <code>&lt;form cngxErrorScope&gt;</code> wraps a fieldset aggregator. Errors stay hidden until <code>(submit)</code> fires <code>scope.reveal()</code>; the resolved <code>shouldShow()</code> then unblocks the visible error list. <code>hasError</code> stays <code>true</code> from page load while <code>shouldShow</code> only flips after submit.',
   description:
-    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive renders its own polite live region inside the host and speaks the labels on every submit; the visible list is plain markup. <code>novalidate</code> keeps the browser from blocking the submit, so the scope reveals.',
+    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive renders its own polite live region inside the host and speaks the labels on every submit; the visible list is plain markup. <code>novalidate</code> keeps the browser from blocking the submit, so the scope reveals. <code>[cngxErrorState]</code> on each input sets <code>aria-invalid</code> and points <code>aria-errormessage</code> at the list once the scope reveals; the list element stays in the DOM so the reference always resolves.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['composition', 'a11y-pattern', 'error-handling'],
-  apiComponents: ['CngxErrorAggregator', 'CngxErrorScope', 'CngxErrorSource'],
+  apiComponents: ['CngxErrorAggregator', 'CngxErrorScope', 'CngxErrorSource', 'CngxErrorState'],
   moduleImports: [
-    "import { CngxErrorAggregator, CngxErrorScope, CngxErrorSource } from '@cngx/common/interactive';",
+    "import { CngxErrorAggregator, CngxErrorScope, CngxErrorSource, CngxErrorState } from '@cngx/common/interactive';",
   ],
-  imports: ['CngxErrorScope', 'CngxErrorAggregator', 'CngxErrorSource'],
+  imports: ['CngxErrorScope', 'CngxErrorAggregator', 'CngxErrorSource', 'CngxErrorState'],
   references: [
     {
       label: 'WAI-ARIA 1.2: aria-invalid',
@@ -50,20 +50,36 @@ export const STORY: DemoSpec = {
 
       <label style="display: block; margin: 6px 0;">
         <span>Email </span>
-        <input id="cngx-error-signup-email" name="email" type="email" autocomplete="email" class="demo-error-input" />
+        <input
+          id="cngx-error-signup-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          class="demo-error-input"
+          [cngxErrorState]="emailFormatBad() || emailTaken()"
+          cngxErrorMessageId="cngx-error-signup-errors"
+        />
       </label>
       <label style="display: block; margin: 6px 0;">
         <span>Password </span>
-        <input id="cngx-error-signup-password" name="password" type="password" autocomplete="new-password" class="demo-error-input" />
+        <input
+          id="cngx-error-signup-password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          class="demo-error-input"
+          [cngxErrorState]="passwordWeak()"
+          cngxErrorMessageId="cngx-error-signup-errors"
+        />
       </label>
 
-      @if (signup.shouldShow()) {
-        <ul class="demo-error-list">
+      <ul id="cngx-error-signup-errors" class="demo-error-list">
+        @if (signup.shouldShow()) {
           @for (label of signup.errorLabels(); track label) {
             <li>{{ label }}</li>
           }
-        </ul>
-      }
+        }
+      </ul>
 
       <div class="button-row" style="margin-top: 12px;">
         <button type="submit">Submit</button>
