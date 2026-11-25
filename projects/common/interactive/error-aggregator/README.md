@@ -104,7 +104,7 @@ If the aggregator host is itself a form control (e.g. a `<fieldset>` with one in
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/error-aggregator/) for the full inputs / outputs / token surface.
-- Stories: `examples/stories/common/interactive/error-aggregator/`.
+- Stories: `examples/stories/common/interactive/error/aggregator/`.
 - `CngxErrorRegistry` - optional named-lookup root, opt-in via `provideErrorRegistry()`.
 - `CngxErrorScope` - the visibility gate read via `CNGX_ERROR_SCOPE`.
 - `CngxErrorSource` - the per-condition contributor that calls `addSource` / `removeSource`.

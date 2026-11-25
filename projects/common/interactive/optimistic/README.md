@@ -302,5 +302,5 @@ protected readonly ratingState = this.ratingUpdate[1];
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/interactive/optimistic/)
 - [CngxAsyncState](../../../core/utils/) - The shared state interface
 - [createRetry](../retry/) - Combines well with createOptimistic for resilient updates
-- Demo: `examples/stories/common/optimistic-demo/`
+- Demo: `examples/stories/common/interactive/optimistic/`
 - Tests: `projects/common/interactive/optimistic/optimistic.spec.ts`

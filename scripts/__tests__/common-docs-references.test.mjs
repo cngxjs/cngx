@@ -66,24 +66,6 @@ const REVIEWED_FOLDERS = [
  */
 const KNOWN_FAILURES = [
   {
-    slice: '2 async-state',
-    file: 'projects/common/interactive/error-aggregator/README.md',
-    kind: 'missing-path',
-    ref: 'examples/stories/common/interactive/error-aggregator/',
-  },
-  {
-    slice: '2 async-state',
-    file: 'projects/common/interactive/error-state/README.md',
-    kind: 'missing-path',
-    ref: 'examples/stories/common/interactive/error-state/',
-  },
-  {
-    slice: '2 async-state',
-    file: 'projects/common/interactive/optimistic/README.md',
-    kind: 'missing-path',
-    ref: 'examples/stories/common/optimistic-demo/',
-  },
-  {
     slice: '3 selection-controls',
     file: 'projects/common/interactive/checkbox-group/README.md',
     kind: 'missing-path',
