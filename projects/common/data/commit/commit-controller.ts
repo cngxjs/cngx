@@ -127,8 +127,10 @@ export interface CngxCommitController<T> {
    * By default the state slot keeps its current status (a destroyed
    * host never reads it again). Pass `settle: true` when the surface
    * lives on - an explicit back-navigation or reset that supersedes a
-   * pending commit must return `state` to `'idle'`, or `busy` latches
-   * true forever.
+   * pending commit must not leave `busy` latched true forever. It
+   * resets the slot: `'idle'` with data, error, progress and
+   * `lastUpdated` cleared and `isFirstLoad()` true again, and it
+   * clears `intendedValue`.
    */
   cancel(options?: { readonly settle?: boolean }): void;
 }
@@ -138,7 +140,6 @@ export interface CngxCommitController<T> {
  *
  * Plain function, not a class - matches the rest of the repo
  * (`createManualState`, `createAsyncState`, `createTransitionTracker`).
- * See `reference_api_prefix_convention.md`.
  */
 export function createCommitController<T>(): CngxCommitController<T> {
   const slot: ManualAsyncState<T | undefined> = createManualState<T | undefined>();
