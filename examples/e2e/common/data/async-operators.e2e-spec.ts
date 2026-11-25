@@ -17,8 +17,8 @@ function readout(page: Page, label: string) {
 async function seesProgress(page: Page, value: string): Promise<void> {
   await page.waitForFunction(
     (expected) =>
-      [...document.querySelectorAll('.cngx-ex-chrome .event-row')].some(
-        (row) =>
+      [...document.querySelectorAll<HTMLElement>('.cngx-ex-chrome .event-row')].some(
+        (row: HTMLElement) =>
           row.querySelector('.event-label')?.textContent?.trim() === 'progress' &&
           row.querySelector('.event-value')?.textContent?.trim() === expected,
       ),
