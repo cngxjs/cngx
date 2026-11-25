@@ -6,7 +6,7 @@ import {
   type HttpInterceptorFn,
   type HttpRequest,
 } from '@angular/common/http';
-import { signal, type WritableSignal } from '@angular/core';
+import { signal, type Signal, type WritableSignal } from '@angular/core';
 import { Observable } from 'rxjs';
 
 /** Options of {@link createDemoHttpBackend}. */
@@ -25,6 +25,8 @@ export interface DemoHttpBackend {
   readonly interceptor: HttpInterceptorFn;
   /** While `true`, a request ends with a 503 instead of the response. Read when it settles. */
   readonly fail: WritableSignal<boolean>;
+  /** URLs of the requests the backend is answering right now, in start order. */
+  readonly inFlight: Signal<readonly string[]>;
 }
 
 const TOTAL_BYTES = 1000;
@@ -39,6 +41,7 @@ const TOTAL_BYTES = 1000;
  */
 export function createDemoHttpBackend(options: DemoHttpBackendOptions = {}): DemoHttpBackend {
   const fail = signal(false);
+  const inFlight = signal<readonly string[]>([]);
   const steps = options.steps ?? 4;
   const respond = options.respond ?? (() => ({ ok: true }));
   const stepOf = (req: HttpRequest<unknown>): number => {
@@ -51,6 +54,7 @@ export function createDemoHttpBackend(options: DemoHttpBackendOptions = {}): Dem
       const stepMs = stepOf(req);
       const type = req.body == null ? HttpEventType.DownloadProgress : HttpEventType.UploadProgress;
       const timers: ReturnType<typeof setTimeout>[] = [];
+      inFlight.update((urls) => [...urls, req.url]);
       subscriber.next({ type: HttpEventType.Sent });
       if (req.reportProgress) {
         for (let i = 1; i <= steps; i++) {
@@ -81,8 +85,14 @@ export function createDemoHttpBackend(options: DemoHttpBackendOptions = {}): Dem
           stepMs * (steps + 1),
         ),
       );
-      return () => timers.forEach((t) => clearTimeout(t));
+      return () => {
+        timers.forEach((t) => clearTimeout(t));
+        inFlight.update((urls) => {
+          const index = urls.indexOf(req.url);
+          return index < 0 ? urls : [...urls.slice(0, index), ...urls.slice(index + 1)];
+        });
+      };
     });
 
-  return { interceptor, fail };
+  return { interceptor, fail, inFlight: inFlight.asReadonly() };
 }
