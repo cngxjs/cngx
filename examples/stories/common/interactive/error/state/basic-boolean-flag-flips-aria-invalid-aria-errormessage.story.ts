@@ -42,13 +42,9 @@ export const STORY: DemoSpec = {
       cngxErrorMessageId="cngx-error-state-basic-email"
     />
   </label>
-  <p
-    id="cngx-error-state-basic-email"
-    role="alert"
-    class="demo-error-message"
-    [attr.aria-hidden]="emailInvalid() ? null : 'true'"
-    [style.display]="emailInvalid() ? 'block' : 'none'"
-  >Please enter a valid email address.</p>`,
+  <p id="cngx-error-state-basic-email" role="alert" class="demo-error-message">{{
+    emailInvalid() ? 'Please enter a valid email address.' : ''
+  }}</p>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row"><span class="event-label">aria-invalid</span><span class="event-value">"{{ emailInput.getAttribute('aria-invalid') }}"</span></div>

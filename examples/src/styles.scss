@@ -836,10 +836,19 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   padding-inline-start: 24px;
   color: var(--cngx-color-danger, #b00020);
 }
+// The list stays in the DOM as an aria-errormessage target; with no items
+// it takes no space.
+.demo-error-list:empty {
+  margin-block: 0;
+}
 .demo-error-message {
   margin: 4px 0 12px;
   color: var(--cngx-color-danger, #b00020);
   font-size: 0.875em;
+}
+// The message stays in the DOM as a live region; empty, it takes no space.
+.demo-error-message:empty {
+  margin-block: 0;
 }
 .demo-error-input {
   padding: 6px 8px;
@@ -1987,6 +1996,13 @@ button.chip.demo-chip--copied {
   border: 0;
   padding: 0;
   margin: -1px;
+}
+
+// createRetry demo: the chip keeps one width across its idle, attempt,
+// success and failure labels, so the layout does not shift mid-run.
+button.chip.demo-retry-chip {
+  min-inline-size: var(--demo-retry-chip-min-size, 10rem);
+  text-align: center;
 }
 
 // Combobox-typeahead demo. Built from raw <li role="option"> nodes (not

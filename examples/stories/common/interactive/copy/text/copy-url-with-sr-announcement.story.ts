@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Pair with an <code>aria-live="polite"</code> region so screen readers announce the copy.',
   description:
-    'Atom: the directive itself ships no live region. This story shows the canonical consumer pattern - an always-present visually-hidden <code>aria-live</code> span whose text becomes non-empty only after a successful copy.',
+    'Atom: the directive itself ships no live region. This story shows the canonical consumer pattern - an always-present visually-hidden <code>aria-live</code> span whose text becomes non-empty only after a copy settles: the success sentence after <code>copied()</code>, the failure sentence after <code>failed()</code>.',
   level: 'atom',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
@@ -34,10 +34,10 @@ export const STORY: DemoSpec = {
       class="chip"
       [class.demo-chip--copied]="cp2.copied()"
     >
-      {{ cp2.copied() ? 'Link copied!' : 'Copy Link' }}
+      {{ cp2.copied() ? 'Link copied!' : cp2.failed() ? 'Not copied' : 'Copy Link' }}
     </button>
-    <span aria-live="polite" class="demo-sr-only">
-      {{ cp2.copied() ? 'Link copied to clipboard' : '' }}
-    </span>
+    <span aria-live="polite" class="demo-sr-only">{{
+      cp2.copied() ? 'Link copied to clipboard' : cp2.failed() ? 'Link not copied' : ''
+    }}</span>
   </div>`,
 };

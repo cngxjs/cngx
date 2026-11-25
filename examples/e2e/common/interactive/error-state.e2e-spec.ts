@@ -15,23 +15,26 @@ test.describe('common/interactive/error-state', () => {
     const input = page.getByLabel('Email');
     const toggle = page.getByRole('button', { name: 'Toggle invalid state' });
 
+    // The message region is in the DOM from the start and holds no text
+    // until the field is invalid, so its first sentence is a live change.
+    const msg = page.locator('#cngx-error-state-basic-email');
     await expect(input).toHaveAttribute('aria-invalid', 'false');
     await expect(input).not.toHaveAttribute('aria-errormessage');
+    await expect(msg).toHaveCount(1);
+    await expect(msg).toHaveText('');
 
     await toggle.click();
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(input).toHaveAttribute('aria-errormessage', 'cngx-error-state-basic-email');
     await expect(input).toHaveClass(/cngx-error/);
-
-    // The linked error message reveals via display:block when invalid.
-    const msg = page.locator('#cngx-error-state-basic-email');
+    await expect(msg).toHaveText('Please enter a valid email address.');
     await expect(msg).toBeVisible();
 
-    // Toggle back — aria-invalid flips, class lifts.
     await toggle.click();
     await expect(input).toHaveAttribute('aria-invalid', 'false');
     await expect(input).not.toHaveClass(/cngx-error/);
     await expect(input).not.toHaveAttribute('aria-errormessage');
+    await expect(msg).toHaveText('');
   });
 
   test('without-message-id: class hook and aria-invalid alone', async ({ page }) => {

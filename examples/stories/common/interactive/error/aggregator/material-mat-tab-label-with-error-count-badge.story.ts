@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'CngxErrorAggregator: Mat-tab label with error-count badge',
   subtitle:
-    'Each tab carries its own aggregator. The label slot reads <code>aggregator.errorCount()</code> to render a small circular badge. Toggle the chrome buttons to watch the badges flip in real time.',
+    'Each tab carries its own aggregator. The label slot reads <code>aggregator.errorCount()</code> to render a small circular badge. The badge is <code>aria-hidden</code>; visually hidden text next to it carries the count into the tab name, and one status region outside the tab group speaks both aggregators, because an inactive tab body is detached and its own region would stay mute.',
   description:
     '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> directives into one live A11y surface. Derived signals (<code>hasError</code>, <code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, <code>shouldShow</code>, <code>announcement</code>) carry structural <code>equal</code> fns so unrelated re-emissions do not cascade. The directive is template-free; render the SR live region yourself.',
   level: 'molecule',
@@ -31,11 +31,13 @@ export const STORY: DemoSpec = {
         Address
         @if (addressTab.errorCount() > 0) {
           <span aria-hidden="true" class="demo-error-count-badge">{{ addressTab.errorCount() }}</span>
+          <span class="demo-sr-only">, {{ addressTab.errorCount() }} {{ addressTab.errorCount() === 1 ? 'error' : 'errors' }}</span>
         }
       </ng-template>
       <section
         style="margin-top: 1rem;"
         cngxErrorAggregator
+        [autoAnnounce]="false"
         #addressTab="cngxErrorAggregator"
         class="demo-error-surface"
       >
@@ -48,11 +50,13 @@ export const STORY: DemoSpec = {
         Payment
         @if (paymentTab.errorCount() > 0) {
           <span aria-hidden="true" class="demo-error-count-badge">{{ paymentTab.errorCount() }}</span>
+          <span class="demo-sr-only">, {{ paymentTab.errorCount() }} {{ paymentTab.errorCount() === 1 ? 'error' : 'errors' }}</span>
         }
       </ng-template>
       <section
         style="margin-top: 1rem;"
         cngxErrorAggregator
+        [autoAnnounce]="false"
         #paymentTab="cngxErrorAggregator"
         class="demo-error-surface"
       >
@@ -60,7 +64,8 @@ export const STORY: DemoSpec = {
         <p>Payment form goes here.</p>
       </section>
     </mat-tab>
-  </mat-tab-group>`,
+  </mat-tab-group>
+  <p class="demo-sr-only" role="status">{{ addressTab.announcement() }} {{ paymentTab.announcement() }}</p>`,
   templateChrome: `
   <div class="event-grid">
     <div class="event-row"><span class="event-label">address errorCount()</span><span class="event-value">{{ addressTab.errorCount() }}</span></div>
