@@ -1,33 +1,47 @@
+import type { Page } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
-// Story: createRetry wraps an AsyncAction with retries; CngxAsyncClick exposes
-// pending/succeeded/failed signals. The demo intentionally uses a flaky
-// (40% success) action — so the test asserts only that the retry state
-// machine moves: attempt climbs, retrying flips, eventually settles.
+const RETRY = 'common/interactive/retry/createretry-cngxasyncclick';
+
+function readout(page: Page, label: string) {
+  return page
+    .locator('.cngx-ex-chrome .event-row')
+    .filter({ has: page.locator('.event-label', { hasText: new RegExp(`^${label}$`) }) })
+    .locator('.event-value');
+}
+
+function retryButton(page: Page) {
+  return page.locator('.cngx-ex-artifact button').first();
+}
 
 test.describe('common/interactive/retry', () => {
-  test('createRetry: attempt counter climbs and pending settles within max attempts', async ({
-    page,
-  }) => {
-    await gotoDemo(page, 'common/interactive/retry/createretry-cngxasyncclick');
+  test('createRetry: an action that succeeds settles on attempt 1', async ({ page }) => {
+    await gotoDemo(page, RETRY);
+    await expect(readout(page, 'Attempt')).toHaveText('0 / 3');
+    await retryButton(page).click();
+    await expect(retryButton(page)).toHaveText('Success!', { timeout: 4000 });
+    await expect(readout(page, 'Attempt')).toHaveText('1 / 3');
+    await expect(readout(page, 'Exhausted')).toHaveText('false');
+  });
 
-    const btn = page.getByRole('button', { name: /Flaky Save|Attempt|Success|retries failed/ });
-    await expect(btn).toBeVisible();
+  test('createRetry: two failures, then the third attempt succeeds', async ({ page }) => {
+    await gotoDemo(page, RETRY);
+    await page.getByRole('button', { name: 'Fail 2 times' }).click();
+    await retryButton(page).click();
+    await expect(retryButton(page)).toHaveText('Attempt 3/3...', { timeout: 6000 });
+    await expect(retryButton(page)).toHaveText('Success!', { timeout: 4000 });
+    await expect(readout(page, 'Attempt')).toHaveText('3 / 3');
+    await expect(readout(page, 'Exhausted')).toHaveText('false');
+  });
 
-    const attemptVal = page
-      .locator('.event-row')
-      .filter({ has: page.getByText('Attempt', { exact: true }) })
-      .locator('.event-value');
-    await expect(attemptVal).toHaveText(/0 ?\/ ?3/);
-
-    await btn.click();
-
-    // The action takes 500ms × up to 3 attempts (~1.5–3s total). Wait for
-    // the button to stop reporting "Attempt N/N..." or transition into
-    // the success/fail terminal label.
-    await expect(btn).toHaveText(/Success!|All retries failed/, { timeout: 10_000 });
-
+  test('createRetry: three failures exhaust the retries', async ({ page }) => {
+    await gotoDemo(page, RETRY);
+    await page.getByRole('button', { name: 'Fail 3 times' }).click();
+    await retryButton(page).click();
+    await expect(retryButton(page)).toHaveText('All retries failed', { timeout: 8000 });
+    await expect(readout(page, 'Attempt')).toHaveText('3 / 3');
+    await expect(readout(page, 'Exhausted')).toHaveText('true');
   });
 
   test('optimistic: liking updates the signal synchronously (rollback may follow)', async ({
