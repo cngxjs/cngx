@@ -309,34 +309,33 @@ All factories return this read-only interface. Every field is a `Signal`.
 
 ## Accessibility
 
-Every component accepting `CngxAsyncState<unknown>` as a state input automatically:
+The state carries no ARIA of its own; each consumer binds what it needs. The units of this entry:
 
-- Updates `aria-busy` when `isBusy()` changes
-- Hides interactive controls when `isPending()` (for mutation states)
-- Announces status transitions to screen readers via an `aria-live` region
-- Shows/hides loading indicators based on `isFirstLoad()` vs `isRefreshing()`
-- Renders semantic error messages with proper ARIA roles
+- `CngxAsyncBoundary` sets `aria-busy` on its host from `state.isBusy()`.
+- `*cngxAsync` binds no ARIA. When a view switch destroys the view that holds focus, it moves focus to the first focusable element of the next rendered view.
 
-Example: A button with async action:
+A button with an async action reads the directive instance, not the bound function. `cngxAsyncClick` sets `aria-busy` itself, so no hand-written attribute is needed:
 
 ```html
-<button [cngxAsyncClick]="action" [attr.aria-busy]="action.state().isBusy()">
-  {{ action.pending() ? 'Loading...' : 'Save' }}
+<button [cngxAsyncClick]="save" #btn="cngxAsyncClick">
+  {{ btn.pending() ? 'Saving...' : 'Save' }}
 </button>
 ```
-
-The state is fully communicated without extra ARIA attributes - the component handles that.
 
 ## Composition
 
 All async state consumers follow the same pattern:
 
 ```typescript
-readonly myState = injectAsyncState(() => this.load());
+readonly residents = injectAsyncState(() => this.api.getResidents());
+```
 
-<div [cngxAsyncClick]="handleSave" [state]="myState()">
-  <!-- myState.status(), myState.data(), etc. all available -->
-</div>
+```html
+<ul *cngxAsync="residents; let list">
+  @for (r of list; track r.id) {
+    <li>{{ r.name }}</li>
+  }
+</ul>
 ```
 
 **No manual subscriptions.** Signals handle cleanup via Angular's DestroyRef.
@@ -351,10 +350,12 @@ Every async state tracks errors:
 
 ```typescript
 readonly data = injectAsyncState(() => this.fetch());
+```
 
+```html
 @if (data.error()) {
   <cngx-alert severity="error">
-    {{ (data.error() as any).message }}
+    {{ data.error() }}
   </cngx-alert>
 }
 ```
@@ -372,4 +373,4 @@ source.pipe(tapAsyncState(state)).subscribe({
 - [CngxSmartDataSource](../data-source/README.md) - integrates async state with table rendering
 - [CngxAsyncContainer](../../../ui/feedback/README.md) - built-in skeleton/error/empty templates for async state
 - [CngxAsyncClick](../../interactive/README.md) - directive that wires async action buttons to this system
-- Compodoc: Full type reference at `/docs`
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/async-state/) for type details.
