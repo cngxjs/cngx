@@ -62,7 +62,7 @@ export function reflectAsyncDisplayStatus(
  * `exportAs`. Switch on `status()`:
  *
  * ```html
- * <button [cngxAsyncStatus]="presenter.commitState" disableWhilePending
+ * <button [cngxAsyncStatus]="presenter.commitState" [disableWhilePending]="true"
  *         #status="cngxAsyncStatus">
  *   @switch (status.status()) {
  *     @case ('pending') { Saving... }
