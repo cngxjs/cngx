@@ -233,7 +233,7 @@ Example:
 
 ## Composition
 
-Use `CngxAsync` when you prefer microsyntax over named content slots. Both approaches render identically:
+Use `CngxAsync` when you prefer microsyntax over named content slots. Both pick the view through `resolveAsyncView`, with two differences: on `content+error` the container renders the content and the error template, `*cngxAsync` only the content; and the container has its own `aria-live` region for status announcements.
 
 **Microsyntax (CngxAsync):**
 
@@ -253,6 +253,8 @@ Use `CngxAsync` when you prefer microsyntax over named content slots. Both appro
     </ul>
   </ng-template>
   <ng-template cngxAsyncSkeleton><!-- skeleton --></ng-template>
+  <ng-template cngxAsyncEmpty><p>No items.</p></ng-template>
+  <ng-template cngxAsyncError let-err><p>{{ messageOf(err) }}</p></ng-template>
 </cngx-async-container>
 ```
 
