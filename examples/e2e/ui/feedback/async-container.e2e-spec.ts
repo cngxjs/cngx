@@ -80,4 +80,37 @@ test.describe('ui/feedback/async-container', () => {
     await expect(alert).toHaveCount(1, { timeout: 4000 });
     await expect(alert).toHaveText('Network error');
   });
+
+  for (const route of ['cngxasync-one-line', 'cngxasync-with-custom-templates']) {
+    test(`${route}: first load, empty load and refresh render the right view`, async ({ page }) => {
+      await gotoDemo(page, `ui/feedback/async-container/${route}`);
+      const items = page.locator('.cngx-ex-artifact li.demo-card-tile');
+      const skeleton = page.locator('.cngx-ex-artifact .demo-skeleton-bar');
+      const custom = route === 'cngxasync-with-custom-templates';
+
+      // The constructor starts a first load.
+      await expect(readout(page, 'status')).toHaveText('loading');
+      await expect(skeleton).toHaveCount(custom ? 3 : 0);
+      await expect(items).toHaveCount(0);
+      await expect(readout(page, 'status')).toHaveText('success', { timeout: 4000 });
+      await expect(readout(page, 'Renders')).toHaveText(custom ? 'content template' : 'content');
+      await expect(items).toHaveText(['Alice', 'Bob', 'Charlie']);
+
+      await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+      await expect(readout(page, 'status')).toHaveText('refreshing');
+      await expect(items).toHaveCount(3);
+      await expect(skeleton).toHaveCount(0);
+      await expect(items).toHaveCount(4, { timeout: 4000 });
+
+      await page.getByRole('button', { name: 'First load, empty' }).click();
+      await expect(readout(page, 'status')).toHaveText('success', { timeout: 4000 });
+      await expect(items).toHaveCount(0);
+      await expect(readout(page, 'Renders')).toHaveText(
+        custom ? 'empty template' : 'nothing (no empty template)',
+      );
+      if (custom) {
+        await expect(page.locator('.cngx-ex-artifact')).toContainText('No results found.');
+      }
+    });
+  }
 });
