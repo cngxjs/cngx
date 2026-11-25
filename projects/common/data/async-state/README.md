@@ -115,7 +115,7 @@ readonly residents = injectAsyncState(
 
 ### `fromResource<T>(ref: Resource<T>): CngxAsyncState<T>`
 
-Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → AsyncStatus, tracks first-load state (not present in Angular's Resource).
+Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → AsyncStatus and adds `isFirstLoad()`, which Angular's `Resource` does not have.
 
 **Requires:** Injection context.
 
@@ -133,9 +133,24 @@ readonly items = fromResource(this.res);
 // items.status(), items.data(), items.isFirstLoad() - all work
 ```
 
+#### Request identity
+
+"First load" is per request: a failed reload of the same request keeps the last good value, a params change or `idle` starts over. Each step of the resource, as the bridge maps it:
+
+|Resource step|`isFirstLoad()`|`data()`|View (`resolveAsyncView`)|
+|-|-|-|-|
+|`resolved` / `local`|false|current value|`content`, or `empty`|
+|`reloading` with a value|false|current value|`content`, status `refreshing`|
+|`reloading`, then `error`|false, the last good value is carried|last good value|`content+error`|
+|`loading` (new params), then `error`|true, the last good value is dropped|none|`skeleton`, then `error`|
+|first load failed, then `reload()`|true|none|`skeleton`, then `error`|
+|`idle` (params gone)|true|none|`none`|
+
+A params change is a new first load; there is no option to keep the previous request's data. A step nobody observed clears the last good value, which degrades to the error view and never to stale data; a read-only effect keeps the chain observed while no template reads the state. `lastUpdated()` is the time of the first read after a successful load, and it survives a params change.
+
 ### `fromHttpResource<T>(ref: HttpResourceRef<T>): CngxAsyncState<T>`
 
-Same as `fromResource` but additionally maps the latest `HttpProgressEvent` to `progress` (0-100 integer, `loaded / total` rounded and clamped; `undefined` while the total is unknown or zero). Angular only emits progress events when the request sets `reportProgress: true`. Avoids hard `@angular/common/http` import via structural interface typing.
+Same as `fromResource`, request identity rule included, but additionally maps the latest `HttpProgressEvent` to `progress` (0-100 integer, `loaded / total` rounded and clamped; `undefined` while the total is unknown or zero). Angular only emits progress events when the request sets `reportProgress: true`. Avoids hard `@angular/common/http` import via structural interface typing.
 
 **Requires:** Injection context.
 
