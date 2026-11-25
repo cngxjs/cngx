@@ -101,6 +101,26 @@ Pick by intent:
 - `createManualState` for choreographed pipelines.
 - `fromHttpResource` for anything already using Angular `httpResource`.
 
+### Empty completion
+
+An Observable that completes without a value is a success with `undefined` data in every producer that runs one: `createAsyncState`, `injectAsyncState`, `tapAsyncState`, `cngxAsyncClick` and `createRetry`. `createOptimistic` confirms the applied value instead. For an action that returns nothing, type the state `createAsyncState<void>()` and do not read `data()`.
+
+`tapHttpAsyncState` is the one exception: an event stream that completes without a response event leaves the sink at `idle`.
+
+### Resource request identity
+
+`fromResource` and `fromHttpResource` count "first load" per request: a failed reload of the same request keeps the last good value, a params change or `idle` starts over.
+
+|Resource step|`isFirstLoad()`|`data()`|View|
+|-|-|-|-|
+|`reloading`, then `error`|false|last good value|`content+error`|
+|`loading` (new params), then `error`|true|none|`skeleton`, then `error`|
+|first load failed, then `reload()`|true|none|`skeleton`, then `error`|
+|`idle` (params gone)|true|none|`none`|
+|`resolved` / `local`|false|current value|`content` or `empty`|
+
+There is no option to keep the previous request's data across a params change. A step nobody observed clears the last good value, which degrades to the error view and never to stale data.
+
 ---
 
 ## Consumers
