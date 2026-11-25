@@ -9,12 +9,21 @@ import {
   CngxActionStatusBrain,
   CngxActionStatusCell,
   CngxActionStatusStack,
+  CngxAsyncClick,
   CngxAsyncStatus,
+  CNGX_ACTION_STATUS,
+  CNGX_ACTION_STATUS_CONFIG,
+  CNGX_ANNOUNCEMENT_COVER,
+  injectActionStatusConfig,
+  makeActionStatusConfig,
   provideActionStatusConfig,
   provideActionStatusConfigAt,
   withActionStatusLabels,
   withActionStatusTemplates,
 } from '@cngx/common/interactive';
+
+// The button host providers of the Quick start:
+import { CngxButtonBrain, provideActionStatusHost, provideButtonHost } from '@cngx/common/button';
 ```
 
 ## Quick start
@@ -69,7 +78,7 @@ A selector-less host directive (`exportAs: 'cngxActionStatusBrain'`) that provid
 `[cngxAsyncStatus]` (`exportAs: 'cngxAsyncStatus'`) reflects an externally-owned `CngxAsyncState` onto its host: a presenter's `commitState`, a resource. It reads a state; `CngxAsyncClick` runs an action.
 
 - **Inputs:** `cngxAsyncStatus` (the state, `null` reflects as idle) and `disableWhilePending`.
-- **Signals:** `status()` is the display bucket (`loading` and `refreshing` fold into `pending`), `isBusy()`, `error()`, and `activeTemplate()`, the projected `cngxPending` / `cngxSucceeded` / `cngxFailed` for the current bucket or `null`.
+- **Signals:** `status()` is the display bucket (`loading` and `refreshing` fold into `pending`), `isBusy()`, `error()`, and `activeTemplate()`, the projected `cngxPending` / `cngxSucceeded` / `cngxFailed` for the current bucket or `null`. `activeTemplate()` carries no context: unlike in `CngxActionStatusStack`, a `cngxFailed` rendered through it gets no `$implicit`, so pass `{ $implicit: status.error() }` to the outlet when the template reads the error.
 - **Host bindings:** `aria-busy` while busy. With `[disableWhilePending]="true"`, `aria-disabled` while busy and a swallowed activation (click, auxclick, and the click a `<button>` synthesises for Enter and Space). The native `disabled` attribute is never set, so a focused host keeps focus.
 - Never put it on the same element as `cngxAsyncClick`: both bind `aria-busy`. Dev mode warns with [`CNGX1019`](../../../../core-concepts/error-codes/cngx1019.md).
 
