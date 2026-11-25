@@ -91,18 +91,15 @@ button.copy--failed {
 
 ### CngxCopyBlock
 
-Uses CSS Custom Properties for theming. The padding and the copied and failed tokens inherit, so any ancestor can set them; the gap is read on the host, and the idle `--cngx-copy-block-btn-bg` / `-color` / `-border` do not inherit and are set on the button:
+Uses CSS Custom Properties for theming. Every token inherits, so set it on the block or any ancestor:
 
 ```scss
 cngx-copy-block {
   --cngx-copy-block-gap: 12px;
   --cngx-copy-block-btn-padding: 6px 12px;
+  --cngx-copy-block-btn-bg: var(--color-surface);
   --cngx-copy-block-btn-copied-bg: var(--color-success-light);
   --cngx-copy-block-btn-failed-bg: var(--color-danger-light);
-}
-
-.cngx-copy-block__button {
-  --cngx-copy-block-btn-bg: var(--color-surface);
 }
 ```
 
