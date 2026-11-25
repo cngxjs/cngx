@@ -3,6 +3,7 @@ import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
 const RETRY = 'common/interactive/retry/createretry-cngxasyncclick';
+const LIKE = 'common/interactive/retry/optimistic-instant-like-toggle';
 
 function readout(page: Page, label: string) {
   return page
@@ -59,23 +60,26 @@ test.describe('common/interactive/retry', () => {
     await expect(readout(page, 'Exhausted')).toHaveText('true');
   });
 
-  test('optimistic: liking updates the signal synchronously (rollback may follow)', async ({
-    page,
-  }) => {
-    await gotoDemo(page, 'common/interactive/retry/optimistic-instant-like-toggle');
+  test('optimistic: a confirmed like stays and nothing rolls back', async ({ page }) => {
+    await gotoDemo(page, LIKE);
+    const region = page.locator('.cngx-ex-artifact .demo-sr-only[aria-live="polite"]');
+    await page.getByRole('button', { name: 'Like', exact: true }).click();
+    await expect(readout(page, 'liked')).toHaveText('true');
+    await expect(readout(page, 'Status')).toHaveText('success', { timeout: 4000 });
+    await expect(readout(page, 'liked')).toHaveText('true');
+    await expect(readout(page, 'Rolled back')).toHaveText('false');
+    await expect(region).toHaveText('');
+  });
 
-    const btn = page.getByRole('button', { name: /Like|Liked/ });
-    const likedVal = page
-      .locator('.event-row')
-      .filter({ has: page.getByText('liked', { exact: true }) })
-      .locator('.event-value');
-
-    await expect(likedVal).toHaveText('false');
-    await btn.click();
-    // Optimistic update flips the signal immediately to true. The server
-    // call may later roll it back; either outcome is fine — what matters
-    // is that the immediate post-click read is true.
-    await expect(likedVal).toHaveText('true');
-
+  test('optimistic: a rejected like rolls back and is announced', async ({ page }) => {
+    await gotoDemo(page, LIKE);
+    const region = page.locator('.cngx-ex-artifact .demo-sr-only[aria-live="polite"]');
+    await page.getByLabel('Server rejects').check();
+    await page.getByRole('button', { name: 'Like', exact: true }).click();
+    await expect(readout(page, 'liked')).toHaveText('true');
+    await expect(readout(page, 'liked')).toHaveText('false', { timeout: 4000 });
+    await expect(readout(page, 'Rolled back')).toHaveText('true');
+    await expect(region).toHaveText('Change not saved, reverted.');
+    await expect(readout(page, 'Error')).toHaveText('Server rejected');
   });
 });
