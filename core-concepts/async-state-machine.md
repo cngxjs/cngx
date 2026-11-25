@@ -394,7 +394,7 @@ The state binding is the directive's primary input (aliased to the directive nam
 
 The state input is **optional**. When omitted (bare attribute `cngxToastOn`), the bridge falls back to `inject(CNGX_STATEFUL, { optional: true })?.state` from the host or any ancestor providing `CNGX_STATEFUL`.
 
-The select family (all seven controls + the shared `select-shell`), the tabs presenter, the stepper presenter, and `cngxChipInput` provide `CNGX_STATEFUL` directly, which means:
+The select family (all eight controls + the shared `select-shell`), the tabs presenter, the stepper presenter, and `cngxChipInput` provide `CNGX_STATEFUL` directly, which means:
 
 ```html
 <!-- cngx-select provides CNGX_STATEFUL - bridge auto-discovers state. -->
@@ -480,7 +480,7 @@ effect(() => {
 
 A second trap: don't call `.set()` on any signal from inside a bridge effect that reads a transition tracker.
 
-The four feedback bridges are safe because they call external service methods (`toaster.show()`, etc.), not signal writes.
+The three feedback bridges are safe because they call external service methods (`toaster.show()`, etc.), not signal writes.
 
 The async-container is the documented exception. It writes an `announcement` signal from its tracker effect.
 
@@ -535,6 +535,7 @@ Current providers:
 - The tabs presenter.
 - The stepper presenter.
 - `CngxChipInput`.
+- `CngxTimeline` - republishes the state bound to its input.
 - `CngxAsyncBoundary` - provides the aggregate over its keyed source list, so a bridge nested in the boundary fires on the combined status with no `[state]` binding.
 
 <aside class="cc-note">
