@@ -4,6 +4,7 @@ import { gotoDemo } from '../../_helpers';
 
 const HTTP = 'common/data/async-registry/http-requests-in-the-registry';
 const LABEL_SKIP = 'common/data/async-registry/label-and-skip-requests';
+const LATENCY = 'common/data/async-registry/latency-selected-indicator';
 
 function readout(page: Page, label: string) {
   return page
@@ -57,5 +58,29 @@ test.describe('common/data/async-registry', () => {
     await expect(list.getByRole('listitem')).toHaveCount(0);
     await expect(readout(page, 'isAnythingLoading()')).toHaveText('false');
     await expect(readout(page, 'backend requests')).toHaveText('-', { timeout: 4000 });
+  });
+
+  test('latency-selected-indicator: a slow envelope switches the next treatment to a skeleton', async ({
+    page,
+  }) => {
+    await gotoDemo(page, LATENCY);
+    const badge = page.locator('.cngx-ex-chrome .status-badge', { hasText: 'Next treatment' });
+    const region = page.locator('.cngx-ex-artifact .latency-indicator [role="status"]');
+    await expect(badge).toHaveText('Next treatment: spinner');
+
+    await page.getByRole('button', { name: 'Run fast operation' }).click();
+    await expect(page.locator('.cngx-ex-chrome .status-badge', { hasText: 'Last envelope' })).toHaveText(
+      /Last envelope: \d+ms/,
+    );
+    await expect(badge).toHaveText('Next treatment: spinner');
+
+    await page.getByRole('button', { name: 'Run slow operation' }).click();
+    await expect(region).toHaveText('Loading');
+    await expect(badge).toHaveText('Next treatment: skeleton', { timeout: 4000 });
+    await expect(region).toHaveText('', { timeout: 4000 });
+
+    await page.getByRole('button', { name: 'Run slow operation' }).click();
+    await expect(region).toHaveText('Preparing content');
+    await expect(page.locator('.cngx-ex-artifact .demo-skeleton-row')).toHaveCount(2);
   });
 });
