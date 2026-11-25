@@ -1,7 +1,7 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'CngxAsyncContainer: createAsyncState mutation',
+  title: 'createAsyncState: mutation with execute()',
   subtitle: 'For POST/PUT/DELETE. Uses <code>execute(fn)</code> which sets status to <code>pending</code>. Tick the fail switch to see the error branch.',
   description: 'Mutation factory variant: <code>createAsyncState()</code> exposes <code>execute(fn)</code> for write paths. The chrome readout exposes <code>status</code>, <code>isPending</code>, <code>data</code> and <code>error</code> live, so the success/error branches are observable without UI templating. The Save button reflects the state through <code>[cngxAsyncStatus]</code> with <code>[disableWhilePending]</code>: it gets <code>aria-disabled</code> instead of <code>disabled</code>, so a keyboard user keeps focus on it, and <code>[cngxToastOn]</code> announces the outcome.',
   level: 'molecule',
