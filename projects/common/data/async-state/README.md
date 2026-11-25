@@ -14,18 +14,21 @@ import {
   tapAsyncState,
   tapAsyncProgress,
   tapHttpAsyncState,
+  createForwardedAsyncState,
   resolveAsyncView,
   CngxAsyncBoundary,
   type ManualAsyncState,
   type MutableAsyncState,
   type ReactiveAsyncState,
-  type CngxAsyncState,
+  type CreateAsyncStateOptions,
+  type InjectAsyncStateOptions,
+  type AsyncView,
   type AggregateSource,
   type AggregateFailure,
 } from '@cngx/common/data';
 
-// The keyless aggregation kernel lives one layer down:
-import { createAggregateAsyncState } from '@cngx/core/utils';
+// The state contract and the keyless aggregation kernel live one layer down:
+import { createAggregateAsyncState, type CngxAsyncState } from '@cngx/core/utils';
 ```
 
 ## Core Concepts

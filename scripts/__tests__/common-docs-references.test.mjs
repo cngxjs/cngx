@@ -68,12 +68,6 @@ const KNOWN_FAILURES = [
   {
     slice: '2 async-state',
     file: 'projects/common/data/async-state/README.md',
-    kind: 'unknown-import',
-    ref: 'CngxAsyncState from @cngx/common/data',
-  },
-  {
-    slice: '2 async-state',
-    file: 'projects/common/data/async-state/README.md',
     kind: 'unknown-binding',
     ref: 'div [state]',
   },
