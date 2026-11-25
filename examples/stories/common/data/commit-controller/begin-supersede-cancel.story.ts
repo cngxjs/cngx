@@ -5,20 +5,23 @@ export const STORY: DemoSpec = {
   subtitle:
     'A plain state machine for "write to the server, then update the value": <code>begin()</code> runs a commit, a second <code>begin()</code> supersedes the first, <code>cancel({ settle: true })</code> returns to <code>idle</code>.',
   description:
-    '<code>createCommitController&lt;T&gt;()</code> is the commit lifecycle the select family and the stepper share, as a plain factory for your own controls. <code>begin(runner, intended, previous, handlers)</code> sets <code>pending</code>, remembers <code>intendedValue()</code> and runs the runner, which gets <code>onSuccess</code> / <code>onError</code> routes and returns a cancel handle. Exactly one handler fires per commit; a newer <code>begin()</code> cancels the older runner and drops its late outcome. The controller writes only its own <code>state</code>: the handlers decide what the value becomes, here pessimistically (the theme changes on success only). <code>cancel({ settle: true })</code> aborts without a handler and returns <code>state</code> to <code>idle</code>. Inside a select, reach for <code>createSelectCommitController</code> from <code>@cngx/forms/select</code> instead. The chrome switch makes the save fail.',
+    '<code>createCommitController&lt;T&gt;()</code> is the commit lifecycle the select family and the stepper share, as a plain factory for your own controls. Resolve it through <code>inject(CNGX_COMMIT_CONTROLLER_FACTORY)</code> as here, so an app-wide override (retry, offline queue, telemetry) reaches your control too. <code>begin(runner, intended, previous, handlers)</code> sets <code>pending</code>, remembers <code>intendedValue()</code> and runs the runner, which gets <code>onSuccess</code> / <code>onError</code> routes and returns a cancel handle. Exactly one handler fires per commit; a newer <code>begin()</code> cancels the older runner and drops its late outcome. The controller writes only its own <code>state</code>: the handlers decide what the value becomes, here pessimistically (the theme changes on success only). <code>cancel({ settle: true })</code> aborts without a handler and returns <code>state</code> to <code>idle</code>; the region then says the save was cancelled. Inside a select, override <code>CNGX_SELECT_COMMIT_CONTROLLER_FACTORY</code> from <code>@cngx/forms/select</code> instead. The chrome switch makes the save fail.',
   level: 'molecule',
   audience: ['dev', 'a11y'],
   artifact: 'building-block',
   focus: ['async-state', 'behavior'],
-  apiComponents: ['createCommitController', 'CngxAsyncStatus'],
+  apiComponents: ['createCommitController', 'CNGX_COMMIT_CONTROLLER_FACTORY', 'CngxAsyncStatus'],
   moduleImports: [
-    "import { createCommitController, type CngxCommitRunner } from '@cngx/common/data';",
+    "import { CNGX_COMMIT_CONTROLLER_FACTORY, type CngxCommitRunner } from '@cngx/common/data';",
     "import { CngxAsyncStatus } from '@cngx/common/interactive';",
     "import { failDemoActionWhen } from '../../../../fixtures';",
   ],
   imports: ['CngxAsyncStatus'],
   setup: `protected readonly theme = signal<string>('light');
-  protected readonly commit = createCommitController<string>();
+  // Resolved through the factory token, so an app-wide override (retry, telemetry) applies.
+  protected readonly commit = inject(CNGX_COMMIT_CONTROLLER_FACTORY)<string>();
+  private readonly cancelled = signal(false);
+  protected readonly canCancel = computed(() => this.commit.state.status() === 'pending');
 
   // The server call. Resolves with the value it stored.
   private readonly save = (value: string): Promise<string> =>
@@ -31,11 +34,12 @@ export const STORY: DemoSpec = {
       case 'error':
         return \`Could not save \${this.commit.intendedValue()}, kept \${this.theme()}\`;
       default:
-        return '';
+        return this.cancelled() ? \`Save cancelled, kept \${this.theme()}\` : '';
     }
   });
 
   protected handlePick(next: string): void {
+    this.cancelled.set(false);
     this.commit.begin(this.runnerFor(next), next, this.theme(), {
       onSuccess: (committed) => this.theme.set(committed ?? next),
       onError: (_err, previous) => this.theme.set(previous ?? 'light'),
@@ -43,6 +47,10 @@ export const STORY: DemoSpec = {
   }
 
   protected handleCancel(): void {
+    if (!this.canCancel()) {
+      return;
+    }
+    this.cancelled.set(true);
     this.commit.cancel({ settle: true });
   }
 
@@ -69,7 +77,7 @@ export const STORY: DemoSpec = {
     <button type="button" class="chip" [attr.aria-pressed]="theme() === 'light'" (click)="handlePick('light')">Light</button>
     <button type="button" class="chip" [attr.aria-pressed]="theme() === 'dark'" (click)="handlePick('dark')">Dark</button>
     <button type="button" class="chip" [attr.aria-pressed]="theme() === 'high-contrast'" (click)="handlePick('high-contrast')">High contrast</button>
-    <button type="button" class="chip" (click)="handleCancel()">Cancel</button>
+    <button type="button" class="chip" [attr.aria-disabled]="!canCancel()" (click)="handleCancel()">Cancel</button>
   </div>
   <p role="status">{{ outcome() }}</p>`,
   templateChrome: `<label class="event-row" style="margin-top:12px;gap:6px;align-items:center">

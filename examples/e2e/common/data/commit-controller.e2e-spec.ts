@@ -63,13 +63,17 @@ test.describe('common/data/commit-controller', () => {
     ]);
   });
 
-  test('begin-supersede-cancel: cancel returns the status to idle', async ({ page }) => {
+  test('begin-supersede-cancel: cancel returns the status to idle and says so', async ({ page }) => {
     await gotoDemo(page, ROUTE);
+    await expect(pick(page, 'Cancel')).toHaveAttribute('aria-disabled', 'true');
     await pick(page, 'Dark').click();
+    await expect(pick(page, 'Cancel')).toHaveAttribute('aria-disabled', 'false');
     await expect(readout(page, 'status')).toHaveText('pending');
     await pick(page, 'Cancel').click();
     await expect(readout(page, 'status')).toHaveText('idle');
     await expect(readout(page, 'theme()')).toHaveText('light');
-    await expect(region(page)).toHaveText('');
+    await expect(region(page)).toHaveText('Save cancelled, kept light');
+    await expect(pick(page, 'Cancel')).toHaveAttribute('aria-disabled', 'true');
+    await expect(pick(page, 'Cancel')).toBeFocused();
   });
 });
