@@ -74,7 +74,8 @@ Two contracts to honour. The runner closes over the async source and returns wha
 | Runner calls a route again after its first outcome | ignored, no state change, no handler fires |
 | `begin(...)` called again before settle | previous runner's `cancel()` fires; status stays `pending`, `commitId` advances |
 | Runner of a superseded commit calls back late | ignored, no state change, no handler fires |
-| `cancel()` | runner's cancel fires, `commitId` advances, status untouched |
+| `cancel()` | runner's cancel fires, `commitId` advances, status untouched, no handler fires |
+| `cancel({ settle: true })` | as `cancel()`, then the slot is reset: `idle` with data, error, progress and `lastUpdated` cleared, `isFirstLoad()` back to true, intended value cleared |
 
 A refusal is not a failure. It mirrors the router: a guard answering `false` produces `NavigationCancel`, only a throw is a `NavigationError`. A refused commit changed nothing, so the controller keeps what the last success stored and publishes a `pending -> idle` edge, on which the feedback bridges stay silent. It does not go to `success` either: a `pending -> success` edge is a success to every bridge.
 
@@ -94,7 +95,7 @@ Factory. No injection context required. Allocates the writable async-state slot,
 | `isCommitting` | `Signal<boolean>` | True while `status === 'pending'`. |
 | `intendedValue` | `Signal<T \| undefined>` | The value passed as `intended` on the latest `begin(...)`. Drives the pending-row spinner and the commit-error template context. |
 | `begin(runner, intended, previous, handlers)` | `void` | Start a new commit. Supersedes any in-flight commit synchronously. |
-| `cancel()` | `void` | Abort the in-flight commit without firing handlers. Use on host destroy or when the commit-action input changes mid-flight. |
+| `cancel(options?)` | `void` | Abort the in-flight commit without firing handlers. Without options the status is left as it is: use it on host destroy, where nobody reads the state again. Pass `{ settle: true }` when the surface lives on (a back-navigation or reset that supersedes a pending commit), so the slot is reset and `busy` does not stay latched. |
 
 ### `CngxCommitRunner<T>`
 
@@ -118,7 +119,7 @@ interface CngxCommitBeginHandlers<T> {
 }
 ```
 
-Caller-supplied routes. Exactly one fires per commit lifecycle, never twice. A superseded commit fires none. `onRefused` is optional; without it a refusal still settles the state slot to `idle`.
+Caller-supplied routes. At most one fires per commit lifecycle, never twice. A superseded commit fires none, and neither does a commit ended by `cancel()`. `onRefused` is optional; without it a refusal still settles the state slot to `idle`.
 
 ### `CngxTransitionOutcome`
 
@@ -169,4 +170,4 @@ The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/sele
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/commit/) for type details.
 - `@cngx/common/data/async-state` for the `CngxAsyncState` shape this controller fills.
 - `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) as the select-side delegation point.
-- Consumers: every `CngxSelect` variant, `CngxStepper`.
+- Consumers: every select variant (through `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, which delegates here), the stepper presenter and the tabs presenter.
