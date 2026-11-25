@@ -510,9 +510,9 @@ the single source of truth - all signals are derived projections.
 
 ```typescript
 private readonly res = resource({
-  request: () => ({ q: this.filter() }),
-  loader: ({ request, abortSignal }) =>
-    fetch(`/api/items?q=${request.q}`, { signal: abortSignal })
+  params: () => ({ q: this.filter() }),
+  loader: ({ params, abortSignal }) =>
+    fetch(`/api/items?q=${params.q}`, { signal: abortSignal })
       .then(r => r.json()),
 });
 

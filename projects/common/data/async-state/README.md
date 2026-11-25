@@ -112,9 +112,9 @@ Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → As
 
 ```typescript
 private readonly res = resource({
-  request: () => ({ filter: this.filter() }),
-  loader: ({ request, abortSignal }) =>
-    fetch(`/api/items?q=${request.filter}`, { signal: abortSignal })
+  params: () => ({ filter: this.filter() }),
+  loader: ({ params, abortSignal }) =>
+    fetch(`/api/items?q=${params.filter}`, { signal: abortSignal })
       .then(r => r.json()),
 });
 
