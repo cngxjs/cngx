@@ -99,4 +99,26 @@ test.describe('common/interactive/error-aggregator', () => {
     await expect(badge).toBeVisible();
     await expect(badge).not.toHaveText('0');
   });
+
+  test('material-mat-tab: the tab name carries its error count and one region speaks for both tabs', async ({
+    page,
+  }) => {
+    await gotoDemo(
+      page,
+      'common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge',
+    );
+    await expect(page.getByRole('tab', { name: /^Payment\W+1 error$/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^Address\W+1 error$/ })).toBeVisible();
+
+    // The Address tab is active, so the Payment body is detached: the region
+    // outside the tab group is the only place its error can be spoken.
+    const region = page.locator('.cngx-ex-artifact [role="status"].demo-sr-only');
+    await expect(region).toHaveCount(1);
+    await expect(region).toContainText('Card number invalid');
+
+    await page.getByRole('button', { name: 'Toggle payment error' }).click();
+    await expect(region).not.toContainText('Card number invalid');
+    await expect(region).toContainText('Street and city are required');
+    await expect(page.getByRole('tab', { name: 'Payment', exact: true })).toBeVisible();
+  });
 });
