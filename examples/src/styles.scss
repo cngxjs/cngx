@@ -846,6 +846,10 @@ html.dark .cngx-ex-tag[data-dim='stability'][data-value='deprecated'] {
   color: var(--cngx-color-danger, #b00020);
   font-size: 0.875em;
 }
+// The message stays in the DOM as a live region; empty, it takes no space.
+.demo-error-message:empty {
+  margin-block: 0;
+}
 .demo-error-input {
   padding: 6px 8px;
   min-width: 240px;
