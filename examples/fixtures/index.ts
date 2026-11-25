@@ -79,3 +79,4 @@ export {
   type SrMirrorTarget,
 } from './sr-mirror.fixture';
 export { failDemoActionWhen, wrapDemoAction, type DemoAction } from './demo-action.fixture';
+export { refuseClipboardWhile } from './clipboard-refusal.fixture';
