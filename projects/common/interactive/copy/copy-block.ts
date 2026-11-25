@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   input,
+  output,
   untracked,
   viewChild,
   ViewEncapsulation,
@@ -19,7 +20,9 @@ import { CngxCopyText } from './copy-text.directive';
  * `--failed` modifier) after a failed one; both return to the idle label after
  * the reset delay. One always-present polite `aria-live` region next to the
  * button announces either outcome. Every label and announcement follows
- * `CNGX_INTERACTIVE_I18N` unless its input is bound.
+ * `CNGX_INTERACTIVE_I18N` unless its input is bound. The block forwards the
+ * `CngxCopyText` contract: `didCopy`, `copyFailed` and `resetDelay` behave as
+ * on the directive.
  *
  * ### Copy a code snippet
  * ```html
@@ -62,6 +65,9 @@ import { CngxCopyText } from './copy-text.directive';
       class="cngx-copy-block__button"
       [cngxCopyText]="value()"
       #cp="cngxCopyText"
+      [resetDelay]="resetDelay()"
+      (didCopy)="didCopy.emit($event)"
+      (copyFailed)="copyFailed.emit($event)"
       [class.cngx-copy-block__button--copied]="cp.copied()"
       [class.cngx-copy-block__button--failed]="cp.failed()"
     >
@@ -96,6 +102,20 @@ export class CngxCopyBlock {
    * `CNGX_INTERACTIVE_I18N.copyFailedAnnouncement`.
    */
   readonly failedAnnouncement = input<string | undefined>(undefined);
+  /**
+   * Duration in ms the copied or failed label stays before the button returns
+   * to its idle label. Forwarded to `CngxCopyText.resetDelay`.
+   */
+  readonly resetDelay = input<number>(2000);
+
+  /** Emitted after a successful copy with the copied text. */
+  readonly didCopy = output<string>();
+  /**
+   * Emitted when a copy attempt fails: with the rejection reason when the
+   * Clipboard API rejects the write, with `undefined` when the
+   * `execCommand('copy')` fallback reports `false`.
+   */
+  readonly copyFailed = output<unknown>();
 
   private readonly copyText = viewChild(CngxCopyText);
 

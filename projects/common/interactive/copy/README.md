@@ -160,7 +160,19 @@ export class TokenComponent {
 >
   <span class="mono">{{ apiKey() }}</span>
 </cngx-copy-block>
+
+// React to the outcome and keep the label longer
+<cngx-copy-block
+  [value]="apiKey()"
+  [resetDelay]="4000"
+  (didCopy)="track($event)"
+  (copyFailed)="showManualCopyHint()"
+>
+  <span class="mono">{{ apiKey() }}</span>
+</cngx-copy-block>
 ```
+
+The block forwards `didCopy`, `copyFailed` and `resetDelay` of its inner `CngxCopyText` with the same payloads and default.
 
 A failed copy sets `.cngx-copy-block__button--failed` and paints `--cngx-copy-block-btn-failed-bg` / `-failed-border` / `-failed-color` (12% `--cngx-color-danger`, `--cngx-color-danger`, `--cngx-color-danger-text`).
 
