@@ -260,6 +260,11 @@
       "artifact": "pack/recipes/common-data-async-operators.md",
       "source": "examples/stories/common/data/async-operators/tap-http-async-state.story.ts",
       "contentHash": "sha256:179406ac26b0e7d96d5f39a986f82ad83241c5a29f2d1de4305db483483e53d0"
+    },
+    {
+      "artifact": "pack/recipes/common-data-async-state.md",
+      "source": "examples/stories/common/data/async-state/forwarded-state-through-an-input.story.ts",
+      "contentHash": "sha256:d953200f8ad306ef0ddd830ba238e133c4721e56dd88c9cee4d3db96cffba914"
     }
   ],
   "theming": {
