@@ -113,6 +113,17 @@ readonly residents = injectAsyncState(
 // Caches last result during refresh
 ```
 
+### `createForwardedAsyncState<T>(source): CngxAsyncState<T>`
+
+Wraps a changing source (`() => CngxAsyncState<T> | undefined`, typically a state `input()`) in one stable state object whose members read the source on every access. Use it when a component publishes a state it receives through an input as `CNGX_STATEFUL`. With nothing bound the facade reports `idle`, `isFirstLoad()` true and `isEmpty()` true, which `resolveAsyncView` maps to `none`. `buildAsyncStateView` defaults `isFirstLoad` to false when a producer passes none, so the two differ on that flag.
+
+**Requires:** No injection context.
+
+```typescript
+readonly state = input<CngxAsyncState<Item[]>>();
+readonly asyncState = createForwardedAsyncState(this.state);
+```
+
 ### `fromResource<T>(ref: Resource<T>): CngxAsyncState<T>`
 
 Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → AsyncStatus and adds `isFirstLoad()`, which Angular's `Resource` does not have.
