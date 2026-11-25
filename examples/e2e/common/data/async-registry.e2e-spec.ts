@@ -70,7 +70,7 @@ test.describe('common/data/async-registry', () => {
 
     await page.getByRole('button', { name: 'Run fast operation' }).click();
     await expect(page.locator('.cngx-ex-chrome .status-badge', { hasText: 'Last envelope' })).toHaveText(
-      /Last envelope: \d+ms/,
+      /Last envelope: \d+(\.\d+)?ms/,
     );
     await expect(badge).toHaveText('Next treatment: spinner');
 
