@@ -1,52 +1,85 @@
+import type { Page } from '@playwright/test';
 import { expect, test } from '../../_test';
 import { gotoDemo } from '../../_helpers';
 
-// Story: createRetry wraps an AsyncAction with retries; CngxAsyncClick exposes
-// pending/succeeded/failed signals. The demo intentionally uses a flaky
-// (40% success) action — so the test asserts only that the retry state
-// machine moves: attempt climbs, retrying flips, eventually settles.
+const RETRY = 'common/interactive/retry/createretry-cngxasyncclick';
+const LIKE = 'common/interactive/retry/optimistic-instant-like-toggle';
+
+function readout(page: Page, label: string) {
+  return page
+    .locator('.cngx-ex-chrome .event-row')
+    .filter({ has: page.locator('.event-label', { hasText: new RegExp(`^${label}$`) }) })
+    .locator('.event-value');
+}
+
+function retryButton(page: Page) {
+  return page.locator('.cngx-ex-artifact button').first();
+}
 
 test.describe('common/interactive/retry', () => {
-  test('createRetry: attempt counter climbs and pending settles within max attempts', async ({
-    page,
-  }) => {
-    await gotoDemo(page, 'common/interactive/retry/createretry-cngxasyncclick');
-
-    const btn = page.getByRole('button', { name: /Flaky Save|Attempt|Success|retries failed/ });
-    await expect(btn).toBeVisible();
-
-    const attemptVal = page
-      .locator('.event-row')
-      .filter({ has: page.getByText('Attempt', { exact: true }) })
-      .locator('.event-value');
-    await expect(attemptVal).toHaveText(/0 ?\/ ?3/);
-
-    await btn.click();
-
-    // The action takes 500ms × up to 3 attempts (~1.5–3s total). Wait for
-    // the button to stop reporting "Attempt N/N..." or transition into
-    // the success/fail terminal label.
-    await expect(btn).toHaveText(/Success!|All retries failed/, { timeout: 10_000 });
-
+  test('createRetry: an action that succeeds settles on attempt 1', async ({ page }) => {
+    await gotoDemo(page, RETRY);
+    await expect(readout(page, 'Attempt')).toHaveText('0 / 3');
+    await retryButton(page).click();
+    await expect(retryButton(page)).toHaveText('Success!', { timeout: 4000 });
+    await expect(readout(page, 'Attempt')).toHaveText('1 / 3');
+    await expect(readout(page, 'Exhausted')).toHaveText('false');
   });
 
-  test('optimistic: liking updates the signal synchronously (rollback may follow)', async ({
-    page,
-  }) => {
-    await gotoDemo(page, 'common/interactive/retry/optimistic-instant-like-toggle');
+  test('createRetry: two failures, then the third attempt succeeds', async ({ page }) => {
+    await gotoDemo(page, RETRY);
+    await page.getByRole('button', { name: 'Fail 2 times' }).click();
+    await retryButton(page).click();
+    await expect(retryButton(page)).toHaveText('Attempt 3/3...', { timeout: 6000 });
+    await expect(retryButton(page)).toHaveText('Success!', { timeout: 4000 });
+    await expect(readout(page, 'Attempt')).toHaveText('3 / 3');
+    await expect(readout(page, 'Exhausted')).toHaveText('false');
+  });
 
-    const btn = page.getByRole('button', { name: /Like|Liked/ });
-    const likedVal = page
-      .locator('.event-row')
-      .filter({ has: page.getByText('liked', { exact: true }) })
-      .locator('.event-value');
+  test('createRetry: three failures exhaust the retries', async ({ page }) => {
+    await gotoDemo(page, RETRY);
+    const button = retryButton(page);
+    const attemptRegion = page.locator('.cngx-ex-artifact .demo-sr-only[aria-live="polite"]');
+    // The polite region CngxAsyncClick renders as the host's next sibling.
+    const settleRegion = button.locator('xpath=following-sibling::span[@role="status"][1]');
+    await expect(attemptRegion).toHaveText('');
+    const idleWidth = (await button.boundingBox())?.width;
 
-    await expect(likedVal).toHaveText('false');
-    await btn.click();
-    // Optimistic update flips the signal immediately to true. The server
-    // call may later roll it back; either outcome is fine — what matters
-    // is that the immediate post-click read is true.
-    await expect(likedVal).toHaveText('true');
+    await page.getByRole('button', { name: 'Fail 3 times' }).click();
+    await button.click();
+    await expect(attemptRegion).toHaveText('Retrying, attempt 2 of 3', { timeout: 4000 });
+    await expect(button).toHaveText('Attempt 2/3...');
+    expect((await button.boundingBox())?.width).toBe(idleWidth);
+    await expect(attemptRegion).toHaveText('Retrying, attempt 3 of 3', { timeout: 4000 });
 
+    await expect(button).toHaveText('All retries failed', { timeout: 8000 });
+    await expect(settleRegion).toHaveText('All retries failed');
+    await expect(attemptRegion).toHaveText('');
+    expect((await button.boundingBox())?.width).toBe(idleWidth);
+    await expect(readout(page, 'Attempt')).toHaveText('3 / 3');
+    await expect(readout(page, 'Exhausted')).toHaveText('true');
+  });
+
+  test('optimistic: a confirmed like stays and nothing rolls back', async ({ page }) => {
+    await gotoDemo(page, LIKE);
+    const region = page.locator('.cngx-ex-artifact .demo-sr-only[aria-live="polite"]');
+    await page.getByRole('button', { name: 'Like', exact: true }).click();
+    await expect(readout(page, 'liked')).toHaveText('true');
+    await expect(readout(page, 'Status')).toHaveText('success', { timeout: 4000 });
+    await expect(readout(page, 'liked')).toHaveText('true');
+    await expect(readout(page, 'Rolled back')).toHaveText('false');
+    await expect(region).toHaveText('');
+  });
+
+  test('optimistic: a rejected like rolls back and is announced', async ({ page }) => {
+    await gotoDemo(page, LIKE);
+    const region = page.locator('.cngx-ex-artifact .demo-sr-only[aria-live="polite"]');
+    await page.getByLabel('Server rejects').check();
+    await page.getByRole('button', { name: 'Like', exact: true }).click();
+    await expect(readout(page, 'liked')).toHaveText('true');
+    await expect(readout(page, 'liked')).toHaveText('false', { timeout: 4000 });
+    await expect(readout(page, 'Rolled back')).toHaveText('true');
+    await expect(region).toHaveText('Change not saved, reverted.');
+    await expect(readout(page, 'Error')).toHaveText('Server rejected');
   });
 });

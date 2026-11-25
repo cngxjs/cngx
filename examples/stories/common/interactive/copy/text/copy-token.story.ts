@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   subtitle:
     'Click the button to copy the API token. The <code>copied()</code> signal drives "Copied!" feedback.',
   description:
-    'Atom: clipboard copy behavior without forms dependency. Uses the Clipboard API with an <code>execCommand</code> fallback. Consumer owns the surface and the optional SR live region.',
+    'Atom: clipboard copy behavior without forms dependency. Uses the Clipboard API with an <code>execCommand</code> fallback. Consumer owns the surface and the live region: the directive ships none, so the story renders an always-present polite span whose text follows <code>copied()</code> and <code>failed()</code>.',
   level: 'atom',
   audience: ['dev'],
   artifact: 'building-block',
@@ -24,8 +24,11 @@ export const STORY: DemoSpec = {
       class="chip"
       [class.demo-chip--copied]="cp.copied()"
     >
-      {{ cp.copied() ? 'Copied!' : 'Copy' }}
+      {{ cp.copied() ? 'Copied!' : cp.failed() ? 'Not copied' : 'Copy' }}
     </button>
+    <span aria-live="polite" class="demo-sr-only">{{
+      cp.copied() ? 'Token copied to clipboard' : cp.failed() ? 'Token not copied' : ''
+    }}</span>
   </div>`,
   templateChrome: `<div class="event-grid" style="margin-top:12px">
     <div class="event-row">

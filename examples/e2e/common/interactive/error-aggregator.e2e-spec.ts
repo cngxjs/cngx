@@ -39,10 +39,18 @@ test.describe('common/interactive/error-aggregator', () => {
       .locator('.event-value');
     const form = page.locator('form[cngxErrorScope]');
 
-    await page.locator('#cngx-error-signup-email').fill('not-an-email');
+    const email = page.locator('#cngx-error-signup-email');
+    await email.fill('not-an-email');
     await expect(shouldShow).toHaveText('false');
+    await expect(email).toHaveAttribute('aria-invalid', 'false');
+    await expect(email).not.toHaveAttribute('aria-errormessage');
     await page.getByRole('button', { name: 'Submit' }).click();
     await expect(shouldShow).toHaveText('true');
+
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    const messageId = await email.getAttribute('aria-errormessage');
+    expect(messageId).toBeTruthy();
+    await expect(page.locator(`[id="${messageId}"]`)).toContainText('Email format invalid');
 
     await expect(form.locator('[role="alert"]')).toHaveCount(0);
     const region = form.locator('[role="status"]');
@@ -98,5 +106,27 @@ test.describe('common/interactive/error-aggregator', () => {
     const badge = page.locator('.demo-error-count-badge').first();
     await expect(badge).toBeVisible();
     await expect(badge).not.toHaveText('0');
+  });
+
+  test('material-mat-tab: the tab name carries its error count and one region speaks for both tabs', async ({
+    page,
+  }) => {
+    await gotoDemo(
+      page,
+      'common/interactive/error/aggregator/material-mat-tab-label-with-error-count-badge',
+    );
+    await expect(page.getByRole('tab', { name: /^Payment\W+1 error$/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^Address\W+1 error$/ })).toBeVisible();
+
+    // The Address tab is active, so the Payment body is detached: the region
+    // outside the tab group is the only place its error can be spoken.
+    const region = page.locator('.cngx-ex-artifact [role="status"].demo-sr-only');
+    await expect(region).toHaveCount(1);
+    await expect(region).toContainText('Card number invalid');
+
+    await page.getByRole('button', { name: 'Toggle payment error' }).click();
+    await expect(region).not.toContainText('Card number invalid');
+    await expect(region).toContainText('Street and city are required');
+    await expect(page.getByRole('tab', { name: 'Payment', exact: true })).toBeVisible();
   });
 });
