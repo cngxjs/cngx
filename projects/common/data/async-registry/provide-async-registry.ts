@@ -14,6 +14,7 @@ import { CngxAsyncRegistry } from './async-registry';
  *   providers: [provideAsyncRegistry()],
  * });
  * ```
+ * <example-url>/#/common/data/async-registry/http-requests-in-the-registry</example-url>
  */
 export function provideAsyncRegistry(): EnvironmentProviders {
   return makeEnvironmentProviders([CngxAsyncRegistry]);

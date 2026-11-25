@@ -137,6 +137,7 @@ const RESPONSE = 4;
  *   ).subscribe();
  * }
  * ```
+ * <example-url>/#/common/data/async-operators/tap-async-progress</example-url>
  */
 export function tapAsyncProgress<E>(
   state: Pick<AsyncStateSink<unknown>, 'setProgress'>,
@@ -182,6 +183,7 @@ export function tapAsyncProgress<E>(
  *   // upload.status(), upload.progress(), upload.data() - all wired
  * }
  * ```
+ * <example-url>/#/common/data/async-operators/tap-http-async-state</example-url>
  */
 export function tapHttpAsyncState<T>(
   state: AsyncStateSink<T>,

@@ -140,6 +140,7 @@ export interface CngxCommitController<T> {
  *
  * Plain function, not a class - matches the rest of the repo
  * (`createManualState`, `createAsyncState`, `createTransitionTracker`).
+ * <example-url>/#/common/data/commit-controller/begin-supersede-cancel</example-url>
  */
 export function createCommitController<T>(): CngxCommitController<T> {
   const slot: ManualAsyncState<T | undefined> = createManualState<T | undefined>();

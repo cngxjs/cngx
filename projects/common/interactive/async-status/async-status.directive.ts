@@ -89,6 +89,7 @@ export function reflectAsyncDisplayStatus(
  * @slot cngxPending Rendered while the tracked operation is in flight.
  * @slot cngxSucceeded Rendered after the operation resolves successfully.
  * @slot cngxFailed Rendered when the operation rejects; gets the error.
+ * <example-url>/#/ui/stepper/stepper-footer/async-commit-status</example-url>
  */
 @Directive({
   selector: '[cngxAsyncStatus]',
