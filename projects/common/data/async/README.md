@@ -60,7 +60,7 @@ export class ResidentsComponent {
 </ng-template>
 
 <ng-template #errTpl let-err>
-  <li>Error: {{ err }}</li>
+  <li>Error: {{ messageOf(err) }}</li>
 </ng-template>
 ```
 
@@ -192,7 +192,7 @@ No optional templates - skeleton and error hidden:
 
 <ng-template #errTpl let-err>
   <cngx-alert severity="error">
-    Failed to load: {{ err }}
+    Failed to load: {{ messageOf(err) }}
   </cngx-alert>
 </ng-template>
 
@@ -260,11 +260,11 @@ Choose based on preference. Microsyntax is more compact; named slots allow multi
 
 ## Error Handling
 
-Error template receives the error as context:
+Error template receives the error as context. The error is `unknown`, and an `HttpErrorResponse` is no `Error`, so interpolating it directly prints `[object Object]` into the region a screen reader announces. Read the message through a helper the component exposes (`protected readonly messageOf = messageOf;`); the templates on this page use it:
 
 ```html
 <ng-template #errTpl let-err>
-  <div>{{ err }}</div>
+  <div>{{ messageOf(err) }}</div>
 </ng-template>
 ```
 
@@ -282,7 +282,9 @@ effect(() => {
 });
 
 function messageOf(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
+  return typeof err === 'object' && err !== null && 'message' in err
+    ? String(err.message)
+    : String(err);
 }
 ```
 

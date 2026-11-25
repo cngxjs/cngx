@@ -48,13 +48,16 @@ export interface AggregateFailure {
  * `[state]` wiring. `failures` exposes the errored sources - keyed, so a
  * consumer's `@for` can render per-source attribution through any feedback
  * component. `state.error` stays the first error for the single-error path.
+ * The errors are `unknown`; `messageOf` below is a component helper that
+ * reads a `message` property, so an `HttpErrorResponse` does not print as
+ * `[object Object]`.
  *
  * ```html
  * <div [cngxAsyncBoundary]="sources" #b="cngxAsyncBoundary"
  *      cngxToastOn [toastError]="'Loading failed'">
  *   <cngx-async-container [state]="b.state"> ... </cngx-async-container>
  *   @for (f of b.failures(); track f.key) {
- *     <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
+ *     <cngx-alert severity="error" [title]="f.label ?? f.key">{{ messageOf(f.error) }}</cngx-alert>
  *   }
  * </div>
  * ```

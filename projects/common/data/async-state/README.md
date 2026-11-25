@@ -299,7 +299,7 @@ type AggregateFailure = { key: string; label?: string; error: unknown };
   </cngx-async-container>
 
   @for (f of b.failures(); track f.key) {
-    <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
+    <cngx-alert severity="error" [title]="f.label ?? f.key">{{ messageOf(f.error) }}</cngx-alert>
   }
 </div>
 ```
@@ -374,14 +374,23 @@ readonly residents = injectAsyncState(() => this.api.getResidents());
 
 Every async state tracks errors:
 
+The error is `unknown`, and an `HttpErrorResponse` is no `Error`, so interpolating it directly prints `[object Object]` into the region a screen reader announces. Read the message through a helper; the templates on this page use it:
+
 ```typescript
 readonly data = injectAsyncState(() => this.fetch());
+protected readonly messageOf = messageOf;
+
+function messageOf(err: unknown): string {
+  return typeof err === 'object' && err !== null && 'message' in err
+    ? String(err.message)
+    : String(err);
+}
 ```
 
 ```html
 @if (data.error()) {
   <cngx-alert severity="error">
-    {{ data.error() }}
+    {{ messageOf(data.error()) }}
   </cngx-alert>
 }
 ```
