@@ -1,6 +1,6 @@
 # Optimistic Updates
 
-Utility function that creates optimistic update behavior for signals.
+`createOptimistic(current, action, destroyRef?)` writes a new value into a signal at once and confirms it through an async action. The action returns `Observable<T>`; the function returns the tuple `[apply, state]`.
 
 ## Import
 
@@ -10,30 +10,47 @@ import { createOptimistic, type OptimisticState } from '@cngx/common/interactive
 
 ## Quick Start
 
+A class field cannot destructure, so store the tuple and name its parts:
+
 ```typescript
-import { Component, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { createOptimistic } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-profile',
-  template: `
-    <input [value]="name()" (change)="updateName($event.target.value)" />
-    @if (optimisticState.rolledBack()) {
-      <span class="error">Reverted - server rejected the change</span>
-    }
-  `,
+  templateUrl: './profile.html',
 })
 export class ProfileComponent {
+  private readonly http = inject(HttpClient);
+
   readonly name = signal('Alice');
-
-  private readonly [updateName, optimisticState] = createOptimistic(
+  private readonly nameUpdate = createOptimistic(
     this.name,
-    (name) => this.http.put('/api/name', { name })
+    (name) => this.http.put<string>('/api/name', { name }),
+    inject(DestroyRef),
   );
-
-  constructor(private http: HttpClient) {}
+  protected readonly updateName = this.nameUpdate[0];
+  protected readonly nameState = this.nameUpdate[1];
 }
 ```
+
+```html
+<input [value]="name()" (change)="updateName($any($event.target).value)" />
+@if (nameState.rolledBack()) {
+  <span class="error">Reverted - server rejected the change</span>
+}
+```
+
+## Behaviour
+
+- **Apply:** `apply(value)` writes `value` into the signal and sets `state.state.status()` to `pending`. `apply` never throws.
+- **Success:** the value the action emits is written into the signal, status `success`. An Observable that completes without a value confirms the applied value.
+- **Failure:** an error, or an action that throws synchronously, writes the rollback target back, sets `rolledBack()` true, `error()` to the error and the status to `error`.
+- **Rollback target:** the value the signal held before the apply. While an earlier apply is still in flight, the target stays the value held before that earlier apply, never an unconfirmed optimistic value.
+- **Overlapping applies:** a new apply cancels the run in flight, so the superseded run's late outcome is dropped.
+- **Lifetime:** pass the owner's `DestroyRef` as the third argument. On destroy the in-flight run is cancelled and later applies do nothing; the unconfirmed value stays in the signal and the status stays `pending`. Without it the caller owns the lifetime: a run still in flight after the owner is gone keeps its subscription, and a late emission writes the signal.
+- **`state.state.data()`** is always `undefined`; the value lives in the signal you passed.
 
 ## Accessibility
 
@@ -58,13 +75,16 @@ createOptimistic composes with any signal and can integrate with the feedback sy
 
 ```typescript
 readonly count = signal(0);
-private readonly [incrementCount, countState] = createOptimistic(
+private readonly countUpdate = createOptimistic(
   this.count,
-  (newValue) => this.http.put('/api/count', { count: newValue })
+  (count) => this.http.put<number>('/api/count', { count }),
 );
+protected readonly setCount = this.countUpdate[0];
+protected readonly countState = this.countUpdate[1];
+```
 
-// In template:
-<input type="number" [value]="count()" (change)="incrementCount($event.target.valueAsNumber)" />
+```html
+<input type="number" [value]="count()" (change)="setCount($any($event.target).valueAsNumber)" />
 <ng-container [cngxToastOn]="countState.state"
   toastError="Could not update count"
   [toastErrorDetail]="true" />
@@ -87,16 +107,19 @@ createOptimistic provides no styling - it exposes state signals for consumers:
 
 ```typescript
 readonly firstName = signal('Alice');
-
-private readonly [updateFirstName, nameState] = createOptimistic(
+private readonly firstNameUpdate = createOptimistic(
   this.firstName,
-  (name) => this.http.put('/api/profile/first-name', { firstName: name })
+  (firstName) => this.http.put<string>('/api/profile/first-name', { firstName }),
 );
+protected readonly updateFirstName = this.firstNameUpdate[0];
+protected readonly nameState = this.firstNameUpdate[1];
+```
 
+```html
 <input
   type="text"
   [value]="firstName()"
-  (change)="updateFirstName($event.target.value)"
+  (change)="updateFirstName($any($event.target).value)"
   [disabled]="nameState.state.isPending()" />
 
 @if (nameState.rolledBack()) {
@@ -110,17 +133,20 @@ private readonly [updateFirstName, nameState] = createOptimistic(
 
 ```typescript
 readonly isSubscribed = signal(false);
-
-private readonly [toggleSubscribed, subscribeState] = createOptimistic(
+private readonly subscribedUpdate = createOptimistic(
   this.isSubscribed,
-  (value) => this.http.post('/api/subscribe', { enabled: value })
+  (enabled) => this.http.post<boolean>('/api/subscribe', { enabled }),
 );
+protected readonly toggleSubscribed = this.subscribedUpdate[0];
+protected readonly subscribeState = this.subscribedUpdate[1];
+```
 
+```html
 <label>
   <input
     type="checkbox"
     [checked]="isSubscribed()"
-    (change)="toggleSubscribed($event.target.checked)" />
+    (change)="toggleSubscribed($any($event.target).checked)" />
   Subscribe to emails
 </label>
 
@@ -135,27 +161,24 @@ private readonly [toggleSubscribed, subscribeState] = createOptimistic(
 
 ### List Item with Optimistic Completion
 
+One controller on the list signal. The action confirms the whole list, so a failure restores the list as it was before the apply:
+
 ```typescript
-readonly todoItems = signal<Todo[]>([...]);
+readonly todoItems = signal<Todo[]>([]);
+private readonly todosUpdate = createOptimistic(
+  this.todoItems,
+  (todos) => this.http.put<Todo[]>('/api/todos', todos),
+);
+protected readonly todosState = this.todosUpdate[1];
 
 markAsComplete(id: string) {
-  const item = this.todoItems().find(i => i.id === id);
-  if (!item) return;
-
-  const [updateItem, updateState] = createOptimistic(
-    signal(item),
-    (updated) => this.http.put(`/api/todos/${id}`, updated)
-  );
-
-  updateItem({ ...item, completed: true });
-
-  // Show toast on rollback
-  this.toaster.show({
-    title: 'Could not complete task',
-    message: 'It was reverted to its previous state',
-    severity: 'error'
-  });
+  const [applyTodos] = this.todosUpdate;
+  applyTodos(this.todoItems().map((t) => (t.id === id ? { ...t, completed: true } : t)));
 }
+```
+
+```html
+<ng-container [cngxToastOn]="todosState.state" toastError="Could not complete task" />
 ```
 
 ### Multi-Field Form with Multiple Optimistic Updates
@@ -164,36 +187,36 @@ markAsComplete(id: string) {
 readonly profile = signal<Profile>({
   name: 'Alice',
   email: 'alice@example.com',
-  bio: 'Engineer'
+  bio: 'Engineer',
 });
-
-private readonly [updateProfile, profileState] = createOptimistic(
+private readonly profileUpdate = createOptimistic(
   this.profile,
-  (updated) => this.http.put('/api/profile', updated)
+  (updated) => this.http.put<Profile>('/api/profile', updated),
 );
+protected readonly profileState = this.profileUpdate[1];
 
-updateField(field: keyof Profile, value: any) {
-  this.updateProfile({
-    ...this.profile(),
-    [field]: value
-  });
+updateField(field: keyof Profile, value: string) {
+  const [applyProfile] = this.profileUpdate;
+  applyProfile({ ...this.profile(), [field]: value });
 }
+```
 
+```html
 <input
   type="text"
   [value]="profile().name"
-  (change)="updateField('name', $event.target.value)"
+  (change)="updateField('name', $any($event.target).value)"
   [disabled]="profileState.state.isPending()" />
 
 <input
   type="email"
   [value]="profile().email"
-  (change)="updateField('email', $event.target.value)"
+  (change)="updateField('email', $any($event.target).value)"
   [disabled]="profileState.state.isPending()" />
 
 <textarea
   [value]="profile().bio"
-  (change)="updateField('bio', $event.target.value)"
+  (change)="updateField('bio', $any($event.target).value)"
   [disabled]="profileState.state.isPending()"></textarea>
 
 <ng-container [cngxToastOn]="profileState.state"
@@ -207,24 +230,30 @@ updateField(field: keyof Profile, value: any) {
 }
 ```
 
-### Counter with Debounced Optimistic Updates
+### Counter with Rapid Updates
+
+Nothing is debounced: every click applies at once and starts a new action. The run still in flight is cancelled, so only the latest click is confirmed, and a failure goes back to the value held before the first unconfirmed click.
 
 ```typescript
 readonly count = signal(0);
-
-private readonly [updateCount, countState] = createOptimistic(
+private readonly countUpdate = createOptimistic(
   this.count,
-  (value) => this.http.post('/api/counter', { count: value })
+  (count) => this.http.post<number>('/api/counter', { count }),
 );
+protected readonly countState = this.countUpdate[1];
 
 increment() {
-  this.updateCount(this.count() + 1);
+  const [applyCount] = this.countUpdate;
+  applyCount(this.count() + 1);
 }
 
 decrement() {
-  this.updateCount(this.count() - 1);
+  const [applyCount] = this.countUpdate;
+  applyCount(this.count() - 1);
 }
+```
 
+```html
 <div>
   <button (click)="decrement()">−</button>
   <span>{{ count() }}</span>
@@ -242,12 +271,15 @@ decrement() {
 
 ```typescript
 readonly rating = signal(0);
-
-private readonly [setRating, ratingState] = createOptimistic(
+private readonly ratingUpdate = createOptimistic(
   this.rating,
-  (value) => this.http.put(`/api/items/${itemId}/rating`, { stars: value })
+  (stars) => this.http.put<number>(`/api/items/${this.itemId}/rating`, { stars }),
 );
+protected readonly setRating = this.ratingUpdate[0];
+protected readonly ratingState = this.ratingUpdate[1];
+```
 
+```html
 <div class="stars" [attr.aria-label]="'Rating: ' + rating() + ' stars'">
   @for (star of [1, 2, 3, 4, 5]; track star) {
     <button
