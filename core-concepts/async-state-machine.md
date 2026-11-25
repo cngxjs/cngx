@@ -63,9 +63,9 @@ interface CngxAsyncState<T> {
 }
 ```
 
-`data()` is `undefined` only while `status() === 'idle' | 'loading'`.
+`data()` holds the last successful result. A query producer keeps it through `refreshing` and a later `error` - this is what enables stale-data + inline-error UX patterns.
 
-After the first successful load, `data()` stays defined even while `status() === 'refreshing' | 'error'` - this is what enables stale-data + inline-error UX patterns.
+`data()` is also `undefined` outside `idle` and `loading`: a mutation is `pending` with no data before its first success, an Observable that completes without a value settles `success` with `undefined` data, `reset()` clears it, and the resource bridges drop it on a params change.
 
 The `isFirstLoad` flag separates "never loaded" from "have data, just retrying".
 
@@ -87,12 +87,12 @@ The interface and the low-level `buildAsyncStateView` kernel live in `@cngx/core
 |-|-|-|
 |`buildAsyncStateView<T>(sources)`|`@cngx/core/utils`|You already have separate `status`/`data`/`error` signals and want to assemble them into the standard interface. Used by `CngxActionStatusBrain` (behind `CngxActionButton`), the select family, and other bespoke organisms.|
 |`createAggregateAsyncState<T>(sources)`|`@cngx/core/utils`|You have N independent `CngxAsyncState`s and want one derived state: loading while any loads, errored on the first failure, empty only when all are empty, success only when all succeed. Pure `computed()` over the `data()` of each source; the result is itself a `CngxAsyncState`. Wire the keyed list through `CngxAsyncBoundary` (see [Aggregating multiple states](#aggregating-multiple-states)).|
-|`createManualState<T>()`|`@cngx/common/data`|You drive status transitions imperatively (typical inside a commit controller or a Web Worker pipeline). No injection context required. Returns `ManualAsyncState<T>` with `set` / `setSuccess` / `setError` / `setProgress` / `reset`.|
-|`createAsyncState<T>()`|`@cngx/common/data`|Explicit user-triggered mutation (POST/PUT/DELETE). Returns `MutableAsyncState<T>` with an `execute(fn)` method that runs the action, manages cancellation through an internal `AbortController`, and transitions through `pending` -> `success`/`error`. Requires an injection context.|
+|`createManualState<T>()`|`@cngx/common/data`|You drive status transitions imperatively (typical inside a commit controller or a Web Worker pipeline). No injection context required. Returns `ManualAsyncState<T>` with `set` / `setSuccess` / `setError` / `setIdle` / `setProgress` / `reset`.|
+|`createAsyncState<T>()`|`@cngx/common/data`|Explicit user-triggered mutation (POST/PUT/DELETE). Returns `MutableAsyncState<T>` with an `execute(fn)` method that runs the action, cancels a superseded run (an Observable is unsubscribed, a Promise result is dropped), and transitions through `pending` -> `success`/`error`. Requires an injection context.|
 |`injectAsyncState<T>(fn, options?)`|`@cngx/common/data`|Auto-loading reactive query. Re-runs `fn` when any signal it reads changes, debounced (default 50 ms). First call -> `loading`, subsequent calls -> `refreshing`. Returns `ReactiveAsyncState<T>` with a `refresh()` method. Requires an injection context.|
-|`fromResource<T>(resource)`|`@cngx/common/data`|Projects an Angular `Resource<T>` onto the CNGX shape. Maps `idle`/`loading`/`reloading`/`resolved`/`local`/`error` -> CNGX statuses; tracks `isFirstLoad` via an internal `hadSuccess` signal. Requires an injection context (uses `effect()`).|
+|`fromResource<T>(resource)`|`@cngx/common/data`|Projects an Angular `Resource<T>` onto the CNGX shape. Maps `idle`/`loading`/`reloading`/`resolved`/`local`/`error` -> CNGX statuses; tracks `isFirstLoad` with a `linkedSignal` latch per request identity. Requires an injection context: a read-only `effect()` keeps the latch observed.|
 |`fromHttpResource<T>(resource)`|`@cngx/common/data`|Same as `fromResource` plus the HTTP progress signal mapped to `progress` (0-100, clamped, rounded). Declared structurally against `HttpResourceLike<T>` so the entry point does not import `@angular/common/http`.|
-|`tapAsyncState`, `tapAsyncProgress`, `tapHttpAsyncState`|`@cngx/common/data`|RxJS operators that update a `ManualAsyncState` alongside an existing pipeline. `tapAsyncState` sets `loading` on subscribe (override via `{ status }`), `setSuccess` on next, `setError` on error (re-throws, does not swallow). `tapHttpAsyncState` adds progress and filters down to the response body.|
+|`tapAsyncState`, `tapAsyncProgress`, `tapHttpAsyncState`|`@cngx/common/data`|RxJS operators that update a `ManualAsyncState` alongside an existing pipeline. `tapAsyncState` sets `loading` on subscribe, or `refreshing` when the sink's `isFirstLoad()` is `false` (override via `{ status }`), `setSuccess` on next, `setError` on error (re-throws, does not swallow). `tapHttpAsyncState` adds progress and filters down to the response body.|
 
 Pick by intent:
 
@@ -150,9 +150,9 @@ function resolveAsyncView(status: AsyncStatus, firstLoad: boolean, empty: boolea
 |`idle`|true|\*|`none`|
 |`loading` / `refreshing` / `pending`|true|\*|`skeleton`|
 |`error`|true|\*|`error`|
-|`success`|false|true|`empty`|
+|`success`|\*|true|`empty`|
 |`error`|false|\*|`content+error`|
-|(all other)|false|\*|`content`|
+|(all other)|\*|\*|`content`|
 
 No separate `'idle'` view exists. Idle on first load maps to `'none'`, which the consumer renders as a blank slate or a "press the button to load" prompt.
 
