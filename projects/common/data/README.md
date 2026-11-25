@@ -907,7 +907,7 @@ The loading surfaces above (skeleton, overlay, async-container refresh bar, recy
 
 `injectLatencyProbe()` measures how long the app's aggregate busy window lasted, so an app-shell indicator can pick spinner-vs-skeleton from observed latency before the next load renders.
 
-It bridges `CngxAsyncRegistry.isAnythingLoading` (see the async-registry section) into a `createLatencyProbe` from `@cngx/core/utils`:
+It bridges `CngxAsyncRegistry.isAnythingLoading` (see [Opt-in async observability](../../../core-concepts/store-bridges-and-observability.md#opt-in-async-observability)) into a `createLatencyProbe` from `@cngx/core/utils`:
 
 ```typescript
 const probe = injectLatencyProbe();
