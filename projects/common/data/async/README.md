@@ -14,9 +14,8 @@ import {
 ## Quick Start
 
 ```typescript
-import { Component } from '@angular/core';
-import { CngxAsync } from '@cngx/common/data';
-import { injectAsyncState } from '@cngx/common/data';
+import { Component, inject } from '@angular/core';
+import { CngxAsync, injectAsyncState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-residents',
@@ -30,9 +29,8 @@ import { injectAsyncState } from '@cngx/common/data';
   imports: [CngxAsync],
 })
 export class ResidentsComponent {
+  private readonly api = inject(ApiService);
   readonly residents = injectAsyncState(() => this.api.getResidents());
-
-  constructor(private api: ApiService) {}
 }
 ```
 
@@ -62,7 +60,7 @@ export class ResidentsComponent {
 </ng-template>
 
 <ng-template #errTpl let-err>
-  <li>Error: {{ err }}</li>
+  <li>Error: {{ messageOf(err) }}</li>
 </ng-template>
 ```
 
@@ -194,7 +192,7 @@ No optional templates - skeleton and error hidden:
 
 <ng-template #errTpl let-err>
   <cngx-alert severity="error">
-    Failed to load: {{ (err as any).message }}
+    Failed to load: {{ messageOf(err) }}
   </cngx-alert>
 </ng-template>
 
@@ -209,7 +207,12 @@ No optional templates - skeleton and error hidden:
 
 ## Accessibility
 
-The directive itself does not manage ARIA attributes. The hosting component/element handles:
+The directive itself binds no ARIA attribute. It does two things a consumer relies on:
+
+- **Focus across a view switch.** When a switch destroys the view that holds focus, focus moves to the first focusable element (outside any `inert` subtree) of the next rendered view, so a focused Retry button does not drop keyboard users onto `<body>`. One view without a focusable element (a skeleton) is bridged; after that the hand-off lapses. Focus outside the directive, or moved elsewhere by the user in the meantime, is never touched.
+- **Content data can be `undefined`.** The content template is typed `T`, but it receives `data()` as is: a producer whose data goes `undefined` while it stays in the content view (e.g. `refreshing` after a cleared value) passes `undefined` through. Guard with `@if` / `?.` when the producer can do that.
+
+The hosting component/element handles:
 
 - `role="status"` or `role="alert"` on loading/error states
 - `aria-live="polite"` for status announcements
@@ -230,7 +233,7 @@ Example:
 
 ## Composition
 
-Use `CngxAsync` when you prefer microsyntax over named content slots. Both approaches render identically:
+Use `CngxAsync` when you prefer microsyntax over named content slots. Both pick the view through `resolveAsyncView`, with two differences: on `content+error` the container renders the content and the error template, `*cngxAsync` only the content; and the container has its own `aria-live` region for status announcements.
 
 **Microsyntax (CngxAsync):**
 
@@ -244,12 +247,14 @@ Use `CngxAsync` when you prefer microsyntax over named content slots. Both appro
 
 ```html
 <cngx-async-container [state]="state">
-  <ng-template cngxAsyncContentTpl let-data>
+  <ng-template cngxAsyncContent let-data>
     <ul>
       @for (item of data; track item.id) { <li>{{ item.name }}</li> }
     </ul>
   </ng-template>
-  <ng-template cngxAsyncSkeletonTpl><!-- skeleton --></ng-template>
+  <ng-template cngxAsyncSkeleton><!-- skeleton --></ng-template>
+  <ng-template cngxAsyncEmpty><p>No items.</p></ng-template>
+  <ng-template cngxAsyncError let-err><p>{{ messageOf(err) }}</p></ng-template>
 </cngx-async-container>
 ```
 
@@ -257,11 +262,11 @@ Choose based on preference. Microsyntax is more compact; named slots allow multi
 
 ## Error Handling
 
-Error template receives the error as context:
+Error template receives the error as context. The error is `unknown`, and an `HttpErrorResponse` is no `Error`, so interpolating it directly prints `[object Object]` into the region a screen reader announces. Read the message through a helper the component exposes (`protected readonly messageOf = messageOf;`); the templates on this page use it:
 
 ```html
 <ng-template #errTpl let-err>
-  <div>{{ (err as any).message }}</div>
+  <div>{{ messageOf(err) }}</div>
 </ng-template>
 ```
 
@@ -270,13 +275,19 @@ Error template only shows on error during first load. If error occurs after data
 ```typescript
 // Show error alert for refresh errors
 effect(() => {
-  if (!this.state.isFirstLoad() && this.state.error()) {
-    this.alerter.show({
-      severity: 'error',
-      message: (this.state.error() as any).message,
-    });
+  const err = this.state.error();
+  if (!this.state.isFirstLoad() && err) {
+    untracked(() =>
+      this.alerter.show({ severity: 'error', message: messageOf(err) }),
+    );
   }
 });
+
+function messageOf(err: unknown): string {
+  return typeof err === 'object' && err !== null && 'message' in err
+    ? String(err.message)
+    : String(err);
+}
 ```
 
 ## Type Inference
@@ -298,4 +309,4 @@ The directive includes `ngTemplateContextGuard` for template type inference:
 - [Async State System](../async-state/README.md) - `CngxAsyncState<T>`, factories, operators
 - [CngxAsyncContainer](../../../ui/feedback/README.md) - component alternative with named slots
 - [resolveAsyncView](../async-state/README.md#view-resolution) - view state machine
-- Compodoc: Full API reference at `/docs`
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/async/) for type details.

@@ -510,9 +510,9 @@ the single source of truth - all signals are derived projections.
 
 ```typescript
 private readonly res = resource({
-  request: () => ({ q: this.filter() }),
-  loader: ({ request, abortSignal }) =>
-    fetch(`/api/items?q=${request.q}`, { signal: abortSignal })
+  params: () => ({ q: this.filter() }),
+  loader: ({ params, abortSignal }) =>
+    fetch(`/api/items?q=${params.q}`, { signal: abortSignal })
       .then(r => r.json()),
 });
 
@@ -907,7 +907,7 @@ The loading surfaces above (skeleton, overlay, async-container refresh bar, recy
 
 `injectLatencyProbe()` measures how long the app's aggregate busy window lasted, so an app-shell indicator can pick spinner-vs-skeleton from observed latency before the next load renders.
 
-It bridges `CngxAsyncRegistry.isAnythingLoading` (see the async-registry section) into a `createLatencyProbe` from `@cngx/core/utils`:
+It bridges `CngxAsyncRegistry.isAnythingLoading` (see [Opt-in async observability](../../../core-concepts/store-bridges-and-observability.md#opt-in-async-observability)) into a `createLatencyProbe` from `@cngx/core/utils`:
 
 ```typescript
 const probe = injectLatencyProbe();

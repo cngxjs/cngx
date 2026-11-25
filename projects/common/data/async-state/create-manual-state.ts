@@ -36,7 +36,10 @@ export interface ManualAsyncState<T> extends CngxAsyncState<T> {
   /** Set progress (0–100). */
   setProgress(value: number | undefined): void;
 
-  /** Reset to `idle`, clear data, error, and progress. */
+  /**
+   * Reset to `idle` and clear data, error, progress and `lastUpdated`.
+   * `isFirstLoad()` reads `true` again.
+   */
   reset(): void;
 }
 

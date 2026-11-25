@@ -1,6 +1,6 @@
 # Async State System
 
-The canonical system for managing async operation lifecycle across `@cngx`. Every async operation-data loading, mutations, HTTP requests, Web Worker tasks-flows through these unified factories and interfaces.
+The canonical system for managing async operation lifecycle across `@cngx`. Data loading, mutations, HTTP requests and Web Worker tasks all run through these factories and the one `CngxAsyncState<T>` interface.
 
 ## Import
 
@@ -14,25 +14,28 @@ import {
   tapAsyncState,
   tapAsyncProgress,
   tapHttpAsyncState,
+  createForwardedAsyncState,
   resolveAsyncView,
   CngxAsyncBoundary,
   type ManualAsyncState,
   type MutableAsyncState,
   type ReactiveAsyncState,
-  type CngxAsyncState,
+  type CreateAsyncStateOptions,
+  type InjectAsyncStateOptions,
+  type AsyncView,
   type AggregateSource,
   type AggregateFailure,
 } from '@cngx/common/data';
 
-// The keyless aggregation kernel lives one layer down:
-import { createAggregateAsyncState } from '@cngx/core/utils';
+// The state contract and the keyless aggregation kernel live one layer down:
+import { createAggregateAsyncState, type CngxAsyncState } from '@cngx/core/utils';
 ```
 
 ## Core Concepts
 
 **All async state is Signal-first.** The system cannot become inconsistent because every derived value (loading, pending, refreshing, empty, error) is `computed()` from a single source of truth: the `status` signal.
 
-**All state changes are communicated.** Status transitions (loading → success, success → error) automatically update ARIA attributes, focus management, and SR announcements for any consuming component.
+**The state is a bundle of signals, the reaction is the consumer's.** A status transition (loading → success, success → error) changes the signals of the state object. The ARIA attributes, focus moves and announcements that follow it come from the unit that reads the state, such as `CngxAsyncBoundary` or `*cngxAsync`, not from the factory.
 
 **No manual synchronization.** The contract is single-direction: the consumer creates a state factory, reads from it, and (for mutations) calls methods on it. Everything else is derived.
 
@@ -63,13 +66,17 @@ async handleHeavyWork() {
 }
 ```
 
-### `createAsyncState<T>(): MutableAsyncState<T>`
+### `createAsyncState<T>(options?): MutableAsyncState<T>`
 
-Create mutation state for explicit user-triggered actions (POST/PUT/DELETE). Sets `pending` before execution, then `success` or `error` on completion. A superseded, reset or destroyed run writes nothing: an Observable action is unsubscribed (an `HttpClient` request is cancelled), a Promise action keeps running and its result is dropped.
+Create mutation state for explicit user-triggered actions (POST/PUT/DELETE). Sets `pending` before execution, then `success` or `error` on completion. An Observable action settles on its first emission; one that completes without a value settles `success` with `undefined` data. A superseded, reset or destroyed run writes nothing: an Observable action is unsubscribed (an `HttpClient` request is cancelled), a Promise action keeps running and its result is dropped.
 
 **Requires:** Injection context (field initializer or constructor).
 
-**Returns:** `MutableAsyncState<T>` with `execute()` method plus `reportProgress()` and `reset()`.
+**Returns:** `MutableAsyncState<T>` with `execute()` method plus `reportProgress()` and `reset()`. After the injector is destroyed, `execute()` resolves without calling the action.
+
+**Options (`CreateAsyncStateOptions`):**
+- `register?: boolean` (default `false`) - register the state in the `CngxAsyncRegistry` provided by `provideAsyncRegistry()`, unregistered on destroy. A no-op without a registry.
+- `label?: string` - display label in `CngxAsyncRegistry.activeOperations`. Ignored unless `register` is set.
 
 ```typescript
 readonly saveResident = createAsyncState<Resident>();
@@ -88,10 +95,14 @@ Create reactive query state that auto-loads when signal dependencies change. Set
 
 **Requires:** Injection context. The function `fn` is tracked by Angular's `effect()` - any signal read inside triggers a reload.
 
-**Returns:** `ReactiveAsyncState<T>` with `refresh()` method.
+**Returns:** `ReactiveAsyncState<T>` with `refresh()` method. `refresh()` does nothing after the injector is destroyed.
 
-**Options:**
+A promise-returning `fn` still runs once per dependency change (the call is what tracks its signals), but only the freshest result is consumed. An Observable that completes without a value settles `success` with `undefined` data.
+
+**Options (`InjectAsyncStateOptions`):**
 - `debounce?: number` (default 50) - ms delay before executing the query after dependencies change
+- `register?: boolean` (default `false`) - register the state in the `CngxAsyncRegistry` provided by `provideAsyncRegistry()`, unregistered on destroy. A no-op without a registry.
+- `label?: string` - display label in `CngxAsyncRegistry.activeOperations`. Ignored unless `register` is set.
 
 ```typescript
 readonly residents = injectAsyncState(
@@ -102,9 +113,20 @@ readonly residents = injectAsyncState(
 // Caches last result during refresh
 ```
 
+### `createForwardedAsyncState<T>(source): CngxAsyncState<T>`
+
+Wraps a changing source (`() => CngxAsyncState<T> | undefined`, typically a state `input()`) in one stable state object whose members read the source on every access. Use it when a component publishes a state it receives through an input as `CNGX_STATEFUL`. With nothing bound the facade reports `idle`, `isFirstLoad()` true and `isEmpty()` true, which `resolveAsyncView` maps to `none`. `buildAsyncStateView` defaults `isFirstLoad` to false when a producer passes none, so the two differ on that flag.
+
+**Requires:** No injection context.
+
+```typescript
+readonly state = input<CngxAsyncState<Item[]>>();
+readonly asyncState = createForwardedAsyncState(this.state);
+```
+
 ### `fromResource<T>(ref: Resource<T>): CngxAsyncState<T>`
 
-Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → AsyncStatus, tracks first-load state (not present in Angular's Resource).
+Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → AsyncStatus and adds `isFirstLoad()`, which Angular's `Resource` does not have.
 
 **Requires:** Injection context.
 
@@ -112,9 +134,9 @@ Bridge an Angular `resource()` onto `CngxAsyncState`. Maps ResourceStatus → As
 
 ```typescript
 private readonly res = resource({
-  request: () => ({ filter: this.filter() }),
-  loader: ({ request, abortSignal }) =>
-    fetch(`/api/items?q=${request.filter}`, { signal: abortSignal })
+  params: () => ({ filter: this.filter() }),
+  loader: ({ params, abortSignal }) =>
+    fetch(`/api/items?q=${params.filter}`, { signal: abortSignal })
       .then(r => r.json()),
 });
 
@@ -122,9 +144,24 @@ readonly items = fromResource(this.res);
 // items.status(), items.data(), items.isFirstLoad() - all work
 ```
 
+#### Request identity
+
+"First load" is per request: a failed reload of the same request keeps the last good value, a params change or `idle` starts over. Each step of the resource, as the bridge maps it:
+
+|Resource step|`isFirstLoad()`|`data()`|View (`resolveAsyncView`)|
+|-|-|-|-|
+|`resolved` / `local`|false|current value|`content`, or `empty`|
+|`reloading` with a value|false|current value|`content`, status `refreshing`|
+|`reloading`, then `error`|false, the last good value is carried|last good value|`content+error`|
+|`loading` (new params), then `error`|true, the last good value is dropped|none|`skeleton`, then `error`|
+|first load failed, then `reload()`|true|none|`skeleton`, then `error`|
+|`idle` (params gone)|true|none|`none`|
+
+A params change is a new first load; there is no option to keep the previous request's data. A step nobody observed clears the last good value, which degrades to the error view and never to stale data; a read-only effect keeps the chain observed while no template reads the state. `lastUpdated()` is the time of the first read after a successful load, and it survives a params change.
+
 ### `fromHttpResource<T>(ref: HttpResourceRef<T>): CngxAsyncState<T>`
 
-Same as `fromResource` but additionally maps the latest `HttpProgressEvent` to `progress` (0-100 integer, `loaded / total` rounded and clamped; `undefined` while the total is unknown or zero). Angular only emits progress events when the request sets `reportProgress: true`. Avoids hard `@angular/common/http` import via structural interface typing.
+Same as `fromResource`, request identity rule included, but additionally maps the latest `HttpProgressEvent` to `progress` (0-100 integer, `loaded / total` rounded and clamped; `undefined` while the total is unknown or zero). Angular only emits progress events when the request sets `reportProgress: true`. Avoids hard `@angular/common/http` import via structural interface typing.
 
 **Requires:** Injection context.
 
@@ -147,12 +184,12 @@ All operators work with `ManualAsyncState` - they only need the write interface 
 
 ### `tapAsyncState<T>(state, options?): MonoTypeOperatorFunction<T>`
 
-Wires an Observable's lifecycle to async state. On subscribe: sets loading (or refreshing if data loaded). On next: calls `setSuccess`. On error: calls `setError` and re-throws.
+Wires an Observable's lifecycle to async state. On subscribe: sets `options.status`, or without it `refreshing` when the sink's `isFirstLoad()` is `false` and `loading` otherwise. On next: calls `setSuccess`. On error: calls `setError` and re-throws. A completion without a value calls `setSuccess(undefined)`; an unsubscribe before any value sets the sink back to `idle`.
 
 The Observable passes through unchanged - side-effect operator.
 
 **Options:**
-- `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`)
+- `status?: 'loading' | 'refreshing' | 'pending'` (default: `refreshing` or `loading`, see above)
 
 ```typescript
 readonly residents = createManualState<Resident[]>();
@@ -193,10 +230,10 @@ handleUpload(file: File) {
 
 Combines `tapAsyncState` + `tapAsyncProgress`. Pipe onto HttpClient with `{ observe: 'events', reportProgress: true }`. Extracts response body, calls `setSuccess(body)`, re-throws on error.
 
-Output Observable emits response body (not HttpEvents).
+Output Observable emits response body (not HttpEvents). A `null` response body throws `CngxRuntimeError` [`CNGX1054`](../../../../core-concepts/error-codes/cngx1054.md), which reaches the sink through `setError`. A stream torn down before a response, or one that completes without a response, sets the sink to `idle`.
 
 **Options:**
-- `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`)
+- `status?: 'loading' | 'refreshing' | 'pending'` (default `'loading'`, always: unlike `tapAsyncState` it does not read `isFirstLoad()`)
 
 ```typescript
 readonly upload = createManualState<UploadResult>();
@@ -262,7 +299,7 @@ type AggregateFailure = { key: string; label?: string; error: unknown };
   </cngx-async-container>
 
   @for (f of b.failures(); track f.key) {
-    <cngx-alert severity="error" [title]="f.label ?? f.key">{{ f.error }}</cngx-alert>
+    <cngx-alert severity="error" [title]="f.label ?? f.key">{{ messageOf(f.error) }}</cngx-alert>
   }
 </div>
 ```
@@ -287,45 +324,44 @@ All factories return this read-only interface. Every field is a `Signal`.
 
 | Signal | Meaning |
 |-|-|
-| `isLoading()` | First load in progress (status = `'loading'`). |
+| `isLoading()` | Any operation running: status is `'loading'`, `'pending'` or `'refreshing'`. |
 | `isPending()` | Mutation in progress (status = `'pending'`). |
 | `isRefreshing()` | Reload with cached data visible (status = `'refreshing'`). |
-| `isBusy()` | Any operation running (loading OR pending OR refreshing). |
+| `isBusy()` | The same signal as `isLoading()`. |
 | `isFirstLoad()` | First load never completed yet. |
-| `isEmpty()` | Data is null/undefined/empty array AND no busy operation. |
-| `hasData()` | Data exists AND not empty. |
+| `isEmpty()` | Data is `null`, `undefined` or an empty array. No busy condition. |
+| `hasData()` | The inverse of `isEmpty()`. |
 | `isSettled()` | Status is `'success'` or `'error'` (operation complete). |
 
 ## Accessibility
 
-Every component accepting `CngxAsyncState<unknown>` as a state input automatically:
+The state carries no ARIA of its own; each consumer binds what it needs. The units of this entry:
 
-- Updates `aria-busy` when `isBusy()` changes
-- Hides interactive controls when `isPending()` (for mutation states)
-- Announces status transitions to screen readers via an `aria-live` region
-- Shows/hides loading indicators based on `isFirstLoad()` vs `isRefreshing()`
-- Renders semantic error messages with proper ARIA roles
+- `CngxAsyncBoundary` sets `aria-busy` on its host from `state.isBusy()`.
+- `*cngxAsync` binds no ARIA. When a view switch destroys the view that holds focus, it moves focus to the first focusable element of the next rendered view.
 
-Example: A button with async action:
+A button with an async action reads the directive instance, not the bound function. `cngxAsyncClick` sets `aria-busy` itself, so no hand-written attribute is needed:
 
 ```html
-<button [cngxAsyncClick]="action" [attr.aria-busy]="action.state().isBusy()">
-  {{ action.pending() ? 'Loading...' : 'Save' }}
+<button [cngxAsyncClick]="save" #btn="cngxAsyncClick">
+  {{ btn.pending() ? 'Saving...' : 'Save' }}
 </button>
 ```
-
-The state is fully communicated without extra ARIA attributes - the component handles that.
 
 ## Composition
 
 All async state consumers follow the same pattern:
 
 ```typescript
-readonly myState = injectAsyncState(() => this.load());
+readonly residents = injectAsyncState(() => this.api.getResidents());
+```
 
-<div [cngxAsyncClick]="handleSave" [state]="myState()">
-  <!-- myState.status(), myState.data(), etc. all available -->
-</div>
+```html
+<ul *cngxAsync="residents; let list">
+  @for (r of list; track r.id) {
+    <li>{{ r.name }}</li>
+  }
+</ul>
 ```
 
 **No manual subscriptions.** Signals handle cleanup via Angular's DestroyRef.
@@ -338,12 +374,23 @@ readonly myState = injectAsyncState(() => this.load());
 
 Every async state tracks errors:
 
+The error is `unknown`, and an `HttpErrorResponse` is no `Error`, so interpolating it directly prints `[object Object]` into the region a screen reader announces. Read the message through a helper; the templates on this page use it:
+
 ```typescript
 readonly data = injectAsyncState(() => this.fetch());
+protected readonly messageOf = messageOf;
 
+function messageOf(err: unknown): string {
+  return typeof err === 'object' && err !== null && 'message' in err
+    ? String(err.message)
+    : String(err);
+}
+```
+
+```html
 @if (data.error()) {
   <cngx-alert severity="error">
-    {{ (data.error() as any).message }}
+    {{ messageOf(data.error()) }}
   </cngx-alert>
 }
 ```
@@ -361,4 +408,4 @@ source.pipe(tapAsyncState(state)).subscribe({
 - [CngxSmartDataSource](../data-source/README.md) - integrates async state with table rendering
 - [CngxAsyncContainer](../../../ui/feedback/README.md) - built-in skeleton/error/empty templates for async state
 - [CngxAsyncClick](../../interactive/README.md) - directive that wires async action buttons to this system
-- Compodoc: Full type reference at `/docs`
+- [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/async-state/) for type details.

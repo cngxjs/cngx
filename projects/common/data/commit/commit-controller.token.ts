@@ -20,16 +20,43 @@ export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
  *
  * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`
  * (`@cngx/forms/select`); the select-side token's default factory
- * delegates to this one, so a single override here cascades into
- * every select variant transparently.
+ * delegates to this one in the root injector, so an app-level override
+ * here cascades into every select variant. A subtree override reaches
+ * the stepper and tabs presenters, not the select family: override
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` there.
+ *
+ * A replacement must honour `cancel({ settle: true })`, or `busy` stays
+ * latched where the surface lives on. A custom factory usually wraps the
+ * default one, here to time each commit that settles (`reportCommit`
+ * stands for your telemetry call):
  *
  * ```ts
+ * function createTimedCommitController<T>(): CngxCommitController<T> {
+ *   const inner = createCommitController<T>();
+ *   const begin: CngxCommitController<T>['begin'] = (runner, intended, previous, handlers) => {
+ *     const started = performance.now();
+ *     const report = (outcome: string) => reportCommit(outcome, performance.now() - started);
+ *     inner.begin(runner, intended, previous, {
+ *       onSuccess: (committed) => {
+ *         report('success');
+ *         handlers.onSuccess(committed);
+ *       },
+ *       onError: (err, prev) => {
+ *         report('error');
+ *         handlers.onError(err, prev);
+ *       },
+ *       onRefused: (prev) => {
+ *         report('refused');
+ *         handlers.onRefused?.(prev);
+ *       },
+ *     });
+ *   };
+ *   return { ...inner, begin };
+ * }
+ *
  * bootstrapApplication(App, {
  *   providers: [
- *     {
- *       provide: CNGX_COMMIT_CONTROLLER_FACTORY,
- *       useValue: <T>() => createRetryingCommitController<T>({ attempts: 3 }),
- *     },
+ *     { provide: CNGX_COMMIT_CONTROLLER_FACTORY, useValue: createTimedCommitController },
  *   ],
  * });
  * ```

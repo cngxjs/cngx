@@ -74,7 +74,8 @@ Two contracts to honour. The runner closes over the async source and returns wha
 | Runner calls a route again after its first outcome | ignored, no state change, no handler fires |
 | `begin(...)` called again before settle | previous runner's `cancel()` fires; status stays `pending`, `commitId` advances |
 | Runner of a superseded commit calls back late | ignored, no state change, no handler fires |
-| `cancel()` | runner's cancel fires, `commitId` advances, status untouched |
+| `cancel()` | runner's cancel fires, `commitId` advances, status untouched, no handler fires |
+| `cancel({ settle: true })` | as `cancel()`, then the slot is reset: `idle` with data, error, progress and `lastUpdated` cleared, `isFirstLoad()` back to true, intended value cleared |
 
 A refusal is not a failure. It mirrors the router: a guard answering `false` produces `NavigationCancel`, only a throw is a `NavigationError`. A refused commit changed nothing, so the controller keeps what the last success stored and publishes a `pending -> idle` edge, on which the feedback bridges stay silent. It does not go to `success` either: a `pending -> success` edge is a success to every bridge.
 
@@ -94,7 +95,7 @@ Factory. No injection context required. Allocates the writable async-state slot,
 | `isCommitting` | `Signal<boolean>` | True while `status === 'pending'`. |
 | `intendedValue` | `Signal<T \| undefined>` | The value passed as `intended` on the latest `begin(...)`. Drives the pending-row spinner and the commit-error template context. |
 | `begin(runner, intended, previous, handlers)` | `void` | Start a new commit. Supersedes any in-flight commit synchronously. |
-| `cancel()` | `void` | Abort the in-flight commit without firing handlers. Use on host destroy or when the commit-action input changes mid-flight. |
+| `cancel(options?)` | `void` | Abort the in-flight commit without firing handlers. Without options the status is left as it is: use it on host destroy, where nobody reads the state again. Pass `{ settle: true }` when the surface lives on (a back-navigation or reset that supersedes a pending commit), so the slot is reset and `busy` does not stay latched. |
 
 ### `CngxCommitRunner<T>`
 
@@ -118,7 +119,7 @@ interface CngxCommitBeginHandlers<T> {
 }
 ```
 
-Caller-supplied routes. Exactly one fires per commit lifecycle, never twice. A superseded commit fires none. `onRefused` is optional; without it a refusal still settles the state slot to `idle`.
+Caller-supplied routes. At most one fires per commit lifecycle, never twice. A superseded commit fires none, and neither does a commit ended by `cancel()`. `onRefused` is optional; without it a refusal still settles the state slot to `idle`.
 
 ### `CngxTransitionOutcome`
 
@@ -149,24 +150,48 @@ const refusedPhrase = createRefusedPhrase({
 
 `InjectionToken<CngxCommitControllerFactory>` with `providedIn: 'root'`. Default factory is `createCommitController`. Override globally or per component-subtree to inject retry-with-backoff, offline queueing, telemetry, or any other enterprise-specific commit lifecycle without forking the features that consume it.
 
+A custom factory usually wraps the default one. This one times each commit that settles and reports its outcome (`reportCommit` stands for your telemetry call). A superseded commit or one ended by `cancel()` fires no handler, so the wrapper reports nothing for it:
+
 ```ts
+function createTimedCommitController<T>(): CngxCommitController<T> {
+  const inner = createCommitController<T>();
+  const begin: CngxCommitController<T>['begin'] = (runner, intended, previous, handlers) => {
+    const started = performance.now();
+    const report = (outcome: string) => reportCommit(outcome, performance.now() - started);
+    inner.begin(runner, intended, previous, {
+      onSuccess: (committed) => {
+        report('success');
+        handlers.onSuccess(committed);
+      },
+      onError: (err, prev) => {
+        report('error');
+        handlers.onError(err, prev);
+      },
+      onRefused: (prev) => {
+        report('refused');
+        handlers.onRefused?.(prev);
+      },
+    });
+  };
+  return { ...inner, begin };
+}
+
 bootstrapApplication(App, {
   providers: [
-    {
-      provide: CNGX_COMMIT_CONTROLLER_FACTORY,
-      useValue: <T>() => createRetryingCommitController<T>({ attempts: 3 }),
-    },
+    { provide: CNGX_COMMIT_CONTROLLER_FACTORY, useValue: createTimedCommitController },
   ],
 });
 ```
 
-A custom controller must hand its runner an `onRefused` route and forward it to `handlers.onRefused`; one written before the refusal outcome existed does not compile against the runner type. The select side re-exports `CngxCommitRunner` and `CngxCommitBeginHandlers` from `@cngx/forms/select`, so the same change shows there.
+A replacement must honour `cancel({ settle: true })`: the stepper presenter and the select family's scalar commit handler (on clear) call it when the surface lives on, and a controller that ignores it leaves `busy` latched (the stepper warns with [`CNGX1040`](../../../../core-concepts/error-codes/cngx1040.md) in dev mode). A wrapper that spreads the default controller keeps it.
 
-The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) delegates to this one by default, so a single override here cascades into every select variant transparently.
+A custom controller must hand its runner an `onRefused` route and forward it to `handlers.onRefused`; one written before the refusal outcome existed does not compile against the runner type. `@cngx/forms/select` re-exports `CngxCommitController` and `CngxCommitBeginHandlers`, so the same change shows there.
+
+The select-side token `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) delegates to this one by default. It is `providedIn: 'root'` and reads this token in the root injector, so an app-level override here cascades into every select variant; an override in a component subtree reaches the stepper and tabs presenters there, but not the select family. For select in a subtree, override `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` itself.
 
 ## See also
 
 - [API on compodocx](https://cngxjs.github.io/cngx/main/common/data/commit/) for type details.
 - `@cngx/common/data/async-state` for the `CngxAsyncState` shape this controller fills.
 - `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` (`@cngx/forms/select`) as the select-side delegation point.
-- Consumers: every `CngxSelect` variant, `CngxStepper`.
+- Consumers: every select variant (through `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, which delegates here), the stepper presenter and the tabs presenter.

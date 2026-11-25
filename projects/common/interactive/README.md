@@ -48,7 +48,7 @@ state fields have fixed values:
 ### Types
 
 ```typescript
-type AsyncAction = () => Promise<unknown> | Observable<unknown>;
+type AsyncAction = (signal?: AbortSignal) => Promise<unknown> | Observable<unknown>;
 type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | 'error';
 ```
 
@@ -163,19 +163,23 @@ const [saveWithRetry, retryState] = createRetry(
 ## createOptimistic
 
 Creates an optimistic update function for a signal. Sets the value immediately,
-then confirms via an async action. On failure, rolls back to the last confirmed value.
+then confirms via an async action. On failure, rolls back to the value the signal held
+before the apply.
 The former `optimistic` name is a deprecated alias and is removed at the v1.0 cut.
 
 ```typescript
 readonly name = signal('Alice');
-readonly [updateName, nameState] = createOptimistic(
+private readonly nameUpdate = createOptimistic(
   this.name,
-  (value) => this.http.put('/api/name', { name: value })
+  (value) => this.http.put<string>('/api/name', { name: value }),
+  inject(DestroyRef),
 );
+protected readonly updateName = this.nameUpdate[0];
+protected readonly nameState = this.nameUpdate[1];
 ```
 
 ```html
-<input [value]="name()" (change)="updateName($event.target.value)" />
+<input [value]="name()" (change)="updateName($any($event.target).value)" />
 
 <!-- Bind optimistic state to toast -->
 <ng-container [cngxToastOn]="nameState.state" toastError="Update failed" />
@@ -201,10 +205,13 @@ readonly [updateName, nameState] = createOptimistic(
 
 ### Notes
 
-- Rapid successive calls cancel the previous in-flight Observable. Rollback always
-  returns to the last server-confirmed value, not a stale optimistic value.
-- No `DestroyRef` cleanup - the subscription is unmanaged. If the component is
-  destroyed mid-flight, the subscription completes silently.
+- Rapid successive calls cancel the previous in-flight Observable. Rollback returns
+  to the value held before the first unconfirmed apply, never a stale optimistic value.
+- An Observable that completes without a value confirms the applied value (`'success'`).
+- The optional third argument `destroyRef` binds the lifetime: on destroy the in-flight
+  Observable is unsubscribed and later applies do nothing. Without it the subscription
+  is unmanaged: a run still in flight after the component is destroyed keeps its
+  subscription, and a late emission writes the signal.
 
 ## CngxSlider / CngxRangeSlider
 

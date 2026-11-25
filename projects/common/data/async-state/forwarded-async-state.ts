@@ -15,7 +15,10 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * source on each access, so bridges observe transitions of whatever is bound
  * right now. With nothing bound it reports a quiet `idle` state rather than
  * throwing, which is what lets a bridge sit inside a timeline that has not
- * been given a state yet.
+ * been given a state yet: `status()` is `idle`, `isFirstLoad()` and
+ * `isEmpty()` are true, which `resolveAsyncView` maps to `none`. Note the
+ * difference to `buildAsyncStateView`, which defaults `isFirstLoad` to false
+ * when a producer passes none.
  *
  * Contrast the select family, which provides `CNGX_STATEFUL` with
  * `useFactory` over a concrete `commitState` field - no forwarding needed
@@ -32,6 +35,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *
  * @relatedTo createAsyncState, createManualState
  * @since 0.1.0
+ * <example-url>/#/common/data/async-state/forwarded-state-through-an-input</example-url>
  */
 export function createForwardedAsyncState<T>(
   source: () => CngxAsyncState<T> | undefined,

@@ -20,6 +20,7 @@ export const CNGX_ASYNC_SKIP = new HttpContextToken<boolean>(() => false);
  * ```typescript
  * this.http.get('/api/users', { context: withAsyncLabel('users') });
  * ```
+ * <example-url>/#/common/data/async-registry/label-and-skip-requests</example-url>
  */
 export function withAsyncLabel(label: string, context: HttpContext = new HttpContext()): HttpContext {
   return context.set(CNGX_ASYNC_LABEL, label);
@@ -32,6 +33,7 @@ export function withAsyncLabel(label: string, context: HttpContext = new HttpCon
  * ```typescript
  * this.http.get('/api/ping', { context: withAsyncSkip() });
  * ```
+ * <example-url>/#/common/data/async-registry/label-and-skip-requests</example-url>
  */
 export function withAsyncSkip(context: HttpContext = new HttpContext()): HttpContext {
   return context.set(CNGX_ASYNC_SKIP, true);

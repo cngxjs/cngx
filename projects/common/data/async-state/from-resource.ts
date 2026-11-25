@@ -11,11 +11,14 @@ import { buildResourceBridge } from './resource-bridge';
  * All signals are derived reactively from the resource - no manual
  * synchronization. The resource stays the single source of truth.
  *
+ * "First load" is per request: a failed reload keeps the last good value, a
+ * params change or `idle` starts over with no data and `isFirstLoad()` true.
+ *
  * ```typescript
  * private readonly res = resource({
- *   request: () => ({ filter: this.filter() }),
- *   loader: ({ request, abortSignal }) =>
- *     fetch(`/api/items?q=${request.filter}`, { signal: abortSignal })
+ *   params: () => ({ filter: this.filter() }),
+ *   loader: ({ params, abortSignal }) =>
+ *     fetch(`/api/items?q=${params.filter}`, { signal: abortSignal })
  *       .then(r => r.json()),
  * });
  *
