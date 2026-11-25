@@ -19,7 +19,7 @@ import { CNGX_STAT_CARD_CONFIG } from './stat-card.config.defaults';
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectStatCardConfig(): CngxStatCardConfig {
   return inject(CNGX_STAT_CARD_CONFIG);
@@ -33,7 +33,7 @@ export function injectStatCardConfig(): CngxStatCardConfig {
  * in injection context; read it inside a `computed()`, a template or a
  * handler, and untracked where it builds live-region text.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectStatCardAriaLabels(): Signal<CngxStatCardResolvedAriaLabels> {
   return createFilledOverrideMerge(injectStatCardSiteCopy(), injectStatCardConfig().ariaLabels);

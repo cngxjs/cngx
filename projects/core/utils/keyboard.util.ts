@@ -3,7 +3,7 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
 /**
  * Parsed keyboard combo.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface KeyCombo {
   readonly key: string;
@@ -37,7 +37,7 @@ const KEY_ALIASES: Readonly<Record<string, string>> = { esc: 'escape' };
  * // { key: 'b', ctrl: false, meta: false, mod: true, shift: false, alt: false }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function parseKeyCombo(combo: string): KeyCombo {
   const parts = combo
@@ -109,7 +109,7 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param isMac Whether the current platform is macOS (affects `mod` resolution
  *   and the AltGr guard). Resolve it once with {@link resolveMacPlatform}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
   // Never match during IME composition: the event's key is an artifact of the
@@ -159,7 +159,7 @@ export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: bo
  * non-modifier key (lower-case, as {@link parseKeyCombo} stores it).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo resolveKeyComboParts, KeyCombo
  */
 export type KeyComboPart = 'ctrl' | 'meta' | 'alt' | 'shift' | { readonly key: string };
@@ -197,7 +197,7 @@ function resolvedModifiers(combo: KeyCombo, isMac: boolean): readonly KeyComboMo
  * @param isMac Whether the current platform is macOS (resolves `mod`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo parseKeyCombo, resolveAriaKeyShortcuts, KeyComboPart
  */
 export function resolveKeyComboParts(combo: KeyCombo, isMac: boolean): readonly KeyComboPart[] {
@@ -271,7 +271,7 @@ function ariaKeyToken(key: string): string {
  * @param isMac Whether the current platform is macOS (resolves `mod`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo parseKeyCombo, resolveKeyComboParts
  */
 export function resolveAriaKeyShortcuts(combo: KeyCombo, isMac: boolean): string {
@@ -305,7 +305,7 @@ interface NavigatorWithUaData {
  * @param nav The navigator to read, `undefined` on the server.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo matchesKeyCombo, resolveKeyComboParts
  */
 export function resolveMacPlatform(nav: Navigator | undefined): boolean {
@@ -375,7 +375,7 @@ const NESTED_INTERACTIVE_DEFAULTS = [
  * when slot content carries another custom widget.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideNestedInteractiveSelector, CngxActiveDescendant, CngxListboxTrigger
  */
 export const CNGX_NESTED_INTERACTIVE_SELECTOR = new InjectionToken<string>(
@@ -399,7 +399,7 @@ export const CNGX_NESTED_INTERACTIVE_SELECTOR = new InjectionToken<string>(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_NESTED_INTERACTIVE_SELECTOR
  */
 export function provideNestedInteractiveSelector(...selectors: string[]): Provider[] {
@@ -457,7 +457,7 @@ const TEXT_ENTRY_ROLES = '[role="textbox"], [role="searchbox"]';
  * @param target The event target, `null` or a non-element reads `false`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo isComposingKeydown, CNGX_NESTED_INTERACTIVE_SELECTOR
  */
 export function isTextEntryTarget(target: EventTarget | null): boolean {
@@ -488,7 +488,7 @@ export function isTextEntryTarget(target: EventTarget | null): boolean {
  * @param event The key event to test.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/keyboard.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo isTextEntryTarget
  */
 export function isComposingKeydown(event: KeyboardEvent): boolean {

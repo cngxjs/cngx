@@ -27,7 +27,7 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/optgroup.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectDivider, CngxSelectSearch
  * <example-url>/#/forms/select/declarative/optgroup</example-url>
  * @axis level organism

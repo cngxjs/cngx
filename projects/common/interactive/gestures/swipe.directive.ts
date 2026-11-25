@@ -42,7 +42,7 @@ interface SwipeReading {
  * ```
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/gestures/swipe.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSwipeDismiss, CngxLongPress
  * <example-url>/#/ui/stepper/dot-stepper/mobile-carousel</example-url>
  * <example-url>/#/common/interactive/gestures/swipe/swipe-to-page</example-url>

@@ -127,7 +127,7 @@ export function loadAllMaskPresets(): Promise<void> {
  * // or: provideEagerMaskPresets('phone', 'date')      // only these
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInputMask, provideInputConfig
  */
 export function provideEagerMaskPresets(...keys: MaskPresetKey[]): EnvironmentProviders {

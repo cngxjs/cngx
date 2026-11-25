@@ -70,7 +70,7 @@ export interface CngxTabKeyboardNav {
  * active index is the correct origin.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/keyboard/tab-keyboard-nav.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabGroupPresenter, CngxTabGroup, createTabGroupAnnouncements
  */
 export function createTabKeyboardNav(

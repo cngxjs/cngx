@@ -100,7 +100,7 @@ import { CngxPopoverCloseOnSuccess } from './popover-close-on-success.directive'
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-action.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverDismiss, CngxPopoverPanel, CngxPopoverFooter, CngxButtonBrain, CngxAsyncClick, CngxActionStatusBrain, CngxPopoverCloseOnSuccess
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.

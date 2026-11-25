@@ -43,7 +43,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/loading-indicator.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLoadingOverlay, CngxProgress, CngxAsyncContainer
  *
  * <example-url>/#/ui/feedback/loading-indicator/bar-variant</example-url>

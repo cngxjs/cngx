@@ -14,7 +14,7 @@ import type { CngxSidenavConfigFeature } from './provide-sidenav-config';
  * provideSidenavConfig(withSidenavDimensions({ width: '320px', miniWidth: '64px' }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSidenavDimensions(
   payload: NonNullable<CngxSidenavConfig['dimensions']>,
@@ -32,7 +32,7 @@ export function withSidenavDimensions(
  * provideSidenavConfig(withSidenavShortcut('mod+b'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
   return { kind: 'shortcut', payload: { shortcut: combo } };
@@ -51,7 +51,7 @@ export function withSidenavShortcut(combo: string): CngxSidenavConfigFeature {
  * provideSidenavConfig(withSidenavHoverDwell({ enterDelay: 200, leaveDelay: 150 }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSidenavHoverDwell(
   payload: NonNullable<CngxSidenavConfig['hover']>,
@@ -69,7 +69,7 @@ export function withSidenavHoverDwell(
  * provideSidenavConfig(withSidenavRouterSync({ param: 'menu' }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSidenavRouterSync(
   payload: NonNullable<CngxSidenavConfig['routerSync']>,
@@ -87,7 +87,7 @@ export function withSidenavRouterSync(
  * provideSidenavConfig(withSidenavLabels({ resizeHandle: 'Navigation anpassen' }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSidenavLabels(
   labels: Partial<CngxSidenavLabels> | Signal<Partial<CngxSidenavLabels>>,
@@ -109,7 +109,7 @@ export function withSidenavLabels(
  * provideSidenavConfig(withSidenavPersistence());
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSidenavPersistence(storageKey = 'cngx-sidenav'): CngxSidenavConfigFeature {
   return { kind: 'persistence', payload: { storageKey } };

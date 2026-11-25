@@ -32,7 +32,7 @@ export interface CngxAudioZoneBinding {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/zone-mode/audio-zone.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAudio, injectCngxAudio
  * <example-url>/#/common/audio/zone/enter-leave</example-url>
  * @axis level atom

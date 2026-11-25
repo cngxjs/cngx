@@ -43,7 +43,7 @@ import { injectFormFieldPresenter } from './inject-form-field-presenter';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/required.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLabel, CngxFormField, withRequiredMarker
  * <example-url>/#/forms/field/required/basic</example-url>
  * <example-url>/#/forms/field/required/custom-template</example-url>

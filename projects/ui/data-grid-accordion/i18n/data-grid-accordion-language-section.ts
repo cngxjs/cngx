@@ -7,7 +7,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `withDataGridAccordionLabels` still wins. Messages use `{name}`
  * placeholders, numbers are formatted for the locale.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DATA_GRID_ACCORDION_CONFIG, withDataGridAccordionLabels
  */
 export interface CngxDataGridAccordionLanguageSection {
@@ -47,7 +47,7 @@ export interface CngxDataGridAccordionLanguageSection {
  * The English data-grid-accordion section: the single source of the entry's
  * English copy. The `CNGX_DATA_GRID_ACCORDION_CONFIG` labels default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DATA_GRID_ACCORDION_CONFIG
  */
 export const CNGX_DATA_GRID_ACCORDION_LANGUAGE_EN: CngxDataGridAccordionLanguageSection = {

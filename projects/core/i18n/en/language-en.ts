@@ -6,7 +6,7 @@
  * Copy it as the template for a new language file, or pass it to
  * `withPack` to switch back to English explicitly.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideCngxI18n, withPack
  */
 export const CNGX_LANGUAGE_EN = {

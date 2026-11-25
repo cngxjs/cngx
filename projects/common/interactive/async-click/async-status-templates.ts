@@ -14,7 +14,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-status-templates.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSucceeded, CngxFailed, CngxAsyncClick
  * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
@@ -33,7 +33,7 @@ export class CngxPending {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-status-templates.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPending, CngxFailed, CngxAsyncClick
  * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
@@ -53,7 +53,7 @@ export class CngxSucceeded {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-status-templates.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPending, CngxSucceeded, CngxAsyncClick
  * <example-url>/#/ui/action-button/async-button/template-slots</example-url>
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>

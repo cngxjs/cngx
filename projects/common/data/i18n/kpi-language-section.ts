@@ -5,7 +5,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `CngxMetric`, `CngxDelta`, `CngxTrend` and `CngxGoal`. Magnitudes reach the
  * messages already formatted for the app locale.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_KPI_I18N
  */
 export interface CngxKpiLanguageSection {
@@ -33,7 +33,7 @@ export interface CngxKpiLanguageSection {
  * The English kpi section: the single source of the KPI atoms' English copy.
  * `CNGX_KPI_I18N` defaults to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_KPI_I18N
  */
 export const CNGX_KPI_LANGUAGE_EN: CngxKpiLanguageSection = {

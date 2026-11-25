@@ -67,7 +67,7 @@ export interface CngxTreetableOptions<T> {
    * for the treetable's locale. A `*cngxCell` template still gets the raw
    * value.
    * @defaultValue `{ year: 'numeric', month: 'short', day: 'numeric' }`
-   * @since 0.1.0
+   * @since 0.3.0
    */
   dateFormat?: Intl.DateTimeFormatOptions;
   /**
@@ -75,7 +75,7 @@ export interface CngxTreetableOptions<T> {
    * for the treetable's locale. A `*cngxCell` template still gets the raw
    * value.
    * @defaultValue `{}` (the `Intl.NumberFormat` defaults)
-   * @since 0.1.0
+   * @since 0.3.0
    */
   numberFormat?: Intl.NumberFormatOptions;
 }
@@ -118,7 +118,7 @@ export interface CngxCellTplContext<T> {
  * a dev build). Derive a header from `column` when neither fits; the key is
  * never rendered unless the template renders it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxHeaderTplContext {
   /** The column key - available as `let-column`. */

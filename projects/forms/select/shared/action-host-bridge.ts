@@ -188,7 +188,7 @@ export type CngxActionHostBridgeFactory = (options: ActionHostBridgeOptions) => 
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/action-host-bridge.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_ACTION_HOST_BRIDGE_FACTORY = new InjectionToken<CngxActionHostBridgeFactory>(
   'CngxActionHostBridgeFactory',

@@ -5,7 +5,7 @@ import type {} from '@cngx/core/i18n';
  * The `menuButton` section of a `CngxLanguagePack`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-language-section.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, CNGX_MENU_BUTTON_LANGUAGE_EN
  */
 export interface CngxMenuButtonLanguageSection {
@@ -19,7 +19,7 @@ export interface CngxMenuButtonLanguageSection {
  * The English `menuButton` section, the default of `CNGX_MENU_BUTTON_I18N`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-language-section.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, CngxMenuButtonLanguageSection
  */
 export const CNGX_MENU_BUTTON_LANGUAGE_EN: CngxMenuButtonLanguageSection = {

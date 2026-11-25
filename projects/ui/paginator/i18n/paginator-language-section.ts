@@ -11,7 +11,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * The readout messages (`range`, `pageStatus`, `pageOfPagesReadout`) render as
  * sanitised HTML, so they may emphasise the current value with `<b>`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_PAGINATOR_CONFIG, withPaginatorAriaLabels, withPaginatorAnnouncements
  */
 export interface CngxPaginatorLanguageSection {
@@ -67,7 +67,7 @@ export interface CngxPaginatorLanguageSection {
  * The English paginator section: the single source of the paginator's English
  * copy. The `CNGX_PAGINATOR_CONFIG` copy sub-trees default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_PAGINATOR_CONFIG
  */
 export const CNGX_PAGINATOR_LANGUAGE_EN: CngxPaginatorLanguageSection = {

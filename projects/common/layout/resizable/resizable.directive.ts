@@ -18,7 +18,7 @@ import { injectLayoutI18n } from '../i18n/layout-i18n';
  * Which inline edge of the resized panel the handle sits on. Logical, so the
  * drag and arrow-key direction follow the writing direction.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxResizableEdge = 'inline-start' | 'inline-end';
 
@@ -29,7 +29,7 @@ export type CngxResizableEdge = 'inline-start' | 'inline-end';
  * Every key is optional - an unset key keeps the atom's literal
  * (120 / 600 / 16).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxResizableDefaults {
   /** Fallback for `min` (px) when the input is not bound. */
@@ -49,7 +49,7 @@ export interface CngxResizableDefaults {
  * `[cngxResizable]` stays byte-identical when the token is absent.
  *
  * @relatedTo CngxResizable
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_RESIZABLE_DEFAULTS = new InjectionToken<CngxResizableDefaults>(
   'CNGX_RESIZABLE_DEFAULTS',
@@ -92,7 +92,7 @@ export const CNGX_RESIZABLE_DEFAULTS = new InjectionToken<CngxResizableDefaults>
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/resizable/resizable.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSidebar, CngxDrawerPanel, CNGX_LAYOUT_I18N
  * <example-url>/#/common/layout/resizable/side-panel</example-url>
  * @axis level atom

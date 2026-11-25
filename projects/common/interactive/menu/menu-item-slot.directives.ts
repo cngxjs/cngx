@@ -9,7 +9,7 @@ import { Directive } from '@angular/core';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuItem, CngxMenuItemLabel, CngxMenuItemSuffix, CngxMenuItemKbd
  * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
@@ -32,7 +32,7 @@ export class CngxMenuItemIcon {}
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuItem, CngxMenuItemIcon, CngxMenuItemSuffix, CngxMenuItemKbd
  * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
@@ -55,7 +55,7 @@ export class CngxMenuItemLabel {}
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuItem, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemKbd
  * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */
@@ -81,7 +81,7 @@ export class CngxMenuItemSuffix {}
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-item-slot.directives.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuItem, CngxMenuItemIcon, CngxMenuItemLabel, CngxMenuItemSuffix
  * <example-url>/#/common/interactive/menu/base/action-menu-with-separator</example-url>
  */

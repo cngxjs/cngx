@@ -8,7 +8,7 @@ import type { CngxCommand } from './command';
  * first. The palette renders these in order; the row slot reads `command` and
  * the term to highlight.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxRankedCommand {
   /** The matched command. */
@@ -21,7 +21,7 @@ export interface CngxRankedCommand {
  * @deprecated Use {@link CngxRankedCommand}. Published under the unprefixed
  * name by mistake; the alias remains for compatibility and will be removed in
  * a future major.
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type RankedCommand = CngxRankedCommand;
 
@@ -30,7 +30,7 @@ export type RankedCommand = CngxRankedCommand;
  * via {@link CNGX_COMMAND_MATCH_FACTORY} - a consumer drops in Levenshtein or a
  * fuzzy engine without touching the panel.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxCommandMatcher = (
   commands: readonly CngxCommand[],
@@ -51,7 +51,7 @@ export type CngxCommandMatcher = (
  * by its rules, e.g. Turkish `I` / `ı`; read inside a `computed()`, a locale
  * switch re-ranks.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createDefaultCommandMatcher(locale?: Signal<string>): CngxCommandMatcher {
   // Folded label and keywords per command, re-folded only when the label, the

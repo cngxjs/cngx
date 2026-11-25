@@ -14,7 +14,7 @@ let counter = 0;
  * generated id through signals after hydration, but do not persist a
  * `nextUid` value or use it as a cross-request key.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function nextUid(prefix: string): string {
   return `${prefix}-${counter++}`;

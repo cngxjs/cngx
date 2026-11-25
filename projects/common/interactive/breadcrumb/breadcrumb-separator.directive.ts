@@ -8,7 +8,7 @@ import { Directive } from '@angular/core';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-separator.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbItem
  * <example-url>/#/common/interactive/breadcrumb/custom-separator</example-url>
  * @axis level molecule

@@ -182,7 +182,7 @@ function warnUnlabeledColumns(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetableRow, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
  * @slot cngxHeader Replaces a column's header cell; gets the column key as `$implicit` / `column` plus the resolved default header `label`.
  * @slot cngxCell Replaces a body cell; gets the flat node as `$implicit` plus the resolved `value`.

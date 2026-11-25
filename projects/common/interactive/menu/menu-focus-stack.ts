@@ -138,7 +138,7 @@ export type CngxMenuFocusStackFactory = (deps: CngxMenuFocusStackDeps) => CngxMe
  * Button pattern that `CngxMenuTrigger` shipped inline before extraction.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createMenuFocusStack(deps: CngxMenuFocusStackDeps): CngxMenuFocusStack {
   const submenuStack = signal<readonly CngxMenuHost[]>([]);
@@ -388,7 +388,7 @@ export interface CngxSubmenuHoverRoutingDeps {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuItemSubmenu, CngxMenuTrigger, CngxContextMenuTrigger, CNGX_MENU_FOCUS_STACK_FACTORY
  */
 export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDeps): void {
@@ -427,7 +427,7 @@ export function connectSubmenuHoverToFocusStack(deps: CngxSubmenuHoverRoutingDep
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-focus-stack.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuTrigger, CngxContextMenuTrigger, CNGX_MENU_NAV_STRATEGY
  */
 export const CNGX_MENU_FOCUS_STACK_FACTORY = new InjectionToken<CngxMenuFocusStackFactory>(

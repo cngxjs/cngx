@@ -32,7 +32,7 @@ import { injectDisplayI18n, isSectionAvatarGroupLabel } from '../i18n/display-i1
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/avatar-group/avatar-group.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAvatar
  * @axis level molecule
  */

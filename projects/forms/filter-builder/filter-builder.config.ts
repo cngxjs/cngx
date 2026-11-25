@@ -191,7 +191,7 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
  * swap them via `CNGX_FILTER_EDITORS`, not here.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideFilterBuilderConfig, provideFilterBuilderConfigAt, withTemplates, withFilterBuilderI18n, withMaxNestingDepth, withDefaultOperators, withOperators, withCaseInsensitiveStrings, withLogicOptions, withNegation, CNGX_FILTER_EDITORS
  */
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
@@ -369,7 +369,7 @@ export function injectFilterBuilderConfig(): CngxFilterBuilderConfig {
  * template or a handler so a runtime language switch reaches the copy.
  * Injection context required.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withFilterBuilderI18n, CNGX_FILTER_BUILDER_LANGUAGE_EN
  */
 export function injectFilterBuilderI18n(): Signal<Required<CngxFilterBuilderI18n>> {

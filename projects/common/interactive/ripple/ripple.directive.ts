@@ -41,7 +41,7 @@ import { computed, DestroyRef, Directive, ElementRef, inject, input, signal } fr
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/ripple/ripple.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPressable, CngxPressRipple, CngxHoverable
  * <example-url>/#/common/interactive/ripple/base/button-ripples</example-url>
  * <example-url>/#/common/interactive/ripple/base/card-with-ripple</example-url>

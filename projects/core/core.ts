@@ -26,7 +26,7 @@
  *
  * `VERSION` is `@internal` (replaced at publish time) and is not consumer API.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 
 import { makeVersion } from '@cngx/utils';

@@ -39,7 +39,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/highlight.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTruncate, CngxExpandableText
  * <example-url>/#/common/layout/highlight/live-search-highlighting</example-url>
  * <example-url>/#/common/layout/highlight/multiple-paragraphs</example-url>

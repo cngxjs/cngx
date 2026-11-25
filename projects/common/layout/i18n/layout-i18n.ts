@@ -16,7 +16,7 @@ import { CNGX_LAYOUT_LANGUAGE_EN, type CngxLayoutLanguageSection } from './layou
  * ({@link CngxLayoutLanguageSection}); composed copy is a function of its
  * parameters, formatted for the reading locale.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxLayoutI18n {
   /** Fallback of `CngxExpandableText.moreLabel`. */
@@ -71,7 +71,7 @@ const layoutBundle = createSectionBundle<CngxLayoutLanguageSection, CngxLayoutI1
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/i18n/layout-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxExpandableText, CngxResizable, CngxPanelTrigger, CngxSidebar, CngxDrawerPanel
  */
 export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('CngxLayoutI18n', {
@@ -82,7 +82,7 @@ export const CNGX_LAYOUT_I18N = new InjectionToken<Signal<CngxLayoutI18n>>('Cngx
 /**
  * A label override feature of `provideLayoutI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_LAYOUT_I18N, withLayoutI18nLabels
  */
 export type CngxLayoutI18nFeature = (bundle: Signal<CngxLayoutI18n>) => Signal<CngxLayoutI18n>;
@@ -92,7 +92,7 @@ export type CngxLayoutI18nFeature = (bundle: Signal<CngxLayoutI18n>) => Signal<C
  * language pack's copy, or the English default. Pass a `Signal` of a partial
  * bundle to switch languages at runtime.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withLayoutI18nLabels(
   overrides: Partial<CngxLayoutI18n> | Signal<Partial<CngxLayoutI18n>>,
@@ -115,7 +115,7 @@ export function withLayoutI18nLabels(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[]): Provider {
   return {
@@ -128,7 +128,7 @@ export function provideLayoutI18n(...features: readonly CngxLayoutI18nFeature[])
  * Inject the resolved layout i18n bundle signal. Read it inside a
  * `computed()` or template so a runtime override flip re-derives.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectLayoutI18n(): Signal<CngxLayoutI18n> {
   return layoutBundle.resolve(inject(CNGX_LAYOUT_I18N));

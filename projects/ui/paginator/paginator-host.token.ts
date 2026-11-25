@@ -65,7 +65,7 @@ export interface CngxPaginatorHost {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_PAGINATOR_HOST = new InjectionToken<CngxPaginatorHost>('CngxPaginatorHost');
 

@@ -148,7 +148,7 @@ export interface CngxFilterBuilderNegationToggleContext {
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.empty` and the built-in default.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton, CngxFilterBuilder
  */
 @Directive({
@@ -183,7 +183,7 @@ export class CngxFilterBuilderEmpty {
  * `CNGX_FILTER_BUILDER_CONFIG.templates.expressionTemplate` and the default row.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderGroupTemplate, CngxFilterBuilderValueEditor, CngxFilterBuilder
  */
 @Directive({
@@ -218,7 +218,7 @@ export class CngxFilterBuilderExpressionTemplate {
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.groupTemplate` and the default shell.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderExpressionTemplate, CngxFilterBuilderLogicToggle, CngxFilterBuilder
  */
 @Directive({
@@ -251,7 +251,7 @@ export class CngxFilterBuilderGroupTemplate {
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.addFilterButton` and the default button.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderAddGroupButton, CngxFilterBuilderRemoveButton, CngxFilterBuilderEmpty
  */
 @Directive({
@@ -284,7 +284,7 @@ export class CngxFilterBuilderAddFilterButton {
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.addGroupButton` and the default button.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderRemoveButton, CngxFilterBuilderEmpty
  */
 @Directive({
@@ -316,7 +316,7 @@ export class CngxFilterBuilderAddGroupButton {
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.removeButton` and the default button.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton, CngxFilterBuilder
  */
 @Directive({
@@ -350,7 +350,7 @@ export class CngxFilterBuilderRemoveButton {
  * `CNGX_FILTER_BUILDER_CONFIG.templates.logicToggle` and the default toggle.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderNegationToggle, CngxFilterBuilderGroupTemplate, CngxFilterGroup
  */
 @Directive({
@@ -383,7 +383,7 @@ export class CngxFilterBuilderLogicToggle {
  * Wins over `CNGX_FILTER_BUILDER_CONFIG.templates.negationToggle` and the default toggle.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderLogicToggle, CngxFilterBuilderGroupTemplate, CngxFilterGroup
  */
 @Directive({

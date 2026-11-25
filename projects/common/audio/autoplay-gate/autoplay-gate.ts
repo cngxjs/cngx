@@ -8,14 +8,14 @@ const GESTURE_EVENTS = ['pointerdown', 'keydown', 'touchstart'] as const;
  * this narrow shape (rather than a concrete `Document`) keeps the factory
  * inject-free and trivially fakeable in a spec.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/autoplay-gate/autoplay-gate.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type GestureEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 
 /**
  * Public handle returned by {@link createAutoplayGate}.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/autoplay-gate/autoplay-gate.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAutoplayGate {
   /**
@@ -45,7 +45,7 @@ export interface CngxAutoplayGate {
  * @param deps.target The event target to listen on (typically the `Document`).
  * @param deps.destroyRef Cleanup owner - removes any surviving listeners on destroy.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/autoplay-gate/autoplay-gate.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createAutoplayGate(deps: {
   readonly target: GestureEventTarget;

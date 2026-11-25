@@ -66,7 +66,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/toggle/toggle.component.ts
  * @selector cngx-toggle
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCheckbox, CngxButtonToggle, CngxRadio
  * <example-url>/#/common/interactive/toggle/basic-two-way-binding</example-url>
  * <example-url>/#/common/interactive/toggle/custom-thumb-glyph</example-url>

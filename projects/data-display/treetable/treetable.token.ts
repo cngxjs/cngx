@@ -41,7 +41,7 @@ export interface TreetableConfig {
    * for the treetable's locale. Register via {@link withTreetableDateFormat};
    * set per-instance via `options.dateFormat` to override.
    * @defaultValue `{ year: 'numeric', month: 'short', day: 'numeric' }`
-   * @since 0.1.0
+   * @since 0.3.0
    */
   dateFormat?: Intl.DateTimeFormatOptions;
   /**
@@ -49,7 +49,7 @@ export interface TreetableConfig {
    * for the treetable's locale. Register via {@link withTreetableNumberFormat};
    * set per-instance via `options.numberFormat` to override.
    * @defaultValue `{}` (the `Intl.NumberFormat` defaults, at most three fraction digits)
-   * @since 0.1.0
+   * @since 0.3.0
    */
   numberFormat?: Intl.NumberFormatOptions;
   /**
@@ -86,7 +86,7 @@ export interface TreetableTemplates {
    * Default for every column header (`*cngxHeader`); gets
    * {@link CngxHeaderTplContext}, so one template serves every column by its
    * key. A `*cngxHeader` projected for a column wins for that column.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   header?: TemplateRef<CngxHeaderTplContext>;
 }
@@ -168,7 +168,7 @@ export interface TreetableFeature {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/treetable.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_TREETABLE_CONFIG', {
   factory: () => ({}),
@@ -312,7 +312,7 @@ export function withTreetableTemplates(templates: TreetableTemplates): Treetable
  *
  * @param options - The `Intl.DateTimeFormat` options for date cells.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableNumberFormat
  */
 export function withTreetableDateFormat(options: Intl.DateTimeFormatOptions): TreetableFeature {
@@ -336,7 +336,7 @@ export function withTreetableDateFormat(options: Intl.DateTimeFormatOptions): Tr
  *
  * @param options - The `Intl.NumberFormat` options for number cells.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, provideTreetable, provideTreetableAt, withTreetableDateFormat
  */
 export function withTreetableNumberFormat(options: Intl.NumberFormatOptions): TreetableFeature {

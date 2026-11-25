@@ -10,7 +10,7 @@ import { observeResize, type ResizeObserverHost } from '../observers/resize-sign
  * `requestAnimationFrame` means every trigger reads synchronously, no
  * `getComputedStyle` means the scrollport is read as horizontal-tb.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface ScrollEdgesHost extends ResizeObserverHost {
   MutationObserver?: typeof MutationObserver;
@@ -27,7 +27,7 @@ export interface ScrollEdgesHost extends ResizeObserverHost {
  * The writing mode is read once per scrollport, so a runtime `writing-mode`
  * flip on a live scrollport is not picked up.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxScrollEdgesState {
   /** Content is hidden toward the block-start edge (top in horizontal writing modes). */
@@ -129,7 +129,7 @@ function readEdges(element: HTMLElement, vertical: boolean): ScrollEdgesSnapshot
  * @param host The window-like object to read the observer and frame APIs from.
  * @returns The four per-edge signals.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/scroll/scroll-edges-core.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxScrollEdges, observeResize
  */
 export function createScrollEdges(

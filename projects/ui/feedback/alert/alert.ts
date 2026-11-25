@@ -42,7 +42,7 @@ export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting'
  * Content slot directive for custom alert icons.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAlert, CngxAlertAction
  *
  * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
@@ -72,7 +72,7 @@ export class CngxAlertIcon {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
  * @selector [cngxAlertAction]
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAlert, CngxAlertIcon
  *
  * <example-url>/#/ui/feedback/alert/action-buttons</example-url>
@@ -102,7 +102,7 @@ export class CngxAlertAction {}
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAlertStack, CngxAlerter, CngxAlertOn, CngxAlertIcon, CngxAlertAction
  *
  * <example-url>/#/ui/feedback/alert/action-buttons</example-url>

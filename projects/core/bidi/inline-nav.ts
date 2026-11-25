@@ -18,7 +18,7 @@ import type { CngxDirection } from './direction';
  *
  * @relatedTo resolveInlineArrowKey
  * @relatedTo injectDirection
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function resolveInlineStep(key: string, direction: CngxDirection): 1 | -1 | null {
   const rtl = direction === 'rtl';
@@ -48,7 +48,7 @@ export function resolveInlineStep(key: string, direction: CngxDirection): 1 | -1
  *
  * @relatedTo resolveInlineStep
  * @relatedTo injectDirection
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function resolveInlineArrowKey(key: string, direction: CngxDirection): string {
   if (direction !== 'rtl') {

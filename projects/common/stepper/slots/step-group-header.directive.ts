@@ -37,7 +37,7 @@ export interface CngxStepGroupHeaderContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-group-header.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepGroup, CngxStepIndicator, CngxStepLabel
  * <example-url>/#/ui/stepper/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
  */

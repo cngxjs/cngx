@@ -70,7 +70,7 @@ import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/context-menu-trigger.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenu, CngxMenuTrigger, CngxPopover
  * <example-url>/#/common/interactive/context-menu/right-click-target-zone</example-url>
  * @axis level molecule

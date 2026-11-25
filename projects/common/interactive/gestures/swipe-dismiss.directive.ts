@@ -33,7 +33,7 @@ import { createSwipeEngine } from './swipe-engine';
  * ```
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/gestures/swipe-dismiss.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLongPress, CngxDrawer
  * <example-url>/#/common/interactive/gestures/swipe-dismiss/directional-swipe</example-url>
  * @axis level atom

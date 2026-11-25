@@ -41,7 +41,7 @@ export interface CngxTimelineView {
  * skeleton through a refresh, is a per-app decision.
  *
  * @relatedTo CNGX_TIMELINE_VIEW_FACTORY
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTimelineView(
   state: () => CngxAsyncState<unknown> | undefined,
@@ -132,7 +132,7 @@ export type CngxTimelineViewFactory = (
  * ```
  *
  * @relatedTo createTimelineView
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TIMELINE_VIEW_FACTORY = new InjectionToken<CngxTimelineViewFactory>(
   'CNGX_TIMELINE_VIEW_FACTORY',

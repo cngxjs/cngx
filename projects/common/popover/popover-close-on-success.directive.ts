@@ -41,7 +41,7 @@ import { CngxPopover } from './popover.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-close-on-success.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverAction, CngxActionStatusBrain, CNGX_ANNOUNCEMENT_COVER, CNGX_POPOVER_PANEL_CONFIG
  * <example-url>/#/common/popover/popover-panel/close-on-success</example-url>
  * @axis level molecule

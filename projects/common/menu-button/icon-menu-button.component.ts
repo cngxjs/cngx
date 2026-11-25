@@ -29,7 +29,7 @@ import { CngxSplitCaret } from './split-caret.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/icon-menu-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenuButton, CngxButtonBrain, CngxSplitButton, CngxSplitCaret, CngxIconButton, CngxMenuTrigger, CNGX_MENU_BUTTON_I18N, CNGX_BUTTON_CARET_ICON, CngxPopoverTrigger
  * <example-url>/#/common/menu-button/icon-menu-button/kebab</example-url>
  * <example-url>/#/common/menu-button/split-button/basic</example-url>

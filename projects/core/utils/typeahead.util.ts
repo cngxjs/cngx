@@ -19,7 +19,7 @@ const FOLDED_AWAY = /[\p{M}\p{Cf}]/gu;
  * foldForMatching('Straße');          // 'strasse'
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo matchesTypeahead
  */
 export function foldForMatching(value: string, locale?: string): string {
@@ -55,7 +55,7 @@ export function foldForMatching(value: string, locale?: string): string {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActiveDescendant, CngxTreeSelect
  */
 export function matchesTypeahead(label: string, term: string, locale?: string): boolean {
@@ -98,7 +98,7 @@ function foldedLabelOf(label: string, locale: string | undefined, key: object | 
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo matchesTypeahead, foldForMatching
  */
 export function createTypeaheadMatcher(
@@ -113,7 +113,7 @@ export function createTypeaheadMatcher(
  * Options for {@link createTypeaheadWalker}. Both are read on every keystroke,
  * so a signal input passed as-is keeps the walker current.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createTypeaheadWalker
  */
 export interface CngxTypeaheadWalkerOptions {
@@ -129,7 +129,7 @@ export interface CngxTypeaheadWalkerOptions {
 /**
  * Buffer and walk returned by {@link createTypeaheadWalker}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createTypeaheadWalker
  */
 export interface CngxTypeaheadWalker {
@@ -178,7 +178,7 @@ export interface CngxTypeaheadWalker {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createTypeaheadMatcher, matchesTypeahead, CngxActiveDescendant
  */
 export function createTypeaheadWalker(options: CngxTypeaheadWalkerOptions): CngxTypeaheadWalker {
@@ -265,7 +265,7 @@ interface FoldedText {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/typeahead.util.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createTypeaheadMatcher, foldForMatching
  */
 export function createLabelMatcher(

@@ -92,7 +92,7 @@ class CngxPhoneInputHostDetach {}
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-input/phone-input.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxInputMask, CngxFormField, withPhonePatterns
  * @playground libphonenumber-js adapter ./examples/libphonenumber/libphonenumber-example.component.ts
  * <example-url>/#/forms/input/phone/intl</example-url>

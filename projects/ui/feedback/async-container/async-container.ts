@@ -28,7 +28,7 @@ import { CngxToaster } from '../toast/toast.service';
  * Marks the skeleton template inside `cngx-async-container`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({ selector: 'ng-template[cngxAsyncSkeleton]', standalone: true })
 export class CngxAsyncSkeletonTpl {
@@ -40,7 +40,7 @@ export class CngxAsyncSkeletonTpl {
  * Context: `{ $implicit: T }` - use `let-data` to access.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({ selector: 'ng-template[cngxAsyncContent]', standalone: true })
 export class CngxAsyncContentTpl<T> {
@@ -58,7 +58,7 @@ export class CngxAsyncContentTpl<T> {
  * Marks the empty-state template inside `cngx-async-container`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({ selector: 'ng-template[cngxAsyncEmpty]', standalone: true })
 export class CngxAsyncEmptyTpl {
@@ -70,7 +70,7 @@ export class CngxAsyncEmptyTpl {
  * Context: `{ $implicit: unknown }` - use `let-err` to access.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({ selector: 'ng-template[cngxAsyncError]', standalone: true })
 export class CngxAsyncErrorTpl {
@@ -108,7 +108,7 @@ export class CngxAsyncErrorTpl {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/async-container/async-container.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLoadingIndicator, CngxLoadingOverlay, CngxAlert, CngxToaster
  * @slot cngxAsyncContent Rendered on success; gets the resolved value.
  * @slot cngxAsyncSkeleton Rendered during the first load.

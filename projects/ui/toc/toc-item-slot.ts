@@ -22,7 +22,7 @@ import type { CngxTocItemContext } from './toc.types';
  * Resolves ahead of `CNGX_TOC_CONFIG.templates.item` and the built-in label.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/toc-item-slot.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxToc
  * <example-url>/#/ui/toc/slots/custom-item-template</example-url>
  */

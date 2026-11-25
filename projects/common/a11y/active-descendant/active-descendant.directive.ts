@@ -65,7 +65,7 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/active-descendant/active-descendant.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRovingTabindex, CngxListbox, CngxMenu
  * <example-url>/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
  * <example-url>/#/common/a11y/active-descendant/typeahead</example-url>

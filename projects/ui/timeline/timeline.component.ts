@@ -175,7 +175,7 @@ export type CngxTimelineOrientation = 'vertical' | 'horizontal';
  * <example-url>/#/ui/timeline/async/refreshing-tail</example-url>
  * <example-url>/#/ui/timeline/skins/activity-vs-narrative</example-url>
  * <example-url>/#/ui/timeline/skins/dark</example-url>
- * @since 0.1.0
+ * @since 0.3.0
  * @axis level organism
  */
 @Component({

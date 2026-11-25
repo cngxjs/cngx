@@ -12,7 +12,7 @@ import type { CngxTocConfigFeature } from './provide-toc-config';
  * provideTocConfig(withTocAriaLabels({ nav: 'Auf dieser Seite' }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withTocAriaLabels(
   payload: CngxTocAriaLabels | Signal<CngxTocAriaLabels>,
@@ -30,7 +30,7 @@ export function withTocAriaLabels(
  * provideTocConfig(withTocScrollBehavior('auto'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withTocScrollBehavior(
   scrollBehavior: NonNullable<CngxTocConfig['scrollBehavior']>,
@@ -48,7 +48,7 @@ export function withTocScrollBehavior(
  * provideTocConfig(withTocSpy({ rootMargin: '-80px 0px 0px 0px' }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withTocSpy(payload: NonNullable<CngxTocConfig['spy']>): CngxTocConfigFeature {
   return { kind: 'spy', payload };
@@ -75,7 +75,7 @@ export function withTocSpy(payload: NonNullable<CngxTocConfig['spy']>): CngxTocC
  * // <ng-container *ngTemplateOutlet="tocTpl; injector: tocScope()" />
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withTocTemplates(
   payload: NonNullable<CngxTocConfig['templates']>,

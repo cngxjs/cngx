@@ -19,7 +19,7 @@ import { CNGX_FORM_FIELD_REVEAL, type CngxFormFieldRevealContract } from './form
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/error-scope-field-bridge.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFormField, CngxFormFieldPresenter, CngxErrorScope, CNGX_FORM_FIELD_REVEAL
  */
 @Directive({

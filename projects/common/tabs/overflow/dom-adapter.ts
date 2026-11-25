@@ -59,7 +59,7 @@ export function createCngxTabOverflowDefaultDomAdapter(): CngxTabOverflowDomAdap
  * {@link createCngxTabOverflowDefaultDomAdapter}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/overflow/dom-adapter.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY =
   new InjectionToken<CngxTabOverflowDomAdapterFactory>('CngxTabOverflowDomAdapterFactory', {

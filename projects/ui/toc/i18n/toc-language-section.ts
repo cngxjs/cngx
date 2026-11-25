@@ -3,7 +3,7 @@
  * `CngxToc`. It feeds the `ariaLabels` of `CNGX_TOC_CONFIG`; a key set through
  * `withTocAriaLabels` still wins.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_TOC_CONFIG, withTocAriaLabels
  */
 export interface CngxTocLanguageSection {
@@ -15,7 +15,7 @@ export interface CngxTocLanguageSection {
  * The English toc section: the single source of the toc's English copy. The
  * `CNGX_TOC_CONFIG` labels default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_TOC_CONFIG
  */
 export const CNGX_TOC_LANGUAGE_EN: CngxTocLanguageSection = {

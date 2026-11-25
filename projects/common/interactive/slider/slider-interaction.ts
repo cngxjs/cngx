@@ -10,7 +10,7 @@ import type { CngxSliderCore } from './slider-core';
  * the geometry math lives in exactly one place.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-interaction.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @internal
  */
 export function pointerFraction(
@@ -74,7 +74,7 @@ export interface CngxSliderInteraction {
  * thumb cannot drift apart.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-interaction.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createSliderCore, CngxSlider, CngxSliderThumb
  * @internal
  */

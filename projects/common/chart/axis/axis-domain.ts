@@ -38,7 +38,7 @@ const NO_RESERVATION: Signal<number> = signal(0).asReadonly();
  * child.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/axis-domain.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAxis, CngxChart, CngxChartAxis
  *
  * <example-url>/#/ui/chart-panel/basic/titled-panel-with-legend</example-url>

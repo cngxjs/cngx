@@ -17,7 +17,7 @@ const NO_ARIA_LABELS: CngxChartPanelAriaLabels = {};
  * reducer matches on `kind` and merges `payload` into the corresponding config
  * sub-tree. Mirrors `CngxStatCardConfigFeature` and `CngxBreadcrumbConfigFeature`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxChartPanelConfigFeature =
   | {
@@ -82,7 +82,7 @@ function mergeConfig(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideChartPanelConfig(
   ...features: CngxChartPanelConfigFeature[]
@@ -105,7 +105,7 @@ export function provideChartPanelConfig(
  * Component-scoped configuration cascade for the chart-panel. Injects the
  * parent injector's value and deep-merges the supplied features on top.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideChartPanelConfigAt(
   ...features: CngxChartPanelConfigFeature[]

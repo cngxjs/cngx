@@ -27,7 +27,7 @@ import { createTransitionTracker } from '@cngx/core/utils';
  * (e.g. "does this panel contain a focusable child?") query against it.
  * Keeping one selector stops the two uses from drifting apart.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_FOCUSABLE_SELECTOR =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), details > summary:first-of-type, [contenteditable]:not([contenteditable="false"]), [tabindex]:not([tabindex="-1"])';
@@ -42,7 +42,7 @@ export const CNGX_FOCUSABLE_SELECTOR =
  *
  * @relatedTo CngxFocusRestore, CNGX_FOCUS_RESTORE_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxFocusRestoreDriver {
   /** Whether the surface is engaged; wins over `[cngxFocusRestoreWhile]`. */
@@ -63,7 +63,7 @@ export interface CngxFocusRestoreDriver {
  *
  * @relatedTo CngxFocusRestore
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriver>(
   'CngxFocusRestoreDriver',
@@ -114,7 +114,7 @@ export const CNGX_FOCUS_RESTORE_DRIVER = new InjectionToken<CngxFocusRestoreDriv
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-restore.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAutofocus, CngxFocusTrap, CngxFocusVisible
  * <example-url>/#/common/a11y/focus-restore/inline-details</example-url>
  * <example-url>/#/common/a11y/focus-restore/panel-with-automatic-restore</example-url>

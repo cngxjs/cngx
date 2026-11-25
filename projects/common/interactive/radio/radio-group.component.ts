@@ -57,7 +57,7 @@ import { CNGX_RADIO_GROUP, type CngxRadioGroupContract } from './radio-group.tok
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.component.ts
  * @selector cngx-radio-group
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRadio, CngxButtonToggleGroup, CngxChipGroup
  * <example-url>/#/common/interactive/radio/basic-vertical-group</example-url>
  * <example-url>/#/common/interactive/radio/custom-dot-glyph</example-url>

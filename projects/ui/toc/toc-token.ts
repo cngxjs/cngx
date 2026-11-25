@@ -14,7 +14,7 @@ import type { CngxTocItem } from './toc.types';
  * rail owns the state (`activeId`, `scrollTo`) and the collaborator consumes
  * it, so the toc *provides* the token and the sync directive *injects* it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxToc, CngxTocRouterSync
  */
 export interface CngxTocContract {
@@ -31,7 +31,7 @@ export interface CngxTocContract {
  * `{ provide: CNGX_TOC, useExisting: CngxToc }`, so a collaborator injects the
  * narrow {@link CngxTocContract} instead of the concrete class.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxToc, CngxTocRouterSync
  */
 export const CNGX_TOC = new InjectionToken<CngxTocContract>('CNGX_TOC');

@@ -4,7 +4,7 @@ import type { AsyncStatus, CngxAsyncState } from './async-state';
 /**
  * Source signals for building a read-only async state view.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface AsyncStateViewSources<T> {
   /** Single source of truth - the current status. */
@@ -50,7 +50,7 @@ const ALWAYS_UNDEFINED_DATE: Signal<Date | undefined> = computed(() => undefined
  * This is the shared kernel used by all async state factories and state producers.
  * No injection context required - uses only `computed()`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function buildAsyncStateView<T>(sources: AsyncStateViewSources<T>): CngxAsyncState<T> {
   const { status, data, error } = sources;

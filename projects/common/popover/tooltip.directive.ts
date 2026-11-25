@@ -74,7 +74,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/tooltip.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopover, CngxPopoverTrigger, CNGX_DESCRIBED_BY
  * <example-url>/#/common/popover/tooltip/basic-tooltip</example-url>
  * <example-url>/#/common/popover/tooltip/custom-delay</example-url>

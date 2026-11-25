@@ -50,6 +50,6 @@ export interface DialogRef<T = unknown> {
  * Injection token to access the nearest `DialogRef` from inside a dialog.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-ref.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const DIALOG_REF = new InjectionToken<DialogRef>('CngxDialogRef');

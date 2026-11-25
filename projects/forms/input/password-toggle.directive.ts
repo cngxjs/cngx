@@ -14,7 +14,7 @@ import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
  * ```
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-toggle.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxInputClear, CngxCopyValue
  * <example-url>/#/forms/input/character-counter</example-url>
  * <example-url>/#/forms/input/password-visibility-toggle</example-url>

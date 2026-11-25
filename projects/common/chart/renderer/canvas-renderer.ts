@@ -88,7 +88,7 @@ const SOLID_DASH: number[] = [];
  * repainting on a flip, so a contrast-theme switch repaints at once.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/canvas-renderer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createCanvasRenderer(deps: ChartRendererDeps): CngxChartRenderer {
   let canvas: HTMLCanvasElement | null = null;

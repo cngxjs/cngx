@@ -56,7 +56,7 @@ const CNGX_RATING_GLYPHS = {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/rating/rating.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRatingItem, CngxRovingTabindex, withInputAriaLabels, CngxFormField
  * @slot cngxRatingItem Replaces one rating symbol; gets its index and filled state.
  * <example-url>/#/forms/input/rating/basic</example-url>

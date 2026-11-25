@@ -95,7 +95,7 @@ const injectPopoverPanelLanguage = createLanguageSection('popover', CNGX_POPOVER
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopover, CngxPopoverAction, CngxPopoverDismiss, CngxPopoverHeader, CngxPopoverBody, CngxPopoverFooter
  * @slot cngxPopoverArrow Replaces the pointer that ties the panel to its trigger.
  * @slot cngxPopoverClose Replaces the dismiss control.

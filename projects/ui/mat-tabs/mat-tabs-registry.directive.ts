@@ -64,7 +64,7 @@ export interface CngxMatTabsRegistryHost {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-registry.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MAT_TABS_REGISTRY_HOST = new InjectionToken<CngxMatTabsRegistryHost>(
   'CngxMatTabsRegistryHost',
@@ -97,7 +97,7 @@ export const CNGX_MAT_TABS_REGISTRY_HOST = new InjectionToken<CngxMatTabsRegistr
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/mat-tabs-registry.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMatTabs, CngxMatTabError, CNGX_MAT_TABS_REGISTRY_HOST
  */
 @Directive({

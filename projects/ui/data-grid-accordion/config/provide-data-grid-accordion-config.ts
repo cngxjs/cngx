@@ -24,7 +24,7 @@ import {
  * `CngxAccordionConfigFeature` from `@cngx/ui/accordion` so the consumer's mental
  * model is one across feature areas.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxDataGridAccordionConfigFeature =
   | {
@@ -96,7 +96,7 @@ function mergeConfig(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDataGridAccordionConfig(
   ...features: CngxDataGridAccordionConfigFeature[]
@@ -135,7 +135,7 @@ export function provideDataGridAccordionConfig(
  * class Ledger {}
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDataGridAccordionConfigAt(
   ...features: CngxDataGridAccordionConfigFeature[]

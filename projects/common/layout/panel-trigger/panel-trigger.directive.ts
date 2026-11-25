@@ -17,7 +17,7 @@ import { CNGX_PANEL_TARGET, type CngxPanelTarget } from './panel-target';
 /**
  * What a `CngxPanelTrigger` does on activation.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPanelTriggerAction = 'toggle' | 'peek';
 
@@ -58,7 +58,7 @@ export type CngxPanelTriggerAction = 'toggle' | 'peek';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/panel-trigger/panel-trigger.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPanelToggle, CngxPanelTarget, CNGX_PANEL_TARGET, CngxDrawer, CngxSidebar
  * <example-url>/#/common/layout/sidebar/clipped-below-header</example-url>
  * <example-url>/#/common/layout/sidebar/collapsible-rail</example-url>

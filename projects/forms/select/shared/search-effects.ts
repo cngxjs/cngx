@@ -212,7 +212,7 @@ export type CngxSearchEffectsFactory = (opts: SearchEffectsOptions) => void;
  * Override to change the auto-open gating or term-forwarding for filter variants.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/search-effects.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCombobox, CngxTypeahead, withTypeaheadDebounce
  */
 export const CNGX_SEARCH_EFFECTS_FACTORY = new InjectionToken<CngxSearchEffectsFactory>(

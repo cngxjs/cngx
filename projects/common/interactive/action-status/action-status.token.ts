@@ -9,7 +9,7 @@ import type { CngxActionStatusFailedContext } from './action-status-config';
  * succeeded or failed label.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatusCell, CngxActionStatus
  */
 export type CngxActionStatusCellKind = 'idle' | 'pending' | 'success' | 'error';
@@ -19,7 +19,7 @@ export type CngxActionStatusCellKind = 'idle' | 'pending' | 'success' | 'error';
  * `success` / `error` edge of a bound external state.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatus, CngxActionStatusBrain
  */
 export interface CngxActionOutcome {
@@ -33,7 +33,7 @@ export interface CngxActionOutcome {
  * Which status cells an action host renders: a label or a template for the state.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatus
  */
 export interface CngxActionStatusCells {
@@ -52,7 +52,7 @@ export interface CngxActionStatusCells {
  * through {@link CNGX_ACTION_STATUS}, never through the brain class.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ACTION_STATUS, CngxActionStatusBrain, CngxActionStatusCell
  */
 export interface CngxActionStatus {
@@ -114,7 +114,7 @@ export interface CngxActionStatus {
  * No `providedIn`, no default: an element without the brain has no status layer.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatusBrain, CngxActionStatusCell
  */
 export const CNGX_ACTION_STATUS = new InjectionToken<CngxActionStatus>('CngxActionStatus');
@@ -125,7 +125,7 @@ export const CNGX_ACTION_STATUS = new InjectionToken<CngxActionStatus>('CngxActi
  * empty for it and the outcome is heard once.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ANNOUNCEMENT_COVER, CngxActionStatusBrain
  */
 export interface CngxAnnouncementCover {
@@ -144,7 +144,7 @@ export interface CngxAnnouncementCover {
  * No `providedIn`, no default: without a cover every outcome is spoken in the region.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatusBrain
  */
 export const CNGX_ANNOUNCEMENT_COVER = new InjectionToken<readonly CngxAnnouncementCover[]>(

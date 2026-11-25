@@ -13,7 +13,7 @@ import type { CngxSelectOptionDef } from './option.model';
  * these two members.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/ad-activation-dispatcher.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createADActivationDispatcher, CngxCommitHandlerCore
  */
 export interface CngxActivationDispatcherCore<T> {

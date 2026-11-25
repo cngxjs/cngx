@@ -9,7 +9,7 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
  * to control `--cngx-dialog-backdrop-opacity`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog-stack.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDialog, CngxDialogOpener
  * <example-url>/#/common/dialog/alert-dialog</example-url>
  * <example-url>/#/common/dialog/bottom-sheet</example-url>

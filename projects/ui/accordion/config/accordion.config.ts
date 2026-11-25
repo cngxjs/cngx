@@ -17,7 +17,7 @@ import type { CngxAccordionItemStateContext } from '../accordion-item-state-cont
  * `'severity-spine'` a full-height priority spine; `'primary-frame'` a solid
  * primary border + glow on open.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAccordionSkin =
   | 'editorial'
@@ -36,7 +36,7 @@ export type CngxAccordionSkin =
  * the `--cngx-color-danger` / `-warning` / `-info` tokens). Structural only - it
  * changes no ARIA and no behaviour, and unset items simply carry no severity.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
 
@@ -57,7 +57,7 @@ export type CngxAccordionSeverity = 'error' | 'warning' | 'info';
  * {@link injectAccordionLabels} fills every unset key from the `accordion`
  * section of the language pack, so a reader never observes a partial shape.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAccordionConfig {
   /**

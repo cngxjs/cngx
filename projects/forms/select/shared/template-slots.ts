@@ -436,7 +436,7 @@ export interface CngxSelectChipOverflowContext<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectCaret, CngxSelectOptionLabel
  */
 @Directive({
@@ -461,7 +461,7 @@ export class CngxSelectCheck<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectCheck, CngxSelectTriggerLabel
  */
 @Directive({
@@ -486,7 +486,7 @@ export class CngxSelectCaret {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectOptionLabel, CngxSelectOptgroup
  */
 @Directive({
@@ -511,7 +511,7 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectTriggerLabel
  */
 @Directive({
@@ -536,7 +536,7 @@ export class CngxSelectPlaceholder {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectLoading, CngxSelectError
  */
 @Directive({
@@ -561,7 +561,7 @@ export class CngxSelectEmpty {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectEmpty
  */
 @Directive({
@@ -586,7 +586,7 @@ export class CngxSelectLoading {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelectTriggerLabel, CngxComboboxTriggerLabel, CngxTreeSelectTriggerLabel
  */
 @Directive({
@@ -611,7 +611,7 @@ export class CngxSelectTriggerLabel<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectOptgroupTemplate, CngxSelectCheck
  */
 @Directive({
@@ -637,7 +637,7 @@ export class CngxSelectOptionLabel<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectRetryButton, CngxSelectCommitError, CngxSelectEmpty
  */
 @Directive({
@@ -663,7 +663,7 @@ export class CngxSelectError {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectError, CngxSelectCommitError, CngxSelectClearButton
  */
 @Directive({
@@ -689,7 +689,7 @@ export class CngxSelectRetryButton {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectLoading, CngxSelectRefreshing
  */
 @Directive({
@@ -714,7 +714,7 @@ export class CngxSelectLoadingGlyph {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectLoading, CngxSelectLoadingGlyph
  */
 @Directive({
@@ -741,7 +741,7 @@ export class CngxSelectRefreshing {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectError, CngxSelectRetryButton
  */
 @Directive({
@@ -768,7 +768,7 @@ export class CngxSelectCommitError<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CngxComboboxChip, CngxTreeSelectChip, CngxMultiSelectChipHandle
  */
 @Directive({
@@ -799,7 +799,7 @@ export class CngxMultiSelectChip<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChip, CngxMultiSelectMoveGlyph, withDefaultDragHandle
  */
 @Directive({
@@ -834,7 +834,7 @@ export class CngxMultiSelectChipHandle {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxReorderableMultiSelect, CngxMultiSelectChipHandle, withDefaultMoveGlyph
  */
 @Directive({
@@ -877,7 +877,7 @@ export class CngxMultiSelectMoveGlyph {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CngxCombobox, CngxActionMultiSelect, CngxTreeSelect, CngxMultiSelectChip, CngxComboboxChip, withChipOverflow, withMaxVisibleChips
  */
 @Directive({
@@ -904,7 +904,7 @@ export class CngxSelectChipOverflow<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CngxSelectTriggerLabel, CngxComboboxTriggerLabel, CngxTreeSelectTriggerLabel
  */
 @Directive({
@@ -936,7 +936,7 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxCombobox, CngxSelectCaret, CngxSelectRetryButton
  */
 @Directive({
@@ -962,7 +962,7 @@ export class CngxSelectClearButton {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withMobileSheet, CngxPopoverSheetHandle
  * <example-url>/#/forms/select/mobile-sheet/custom-handle</example-url>
  */
@@ -1007,7 +1007,7 @@ export interface CngxSelectSheetCountContext {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreeSelect, CngxSelectSheetHandle
  */
 @Directive({
@@ -1040,7 +1040,7 @@ export class CngxSelectSheetCount {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectOptionError, CngxSelectOptionLabel
  */
 @Directive({
@@ -1066,7 +1066,7 @@ export class CngxSelectOptionPending<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxMultiSelect, CngxSelectOptionPending, CngxSelectOptionLabel
  */
 @Directive({
@@ -1092,7 +1092,7 @@ export class CngxSelectOptionError<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCombobox, CngxSelectTriggerLabel, CngxMultiSelectTriggerLabel, CngxTreeSelectTriggerLabel
  */
 @Directive({
@@ -1119,7 +1119,7 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCombobox, CngxMultiSelectChip, CngxTreeSelectChip
  */
 @Directive({
@@ -1184,7 +1184,7 @@ export interface CngxSelectInputSlotContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCombobox, CngxTypeahead, CngxSelectInputSuffix
  */
 @Directive({
@@ -1210,7 +1210,7 @@ export class CngxSelectInputPrefix {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCombobox, CngxTypeahead, CngxSelectInputPrefix
  */
 @Directive({
@@ -1240,7 +1240,7 @@ export class CngxSelectInputSuffix {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionSelect, CngxActionMultiSelect, CngxSelectCommitError
  */
 @Directive({

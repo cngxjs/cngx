@@ -8,7 +8,7 @@ import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
  * Replaces the imperative `let previous` pattern inside `effect()` calls
  * with a fully reactive, `linkedSignal`-based approach.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo StatusTransition, createTransitionTracker
  */
 export interface ValueTransition<T> {
@@ -22,14 +22,14 @@ export interface ValueTransition<T> {
  * Reactive current/previous pair for `AsyncStatus` transitions - the
  * {@link ValueTransition} specialisation every async-state bridge consumes.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type StatusTransition = ValueTransition<AsyncStatus>;
 
 /**
  * Options for {@link createTransitionTracker}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface TransitionTrackerOptions<T = AsyncStatus> {
   /**
@@ -78,7 +78,7 @@ export interface TransitionTrackerOptions<T = AsyncStatus> {
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTransitionTracker<T = AsyncStatus>(
   source: () => T,

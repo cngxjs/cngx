@@ -15,7 +15,7 @@ import type { CngxBreadcrumbLanguageSection } from '../i18n/breadcrumb-language-
  * projected (Pillar 3). `'classic'` is the bare default (plain link + slash
  * separator). Mirrors `CngxTabsSkin`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxBreadcrumbSkin =
   | 'classic'
@@ -40,7 +40,7 @@ export type CngxBreadcrumbSkin =
  * language section, declared once there; an unset key reads the section
  * (English without a pack).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxBreadcrumbAriaLabels = Partial<CngxBreadcrumbLanguageSection>;
 
@@ -59,7 +59,7 @@ export type CngxBreadcrumbAriaLabels = Partial<CngxBreadcrumbLanguageSection>;
  * Every key is optional - partial overrides deep-merge with the library
  * defaults, so consumers declare only the keys they want to override.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxBreadcrumbConfig {
   /**

@@ -48,7 +48,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/skeleton/skeleton-container.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSkeletonPlaceholder, CngxAsyncState, CngxEmptyState
  * @slot cngxSkeletonPlaceholder Replaces the generated placeholder shape.
  * <example-url>/#/ui/skeleton/skeleton-container</example-url>

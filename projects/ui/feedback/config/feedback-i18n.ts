@@ -154,7 +154,7 @@ const feedbackBundle = createSectionBundle<CngxFeedbackLanguageSection, CngxFeed
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/config/feedback-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAlertStack, CngxToastOutlet
  */
 export const CNGX_FEEDBACK_I18N = new InjectionToken<Signal<CngxFeedbackI18n>>('CngxFeedbackI18n', {
@@ -218,7 +218,7 @@ export function withFeedbackI18nLabels(
  * bootstrapApplication(App, { providers: [...DE] });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideFeedbackI18n(
   overrides: CngxFeedbackI18nOverrides | Signal<CngxFeedbackI18nOverrides>,

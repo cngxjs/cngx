@@ -16,7 +16,7 @@ const DEFAULT_CONFIG: CngxPopoverPanelConfig = {
  * Injection token for popover panel configuration.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_POPOVER_PANEL_CONFIG = new InjectionToken<CngxPopoverPanelConfig>(
   'CngxPopoverPanelConfig',
@@ -113,7 +113,7 @@ export function withArrowTemplate(tpl: TemplateRef<CngxPopoverArrowContext>): Po
  * ]
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPopoverPanelLabels(
   labels: Partial<CngxPopoverPanelLabels> | Signal<Partial<CngxPopoverPanelLabels>>,

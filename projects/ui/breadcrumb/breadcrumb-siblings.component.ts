@@ -47,7 +47,7 @@ import type { CngxBreadcrumbSibling } from './breadcrumb.types';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-siblings.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumbSiblingItem, CngxBreadcrumbSiblingsRouterSync, CngxBreadcrumbSiblingsSource, CngxBreadcrumbBar, CngxPopoverPanel, CngxPopoverTrigger
  * @slot cngxBreadcrumbSiblingItem Replaces a row in the sibling-navigation menu; gets the sibling.
  * <example-url>/#/ui/breadcrumb/siblings/static-siblings</example-url>

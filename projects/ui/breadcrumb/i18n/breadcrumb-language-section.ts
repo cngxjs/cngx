@@ -4,7 +4,7 @@
  * a key set through `withBreadcrumbAriaLabels` still wins. Route labels are app
  * copy and stay out of the pack: route data takes a `Signal` of the label.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BREADCRUMB_CONFIG, withBreadcrumbAriaLabels
  */
 export interface CngxBreadcrumbLanguageSection {
@@ -24,7 +24,7 @@ export interface CngxBreadcrumbLanguageSection {
  * The English breadcrumb section: the single source of the breadcrumb family's
  * English copy. The `CNGX_BREADCRUMB_CONFIG` names default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BREADCRUMB_CONFIG
  */
 export const CNGX_BREADCRUMB_LANGUAGE_EN: CngxBreadcrumbLanguageSection = {

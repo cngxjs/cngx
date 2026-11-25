@@ -61,7 +61,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-skin.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFormField, CngxInput, CngxFieldBox, withFieldSkin
  * <example-url>/#/forms/field/skin/outline-anatomy</example-url>
  * <example-url>/#/forms/field/skin/fill-anatomy</example-url>

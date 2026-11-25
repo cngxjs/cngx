@@ -41,7 +41,7 @@ import type { CngxNavGroup } from './nav-group.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-group-content.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxNavGroup, CngxDisclosure
  * <example-url>/#/ui/sidenav/full-navigation-sidebar</example-url>
  * @axis level atom

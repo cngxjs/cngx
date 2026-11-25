@@ -144,7 +144,7 @@ export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hierarchical-nav/hierarchical-nav-strategy.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_HIERARCHICAL_NAV_STRATEGY = new InjectionToken<CngxHierarchicalNavStrategy>(
   'CngxHierarchicalNavStrategy',

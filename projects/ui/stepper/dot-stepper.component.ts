@@ -58,7 +58,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/dot-stepper.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxTextStepper
  * @slot cngxDotStepperDot Replaces one dot; gets its index and active state.
  * @slot cngxStepperEmpty Renders when no step is projected at all.

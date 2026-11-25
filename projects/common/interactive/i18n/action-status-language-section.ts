@@ -9,7 +9,7 @@ import type {} from '@cngx/core/i18n';
  * single keys on top of it; a bound `pendingLabel` / `succeededLabel` /
  * `failedLabel` wins over both.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ACTION_STATUS_CONFIG, CngxActionStatusBrain, withActionStatusLabels
  */
 export interface CngxActionStatusLanguageSection {
@@ -26,7 +26,7 @@ export interface CngxActionStatusLanguageSection {
  * its idle content through a run unless an app, a pack or the host sets a
  * label.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ACTION_STATUS_CONFIG
  */
 export const CNGX_ACTION_STATUS_LANGUAGE_EN: CngxActionStatusLanguageSection = {

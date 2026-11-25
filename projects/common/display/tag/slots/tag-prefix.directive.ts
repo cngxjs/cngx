@@ -20,7 +20,7 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/slots/tag-prefix.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTag, CngxTagLabel, CngxTagSuffix
  * <example-url>/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>/#/common/display/tag/color-palette</example-url>

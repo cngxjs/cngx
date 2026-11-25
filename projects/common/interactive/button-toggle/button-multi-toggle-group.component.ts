@@ -42,7 +42,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.component.ts
  * @selector cngx-button-multi-toggle-group
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonToggle, CngxButtonToggleGroup, CngxCheckboxGroup, CngxMultiChipGroup, CNGX_SELECTION_CONTROLLER_FACTORY, CngxRovingTabindex
  * <example-url>/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>

@@ -6,7 +6,7 @@ import type { CngxButtonState } from '@cngx/common/button';
  * `CngxSplitCaret` supplies.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSplitButton, CngxSplitCaret, CngxIconMenuButton, CNGX_SPLIT_BUTTON, CNGX_BUTTON_STATE
  */
 export interface CngxSplitButtonContext {
@@ -24,7 +24,7 @@ export interface CngxSplitButtonContext {
  * Provided by `CngxSplitButton`, injected by `CngxSplitCaret`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/split-button.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSplitButton, CngxSplitCaret, CngxIconMenuButton, CngxSplitButtonContext, CNGX_BUTTON_STATE
  */
 export const CNGX_SPLIT_BUTTON = new InjectionToken<CngxSplitButtonContext>('CngxSplitButton');

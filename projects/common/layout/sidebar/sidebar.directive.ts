@@ -34,7 +34,7 @@ import {
  * How a collapsed `CngxSidebar` rests: as a narrow, operable `rail`, or
  * `hidden` (no reserved space, `inert`).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxSidebarCollapsedAs = 'rail' | 'hidden';
 
@@ -42,14 +42,14 @@ export type CngxSidebarCollapsedAs = 'rail' | 'hidden';
  * The edge a `CngxSidebar` sits on, in the writing direction: a `start`
  * sidebar peeks towards the end, an `end` sidebar towards the start.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxSidebarSide = 'start' | 'end';
 
 /**
  * The resting state a `CngxSidebar` renders as `data-sidebar-state`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxSidebarState = 'expanded' | 'rail' | 'hidden' | 'peek';
 
@@ -126,7 +126,7 @@ export const CNGX_SIDEBAR_DRIVER = new InjectionToken<CngxSidebarDriver>('CngxSi
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/sidebar/sidebar.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPanelTrigger, CngxDrawer, CngxHoverIntent, CngxResizable
  * <example-url>/#/common/layout/sidebar/clipped-below-header</example-url>
  * <example-url>/#/common/layout/sidebar/collapsible-rail</example-url>

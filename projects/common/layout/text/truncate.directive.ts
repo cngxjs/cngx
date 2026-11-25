@@ -37,7 +37,7 @@ import { observeResize } from '../observers/resize-signal';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/truncate.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxExpandableText, CngxExpandableToggle, CngxHighlight
  * <example-url>/#/common/layout/truncate/short-text-no-toggle</example-url>
  * <example-url>/#/common/layout/truncate/truncated-text-with-toggle</example-url>

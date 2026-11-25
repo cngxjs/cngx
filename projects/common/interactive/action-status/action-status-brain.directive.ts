@@ -91,7 +91,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-brain.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ACTION_STATUS, CNGX_ACTION_STATUS_CONFIG, CngxActionStatusCell, CNGX_ANNOUNCEMENT_COVER, CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed
  * @slot cngxPending Replaces the label while the action runs, once the run outlasts the show delay.
  * @slot cngxSucceeded Replaces the label after the action succeeds, once the busy visual releases.

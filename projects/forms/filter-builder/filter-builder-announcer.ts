@@ -162,7 +162,7 @@ function formatMutation<TValue>(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createFilterBuilderAnnouncer, CngxFilterBuilderAnnouncer, withFilterBuilderI18n, CngxFilterBuilderPresenter
  */
 export const CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY =

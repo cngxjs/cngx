@@ -31,7 +31,7 @@ import { commitLedgerFor } from './internal/commit-ledger';
  * that bypasses the default handlers stays with the replacement.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-baseline.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createCommitBaseline, CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_REORDER_COMMIT_HANDLER_FACTORY
  */
 export interface CngxCommitBaseline<TCommit> {
@@ -55,7 +55,7 @@ export interface CngxCommitBaseline<TCommit> {
  * keeps no baseline. No injection context needed.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-baseline.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCommitBaseline, CngxCommitHandlerCore
  */
 export function createCommitBaseline<TCommit>(

@@ -42,7 +42,7 @@ function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
  * touch editor resolution - editors live on this token alone.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder.tokens.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectFilterEditors, CngxFilterEditorComponent, CNGX_FILTER_BUILDER_CONFIG
  */
 export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFilterEditor>>(

@@ -37,7 +37,7 @@ import { CngxToaster } from './toast.service';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast-on.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxToaster, CngxToastOutlet, CngxAlertOn, CngxBannerOn
  *
  * <example-url>/#/ui/feedback/toast/custom-component-body</example-url>

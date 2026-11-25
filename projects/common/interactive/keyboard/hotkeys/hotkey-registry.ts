@@ -35,7 +35,7 @@ import { isAltGrRiskHotkey, isReservedHotkey } from './reserved-combos';
  * One listed binding: what the help list renders for a live binding.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxHotkeyRegistry, CngxHotkeyGroup
  */
 export interface CngxHotkeyListing {
@@ -53,7 +53,7 @@ export interface CngxHotkeyListing {
  * Listed bindings sharing one group, in registration order.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxHotkeyRegistry, CngxHotkeyListing
  */
 export interface CngxHotkeyGroup {
@@ -68,7 +68,7 @@ export interface CngxHotkeyGroup {
  * the per-keypress resolution over the hotkey scope tree.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyRegistry, CNGX_HOTKEY_REGISTRY, injectHotkey, injectHotkeys
  */
 export interface CngxHotkeyRegistry {
@@ -96,7 +96,7 @@ export interface CngxHotkeyRegistry {
  * Inputs of {@link createHotkeyRegistry}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyRegistry, injectHotkeyRegistryDeps
  */
 export interface CngxHotkeyRegistryDeps {
@@ -124,7 +124,7 @@ export interface CngxHotkeyRegistryDeps {
  * call `destroy()` on teardown so the document listener does not outlive it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_HOTKEY_REGISTRY, createHotkeyRegistry
  */
 export type CngxHotkeyRegistryFactory = (deps: CngxHotkeyRegistryDeps) => CngxHotkeyRegistry;
@@ -301,7 +301,7 @@ function warnTie(
  * @param deps The document and the platform flag.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_HOTKEY_REGISTRY, injectHotkeyRegistryDeps, CngxHotkeyRegistryFactory
  */
 export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRegistry {
@@ -533,7 +533,7 @@ export function createHotkeyRegistry(deps: CngxHotkeyRegistryDeps): CngxHotkeyRe
  * replacement factory behind {@link CNGX_HOTKEY_REGISTRY}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyRegistry, CNGX_HOTKEY_REGISTRY
  */
 export function injectHotkeyRegistryDeps(): CngxHotkeyRegistryDeps {
@@ -562,7 +562,7 @@ export function injectHotkeyRegistryDeps(): CngxHotkeyRegistryDeps {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyRegistry, injectHotkeyRegistry, CngxHotkeyRegistryFactory
  */
 export const CNGX_HOTKEY_REGISTRY = new InjectionToken<CngxHotkeyRegistry>('CNGX_HOTKEY_REGISTRY', {
@@ -578,7 +578,7 @@ export const CNGX_HOTKEY_REGISTRY = new InjectionToken<CngxHotkeyRegistry>('CNGX
  * Injects the hotkey registry of the current injector.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_HOTKEY_REGISTRY, injectHotkey
  */
 export function injectHotkeyRegistry(): CngxHotkeyRegistry {
@@ -596,7 +596,7 @@ export function injectHotkeyRegistry(): CngxHotkeyRegistry {
  * @param binding The binding record.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectHotkeys, CngxHotkeyBinding, CngxHotkeyRef
  */
 export function injectHotkey(binding: CngxHotkeyBinding): CngxHotkeyRef {
@@ -623,7 +623,7 @@ export function injectHotkey(binding: CngxHotkeyBinding): CngxHotkeyRef {
  * @param source The bindings to register.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectHotkey, CngxHotkeyBinding, CngxHotkeyRegistration
  * <example-url>/#/common/dialog/hotkey-registry-scopes</example-url>
  */

@@ -84,7 +84,7 @@ export function reflectAsyncDisplayStatus(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-status/async-status.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAsyncClick, CngxPending, CngxSucceeded, CngxFailed
  * @slot cngxPending Rendered while the tracked operation is in flight.
  * @slot cngxSucceeded Rendered after the operation resolves successfully.

@@ -8,7 +8,7 @@ import { createPreferenceAxis } from './preference-axis';
  * (`density-tokens.css`). `comfortable` is the library default;
  * `compact` and `spacious` re-scale `--cngx-space-*` for the subtree.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxDensityValue = 'comfortable' | 'compact' | 'spacious';
 
@@ -21,7 +21,7 @@ export type CngxDensityValue = 'comfortable' | 'compact' | 'spacious';
  *
  * @relatedTo provideDensity
  * @relatedTo injectDensity
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_DENSITY = new InjectionToken<WritableSignal<CngxDensityValue>>('CNGX_DENSITY', {
   providedIn: 'root',
@@ -62,7 +62,7 @@ const densityAxis = createPreferenceAxis({
  *
  * @relatedTo CNGX_DENSITY
  * @relatedTo injectDensity
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDensity(initial: CngxDensityValue = 'comfortable'): EnvironmentProviders {
   return densityAxis.provide(initial);
@@ -74,7 +74,7 @@ export function provideDensity(initial: CngxDensityValue = 'comfortable'): Envir
  * re-densifies the whole document reactively.
  *
  * @relatedTo provideDensity
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectDensity(): WritableSignal<CngxDensityValue> {
   return densityAxis.injectValue();

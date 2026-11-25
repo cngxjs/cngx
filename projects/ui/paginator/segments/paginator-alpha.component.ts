@@ -33,7 +33,7 @@ import { injectPaginatorAriaLabels } from '../paginator-config';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-alpha.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/ui/paginator/paginator-parts/alpha/strip</example-url>
  * <example-url>/#/ui/paginator/paginator-modes/alphabetical</example-url>
  * @axis level molecule

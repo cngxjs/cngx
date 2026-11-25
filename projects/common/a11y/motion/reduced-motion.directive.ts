@@ -34,7 +34,7 @@ import { createMediaQuerySignal } from '@cngx/core/utils';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/motion/reduced-motion.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/common/a11y/reduced-motion/animation-toggle</example-url>
  * <example-url>/#/common/a11y/reduced-motion/toast-notifications-motion-aware</example-url>
  * @axis level atom

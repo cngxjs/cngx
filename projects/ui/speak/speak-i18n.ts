@@ -29,7 +29,7 @@ const speakBundleFromPack = createLanguageSection('speak', CNGX_SPEAK_LANGUAGE_E
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/speak/speak-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSpeakButton
  */
 export const CNGX_SPEAK_I18N = new InjectionToken<Signal<CngxSpeakI18n>>('CngxSpeakI18n', {
@@ -40,7 +40,7 @@ export const CNGX_SPEAK_I18N = new InjectionToken<Signal<CngxSpeakI18n>>('CngxSp
 /**
  * A label override feature of `provideSpeakI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SPEAK_I18N, withSpeakI18nLabels
  */
 export type CngxSpeakI18nFeature = (bundle: Signal<CngxSpeakI18n>) => Signal<CngxSpeakI18n>;
@@ -51,7 +51,7 @@ export type CngxSpeakI18nFeature = (bundle: Signal<CngxSpeakI18n>) => Signal<Cng
  * default, so the button never loses its accessible name. Pass a `Signal` of a
  * partial bundle to switch languages at runtime.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withSpeakI18nLabels(
   overrides: Partial<CngxSpeakI18n> | Signal<Partial<CngxSpeakI18n>>,
@@ -71,7 +71,7 @@ export function withSpeakI18nLabels(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideSpeakI18n(...features: readonly CngxSpeakI18nFeature[]): Provider {
   return {
@@ -84,7 +84,7 @@ export function provideSpeakI18n(...features: readonly CngxSpeakI18nFeature[]): 
 /**
  * Inject the resolved speak i18n bundle signal.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectSpeakI18n(): Signal<CngxSpeakI18n> {
   return inject(CNGX_SPEAK_I18N);

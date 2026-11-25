@@ -13,7 +13,7 @@ type CngxDigit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
  * `scripts/__tests__/raw-throw-guard.test.mjs`; that every code has its page,
  * one severity and one lib is checked by `scripts/error-codes-manifest.mjs`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRuntimeError
  */
 export type CngxErrorCode = `CNGX${CngxDigit}${CngxDigit}${CngxDigit}${CngxDigit}`;

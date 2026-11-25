@@ -41,7 +41,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/expandable/expandable.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxHierarchicalNav, CngxTreeController, CngxRovingTabindex
  * <example-url>/#/common/interactive/expandable/uncontrolled-toggle</example-url>
  * <example-url>/#/common/interactive/expandable/controlled-by-external-state</example-url>

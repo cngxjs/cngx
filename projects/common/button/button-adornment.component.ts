@@ -24,7 +24,7 @@ import { CngxButtonBrain } from './button-brain.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-adornment.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonBrain, provideButtonHost, CngxActionStatusBrain
  * <example-url>/#/common/button/button/async-click-busy</example-url>
  * <example-url>/#/common/button/button/disabled-with-reason</example-url>

@@ -58,7 +58,7 @@ export function arrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
  * bundle, so a re-run that merges the same values into a fresh object keeps
  * the previous reference and downstream readers do not re-render.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo setEqual, arrayEqual
  */
 export function recordEqual<T extends object>(a: T, b: T): boolean {

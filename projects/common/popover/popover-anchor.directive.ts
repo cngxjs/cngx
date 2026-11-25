@@ -32,7 +32,7 @@ import { type CngxPopover } from './popover.directive';
  * again.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-anchor.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopover, CngxPopoverTrigger
  * <example-url>/#/common/popover/anchor/field-box-anchor</example-url>
  * @axis level atom

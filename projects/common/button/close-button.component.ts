@@ -20,7 +20,7 @@ import { provideButtonHost } from './button-host.token';
  * `provideFeedback(withCloseIcon(MyIcon))` forwards to it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonCloseIcon, injectButtonCloseIcon, CngxCloseButton
  * <example-url>/#/common/button/close-button/provided-icon</example-url>
  */
@@ -35,7 +35,7 @@ export const CNGX_BUTTON_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxBut
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_CLOSE_ICON, injectButtonCloseIcon, CngxCloseButton
  * <example-url>/#/common/button/close-button/provided-icon</example-url>
  */
@@ -47,7 +47,7 @@ export function provideButtonCloseIcon(component: Type<unknown>): Provider {
  * The {@link provideButtonCloseIcon} glyph, or `null` for the default X. For custom dismiss hosts.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_CLOSE_ICON, provideButtonCloseIcon
  */
 export function injectButtonCloseIcon(): Type<unknown> | null {
@@ -70,7 +70,7 @@ export function injectButtonCloseIcon(): Type<unknown> | null {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/close-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonCloseIcon, CngxIconButton, CngxButtonBrain, CngxAlert, CngxToastOutlet, CngxPopoverPanel, withCloseIcon
  * <example-url>/#/common/button/close-button/basic</example-url>
  * <example-url>/#/common/button/close-button/projected-icon</example-url>

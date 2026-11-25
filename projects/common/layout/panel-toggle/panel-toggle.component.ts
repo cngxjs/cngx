@@ -70,7 +70,7 @@ import { CngxPanelTrigger } from '../panel-trigger/panel-trigger.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/panel-toggle/panel-toggle.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPanelTrigger, CngxPanelTarget, CngxDrawer, CngxSidebar, CngxIconButton
  * <example-url>/#/common/layout/sidebar/inset-app-sidebar</example-url>
  * <example-url>/#/common/layout/sidebar/collapsible-rail</example-url>

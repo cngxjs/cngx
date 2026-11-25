@@ -19,7 +19,7 @@ import { CNGX_TOC_CONFIG } from './toc.config.defaults';
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectTocConfig(): CngxTocConfig {
   return inject(CNGX_TOC_CONFIG);
@@ -32,7 +32,7 @@ export function injectTocConfig(): CngxTocConfig {
  * language switch. Runs in injection context; read it inside a `computed()`, a template
  * or a handler.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectTocAriaLabels(): Signal<Required<CngxTocAriaLabels>> {
   return createFilledOverrideMerge(injectTocSiteCopy(), injectTocConfig().ariaLabels);

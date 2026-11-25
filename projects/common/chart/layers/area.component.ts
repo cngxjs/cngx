@@ -32,7 +32,7 @@ import {
  * only the one-datum case, `'always'` every datum, `'never'` none.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/area.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLine, CngxBand, CngxThreshold, CngxChart
  *
  * <example-url>/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>

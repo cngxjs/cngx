@@ -5,7 +5,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `@cngx/common/display` atoms (avatar, avatar group, segmented progress,
  * chip, badge). It feeds `CNGX_DISPLAY_I18N`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DISPLAY_I18N
  */
 export interface CngxDisplayLanguageSection {
@@ -36,7 +36,7 @@ export interface CngxDisplayLanguageSection {
  * The English display section: the single source of the display atoms'
  * English copy. `CNGX_DISPLAY_I18N` defaults to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DISPLAY_I18N
  */
 export const CNGX_DISPLAY_LANGUAGE_EN: CngxDisplayLanguageSection = {

@@ -11,7 +11,7 @@ import type { CngxChartPanelConfigFeature } from './provide-chart-panel-config';
  * language at runtime; the busy status speaks the new language with the next
  * busy phase.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withChartPanelAriaLabels(
   labels: CngxChartPanelAriaLabels | Signal<CngxChartPanelAriaLabels>,
@@ -23,7 +23,7 @@ export function withChartPanelAriaLabels(
  * Move the cascade default for where a projected `cngx-chart-legend` sits.
  * Per-instance `[legendPosition]` still wins.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withChartPanelLegendPosition(
   position: CngxChartPanelLegendPosition,

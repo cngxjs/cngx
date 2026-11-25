@@ -42,7 +42,7 @@ export const createMenuRadioController: CngxMenuRadioGroupFactory = ({ selectedV
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-radio-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_RADIO_GROUP = new InjectionToken<CngxMenuRadioGroup<unknown>>(
   'CNGX_MENU_RADIO_GROUP',

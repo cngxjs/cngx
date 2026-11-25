@@ -26,7 +26,7 @@ const NO_RELEASE = (): void => undefined;
  * only). Single consumer (the footer); the surface is load-bearing, not
  * speculative.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperFooter, CngxStepperHost
  */
 export function createStepperHostProxy(supplier: () => CngxStepperHost | null): CngxStepperHost {

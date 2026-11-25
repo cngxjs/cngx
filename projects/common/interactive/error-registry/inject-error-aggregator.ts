@@ -40,7 +40,7 @@ import { errorSourceMapEqual } from './equal-fns';
  * function form share a single source of truth.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-aggregator.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorAggregator
  * <example-url>/#/common/interactive/error/registry/inject-error-aggregator-programmatic</example-url>
  */

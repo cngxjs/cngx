@@ -166,7 +166,7 @@ export interface CngxSelectChange<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/single-select/select.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxSelectShell, CngxActionSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * @playground Commit action ./examples/commit-action/commit-action-example.component.ts

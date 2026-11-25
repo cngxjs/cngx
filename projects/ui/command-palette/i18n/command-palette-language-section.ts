@@ -7,7 +7,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `withResultCountFormatter` or `withKeyboardLegend` still wins. Messages use
  * `{name}` placeholders, numbers are formatted for the locale.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_COMMAND_PALETTE_CONFIG, withCommandPaletteLabels
  */
 export interface CngxCommandPaletteLanguageSection {
@@ -49,7 +49,7 @@ export interface CngxCommandPaletteLanguageSection {
  * The English command-palette section: the single source of the palette's
  * English copy. The `CNGX_COMMAND_PALETTE_CONFIG` copy keys default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_COMMAND_PALETTE_CONFIG
  */
 export const CNGX_COMMAND_PALETTE_LANGUAGE_EN: CngxCommandPaletteLanguageSection = {

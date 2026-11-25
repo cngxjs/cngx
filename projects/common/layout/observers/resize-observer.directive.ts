@@ -37,7 +37,7 @@ import { observeResize } from './resize-signal';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/resize-observer.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxIntersectionObserver, CngxMediaQuery
  * <example-url>/#/common/layout/resize-observer/live-size</example-url>
  * <example-url>/#/ui/breadcrumb/recipes/responsive-collapse</example-url>

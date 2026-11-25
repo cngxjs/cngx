@@ -56,7 +56,7 @@ import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilder, CngxFilterExpressionRow, CngxFilterBuilderValueEditor
  * <example-url>/#/forms/filter-builder/filter-row-standalone/single-row-with-value</example-url>
  * @axis level molecule

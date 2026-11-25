@@ -20,7 +20,7 @@ import { CNGX_HOTKEY_SCOPE, createHotkeyScope, type CngxHotkeyScopeNode } from '
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_HOTKEY_SCOPE, createHotkeyScope, injectHotkey, CngxKeyboardShortcut
  * <example-url>/#/common/dialog/hotkey-registry-scopes</example-url>
  * @axis level atom

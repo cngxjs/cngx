@@ -302,7 +302,7 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-mask.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxInputFormat, CngxNumericInput, CngxFormBridge, withMaskPlaceholder, withMaskGuide, withCustomTokens
  * @playground All presets ./examples/all-presets/all-presets-example.component.ts
  * @playground Build your own pattern ./examples/pattern-builder/pattern-builder-example.component.ts

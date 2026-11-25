@@ -47,7 +47,7 @@ export interface CngxTimelineItemContext<T> {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineItem, CngxTimelineDateHeader
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineItem]',
@@ -114,7 +114,7 @@ export interface CngxTimelineDateHeaderContext<T> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineItemTpl
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineDateHeader]',
@@ -168,7 +168,7 @@ export interface CngxTimelineMarkerContext<T> {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineMarker
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineMarkerTpl]',
@@ -221,7 +221,7 @@ export interface CngxTimelineEmptyContext {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineError
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineEmpty]',
@@ -257,7 +257,7 @@ export interface CngxTimelineErrorContext {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineRetryButton, CngxTimelineEmpty
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineError]',
@@ -299,7 +299,7 @@ export interface CngxTimelineRetryButtonContext {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineError
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineRetryButton]',
@@ -327,7 +327,7 @@ export class CngxTimelineRetryButton {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineError
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineLoadingTail]',
@@ -343,7 +343,7 @@ export class CngxTimelineLoadingTail {
  * no data, only a position: the same index, row count and side the built-in
  * placeholder uses, so a custom shape lands where the content row will.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTimelineSkeletonContext {
   /** Same as `index`, for `let-index` shorthand. */
@@ -371,7 +371,7 @@ export interface CngxTimelineSkeletonContext {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/template-slots.ts
  * @relatedTo CngxTimelineLoadingTail
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxTimelineSkeleton]',

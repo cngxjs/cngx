@@ -16,7 +16,7 @@ import { Directive, input } from '@angular/core';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-actions.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard, CngxCardFooter, CngxCardBody
  * <example-url>/#/common/card/action-card-with-selection</example-url>
  * @axis level organism

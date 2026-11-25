@@ -48,7 +48,7 @@ import { injectMenuToggle } from './internal/menu-toggle';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/menu-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButton, CngxButtonBrain, CngxMenuTrigger, CngxPopoverTrigger, CngxMenu, provideButtonCaretIcon, CngxIconMenuButton, CNGX_BUTTON_CARET_ICON
  * <example-url>/#/common/menu-button/menu-button/basic</example-url>
  * <example-url>/#/common/menu-button/menu-button/disabled-with-reason</example-url>

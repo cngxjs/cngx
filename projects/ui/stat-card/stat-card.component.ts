@@ -64,7 +64,7 @@ const DEFAULT_SKELETON_SLOTS: readonly CngxStatSlotKind[] = ['label', 'value', '
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stat-card/stat-card.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStat, CngxStatCoordinator, CngxStatCardViz, CngxStatCardFooter, CngxCard
  *
  * <example-url>/#/ui/stat-card/basic/composed-kpi-tile</example-url>

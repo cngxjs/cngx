@@ -12,7 +12,7 @@ import type {
  * records label the toggle options by value, so an axis list from
  * `withA11yPanelAxes` without option labels reads them from here.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_A11Y_PANEL_CONFIG, withA11yPanelLabels, withA11yPanelAxes
  */
 export interface CngxA11yPanelLanguageSection {
@@ -39,7 +39,7 @@ export interface CngxA11yPanelLanguageSection {
  * English copy. The `CNGX_A11Y_PANEL_CONFIG` labels and option labels default
  * to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_A11Y_PANEL_CONFIG
  */
 export const CNGX_A11Y_PANEL_LANGUAGE_EN: CngxA11yPanelLanguageSection = {

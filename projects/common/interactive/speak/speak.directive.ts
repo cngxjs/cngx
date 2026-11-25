@@ -59,7 +59,7 @@ const IMPLICIT_LOCALE_ID = 'en-US';
  * ```
  * @wcag AAA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/speak/speak.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSpeakButton, CngxLiveRegion
  * <example-url>/#/common/interactive/speak/form-error-read-aloud-on-demand</example-url>
  * <example-url>/#/common/interactive/speak/headless-read-aloud</example-url>

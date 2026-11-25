@@ -13,7 +13,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * `getComputedStyle`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/chart-layer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type LayerGeometry =
   | {
@@ -77,7 +77,7 @@ export type LayerGeometry =
  * read layer geometry through this token instead of scraping the DOM.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/chart-layer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxChartLayer {
   /** The layer's scale-projected geometry, cascade-guarded by an `equal` fn. */
@@ -91,7 +91,7 @@ export interface CngxChartLayer {
  * chart shell collects every mounted layer's geometry through DI.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/layers/chart-layer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand
  */
 export const CNGX_CHART_LAYER = new InjectionToken<CngxChartLayer>('CngxChartLayer');

@@ -70,7 +70,7 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/scroll-sync/organism-scroll-sync.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabGroup, CngxTabOverflow, CNGX_ORGANISM_SCROLL_SYNC_FACTORY
  */
 export function createOrganismScrollSync(opts: CngxOrganismScrollSyncOptions): void {
@@ -128,7 +128,7 @@ export type CngxOrganismScrollSyncFactory = (opts: CngxOrganismScrollSyncOptions
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/scroll-sync/organism-scroll-sync.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createOrganismScrollSync, CngxOrganismScrollSyncFactory
  */
 export const CNGX_ORGANISM_SCROLL_SYNC_FACTORY = new InjectionToken<CngxOrganismScrollSyncFactory>(

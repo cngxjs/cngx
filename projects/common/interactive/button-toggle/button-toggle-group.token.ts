@@ -5,7 +5,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * `CNGX_BUTTON_TOGGLE_GROUP` to drive the leaf from a custom group.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_TOGGLE_GROUP, CngxButtonToggleGroup, CngxButtonToggle
  */
 export interface CngxButtonToggleGroupContract<T = unknown> {
@@ -30,7 +30,7 @@ export interface CngxButtonToggleGroupContract<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonToggleGroup, CngxButtonToggle, CNGX_BUTTON_MULTI_TOGGLE_GROUP
  */
 export const CNGX_BUTTON_TOGGLE_GROUP = new InjectionToken<CngxButtonToggleGroupContract>(

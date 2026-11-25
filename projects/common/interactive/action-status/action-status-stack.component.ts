@@ -35,7 +35,7 @@ import { CNGX_ACTION_STATUS } from './action-status.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-stack.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatusCell, CngxActionStatusBrain, CNGX_ACTION_STATUS, CngxPending, CngxSucceeded, CngxFailed
  * <example-url>/#/ui/action-button/async-button/ejected-host</example-url>
  * @axis level molecule

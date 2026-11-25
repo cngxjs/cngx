@@ -14,7 +14,7 @@ import type { AsyncStatus } from '@cngx/core/utils';
  * rather than imported from the accordion entry, so this entry pulls in nothing
  * from a sibling `@cngx/ui` entry (data-grid-accordion accepted-debt §1).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxDgaRowStateContext {
   readonly $implicit: AsyncStatus;

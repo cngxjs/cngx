@@ -68,7 +68,7 @@ export const CHART_SMALL_BREAKPOINT_PX = 400;
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartSlotContext, CngxChartEmpty, CngxChartError, CngxChart
  */
 @Directive({
@@ -95,7 +95,7 @@ export class CngxChartLoading {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartError, CngxChart
  */
 @Directive({
@@ -130,7 +130,7 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartErrorContext, CngxChartLoading, CngxChartEmpty, CngxChart
  */
 @Directive({
@@ -168,7 +168,7 @@ export interface CngxChartConnectionContext extends CngxChartSlotContext {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartConnectionContext, CngxChartReconnecting, CngxChart
  */
 @Directive({
@@ -194,7 +194,7 @@ export class CngxChartConnectionError {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartConnectionContext, CngxChartConnectionError, CngxChart
  */
 @Directive({
@@ -248,7 +248,7 @@ export class CngxChartReconnecting {
  * not on an element projected here.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/template-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartSlotContext, CngxChartLoading, CngxChartEmpty, CngxChartError, CngxChart
  */
 @Directive({

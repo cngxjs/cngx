@@ -43,6 +43,6 @@ export interface CngxErrorScopeContract {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-scope/error-scope.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_ERROR_SCOPE = new InjectionToken<CngxErrorScopeContract>('CngxErrorScope');

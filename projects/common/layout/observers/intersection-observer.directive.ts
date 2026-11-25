@@ -46,7 +46,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/intersection-observer.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxResizeObserver, CngxMediaQuery, CngxInfiniteScroll, CngxScrollSpy
  * <example-url>/#/common/layout/intersection-observer/scroll-sentinel</example-url>
  * @axis level atom

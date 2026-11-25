@@ -119,7 +119,7 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
  * side.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChartContext');
 
@@ -135,7 +135,7 @@ export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>('CngxChar
  * layer atoms do.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart-context.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectChartContext(selector: string): CngxChartContext {
   const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });

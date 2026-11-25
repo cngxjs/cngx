@@ -66,7 +66,7 @@ export type CngxErrorDetailFn = (error: unknown) => string | undefined;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/config/feedback-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeedbackConfig');
 
@@ -344,7 +344,7 @@ function rawErrorDetailWithWarning(injector: EnvironmentInjector): CngxErrorDeta
  * )
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withErrorDetail(map: CngxErrorDetailFn): FeedbackFeature {
   return { _apply: (c) => ({ ...c, errorDetail: map }) };
@@ -356,7 +356,7 @@ export function withErrorDetail(map: CngxErrorDetailFn): FeedbackFeature {
  * time it shows, and nothing in production. Call it in an injection context,
  * then call the returned function with the error.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectErrorDetail(): CngxErrorDetailFn {
   const mapped = inject(CNGX_FEEDBACK_CONFIG, { optional: true })?.errorDetail;

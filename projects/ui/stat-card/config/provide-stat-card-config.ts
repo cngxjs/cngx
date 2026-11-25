@@ -20,7 +20,7 @@ const NO_ARIA_LABELS: CngxStatCardAriaLabels = {};
  * `CngxBreadcrumbConfigFeature` so the consumer's mental model is one across
  * feature areas.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxStatCardConfigFeature =
   | {
@@ -92,7 +92,7 @@ function mergeConfig(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideStatCardConfig(
   ...features: CngxStatCardConfigFeature[]
@@ -130,7 +130,7 @@ export function provideStatCardConfig(
  * class LiveTiles {}
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideStatCardConfigAt(...features: CngxStatCardConfigFeature[]): Provider[] {
   // Empty-features call: parent value flows through untouched. Skipping the

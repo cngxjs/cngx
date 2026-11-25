@@ -88,7 +88,7 @@ export type AriaLivePoliteness = 'polite' | 'assertive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLiveRegion
  * <example-url>/#/common/a11y/live-announcer/polite-vs-assertive</example-url>
  */

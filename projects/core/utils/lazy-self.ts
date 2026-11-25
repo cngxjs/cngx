@@ -6,7 +6,7 @@ const UNRESOLVED: unique symbol = Symbol('UNRESOLVED');
  * Options of {@link injectLazySelf}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/lazy-self.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxLazySelfOptions {
   /** `true` resolves an absent token to `null` instead of throwing. */
@@ -32,7 +32,7 @@ export interface CngxLazySelfOptions {
  * handler or a later lifecycle hook.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/lazy-self.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectLazySelf<T>(token: ProviderToken<T>): () => T;
 /**

@@ -48,7 +48,7 @@ function charMatcher(pattern: InputFilterPattern): (char: string) => boolean {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-filter.directive.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxInputMask, CngxTrim, withInputAriaLabels
  * <example-url>/#/forms/input/charset-filter</example-url>
  */

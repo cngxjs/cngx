@@ -44,7 +44,7 @@ import { injectSelectShellSearchHost } from './select-search-host';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/select-search.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSearch, withFallbackLabels
  * <example-url>/#/forms/select/declarative/search</example-url>
  * @axis level organism

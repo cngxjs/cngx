@@ -236,7 +236,7 @@ function groupsEqual<T>(a: readonly TimelineGroup<T>[], b: readonly TimelineGrou
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/grouping.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTimelineGrouping<T>(
   options: TimelineGroupingOptions<T>,
@@ -345,7 +345,7 @@ export type CngxTimelineGroupingFactory = <T>(
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/grouping.ts
  * @relatedTo createTimelineGrouping
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TIMELINE_GROUPING_FACTORY = new InjectionToken<CngxTimelineGroupingFactory>(
   'CngxTimelineGroupingFactory',

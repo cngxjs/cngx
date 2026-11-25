@@ -27,7 +27,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterGroup, CngxFilterBuilderPresenter, CngxFilterBuilder
  * <example-url>/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
  * <example-url>/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>

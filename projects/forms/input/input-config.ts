@@ -151,7 +151,7 @@ const NO_INPUT_ARIA_LABELS: Partial<InputAriaLabels> = {};
  * @see {@link provideInputConfig}
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideInputConfig, provideInputConfigAt, injectInputConfig, withInputAriaLabels, withNumericDefaults, withMaskPlaceholder, withMaskGuide, withCustomTokens, withPhonePatterns, withIbanPatterns, withZipPatterns, withDateFormats, withDateShortFormats, withCopyResetDelay, withFileMaxSize, withFileMaxFiles, withCurrency, withPhoneDefaultRegion
  */
 export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CONFIG', {
@@ -591,7 +591,7 @@ export function withInputAriaLabels(
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withInputAriaLabels, provideInputConfig, provideInputConfigAt, InputAriaLabels
  */
 export function injectInputAriaLabels(): Signal<Required<InputAriaLabels>> {

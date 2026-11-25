@@ -7,7 +7,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * Messages use `{name}` placeholders; a plural message picks its form from
  * `{count}`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_TREETABLE_CONFIG, withTreetableLabels
  */
 export interface CngxTreetableLanguageSection {
@@ -45,7 +45,7 @@ export interface CngxTreetableLanguageSection {
  * The English treetable section: the single source of the treetable's English
  * copy. The `CNGX_TREETABLE_CONFIG` labels default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_TREETABLE_CONFIG, withTreetableLabels
  */
 export const CNGX_TREETABLE_LANGUAGE_EN: CngxTreetableLanguageSection = {

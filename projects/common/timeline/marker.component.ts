@@ -43,7 +43,7 @@ export type TimelineStatus = 'done' | 'active' | 'upcoming' | 'rejected';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/marker.component.ts
  * @relatedTo CngxTimelineConnector
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Component({
   selector: 'cngx-timeline-marker',

@@ -19,7 +19,7 @@ import { Directive } from '@angular/core';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-item-meta.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordionItem, CngxAccordionItemLeading
  */
 @Directive({

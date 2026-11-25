@@ -40,7 +40,7 @@ import { CngxCopyText } from './copy-text.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/copy/copy-block.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCopyText
  * <example-url>/#/common/interactive/copy/block/api-key</example-url>
  * <example-url>/#/common/interactive/copy/block/code-snippet</example-url>

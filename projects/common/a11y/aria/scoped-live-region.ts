@@ -48,7 +48,7 @@ export interface CngxScopedLiveRegion {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/scoped-live-region.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLiveAnnouncer, CngxLiveRegion
  * <example-url>/#/common/a11y/live-announcer/scoped-announcing-in-a-modal</example-url>
  */

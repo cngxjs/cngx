@@ -34,7 +34,7 @@ const localeSignalFor = memoize((id: string): Signal<string> => signal(id).asRea
  * runtime, provide a `Signal` through {@link provideLocale} or
  * {@link provideLocaleAt}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectLocale, provideLocale, provideLocaleAt
  */
 export const CNGX_LOCALE = new InjectionToken<Signal<string>>('CNGX_LOCALE');
@@ -46,7 +46,7 @@ export const CNGX_LOCALE = new InjectionToken<Signal<string>>('CNGX_LOCALE');
  * the `computed()` that formats, so a locale flip re-formats:
  * `computed(() => numberFormatterFor(this.locale(), OPTS).format(v))`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_LOCALE, provideLocale, numberFormatterFor, dateTimeFormatterFor
  */
 export function injectLocale(): Signal<string> {
@@ -68,7 +68,7 @@ export function injectLocale(): Signal<string> {
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_LOCALE, provideLocaleAt, injectLocale
  */
 export function provideLocale(source: string | Signal<string>): EnvironmentProviders {
@@ -82,7 +82,7 @@ export function provideLocale(source: string | Signal<string>): EnvironmentProvi
  * can go in a component's `viewProviders` (or `providers`) array and scope
  * the cngx locale to that DI subtree.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_LOCALE, provideLocale, injectLocale
  */
 export function provideLocaleAt(source: string | Signal<string>): Provider[] {

@@ -77,7 +77,7 @@ function sameAxisViews(
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.component.ts
  * @selector cngx-a11y-panel
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard, CngxButtonToggleGroup, CngxLiveAnnouncer, provideA11yPreferences, provideA11yPanelConfig
  * <example-url>/#/ui/a11y/panel/inline</example-url>
  * @axis level organism

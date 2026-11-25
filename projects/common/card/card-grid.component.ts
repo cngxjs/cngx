@@ -48,7 +48,7 @@ import type { EmptyReason } from './card.types';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-grid.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard, CngxCardGridEmpty, CngxRovingTabindex, CngxAsyncState
  * <example-url>/#/common/card/card-grid/basic-grid</example-url>
  * <example-url>/#/common/card/card-grid/density-variants</example-url>

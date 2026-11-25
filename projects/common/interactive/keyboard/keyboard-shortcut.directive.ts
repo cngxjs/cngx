@@ -67,7 +67,7 @@ function sameBinding(
  * ```
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/keyboard-shortcut.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxClickOutside, CngxSearch, CngxHotkeyScope, injectHotkey
  * <example-url>/#/common/interactive/gestures/keyboard-shortcut/global-shortcut</example-url>
  * <example-url>/#/common/interactive/gestures/keyboard-shortcut/self-scoped-shortcut</example-url>

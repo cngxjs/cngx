@@ -53,6 +53,6 @@ export interface CngxStepPanelHost {
  * (`<cngx-stepper>`, `<cngx-mat-stepper>`) and consumer-authored skins.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-panel-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_STEP_PANEL_HOST = new InjectionToken<CngxStepPanelHost>('CngxStepPanelHost');

@@ -35,7 +35,7 @@ export interface CngxValueTransformer<T> {
  * directive may provide both.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/value-transformer.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxValueTransformer, CNGX_FORM_FIELD_CONTROL, CngxInputMask, CngxInputFormat, CngxNumericInput
  */
 export const CNGX_VALUE_TRANSFORMER = new InjectionToken<CngxValueTransformer<unknown>>(

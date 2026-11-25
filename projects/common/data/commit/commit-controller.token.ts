@@ -62,7 +62,7 @@ export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/commit/commit-controller.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_COMMIT_CONTROLLER_FACTORY = new InjectionToken<CngxCommitControllerFactory>(
   'CngxCommitControllerFactory',

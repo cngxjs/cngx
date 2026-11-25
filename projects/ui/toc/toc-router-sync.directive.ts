@@ -39,7 +39,7 @@ function warnRouterAbsent(selector: string, enables: string): void {
  * dev-warns once and no-ops.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/toc-router-sync.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxToc, CNGX_TOC
  * <example-url>/#/ui/toc/router/fragment-deep-link</example-url>
  * @axis level organism

@@ -42,7 +42,7 @@ export interface FloatingFallbackConfig {
  * `null` when not provided - CSS Anchor Positioning is used instead.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/floating-fallback.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig | null>(
   'CngxFloatingFallback',

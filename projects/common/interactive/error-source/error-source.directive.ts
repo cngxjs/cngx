@@ -30,7 +30,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-source/error-source.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorAggregator, CngxErrorScope, CngxErrorState
  * <example-url>/#/common/interactive/error/aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
  * <example-url>/#/common/interactive/error/aggregator/cngx-popover-panel-host</example-url>

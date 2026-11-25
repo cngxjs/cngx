@@ -38,7 +38,7 @@ export interface CngxTimelineSlotSource<C> {
  * otherwise have to restate the rule.
  *
  * @relatedTo createTimelineSlots
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTimelineSlotBinding<C>(
   instance: Signal<CngxTimelineSlotSource<C> | undefined>,
@@ -88,7 +88,7 @@ export interface CngxTimelineSlots<T> {
  * concrete template still assigns in.
  *
  * @relatedTo createTimelineSlotBinding
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTimelineSlots<T>(
   queries: CngxTimelineSlotQueries<T>,

@@ -10,7 +10,7 @@ import { Directive } from '@angular/core';
  * accessible name.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stat-card/stat-card-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStatCard, CngxStatCardFooter
  */
 @Directive({
@@ -25,7 +25,7 @@ export class CngxStatCardViz {}
  * link, a `cngx-tag` row. Rendered below the stat block and the viz slot.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stat-card/stat-card-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStatCard, CngxStatCardViz
  */
 @Directive({

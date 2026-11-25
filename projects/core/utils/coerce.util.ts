@@ -8,7 +8,7 @@ import { memoize } from './memo.util';
  * Strings are truthy unless they equal `'false'`.
  * All other falsy values return `false`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function coerceBooleanProperty(value: unknown): boolean {
   if (value == null) {
@@ -32,7 +32,7 @@ export function coerceBooleanProperty(value: unknown): boolean {
  * `1.5`). A string with no leading number (`'px12'`, `'true'`) returns
  * `fallback`. Booleans and objects are never numeric and return `fallback`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function coerceNumberProperty(value: unknown, fallback = 0): number {
   if (value == null) {
@@ -84,7 +84,7 @@ const NULL_SIGNAL = signal(null).asReadonly();
  * handler: a bound value would lag one tick there. Resolve it through this
  * function, as `CngxPopover.closeOnEscape` does.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo coerceBooleanProperty, coerceNumberProperty, createOverrideMerge
  */
 export function coerceSignal<T>(source: T | Signal<T>): Signal<T> {

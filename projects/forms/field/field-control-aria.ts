@@ -112,7 +112,7 @@ export function isFocusLeavingHost(event: FocusEvent, host: Node): boolean {
  * signals its host template declares, and control-specific surfaces
  * (`empty`, `aria-label` fallbacks) stay in the control.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL, createFieldSync
  */
 export function createFieldControlAria(

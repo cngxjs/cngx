@@ -197,7 +197,7 @@ export interface CngxActionSelectChange<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/action-select/action-select.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxActionMultiSelect, CngxSelectAction, CngxTypeahead, withActionPosition, withCloseOnCreate, withLiveInputFallback, withActionPopoverPlacement
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/action-select/basic-sync-quick-create</example-url>

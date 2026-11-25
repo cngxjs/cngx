@@ -9,7 +9,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * defaults. Messages use `{name}` placeholders; a plural message picks its
  * form from `{count}`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SELECT_CONFIG, CNGX_ACTION_SELECT_CONFIG, CNGX_REORDERABLE_SELECT_CONFIG
  */
 export interface CngxSelectLanguageSection {
@@ -132,7 +132,7 @@ export interface CngxSelectLanguageSection {
  * English copy. The `CNGX_SELECT_CONFIG`, `CNGX_ACTION_SELECT_CONFIG` and
  * `CNGX_REORDERABLE_SELECT_CONFIG` copy keys default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SELECT_CONFIG
  */
 export const CNGX_SELECT_LANGUAGE_EN: CngxSelectLanguageSection = {

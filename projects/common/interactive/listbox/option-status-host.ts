@@ -44,7 +44,7 @@ export interface CngxOptionStatusHost {
  * no DOM cost.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-status-host.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_OPTION_STATUS_HOST = new InjectionToken<CngxOptionStatusHost>(
   'CNGX_OPTION_STATUS_HOST',
@@ -58,7 +58,7 @@ export const CNGX_OPTION_STATUS_HOST = new InjectionToken<CngxOptionStatusHost>(
  * option sets it on the wrapper element of that rendering.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/option-status-host.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_OPTION_STATUS_HOST, CngxOption
  */
 export const CNGX_OPTION_CHROME_ATTR = 'data-cngx-option-chrome';

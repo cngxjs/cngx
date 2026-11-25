@@ -144,7 +144,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/chart.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAxis, CngxLine, CngxArea, CngxBar, CngxChartLegend
  *
  * <example-url>/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>

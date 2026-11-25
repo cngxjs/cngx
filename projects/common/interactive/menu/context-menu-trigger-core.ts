@@ -171,7 +171,7 @@ const DEFAULT_RESOLVE_KEYBOARD_OPEN = DEFAULT_RESOLVE_OPEN;
  * them in.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/context-menu-trigger-core.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createContextMenuTriggerCore(
   deps: CngxContextMenuTriggerCoreDeps,

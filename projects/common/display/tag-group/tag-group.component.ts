@@ -88,7 +88,7 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/tag-group.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTag, CngxTagGroupHeader, CngxTagGroupAccessory, CNGX_TAG_GROUP
  * @slot cngxTagGroupHeader Replaces the group's heading row.
  * @slot cngxTagGroupAccessory Trailing control beside the header, e.g. a clear-all button.

@@ -48,7 +48,7 @@ import type { CngxFieldValidationError } from './models';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-errors.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxError, CngxFormErrors, CngxFormField, CNGX_ERROR_MESSAGES, withErrorMessages
  * <example-url>/#/forms/field/field-errors/basic</example-url>
  * <example-url>/#/forms/field/field-errors/multiple-validators</example-url>

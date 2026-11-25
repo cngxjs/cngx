@@ -36,7 +36,7 @@ export interface CngxTimelineFallbackCopy {
  * clears the formatter should still get a legible header rather than an
  * empty one that leaves the group unnamed.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTimelineFallbackCopy(
   config: CngxTimelineConfig,

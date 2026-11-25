@@ -31,7 +31,7 @@ import { injectStepperHost } from './stepper-host.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/router-sync.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperPresenter, CNGX_STEPPER_CONFIG
  * <example-url>/#/ui/stepper/stepper-router-sync/deep-linking-with-fragment-queryparam-modes</example-url>
  */

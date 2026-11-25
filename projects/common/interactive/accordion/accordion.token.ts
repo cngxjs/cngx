@@ -15,7 +15,7 @@ import type {
  * header handle, and bind `tabindex`/`keydown` through {@link nav}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordion, CngxAccordionPanel, createAccordionKeyboardNav
  */
 export interface CngxAccordionHost {
@@ -46,7 +46,7 @@ export interface CngxAccordionHost {
  * the element-injector hierarchy.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordion, CngxAccordionPanel
  */
 export const CNGX_ACCORDION = new InjectionToken<CngxAccordionHost>('CNGX_ACCORDION');

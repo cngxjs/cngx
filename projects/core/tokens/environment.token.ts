@@ -26,7 +26,7 @@ export interface Environment {
  * and handles the `null`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/environment.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideEnvironment
  */
 export const ENVIRONMENT = new InjectionToken<Environment>('CNGX_ENVIRONMENT');
@@ -43,7 +43,7 @@ export const ENVIRONMENT = new InjectionToken<Environment>('CNGX_ENVIRONMENT');
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/environment.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo ENVIRONMENT
  */
 export function provideEnvironment(env: Environment): Provider {

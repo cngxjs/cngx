@@ -7,7 +7,7 @@ import { matchesKeyCombo, type KeyCombo } from '@cngx/core/utils';
  * listener. The palette recreates the keybinding whenever the resolved combo
  * changes and tears the previous one down, so nothing leaks document-wide.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaletteKeybinding {
   /** Removes the installed document keydown listener. */
@@ -20,7 +20,7 @@ export interface CngxPaletteKeybinding {
  * as a type alias so an override matches the exact signature - a consumer can
  * swap in an enterprise key-capture policy without touching the palette.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPaletteKeybindingFactory = (
   combo: KeyCombo,
@@ -36,7 +36,7 @@ export type CngxPaletteKeybindingFactory = (
  * `isMac` defaults to platform detection; pass it explicitly for deterministic
  * tests.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createPaletteKeybinding(
   combo: KeyCombo,
@@ -64,7 +64,7 @@ export function createPaletteKeybinding(
  * palette. To only change the *combo*, prefer `withPaletteShortcut(...)` or the
  * `[openShortcut]` input - this token is for replacing the whole listener.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_PALETTE_KEYBINDING_FACTORY = new InjectionToken<CngxPaletteKeybindingFactory>(
   'CNGX_PALETTE_KEYBINDING_FACTORY',

@@ -19,7 +19,7 @@ const NO_COLLAPSE: ReadonlySet<number> = new Set();
  * (`total <= maxVisible`), so a short trail never collapses.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-collapse.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumb, CNGX_BREADCRUMB_COLLAPSE_STRATEGY
  */
 export function createBreadcrumbCollapse(): CngxBreadcrumbCollapseStrategy {

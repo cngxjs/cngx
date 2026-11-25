@@ -10,7 +10,7 @@ import { CNGX_MENU_RADIO_GROUP, type CngxMenuRadioGroup } from './menu-radio-con
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-group.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenu, CngxMenuItemRadio, CngxMenuItem
  * <example-url>/#/common/interactive/menu/checkable/text-formatting-menu</example-url>
  */

@@ -27,7 +27,7 @@ export interface CngxTabCloseIconContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-close-icon.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabAddIcon, CngxTabGroup
  * <example-url>/#/ui/tabs/tab-dismissable/dismissable-and-addable</example-url>
  */

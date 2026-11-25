@@ -137,7 +137,7 @@ export function createFilterBuilderTemplateRegistry(
  * `injectFilterBuilderTemplateRegistry(queries)`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-template-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilder, CNGX_FILTER_BUILDER_CONFIG, withTemplates, CngxFilterBuilderValueEditor
  */
 export const CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxFilterBuilderTemplateRegistryFactory>(

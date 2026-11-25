@@ -6,7 +6,7 @@ import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button
  * Static facts about a button host, read by `CngxButtonBrain`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonHost, CngxButtonBrain
  */
 export interface CngxButtonHostDescriptor {
@@ -29,7 +29,7 @@ export interface CngxButtonHostDescriptor {
  * not a consumer option.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonBrain, provideButtonHost, CNGX_BUTTON_HOST_STATE
  */
 export const CNGX_BUTTON_HOST = new InjectionToken<CngxButtonHostDescriptor>('CngxButtonHost');
@@ -44,7 +44,7 @@ export const CNGX_BUTTON_HOST = new InjectionToken<CngxButtonHostDescriptor>('Cn
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST, CngxActionButton
  */
 export function provideButtonHost(
@@ -59,7 +59,7 @@ export function provideButtonHost(
  * main action.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_HOST_STATE, CngxButtonBrain, CngxSplitCaret
  */
 export interface CngxButtonHostState {
@@ -83,7 +83,7 @@ export interface CngxButtonHostState {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonBrain, CNGX_BUTTON_HOST, CngxSplitCaret
  */
 export const CNGX_BUTTON_HOST_STATE = new InjectionToken<CngxButtonHostState>(

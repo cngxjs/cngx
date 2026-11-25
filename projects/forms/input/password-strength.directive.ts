@@ -45,7 +45,7 @@ const ANNOUNCE_DEBOUNCE_MS = 400;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-strength.directive.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxPasswordToggle, CngxCapsLock, CngxPasswordStrengthMeter, CNGX_PASSWORD_STRENGTH_FACTORY, withInputAriaLabels
  * <example-url>/#/forms/input/password-strength</example-url>
  * @axis level molecule

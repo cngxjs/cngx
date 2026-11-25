@@ -17,7 +17,7 @@ import {
  * optional - an unset key keeps the atom's literal (120 / 0).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxHoverIntentDefaults {
   /** Fallback for `enterDelay` (ms) when the input is not bound. */
@@ -40,7 +40,7 @@ export interface CngxHoverIntentDefaults {
  *
  * @relatedTo CngxHoverIntent
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefaults>(
   'CNGX_HOVER_INTENT_DEFAULTS',
@@ -56,7 +56,7 @@ export const CNGX_HOVER_INTENT_DEFAULTS = new InjectionToken<CngxHoverIntentDefa
  *
  * @relatedTo CngxHoverIntent, CNGX_HOVER_INTENT_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxHoverIntentDriver {
   /** Dwell in ms before `active` settles to `true`; wins over `[enterDelay]`. */
@@ -73,7 +73,7 @@ export interface CngxHoverIntentDriver {
  *
  * @relatedTo CngxHoverIntent
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_HOVER_INTENT_DRIVER = new InjectionToken<CngxHoverIntentDriver>(
   'CngxHoverIntentDriver',
@@ -113,7 +113,7 @@ export const CNGX_HOVER_INTENT_DRIVER = new InjectionToken<CngxHoverIntentDriver
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hover-intent/hover-intent.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxHoverable, CngxLongPress, CngxExpandable
  * <example-url>/#/common/interactive/hover-intent/hover-to-reveal</example-url>
  * <example-url>/#/common/interactive/hover-intent/hover-to-prefetch</example-url>

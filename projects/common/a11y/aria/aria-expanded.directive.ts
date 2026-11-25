@@ -19,7 +19,7 @@ import {
  *
  * @relatedTo CngxAriaExpanded, CNGX_ARIA_EXPANDED_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAriaExpandedDriver {
   /**
@@ -37,7 +37,7 @@ export interface CngxAriaExpandedDriver {
  *
  * @relatedTo CngxAriaExpanded
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_ARIA_EXPANDED_DRIVER = new InjectionToken<CngxAriaExpandedDriver>(
   'CngxAriaExpandedDriver',
@@ -76,7 +76,7 @@ export const CNGX_ARIA_EXPANDED_DRIVER = new InjectionToken<CngxAriaExpandedDriv
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/aria-expanded.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLiveRegion, CngxExpandable, CngxDisclosure
  * <example-url>/#/common/a11y/aria-expanded/accordion-multiple-panels</example-url>
  * <example-url>/#/common/a11y/aria-expanded/disclosure-pattern</example-url>

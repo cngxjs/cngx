@@ -50,7 +50,7 @@ import { injectTabsConfig } from './tabs-config';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/router-sync.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabGroupPresenter, CngxTab
  * @axis level organism
  */

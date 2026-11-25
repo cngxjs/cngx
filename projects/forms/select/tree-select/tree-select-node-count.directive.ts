@@ -24,7 +24,7 @@ import { type CngxTreeSelectNodeCountContext } from './tree-select.model';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-node-count.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreeSelect, CngxTreeSelectNode
  */
 @Directive({

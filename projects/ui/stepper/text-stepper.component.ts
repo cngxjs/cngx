@@ -38,7 +38,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/text-stepper.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperPresenter, CngxProgressBarStepper, CngxDotStepper
  * @slot cngxStepperEmpty Renders when no step is projected at all.
  * <example-url>/#/ui/stepper/text-stepper/inline-progress</example-url>

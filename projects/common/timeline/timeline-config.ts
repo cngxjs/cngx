@@ -229,7 +229,7 @@ function timelineConfigDefaultsFromPack(): CngxTimelineConfig {
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-config.ts
  * @relatedTo provideTimelineConfig
  * @relatedTo withTimelineLabels
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TIMELINE_CONFIG = new InjectionToken<CngxTimelineConfig>('CngxTimelineConfig', {
   providedIn: 'root',

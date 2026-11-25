@@ -49,7 +49,7 @@ export interface CngxStepIndicatorContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/slots/step-indicator.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepBadge, CngxStepBusySpinner, CngxStepRejection, CngxStepGroupHeader
  * <example-url>/#/ui/stepper/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code</example-url>
  * <example-url>/#/ui/stepper/stepper-slot-overrides/cross-skin-indicator-override</example-url>

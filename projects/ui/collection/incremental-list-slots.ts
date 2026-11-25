@@ -15,7 +15,7 @@ export interface CngxIncrementalItemContext<T> {
  * renders it per item in the revealed slice. Resolution cascades instance slot
  * -> `CngxIncrementalListConfig.templates.item` -> the built-in text row.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxIncrementalItem]',
@@ -37,7 +37,7 @@ export class CngxIncrementalItem<T = unknown> {
  * Empty slot. Project `<ng-template cngxIncrementalEmpty>` to replace the
  * built-in empty view shown when the bound state settles with no data.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxIncrementalEmpty]',
@@ -63,7 +63,7 @@ export interface CngxIncrementalErrorContext {
  * replace the built-in error + retry view. Resolution cascades instance slot ->
  * `CngxIncrementalListConfig.templates.error` -> the built-in message + button.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxIncrementalError]',
@@ -85,7 +85,7 @@ export class CngxIncrementalError {
  * End-reached slot. Project `<ng-template cngxIncrementalEnd>` to replace the
  * built-in "all loaded" label shown once every page has been revealed.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxIncrementalEnd]',
@@ -101,7 +101,7 @@ export class CngxIncrementalEnd {
  * built-in first-load progress indicator. Resolution cascades instance slot ->
  * `CngxIncrementalListConfig.templates.loading` -> the built-in `CngxProgress`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: 'ng-template[cngxIncrementalLoading]',

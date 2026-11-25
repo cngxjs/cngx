@@ -59,7 +59,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/checkbox/checkbox.component.ts
  * @selector cngx-checkbox
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCheckboxGroup, CngxCheckboxIndicator, CngxToggle, CngxRadio
  * <example-url>/#/common/interactive/checkbox/group/basic-select-all-master-projected-leaves</example-url>
  * <example-url>/#/common/interactive/checkbox/group/disabled-cascade</example-url>

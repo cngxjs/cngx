@@ -27,7 +27,7 @@ import { clamp } from '@cngx/utils';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/autosize.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxCharCount
  * <example-url>/#/forms/input/autosize/basic-autosize</example-url>
  * <example-url>/#/forms/input/autosize/min-max-rows</example-url>

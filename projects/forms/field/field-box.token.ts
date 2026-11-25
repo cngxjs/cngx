@@ -20,7 +20,7 @@ export interface CngxFieldBoxContract {
  * element. Only direct children count: the box owns its direct children,
  * so a control two levels down follows the normal skin cascade.
  *
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxFieldBox, CngxFieldBoxContract, CngxFieldSkinHost
  */
 export const CNGX_FIELD_BOX = new InjectionToken<CngxFieldBoxContract>('CngxFieldBox');

@@ -22,7 +22,7 @@ import type { CngxRecycler } from './recycler';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/measure.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxVirtualItem, CngxRecyclerAnnouncer, injectRecycler
  *
  * <example-url>/#/common/data/recycler/basic-list-fixed-item-height</example-url>

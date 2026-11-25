@@ -37,7 +37,7 @@ export interface CngxTabsCommitActionSource {
  * `[commitMode]` input.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/commit-action.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TABS_COMMIT_ACTION = new InjectionToken<CngxTabsCommitActionSource>(
   'CngxTabsCommitAction',

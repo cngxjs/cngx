@@ -52,7 +52,7 @@ import type { CngxRadioSkin } from './config/radio.config';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/radio-indicator/radio-indicator.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCheckboxIndicator, CngxIcon
  * <example-url>/#/common/display/radio-indicator/custom-dotglyph</example-url>
  * <example-url>/#/common/display/radio-indicator/default-unchecked-vs-checked</example-url>

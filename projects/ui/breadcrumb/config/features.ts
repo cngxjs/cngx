@@ -16,7 +16,7 @@ import type { CngxBreadcrumbConfigFeature } from './provide-breadcrumb-config';
  * );
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withBreadcrumbAriaLabels(
   payload: CngxBreadcrumbAriaLabels | Signal<CngxBreadcrumbAriaLabels>,
@@ -33,7 +33,7 @@ export function withBreadcrumbAriaLabels(
  * provideBreadcrumbConfig(withBreadcrumbDataKey('crumb'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeature {
   return { kind: 'router', payload: { dataKey } };
@@ -48,7 +48,7 @@ export function withBreadcrumbDataKey(dataKey: string): CngxBreadcrumbConfigFeat
  * provideBreadcrumbConfig(withBreadcrumbIconKey('glyph'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withBreadcrumbIconKey(iconKey: string): CngxBreadcrumbConfigFeature {
   return { kind: 'router', payload: { iconKey } };
@@ -64,7 +64,7 @@ export function withBreadcrumbIconKey(iconKey: string): CngxBreadcrumbConfigFeat
  * provideBreadcrumbConfig(withBreadcrumbSkin('pill'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withBreadcrumbSkin(skin: CngxBreadcrumbSkin): CngxBreadcrumbConfigFeature {
   return { kind: 'skin', payload: { skin } };

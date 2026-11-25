@@ -74,7 +74,7 @@ export interface BannerState {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/banner/banner.service.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBannerOutlet, CngxBannerTrigger, CngxBannerOn, CngxAlerter, CngxToaster
  *
  * <example-url>/#/ui/feedback/banner/async-action</example-url>

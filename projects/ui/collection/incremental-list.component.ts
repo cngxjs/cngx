@@ -113,7 +113,7 @@ export type CngxIncrementalListSkin = 'plain' | 'divided' | 'card';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPaginate, CngxPaginator, CngxAsyncState
  * @slot cngxIncrementalItem Renders one row; gets the item and its index.
  * @slot cngxIncrementalLoading Rendered while a page is being fetched.

@@ -144,7 +144,7 @@ export type CngxDisplayBindingFactory = <T>(opts: DisplayBindingOptions<T>) => D
  * input or when that write is held back while the user types.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/display-binding.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTypeahead, CngxActionSelect
  */
 export const CNGX_DISPLAY_BINDING_FACTORY = new InjectionToken<CngxDisplayBindingFactory>(

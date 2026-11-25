@@ -16,7 +16,7 @@ import { CngxErrorRegistry } from './error-registry';
  * `runInInjectionContext`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/inject-error-scope.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorScope
  * <example-url>/#/common/interactive/error/registry/inject-error-scope-programmatic</example-url>
  */

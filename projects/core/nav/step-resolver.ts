@@ -50,7 +50,7 @@ export interface CngxStepScan {
  *
  * @relatedTo resolveBoundaryStep
  * @relatedTo resolveInlineStep
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function resolveStepFrom(
   current: number,
@@ -91,7 +91,7 @@ export function resolveStepFrom(
  *
  * @relatedTo resolveStepFrom
  * @relatedTo resolveInlineStep
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function resolveBoundaryStep(direction: 1 | -1, scan: CngxStepScan): number | null {
   const count = scan.count;

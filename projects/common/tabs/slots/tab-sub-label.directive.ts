@@ -19,7 +19,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-sub-label.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTab, CngxTabLabel, CngxTabContent
  * <example-url>/#/ui/tabs/tab-sub-label/label-with-count</example-url>
  */

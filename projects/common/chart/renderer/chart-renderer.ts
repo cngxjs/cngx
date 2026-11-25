@@ -32,7 +32,7 @@ export interface ChartRendererDeps {
  * backend paints the geometries onto a `<canvas>` 2D context.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/chart-renderer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxChartRenderer {
   /** Which backend this instance is. */
@@ -60,7 +60,7 @@ export interface CngxChartRenderer {
  * without touching layer atoms.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/chart-renderer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxChartRendererFactory = (
   mode: 'svg' | 'canvas',

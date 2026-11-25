@@ -23,7 +23,7 @@ import type { CngxRadioSkin } from '@cngx/common/display';
  * `CNGX_RADIO_CONFIG` cascade.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxRadioGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
@@ -57,6 +57,6 @@ export interface CngxRadioGroupContract<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/radio/radio-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_RADIO_GROUP = new InjectionToken<CngxRadioGroupContract>('CngxRadioGroup');

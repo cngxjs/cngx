@@ -10,7 +10,7 @@ import {
 /**
  * Options of {@link time} and {@link timeRange}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface TimeValidatorOptions {
   /**
@@ -26,7 +26,7 @@ export interface TimeValidatorOptions {
  * The `timeRange` error {@link time} reports: `cycle` is the hour cycle the
  * value was judged by.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface TimeRangeValidationError extends ValidationError {
   /** A validator result names no field; Signal Forms binds it to the validated one. */
@@ -113,7 +113,7 @@ function timeRangeCycle(value: unknown, options: TimeValidatorOptions | undefine
  * }));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInputMask, timeRange, patternMatch, withErrorMessages
  */
 export function time<TPathKind extends PathKind = PathKind.Root>(
@@ -138,7 +138,7 @@ export function time<TPathKind extends PathKind = PathKind.Root>(
  * readonly start = new FormControl('', { nonNullable: true, validators: [timeRange()] });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo time, patternMatch, adaptFormControl
  */
 export function timeRange(options?: TimeValidatorOptions): ValidatorFn {

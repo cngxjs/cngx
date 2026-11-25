@@ -11,7 +11,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * transition settles. The panel only needs to know it is open and to ask the
  * surface to dismiss when a command runs.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxCommandPaletteHost {
   /**
@@ -30,7 +30,7 @@ export interface CngxCommandPaletteHost {
 /**
  * DI token the panel injects (optional) to reach its hosting palette surface.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_COMMAND_PALETTE_HOST = new InjectionToken<CngxCommandPaletteHost>(
   'CNGX_COMMAND_PALETTE_HOST',

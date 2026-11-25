@@ -54,7 +54,7 @@ import { createInertSiblings } from './inert-siblings';
  *   and Tab can reach the live page around the boundary.
  * - `'none'`: the page stays operable. No trap, no inert, no lock.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxDrawerModality = 'page' | 'contained' | 'none';
 
@@ -156,7 +156,7 @@ const SCROLLING_OVERFLOW = new Set(['auto', 'scroll']);
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-surface.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDrawerPanel, CngxFocusTrap, CngxFocusRestore, CngxClickOutside, createScrollLock
  * <example-url>/#/common/layout/drawer/standalone-surface</example-url>
  * @axis level molecule

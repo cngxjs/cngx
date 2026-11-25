@@ -69,7 +69,7 @@ const splitIds = (ids: string | null | undefined): readonly string[] =>
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/described-by.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DESCRIBED_BY, injectDescribedByContribution, createKeyedRegistry
  */
 export function createDescribedByRegistry(
@@ -107,7 +107,7 @@ export function createDescribedByRegistry(
  * the directive's own binding.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/described-by.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createDescribedByRegistry, injectDescribedByContribution
  */
 export const CNGX_DESCRIBED_BY = new InjectionToken<CngxDescribedByRegistry>('CNGX_DESCRIBED_BY');
@@ -125,7 +125,7 @@ export const CNGX_DESCRIBED_BY = new InjectionToken<CngxDescribedByRegistry>('CN
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/described-by.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DESCRIBED_BY, createDescribedByRegistry
  */
 export function injectDescribedByContribution(

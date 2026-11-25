@@ -61,7 +61,7 @@ export const cngxDefaultTabRoute = (handle: CngxTabHandle): unknown[] => [handle
  * dropped by RxJS itself.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/router-commit.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTabRouterCommit(opts: CngxTabRouterCommitOptions): CngxTabsCommitAction {
   const routeFor = opts.routeFor ?? cngxDefaultTabRoute;

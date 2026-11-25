@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  * `[columns]="3"` produce identical output.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/layout/grid.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStack
  * @axis level organism
  */

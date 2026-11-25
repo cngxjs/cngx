@@ -32,7 +32,7 @@ import type { CngxContrastPreference } from './contrast';
  *
  * @relatedTo provideContrast
  * @relatedTo CNGX_CONTRAST
- * @since 0.1.0
+ * @since 0.3.0
  * @axis level atom
  */
 @Directive({

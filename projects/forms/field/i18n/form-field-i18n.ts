@@ -16,7 +16,7 @@ import {
  * hints; replace a hint through `withConstraintHints`, the one override for
  * hints (`withFormFieldI18nLabels` does not take them).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxFormFieldI18n {
   /**
@@ -60,7 +60,7 @@ type HintKey =
  * `errorMessages` merged kind by kind. Hints are replaced through
  * `withConstraintHints` on `provideFormField` / `provideFormFieldAt`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxFormFieldI18nOverrides = CngxNestedOverrides<
   Omit<CngxFormFieldI18n, HintKey>,
@@ -139,7 +139,7 @@ const formFieldBundle = createSectionBundle<CngxFormFieldLanguageSection, CngxFo
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/i18n/form-field-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFieldErrors, CngxFormErrors, CNGX_ERROR_MESSAGES, provideFormFieldI18n
  */
 export const CNGX_FORM_FIELD_I18N = new InjectionToken<Signal<CngxFormFieldI18n>>(
@@ -153,7 +153,7 @@ export const CNGX_FORM_FIELD_I18N = new InjectionToken<Signal<CngxFormFieldI18n>
 /**
  * A label override feature of `provideFormFieldI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_FORM_FIELD_I18N, withFormFieldI18nLabels
  */
 export type CngxFormFieldI18nFeature = (
@@ -170,7 +170,7 @@ export type CngxFormFieldI18nFeature = (
  * on `provideFormField` / `provideFormFieldAt` is the one override for them,
  * and the language pack's `formField.hint*` keys stay their copy source.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideFormFieldI18n, withConstraintHints
  */
 export function withFormFieldI18nLabels(
@@ -199,7 +199,7 @@ export function withFormFieldI18nLabels(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideFormFieldI18n(...features: readonly CngxFormFieldI18nFeature[]): Provider {
   return {
@@ -212,7 +212,7 @@ export function provideFormFieldI18n(...features: readonly CngxFormFieldI18nFeat
  * Inject the resolved form-field i18n bundle. Read it inside a `computed()`,
  * template or handler so a language switch reaches the message.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectFormFieldI18n(): Signal<CngxFormFieldI18n> {
   return formFieldBundle.resolve(inject(CNGX_FORM_FIELD_I18N));

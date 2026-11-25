@@ -14,7 +14,7 @@ import { provideButtonHost } from './button-host.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/icon-button.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButton, CngxButtonBrain, CngxAsyncClick, provideButtonConfig, CngxSplitButton, CngxIconMenuButton, CngxCloseButton
  * <example-url>/#/common/button/icon-button/basic</example-url>
  * <example-url>/#/common/button/icon-button/with-badge</example-url>

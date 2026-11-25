@@ -13,7 +13,7 @@ import { Directive } from '@angular/core';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-subtitle.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard, CngxCardHeader, CngxCardTitle
  */
 @Directive({

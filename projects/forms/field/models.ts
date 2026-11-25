@@ -14,7 +14,7 @@ export type { CngxFormFieldControl } from '@cngx/core/tokens';
  * What the field of a validation error resolves to, as far as cngx reads it:
  * the focus hook and, from Signal Forms 21.1 on, the `[formField]` bindings.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxErrorFieldState {
   /** The `[formField]` controls bound to the field; empty for a group-level error. */
@@ -34,7 +34,7 @@ export interface CngxErrorFieldState {
  * `[field]` binding type-checks on every Angular version cngx supports without
  * naming a version-specific or deprecated type.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxFieldValidationError extends ValidationError {
   /** The field the error belongs to. */

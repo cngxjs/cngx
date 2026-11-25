@@ -18,7 +18,7 @@ import { CNGX_AUDIO_ENGINE_FACTORY, type CngxAudioEngine } from './engine/audio-
  * the engine contract is the one an override implements.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/inject-audio.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAudioHandle = CngxAudioEngine;
 
@@ -52,7 +52,7 @@ export const CNGX_AUDIO_ENGINE = new InjectionToken<CngxAudioHandle>('CngxAudioE
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/inject-audio.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectCngxAudio(): CngxAudioHandle {
   return inject(CNGX_AUDIO_ENGINE);
@@ -95,7 +95,7 @@ export function injectCngxAudio(): CngxAudioHandle {
  *
  * @relatedTo provideCngxAudio, injectCngxAudio
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/inject-audio.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideCngxAudioAt(...features: CngxAudioFeature[]): Provider[] {
   return [

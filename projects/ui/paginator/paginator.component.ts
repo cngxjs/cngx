@@ -80,7 +80,7 @@ export type CngxPaginatorDensity = 'compact' | 'default' | 'comfortable';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPaginate, CngxMatPaginator
  * @playground Material theme coverage across all skins ./examples/material-theme-coverage/skins-coverage.component.ts
  * @playground Data-table footer (Material) ./examples/data-table/data-table.component.ts

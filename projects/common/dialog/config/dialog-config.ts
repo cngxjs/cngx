@@ -37,7 +37,7 @@ export type CngxDialogLabels = CngxDialogLanguageSection;
  * with no caller is configuration for its own sake.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxDialogDefaults {
   readonly labels: CngxDialogLabels | Signal<CngxDialogLabels>;
@@ -54,7 +54,7 @@ const dialogLabelsFromPack = createLanguageSection('dialog', CNGX_DIALOG_LANGUAG
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDialog, CngxDialogClose, CngxDialogDraggable
  */
 export const CNGX_DIALOG_DEFAULTS = new InjectionToken<CngxDialogDefaults>('CngxDialogDefaults', {
@@ -87,7 +87,7 @@ export interface CngxDialogConfigFeature {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withDialogLabels(
   overrides: Partial<CngxDialogLabels> | Signal<Partial<CngxDialogLabels>>,
@@ -100,7 +100,7 @@ export function withDialogLabels(
  * on top of the active language pack.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDialogConfig(...features: CngxDialogConfigFeature[]): Provider[] {
   return [
@@ -121,7 +121,7 @@ export function provideDialogConfig(...features: CngxDialogConfigFeature[]): Pro
  * dialogs opened from descendants of this component.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDialogConfigAt(...features: CngxDialogConfigFeature[]): Provider[] {
   return provideDialogConfig(...features);
@@ -132,7 +132,7 @@ export function provideDialogConfigAt(...features: CngxDialogConfigFeature[]): P
  * context; falls back to the English bundle when nothing is provided.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/config/dialog-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectDialogConfig(): CngxDialogDefaults {
   return inject(CNGX_DIALOG_DEFAULTS);

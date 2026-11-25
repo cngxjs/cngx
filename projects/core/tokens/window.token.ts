@@ -12,7 +12,7 @@ import { isPlatformBrowser } from '@angular/common';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/tokens/window.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const WINDOW = new InjectionToken<Window | null>('CNGX_WINDOW', {
   providedIn: 'root',

@@ -181,7 +181,7 @@ export function createTabUrlMatch(): CngxTabUrlMatch {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/url-match.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabsRouteSync, createTabUrlMatch, createTabRouterCommit
  */
 export const CNGX_TAB_URL_MATCH_STRATEGY = new InjectionToken<CngxTabUrlMatch>(

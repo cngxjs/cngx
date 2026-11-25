@@ -5,7 +5,7 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
  * layer and its show delay and min-dwell stay.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonSpinner, injectButtonSpinner, CngxButtonBrain, CngxButton
  * <example-url>/#/common/button/button/custom-spinner</example-url>
  */
@@ -19,7 +19,7 @@ export const CNGX_BUTTON_SPINNER = new InjectionToken<Type<unknown>>('CngxButton
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_SPINNER, injectButtonSpinner
  * <example-url>/#/common/button/button/custom-spinner</example-url>
  */
@@ -31,7 +31,7 @@ export function provideButtonSpinner(component: Type<unknown>): Provider {
  * The {@link provideButtonSpinner} glyph, or `null` for the built-in spinner.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-spinner.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_SPINNER, provideButtonSpinner
  */
 export function injectButtonSpinner(): Type<unknown> | null {

@@ -10,7 +10,7 @@ import { createPreferenceAxis } from './preference-axis';
  * derives the 44px floor. `on` / `off` pin the floor explicitly,
  * overriding the media query for the subtree.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxTouchTargetValue = 'auto' | 'on' | 'off';
 
@@ -23,7 +23,7 @@ export type CngxTouchTargetValue = 'auto' | 'on' | 'off';
  *
  * @relatedTo provideTouchTargets
  * @relatedTo injectTouchTargets
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TOUCH_TARGET = new InjectionToken<WritableSignal<CngxTouchTargetValue>>(
   'CNGX_TOUCH_TARGET',
@@ -69,7 +69,7 @@ const touchTargetAxis = createPreferenceAxis({
  *
  * @relatedTo CNGX_TOUCH_TARGET
  * @relatedTo injectTouchTargets
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideTouchTargets(initial: CngxTouchTargetValue = 'auto'): EnvironmentProviders {
   return touchTargetAxis.provide(initial);
@@ -81,7 +81,7 @@ export function provideTouchTargets(initial: CngxTouchTargetValue = 'auto'): Env
  * pins the 44px floor across the whole document reactively.
  *
  * @relatedTo provideTouchTargets
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectTouchTargets(): WritableSignal<CngxTouchTargetValue> {
   return touchTargetAxis.injectValue();

@@ -12,7 +12,7 @@ import type { CngxAsyncSettle } from './async-click.directive';
  * flattened into separate signals.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-run-state.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ASYNC_RUN_STATE, CngxAsyncClick
  */
 export interface CngxAsyncRunState {
@@ -56,7 +56,7 @@ export interface CngxAsyncRunState {
  * No `providedIn`, no default: an element without a runner has no run.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-run-state.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAsyncClick, CNGX_HOST_INTERACTION_STATE
  */
 export const CNGX_ASYNC_RUN_STATE = new InjectionToken<CngxAsyncRunState>('CngxAsyncRunState');

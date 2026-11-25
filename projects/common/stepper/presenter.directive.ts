@@ -45,7 +45,7 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
  * commit-action signature.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxStepperCommitAction = (
   fromIndex: number,
@@ -65,7 +65,7 @@ export type CngxStepperCommitAction = (
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/presenter.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStep, CngxStepGroup, CngxStepperRouterSync, CNGX_STEPPER_HOST, CNGX_STEPPER_CONFIG
  * <example-url>/#/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  */

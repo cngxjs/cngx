@@ -8,7 +8,7 @@ import type { DrawerPosition } from './drawer.directive';
  * how its panel is presented (the `CngxPanelTarget` view of `CngxDrawer`)
  * and leave Escape inside the panel to the panel's surface.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxDrawerPanelPresentation {
   /** The panel's `mode`. */
@@ -29,7 +29,7 @@ export interface CngxDrawerPanelPresentation {
  * own element.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-host.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDrawer, CngxDrawerPanel, CNGX_DRAWER_HOST
  */
 export interface CngxDrawerHost {
@@ -56,7 +56,7 @@ export interface CngxDrawerHost {
  * An explicit `[cngxDrawerPanel]` reference wins over it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-host.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDrawer, CngxDrawerPanel
  */
 export const CNGX_DRAWER_HOST = new InjectionToken<CngxDrawerHost>('CngxDrawerHost');

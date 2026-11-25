@@ -53,7 +53,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  * @internal
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-body.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilder, CngxFilterBuilderPresenter, CngxFilterGroup, CngxFilterExpression
  */
 @Component({

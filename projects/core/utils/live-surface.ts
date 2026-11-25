@@ -9,7 +9,7 @@
  * {@link CNGX_LIVE_SURFACE_SELECTOR}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/live-surface.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_LIVE_SURFACE_SELECTOR, CngxDrawerSurface, CngxBackdrop
  */
 export const CNGX_LIVE_SURFACE_ATTR = 'data-cngx-live-surface';
@@ -19,7 +19,7 @@ export const CNGX_LIVE_SURFACE_ATTR = 'data-cngx-live-surface';
  * surface that a modal inert scope leaves live.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/live-surface.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_LIVE_SURFACE_ATTR
  */
 export const CNGX_LIVE_SURFACE_SELECTOR = '[data-cngx-live-surface]';

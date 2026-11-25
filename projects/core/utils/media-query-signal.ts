@@ -5,7 +5,7 @@ import { type DestroyRef, signal, type Signal } from '@angular/core';
  * `globalThis`, or a test double. `matchMedia` is optional so SSR and
  * jsdom hosts pass the type and hit the runtime guard instead.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface MediaQueryHost {
   matchMedia?: (query: string) => MediaQueryList;
@@ -29,7 +29,7 @@ export interface MediaQueryHost {
  * @param apply Receives the current match state, synchronously on subscribe and on every change.
  * @returns Teardown that removes the change listener.
  * @relatedTo createMediaQuerySignal
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function observeMediaQuery(
   host: MediaQueryHost | null | undefined,
@@ -73,7 +73,7 @@ export function observeMediaQuery(
  * @param host The window-like object to read `matchMedia` from.
  * @returns A readonly `Signal<boolean>` tracking the query's match state.
  * @relatedTo observeMediaQuery
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createMediaQuerySignal(
   query: string,

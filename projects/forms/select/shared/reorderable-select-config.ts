@@ -115,7 +115,7 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/reorderable-select-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideReorderableSelectConfig, provideReorderableSelectConfigAt, injectReorderableSelectConfig, withReorderKeyboardModifier, withReorderAriaLabel, withReorderListLabels, withDefaultDragHandle, withDefaultMoveGlyph, withReorderStripFreeze, CngxReorderableMultiSelect
  */
 export const CNGX_REORDERABLE_SELECT_CONFIG = new InjectionToken<CngxReorderableSelectConfig>(

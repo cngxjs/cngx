@@ -9,7 +9,7 @@ import { arrayEqual } from '@cngx/utils';
 /**
  * Options for {@link createAnnouncementCapture}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAnnouncementCaptureOptions {
   /** Subtree to observe. Defaults to the global `document`. */
@@ -25,7 +25,7 @@ export interface CngxAnnouncementCaptureOptions {
 /**
  * The handle {@link createAnnouncementCapture} returns.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAnnouncementCapture {
   /**
@@ -90,7 +90,7 @@ export interface CngxAnnouncementCapture {
  *
  * @param options The subtree to observe and how many entries to keep.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo resolveHeardAnnouncements, createAnnouncementRecorder
  */
 export function createAnnouncementCapture(

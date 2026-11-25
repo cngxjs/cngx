@@ -29,7 +29,7 @@ import { DestroyRef, ElementRef, inject } from '@angular/core';
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/activation-guard.ts
  * @relatedTo injectDescribedByContribution
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectActivationGuard(refuses: () => boolean): void {
   const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

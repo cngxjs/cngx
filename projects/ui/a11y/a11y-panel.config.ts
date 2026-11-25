@@ -24,7 +24,7 @@ import { injectA11yPanelSiteCopy, type CngxA11yPanelOptionLabels } from './i18n/
  * Each maps 1:1 onto a writable signal returned by `injectA11yPreferences()`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxA11yPanelAxis = 'density' | 'textScale' | 'motion' | 'contrast';
 
@@ -37,7 +37,7 @@ export type CngxA11yPanelAxis = 'density' | 'textScale' | 'motion' | 'contrast';
  *
  * @relatedTo withA11yPanelAxes
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxA11yPanelAxisOption<V extends string = string> {
   /** Value written to the axis signal - a valid member of that axis' union. */
@@ -60,7 +60,7 @@ export interface CngxA11yPanelAxisOption<V extends string = string> {
  *
  * @relatedTo withA11yPanelAxes
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxA11yPanelAxisSpec =
   | {
@@ -92,7 +92,7 @@ export type CngxA11yPanelAxisSpec =
  * single keys via {@link withA11yPanelLabels}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxA11yPanelLabels {
   /** Group label (the accessible name) per axis. */
@@ -117,7 +117,7 @@ export interface CngxA11yPanelLabels {
  * both through {@link injectA11yPanelLabels} and {@link injectA11yPanelAxes}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxA11yPanelConfig {
   readonly labels?: CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>;
@@ -131,7 +131,7 @@ export interface CngxA11yPanelConfig {
  *
  * @relatedTo withA11yPanelLabels
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxA11yPanelLabelsOverride {
   readonly axes?: Partial<Record<CngxA11yPanelAxis, string>>;
@@ -182,7 +182,7 @@ const NO_LABELS: CngxA11yPanelLabelsOverride = {};
  *
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_A11Y_PANEL_CONFIG = new InjectionToken<CngxA11yPanelConfig>(
   'CngxA11yPanelConfig',
@@ -198,7 +198,7 @@ export const CNGX_A11Y_PANEL_CONFIG = new InjectionToken<CngxA11yPanelConfig>(
  * merges the text bundle, `axes` replaces the axis list wholesale.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxA11yPanelConfigFeature =
   | {
@@ -245,7 +245,7 @@ function applyFeatures(
  *
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withA11yPanelLabels(
   payload: CngxA11yPanelLabelsOverride | Signal<CngxA11yPanelLabelsOverride>,
@@ -273,7 +273,7 @@ export function withA11yPanelLabels(
  *
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withA11yPanelAxes(
   payload: readonly CngxA11yPanelAxisSpec[] | Signal<readonly CngxA11yPanelAxisSpec[]>,
@@ -291,7 +291,7 @@ export function withA11yPanelAxes(
  * @relatedTo withA11yPanelAxes
  * @relatedTo injectA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideA11yPanelConfig(
   ...features: CngxA11yPanelConfigFeature[]
@@ -333,7 +333,7 @@ export function provideA11yPanelConfig(
  *
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideA11yPanelConfigAt(...features: CngxA11yPanelConfigFeature[]): Provider[] {
   return [
@@ -353,7 +353,7 @@ export function provideA11yPanelConfigAt(...features: CngxA11yPanelConfigFeature
  *
  * @relatedTo provideA11yPanelConfig
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectA11yPanelConfig(): CngxA11yPanelConfig {
   return inject(CNGX_A11Y_PANEL_CONFIG);
@@ -368,7 +368,7 @@ export function injectA11yPanelConfig(): CngxA11yPanelConfig {
  *
  * @relatedTo withA11yPanelLabels
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectA11yPanelLabels(): Signal<CngxA11yPanelLabels> {
   const section = injectA11yPanelSiteCopy().labels;
@@ -451,7 +451,7 @@ function resolveAxes(
  *
  * @relatedTo withA11yPanelAxes
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/a11y/a11y-panel.config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectA11yPanelAxes(): Signal<readonly CngxA11yPanelAxisSpec[]> {
   const config = injectA11yPanelConfig();

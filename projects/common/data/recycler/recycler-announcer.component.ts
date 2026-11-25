@@ -14,7 +14,7 @@ import type { CngxRecycler } from './recycler';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-announcer.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMeasure, CngxVirtualItem, injectRecycler, CNGX_RECYCLER_I18N
  *
  * <example-url>/#/common/data/recycler/basic-list-fixed-item-height</example-url>
