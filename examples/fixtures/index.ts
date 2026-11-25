@@ -80,3 +80,8 @@ export {
 } from './sr-mirror.fixture';
 export { failDemoActionWhen, wrapDemoAction, type DemoAction } from './demo-action.fixture';
 export { refuseClipboardWhile } from './clipboard-refusal.fixture';
+export {
+  createDemoHttpBackend,
+  type DemoHttpBackend,
+  type DemoHttpBackendOptions,
+} from './demo-http.fixture';

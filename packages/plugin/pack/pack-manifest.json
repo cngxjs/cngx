@@ -255,6 +255,11 @@
       "artifact": "pack/recipes/ui-action-button-async-button.md",
       "source": "examples/stories/ui/action-button/async-button/external-state.story.ts",
       "contentHash": "sha256:5964b84c3d45838a9febe120f108c46809d50419c82251960c778226a40fbaf9"
+    },
+    {
+      "artifact": "pack/recipes/common-data-async-operators.md",
+      "source": "examples/stories/common/data/async-operators/tap-http-async-state.story.ts",
+      "contentHash": "sha256:179406ac26b0e7d96d5f39a986f82ad83241c5a29f2d1de4305db483483e53d0"
     }
   ],
   "theming": {
