@@ -124,11 +124,43 @@ describe('CngxCopyBlock geometry', () => {
   });
 });
 
-// The button radius and font size are registered with a fixed initial, so a
-// use-site fallback never paints: the theme reaches them only through the SET.
-// The copied palette is registered without an initial and derives at the use
-// site.
+// Every copy-block token is registered without an initial value and inherits,
+// so it derives at its use site and an ancestor SET reaches the block.
 describe('CngxCopyBlock theme-derived button tokens', () => {
+  it('derives the idle defaults from the foundation tokens when nothing is set', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-space-sm', '9px');
+    mountedRoot!.style.setProperty('--cngx-radius-sm', '6px');
+    mountedRoot!.style.setProperty('--cngx-font-size-sm', '13px');
+    mountedRoot!.style.color = 'rgb(10, 20, 30)';
+    const button = query(host, '.cngx-copy-block__button');
+
+    expect(computedValue(host, 'column-gap')).toBe('9px');
+    expect(computedValue(button, 'background-color')).toBe('rgba(0, 0, 0, 0)');
+    expect(computedValue(button, 'color')).toBe(paintedColor('rgb(10, 20, 30)'));
+    expect(computedValue(button, 'border-top-color')).toBe(paintedColor('rgb(10, 20, 30)'));
+    expect(computedValue(button, 'border-top-left-radius')).toBe('6px');
+    expect(computedValue(button, 'font-size')).toBe('13px');
+  });
+
+  it('lets an ancestor SET of every idle token reach the block and its button', () => {
+    const host = mount();
+    mountedRoot!.style.setProperty('--cngx-copy-block-gap', '17px');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-bg', 'rgb(1, 2, 3)');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-color', 'rgb(4, 5, 6)');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-border', 'rgb(7, 8, 9)');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-radius', '3px');
+    mountedRoot!.style.setProperty('--cngx-copy-block-btn-font-size', '15px');
+    const button = query(host, '.cngx-copy-block__button');
+
+    expect(computedValue(host, 'column-gap')).toBe('17px');
+    expect(computedValue(button, 'background-color')).toBe('rgb(1, 2, 3)');
+    expect(computedValue(button, 'color')).toBe('rgb(4, 5, 6)');
+    expect(computedValue(button, 'border-top-color')).toBe('rgb(7, 8, 9)');
+    expect(computedValue(button, 'border-top-left-radius')).toBe('3px');
+    expect(computedValue(button, 'font-size')).toBe('15px');
+  });
+
   it('derives the button radius, font size and copied border from the theme', async () => {
     const { fixture } = mountFixture();
     mountedRoot!.style.setProperty('--cngx-duration-fast', '0s');
