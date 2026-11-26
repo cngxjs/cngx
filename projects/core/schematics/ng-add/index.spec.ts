@@ -8,6 +8,7 @@ import {
   AI_TOOLS,
   CNGX_LIBS,
   DEFAULT_ESLINT_PLUGIN_VERSION,
+  DEFAULT_MCP_VERSION,
   LANGUAGES,
   NG_ADD_PRESETS,
   THEME_CHOICES,
@@ -31,6 +32,11 @@ const SCHEMA = JSON.parse(readFileSync(join(__dirname, 'schema.json'), 'utf8')) 
 };
 
 type Tree = ReturnType<typeof createFixtureTree>;
+
+// The plan names the `@cngx/mcp` pin of a local build, which every lockstep
+// release moves; the snapshots hold a stand-in so a release leaves them alone.
+const withoutMcpPin = (logs: readonly string[]): readonly string[] =>
+  logs.map((line) => line.replaceAll(`@cngx/mcp@${DEFAULT_MCP_VERSION}`, '@cngx/mcp@<default>'));
 
 // The terminal side of an interactive run: every question keeps its
 // preselection or default, the AI tooling question answers `editorPicks`.
@@ -367,7 +373,7 @@ describe('ngAdd', () => {
     it('prints the described plan, then the summary', async () => {
       const run = await runRule(ngAdd({ preset }), createFixtureTree());
 
-      expect(run.logs).toMatchSnapshot();
+      expect(withoutMcpPin(run.logs)).toMatchSnapshot();
     });
   });
 
@@ -377,7 +383,7 @@ describe('ngAdd', () => {
     it('prints the described plan, then the summary', async () => {
       const run = await runRule(ngAdd({ preset, yes: true }), createFixtureTree('existing-tailwind-app'));
 
-      expect(run.logs).toMatchSnapshot();
+      expect(withoutMcpPin(run.logs)).toMatchSnapshot();
     });
 
     it('edits the files it plans in place and leaves every other file as it was', async () => {
