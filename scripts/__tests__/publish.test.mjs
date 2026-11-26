@@ -1055,7 +1055,16 @@ describe('stampToolingChangelog', () => {
       const stamped = stampToolingChangelog(text, '0.3.0', '2026-11-20');
 
       expect(stamped).toContain('## 0.3.0 - 2026-11-20');
-      expect(stamped.split('\n')).toHaveLength(text.split('\n').length);
+      // Every line but the Unreleased heading survives, in order; a file
+      // without Unreleased (right after a release) gains a new section.
+      const kept = text.split('\n').filter((line) => line.trim() !== '## Unreleased');
+      const out = stamped.split('\n');
+      let at = 0;
+      for (const line of kept) {
+        at = out.indexOf(line, at);
+        expect(at, `line lost: ${line}`).not.toBe(-1);
+        at += 1;
+      }
     }
   });
 });

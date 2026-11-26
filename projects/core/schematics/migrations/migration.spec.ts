@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type Codemod, createMemoryTree, EMPTY_RENAME_TABLE, type RenameTable } from '../engine';
+import { type Codemod, createMemoryTree, DEFAULT_MCP_VERSION, EMPTY_RENAME_TABLE, type RenameTable } from '../engine';
 import { type InstallManifest, type ProjectRecord } from '../ng-add/steps/manifest';
 import { readFixture, readMigrationFixture, readTree, runRule } from '../testing/run-schematic';
 import { createMigration } from './migration';
@@ -248,7 +248,7 @@ describe('createMigration', () => {
     const files = withRecords(stale(projects['alpha']));
     const unreadable = withRecords({ ...stale(projects['alpha']), answers: { preset: 'gone' } });
 
-    const current = withRecords({ ...stale(projects['alpha']), mcpVersion: '0.2.0' });
+    const current = withRecords({ ...stale(projects['alpha']), mcpVersion: DEFAULT_MCP_VERSION });
 
     const { logs } = await runRule(migration(), createMemoryTree(unreadable), ENTRY);
     const { logs: readable } = await runRule(migration(), createMemoryTree(files), ENTRY);

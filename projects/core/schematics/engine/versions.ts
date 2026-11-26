@@ -33,7 +33,7 @@ export function isUnstampedVersion(version: string): boolean {
 
 // The versions a local build (no `versions.json`) pins; a spec keeps them in
 // step with packages/mcp and packages/eslint-plugin.
-export const DEFAULT_MCP_VERSION = '0.2.0';
+export const DEFAULT_MCP_VERSION = '0.3.0';
 export const DEFAULT_ESLINT_PLUGIN_VERSION = '0.2.0';
 
 /** The pins of a `versions.json` body; `undefined` when it is not JSON or a pin is missing. */

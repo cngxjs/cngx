@@ -11,7 +11,7 @@ import {
   sdkInTree,
   selectCliTarballs,
   missingRecordedLibs,
-  newestListed,
+  newestBelow,
   packument,
   parseAngularSpec,
   peerInstallSpecs,
@@ -515,11 +515,17 @@ describe('packument', () => {
   });
 });
 
-describe('newestListed', () => {
-  it('reads a list, a single version and nothing', () => {
-    expect(newestListed('["0.1.0-rc.6","0.1.0-rc.7"]')).toBe('0.1.0-rc.7');
-    expect(newestListed('"0.1.0-rc.7"')).toBe('0.1.0-rc.7');
-    expect(newestListed('')).toBeUndefined();
+describe('newestBelow', () => {
+  it('picks the newest version below the given one, prereleases included', () => {
+    expect(newestBelow('["0.1.0-rc.6","0.1.0-rc.10","0.1.0-rc.9","0.3.0"]', '0.3.0')).toBe('0.1.0-rc.10');
+    expect(newestBelow('["0.1.0-rc.9","0.1.0","0.2.0","0.3.0"]', '0.3.0')).toBe('0.2.0');
+    expect(newestBelow('["0.1.0-rc.9","0.1.0"]', '0.1.0')).toBe('0.1.0-rc.9');
+  });
+
+  it('reads a bare version and an empty answer', () => {
+    expect(newestBelow('"0.1.0-rc.7"', '0.3.0')).toBe('0.1.0-rc.7');
+    expect(newestBelow('"0.3.0"', '0.3.0')).toBeUndefined();
+    expect(newestBelow('', '0.3.0')).toBeUndefined();
   });
 });
 

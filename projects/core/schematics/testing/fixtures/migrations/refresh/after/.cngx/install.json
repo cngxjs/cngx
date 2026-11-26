@@ -3,7 +3,7 @@
   "projects": {
     "fixture-app": {
       "cngxVersion": "0.0.0-PLACEHOLDER",
-      "mcpVersion": "0.2.0",
+      "mcpVersion": "0.3.0",
       "eslintPluginVersion": "0.2.0",
       "angularVersion": "21.2.0",
       "preset": "minimal",
