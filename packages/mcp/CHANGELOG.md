@@ -6,7 +6,7 @@ lockstep with the cngx libraries: `@cngx/mcp` X.Y.Z bundles the X.Y.Z snapshot,
 and a tool's `version` argument still grounds an answer against another
 release (`cngx://provenance` and `groundedVersion` name the one that answered).
 
-## Unreleased
+## 0.3.0 - 2026-11-26
 
 ### Breaking
 

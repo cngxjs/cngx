@@ -1,6 +1,6 @@
 {
   "name": "@cngx/cli",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Command line for the cngx public API: the @cngx/mcp queries as cngx subcommands with markdown or JSON output, for coding agents and CI.",
   "license": "MIT",
   "repository": {

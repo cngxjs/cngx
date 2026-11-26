@@ -137,14 +137,14 @@
         }
     ],
     "playgroundDependencies": {
-        "@cngx/utils": "0.1.0-rc.9",
-        "@cngx/core": "0.1.0-rc.9",
-        "@cngx/common": "0.1.0-rc.9",
-        "@cngx/forms": "0.1.0-rc.9",
-        "@cngx/ui": "0.1.0-rc.9",
-        "@cngx/data-display": "0.1.0-rc.9",
-        "@cngx/interop": "0.1.0-rc.9",
-        "@cngx/themes": "0.1.0-rc.9",
+        "@cngx/utils": "0.3.0",
+        "@cngx/core": "0.3.0",
+        "@cngx/common": "0.3.0",
+        "@cngx/forms": "0.3.0",
+        "@cngx/ui": "0.3.0",
+        "@cngx/data-display": "0.3.0",
+        "@cngx/interop": "0.3.0",
+        "@cngx/themes": "0.3.0",
         "@angular/material": "^21.2.14",
         "libphonenumber-js": "^1.11.0"
     },

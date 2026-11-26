@@ -6,7 +6,7 @@ with the cngx libraries: `@cngx/cli` X.Y.Z bundles the X.Y.Z snapshot, and
 `--cngx-version` or the installed release still grounds an answer against
 another release.
 
-## Unreleased
+## 0.3.0 - 2026-11-26
 
 ### Added
 

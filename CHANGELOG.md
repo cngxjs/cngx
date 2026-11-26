@@ -5,6 +5,336 @@ squash-merged pull request. Non-library scopes (examples, examples-gen, docs,
 ci, build, chore) and non-consumer-facing types are omitted by design.
 See CONTRIBUTING.md for the workflow.
 
+## 0.3.0 (2026-11-26)
+
+
+### Features
+
+- **cli:** add the cngx cli over the shared query core ([#677](https://github.com/cngxjs/cngx/issues/677)) ([0dd4cc4](https://github.com/cngxjs/cngx/commit/0dd4cc40dd0b5e126f45811e9e5648c930352e2e))
+- **cli:** pin answers to the installed cngx release, cache snapshots on disk, take several names and run cngx doctor ([#700](https://github.com/cngxjs/cngx/issues/700)) ([4020c63](https://github.com/cngxjs/cngx/commit/4020c634b1e2f546ed555d4dda8d3fbe174bb7ec))
+- **common:** give dialogs and the drawer surface modal hotkey scopes ([#752](https://github.com/cngxjs/cngx/issues/752)) ([67d7757](https://github.com/cngxjs/cngx/commit/67d775731f99c34d59f6270b471f69b0f850d751))
+- **common,core,themes:** move dropdown menu focus into the menu and lift solid button contrast to AA ([#716](https://github.com/cngxjs/cngx/issues/716)) ([1cf9e4e](https://github.com/cngxjs/cngx/commit/1cf9e4eee09caff8e70de4458831a4de3e2150b2))
+- **common,forms,ui,themes:** move the close and action buttons onto the cngx button core ([#674](https://github.com/cngxjs/cngx/issues/674)) ([df98cf8](https://github.com/cngxjs/cngx/commit/df98cf83fb3dcb9c51a129e07bd2f6c84202d981))
+- **common/button:** add @cngx/common/button with CngxButton and CngxIconButton ([#660](https://github.com/cngxjs/cngx/issues/660)) ([dd738fc](https://github.com/cngxjs/cngx/commit/dd738fc526778e589800fa8f32bf88b1ec30bc9d))
+- **common/button:** add CngxButtonGroup with addon and separator segments ([#663](https://github.com/cngxjs/cngx/issues/663)) ([e7319d7](https://github.com/cngxjs/cngx/commit/e7319d772d11ae67172f50f3334f994e9dad8106))
+- **common/button:** build every button host on CngxButtonBrain and a run-state seam ([#741](https://github.com/cngxjs/cngx/issues/741)) ([e6c299b](https://github.com/cngxjs/cngx/commit/e6c299b0e3eaa177c1a841e324dd2784dcea7683))
+- **common/card:** paint the severity accent with the feedback recipe and add a status icon ([#882](https://github.com/cngxjs/cngx/issues/882)) ([345dd7a](https://github.com/cngxjs/cngx/commit/345dd7aeda493ae99905877e77ea8834b57894ee))
+- **common/display:** snap icon boxes to whole pixels and add the 12-grid micro tier ([#704](https://github.com/cngxjs/cngx/issues/704)) ([9518200](https://github.com/cngxjs/cngx/commit/9518200d91dacb3d2ee08818dfd407d218d61434))
+- **common/display:** add the 16-grid small icon tier mechanics and sign-off sheet ([#726](https://github.com/cngxjs/cngx/issues/726)) ([a676c03](https://github.com/cngxjs/cngx/commit/a676c033fbb60f6a6268fcb0765b3c4a3191ed74))
+- **common/display:** 16-grid small icon tier and band consumers on the 16px box ([#732](https://github.com/cngxjs/cngx/issues/732)) ([73a7b04](https://github.com/cngxjs/cngx/commit/73a7b0409520ff1a9b9afe30942d82f00ed49c98))
+- **common/interactive:** emit settled per cngxAsyncClick run and hand actions an abort signal ([#729](https://github.com/cngxjs/cngx/issues/729)) ([02f626e](https://github.com/cngxjs/cngx/commit/02f626e5cba97446d9834c2a366cb7b32b80ae49))
+- **common/interactive:** add the hotkey registry and run CngxKeyboardShortcut on it ([#749](https://github.com/cngxjs/cngx/issues/749)) ([d5504b3](https://github.com/cngxjs/cngx/commit/d5504b36387a47c68564ca1790968b57155d899f))
+- **common/interactive:** run the action button and popover action on a shared action status brain ([#760](https://github.com/cngxjs/cngx/issues/760)) ([94e065b](https://github.com/cngxjs/cngx/commit/94e065b54651859e221112c4197d6e6d6100947e))
+- **common/interactive:** forward the copy outputs and resetDelay from CngxCopyBlock ([#935](https://github.com/cngxjs/cngx/issues/935)) ([0fc1607](https://github.com/cngxjs/cngx/commit/0fc1607775be1d13cf35ff43e017c271cf44abef))
+- **common/layout:** add the sidebar, panel trigger and modal drawer surface ([#742](https://github.com/cngxjs/cngx/issues/742)) ([5242889](https://github.com/cngxjs/cngx/commit/52428896fb7f8869105a6feed77aaa9f6d1a21b0))
+- **common/layout:** ship the sidebar and drawer base skins and run the rail helpers on the nav atoms ([#812](https://github.com/cngxjs/cngx/issues/812)) ([842d1e9](https://github.com/cngxjs/cngx/commit/842d1e95ebd8f87d855f94a75275c4503bc8f33b))
+- **common/menu-button:** add CngxMenuButton as a button type that opens a menu ([#683](https://github.com/cngxjs/cngx/issues/683)) ([a639a91](https://github.com/cngxjs/cngx/commit/a639a917696ef6809bad7f56d5774cb71be80535))
+- **common/menu-button:** add CngxIconMenuButton and CngxSplitButton ([#684](https://github.com/cngxjs/cngx/issues/684)) ([768a167](https://github.com/cngxjs/cngx/commit/768a1674059f42d59ea569d81d447df18693bff6))
+- **common/popover:** rebuild the popover footer actions on CngxButtonBrain ([#748](https://github.com/cngxjs/cngx/issues/748)) ([0c76c5e](https://github.com/cngxjs/cngx/commit/0c76c5e21ab20372c6432c67b531191e718d92c5))
+- **core/schematics:** move the mcp pin in editor configs cngx wrote ([#730](https://github.com/cngxjs/cngx/issues/730)) ([4be0b30](https://github.com/cngxjs/cngx/commit/4be0b303b68b2506ebcbfdad2d02a1eb9d58b871))
+- **core/schematics:** place the ngmodule outlets on @angular/build 22.3 and later ([#929](https://github.com/cngxjs/cngx/issues/929)) ([61bd402](https://github.com/cngxjs/cngx/commit/61bd402c73663f13cf25daccb1c7a0d8466b0a03))
+- **core/theming:** derive the primary and danger text and strong rungs via relative colour syntax ([#725](https://github.com/cngxjs/cngx/issues/725)) ([134d912](https://github.com/cngxjs/cngx/commit/134d912e002d13d64ff93e466803e1b409d2e159))
+- **forms/controls:** warn in dev mode when a bridged atom is also bound by a parent value ([#890](https://github.com/cngxjs/cngx/issues/890)) ([b49e012](https://github.com/cngxjs/cngx/commit/b49e012a167b7323a9dabe6345e96f39c115ca8f))
+- **forms/field:** warn in dev mode when a field control is also bound by hand ([#886](https://github.com/cngxjs/cngx/issues/886)) ([ec7d707](https://github.com/cngxjs/cngx/commit/ec7d707cac9a1c62b53daa601296ba1a2f41043c))
+- **forms/select:** summarize the reorderable multi-select trigger and sort its values in the panel on touch ([#648](https://github.com/cngxjs/cngx/issues/648)) ([d8e2f18](https://github.com/cngxjs/cngx/commit/d8e2f18b6e083ab63d800a9b7f78634769a0ff70))
+- **forms/select:** make the tree-select readable and usable on desktop and touch ([#658](https://github.com/cngxjs/cngx/issues/658)) ([423f742](https://github.com/cngxjs/cngx/commit/423f7422655b85e243b039372091255ca8c5b7f6))
+- **forms/select:** fit as many chips as the strip holds and fold the rest into the +N badge ([#685](https://github.com/cngxjs/cngx/issues/685)) ([dee41fa](https://github.com/cngxjs/cngx/commit/dee41fa65c50da879494a85c4ca2125eeb93632e))
+- **forms/select:** drop the selected-row fill in multi-value panels and keep the cursor on top ([#686](https://github.com/cngxjs/cngx/issues/686)) ([67f18e5](https://github.com/cngxjs/cngx/commit/67f18e5475365e4a58324f711c11aff9f738bb5c))
+- **forms/select:** add the select-prefixed commit controller names and deprecate the old ones ([#925](https://github.com/cngxjs/cngx/issues/925)) ([89343a9](https://github.com/cngxjs/cngx/commit/89343a976389a459f01844d14b1c1a1077baba83))
+- **mcp:** read schema-6 snapshots next to schema 2 ([#669](https://github.com/cngxjs/cngx/issues/669)) ([dcf170f](https://github.com/cngxjs/cngx/commit/dcf170fc20c944d07ef8ed79581493017d9e5f96))
+- **mcp,cli:** explain a CNGX error code ([#736](https://github.com/cngxjs/cngx/issues/736)) ([a06a912](https://github.com/cngxjs/cngx/commit/a06a9128d5a1d4b890fce1e890d75d2643894d99))
+- **mcp,cli:** explain a code for a requested cngx release ([#740](https://github.com/cngxjs/cngx/issues/740)) ([a2abbd6](https://github.com/cngxjs/cngx/commit/a2abbd6ab857d25e646e06035e81044561c532e3))
+- **scripts:** publish @cngx/mcp and @cngx/cli in lockstep with the libraries ([#727](https://github.com/cngxjs/cngx/issues/727)) ([ab2d19a](https://github.com/cngxjs/cngx/commit/ab2d19a8257056e07c281cd9c9c55d27fc4d7802))
+- **themes:** give the cngx button family the Material 3 bridge ([#679](https://github.com/cngxjs/cngx/issues/679)) ([6926f29](https://github.com/cngxjs/cngx/commit/6926f2980f9aa2fccae985422b9bef5aa0d9ff3c))
+- **themes/material:** bridge the menu buttons, the split button and the menu dropdown to Material 3 ([#688](https://github.com/cngxjs/cngx/issues/688)) ([6a18fa2](https://github.com/cngxjs/cngx/commit/6a18fa259ad60c108eaca0043659eea9eac4b1a8))
+- **themes/material:** map the M3 list item and navigation rail onto the sidenav and nav rail ([#824](https://github.com/cngxjs/cngx/issues/824)) ([d2b2c8a](https://github.com/cngxjs/cngx/commit/d2b2c8a8703f1fd0ba11794f9887d544675278f3))
+- **ui/feedback:** draw the toast on the overlay surface with an alert-style action ([#739](https://github.com/cngxjs/cngx/issues/739)) ([474a853](https://github.com/cngxjs/cngx/commit/474a853c0dd50c9d978f6bad8738c9bb269d6051))
+- **ui/feedback:** show the toast timer and hold queued toasts until shown ([#744](https://github.com/cngxjs/cngx/issues/744)) ([684718f](https://github.com/cngxjs/cngx/commit/684718fc57063099c3422b37ec8589bf03bccf8d))
+- **ui/nav-rail:** add the navigation rail on nav atoms that carry their own row skin ([#788](https://github.com/cngxjs/cngx/issues/788)) ([179f4de](https://github.com/cngxjs/cngx/commit/179f4de57114d92669773f2203b3d2b2517ac65c))
+- **ui/sidenav:** keep the rail a crop of the sidenav and animate between rail, peek and expanded ([#797](https://github.com/cngxjs/cngx/issues/797)) ([c51a8a6](https://github.com/cngxjs/cngx/commit/c51a8a68060514dd25b91dc8aad9241600e66aa5))
+- **utils:** draw every default glyph from one framework-agnostic icon set ([#690](https://github.com/cngxjs/cngx/issues/690)) ([1fae42d](https://github.com/cngxjs/cngx/commit/1fae42d15b8b12b76fb98357a4a116989a11e347))
+- **utils:** draw 12-grid micro glyphs for 17 default icons ([#709](https://github.com/cngxjs/cngx/issues/709)) ([97b5ab0](https://github.com/cngxjs/cngx/commit/97b5ab0a9565302d1af4680e8b5cdb75080da221))
+- **utils:** link diagnostics to the docs of the installed version ([#764](https://github.com/cngxjs/cngx/issues/764)) ([f6a7456](https://github.com/cngxjs/cngx/commit/f6a7456bcf57ec4c1c5990bff9f9c7ab934c6183))
+- **utils,forms:** finish the 12-grid micro icon set and add a reorder move glyph slot ([#721](https://github.com/cngxjs/cngx/issues/721)) ([3082069](https://github.com/cngxjs/cngx/commit/308206919c2d7331cfc46d94c9aed225692ed93b))
+
+### Bug Fixes
+
+- **cli,doctor:** close the pre-release block of the cli review ([#718](https://github.com/cngxjs/cngx/issues/718)) ([8e71206](https://github.com/cngxjs/cngx/commit/8e7120673a933b04ec8d44e5af7214531459829f))
+- **common:** name the tab group and the stepper through their i18n label only ([#775](https://github.com/cngxjs/cngx/issues/775)) ([6789aa1](https://github.com/cngxjs/cngx/commit/6789aa1b243eaa03c592cb2cb11e5c50f155af3f))
+- **common:** derive card, avatar, chip and tag tokens from the theme and drop dead fallbacks ([#881](https://github.com/cngxjs/cngx/issues/881)) ([4849fa6](https://github.com/cngxjs/cngx/commit/4849fa6b279dab5040ae1f8d170623e4afad1c65))
+- **common:** derive interactive, badge and divider tokens from the theme and drop dead fallbacks ([#885](https://github.com/cngxjs/cngx/issues/885)) ([cc3dc5a](https://github.com/cngxjs/cngx/commit/cc3dc5ab652a0112662312f2720536c5f263baf8))
+- **common:** harden the keyboard model of hotkeys, active descendant, roving tabindex and activation key ([#909](https://github.com/cngxjs/cngx/issues/909)) ([022e013](https://github.com/cngxjs/cngx/commit/022e013422a34eacce818cf6640503d70647f7a8))
+- **common:** restore focus only when lost, harden live regions and bind CngxExpandable two-way ([#912](https://github.com/cngxjs/cngx/issues/912)) ([92a25e9](https://github.com/cngxjs/cngx/commit/92a25e9489fc6161748a126ccc1eae002cfedc93))
+- **common:** read the popover Escape gate at keydown time ([#921](https://github.com/cngxjs/cngx/issues/921)) ([249368e](https://github.com/cngxjs/cngx/commit/249368e1a22a445d3054dbc7bc8206c040ec6fd5))
+- **common,core:** close four silent paths in direction, audio pitch, command sources and scroll edges ([#647](https://github.com/cngxjs/cngx/issues/647)) ([6b98b99](https://github.com/cngxjs/cngx/commit/6b98b99fddb00d4941d6ac9a69207a49fd48e3ed))
+- **common,forms,ui:** derive option, chip and row tints from the primary colour ([#847](https://github.com/cngxjs/cngx/issues/847)) ([ccbc84e](https://github.com/cngxjs/cngx/commit/ccbc84e78797a67860df67b94e93511dcada7b1d))
+- **common,forms,ui:** fix inset divider height, select shadow, filter-builder fallback, toast type ([#902](https://github.com/cngxjs/cngx/issues/902)) ([4d83f6b](https://github.com/cngxjs/cngx/commit/4d83f6bed4f8dfe9829aa80b6e0b99acecb3df73))
+- **common,forms,ui,themes:** land the internal glyphs on the 12px micro box ([#713](https://github.com/cngxjs/cngx/issues/713)) ([51320ed](https://github.com/cngxjs/cngx/commit/51320ed7b52161b193106e2ceb9d1d79bc89ad22))
+- **common,ui:** keep the button label in the accessible name while busy ([#702](https://github.com/cngxjs/cngx/issues/702)) ([e7015b8](https://github.com/cngxjs/cngx/commit/e7015b8d78fe6c297682be0fcdff82411a52dbe3))
+- **common,ui:** close the loading-gate review of [#712](https://github.com/cngxjs/cngx/issues/712) ([#731](https://github.com/cngxjs/cngx/issues/731)) ([c5020dc](https://github.com/cngxjs/cngx/commit/c5020dca7663975454b8a34c2f51216ac6640d9a))
+- **common,ui:** skin the accordion by class and document the skin and story ownership rules ([#854](https://github.com/cngxjs/cngx/issues/854)) ([6f4167a](https://github.com/cngxjs/cngx/commit/6f4167a2a9081dacdaeeaf69f44f396b8142930d))
+- **common,ui:** close the button review 3 runtime nits and test gaps ([#903](https://github.com/cngxjs/cngx/issues/903)) ([ee8b2b6](https://github.com/cngxjs/cngx/commit/ee8b2b61141dc83fb5404a86e9e10296302fe80a))
+- **common,ui,examples:** keep a sheet's inert claim through a popover close fade and leave footer focus where the user put it ([#867](https://github.com/cngxjs/cngx/issues/867)) ([2054153](https://github.com/cngxjs/cngx/commit/20541537a9a92ded9849e52d7d92fc4efde10e15))
+- **common,ui,examples:** make the sidenav a navigation landmark and layer its Escape and announcement ([#874](https://github.com/cngxjs/cngx/issues/874)) ([8de7dfb](https://github.com/cngxjs/cngx/commit/8de7dfb982f7418d3a28584b39184a610ffda8cb))
+- **common,ui,forms:** gate the async-click busy visual and the recycler skeleton behind the loading config ([#712](https://github.com/cngxjs/cngx/issues/712)) ([8ddb8bd](https://github.com/cngxjs/cngx/commit/8ddb8bdda45c6f78e127572b78b835a7322b43e9))
+- **common,ui,themes:** speak settles during the popover close fade, move the last on-* readers to strong pairs ([#848](https://github.com/cngxjs/cngx/issues/848)) ([8d6baa9](https://github.com/cngxjs/cngx/commit/8d6baa9ee99fc0ec28f818a9d884d2dcb0784a29))
+- **common,ui,themes:** let primary tokens follow the brand primary instead of Ember ([#857](https://github.com/cngxjs/cngx/issues/857)) ([c3eef7b](https://github.com/cngxjs/cngx/commit/c3eef7bceb0984d50b570df2827107523df5076e))
+- **common,ui,themes:** keep select and paginator styles independent of the listbox skin load order ([#869](https://github.com/cngxjs/cngx/issues/869)) ([e11f5c9](https://github.com/cngxjs/cngx/commit/e11f5c9534390de8d50028734f5c59ea520ed23c))
+- **common/button:** floor touch targets, paint states under forced colors and flip clipped menus ([#774](https://github.com/cngxjs/cngx/issues/774)) ([bee0ab6](https://github.com/cngxjs/cngx/commit/bee0ab61751a9a6aaa0e37308a6b1176cb8d5c95))
+- **common/button:** close the button family behaviour gaps from the re-review ([#811](https://github.com/cngxjs/cngx/issues/811)) ([c9ff389](https://github.com/cngxjs/cngx/commit/c9ff389267c21b3fef27c5d6a171952b755da7e8))
+- **common/button:** meet secondary and toggle contrast, keep sheet announcements and footer focus ([#839](https://github.com/cngxjs/cngx/issues/839)) ([0214ac5](https://github.com/cngxjs/cngx/commit/0214ac5c760fb223d0f4e1a4f59000f3c7137a54))
+- **common/button:** make the secondary fill visible against the page and keep neutral solid above it ([#846](https://github.com/cngxjs/cngx/issues/846)) ([8c44b3b](https://github.com/cngxjs/cngx/commit/8c44b3bff11a8fbf7c5b1f8c5df983cb79f998e2))
+- **common/button,themes/material:** keep the neutral tone on a link button ([#696](https://github.com/cngxjs/cngx/issues/696)) ([39b97c0](https://github.com/cngxjs/cngx/commit/39b97c0774d3e16d381cf616992df9a353c2af97))
+- **common/chart:** draw markers, strokes, gutters and forced-colors steps from what is bound ([#649](https://github.com/cngxjs/cngx/issues/649)) ([3674cf9](https://github.com/cngxjs/cngx/commit/3674cf9c038b4b1fcdead7d8b54145024ed507a7))
+- **common/data:** derive the resource bridge state per request and harden CngxAsync ([#927](https://github.com/cngxjs/cngx/issues/927)) ([89cdcdb](https://github.com/cngxjs/cngx/commit/89cdcdbc1e2e521199d86198b5f85afc09dee1be))
+- **common/data:** settle async-state actions once and honour cancellation and destroy ([#932](https://github.com/cngxjs/cngx/issues/932)) ([1404276](https://github.com/cngxjs/cngx/commit/14042764cbaffe146a547a148963ed9096e947a6))
+- **common/dialog:** start a drag from non-interactive content inside the handle ([#941](https://github.com/cngxjs/cngx/issues/941)) ([e14e423](https://github.com/cngxjs/cngx/commit/e14e4235ae68abe5646df92f7901398ca081e4da))
+- **common/display:** apply the cngx-icon size presets and keep an explicit svg fill ([#664](https://github.com/cngxjs/cngx/issues/664)) ([a1a0991](https://github.com/cngxjs/cngx/commit/a1a099114fb22ba53f1446f998b9f1239df5647f))
+- **common/interactive:** clip the ripple wave, not its host ([#666](https://github.com/cngxjs/cngx/issues/666)) ([6180f9d](https://github.com/cngxjs/cngx/commit/6180f9d6f01b3a116ef537d73a1969eda2ea5603))
+- **common/interactive:** keep disabled menu and listbox triggers from opening on the keyboard ([#681](https://github.com/cngxjs/cngx/issues/681)) ([1794f0a](https://github.com/cngxjs/cngx/commit/1794f0ae6e381b1ec5de0bd49d723ec968f6a0fc))
+- **common/interactive:** start the checkbox group's arrow-key axis on its vertical layout ([#767](https://github.com/cngxjs/cngx/issues/767)) ([6583fa1](https://github.com/cngxjs/cngx/commit/6583fa18defefc717564883d053efeda7bea6b9f))
+- **common/interactive:** keep disabled button toggles focusable and clear the arrow-select flag on toggles and radios ([#798](https://github.com/cngxjs/cngx/issues/798)) ([9e52cff](https://github.com/cngxjs/cngx/commit/9e52cff6129295efd0392058a5b9f4156801aa90))
+- **common/interactive:** keep nav rows at their height in a column too short for them ([#802](https://github.com/cngxjs/cngx/issues/802)) ([81a3896](https://github.com/cngxjs/cngx/commit/81a38969319ebe54307d72d7cf09f9ca4f684279))
+- **common/interactive:** drop the popover panel strip from the menu skin ([#823](https://github.com/cngxjs/cngx/issues/823)) ([3e2f91d](https://github.com/cngxjs/cngx/commit/3e2f91d7319eab5053ce0326b5bc6aeeaf2f82dc))
+- **common/interactive:** paint async states at zero specificity and drop the button exclusion ([#834](https://github.com/cngxjs/cngx/issues/834)) ([1987299](https://github.com/cngxjs/cngx/commit/1987299dbdab18144d64d345af677dfbdaa0ce2c))
+- **common/interactive:** let the toggle on-track follow the primary colour ([#851](https://github.com/cngxjs/cngx/issues/851)) ([e211d96](https://github.com/cngxjs/cngx/commit/e211d9616def5998ff7579f15916d5c61322c591))
+- **common/interactive:** let the toggle track and thumb tokens inherit from the host ([#866](https://github.com/cngxjs/cngx/issues/866)) ([17bb912](https://github.com/cngxjs/cngx/commit/17bb912c8801204e9b0e93bdc91a5c6bcafc7b5a))
+- **common/interactive:** speak the settle text of a host removed by its own settle and fix button doc drift ([#889](https://github.com/cngxjs/cngx/issues/889)) ([9d674ff](https://github.com/cngxjs/cngx/commit/9d674ffab70c50a131785269aa6fd3b5b55a90bd))
+- **common/interactive:** speak only on text transitions and pass the routed component to the guard ([#910](https://github.com/cngxjs/cngx/issues/910)) ([6f54b27](https://github.com/cngxjs/cngx/commit/6f54b27f9a421ad754525a8486d39fb6788bbeff))
+- **common/interactive:** harden the gesture, ripple and pointer atoms and the tooltip motion class ([#911](https://github.com/cngxjs/cngx/issues/911)) ([4af72ec](https://github.com/cngxjs/cngx/commit/4af72ec7f2475f6a95d5abf843f87b43218c20bf))
+- **common/interactive:** keep async status focusable and bridge async tokens on the theme host ([#924](https://github.com/cngxjs/cngx/issues/924)) ([d694bf5](https://github.com/cngxjs/cngx/commit/d694bf5a82fc23bae1843fa5f9abd5139b6e4a96))
+- **common/interactive:** gate, announce and register the error atoms consistently ([#926](https://github.com/cngxjs/cngx/issues/926)) ([2789682](https://github.com/cngxjs/cngx/commit/2789682efd167a2b46bb69f6a63c9263ff27d698))
+- **common/interactive:** report, show and announce a failed copy in the copy units ([#930](https://github.com/cngxjs/cngx/issues/930)) ([9a41203](https://github.com/cngxjs/cngx/commit/9a4120307e283e1ee5a95748e388358cad6261e2))
+- **common/interactive:** let an ancestor set every copy block token ([#936](https://github.com/cngxjs/cngx/issues/936)) ([efddb83](https://github.com/cngxjs/cngx/commit/efddb83777392642db6a047b811e8278a5c6c45e))
+- **common/layout:** swallow the trailing click of a gesture that dismissed a page-modal surface ([#759](https://github.com/cngxjs/cngx/issues/759)) ([5373fcd](https://github.com/cngxjs/cngx/commit/5373fcdf157a61537480337f83b8a3ac7f3a1f1c))
+- **common/layout:** read the synced query-param key once inputs are bound ([#768](https://github.com/cngxjs/cngx/issues/768)) ([009b39f](https://github.com/cngxjs/cngx/commit/009b39f26b6a739cf7f841a7f8c78b31617a6195))
+- **common/layout:** keep a visible drawer backdrop live and correct the drawer stories ([#827](https://github.com/cngxjs/cngx/issues/827)) ([87c9603](https://github.com/cngxjs/cngx/commit/87c96031643022a19d9f0a607bdcb4dda735aad4))
+- **common/popover:** stop a bare popover host from clipping the shadow of its content ([#694](https://github.com/cngxjs/cngx/issues/694)) ([74d61c4](https://github.com/cngxjs/cngx/commit/74d61c408648d77f6451612bea1118debc89d0e3))
+- **common/popover:** restore trigger focus only when focus is lost ([#695](https://github.com/cngxjs/cngx/issues/695)) ([37f9683](https://github.com/cngxjs/cngx/commit/37f9683a7c5920396251cf8e32f480be2ae3789b))
+- **common/popover:** return focus from the popover panel and claim composer hints per owner ([#745](https://github.com/cngxjs/cngx/issues/745)) ([f8670b9](https://github.com/cngxjs/cngx/commit/f8670b9cbe2d8232e3a18b79346d350f37cf2101))
+- **common/popover:** restore trigger focus when the popover closes before change detection runs ([#751](https://github.com/cngxjs/cngx/issues/751)) ([4dac188](https://github.com/cngxjs/cngx/commit/4dac1887f62c0c524826d24d09b5db611c9c2cbe))
+- **common/popover:** reset bare popover chrome at zero specificity instead of excluding consumers ([#822](https://github.com/cngxjs/cngx/issues/822)) ([0361b4c](https://github.com/cngxjs/cngx/commit/0361b4c1501981568ba787a5905e09d538981846))
+- **common/popover:** lay out and cap the anchored sheet host like the modal presentations ([#877](https://github.com/cngxjs/cngx/issues/877)) ([b8415ca](https://github.com/cngxjs/cngx/commit/b8415ca39d7e5e200a8170e97657eed09544b314))
+- **common/popover:** keep focus on the trigger through the close fade and a sheet backdrop tap ([#880](https://github.com/cngxjs/cngx/issues/880)) ([d34b52c](https://github.com/cngxjs/cngx/commit/d34b52c5c47ab75525f23de03371a8c2acd24303))
+- **common/popover:** write the anchor placement styles before showPopover() ([#922](https://github.com/cngxjs/cngx/issues/922)) ([f83f5cc](https://github.com/cngxjs/cngx/commit/f83f5ccad322b2a6d668b7669645c290bc58f5ef))
+- **common/tabs:** name the tab group from the tabs i18n label unless an aria label is configured ([#771](https://github.com/cngxjs/cngx/issues/771)) ([1dcadf1](https://github.com/cngxjs/cngx/commit/1dcadf17b36b12d745732e64951336ca5b992820))
+- **core:** harden key combo matching and add combo helpers ([#747](https://github.com/cngxjs/cngx/issues/747)) ([b4b34bf](https://github.com/cngxjs/cngx/commit/b4b34bfbb309b4b981f2f5902e3c89c44ebf04ca))
+- **core:** harden storage, the keyed registry and the preference axes ([#793](https://github.com/cngxjs/cngx/issues/793)) ([1da289c](https://github.com/cngxjs/cngx/commit/1da289c8d022bf824c5469ebcb11f6ab1af4a9e2))
+- **core:** handle the reviewed edge cases in selection, transition, pack merge, typeahead folding and the announcement recorder ([#818](https://github.com/cngxjs/cngx/issues/818)) ([2c46b3c](https://github.com/cngxjs/cngx/commit/2c46b3cd504d66441527f3c75773ea3e417da34b))
+- **core:** translate the german breadcrumb labels and describe what the core package ships ([#840](https://github.com/cngxjs/cngx/issues/840)) ([9af63f6](https://github.com/cngxjs/cngx/commit/9af63f61123c87607803c85d6d0f921d709d80ee))
+- **core/schematics:** close the ng add findings of the second independent review ([#652](https://github.com/cngxjs/cngx/issues/652)) ([3977177](https://github.com/cngxjs/cngx/commit/39771772a69b2429a348dcf19118cc33a9ef5d31))
+- **core/schematics:** close the dry-run, stylesheet and manifest gaps and correct the core docs ([#795](https://github.com/cngxjs/cngx/issues/795)) ([54e6cb1](https://github.com/cngxjs/cngx/commit/54e6cb1c7e3314dff80116bd7a16b26ee43c1802))
+- **core/schematics:** keep line endings, read git from the workspace root and harden ng add input handling ([#837](https://github.com/cngxjs/cngx/issues/837)) ([99279a2](https://github.com/cngxjs/cngx/commit/99279a2ddb3dbbb53ce304afe99011af1bbe4ff3))
+- **core/schematics,themes/material:** set rtl on <html>, rename only project sources, map muted text ([#809](https://github.com/cngxjs/cngx/issues/809)) ([0402069](https://github.com/cngxjs/cngx/commit/040206990e2f0cbd9560701c361497f84b95ef68))
+- **core/theming:** keep reduced motion, contrast and the material bridge honest ([#790](https://github.com/cngxjs/cngx/issues/790)) ([6fe1891](https://github.com/cngxjs/cngx/commit/6fe1891bde11fed424c3901bbc9bb6673805c7b1))
+- **core/theming:** cover the root, delays and pulse tokens under reduced motion and add the touch-target axis to the a11y preferences ([#821](https://github.com/cngxjs/cngx/issues/821)) ([2c4b6c1](https://github.com/cngxjs/cngx/commit/2c4b6c1971a284cf63a096b2f711736f9c9ce242))
+- **core/theming:** add status text rungs and harden bare controls and more contrast ([#845](https://github.com/cngxjs/cngx/issues/845)) ([4d0e206](https://github.com/cngxjs/cngx/commit/4d0e2067bdf80ca3b9540c3fe8a270b9eef4e5e9))
+- **core/theming:** give small targets a 24px hit area on a fine pointer ([#853](https://github.com/cngxjs/cngx/issues/853)) ([4f9ba6f](https://github.com/cngxjs/cngx/commit/4f9ba6f597c361a27998557dbdf785cecb021a49))
+- **forms:** keep error text off error-state containers and Escape off dirty action panels ([#863](https://github.com/cngxjs/cngx/issues/863)) ([9ee5b36](https://github.com/cngxjs/cngx/commit/9ee5b3615d8bc816fc3b2ee669cb8719b181012e))
+- **forms:** derive the commit error hint and file-drop tokens from the theme and drop dead fallbacks ([#891](https://github.com/cngxjs/cngx/issues/891)) ([6d8e012](https://github.com/cngxjs/cngx/commit/6d8e012274f03f51a3f993c69f480a9aa02d4e49))
+- **forms,common,themes:** close the select review residue ([#653](https://github.com/cngxjs/cngx/issues/653)) ([6671dda](https://github.com/cngxjs/cngx/commit/6671ddaec56c9548bc2bcf0d044111749e5ea2e8))
+- **forms,themes:** colour the select checkmark and declare the primary-following token defaults ([#879](https://github.com/cngxjs/cngx/issues/879)) ([1a411e6](https://github.com/cngxjs/cngx/commit/1a411e6d3d5867e6831a57f9b011cca6a8fd2d75))
+- **forms/controls:** stop forwarding a parent value binding to Reactive Forms as a user change ([#887](https://github.com/cngxjs/cngx/issues/887)) ([c1fa430](https://github.com/cngxjs/cngx/commit/c1fa4301b4b2d0699071108ae153825cd75a7c5b))
+- **forms/field:** reach every control from the summary, gate the hint and reason ids and warn on duplicate field ids ([#805](https://github.com/cngxjs/cngx/issues/805)) ([54680ff](https://github.com/cngxjs/cngx/commit/54680ff14e82b17b3d50705a422470d32c75b0fb))
+- **forms/field:** name and describe the control the field discovered and keep the error regions stable ([#806](https://github.com/cngxjs/cngx/issues/806)) ([223ee62](https://github.com/cngxjs/cngx/commit/223ee62f06aeda7aa70ad827f6db8cac70973a75))
+- **forms/field:** paint errors and markers in the scheme danger text, lift affixes to the touch floor and drop the dead demos ([#816](https://github.com/cngxjs/cngx/issues/816)) ([65046c8](https://github.com/cngxjs/cngx/commit/65046c8d37c2964fc09a7c474947a16a39e30270))
+- **forms/field:** sync the value of the atom the field discovered ([#828](https://github.com/cngxjs/cngx/issues/828)) ([462675c](https://github.com/cngxjs/cngx/commit/462675cde53a344cbe93b13b4c5b10f7aba15737))
+- **forms/field:** keep field error and disabled paint in every state and match token fallbacks to their defaults ([#831](https://github.com/cngxjs/cngx/issues/831)) ([81a69f9](https://github.com/cngxjs/cngx/commit/81a69f929fed475fa8761b34983ef082b08f3355))
+- **forms/field:** tint the M2 fill field like its Material twin, add a field ring colour token ([#842](https://github.com/cngxjs/cngx/issues/842)) ([318c0e9](https://github.com/cngxjs/cngx/commit/318c0e96990be6c08555bb24fdda08903be90ac5))
+- **forms/field:** keep the fill autofill shadow from flashing the primary colour on focus changes ([#844](https://github.com/cngxjs/cngx/issues/844)) ([c1fd40d](https://github.com/cngxjs/cngx/commit/c1fd40dc28898988a0fe5c35c11d23f6fa436605))
+- **forms/field:** keep the fill surface and danger line on an invalid autofilled field ([#850](https://github.com/cngxjs/cngx/issues/850)) ([c0e6a65](https://github.com/cngxjs/cngx/commit/c0e6a658da2999a809998d72fa8c7c9198962de6))
+- **forms/filter-builder:** disable every control and block writes while the field is disabled ([#898](https://github.com/cngxjs/cngx/issues/898)) ([9f1b555](https://github.com/cngxjs/cngx/commit/9f1b55557b09f2e506856765f6dc29ba9874fcdf))
+- **forms/input:** warn when a cngxInput sits in a Signal Forms field without a [formField] binding ([#838](https://github.com/cngxjs/cngx/issues/838)) ([669e192](https://github.com/cngxjs/cngx/commit/669e1926aef2420341dc50628fe058c2a76089cd))
+- **forms/select:** show the placeholder at the inline start of an empty trigger on every select ([#651](https://github.com/cngxjs/cngx/issues/651)) ([eaac3f6](https://github.com/cngxjs/cngx/commit/eaac3f64e0f5a50fdd8592938b3c608e650f1b86))
+- **forms/select:** close eight select review code findings ([#667](https://github.com/cngxjs/cngx/issues/667)) ([36df9dc](https://github.com/cngxjs/cngx/commit/36df9dc67dff87779471a968d1c71fca5a3eb0a3))
+- **forms/select:** match the trigger corner radius to form inputs ([#692](https://github.com/cngxjs/cngx/issues/692)) ([90e81fe](https://github.com/cngxjs/cngx/commit/90e81fee8a9b97cc12601b6b2f96be30c862589e))
+- **forms/select:** route every select commit through one commit ledger ([#706](https://github.com/cngxjs/cngx/issues/706)) ([2c2d554](https://github.com/cngxjs/cngx/commit/2c2d5549891fee403f6ad808d9c6356b44663014))
+- **forms/select:** floor the select clear button to a 24px hit area on a fine pointer ([#720](https://github.com/cngxjs/cngx/issues/720)) ([4458f98](https://github.com/cngxjs/cngx/commit/4458f98f67578197201719ea7a91cad22a058050))
+- **forms/select:** select review 2 strand B - theming, docs, stories and test infrastructure ([#728](https://github.com/cngxjs/cngx/issues/728)) ([0bec124](https://github.com/cngxjs/cngx/commit/0bec1248a51d47426c87b92a153161908ea2abdd))
+- **forms/select:** select review 2 strand A - behaviour and a11y ([#734](https://github.com/cngxjs/cngx/issues/734)) ([4021578](https://github.com/cngxjs/cngx/commit/4021578781e2328809a66bd7b1796de10f3e4cef))
+- **forms/select:** decide focus gestures from the event and pin the select suites ([#756](https://github.com/cngxjs/cngx/issues/756)) ([fb07a5e](https://github.com/cngxjs/cngx/commit/fb07a5e553904f6163555fb54e2216141066b636))
+- **forms/select:** settle deferred keys, measure option rows and show option labels in the input ([#769](https://github.com/cngxjs/cngx/issues/769)) ([418eeaf](https://github.com/cngxjs/cngx/commit/418eeaf4a76ea369b7e9e90e7797df58e7673b6f))
+- **forms/select:** keep deferred Enter single, drop shell content-visibility and hold the last option label ([#770](https://github.com/cngxjs/cngx/issues/770)) ([5e5b995](https://github.com/cngxjs/cngx/commit/5e5b995227f92341a8745e97c23f7377fc17ed22))
+- **forms/select:** close the a11y and disabled-pick gaps of projected slots and custom strategies ([#779](https://github.com/cngxjs/cngx/issues/779)) ([ec7a62d](https://github.com/cngxjs/cngx/commit/ec7a62d95029051f195eb81a19a71f762e1589a0))
+- **forms/select:** stop a per-row min-block-size from re-estimating the virtual row height ([#782](https://github.com/cngxjs/cngx/issues/782)) ([b6766ad](https://github.com/cngxjs/cngx/commit/b6766ad1cae981d7c77af82d22efeb82415eb039))
+- **mcp:** fail build:mcp when the bundled snapshot does not load ([#672](https://github.com/cngxjs/cngx/issues/672)) ([004c544](https://github.com/cngxjs/cngx/commit/004c5447d8de69d4439f465136069b3013b96411))
+- **mcp:** harden the cli and mcp query core ([#698](https://github.com/cngxjs/cngx/issues/698)) ([86de6d8](https://github.com/cngxjs/cngx/commit/86de6d8120c6a6122f563d1299fb62657a2335a2))
+- **mcp,cli:** point example urls of a fetched release at its own examples ([#773](https://github.com/cngxjs/cngx/issues/773)) ([2158d1b](https://github.com/cngxjs/cngx/commit/2158d1b2037212de2803d30e23d62d2075c6ad91))
+- **select-family:** close the a11y and theming residue of the select family ([#710](https://github.com/cngxjs/cngx/issues/710)) ([9d4d149](https://github.com/cngxjs/cngx/commit/9d4d1497a34440a688f5455d2aecaf67df0b998e))
+- **select-family:** close the docs, tests and config residue of the select family ([#715](https://github.com/cngxjs/cngx/issues/715)) ([e2ff0e1](https://github.com/cngxjs/cngx/commit/e2ff0e19103d65ecac3195399d7fe91df0fed40d))
+- **themes/material:** bring the form field onto the mat-form-field metrics and colours ([#871](https://github.com/cngxjs/cngx/issues/871)) ([4383eac](https://github.com/cngxjs/cngx/commit/4383eac524dab6368ad834c21e9d2cc1152c553b))
+- **themes/material:** size the field affixes and the value start like mat-form-field ([#875](https://github.com/cngxjs/cngx/issues/875)) ([3f28ff6](https://github.com/cngxjs/cngx/commit/3f28ff6fa3719516fea4688b1689f6abc52273a7))
+- **themes/material:** paint the M2 text rung in the plain foreground text ([#878](https://github.com/cngxjs/cngx/issues/878)) ([1f5d800](https://github.com/cngxjs/cngx/commit/1f5d8004710a64505999859328ff0135450c1004))
+- **themes/material:** match card, checkbox, button-toggle and divider corners and spacing to Material ([#900](https://github.com/cngxjs/cngx/issues/900)) ([102d415](https://github.com/cngxjs/cngx/commit/102d415af55f5f11ecdcbc1095cc17c47e270ef6))
+- **themes/material:** set the button scheme knobs from the Material theme type ([#901](https://github.com/cngxjs/cngx/issues/901)) ([391b3be](https://github.com/cngxjs/cngx/commit/391b3be0b91dc18d3564b11f040abc608c14f93a))
+- **themes/material:** lift the M2 light secondary danger label to 4.5:1 on hover and press ([#905](https://github.com/cngxjs/cngx/issues/905)) ([0dea509](https://github.com/cngxjs/cngx/commit/0dea509a1f52a03a56c6304188cfd03841c52a34))
+- **themes/material:** land five M3 bridges on the elements that paint them ([#920](https://github.com/cngxjs/cngx/issues/920)) ([1e8adc7](https://github.com/cngxjs/cngx/commit/1e8adc7d1302a9a61c4ff26a1db40577a8f93738))
+- **themes/material:** bring badge, chip, button toggle and card onto their M3 twins ([#923](https://github.com/cngxjs/cngx/issues/923)) ([acd78f2](https://github.com/cngxjs/cngx/commit/acd78f2eea3136563c839fbaae767a04a439e967))
+- **themes/material:** bring the context menu and popover sheet onto their M3 overlay twins ([#928](https://github.com/cngxjs/cngx/issues/928)) ([c4eb9ee](https://github.com/cngxjs/cngx/commit/c4eb9ee4f3dbf1c37cd8c98a8f2f6e0644e98eae))
+- **themes/material:** align the overlay bridges with mat-menu and mat-bottom-sheet follow-ups ([#931](https://github.com/cngxjs/cngx/issues/931)) ([ce29ec1](https://github.com/cngxjs/cngx/commit/ce29ec13f0372b962d79d625c55de480d159e152))
+- **ui,data-display:** derive ui tokens from the theme and drop dead fallbacks on registered properties ([#897](https://github.com/cngxjs/cngx/issues/897)) ([18189c8](https://github.com/cngxjs/cngx/commit/18189c8e2a2654b9757d04a12e006adb02da981c))
+- **ui,examples:** close the [#848](https://github.com/cngxjs/cngx/issues/848) smoke findings in accordion, stepper, paginator and the demos ([#855](https://github.com/cngxjs/cngx/issues/855)) ([5e2f19f](https://github.com/cngxjs/cngx/commit/5e2f19f50282d307670c5d85805c5f783ad41754))
+- **ui,themes,examples:** scope sidenav ring and labels to the rail, fix M2 dark rows, merge labels ([#892](https://github.com/cngxjs/cngx/issues/892)) ([6324270](https://github.com/cngxjs/cngx/commit/632427053efcfdd18909878395a75a2b8734a316))
+- **ui/command-palette:** size the palette itself under the dialog skin ([#865](https://github.com/cngxjs/cngx/issues/865)) ([cd43604](https://github.com/cngxjs/cngx/commit/cd43604805179c8dd115c92b01376398fff34810))
+- **ui/feedback:** keep every undo toast and give action toasts time to be reached ([#676](https://github.com/cngxjs/cngx/issues/676)) ([81c2941](https://github.com/cngxjs/cngx/commit/81c2941b89c7f317e19a8f4881e9fb04f185f45c))
+- **ui/feedback:** let the loading surfaces follow data-motion full under reduced motion ([#826](https://github.com/cngxjs/cngx/issues/826)) ([2cc37b6](https://github.com/cngxjs/cngx/commit/2cc37b6b08d630d845602f227a9f5deaab86a323))
+- **ui/paginator:** drop the own coarse-pointer button size so data-touch opt-out applies ([#852](https://github.com/cngxjs/cngx/issues/852)) ([97cc957](https://github.com/cngxjs/cngx/commit/97cc95703e0bab1604ef051ffcf892df5360a7a7))
+- **ui/paginator:** opt-in ripple, scheme-island colours and rounded bar focus rings ([#856](https://github.com/cngxjs/cngx/issues/856)) ([6d843b3](https://github.com/cngxjs/cngx/commit/6d843b390ba0972e564089d2aa52ea5dee66a45c))
+- **ui/sidenav:** close the overlay toggle, nav-group focus and overlay role defects ([#724](https://github.com/cngxjs/cngx/issues/724)) ([0b4dc5f](https://github.com/cngxjs/cngx/commit/0b4dc5f2c1c9523ac4195a6024c7ce0cf86a7489))
+- **ui/sidenav:** keep an auto rail from sliding in on load ([#808](https://github.com/cngxjs/cngx/issues/808)) ([6155367](https://github.com/cngxjs/cngx/commit/61553677e750b5dcb2a2bfebf8d575f3fac704dc))
+- **ui/sidenav:** keep the layout hidden until its settled width class has been painted ([#810](https://github.com/cngxjs/cngx/issues/810)) ([c1a23ad](https://github.com/cngxjs/cngx/commit/c1a23ad72e2045e8e1447730564dc854084addce))
+- **ui/sidenav:** resolve the rail tokens on the rail and read the M2 ink from the theme ([#861](https://github.com/cngxjs/cngx/issues/861)) ([8a82ec0](https://github.com/cngxjs/cngx/commit/8a82ec0417d369497ecf6e5067373cb9d520a579))
+- **ui/sidenav:** one source for the overlay open state, surface and router-sync param ([#868](https://github.com/cngxjs/cngx/issues/868)) ([160c2ef](https://github.com/cngxjs/cngx/commit/160c2efa7ec41c64507ea84699ba9f519c1d6a0b))
+- **ui/sidenav:** keep overlay state to a layout's own rails and drop opened on a docked rail ([#888](https://github.com/cngxjs/cngx/issues/888)) ([eaad60a](https://github.com/cngxjs/cngx/commit/eaad60a0f545a3a91c2b06fc6b80f250e7d5071c))
+- **ui/skeleton:** mark shimmer bones with the cngx-skeleton__bone element of the host block ([#829](https://github.com/cngxjs/cngx/issues/829)) ([e28bfe7](https://github.com/cngxjs/cngx/commit/e28bfe7031f78f1deb9337f26f181d32617417c0))
+- **ui/stepper:** break the indicator and group-chip font-size cycles ([#737](https://github.com/cngxjs/cngx/issues/737)) ([02adf36](https://github.com/cngxjs/cngx/commit/02adf3614c4fe740e8a4b02f7243ecc945803db1))
+- **ui/stepper:** let the pending connector follow the step active colour ([#862](https://github.com/cngxjs/cngx/issues/862)) ([fdc0d14](https://github.com/cngxjs/cngx/commit/fdc0d1415946828a2c3c8dffe1e0de671949f18d))
+
+### BREAKING CHANGES
+
+- **common,core:** close four silent paths in direction, audio pitch, command sources and scroll edges ([#647](https://github.com/cngxjs/cngx/issues/647))
+- **forms/select:** summarize the reorderable multi-select trigger and sort its values in the panel on touch ([#648](https://github.com/cngxjs/cngx/issues/648))
+- **forms,common,themes:** close the select review residue ([#653](https://github.com/cngxjs/cngx/issues/653))
+- **forms/select:** make the tree-select readable and usable on desktop and touch ([#658](https://github.com/cngxjs/cngx/issues/658))
+- **common,forms,ui,themes:** move the close and action buttons onto the cngx button core ([#674](https://github.com/cngxjs/cngx/issues/674))
+- **forms:** delete the remaining select review leftovers and the CngxAffixRow alias ([#678](https://github.com/cngxjs/cngx/issues/678))
+- **themes:** give the cngx button family the Material 3 bridge ([#679](https://github.com/cngxjs/cngx/issues/679))
+- **themes/material:** `--cngx-breadcrumb-overflow-trigger-width` and
+`--cngx-breadcrumb-overflow-trigger-height` are removed. The overflow
+trigger is now the xs icon-button square instead of the fixed 32x26 box.
+
+- To change the trigger size, set `--cngx-icon-button-size` on
+`.cngx-breadcrumb__overflow-trigger` from an unlayered app rule.
+- The colour and radius tokens are unchanged.
+
+Visible change (not breaking): with the Material bridge included,
+neutral `outline` and `ghost` buttons across the app now render primary
+labels, matching `mat-stroked-button` and `mat-button`. An app that
+wants the previous on-surface label can set `--cngx-button-tone-text` on
+those buttons.
+
+The removed tokens set a box that no longer exists: the trigger is sized
+by the icon-button contract, so there is no value a codemod could carry
+over.
+- **utils:** draw every default glyph from one framework-agnostic icon set ([#690](https://github.com/cngxjs/cngx/issues/690))
+- **mcp:** harden the cli and mcp query core ([#698](https://github.com/cngxjs/cngx/issues/698))
+- **forms/select:** route every select commit through one commit ledger ([#706](https://github.com/cngxjs/cngx/issues/706))
+- **select-family:** close the a11y and theming residue of the select family ([#710](https://github.com/cngxjs/cngx/issues/710))
+- **common,ui,forms:** gate the async-click busy visual and the recycler skeleton behind the loading config ([#712](https://github.com/cngxjs/cngx/issues/712))
+- **common,core,themes:** move dropdown menu focus into the menu and lift solid button contrast to AA ([#716](https://github.com/cngxjs/cngx/issues/716))
+- **select-family:** close the docs, tests and config residue of the select family ([#715](https://github.com/cngxjs/cngx/issues/715))
+- **cli,doctor:** close the pre-release block of the cli review ([#718](https://github.com/cngxjs/cngx/issues/718))
+- **ui/sidenav:** close the overlay toggle, nav-group focus and overlay role defects ([#724](https://github.com/cngxjs/cngx/issues/724))
+- **core/theming:** derive the primary and danger text and strong rungs via relative colour syntax ([#725](https://github.com/cngxjs/cngx/issues/725))
+- **common/interactive:** emit settled per cngxAsyncClick run and hand actions an abort signal ([#729](https://github.com/cngxjs/cngx/issues/729))
+- **ui/feedback:** draw the toast on the overlay surface with an alert-style action ([#739](https://github.com/cngxjs/cngx/issues/739))
+- **common/button:** injectButtonCore, provideButtonDescribedBy,
+CngxButtonCore,
+CngxButtonCoreDefaults, CngxButtonCoreInputs and hasAccessibleName are
+no
+longer exported; build a custom host on CngxButtonBrain. Host-class
+inputs
+(variant, tone, size, disabled, disabledReason, describedBy, type) and
+blocked
+moved to CngxButtonBrain.
+- **common/layout:** an open `over` CngxDrawerPanel is a page modal dialog
+by default (`role="dialog"`, `aria-modal`, focus trap, inert page,
+scroll lock); set `modality="contained"` or `modality="none"` for the
+old non-blocking panel. `DrawerMode` drops `side`. CngxDrawerPanel no
+longer forwards the focus-trap `enabled` and `autoFocus` inputs; the
+modality drives the trap. `CngxDrawerPanel.drawerRef()` is typed
+`CngxDrawerHost` instead of `CngxDrawer`.
+- **ui/feedback:** toasts beyond the outlet's maxVisible no longer
+auto-dismiss
+while hidden; their timer is held until they are shown, unless every
+visible
+toast is persistent.
+- **common/popover:** CngxPopover.setHaspopup and CngxPopover.setControls are
+replaced by claimHaspopup / releaseHaspopup and claimControls /
+releaseControls. Composers claim with an owner (usually `this`) and
+release that owner's claim on destroy; the last live claim wins and a
+release keeps a co-composer's claim. Replace setHaspopup(v) with
+claimHaspopup(this, v) and setControls(s) with claimControls(this, s),
+plus releaseHaspopup(this) / releaseControls(this) on destroy.
+- **core:** harden key combo matching and add combo helpers ([#747](https://github.com/cngxjs/cngx/issues/747))
+- **common/popover:** cngx-popover-action is replaced by
+button[cngxPopoverAction] (confirm,
+[action] required) and button[cngxPopoverDismiss] (dismiss). The role
+and variant inputs
+and PopoverActionVariant are removed; variant and tone come from the
+button family
+(primary -> solid + tone primary, danger -> solid + tone danger, ghost
+-> ghost,
+secondary -> the outline default). Size is pinned sm. The panel accent
+no longer tints
+footer actions. The eight --cngx-popover-action-* tokens are removed.
+CNGX1035 is retired.
+
+### Other information
+
+- `examples/e2e/common/popover/link-list.e2e-spec.ts:39` (Escape from a
+link returns focus to the button) fails intermittently on `main` as
+well; it is not touched here and gets its own fix.
+- **common/interactive:** add the hotkey registry and run CngxKeyboardShortcut on it ([#749](https://github.com/cngxjs/cngx/issues/749))
+- **forms/select:** select review 2 strand A - behaviour and a11y ([#734](https://github.com/cngxjs/cngx/issues/734))
+- **ui/sidenav:** |Before|After|
+|-|-|
+|`mode="mini"`|`mode="side"` + `[(collapsed)]`, peek via
+`expandOnHover`|
+|`mode="push"`|`mode="side"` + `collapsedAs="hidden"` + `[(collapsed)]`|
+|`--cngx-sidenav-layout-wide`|`--cngx-sidenav-width-class` rule block
+(48rem / 64rem)|
+|`auto` side-to-over switch auto-opens the overlay|every width-class
+change starts closed|
+|sidenav `id` input|id comes from the sidebar (`cngx-sidebar-N`)|
+|every overlay modal|`modality` input, `'page'` by default|
+|`withSidenavShortcut` on every rail|start rail only; end rails need an
+explicit `[shortcut]`|
+|two rails on one combo both toggle|one binding wins (`CNGX1077`)|
+|resize ARIA trio omitted for non-px bounds|always rendered, non-px
+bounds clamp to 120 / 600 px|
+
+`CngxSidenavLayout` no longer locks the html scroll or listens on
+`document`; a consumer that relied on either gets the surface's scoped
+lock and dismissal instead.
+- **common/interactive:** |Before|After|
+|-|-|
+|`#btn="cngxActionButton"` then `btn.succeededLabel()`,
+`btn.externalState()`, `btn.toastSuccess()` and the other status / toast
+inputs|template bindings unchanged (forwarded host-directive inputs);
+programmatic reads go through `inject(CNGX_ACTION_STATUS)` or
+`CngxActionToast`|
+|`CngxActionButton.hostState` / `hostInteraction`|removed; `status`,
+`busyVisible`, `state` stay on the class|
+|`CngxPopoverAction.succeededAnnouncement` / `failedAnnouncement` /
+`autoAnnounce` / `closeOnSuccessDelay` / `hostInteraction` on the
+class|bindings unchanged; read through `CNGX_ACTION_STATUS` /
+`CngxPopoverCloseOnSuccess`|
+|`toastSuccessDuration` default 3000 ms (`cngxActionButton`,
+`[cngxToastOn]`)|unset; the toaster resolves it (`withToasts({
+defaultDuration })`, else 5000 ms). Bind `[toastSuccessDuration]="3000"`
+for the old timing. Error toasts stay persistent|
+|popover closes after its own success, also while `[externalState]` is
+bound|closes on `CNGX_ACTION_STATUS.outcome`: an external `success` edge
+closes, an own run under `[externalState]` does not|
+|a projected `cngxSucceeded` is not spoken|the rendered result cell is
+the settle announcement|
+- **common/tabs:** name the tab group from the tabs i18n label unless an aria label is configured ([#771](https://github.com/cngxjs/cngx/issues/771))
+- **common:** name the tab group and the stepper through their i18n label only ([#775](https://github.com/cngxjs/cngx/issues/775))
+- **common/button:** |Before|After|
+|-|-|
+|`CngxContextMenuTriggerPopoverRef` (`@cngx/common/interactive`) needs
+`show`, `hide`, `isVisible`, `elementRef`, `setAnchorElement`, `id`|also
+needs `claimPositionTryFallbacks(owner, value)` and
+`releasePositionTryFallbacks(owner)`. `CngxPopover` implements both;
+only a custom popover ref passed to the context-menu core has to add
+them|
+- **ui/nav-rail:** add the navigation rail on nav atoms that carry their own row skin ([#788](https://github.com/cngxjs/cngx/issues/788))
+- **common,ui:** skin the accordion by class and document the skin and story ownership rules ([#854](https://github.com/cngxjs/cngx/issues/854))
+- **themes/material:** stop bridging Angular Material M2 themes ([#914](https://github.com/cngxjs/cngx/issues/914))
+- **common/interactive:** gate, announce and register the error atoms consistently ([#926](https://github.com/cngxjs/cngx/issues/926))
+- **common/interactive:** report, show and announce a failed copy in the copy units ([#930](https://github.com/cngxjs/cngx/issues/930))
+
 ## 0.1.0-rc.9 (2026-10-22)
 
 
