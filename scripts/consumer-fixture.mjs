@@ -364,11 +364,39 @@ export function packument(manifest, tarballUrl, tarball) {
   };
 }
 
-/** The newest version `npm view <name>@"<current" version --json` listed; npm prints one version bare. */
-export function newestListed(output) {
+// Orders two `x.y.z` or `x.y.z-pre` versions the way semver does: the core
+// numbers first, then a prerelease sorts below its own release.
+function compareVersions(a, b) {
+  const [aCore, aPre] = a.split('-', 2);
+  const [bCore, bPre] = b.split('-', 2);
+  const aNums = aCore.split('.').map(Number);
+  const bNums = bCore.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if (aNums[i] !== bNums[i]) {
+      return aNums[i] - bNums[i];
+    }
+  }
+  if (aPre === bPre) {
+    return 0;
+  }
+  if (aPre === undefined) {
+    return 1;
+  }
+  if (bPre === undefined) {
+    return -1;
+  }
+  return aPre.localeCompare(bPre, 'en', { numeric: true });
+}
+
+/**
+ * The newest version below `version` in the output of `npm view <name> versions --json`
+ * (npm prints one version bare). Prereleases count: a range like `<0.3.0` would skip
+ * `0.1.0-rc.9`, and before the first final release they are all the registry has.
+ */
+export function newestBelow(output, version) {
   const parsed = output.trim() === '' ? [] : JSON.parse(output);
   const versions = Array.isArray(parsed) ? parsed : [parsed];
-  return versions.at(-1);
+  return versions.filter((v) => compareVersions(v, version) < 0).sort(compareVersions).at(-1);
 }
 
 const ANGULAR_SCOPES = ['@angular/', '@angular-devkit/', '@schematics/'];
@@ -842,7 +870,7 @@ async function runSteps(appDir, version, steps, tag) {
 
 // The newest registry release of @cngx/core below the packed one.
 function previousRelease(version) {
-  const previous = newestListed(capture('npm', ['view', `@cngx/core@<${version}`, 'version', '--json']));
+  const previous = newestBelow(capture('npm', ['view', '@cngx/core', 'versions', '--json']), version);
   if (previous === undefined) {
     throw new Error(`the registry lists no @cngx/core below ${version}`);
   }
