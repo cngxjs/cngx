@@ -529,7 +529,6 @@ describe('newestBelow', () => {
   });
 });
 
-
 describe('the consumer-compat workflow', () => {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
   const workflow = readFileSync(join(root, '.github', 'workflows', 'consumer-compat.yml'), 'utf8');

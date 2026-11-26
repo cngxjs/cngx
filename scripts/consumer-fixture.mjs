@@ -364,11 +364,17 @@ export function packument(manifest, tarballUrl, tarball) {
   };
 }
 
+// `x.y.z-pre.1-x` splits at the first hyphen only: the tag may hold more.
+function splitPrerelease(version) {
+  const dash = version.indexOf('-');
+  return dash === -1 ? [version, undefined] : [version.slice(0, dash), version.slice(dash + 1)];
+}
+
 // Orders two `x.y.z` or `x.y.z-pre` versions the way semver does: the core
 // numbers first, then a prerelease sorts below its own release.
 function compareVersions(a, b) {
-  const [aCore, aPre] = a.split('-', 2);
-  const [bCore, bPre] = b.split('-', 2);
+  const [aCore, aPre] = splitPrerelease(a);
+  const [bCore, bPre] = splitPrerelease(b);
   const aNums = aCore.split('.').map(Number);
   const bNums = bCore.split('.').map(Number);
   for (let i = 0; i < 3; i++) {
