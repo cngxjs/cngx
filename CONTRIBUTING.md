@@ -203,6 +203,27 @@ request so `main` carries exactly one curated commit per PR. The changelog is
 generated from those squash commits, so a clean PR title is a clean changelog
 line.
 
+### Fork first
+
+Only maintainers can push branches to `cngxjs/cngx`. Everyone else works on a
+fork:
+
+```bash
+gh repo fork cngxjs/cngx --clone   # forks, clones, and adds the upstream remote
+cd cngx
+git remote -v                      # origin = your fork, upstream = cngxjs/cngx
+git fetch upstream
+git switch -c fix/my-change upstream/main
+```
+
+Forked on github.com instead? Clone your fork and add the remote yourself:
+`git remote add upstream https://github.com/cngxjs/cngx.git`.
+
+Push the branch to your fork (`git push -u origin fix/my-change`) and open the
+pull request against `cngxjs/cngx:main`. Keep "Allow edits by maintainers"
+checked. Before opening it, rebase on `upstream/main` so CI runs against the
+current state.
+
 ### Branches
 
 Always branch off `main` - never commit to `main` directly. Name the branch
@@ -322,6 +343,23 @@ This script handles:
 - Creating and pushing the git tag, which then points at a commit that already
   carries its own changelog section
 
+## Contributor License Agreement
+
+Contributions need a signed Contributor License Agreement (CLA) before they
+are merged. cngx is MIT-licensed today; the CLA keeps the option open to
+license it, or parts of it, under other terms later, including commercial
+ones. You keep the copyright in your contribution.
+
+- Contributing as an individual: sign `legal/ICLA.md`.
+- Contributing as part of your job: your employer usually holds the rights,
+  so it signs `legal/EMPLOYER-STATEMENT.md` and names you to the maintainer
+  in writing. Named employees need no ICLA for that work.
+
+To sign, fill in the document and sign it by hand (scanned) or with an
+electronic signature, then say so in your pull request; the maintainer replies
+with where to send the signed copy. A pull request stays open until the signed
+copy has arrived. Signing once covers all your later contributions.
+
 ## Pull Requests
 
 Please use the provided Pull Request Template when submitting changes. Ensure your PR:
@@ -331,3 +369,4 @@ Please use the provided Pull Request Template when submitting changes. Ensure yo
 3. Includes unit tests (vitest) for new features and bugfixes, plus Playwright e2e where the change is visual or interactive.
 4. Passes `npm run lint` and `npm test` locally.
 5. Updates documentation or the relevant demo story when behaviour changes.
+6. Comes from a contributor with a signed CLA (see Contributor License Agreement).

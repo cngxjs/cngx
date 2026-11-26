@@ -31,4 +31,8 @@ What kind of change does this PR introduce?
 <!-- A breaking change (`!` in the title) adds an ng update migration: a new key in projects/core/schematics/migrations/migrations.json. When no codemod can do the change, write "not migratable" after the colon below; the migration-gate check reads that line. -->
 Migration:
 
+### Contributor License Agreement
+
+- [ ] I have signed the cngx ICLA, or my employer has signed the employer statement and named me (see CONTRIBUTING.md)
+
 ### Other information
