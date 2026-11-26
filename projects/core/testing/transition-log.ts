@@ -3,7 +3,7 @@ import { effect, untracked, type Injector } from '@angular/core';
 /**
  * Options for {@link injectTransitionLog}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTransitionLogOptions<T> {
   /**
@@ -18,7 +18,7 @@ export interface CngxTransitionLogOptions<T> {
 /**
  * The values a signal settled on, in order. Returned by {@link injectTransitionLog}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTransitionLog<T> {
   /**
@@ -69,7 +69,7 @@ export interface CngxTransitionLog<T> {
  * @param source The signal (or any reactive read) to record.
  * @param options Injector and equality for consecutive values.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createAsyncStateMock, createTransitionTracker
  */
 export function injectTransitionLog<T>(

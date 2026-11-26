@@ -204,7 +204,7 @@ export type CngxTemplateRegistryFactory = <T = unknown>(
  * providing your own factory at root or component scope.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/template-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SELECT_CONFIG, provideSelectConfig
  */
 export const CNGX_TEMPLATE_REGISTRY_FACTORY = new InjectionToken<CngxTemplateRegistryFactory>(

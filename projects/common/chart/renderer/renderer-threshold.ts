@@ -10,7 +10,7 @@ import { InjectionToken } from '@angular/core';
  * hardware profile.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-threshold.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideChartRenderer, withChartRendererThreshold
  */
 export const CNGX_CHART_RENDERER_THRESHOLD = new InjectionToken<number>(

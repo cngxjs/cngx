@@ -28,7 +28,7 @@ import { injectKpiI18n } from '../shared/kpi-i18n';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/goal/goal.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSegmentedProgress, CngxMetric
  *
  * <example-url>/#/common/data/goal/quota-attainment</example-url>

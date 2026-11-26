@@ -14,7 +14,7 @@ import type { CngxButtonSize, CngxButtonTone, CngxButtonVariant } from './button
  * the host default, which is how the icon buttons keep `ghost` unless the app picks a variant.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt, injectButtonConfig
  */
 export interface CngxButtonConfig {
@@ -27,7 +27,7 @@ export interface CngxButtonConfig {
  * The resolved {@link CngxButtonConfig}. Empty by default.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, injectButtonConfig, withButtonVariant, withButtonTone, withButtonSize
  */
 export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButtonConfig', {
@@ -40,7 +40,7 @@ export const CNGX_BUTTON_CONFIG = new InjectionToken<CngxButtonConfig>('CngxButt
  * `provideButtonConfigAt`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt
  */
 export interface CngxButtonConfigFeature {
@@ -51,7 +51,7 @@ export interface CngxButtonConfigFeature {
  * Default emphasis in scope. An input, a pinned axis or a group still wins.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt
  */
 export function withButtonVariant(variant: CngxButtonVariant): CngxButtonConfigFeature {
@@ -63,7 +63,7 @@ export function withButtonVariant(variant: CngxButtonVariant): CngxButtonConfigF
  * `neutral`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt
  */
 export function withButtonTone(tone: CngxButtonTone): CngxButtonConfigFeature {
@@ -74,7 +74,7 @@ export function withButtonTone(tone: CngxButtonTone): CngxButtonConfigFeature {
  * Default size in scope. An input, a pinned size or a group still wins.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, provideButtonConfigAt
  */
 export function withButtonSize(size: CngxButtonSize): CngxButtonConfigFeature {
@@ -99,7 +99,7 @@ function mergeFeatures(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withButtonVariant, withButtonTone, withButtonSize, provideButtonConfigAt
  */
 export function provideButtonConfig(...features: CngxButtonConfigFeature[]): EnvironmentProviders {
@@ -116,7 +116,7 @@ export function provideButtonConfig(...features: CngxButtonConfigFeature[]): Env
  * nested scopes cascade.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonConfig, withButtonVariant, withButtonTone, withButtonSize
  */
 export function provideButtonConfigAt(...features: CngxButtonConfigFeature[]): Provider[] {
@@ -136,7 +136,7 @@ export function provideButtonConfigAt(...features: CngxButtonConfigFeature[]): P
  * themselves like a button, as `CngxButtonGroupAddon` does.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_CONFIG, provideButtonConfig
  */
 export function injectButtonConfig(): CngxButtonConfig {

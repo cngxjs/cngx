@@ -98,7 +98,7 @@ export type CngxPanelRendererFactory = <T>(input: PanelRendererInput<T>) => Pane
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/panel-renderer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_PANEL_RENDERER_FACTORY = new InjectionToken<CngxPanelRendererFactory>(
   'CngxPanelRendererFactory',

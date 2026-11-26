@@ -11,7 +11,7 @@ import { injectBreadcrumbHost } from './breadcrumb.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-item.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumb, CngxBreadcrumbSeparator
  * <example-url>/#/common/interactive/breadcrumb/basic-trail</example-url>
  */

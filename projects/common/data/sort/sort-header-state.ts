@@ -42,7 +42,7 @@ export interface SortHeaderState {
  * @param field Getter for the column's field key.
  * @returns The derived `{ entry, isActive, isAsc, isDesc, priority, toggle }` bundle.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSort, CngxSortHeader
  */
 export function createSortHeaderState(sort: () => CngxSort, field: () => string): SortHeaderState {

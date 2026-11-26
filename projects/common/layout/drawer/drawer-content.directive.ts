@@ -17,7 +17,7 @@ import type { CngxDrawer } from './drawer.directive';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-content.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDrawer, CngxDrawerPanel
  * <example-url>/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>

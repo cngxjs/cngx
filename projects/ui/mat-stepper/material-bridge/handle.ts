@@ -228,7 +228,7 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/material-bridge/handle.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MAT_STEP_HANDLE_FACTORY = new InjectionToken<CngxMatStepHandleFactory>(
   'CNGX_MAT_STEP_HANDLE_FACTORY',

@@ -65,7 +65,7 @@ export class CngxTimelineTime {}
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/timeline-item.component.ts
  * @relatedTo CngxTimelineItem, CngxTimelineTime
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: '[cngxTimelineOpposite]',
@@ -162,7 +162,7 @@ const FOCUSABLE =
  * <example-url>/#/ui/timeline/basics/marker-precedence</example-url>
  * <example-url>/#/ui/timeline/layout/media-markers</example-url>
  * <example-url>/#/ui/timeline/layout/placement-end</example-url>
- * @since 0.1.0
+ * @since 0.3.0
  * @axis level atom
  */
 @Component({

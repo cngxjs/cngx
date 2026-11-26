@@ -25,7 +25,7 @@ import { type CngxTreeSelectChipContext } from './tree-select.model';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select-chip.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreeSelect, CngxTreeSelectNode, CngxMultiSelectChip, CngxComboboxChip
  */
 @Directive({

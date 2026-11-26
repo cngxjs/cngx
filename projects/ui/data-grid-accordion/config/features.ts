@@ -22,7 +22,7 @@ import type { CngxDataGridAccordionConfigFeature } from './provide-data-grid-acc
  * provideDataGridAccordionConfig(withDataGridSkin('ledger'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withDataGridSkin(skin: CngxDataGridSkin): CngxDataGridAccordionConfigFeature {
   return { kind: 'skin', payload: { skin } };
@@ -42,7 +42,7 @@ export function withDataGridSkin(skin: CngxDataGridSkin): CngxDataGridAccordionC
  * );
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withDataGridAccordionLabels(
   labels: Partial<CngxDataGridAccordionLabels> | Signal<Partial<CngxDataGridAccordionLabels>>,

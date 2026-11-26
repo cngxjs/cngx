@@ -31,7 +31,7 @@ export interface CngxTabBusySpinnerContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-busy-spinner.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabErrorBadge, CngxTabRejectionIcon, CngxTab
  * <example-url>/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
  */

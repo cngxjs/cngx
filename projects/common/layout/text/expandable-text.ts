@@ -42,7 +42,7 @@ export interface CngxExpandableToggleContext {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/expandable-text.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxExpandableText, CngxTruncate
  */
 @Directive({
@@ -89,7 +89,7 @@ export class CngxExpandableToggle {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/text/expandable-text.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTruncate, CngxExpandableToggle, CngxHighlight
  * @slot cngxExpandableToggle Replaces the show-more control; gets the current expanded state.
  * <example-url>/#/common/layout/expandable-text/auto-toggle</example-url>

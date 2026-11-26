@@ -315,7 +315,7 @@ export interface CngxSelectFallbackLabels {
  *   option.label.toLowerCase().startsWith(term.toLowerCase());
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withSearchMatchFn, CngxSelectShell, ListboxMatchFn
  */
 export type CngxSelectMatchFn<T = unknown> = (
@@ -329,7 +329,7 @@ export type CngxSelectMatchFn<T = unknown> = (
  * object per option (the option definition, or the projected option's record
  * in `CngxSelectShell`), so a matcher can key a per-option cache on it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelectMatchFn
  */
 export interface CngxSelectMatchOption<T = unknown> {
@@ -641,7 +641,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideSelectConfig, provideSelectConfigAt, CngxSelectConfig, CNGX_ACTION_SELECT_CONFIG, CNGX_REORDERABLE_SELECT_CONFIG, CngxSelectLanguageSection
  */
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
@@ -1021,7 +1021,7 @@ export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectCo
  * and anchored everywhere else; `'off'` keeps it anchored. A per-instance
  * `[presentation]` wins.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverSheet
  * <example-url>/#/forms/select/mobile-sheet/opt-out</example-url>
  */

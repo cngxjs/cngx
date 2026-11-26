@@ -26,7 +26,7 @@ import type { CngxDirection } from './direction';
  * @relatedTo provideDirection
  * @relatedTo provideDirectionAt
  * @relatedTo CNGX_DIRECTION
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/core/bidi/rtl/direction-sensitive-surfaces</example-url>
  * @axis level atom
  */

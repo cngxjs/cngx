@@ -10,7 +10,7 @@ import { createPreferenceAxis } from './preference-axis';
  * `more` strengthens borders and demotes muted text toward the full text
  * colour app-wide; `normal` opts out even under an OS `more` preference.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxContrastPreference = 'normal' | 'more' | 'auto';
 
@@ -22,7 +22,7 @@ export type CngxContrastPreference = 'normal' | 'more' | 'auto';
  *
  * @relatedTo provideContrast
  * @relatedTo injectContrast
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CONTRAST = new InjectionToken<WritableSignal<CngxContrastPreference>>(
   'CNGX_CONTRAST',
@@ -70,7 +70,7 @@ const contrastAxis = createPreferenceAxis({
  *
  * @relatedTo CNGX_CONTRAST
  * @relatedTo injectContrast
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideContrast(initial: CngxContrastPreference = 'auto'): EnvironmentProviders {
   return contrastAxis.provide(initial);
@@ -83,7 +83,7 @@ export function provideContrast(initial: CngxContrastPreference = 'auto'): Envir
  * `set('auto')` hands control back to the OS preference.
  *
  * @relatedTo provideContrast
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectContrast(): WritableSignal<CngxContrastPreference> {
   return contrastAxis.injectValue();

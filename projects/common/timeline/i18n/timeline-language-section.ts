@@ -5,7 +5,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * timeline renders without a consumer slot. It feeds the `labels` of
  * `CNGX_TIMELINE_CONFIG`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_TIMELINE_CONFIG, withTimelineLabels
  */
 export interface CngxTimelineLanguageSection {
@@ -40,7 +40,7 @@ export interface CngxTimelineLanguageSection {
  * The English timeline section: the single source of the timeline's English
  * copy. `CNGX_TIMELINE_CONFIG` defaults its `labels` to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_TIMELINE_CONFIG
  */
 export const CNGX_TIMELINE_LANGUAGE_EN: CngxTimelineLanguageSection = {

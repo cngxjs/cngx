@@ -3,7 +3,7 @@
  *
  * @returns `true` if at least one `transition-duration` value is greater than 0.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function hasTransition(el: HTMLElement): boolean {
   const duration = getComputedStyle(el).transitionDuration;
@@ -20,7 +20,7 @@ export function hasTransition(el: HTMLElement): boolean {
  * torn down mid-transition does not receive a late `onDone` from the fallback
  * timer.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface TransitionDoneHandle {
   /** Complete now: remove the listener, clear the timer, invoke `onDone` once. */
@@ -40,7 +40,7 @@ export interface TransitionDoneHandle {
  * @returns A {@link TransitionDoneHandle} - `flush()` completes immediately,
  *   `cancel()` tears down without invoking `onDone`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function onTransitionDone(el: HTMLElement, onDone: () => void): TransitionDoneHandle {
   const style = getComputedStyle(el);

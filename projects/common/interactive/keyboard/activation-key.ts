@@ -30,7 +30,7 @@
  * @returns The key handler.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/activation-key.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDisclosure, CngxPanelTrigger
  */
 export function createActivationKeyHandler(

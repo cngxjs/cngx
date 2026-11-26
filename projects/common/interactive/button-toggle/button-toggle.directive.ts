@@ -40,7 +40,7 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle.directive.ts
  * @selector button[cngxButtonToggle]
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxRadio, CngxRovingItem, CngxCheckbox, CngxToggle
  * <example-url>/#/common/interactive/button-toggle/multi-group/basic-multi-filter-toolbar</example-url>
  * <example-url>/#/common/interactive/button-toggle/multi-group/disabled-group-cascade-vs-per-toggle</example-url>

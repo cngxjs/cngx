@@ -25,7 +25,7 @@ import type { CngxAccordionItemStateContext } from './accordion-item-state-conte
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-item-error.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordionItem, CngxAccordionItemBusy
  */
 @Directive({

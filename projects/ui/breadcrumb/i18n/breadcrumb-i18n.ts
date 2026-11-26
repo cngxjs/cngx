@@ -13,7 +13,7 @@ import { CNGX_BREADCRUMB_LANGUAGE_EN } from './breadcrumb-language-section';
  * { path: 'orders', data: { breadcrumb: computed(() => t('nav.orders')) } }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumbRouterSync, CngxBreadcrumbSiblingsRouterSync
  */
 export type CngxBreadcrumbRouteLabel = string | Signal<string>;

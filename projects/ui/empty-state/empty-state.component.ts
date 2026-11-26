@@ -30,7 +30,7 @@ import { CNGX_ICON_ARCHIVE } from '@cngx/utils';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/empty-state/empty-state.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAsyncState, CngxSkeletonContainer
  * <example-url>/#/ui/empty-state/default-no-icon-projected</example-url>
  * <example-url>/#/ui/empty-state/inside-a-card-grid</example-url>

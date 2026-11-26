@@ -40,7 +40,7 @@ export const CNGX_TOC_DEFAULTS: CngxTocConfig = {
  * in a component's `viewProviders` (sub-tree cascade).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/toc/config/toc.config.defaults.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TOC_CONFIG = new InjectionToken<CngxTocConfig>('CNGX_TOC_CONFIG', {
   providedIn: 'root',

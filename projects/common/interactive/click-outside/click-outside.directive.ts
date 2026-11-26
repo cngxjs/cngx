@@ -22,7 +22,7 @@ import { EMPTY, fromEvent, switchMap } from 'rxjs';
  *
  * @relatedTo CngxClickOutside, CNGX_CLICK_OUTSIDE_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/click-outside/click-outside.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxClickOutsideDriver {
   /** Whether outside interactions emit; wins over `[enabled]`. */
@@ -37,7 +37,7 @@ export interface CngxClickOutsideDriver {
  *
  * @relatedTo CngxClickOutside
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/click-outside/click-outside.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CLICK_OUTSIDE_DRIVER = new InjectionToken<CngxClickOutsideDriver>(
   'CngxClickOutsideDriver',
@@ -86,7 +86,7 @@ function controlledIdsOf(target: EventTarget | null): readonly string[] {
  * <div cngxClickOutside [eventType]="'click'" (clickOutside)="dismiss()">…</div>
  * ```
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/click-outside/click-outside.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxKeyboardShortcut, CngxPopover
  * <example-url>/#/common/interactive/gestures/click-outside/dropdown</example-url>
  * <example-url>/#/common/interactive/gestures/click-outside/enabled-toggle</example-url>

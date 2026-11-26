@@ -38,7 +38,7 @@ const NUMBER_FORMAT: Intl.NumberFormatOptions = {};
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRangeSliderTrack, CngxSlider, CngxSliderThumb
  * @axis level molecule
  */

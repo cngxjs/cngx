@@ -51,7 +51,7 @@ export interface CngxLatencyProbe {
  * @returns `{ lastDuration, isBusy }`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/latency-probe.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createLatencyProbe(
   busy: () => boolean,

@@ -37,7 +37,7 @@ import { CNGX_TAB_GROUP_HOST, type CngxTabHandle } from './tab-group-host.token'
  * ```
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tab.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabGroupPresenter, CngxTabLabel, CngxTabContent, CngxTabErrorBadge
  * @slot cngxTabLabel The tab's own header label.
  * @slot cngxTabSubLabel Secondary line under the label, e.g. a count or status.

@@ -71,7 +71,7 @@ const recyclerBundle = createSectionBundle<CngxRecyclerLanguageSection, Recycler
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('CngxRecyclerI18n', {
   factory: () => recyclerBundle.build(),
@@ -80,7 +80,7 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<Signal<RecyclerI18n>>('Cngx
 /**
  * A label override feature of `provideRecyclerI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_RECYCLER_I18N, withRecyclerI18nLabels
  */
 export type CngxRecyclerI18nFeature = (bundle: Signal<RecyclerI18n>) => Signal<RecyclerI18n>;

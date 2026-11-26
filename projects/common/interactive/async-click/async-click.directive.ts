@@ -51,7 +51,7 @@ export type AsyncAction = (signal?: AbortSignal) => Promise<unknown> | Observabl
  * result with it where the result is used.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createRetry, CngxAsyncClick
  */
 export const CNGX_ASYNC_CANCELLED: unique symbol = Symbol('CNGX_ASYNC_CANCELLED');
@@ -65,7 +65,7 @@ export const CNGX_ASYNC_CANCELLED: unique symbol = Symbol('CNGX_ASYNC_CANCELLED'
  * `undefined` for `'success'`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAsyncClick
  */
 export interface CngxAsyncSettle {
@@ -152,7 +152,7 @@ export interface CngxAsyncSettle {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/async-click/async-click.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPending, CngxSucceeded, CngxFailed, CngxActionButton
  * <example-url>/#/common/interactive/retry/optimistic-instant-like-toggle</example-url>
  * <example-url>/#/common/interactive/retry/createretry-cngxasyncclick</example-url>

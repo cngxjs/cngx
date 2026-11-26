@@ -4,7 +4,7 @@
  * (a guard against pathological DOM, e.g. step 1 over a 0..10000 range).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-ticks.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 import { computed, type Signal } from '@angular/core';
 import { arrayEqual, decimalPlaces } from '@cngx/utils';
@@ -29,7 +29,7 @@ export interface CngxSliderTicksView {
  * are independent. The values signal is `arrayEqual`-guarded.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-ticks.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @internal
  */
 export function createSliderTicks(options: {

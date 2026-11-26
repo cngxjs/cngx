@@ -24,7 +24,7 @@ import { type CngxAxisPosition, type CngxAxisType } from './axis-position';
  * the directive up through its content query.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/chart-axis.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAxis, CngxAxisDomain, CngxChart
  */
 export interface CngxChartAxis {
@@ -57,7 +57,7 @@ export interface CngxChartAxis {
  * insetting on equal terms with the ones the library ships.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/axis/chart-axis.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartAxis, CngxAxis, CngxAxisDomain
  */
 export const CNGX_CHART_AXIS = new InjectionToken<CngxChartAxis>('CNGX_CHART_AXIS');

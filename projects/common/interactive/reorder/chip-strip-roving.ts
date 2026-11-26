@@ -10,7 +10,7 @@ import {
  * Configuration for {@link createChipStripRoving}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxChipStripRovingOptions {
   /**
@@ -50,7 +50,7 @@ export interface CngxChipStripRovingOptions {
  * keyboard handler and imperative focus helpers.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxChipStripRovingController {
   /**
@@ -92,7 +92,7 @@ export interface CngxChipStripRovingController {
  * Signature of the factory behind {@link CNGX_CHIP_STRIP_ROVING_FACTORY}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxChipStripRovingFactory = (
   opts: CngxChipStripRovingOptions,
@@ -117,7 +117,7 @@ export type CngxChipStripRovingFactory = (
  * (component constructor / field init) because it installs an * `effect()` for the active-index clamp on count shrink.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createChipStripRoving(
   opts: CngxChipStripRovingOptions,
@@ -231,7 +231,7 @@ export function createChipStripRoving(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/chip-strip-roving.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CHIP_STRIP_ROVING_FACTORY = new InjectionToken<CngxChipStripRovingFactory>(
   'CngxChipStripRovingFactory',

@@ -61,7 +61,7 @@ import { CNGX_CHIP_GROUP_HOST, type CngxChipGroupHost } from './chip-group-host.
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group.component.ts
  * @selector cngx-chip-group
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiChipGroup, CngxChipInGroup, CngxChipInteraction, CngxRadioGroup
  * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>

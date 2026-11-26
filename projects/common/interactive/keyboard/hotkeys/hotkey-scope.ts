@@ -12,7 +12,7 @@ import { computed, type DestroyRef, InjectionToken, signal, type Signal } from '
  * node.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyScope, CNGX_HOTKEY_SCOPE, CngxHotkeyScope
  */
 export interface CngxHotkeyScopeNode {
@@ -32,7 +32,7 @@ export interface CngxHotkeyScopeNode {
  * Options for {@link createHotkeyScope}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyScope
  */
 export interface CngxHotkeyScopeOptions {
@@ -58,7 +58,7 @@ export interface CngxHotkeyScopeOptions {
  * that own a region (`CngxDialog`, `CngxDrawerSurface`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyScope, CngxHotkeyScope, injectHotkey
  */
 export const CNGX_HOTKEY_SCOPE = new InjectionToken<CngxHotkeyScopeNode>('CNGX_HOTKEY_SCOPE');
@@ -94,7 +94,7 @@ const MODAL_CAPABLE_SCOPES = new Set<CngxHotkeyScopeNode>();
  * @param options The region, its flags and its parent.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_HOTKEY_SCOPE, CngxHotkeyScope
  */
 export function createHotkeyScope(options: CngxHotkeyScopeOptions): CngxHotkeyScopeNode {
@@ -181,7 +181,7 @@ function parentOf(node: Node): Node | null {
  * @param target The element a key press or a listing starts from.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-scope.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createHotkeyScope, createHotkeyRegistry
  */
 export function resolveHotkeyScopeChain(target: Element): readonly CngxHotkeyScopeNode[] {

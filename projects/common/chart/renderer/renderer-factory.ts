@@ -13,7 +13,7 @@ import { CNGX_CHART_RENDERER_THRESHOLD } from './renderer-threshold';
  * {@link withChartRendererFactory}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-factory.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const createDefaultChartRenderer: CngxChartRendererFactory = (mode, deps) =>
   mode === 'svg' ? createSvgRenderer(deps) : createCanvasRenderer(deps);
@@ -25,7 +25,7 @@ export const createDefaultChartRenderer: CngxChartRendererFactory = (mode, deps)
  * atoms.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-factory.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideChartRenderer, withChartRendererFactory
  */
 export const CNGX_CHART_RENDERER_FACTORY = new InjectionToken<CngxChartRendererFactory>(
@@ -45,7 +45,7 @@ export interface CngxChartRendererFeature {
  * Override the SVG->Canvas auto-switch cutoff (default `500`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-factory.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withChartRendererThreshold(n: number): CngxChartRendererFeature {
   return { providers: [{ provide: CNGX_CHART_RENDERER_THRESHOLD, useValue: n }] };
@@ -57,7 +57,7 @@ export function withChartRendererThreshold(n: number): CngxChartRendererFeature 
  * (the heuristic-swap axis ships no dedicated token at v2).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-factory.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withChartRendererFactory(fn: CngxChartRendererFactory): CngxChartRendererFeature {
   return { providers: [{ provide: CNGX_CHART_RENDERER_FACTORY, useValue: fn }] };
@@ -73,7 +73,7 @@ export function withChartRendererFactory(fn: CngxChartRendererFactory): CngxChar
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/renderer/renderer-factory.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withChartRendererThreshold, withChartRendererFactory
  */
 export function provideChartRenderer(...features: CngxChartRendererFeature[]): Provider[] {

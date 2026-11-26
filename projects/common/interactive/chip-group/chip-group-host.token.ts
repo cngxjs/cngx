@@ -23,7 +23,7 @@ import { CngxRuntimeError } from '@cngx/utils';
  * then the field stays out of the public surface.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxChipGroupHost<T = unknown> {
   isSelected(value: T): boolean;
@@ -48,7 +48,7 @@ export interface CngxChipGroupHost<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-group/chip-group-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CHIP_GROUP_HOST = new InjectionToken<CngxChipGroupHost>('CngxChipGroupHost');
 

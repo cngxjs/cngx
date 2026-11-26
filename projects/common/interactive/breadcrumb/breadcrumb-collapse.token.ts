@@ -17,7 +17,7 @@ import { createBreadcrumbCollapse, type CngxBreadcrumbCollapseStrategy } from '.
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/breadcrumb/breadcrumb-collapse.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumb, createBreadcrumbCollapse
  * <example-url>/#/common/interactive/breadcrumb/custom-collapse-strategy</example-url>
  * <example-url>/#/ui/breadcrumb/recipes/mobile-parent-only</example-url>

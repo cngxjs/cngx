@@ -24,7 +24,7 @@ import { CNGX_ACTION_STATUS, type CngxActionStatusCellKind } from './action-stat
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-cell.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionStatusBrain, CNGX_ACTION_STATUS
  * <example-url>/#/ui/action-button/async-button/ejected-host</example-url>
  * @axis level atom

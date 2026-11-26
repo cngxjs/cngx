@@ -19,7 +19,7 @@ import { shallowReadonlyArrayEqual } from './equal-fns';
  * pure DOM behaviour.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/error-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorScope, CngxErrorAggregator, CngxErrorSource
  * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */

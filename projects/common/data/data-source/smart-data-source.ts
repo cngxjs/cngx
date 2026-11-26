@@ -170,7 +170,7 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * @typeParam T - The row item type.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/data-source/smart-data-source.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDataSource, CngxSort, CngxFilter, CngxPaginate
  * <example-url>/#/common/data/smart-data-source/auto-wired</example-url>
  * <example-url>/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>

@@ -52,7 +52,7 @@ export interface CngxStepperCountHost {
  * the caption sits next to another live region (e.g. a stepper that
  * already mounts its own live announcer) to prevent double announces.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperHost, CngxStepperI18n
  * <example-url>/#/ui/stepper/stepper-count/multi-instance-format-overrides</example-url>
  */

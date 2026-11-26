@@ -27,7 +27,7 @@ import { injectSpeakI18n } from './speak-i18n';
  *
  * @wcag AAA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/speak/speak-button.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSpeak
  * <example-url>/#/ui/speak/speak-button/styled-speaker-icon</example-url>
  * <example-url>/#/ui/speak/speak-button/card-with-speak-badge</example-url>

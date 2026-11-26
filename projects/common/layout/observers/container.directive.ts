@@ -41,7 +41,7 @@ import { CNGX_CONTAINER_SIZE, type CngxContainerSize, createContainerSize } from
  * container.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/observers/container.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectContainerSize, CngxResizeObserver, CngxMediaQuery
  * <example-url>/#/common/layout/container/css-decides-js-reads</example-url>
  * @axis level atom

@@ -33,7 +33,7 @@ import { CNGX_ERROR_SCOPE } from '../error-scope/error-scope.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-state/error-state.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorAggregator, CngxErrorSource, CngxErrorScope
  * <example-url>/#/common/interactive/error/state/basic-boolean-flag-flips-aria-invalid-aria-errormessage</example-url>
  * <example-url>/#/common/interactive/error/state/without-message-id-class-hook-aria-invalid-only</example-url>

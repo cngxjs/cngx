@@ -43,7 +43,7 @@ export interface CngxBreadcrumbIconContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/breadcrumb/breadcrumb-icon.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBreadcrumbBar, CngxBreadcrumbItemAccessory
  * <example-url>/#/ui/breadcrumb/skins/iconlabel</example-url>
  */

@@ -72,7 +72,7 @@ import { CngxFieldSkinHost } from './field-skin.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/field-box.directive.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxPrefix, CngxSuffix, CngxLabel, CngxFormField, CngxInput, CngxFieldSkinHost, CNGX_FIELD_BOX
  * <example-url>/#/forms/field/affix/currency-and-unit</example-url>
  * <example-url>/#/forms/field/skin/outline-anatomy</example-url>

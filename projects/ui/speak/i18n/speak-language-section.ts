@@ -3,7 +3,7 @@
  * `CngxSpeakButton`. It feeds `CNGX_SPEAK_I18N`; a key set through
  * `withSpeakI18nLabels` still wins.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SPEAK_I18N, withSpeakI18nLabels
  */
 export interface CngxSpeakLanguageSection {
@@ -17,7 +17,7 @@ export interface CngxSpeakLanguageSection {
  * The English speak section: the single source of the speak button's English
  * copy. `CNGX_SPEAK_I18N` defaults to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SPEAK_I18N
  */
 export const CNGX_SPEAK_LANGUAGE_EN: CngxSpeakLanguageSection = {

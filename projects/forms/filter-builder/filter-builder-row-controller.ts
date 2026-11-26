@@ -188,7 +188,7 @@ export type CngxFilterRowControllerFactory = (
  * carry-over) without forking either skin.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterRow, CngxFilterExpressionRow, CNGX_FILTER_ROW_CONTROLLER_FACTORY
  */
 export function createFilterRowController(
@@ -395,7 +395,7 @@ export function createFilterRowController(
  * or `CngxFilterExpressionRow`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-row-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createFilterRowController, CngxFilterRow, CngxFilterExpressionRow
  */
 export const CNGX_FILTER_ROW_CONTROLLER_FACTORY =

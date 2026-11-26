@@ -86,7 +86,7 @@ export function createW3CMenuStrategy(): CngxMenuNavStrategy {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-nav-strategy.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_NAV_STRATEGY = new InjectionToken<CngxMenuNavStrategy>(
   'CngxMenuNavStrategy',

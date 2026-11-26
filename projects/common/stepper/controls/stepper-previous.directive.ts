@@ -40,7 +40,7 @@ import { warnStepperControlUnhosted } from '../warn-stepper-unhosted';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/controls/stepper-previous.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperNext, CngxStepperComplete, CngxStepperHost
  */
 @Directive({

@@ -20,7 +20,7 @@ import { booleanAttribute, Directive, ElementRef, inject, input } from '@angular
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/trim.directive.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxInputFilter, CngxInputFormat
  * <example-url>/#/forms/input/trim-on-blur</example-url>
  * @axis level atom

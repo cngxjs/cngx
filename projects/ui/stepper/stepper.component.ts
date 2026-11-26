@@ -98,7 +98,7 @@ const STEPPER_ICONS = {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/stepper.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperPresenter, CngxStep, CngxRovingTabindex, CngxFocusRestore, CngxLiveRegion
  * @slot cngxStepIndicator Replaces the per-step number or check glyph in the header.
  * @slot cngxStepBadge Extra marker beside a step label, e.g. an optional or count badge.

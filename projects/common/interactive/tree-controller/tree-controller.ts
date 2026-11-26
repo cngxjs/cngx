@@ -24,7 +24,7 @@ import { CNGX_TREE_CONFIG } from './tree-config';
  * class of heisenbugs.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTreeControllerOptions<T> {
   /** Source tree - the controller re-derives on every change. */
@@ -101,7 +101,7 @@ export interface CngxTreeControllerOptions<T> {
  * inside an `effect()` never latches that effect onto the expansion set.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTreeController<T> {
   /** Flat DFS projection with ARIA metadata + backref to the source node. */
@@ -175,7 +175,7 @@ export interface CngxTreeController<T> {
  * Factory signature carried by the DI token.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxTreeControllerFactory = <T>(
   opts: CngxTreeControllerOptions<T>,
@@ -191,7 +191,7 @@ export type CngxTreeControllerFactory = <T>(
  * same override surface, one concern below: tree-aware derived views.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TREE_CONTROLLER_FACTORY = new InjectionToken<CngxTreeControllerFactory>(
   'CngxTreeControllerFactory',
@@ -267,7 +267,7 @@ interface TreeIndexes<T> {
  * {@link CngxTreeControllerOptions} for the configuration cascade.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/tree-controller/tree-controller.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createTreeController<T>(opts: CngxTreeControllerOptions<T>): CngxTreeController<T> {
   const { nodes } = opts;

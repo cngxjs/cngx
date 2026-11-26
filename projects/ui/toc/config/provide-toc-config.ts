@@ -21,7 +21,7 @@ const NO_ARIA_LABELS: CngxTocAriaLabels = {};
  * `CngxBreadcrumbConfigFeature` so the consumer's mental model is one across
  * feature areas.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxTocConfigFeature =
   | {
@@ -120,7 +120,7 @@ function mergeConfig(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideTocConfig(...features: CngxTocConfigFeature[]): EnvironmentProviders {
   // Empty-features: skip the override so the root factory's CNGX_TOC_DEFAULTS
@@ -156,7 +156,7 @@ export function provideTocConfig(...features: CngxTocConfigFeature[]): Environme
  * class Guide {}
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideTocConfigAt(...features: CngxTocConfigFeature[]): Provider[] {
   // Empty-features call: parent value flows through untouched. Skipping the

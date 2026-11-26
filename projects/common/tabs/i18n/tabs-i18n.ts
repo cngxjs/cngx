@@ -147,7 +147,7 @@ const tabsBundle = createSectionBundle<CngxTabsLanguageSection, CngxTabsI18n>({
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/i18n/tabs-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TABS_I18N = new InjectionToken<Signal<CngxTabsI18n>>('CngxTabsI18n', {
   providedIn: 'root',

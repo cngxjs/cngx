@@ -191,7 +191,7 @@ function missingNote(
  * optional peer of `@cngx/core`) for its types only; it loads nothing from
  * it at runtime. Under Jasmine or Jest, assert on `capture.heard()` instead.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createAnnouncementCapture, resolveUnheardReason
  */
 export const cngxAnnouncementMatchers = {

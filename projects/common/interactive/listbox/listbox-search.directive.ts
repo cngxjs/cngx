@@ -31,7 +31,7 @@ export type ListboxMatchFn = (option: ActiveDescendantItem, term: string) => boo
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createLabelMatcher, CngxListboxSearch
  */
 export function createListboxLabelMatch(
@@ -51,7 +51,7 @@ export function createListboxLabelMatch(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/listbox/listbox-search.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxListbox, CngxSearch, CngxListboxTrigger
  * <example-url>/#/common/interactive/listbox/search/command-palette</example-url>
  * <example-url>/#/common/interactive/listbox/search/inline-filter</example-url>

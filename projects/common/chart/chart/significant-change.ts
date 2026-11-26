@@ -11,7 +11,7 @@ type Trend = 'up' | 'down' | 'flat';
  * A discriminated union - each variant carries exactly its own fields.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/significant-change.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxSignificantChange =
   | { readonly kind: 'trend-flip'; readonly from: Trend; readonly to: Trend }
@@ -62,7 +62,7 @@ function significantChangeEqual(
  * @param summary the chart's `CngxChartSummary` signal.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/chart/significant-change.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createSignificantChangeTracker(
   summary: Signal<CngxChartSummary>,

@@ -20,7 +20,7 @@ import { createPreferenceAxis } from './preference-axis';
  * `reduced` collapses animation/transition durations app-wide; `full`
  * opts back into motion even under an OS reduce preference.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
 
@@ -32,7 +32,7 @@ export type CngxMotionPreference = 'full' | 'reduced' | 'auto';
  *
  * @relatedTo provideMotion
  * @relatedTo injectMotion
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MOTION = new InjectionToken<WritableSignal<CngxMotionPreference>>('CNGX_MOTION', {
   providedIn: 'root',
@@ -77,7 +77,7 @@ const motionAxis = createPreferenceAxis({
  *
  * @relatedTo CNGX_MOTION
  * @relatedTo injectMotion
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideMotion(initial: CngxMotionPreference = 'auto'): EnvironmentProviders {
   return motionAxis.provide(initial);
@@ -90,7 +90,7 @@ export function provideMotion(initial: CngxMotionPreference = 'auto'): Environme
  * to the OS preference.
  *
  * @relatedTo provideMotion
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectMotion(): WritableSignal<CngxMotionPreference> {
   return motionAxis.injectValue();

@@ -83,7 +83,7 @@ export interface CngxAsyncContext<T> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/async/async.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectAsyncState, createAsyncState, createManualState
  *
  * <example-url>/#/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>

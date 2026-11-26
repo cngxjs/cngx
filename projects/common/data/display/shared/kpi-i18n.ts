@@ -16,7 +16,7 @@ import type { DeltaDirection, DeltaSentiment } from './delta-format';
  * (`CNGX_LOCALE`); the per-instance `label` / `valueTextFormat` inputs still
  * win over the bundle.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxKpiI18n {
   /** `CngxDelta` accessible name: formatted magnitude plus the sentiment word. */
@@ -86,7 +86,7 @@ const kpiBundle = createSectionBundle<CngxKpiLanguageSection, CngxKpiI18n>({
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/display/shared/kpi-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDelta, CngxTrend, CngxGoal
  */
 export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18n', {
@@ -97,7 +97,7 @@ export const CNGX_KPI_I18N = new InjectionToken<Signal<CngxKpiI18n>>('CngxKpiI18
 /**
  * A label override feature of `provideKpiI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_KPI_I18N, withKpiI18nLabels
  */
 export type CngxKpiI18nFeature = (bundle: Signal<CngxKpiI18n>) => Signal<CngxKpiI18n>;
@@ -107,7 +107,7 @@ export type CngxKpiI18nFeature = (bundle: Signal<CngxKpiI18n>) => Signal<CngxKpi
  * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withKpiI18nLabels(
   overrides: Partial<CngxKpiI18n> | Signal<Partial<CngxKpiI18n>>,
@@ -132,7 +132,7 @@ export function withKpiI18nLabels(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Provider {
   return {
@@ -145,7 +145,7 @@ export function provideKpiI18n(...features: readonly CngxKpiI18nFeature[]): Prov
  * Inject the resolved KPI i18n bundle signal. Read it inside a `computed()`
  * or template so a runtime override flip re-derives.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectKpiI18n(): Signal<CngxKpiI18n> {
   return kpiBundle.resolve(inject(CNGX_KPI_I18N));

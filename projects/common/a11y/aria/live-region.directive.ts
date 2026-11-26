@@ -31,7 +31,7 @@ import { Directive, input } from '@angular/core';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/aria/live-region.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLiveAnnouncer
  * <example-url>/#/common/a11y/live-region/form-validation-assertive-error-announcements</example-url>
  * <example-url>/#/common/a11y/live-region/polite-vs-assertive</example-url>

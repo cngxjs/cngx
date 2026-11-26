@@ -28,7 +28,7 @@ export interface CngxTimelineMarkerHost {
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/timeline/marker-host.token.ts
  * @relatedTo CngxTimelineMarkerTpl, CngxTimelineItem
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TIMELINE_MARKER_HOST = new InjectionToken<CngxTimelineMarkerHost>(
   'CngxTimelineMarkerHost',

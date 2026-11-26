@@ -48,7 +48,7 @@ import type { PopoverHaspopup } from './popover.types';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-trigger.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopover, CngxPopoverAnchor, CngxPopoverPanel, CngxTooltip, CngxMenuButton, CngxDisclosure
  * <example-url>/#/common/popover/click-popover</example-url>
  * <example-url>/#/common/popover/disclosure/link-list</example-url>

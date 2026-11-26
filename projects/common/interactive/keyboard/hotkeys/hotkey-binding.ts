@@ -9,7 +9,7 @@ import type { Signal } from '@angular/core';
  *   "active only on focus" for single-key shortcuts).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-binding.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxHotkeyBinding, injectHotkey
  */
 export type CngxHotkeyReach = 'global' | 'focus';
@@ -34,7 +34,7 @@ export type CngxHotkeyReach = 'global' | 'focus';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-binding.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectHotkey, injectHotkeys, CngxHotkeyReach
  */
 export interface CngxHotkeyBinding {
@@ -60,7 +60,7 @@ export interface CngxHotkeyBinding {
  * Handle for one source registration in the hotkey registry.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-binding.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectHotkeys, CngxHotkeyRegistry
  */
 export interface CngxHotkeyRegistration {
@@ -72,7 +72,7 @@ export interface CngxHotkeyRegistration {
  * Handle returned by {@link injectHotkey} for a single binding.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/keyboard/hotkeys/hotkey-binding.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectHotkey, CngxHotkeyBinding
  */
 export interface CngxHotkeyRef extends CngxHotkeyRegistration {

@@ -45,7 +45,7 @@ export interface CngxTabRejectionIconContext {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/slots/tab-rejection-icon.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabErrorBadge, CngxTabBusySpinner, CngxTab
  * <example-url>/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
  */

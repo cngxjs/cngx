@@ -9,7 +9,7 @@ import { injectSidenavLabels } from './config/inject-sidenav-config';
  * rail announces it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SIDENAV_ANNOUNCER_FACTORY, createSidenavAnnouncer
  */
 export interface CngxSidenavAnnouncer {
@@ -25,7 +25,7 @@ export interface CngxSidenavAnnouncer {
  * language switch never re-speaks a message. Injection context required.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SIDENAV_ANNOUNCER_FACTORY, CngxLiveAnnouncer
  */
 export function createSidenavAnnouncer(): CngxSidenavAnnouncer {
@@ -53,7 +53,7 @@ export type CngxSidenavAnnouncerFactory = () => CngxSidenavAnnouncer;
  * telemetry tap, assertive politeness, a silent variant).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createSidenavAnnouncer, CngxSidenav
  */
 export const CNGX_SIDENAV_ANNOUNCER_FACTORY = new InjectionToken<CngxSidenavAnnouncerFactory>(

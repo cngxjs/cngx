@@ -43,7 +43,7 @@ import { CngxDgaRowError } from './data-grid-row-error.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-row.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDataGridAccordion, CngxDgCell, CngxAccordionPanel
  * @slot cngxDgaRowBusy Rendered over the row while its detail loads.
  * @slot cngxDgaRowError Rendered when the row's detail failed to load.

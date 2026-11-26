@@ -92,7 +92,7 @@ export function createPasswordStrength(): CngxPasswordStrengthFactory {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/password-strength.factory.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxPasswordStrength, createPasswordStrength
  */
 export const CNGX_PASSWORD_STRENGTH_FACTORY = new InjectionToken<CngxPasswordStrengthFactory>(

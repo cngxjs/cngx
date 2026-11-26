@@ -9,7 +9,7 @@ type CloseWatcherCtor = new () => CloseWatcherLike;
  * Handle returned by {@link createCloseWatcher}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/close-watcher.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxCloseWatcher {
   /**
@@ -51,7 +51,7 @@ function globalWindow(): Window | null {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/close-watcher.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createCloseWatcher(
   onClose: () => void,

@@ -6,7 +6,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * `withSidenavLabels` still wins. Messages use `{name}` placeholders, numbers
  * are formatted for the locale.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SIDENAV_CONFIG, withSidenavLabels
  */
 export interface CngxSidenavLanguageSection {
@@ -34,7 +34,7 @@ export interface CngxSidenavLanguageSection {
  * The English sidenav section: the single source of the sidenav's English
  * copy. The `CNGX_SIDENAV_CONFIG` labels default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_SIDENAV_CONFIG
  */
 export const CNGX_SIDENAV_LANGUAGE_EN: CngxSidenavLanguageSection = {

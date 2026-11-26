@@ -34,7 +34,7 @@ import { buildAsyncStateView } from './build-async-state-view';
  * upload percentage and an indeterminate fetch cannot be averaged honestly).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/aggregate-async-state.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createAggregateAsyncState<T = unknown>(
   sources: Signal<readonly CngxAsyncState<unknown>[]>,

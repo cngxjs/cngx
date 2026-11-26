@@ -20,7 +20,7 @@ import { CNGX_SIDENAV_CONFIG } from './sidenav.config.defaults';
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectSidenavConfig(): CngxSidenavConfig {
   return inject(CNGX_SIDENAV_CONFIG);
@@ -34,7 +34,7 @@ export function injectSidenavConfig(): CngxSidenavConfig {
  * `undefined` reads the section. Runs in injection context; read it inside a
  * `computed()`, a template or a handler.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withSidenavLabels
  */
 export function injectSidenavLabels(): Signal<CngxSidenavLabels> {

@@ -7,7 +7,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * derived empty/active state to reflect.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxBucketPaginateView {
   /** Human-readable bucket label, e.g. `'A-C'`. Rendered as the chip text. */
@@ -27,7 +27,7 @@ export interface CngxBucketPaginateView {
  * the active bucket clears it) holds in one place.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxBucketPaginateHost {
   /** The buckets to render, in declaration order. One chip per entry. */
@@ -57,7 +57,7 @@ export interface CngxBucketPaginateHost {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_BUCKET_PAGINATE_HOST = new InjectionToken<CngxBucketPaginateHost>(
   'CngxBucketPaginateHost',

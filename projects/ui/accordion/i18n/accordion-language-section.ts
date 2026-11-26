@@ -4,7 +4,7 @@
  * `CNGX_ACCORDION_CONFIG`; a key set through `withAccordionLabels` or a bound
  * `[disabledReason]` / `[errorMessage]` still wins.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ACCORDION_CONFIG, withAccordionLabels
  */
 export interface CngxAccordionLanguageSection {
@@ -18,7 +18,7 @@ export interface CngxAccordionLanguageSection {
  * The English accordion section: the single source of the accordion's English
  * copy. The `CNGX_ACCORDION_CONFIG` copy keys default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_ACCORDION_CONFIG
  */
 export const CNGX_ACCORDION_LANGUAGE_EN: CngxAccordionLanguageSection = {

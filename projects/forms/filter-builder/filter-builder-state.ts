@@ -387,7 +387,7 @@ export type CngxFilterBuilderStateFactory = <TValue = unknown>(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-state.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterBuilderPresenter, CngxFilterBuilder, CngxFilterBuilderState
  */
 export const CNGX_FILTER_BUILDER_STATE_FACTORY = new InjectionToken<CngxFilterBuilderStateFactory>(

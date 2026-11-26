@@ -49,7 +49,7 @@ import { CngxLoadingIndicator } from './loading-indicator';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/loading/loading-overlay.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxLoadingIndicator, CngxProgress, CngxAsyncContainer
  *
  * <example-url>/#/ui/feedback/loading-overlay/overlay-with-form</example-url>

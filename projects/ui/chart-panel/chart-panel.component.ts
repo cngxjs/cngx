@@ -23,7 +23,7 @@ import { CNGX_CHART_PANEL, type CngxChartPanelRegistry } from './chart-panel.tok
 /**
  * Where the projected legend sits relative to the chart body.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
 
@@ -67,7 +67,7 @@ export type CngxChartPanelLegendPosition = 'top' | 'bottom' | 'none';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChart, CngxChartLegend, CngxChartPanelTitle, CngxChartPanelActions
  *
  * <example-url>/#/ui/chart-panel/basic/titled-panel-with-legend</example-url>

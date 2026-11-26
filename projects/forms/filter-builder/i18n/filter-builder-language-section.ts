@@ -7,7 +7,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * key set through `withFilterBuilderI18n` still wins. Messages use `{name}`
  * placeholders taken from the flat argument objects of the bundle functions.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_FILTER_BUILDER_CONFIG, withFilterBuilderI18n
  */
 export interface CngxFilterBuilderLanguageSection {
@@ -94,7 +94,7 @@ export interface CngxFilterBuilderLanguageSection {
  * entry's English copy. The `CNGX_FILTER_BUILDER_CONFIG` `i18n` bundle
  * defaults to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_FILTER_BUILDER_CONFIG
  */
 export const CNGX_FILTER_BUILDER_LANGUAGE_EN: CngxFilterBuilderLanguageSection = {

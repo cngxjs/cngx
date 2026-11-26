@@ -56,7 +56,7 @@ const REGIONS =
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/footer/stepper-footer.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepper, CngxStepperPrevious, CngxStepperNext, CngxStepperComplete, CngxStepperCount
  * <example-url>/#/ui/stepper/stepper-footer/back-continue</example-url>
  * <example-url>/#/ui/stepper/stepper-footer/save-draft-extra-button</example-url>

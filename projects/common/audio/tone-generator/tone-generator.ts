@@ -11,7 +11,7 @@ const MIN_DURATION_SEC = ATTACK_SEC + RELEASE_SEC;
  * Exported so a per-element volume multiplier can scale against the same
  * baseline the generator uses.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @internal
  */
 export const DEFAULT_TONE_GAIN = 0.2;
@@ -19,7 +19,7 @@ export const DEFAULT_TONE_GAIN = 0.2;
 /**
  * Per-tone synthesis options.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface ToneOptions {
   /** Oscillator waveform. Default `'sine'`. */
@@ -33,7 +33,7 @@ export interface ToneOptions {
 /**
  * One step of an earcon sequence.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface ToneStep {
   /** Frequency in Hz. */
@@ -51,7 +51,7 @@ export interface ToneStep {
 /**
  * Public handle returned by {@link createToneGenerator}.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxToneGenerator {
   /** Play a single tone of `durationMs` at `freq`. */
@@ -63,7 +63,7 @@ export interface CngxToneGenerator {
 /**
  * Dependencies handed to the tone-generator factory by the engine.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface ToneGeneratorDeps {
   /** Lazy getter for the shared context - called per tone so the engine controls resume. */
@@ -75,7 +75,7 @@ export interface ToneGeneratorDeps {
 /**
  * Signature of the tone-generator factory - the shape an override must match.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAudioToneGeneratorFactory = (deps: ToneGeneratorDeps) => CngxToneGenerator;
 
@@ -89,7 +89,7 @@ export type CngxAudioToneGeneratorFactory = (deps: ToneGeneratorDeps) => CngxTon
  * `create*` pure factory (no `inject()`), so it composes inside the engine and
  * runs against the shared `createAudioContextMock` in specs.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const createToneGenerator: CngxAudioToneGeneratorFactory = (deps) => {
   function schedule(
@@ -148,7 +148,7 @@ export const createToneGenerator: CngxAudioToneGeneratorFactory = (deps) => {
  *
  * @relatedTo createToneGenerator, CNGX_AUDIO_ENGINE_FACTORY
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/tone-generator/tone-generator.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_AUDIO_TONE_GENERATOR_FACTORY = new InjectionToken<CngxAudioToneGeneratorFactory>(
   'CngxAudioToneGeneratorFactory',

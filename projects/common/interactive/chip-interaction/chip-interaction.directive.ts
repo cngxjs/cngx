@@ -91,7 +91,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-interaction/chip-interaction.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChipInGroup, CngxChipGroup, CngxMultiChipGroup, CngxChipInput
  * <example-url>/#/common/interactive/chip/interaction/basic-toggle-on-click-space-or-enter</example-url>
  * <example-url>/#/common/interactive/chip/interaction/disabled-state</example-url>

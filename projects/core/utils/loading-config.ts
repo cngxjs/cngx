@@ -48,7 +48,7 @@ export const CNGX_LOADING_DEFAULTS = {
  * subtree override changes only the fields it names.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideLoadingConfig, provideLoadingConfigAt, injectLoadingConfig
  */
 export const CNGX_LOADING_CONFIG = new InjectionToken<CngxLoadingConfig>('CngxLoadingConfig', {
@@ -111,7 +111,7 @@ export type CngxLoadingTreatment = 'auto' | 'spinner' | 'skeleton';
  * @param cutoff `injectLoadingConfig().spinnerVsSkeletonCutoff`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/loading-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createLatencyProbe, CNGX_LOADING_CONFIG, withSpinnerVsSkeletonCutoff
  */
 export function resolveLoadingTreatment(

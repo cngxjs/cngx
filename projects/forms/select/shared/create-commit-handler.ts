@@ -252,7 +252,7 @@ export type CngxCreateCommitHandlerFactory = <T, Prev = unknown>(
  * telemetry.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/create-commit-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxActionSelect, CngxActionMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY
  */
 export const CNGX_CREATE_COMMIT_HANDLER_FACTORY =

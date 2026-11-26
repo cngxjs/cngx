@@ -16,7 +16,7 @@ import type { CngxStepContentContext } from './step-panel-host.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-content.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStep, CngxStepLabel
  * <example-url>/#/ui/stepper/stepper-step-content/typed-lazy-panels</example-url>
  */

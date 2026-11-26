@@ -6,7 +6,7 @@ import { inject, InjectionToken, type Provider, type Type } from '@angular/core'
  * `aria-hidden` `<cngx-icon>`, so it draws a glyph and nothing else.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideButtonCaretIcon, injectButtonCaretIcon, CngxMenuButton, CngxIconMenuButton
  * <example-url>/#/common/menu-button/menu-button/custom-caret</example-url>
  */
@@ -23,7 +23,7 @@ export const CNGX_BUTTON_CARET_ICON = new InjectionToken<Type<unknown>>('CngxBut
  * @param component The glyph component; it renders inside the `aria-hidden` caret `<cngx-icon>`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_CARET_ICON, injectButtonCaretIcon
  * <example-url>/#/common/menu-button/menu-button/custom-caret</example-url>
  */
@@ -35,7 +35,7 @@ export function provideButtonCaretIcon(component: Type<unknown>): Provider {
  * The caret set with `provideButtonCaretIcon`, or `null` for the default chevron.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/caret-icon.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_CARET_ICON, provideButtonCaretIcon
  */
 export function injectButtonCaretIcon(): Type<unknown> | null {

@@ -35,7 +35,7 @@ import { CngxDivider } from '@cngx/common/display';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-divider.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxDivider
  */
 @Directive({

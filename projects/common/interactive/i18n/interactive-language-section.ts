@@ -6,7 +6,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * breadcrumb, the unsaved-changes guard, the error aggregator). It feeds
  * `CNGX_INTERACTIVE_I18N`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_INTERACTIVE_I18N
  */
 export interface CngxInteractiveLanguageSection {
@@ -45,7 +45,7 @@ export interface CngxInteractiveLanguageSection {
  * The English interactive section: the single source of the interactive
  * atoms' English copy. `CNGX_INTERACTIVE_I18N` defaults to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_INTERACTIVE_I18N
  */
 export const CNGX_INTERACTIVE_LANGUAGE_EN: CngxInteractiveLanguageSection = {

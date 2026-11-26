@@ -57,7 +57,7 @@ export interface CngxPopoverPanelConfig {
  * same shape as the popover section of a language pack, declared once as
  * {@link CngxPopoverLanguageSection}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPopoverPanelLabels = CngxPopoverLanguageSection;
 

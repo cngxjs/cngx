@@ -21,7 +21,7 @@ export type { CngxCommitBeginHandlers } from '@cngx/common/data';
  * `@cngx/common/data` owns the generic state machine.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxSelectCommitController<T> extends Omit<CngxGenericCommitController<T>, 'begin'> {
   /**
@@ -78,7 +78,7 @@ function wrapAsSelectController<T>(
  * resolution.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createSelectCommitController<T>(): CngxSelectCommitController<T> {
   return wrapAsSelectController(createGenericCommitController<T>());
@@ -88,7 +88,7 @@ export function createSelectCommitController<T>(): CngxSelectCommitController<T>
  * @deprecated Use {@link CngxSelectCommitController}. The unprefixed name is
  * also exported by `@cngx/common/data` with a different `begin` signature;
  * this name is removed at the v1.0 cut.
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxCommitController<T> = CngxSelectCommitController<T>;
 
@@ -98,7 +98,7 @@ export type CngxCommitController<T> = CngxSelectCommitController<T>;
  * @deprecated Use `createSelectCommitController`. The unprefixed name is also
  * exported by `@cngx/common/data` with a different contract; this name is
  * removed at the v1.0 cut.
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const createCommitController = createSelectCommitController;
 
@@ -128,7 +128,7 @@ export type CngxSelectCommitControllerFactory = <T>() => CngxSelectCommitControl
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/commit-controller.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createSelectCommitController, CNGX_SCALAR_COMMIT_HANDLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY, CNGX_REORDER_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_SELECT_COMMIT_CONTROLLER_FACTORY =

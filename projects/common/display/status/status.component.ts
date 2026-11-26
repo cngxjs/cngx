@@ -64,7 +64,7 @@ const TONE_ICON: Record<StatusTone, CngxIconData> = {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/status/status.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBadge, CngxTag, CngxChip
  *
  * <example-url>/#/common/display/status/tone-matrix</example-url>

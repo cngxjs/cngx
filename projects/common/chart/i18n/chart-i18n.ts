@@ -165,7 +165,7 @@ const chartBundle = createSectionBundle<CngxChartLanguageSection, CngxChartI18n>
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/i18n/chart-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxChartI18n', {
   providedIn: 'root',
@@ -175,7 +175,7 @@ export const CNGX_CHART_I18N = new InjectionToken<Signal<CngxChartI18n>>('CngxCh
 /**
  * A label override feature of `provideChartI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_CHART_I18N, withChartI18nLabels
  */
 export type CngxChartI18nFeature = (bundle: Signal<CngxChartI18n>) => Signal<CngxChartI18n>;

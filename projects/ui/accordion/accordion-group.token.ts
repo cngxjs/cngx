@@ -8,7 +8,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * skin-agnostic - heading semantics are a skin concern.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordionGroup, CngxAccordionItem
  */
 export interface CngxAccordionGroupContext {
@@ -21,7 +21,7 @@ export interface CngxAccordionGroupContext {
  * provides it via `useExisting`; each `CngxAccordionItem` injects it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/accordion/accordion-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordionGroup, CngxAccordionItem
  */
 export const CNGX_ACCORDION_GROUP = new InjectionToken<CngxAccordionGroupContext>(

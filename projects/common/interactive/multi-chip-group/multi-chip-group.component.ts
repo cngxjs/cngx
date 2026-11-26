@@ -89,7 +89,7 @@ import { injectInteractiveGroupHost } from '../group-host/group-host';
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/multi-chip-group/multi-chip-group.component.ts
  * @selector cngx-multi-chip-group
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChipGroup, CngxChipInGroup, CngxChipInput, CngxChipInteraction
  * <example-url>/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>
  * <example-url>/#/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>

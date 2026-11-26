@@ -7,7 +7,7 @@ import type {} from '@cngx/core/i18n';
  * order of a {@link CngxCardTimestamp} prefix and its date, and the severity
  * words a {@link CngxCardAccentIcon} reads out.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard, CngxCardTimestamp
  */
 export interface CngxCardLanguageSection {
@@ -40,7 +40,7 @@ export interface CngxCardLanguageSection {
  * The English card section: the single source of the card's English copy.
  * `CNGX_CARD_I18N` defaults to it, and the shipped English pack is built from it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_CARD_I18N
  */
 export const CNGX_CARD_LANGUAGE_EN: CngxCardLanguageSection = {

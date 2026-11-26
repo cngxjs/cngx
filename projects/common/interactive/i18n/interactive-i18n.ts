@@ -96,7 +96,7 @@ const interactiveBundle = createSectionBundle<CngxInteractiveLanguageSection, Cn
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/i18n/interactive-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAsyncClick
  */
 export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI18n>>(
@@ -110,7 +110,7 @@ export const CNGX_INTERACTIVE_I18N = new InjectionToken<Signal<CngxInteractiveI1
 /**
  * A label override feature of `provideInteractiveI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_INTERACTIVE_I18N, withInteractiveI18nLabels
  */
 export type CngxInteractiveI18nFeature = (
@@ -122,7 +122,7 @@ export type CngxInteractiveI18nFeature = (
  * pack's copy, or the English default. Pass a `Signal` of a partial bundle to switch languages at
  * runtime.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withInteractiveI18nLabels(
   overrides: Partial<CngxInteractiveI18n> | Signal<Partial<CngxInteractiveI18n>>,
@@ -145,7 +145,7 @@ export function withInteractiveI18nLabels(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideInteractiveI18n(
   ...features: readonly CngxInteractiveI18nFeature[]
@@ -160,7 +160,7 @@ export function provideInteractiveI18n(
  * Inject the resolved interactive i18n bundle signal. Read it inside a
  * `computed()` or template so a runtime override flip re-derives.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectInteractiveI18n(): Signal<CngxInteractiveI18n> {
   return interactiveBundle.resolve(inject(CNGX_INTERACTIVE_I18N));

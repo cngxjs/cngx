@@ -78,7 +78,7 @@ export interface CngxAccordionKeyboardNavOptions {
  * which header should be the stop; it never touches the DOM.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/accordion/accordion-keyboard-nav.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAccordion, CngxAccordionPanel, createTabKeyboardNav
  */
 export function createAccordionKeyboardNav(

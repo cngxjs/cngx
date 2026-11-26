@@ -41,7 +41,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/copy/copy-text.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCopyBlock, CngxCopyValue
  * <example-url>/#/common/interactive/copy/text/copy-token</example-url>
  * <example-url>/#/common/interactive/copy/text/copy-url-with-sr-announcement</example-url>

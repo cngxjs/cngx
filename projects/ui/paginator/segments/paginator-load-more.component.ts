@@ -17,7 +17,7 @@ import { injectPaginatorHost } from '../paginator-host.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/paginator-load-more.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/ui/paginator/paginator-parts/load-more/button</example-url>
  * <example-url>/#/ui/paginator/paginator-modes/load-more</example-url>
  * @axis level atom

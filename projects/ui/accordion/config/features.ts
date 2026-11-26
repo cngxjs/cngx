@@ -20,7 +20,7 @@ import type { CngxAccordionConfigFeature } from './provide-accordion-config';
  * );
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withAccordionLabels(payload: {
   disabledReason?: string | Signal<string>;
@@ -38,7 +38,7 @@ export function withAccordionLabels(payload: {
  * provideAccordionConfig(withDefaultHeadingLevel(2));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConfigFeature {
   return { kind: 'headingLevel', payload: { headingLevel } };
@@ -55,7 +55,7 @@ export function withDefaultHeadingLevel(headingLevel: number): CngxAccordionConf
  * provideAccordionConfig(withAccordionSkin('categorized'));
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withAccordionSkin(skin: CngxAccordionSkin): CngxAccordionConfigFeature {
   return { kind: 'skin', payload: { skin } };
@@ -76,7 +76,7 @@ export function withAccordionSkin(skin: CngxAccordionSkin): CngxAccordionConfigF
  * );
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withAccordionTemplates(
   payload: NonNullable<CngxAccordionConfig['templates']>,

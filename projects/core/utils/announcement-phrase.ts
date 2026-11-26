@@ -3,7 +3,7 @@ import { linkedSignal, type Signal } from '@angular/core';
 /**
  * Options for {@link createAnnouncementPhrase}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface AnnouncementPhraseOptions<TSource> {
   /** Reactive snapshot the phrase derives from. */
@@ -61,7 +61,7 @@ export interface AnnouncementPhraseOptions<TSource> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/announcement-phrase.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createTransitionTracker, ValueTransition
  */
 export function createAnnouncementPhrase<TSource>(

@@ -40,7 +40,7 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/listbox-field-bridge.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBindField, CngxFormField, CngxListbox, adaptFormControl
  * <example-url>/#/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
  * <example-url>/#/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>

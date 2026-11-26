@@ -22,7 +22,7 @@ import {
  *
  * @relatedTo CngxFocusTrap, CNGX_FOCUS_TRAP_DRIVER
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxFocusTrapDriver {
   /** Whether the trap is active; wins over `[enabled]`. */
@@ -39,7 +39,7 @@ export interface CngxFocusTrapDriver {
  *
  * @relatedTo CngxFocusTrap
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_FOCUS_TRAP_DRIVER = new InjectionToken<CngxFocusTrapDriver>(
   'CngxFocusTrapDriver',
@@ -81,7 +81,7 @@ export const CNGX_FOCUS_TRAP_DRIVER = new InjectionToken<CngxFocusTrapDriver>(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/focus-trap.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAutofocus, CngxFocusRestore, CngxDialog
  * <example-url>/#/common/a11y/focus-trap/modal-dialog</example-url>
  * <example-url>/#/common/a11y/focus-trap/slide-out-drawer</example-url>

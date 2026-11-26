@@ -225,7 +225,7 @@ export type CngxArrayCommitHandlerFactory = <T>(
  * change how a tree toggle commits.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/array-commit-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_CHIP_REMOVAL_HANDLER_FACTORY
  */
 export const CNGX_ARRAY_COMMIT_HANDLER_FACTORY = new InjectionToken<CngxArrayCommitHandlerFactory>(

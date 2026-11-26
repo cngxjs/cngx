@@ -43,7 +43,7 @@ export interface CngxPhoneMetadata {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-metadata.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxPhoneInput, providePhoneMetadata
  */
 export const CNGX_PHONE_METADATA = new InjectionToken<CngxPhoneMetadata>('CNGX_PHONE_METADATA', {
@@ -111,7 +111,7 @@ export type PhonePrefixMap = Readonly<
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/phone-metadata.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxPhoneMetadata, providePhoneMetadata
  */
 export function createPrefixPhoneMetadata(prefixes: PhonePrefixMap): CngxPhoneMetadata {

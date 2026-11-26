@@ -21,7 +21,7 @@ import { injectPaginatorSiteCopy } from './i18n/paginator-i18n';
  * (English without one); {@link withPaginatorAriaLabels} overrides single keys.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaginatorAriaLabels {
   /** Accessible name for the `role="navigation"` landmark. */
@@ -76,7 +76,7 @@ export interface CngxPaginatorAriaLabels {
  * locale; the `withPaginator*Format` features override single keys.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaginatorFormats {
   /**
@@ -117,7 +117,7 @@ export interface CngxPaginatorFormats {
  * overrides single keys.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaginatorAnnouncements {
   /** Announced on every page change, given the 1-based page and total pages. */
@@ -135,7 +135,7 @@ export interface CngxPaginatorAnnouncements {
  * `CngxProgress` bar renders).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaginatorTemplates {
   /** Busy indicator shown while the bound async state is busy. */
@@ -157,7 +157,7 @@ export interface CngxPaginatorTemplates {
  * {@link injectPaginatorFormats}, inside a `computed()`, a template or a handler.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaginatorConfig {
   readonly ariaLabels?: Partial<CngxPaginatorAriaLabels> | Signal<Partial<CngxPaginatorAriaLabels>>;
@@ -195,7 +195,7 @@ export const CNGX_PAGINATOR_DEFAULTS: CngxPaginatorConfig = {
  *   4. Library defaults.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>(
   'CngxPaginatorConfig',
@@ -212,7 +212,7 @@ export const CNGX_PAGINATOR_CONFIG = new InjectionToken<CngxPaginatorConfig>(
  * `pageSizeOptions`, whose payload replaces the list wholesale.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPaginatorConfigFeature =
   | {
@@ -286,7 +286,7 @@ function applyFeatures(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorAriaLabels(
   payload: Partial<CngxPaginatorAriaLabels> | Signal<Partial<CngxPaginatorAriaLabels>>,
@@ -310,7 +310,7 @@ export function withPaginatorAriaLabels(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorAnnouncements(
   payload: Partial<CngxPaginatorAnnouncements> | Signal<Partial<CngxPaginatorAnnouncements>>,
@@ -329,7 +329,7 @@ export function withPaginatorAnnouncements(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorRangeFormat(
   range: CngxPaginatorFormats['range'] | Signal<CngxPaginatorFormats['range']>,
@@ -349,7 +349,7 @@ export function withPaginatorRangeFormat(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorPageStatusFormat(
   pageStatus: CngxPaginatorFormats['pageStatus'] | Signal<CngxPaginatorFormats['pageStatus']>,
@@ -369,7 +369,7 @@ export function withPaginatorPageStatusFormat(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorPageOfPagesFormat(
   pageOfPagesReadout:
@@ -390,7 +390,7 @@ export function withPaginatorPageOfPagesFormat(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorLoadMoreFormat(
   loadMoreReadout:
@@ -413,7 +413,7 @@ export function withPaginatorLoadMoreFormat(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorPageSizeOptions(
   payload: readonly number[],
@@ -445,7 +445,7 @@ export function withPaginatorPageSizeOptions(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPaginatorTemplates(
   payload: Partial<CngxPaginatorTemplates>,
@@ -460,7 +460,7 @@ export function withPaginatorTemplates(
  * declare the keys they want to override.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideCngxPaginatorConfig(
   ...features: CngxPaginatorConfigFeature[]
@@ -482,7 +482,7 @@ export function provideCngxPaginatorConfig(
  * announcements or labels without disturbing the rest of the app.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideCngxPaginatorConfigAt(
   ...features: CngxPaginatorConfigFeature[]
@@ -503,7 +503,7 @@ export function provideCngxPaginatorConfigAt(
  * `inject(CNGX_PAGINATOR_CONFIG)`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectPaginatorConfig(): CngxPaginatorConfig {
   return inject(CNGX_PAGINATOR_CONFIG);
@@ -514,7 +514,7 @@ export function injectPaginatorConfig(): CngxPaginatorConfig {
  * Signal that follows a runtime language switch. Runs in injection context.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
   return createFilledOverrideMerge(
@@ -529,7 +529,7 @@ export function injectPaginatorAriaLabels(): Signal<CngxPaginatorAriaLabels> {
  * switch does not re-speak the current message. Runs in injection context.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectPaginatorAnnouncements(): Signal<CngxPaginatorAnnouncements> {
   return createFilledOverrideMerge(
@@ -544,7 +544,7 @@ export function injectPaginatorAnnouncements(): Signal<CngxPaginatorAnnouncement
  * pack. Runs in injection context.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectPaginatorFormats(): Signal<Required<CngxPaginatorFormats>> {
   return createFilledOverrideMerge<Required<CngxPaginatorFormats>>(

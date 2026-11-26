@@ -2,7 +2,7 @@
  * The German language pack: every cngx section in German, as plain data.
  * Load it with `import()` and pass it to `withPack`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideCngxI18n, withPack, CNGX_LANGUAGE_EN
  */
 export const CNGX_LANGUAGE_DE = {

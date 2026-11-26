@@ -20,7 +20,7 @@ import { cngxDevWarn } from '@cngx/utils';
  * `:dir(rtl)` state); an absent `dir` reports `'ltr'`, and so does an
  * invalid value, with a dev-mode warning ([`CNGX0006`](/error-codes/cngx0006.md)).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxDirection = 'ltr' | 'rtl';
 
@@ -139,7 +139,7 @@ function readDocumentDirection(): Signal<CngxDirection> {
  *
  * @relatedTo injectDirection
  * @relatedTo provideDirection
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_DIRECTION = new InjectionToken<Signal<CngxDirection>>('CNGX_DIRECTION', {
   providedIn: 'root',
@@ -156,7 +156,7 @@ export const CNGX_DIRECTION = new InjectionToken<Signal<CngxDirection>>('CNGX_DI
  *
  * @relatedTo CNGX_DIRECTION
  * @relatedTo provideDirection
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectDirection(): Signal<CngxDirection> {
   return inject(CNGX_DIRECTION);
@@ -186,7 +186,7 @@ export function injectDirection(): Signal<CngxDirection> {
  * @relatedTo CNGX_DIRECTION
  * @relatedTo provideDirectionAt
  * @relatedTo injectDirection
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDirection(value: CngxDirection): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -215,7 +215,7 @@ export function provideDirection(value: CngxDirection): EnvironmentProviders {
  * @relatedTo CNGX_DIRECTION
  * @relatedTo provideDirection
  * @relatedTo injectDirection
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDirectionAt(value: CngxDirection): Provider[] {
   return [{ provide: CNGX_DIRECTION, useFactory: () => signal<CngxDirection>(value).asReadonly() }];

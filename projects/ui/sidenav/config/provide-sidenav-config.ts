@@ -23,7 +23,7 @@ const NO_LABELS: Partial<CngxSidenavLabels> = {};
  * `@cngx/ui/breadcrumb` (nested-sub-tree style; the stepper family uses flat
  * scalar keys instead).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxSidenavConfigFeature =
   | {
@@ -145,7 +145,7 @@ function mergeConfig(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideSidenavConfig(
   ...features: CngxSidenavConfigFeature[]
@@ -191,7 +191,7 @@ export function provideSidenavConfig(
  * class Section {}
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideSidenavConfigAt(...features: CngxSidenavConfigFeature[]): Provider[] {
   // Empty-features call: parent value flows through untouched. Skipping the

@@ -46,7 +46,7 @@ import { CngxStepperErrorLine } from './stepper-error-line.component';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/stepper/progress-bar-stepper.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperPresenter, CngxProgress, CngxDotStepper, CngxTextStepper
  * @slot cngxStepperEmpty Renders when no step is projected at all.
  * @playground Material theme coverage across variants ./examples/material-theme-coverage/variants-coverage.component.ts

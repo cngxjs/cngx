@@ -77,7 +77,7 @@ function entriesEqual(a: readonly StackEntry[], b: readonly StackEntry[]): boole
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alert-stack.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAlerter, CngxAlert, CngxAlertOn
  *
  * <example-url>/#/ui/feedback/alert-stack/basic-stack</example-url>

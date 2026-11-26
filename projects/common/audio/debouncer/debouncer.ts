@@ -4,7 +4,7 @@ const DEFAULT_WINDOW_MS = 100;
 /**
  * Public handle returned by {@link createDebouncer}.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/debouncer/debouncer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxDebouncer {
   /**
@@ -36,7 +36,7 @@ export interface CngxDebouncer {
  * @param options.windowMs Suppression window, or a getter for it. `<= 0` disables debouncing. Default `100`.
  * @param options.now Clock source in ms. Default `Date.now`.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/audio/debouncer/debouncer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createDebouncer(options?: {
   readonly windowMs?: number | (() => number);

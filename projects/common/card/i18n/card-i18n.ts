@@ -28,7 +28,7 @@ const cardBundleFromPack = createLanguageSection('card', CNGX_CARD_LANGUAGE_EN);
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/i18n/card-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard
  */
 export const CNGX_CARD_I18N = new InjectionToken<Signal<CngxCardI18n>>('CngxCardI18n', {
@@ -39,7 +39,7 @@ export const CNGX_CARD_I18N = new InjectionToken<Signal<CngxCardI18n>>('CngxCard
 /**
  * A label override feature of `provideCardI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_CARD_I18N, withCardI18nLabels
  */
 export type CngxCardI18nFeature = (bundle: Signal<CngxCardI18n>) => Signal<CngxCardI18n>;

@@ -204,7 +204,7 @@ export interface CngxComboboxChange<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/combobox/combobox.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CngxTypeahead, CngxSelect, CngxTreeSelect, CngxComboboxChip, CngxActionMultiSelect
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/combobox/combobox-basic-tag-picker-with-typeahead-filter</example-url>

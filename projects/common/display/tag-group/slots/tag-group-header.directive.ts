@@ -25,7 +25,7 @@ import type { CngxTagGroupHeaderContext } from './tag-group-slot.context';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag-group/slots/tag-group-header.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTagGroup, CngxTagGroupAccessory
  * <example-url>/#/common/display/tag/app-wide-defaults-via-providetagconfig</example-url>
  * <example-url>/#/common/display/tag/color-palette</example-url>

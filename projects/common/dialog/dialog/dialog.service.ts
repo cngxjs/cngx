@@ -48,7 +48,7 @@ import { CngxDialogOutlet } from './dialog-outlet';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.service.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDialogOpener, CngxDialog, CNGX_DIALOG_DATA
  */
 export class CngxDialogRef<T = unknown> {
@@ -189,7 +189,7 @@ export class CngxDialogRef<T = unknown> {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/dialog/dialog.service.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDialog, CngxDialogRef, CNGX_DIALOG_DATA, CngxDialogStack
  */
 @Injectable()

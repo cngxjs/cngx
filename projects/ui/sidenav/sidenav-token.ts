@@ -8,7 +8,7 @@ import type { CngxDrawerModality } from '@cngx/common/layout';
  * injecting the concrete `CngxSidenav` class - that would create a cyclic type
  * dependency and block the decompose brain/skin split.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxSidenavContract {
   /** Two-way open state of the overlay; the router sync both reads and writes it. */
@@ -32,7 +32,7 @@ export interface CngxSidenavContract {
  * `{ provide: CNGX_SIDENAV, useExisting: CngxSidenav }`, so a collaborator
  * injects the narrow {@link CngxSidenavContract} instead of the concrete class.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSidenav, CngxSidenavRouterSync
  */
 export const CNGX_SIDENAV = new InjectionToken<CngxSidenavContract>('CNGX_SIDENAV');

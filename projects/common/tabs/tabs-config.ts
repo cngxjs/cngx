@@ -312,7 +312,7 @@ export const TABS_CONFIG_DEFAULTS: Required<
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/tabs-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>('CngxTabsConfig', {
   providedIn: 'root',

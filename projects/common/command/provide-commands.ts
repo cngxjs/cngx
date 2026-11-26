@@ -16,7 +16,7 @@ import type { CngxCommand } from './command';
  * commands - a signal source lets a contributor add or remove commands (or
  * flip a command's `disabled`) live, and `injectCommands` tracks it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCommand[];
 
@@ -33,7 +33,7 @@ export type CngxCommandSource = Signal<readonly CngxCommand[]> | readonly CngxCo
  * building, and Angular throws a circular-dependency error (NG0200).
  *
  * @relatedTo provideCommands
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxCommandSourceFactory = () => CngxCommandSource;
 
@@ -93,7 +93,7 @@ const CNGX_COMMAND_REGISTRY = new InjectionToken<readonly CngxCommandSource[]>(
  * @Component({ viewProviders: [provideCommands(editorCommands)] })
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideCommands(
   ...sources: (CngxCommandSource | CngxCommandSourceFactory)[]
@@ -131,7 +131,7 @@ export function provideCommands(
  *
  * Must run in an injection context.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectCommands(): Signal<readonly CngxCommand[]> {
   // A node resolves its element chain before its environment chain, so a

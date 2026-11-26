@@ -28,7 +28,7 @@ export interface CngxPopoverArrowBounds {
  * Injection token for the arrow-bounds contract.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-arrow-bounds.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_POPOVER_ARROW_BOUNDS = new InjectionToken<CngxPopoverArrowBounds>(
   'CngxPopoverArrowBounds',

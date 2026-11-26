@@ -37,7 +37,7 @@ interface SegmentRendering {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/chart/presets/stacked-bar.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxBar, CngxDeviationBar, CngxBullet
  *
  * <example-url>/#/common/chart/stacked-bar/async-state-machine</example-url>

@@ -4,7 +4,7 @@ import type { CngxMessage } from '@cngx/core/i18n';
  * The live-region words of the feedback section: transitions the feedback
  * family announces on its own behalf.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxFeedbackAnnouncementsLanguage {
   /** Announced when a user dismisses an alert. */
@@ -37,7 +37,7 @@ export interface CngxFeedbackAnnouncementsLanguage {
  * container and the state bridges). It feeds `CNGX_FEEDBACK_I18N`. Messages
  * use `{name}` placeholders; a plural message picks its form from `{count}`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_FEEDBACK_I18N
  */
 export interface CngxFeedbackLanguageSection {
@@ -72,7 +72,7 @@ export interface CngxFeedbackLanguageSection {
  * The English feedback section: the single source of the feedback family's
  * English copy. `CNGX_FEEDBACK_I18N` defaults to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_FEEDBACK_I18N
  */
 export const CNGX_FEEDBACK_LANGUAGE_EN: CngxFeedbackLanguageSection = {

@@ -40,7 +40,7 @@ import { CngxPopover } from './popover.directive';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-dismiss.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverAction, CngxPopoverPanel, CngxPopoverFooter, CngxButtonBrain
  * <example-url>/#/common/popover/popover-panel/with-footer-actions</example-url>
  * <example-url>/#/common/popover/popover-panel/with-dividers</example-url>

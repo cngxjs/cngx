@@ -39,7 +39,7 @@ import { CNGX_DEV_DESCRIPTORS } from './dev-descriptors';
  * );
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createSelectionController, createTransitionTracker
  */
 export function createControlledSource<T>(

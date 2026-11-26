@@ -148,7 +148,7 @@ export function createDefaultFlatNavStrategy(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/flat-nav-strategy.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CngxCombobox, CngxTypeahead, CngxActionSelect, CngxActionMultiSelect
  */
 export const CNGX_FLAT_NAV_STRATEGY = new InjectionToken<CngxFlatNavStrategy>(

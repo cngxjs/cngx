@@ -61,7 +61,7 @@ function setEquals(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/paginate/bucket-paginate.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPaginate, CngxFilter
  * <example-url>/#/ui/paginator/paginator-modes/alphabetical</example-url>
  * @axis level organism

@@ -39,7 +39,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/focus/autofocus.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFocusRestore, CngxFocusTrap, CngxFocusVisible
  * <example-url>/#/common/a11y/autofocus/conditional-focus</example-url>
  * <example-url>/#/common/a11y/autofocus/focus-on-insert</example-url>

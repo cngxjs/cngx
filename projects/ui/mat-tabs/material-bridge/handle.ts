@@ -164,7 +164,7 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-tabs/material-bridge/handle.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MAT_TAB_HANDLE_FACTORY = new InjectionToken<CngxMatTabHandleFactory>(
   'CNGX_MAT_TAB_HANDLE_FACTORY',

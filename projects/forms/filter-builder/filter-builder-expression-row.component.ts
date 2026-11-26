@@ -43,7 +43,7 @@ import type { FilterExpression, FilterFieldDef, FilterNode } from './filter-buil
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-expression-row.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterRow, CngxFilterBuilderPresenter
  */
 @Component({

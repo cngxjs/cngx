@@ -40,7 +40,7 @@ import { CngxIconSvg } from '../icon/icon-svg.component';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/chip/chip.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTag, CngxTagGroup, CngxBadge
  * <example-url>/#/common/display/chip/basic</example-url>
  * <example-url>/#/common/display/chip/removable</example-url>

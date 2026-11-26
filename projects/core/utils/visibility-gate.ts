@@ -15,7 +15,7 @@ import { DestroyRef, effect, inject, type Signal, signal, untracked } from '@ang
  *
  * @returns A readonly signal that is `true` when the indicator should be visible.
  * @github https://github.com/cngxjs/cngx/blob/main/projects/core/utils/visibility-gate.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createVisibilityGate(
   isActive: Signal<boolean>,

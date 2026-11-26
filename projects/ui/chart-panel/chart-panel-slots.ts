@@ -23,7 +23,7 @@ const CONTROL_SELECTOR = 'a[href], button, input, select, textarea, [role]';
  * the title resolves it from its declaration site in the consumer template.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartPanel, CngxChartPanelSubtitle
  */
 @Directive({
@@ -49,7 +49,7 @@ export class CngxChartPanelTitle {
  * comparison basis. Descriptive only; it does not join the accessible name.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartPanel, CngxChartPanelTitle
  */
 @Directive({
@@ -77,7 +77,7 @@ export class CngxChartPanelSubtitle {}
  * control keeps its focusability instead of turning natively `disabled`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartPanel
  */
 @Directive({
@@ -121,7 +121,7 @@ export class CngxChartPanelActions {
  * drill-down link. Sits below the chart body and the legend.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/chart-panel/chart-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChartPanel
  */
 @Directive({

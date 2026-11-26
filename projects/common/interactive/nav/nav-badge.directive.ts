@@ -81,7 +81,7 @@ function warnUnlabelledDot(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-badge.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxNavLink, CngxNavGroup, CngxNavLabel, CngxBadge
  * <example-url>/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
  * <example-url>/#/common/interactive/nav/nav-group-accordion-sections</example-url>

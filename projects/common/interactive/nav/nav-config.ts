@@ -68,7 +68,7 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/nav/nav-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFIG');
 

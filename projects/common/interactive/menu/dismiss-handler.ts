@@ -169,7 +169,7 @@ export type CngxMenuDismissHandlerFactory = (
  * telemetry-wrapped or test-doubled dismissal.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/dismiss-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createMenuDismissHandler(
   opts: CngxMenuDismissHandlerOptions,
@@ -343,7 +343,7 @@ export function createMenuDismissHandler(
  * single feature scope.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/dismiss-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_DISMISS_HANDLER_FACTORY = new InjectionToken<CngxMenuDismissHandlerFactory>(
   'CngxMenuDismissHandlerFactory',
@@ -416,7 +416,7 @@ export interface CngxMenuTriggerDismissBinding {
  * (never inside an Angular `effect()`).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/dismiss-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createMenuTriggerDismissBinding(
   opts: CngxMenuTriggerDismissBindingOptions,

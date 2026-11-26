@@ -141,7 +141,7 @@ function isAllowedChar(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/numeric-input.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxInputMask, CngxInputFormat, withNumericDefaults
  * <example-url>/#/forms/input/numeric/basic-numeric-input</example-url>
  * <example-url>/#/forms/input/numeric/locale-formatting</example-url>

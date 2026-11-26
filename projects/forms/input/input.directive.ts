@@ -60,7 +60,7 @@ function isEmptyValue(value: unknown): boolean {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input.directive.ts
  * @selector [cngxInput]
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFormField, CngxCharCount, CngxPasswordToggle, CngxInputClear, CngxFieldSkinHost
  * <example-url>/#/forms/input/character-counter</example-url>
  * <example-url>/#/forms/input/password-visibility-toggle</example-url>

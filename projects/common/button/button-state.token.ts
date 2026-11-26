@@ -4,7 +4,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * Button state a composing molecule reads without importing a button class.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_STATE, CngxButtonBrain
  */
 export interface CngxButtonState {
@@ -23,7 +23,7 @@ export interface CngxButtonState {
  * Provided by every host on `CngxButtonBrain`. A split button reads its main action through it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/button-state.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButton, CngxIconButton, CngxSplitButton, CngxButtonBrain, CngxSplitCaret, CngxActionButton
  */
 export const CNGX_BUTTON_STATE = new InjectionToken<CngxButtonState>('CngxButtonState');

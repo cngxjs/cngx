@@ -24,7 +24,7 @@ import type { CngxDgaRowStateContext } from './data-grid-row-state-context';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-row-busy.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDataGridRow, CngxDgaRowError
  */
 @Directive({

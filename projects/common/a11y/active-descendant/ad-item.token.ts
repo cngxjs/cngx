@@ -32,7 +32,7 @@ export interface ActiveDescendantItem {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/a11y/active-descendant/ad-item.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_AD_ITEM = new InjectionToken<CngxAdItemHandle>('CNGX_AD_ITEM');
 

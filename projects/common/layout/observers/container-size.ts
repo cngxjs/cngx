@@ -15,7 +15,7 @@ import { canObserveResize, createResizeSignal, type ResizeObserverHost } from '.
  * Reactive read of a query container: its size, and the custom properties its
  * `@container` rules resolved to.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxContainerSize {
   /** Border-box inline size in pixels. `0` before the first observation. */
@@ -67,7 +67,7 @@ export interface CngxContainerSize {
  * needs a container and finds none must say so (a dev-mode warning), not
  * silently observe itself.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CONTAINER_SIZE = new InjectionToken<CngxContainerSize>('CNGX_CONTAINER_SIZE');
 
@@ -84,7 +84,7 @@ export const CNGX_CONTAINER_SIZE = new InjectionToken<CngxContainerSize>('CNGX_C
  * @param destroyRef Scope whose destruction disconnects the observer.
  * @param win The window-like object providing `ResizeObserver` and `getComputedStyle`.
  * @relatedTo injectContainerSize, CngxContainer
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createContainerSize(
   element: Element,
@@ -165,7 +165,7 @@ export function createContainerSize(
  *
  * @param target Element to observe when no ancestor container exists.
  * @relatedTo CngxContainer, injectMediaQuery
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectContainerSize(target?: ElementRef<Element> | Element): CngxContainerSize {
   const ancestor = inject(CNGX_CONTAINER_SIZE, { optional: true, skipSelf: true });

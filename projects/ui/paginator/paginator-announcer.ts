@@ -14,7 +14,7 @@ import { CNGX_PAGINATOR_HOST } from './paginator-host.token';
  * Reactive announcement source for the paginator live region.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPaginatorAnnouncer {
   /**
@@ -48,7 +48,7 @@ interface AnnouncerSource {
  * Must run in an injection context (call as a field initialiser on the shell).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createPaginatorAnnouncer(): CngxPaginatorAnnouncer {
   const host = inject(CNGX_PAGINATOR_HOST);
@@ -101,7 +101,7 @@ export type CngxPaginatorAnnouncerFactory = () => CngxPaginatorAnnouncer;
  * still `inject(CNGX_PAGINATOR_HOST)` / {@link injectPaginatorConfig}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/paginator-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_PAGINATOR_ANNOUNCER_FACTORY =
   new InjectionToken<CngxPaginatorAnnouncerFactory>('CngxPaginatorAnnouncerFactory', {

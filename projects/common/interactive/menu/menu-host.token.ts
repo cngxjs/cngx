@@ -59,6 +59,6 @@ export interface CngxMenuHost {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_HOST = new InjectionToken<CngxMenuHost>('CNGX_MENU_HOST');

@@ -6,7 +6,7 @@ import type {} from '@cngx/core/i18n';
  * `CngxPopoverPanel`. `providePopoverPanel(withPopoverPanelLabels(...))`
  * overrides single keys on top of it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, withPopoverPanelLabels
  */
 export interface CngxPopoverLanguageSection {
@@ -33,7 +33,7 @@ export interface CngxPopoverLanguageSection {
  * The English popover section: the single source of the popover panel's
  * English copy.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel
  */
 export const CNGX_POPOVER_LANGUAGE_EN: CngxPopoverLanguageSection = {

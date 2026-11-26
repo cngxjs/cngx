@@ -11,7 +11,7 @@ import { createPreferenceAxis } from './preference-axis';
  * `font-size` on the page shrinks or grows. The swap only takes effect on
  * the root element.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxTextScaleValue = 'sm' | 'md' | 'lg';
 
@@ -24,7 +24,7 @@ export type CngxTextScaleValue = 'sm' | 'md' | 'lg';
  *
  * @relatedTo provideTextScale
  * @relatedTo injectTextScale
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TEXT_SCALE = new InjectionToken<WritableSignal<CngxTextScaleValue>>(
   'CNGX_TEXT_SCALE',
@@ -72,7 +72,7 @@ const textScaleAxis = createPreferenceAxis({
  *
  * @relatedTo CNGX_TEXT_SCALE
  * @relatedTo injectTextScale
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideTextScale(initial: CngxTextScaleValue = 'md'): EnvironmentProviders {
   return textScaleAxis.provide(initial);
@@ -84,7 +84,7 @@ export function provideTextScale(initial: CngxTextScaleValue = 'md'): Environmen
  * re-scales all root-relative text reactively.
  *
  * @relatedTo provideTextScale
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectTextScale(): WritableSignal<CngxTextScaleValue> {
   return textScaleAxis.injectValue();

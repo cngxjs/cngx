@@ -49,7 +49,7 @@ export type ParseFn = (display: string) => string;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/input-format.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxInput, CngxInputMask, CngxNumericInput
  * <example-url>/#/forms/input/utilities/input-format</example-url>
  * @axis level atom

@@ -281,7 +281,7 @@ export type CngxScalarCommitHandlerFactory = <T>(
  * commit result.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/scalar-commit-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelect, CNGX_SELECT_COMMIT_CONTROLLER_FACTORY, CNGX_ARRAY_COMMIT_HANDLER_FACTORY
  */
 export const CNGX_SCALAR_COMMIT_HANDLER_FACTORY =

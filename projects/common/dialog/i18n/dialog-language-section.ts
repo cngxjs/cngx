@@ -6,7 +6,7 @@ import type {} from '@cngx/core/i18n';
  * the dialog family renders on its own behalf. {@link CngxDialogLabels} is
  * this shape; it feeds the `labels` of `CNGX_DIALOG_DEFAULTS`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DIALOG_DEFAULTS
  */
 export interface CngxDialogLanguageSection {
@@ -26,7 +26,7 @@ export interface CngxDialogLanguageSection {
  * The English dialog section: the single source of the dialog family's
  * English copy. The `CNGX_DIALOG_DEFAULTS` labels default to it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DIALOG_DEFAULTS
  */
 export const CNGX_DIALOG_LANGUAGE_EN: CngxDialogLanguageSection = {

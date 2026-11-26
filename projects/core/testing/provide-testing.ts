@@ -54,7 +54,7 @@ import { provideLoadingConfig, withMinDwell, withShowDelay } from '@cngx/core/ut
  * `onTransitionDone` keeps its fallback timer: the computed transition time
  * plus 50 ms, which is 50 ms under jsdom, where no stylesheet loads.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideLoadingConfig, provideCngxI18n, provideDirection
  */
 export function provideCngxTesting(): EnvironmentProviders {

@@ -48,7 +48,7 @@ export interface CngxMenuSubmenuLike {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-submenu.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_SUBMENU_ITEM = new InjectionToken<CngxMenuSubmenuLike>(
   'CNGX_MENU_SUBMENU_ITEM',
@@ -92,7 +92,7 @@ export interface CngxMenuSubmenuWiring {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-submenu.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_SUBMENU_WIRING = new InjectionToken<CngxMenuSubmenuWiring>(
   'CNGX_MENU_SUBMENU_WIRING',

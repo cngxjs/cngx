@@ -97,7 +97,7 @@ export type DrawerMode = 'over' | 'push';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/drawer-panel.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDrawer, CngxDrawerContent, CngxFocusTrap
  * <example-url>/#/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
  * <example-url>/#/common/layout/drawer/controlled-mode</example-url>

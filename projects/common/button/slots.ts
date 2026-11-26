@@ -6,7 +6,7 @@ import { Directive } from '@angular/core';
  * `cngxPopoverDismiss`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButton, CngxButtonEnd, CngxMenuButton
  * <example-url>/#/common/button/button/start-and-end-slots</example-url>
  */
@@ -27,7 +27,7 @@ export class CngxButtonStart {}
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/button/slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButton, CngxButtonStart, CngxMenuButton
  * <example-url>/#/common/button/button/start-and-end-slots</example-url>
  */

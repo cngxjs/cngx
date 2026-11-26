@@ -21,6 +21,6 @@ export interface CngxStepGroupHost {
  * Steps inject this `optional: true` and fall back to {@link CNGX_STEPPER_HOST}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/step-group-host.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_STEP_GROUP_HOST = new InjectionToken<CngxStepGroupHost>('CngxStepGroupHost');

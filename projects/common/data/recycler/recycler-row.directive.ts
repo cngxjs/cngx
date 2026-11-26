@@ -114,7 +114,7 @@ export function provideRecyclerPlaceholderRow(
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/recycler/recycler-row.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectRecycler, CngxRecyclerPlaceholder, CngxVirtualItem, CngxMeasure
  * <example-url>/#/common/data/recycler/windowed-data-availability</example-url>
  * @axis level molecule

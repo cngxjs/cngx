@@ -18,7 +18,7 @@ import { CNGX_SIDENAV, type CngxSidenavContract } from './sidenav-token';
  * start rail and `'nav-end'` on an end rail, so two synced rails keep apart. Without `@angular/router` the kernel dev-warns once and no-ops.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/sidenav-router-sync.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSidenav, CNGX_SIDENAV, injectQueryParamSync
  * <example-url>/#/ui/sidenav/router-sync/deep-linkable-overlay</example-url>
  * @axis level organism

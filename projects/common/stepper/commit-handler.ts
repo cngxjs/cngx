@@ -196,7 +196,7 @@ export type CngxStepperCommitHandlerFactory = (
  * handler. Symmetric to the select family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/commit-handler.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_STEPPER_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxStepperCommitHandlerFactory>('CngxStepperCommitHandlerFactory', {

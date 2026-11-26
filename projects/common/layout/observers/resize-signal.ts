@@ -38,7 +38,7 @@ export function canObserveResize(
  * @param apply Receives the first entry of every observation batch.
  * @returns Teardown that disconnects the observer.
  * @relatedTo createResizeSignal, observeMediaQuery
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function observeResize(
   host: ResizeObserverHost | null | undefined,
@@ -82,7 +82,7 @@ export function observeResize(
  * @param host The window-like object to read `ResizeObserver` from.
  * @returns A readonly signal carrying the latest entry.
  * @relatedTo observeResize, createMediaQuerySignal
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function createResizeSignal(
   element: Element,

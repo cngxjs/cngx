@@ -73,7 +73,7 @@ function wireDevModeCheck(hostEl: HTMLElement, itemSelector: Signal<string>): vo
  * modifier + arrow produces a move.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
 
@@ -126,7 +126,7 @@ function isReorderKey(key: string): boolean {
  * commit controller for optimistic / pessimistic policies).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxReorderEvent<T> {
   readonly fromIndex: number;
@@ -178,7 +178,7 @@ interface ActiveDrag {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/reorder/reorder.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxReorderableMultiSelect, CngxChipStripRovingController
  * <example-url>/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
  * <example-url>/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>

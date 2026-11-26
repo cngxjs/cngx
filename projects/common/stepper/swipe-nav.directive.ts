@@ -24,7 +24,7 @@ import { injectStepperHost } from './stepper-host.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/stepper/swipe-nav.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 @Directive({
   selector: '[cngxStepperSwipeNav]',

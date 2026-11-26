@@ -108,7 +108,7 @@ export interface CngxStepperStateView {
  * step-only projection. Pure factory - `computed()` only, no injection
  * context required, so any skin can allocate it in a field initializer.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepperHost, createStepperSlotContextBuilders
  */
 export function createStepperStateView(inputs: {
@@ -221,7 +221,7 @@ export function createStepperStateView(inputs: {
  * re-announce the line. Pass the i18n bundle as an untracked snapshot for
  * the same reason.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function resolveStepperErrorSummary(
   view: Pick<

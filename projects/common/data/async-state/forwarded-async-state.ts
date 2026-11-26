@@ -34,7 +34,7 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * ```
  *
  * @relatedTo createAsyncState, createManualState
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/common/data/async-state/forwarded-state-through-an-input</example-url>
  */
 export function createForwardedAsyncState<T>(

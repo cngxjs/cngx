@@ -36,7 +36,7 @@ export interface CngxFilterOperatorContext {
  * list or a `withDefaultOperators` entry names it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-operators.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withOperators, evaluateExpression, toFilterPredicate
  */
 export interface CngxFilterOperatorDef {
@@ -100,7 +100,7 @@ function substringDef(
  * `in` / `notIn`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/filter-builder/filter-builder-operators.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterOperatorDef, withOperators
  */
 export const CNGX_FILTER_BUILTIN_OPERATOR_DEFS: ReadonlyMap<string, CngxFilterOperatorDef> =

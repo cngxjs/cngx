@@ -5,7 +5,7 @@ import { InjectionToken, type Signal } from '@angular/core';
  * the layout (a sidebar), `push` slides in next to the content, `over`
  * slides in on top of it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPanelMode = 'inline' | 'push' | 'over';
 
@@ -13,7 +13,7 @@ export type CngxPanelMode = 'inline' | 'push' | 'over';
  * The edge a panel sits on. `start` / `end` follow the writing direction,
  * `left` / `right` / `top` / `bottom` are physical.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPanelSide = 'start' | 'end' | 'left' | 'right' | 'top' | 'bottom';
 
@@ -22,7 +22,7 @@ export type CngxPanelSide = 'start' | 'end' | 'left' | 'right' | 'top' | 'bottom
  * triggers. A trigger mirrors it and owns no state.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/panel-trigger/panel-target.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPanelTrigger, CngxPanelToggle, CNGX_PANEL_TARGET
  */
 export interface CngxPanelTarget {
@@ -67,7 +67,7 @@ export interface CngxPanelTarget {
  * outside the panel takes the target as an explicit reference instead.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/panel-trigger/panel-target.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPanelTrigger, CngxDrawer
  */
 export const CNGX_PANEL_TARGET = new InjectionToken<CngxPanelTarget>('CngxPanelTarget');

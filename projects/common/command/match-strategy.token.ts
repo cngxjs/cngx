@@ -8,7 +8,7 @@ import { createDefaultCommandMatcher, type CngxCommandMatcher } from './match';
  * captured so an override matches it precisely. The panel calls it in an
  * injection context, so a factory may `inject()` what its matcher needs.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxCommandMatchFactory = () => CngxCommandMatcher;
 
@@ -19,7 +19,7 @@ export type CngxCommandMatchFactory = () => CngxCommandMatcher;
  * without touching the panel. The fuzzy engine stays a consumer swap; the
  * default bundle ships only the pure ranker.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_COMMAND_MATCH_FACTORY = new InjectionToken<CngxCommandMatchFactory>(
   'CNGX_COMMAND_MATCH_FACTORY',

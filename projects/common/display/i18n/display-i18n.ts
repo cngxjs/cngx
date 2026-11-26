@@ -10,7 +10,7 @@ import {
 /**
  * Presence states `CngxAvatar` renders a status dot for.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
 
@@ -25,7 +25,7 @@ export type CngxAvatarStatus = 'online' | 'offline' | 'busy' | 'away';
  * reactively while its input is unbound, `avatarGroupNoun` and `chipRemove`
  * included, so a language switch reaches each atom without re-creating it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxDisplayI18n {
   /** `CngxAvatar` status dot accessible name. English keeps the raw status word. */
@@ -110,7 +110,7 @@ const displayBundle = createSectionBundle<CngxDisplayLanguageSection, CngxDispla
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/i18n/display-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAvatar, CngxAvatarGroup, CngxSegmentedProgress, CngxChip
  */
 export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('CngxDisplayI18n', {
@@ -121,7 +121,7 @@ export const CNGX_DISPLAY_I18N = new InjectionToken<Signal<CngxDisplayI18n>>('Cn
 /**
  * A label override feature of `provideDisplayI18n`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_DISPLAY_I18N, withDisplayI18nLabels
  */
 export type CngxDisplayI18nFeature = (bundle: Signal<CngxDisplayI18n>) => Signal<CngxDisplayI18n>;
@@ -131,7 +131,7 @@ export type CngxDisplayI18nFeature = (bundle: Signal<CngxDisplayI18n>) => Signal
  * language pack's copy, or the English default. Pass a `Signal` of a partial
  * bundle to switch languages at runtime.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withDisplayI18nLabels(
   overrides: Partial<CngxDisplayI18n> | Signal<Partial<CngxDisplayI18n>>,
@@ -157,7 +157,7 @@ export function withDisplayI18nLabels(
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[]): Provider {
   return {
@@ -170,7 +170,7 @@ export function provideDisplayI18n(...features: readonly CngxDisplayI18nFeature[
  * Inject the resolved display i18n bundle signal. Read it inside a
  * `computed()` or template so a runtime override flip re-derives.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectDisplayI18n(): Signal<CngxDisplayI18n> {
   return displayBundle.resolve(inject(CNGX_DISPLAY_I18N));

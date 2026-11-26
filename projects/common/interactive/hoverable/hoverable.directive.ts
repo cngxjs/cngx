@@ -34,7 +34,7 @@ import { Directive, signal } from '@angular/core';
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/hoverable/hoverable.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPressable, CngxRipple
  * <example-url>/#/common/interactive/hoverable/basic</example-url>
  * <example-url>/#/common/interactive/hoverable/as-host-directive</example-url>

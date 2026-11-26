@@ -66,7 +66,7 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
  * - `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/registry/directive-by-id-map.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY = new InjectionToken<CngxDirectiveByIdMapFactory>(
   'CngxDirectiveByIdMapFactory',

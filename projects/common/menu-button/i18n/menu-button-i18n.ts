@@ -11,7 +11,7 @@ import {
  * The menu-button copy, the `menuButton` section of a language pack.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N
  */
 export type CngxMenuButtonI18n = CngxMenuButtonLanguageSection;
@@ -25,7 +25,7 @@ const menuButtonBundleFromPack = createLanguageSection('menuButton', CNGX_MENU_B
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxIconMenuButton, CngxSplitButton, CngxSplitCaret, provideMenuButtonI18n, injectMenuButtonI18n, CNGX_MENU_BUTTON_LANGUAGE_EN, provideCngxI18n
  */
 export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18n>>(
@@ -40,7 +40,7 @@ export const CNGX_MENU_BUTTON_I18N = new InjectionToken<Signal<CngxMenuButtonI18
  * A label override feature of `provideMenuButtonI18n`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, withMenuButtonI18nLabels
  */
 export type CngxMenuButtonI18nFeature = (
@@ -52,7 +52,7 @@ export type CngxMenuButtonI18nFeature = (
  * a `Signal` to switch the language at runtime.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, provideMenuButtonI18n
  */
 export function withMenuButtonI18nLabels(
@@ -72,7 +72,7 @@ export function withMenuButtonI18nLabels(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, withMenuButtonI18nLabels
  */
 export function provideMenuButtonI18n(...features: readonly CngxMenuButtonI18nFeature[]): Provider {
@@ -90,7 +90,7 @@ export function provideMenuButtonI18n(...features: readonly CngxMenuButtonI18nFe
  * Reads the resolved copy. `CngxSplitCaret` already exposes it as `label()` and `busyNote()`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/menu-button/i18n/menu-button-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_MENU_BUTTON_I18N, CngxSplitCaret
  */
 export function injectMenuButtonI18n(): Signal<CngxMenuButtonI18n> {

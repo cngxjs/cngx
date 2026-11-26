@@ -8,7 +8,7 @@ import { clamp } from '@cngx/utils';
  * One slot in the rendered page row: a page button or a truncation gap.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/page-model.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type PageItem =
   | { readonly kind: 'page'; readonly index: number }
@@ -18,7 +18,7 @@ export type PageItem =
  * The rendered sequence plus the gap count (a cheap structural fingerprint).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/paginator/segments/page-model.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface PageWindow {
   readonly pages: readonly PageItem[];

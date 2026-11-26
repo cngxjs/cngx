@@ -61,7 +61,7 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-input/chip-input.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiChipGroup, CngxChipInteraction, CngxChipInGroup
  * <example-url>/#/common/interactive/chip/input/async-validation-with-supersede-semantics</example-url>
  * <example-url>/#/common/interactive/chip/input/synchronous-tokenization</example-url>

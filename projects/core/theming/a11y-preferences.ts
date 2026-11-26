@@ -41,7 +41,7 @@ import {
  * same-kind features.
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxA11yPrefFeature =
   | { readonly _target: 'density'; readonly value: CngxDensityValue }
@@ -56,7 +56,7 @@ export type CngxA11yPrefFeature =
  * feature leaves density at its `comfortable` default.
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withDensity(value: CngxDensityValue): CngxA11yPrefFeature {
   return { _target: 'density', value };
@@ -67,7 +67,7 @@ export function withDensity(value: CngxDensityValue): CngxA11yPrefFeature {
  * feature leaves text-scale at its `md` (identity) default.
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withTextScale(value: CngxTextScaleValue): CngxA11yPrefFeature {
   return { _target: 'textScale', value };
@@ -79,7 +79,7 @@ export function withTextScale(value: CngxTextScaleValue): CngxA11yPrefFeature {
  * `prefers-reduced-motion` query.
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withMotion(value: CngxMotionPreference): CngxA11yPrefFeature {
   return { _target: 'motion', value };
@@ -91,7 +91,7 @@ export function withMotion(value: CngxMotionPreference): CngxA11yPrefFeature {
  * OS `prefers-contrast` query.
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature {
   return { _target: 'contrast', value };
@@ -103,7 +103,7 @@ export function withContrast(value: CngxContrastPreference): CngxA11yPrefFeature
  * `(any-pointer: coarse)` media query.
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withTouchTargets(value: CngxTouchTargetValue): CngxA11yPrefFeature {
   return { _target: 'touchTargets', value };
@@ -124,7 +124,7 @@ export function withTouchTargets(value: CngxTouchTargetValue): CngxA11yPrefFeatu
  * ```
  *
  * @relatedTo withPersistence
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_STORAGE', {
   providedIn: 'root',
@@ -161,7 +161,7 @@ export const CNGX_A11Y_STORAGE = new InjectionToken<Storage | null>('CNGX_A11Y_S
  * ```
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
   return { _target: 'persistence', storageKey };
@@ -193,7 +193,7 @@ export function withPersistence(storageKey = 'cngx-a11y'): CngxA11yPrefFeature {
  * @relatedTo withMotion
  * @relatedTo withContrast
  * @relatedTo withTouchTargets
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideA11yPreferences(
   ...features: CngxA11yPrefFeature[]
@@ -252,7 +252,7 @@ export function provideA11yPreferences(
  * through it (`injectA11yPreferences().motion.set('reduced')`).
  *
  * @relatedTo provideA11yPreferences
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectA11yPreferences(): {
   readonly density: WritableSignal<CngxDensityValue>;

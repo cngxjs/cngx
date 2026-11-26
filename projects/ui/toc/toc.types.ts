@@ -6,7 +6,7 @@
  * the document for headings in this release (see the deferred auto-discovery
  * phase).
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTocItem {
   /** Section element id this entry links to and scrolls into view. */
@@ -24,7 +24,7 @@ export interface CngxTocItem {
  * `aria-current` state; `depth` is the zero-based nesting level for
  * indentation-aware custom markup.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxTocItemContext {
   /** The item being rendered (`let-item`). */

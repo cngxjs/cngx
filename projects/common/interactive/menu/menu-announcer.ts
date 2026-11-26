@@ -34,7 +34,7 @@ export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMenu, CngxMenuTrigger, CngxMenuItemSubmenu
  */
 @Injectable({ providedIn: 'root' })
@@ -86,7 +86,7 @@ export function createMenuAnnouncer(): CngxMenuAnnouncerLike {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/menu/menu-announcer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_MENU_ANNOUNCER_FACTORY = new InjectionToken<CngxMenuAnnouncerFactory>(
   'CNGX_MENU_ANNOUNCER_FACTORY',

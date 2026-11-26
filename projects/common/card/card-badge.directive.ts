@@ -18,7 +18,7 @@ import { Directive, input } from '@angular/core';
  * the foundation palette.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/card/card-badge.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxCard, CngxCardAccent, CngxCardHeader
  * <example-url>/#/common/card/card-with-badge</example-url>
  * @axis level organism

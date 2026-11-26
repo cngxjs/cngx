@@ -69,7 +69,7 @@ import { injectChipGroupHost } from '../chip-group/chip-group-host.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/chip-in-group/chip-in-group.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxChipGroup, CngxMultiChipGroup, CngxChipInteraction
  * <example-url>/#/common/interactive/chip/group/basic-pick-exactly-one-size</example-url>
  * <example-url>/#/common/interactive/chip/multi-group/multi-select-chips-with-selection-count</example-url>

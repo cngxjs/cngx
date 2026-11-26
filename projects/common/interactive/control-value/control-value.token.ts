@@ -38,6 +38,6 @@ export interface CngxControlValue<T = unknown> {
  * answer.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/control-value/control-value.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_CONTROL_VALUE = new InjectionToken<CngxControlValue>('CngxControlValue');

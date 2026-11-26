@@ -76,7 +76,7 @@ import { createInertSiblings } from './inert-siblings';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/layout/drawer/backdrop.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDrawer, CngxDrawerPanel, CngxScrollLock
  * <example-url>/#/common/layout/backdrop/overlay-with-inert</example-url>
  * @axis level atom

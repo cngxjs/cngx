@@ -49,7 +49,7 @@ export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
  * automatically. Absence falls back to the default text-only label.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterChips, CngxFilter
  *
  * <example-url>/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
@@ -143,7 +143,7 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter-chips/filter-chips.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilter, CngxFilterChip, CngxMultiChipGroup
  * @slot cngxFilterChip Renders one active filter chip; gets the filter entry and a remove callback.
  *

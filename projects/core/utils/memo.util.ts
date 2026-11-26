@@ -1,7 +1,7 @@
 /**
  * Options for {@link memoize}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface MemoizeOptions {
   /**
@@ -28,7 +28,7 @@ export interface MemoizeOptions {
  * entity ids, dates - must set {@link MemoizeOptions.cacheLimit}, otherwise
  * the cache is a leak by design.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function memoize<K, V>(fn: (key: K) => V, options?: MemoizeOptions): (key: K) => V {
   const cache = new Map<K, V>();

@@ -36,7 +36,7 @@ declare const ngDevMode: boolean | undefined;
  * Pass `{ cause }` as the third argument when the error wraps a caught one,
  * so the original error stays reachable in both builds.
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorCode
  */
 export class CngxRuntimeError extends Error {

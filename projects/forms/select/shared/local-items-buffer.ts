@@ -94,7 +94,7 @@ export type CngxLocalItemsBufferFactory = <T>(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/local-items-buffer.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_LOCAL_ITEMS_BUFFER_FACTORY = new InjectionToken<CngxLocalItemsBufferFactory>(
   'CngxLocalItemsBufferFactory',

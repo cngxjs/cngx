@@ -6,7 +6,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * `isSelected` inside a `computed()` and writes only through `toggle`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CNGX_BUTTON_MULTI_TOGGLE_GROUP, CngxButtonMultiToggleGroup, CngxButtonToggle
  */
 export interface CngxButtonMultiToggleGroupContract<T = unknown> {
@@ -27,7 +27,7 @@ export interface CngxButtonMultiToggleGroupContract<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-multi-toggle-group.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonMultiToggleGroup, CngxButtonToggle, CNGX_BUTTON_TOGGLE_GROUP
  */
 export const CNGX_BUTTON_MULTI_TOGGLE_GROUP =

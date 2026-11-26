@@ -55,7 +55,7 @@ export const CNGX_SIDENAV_DEFAULTS: CngxSidenavConfig = {
  * in a component's `viewProviders` (sub-tree cascade).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/config/sidenav.config.defaults.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_SIDENAV_CONFIG', {
   providedIn: 'root',
@@ -73,7 +73,7 @@ export const CNGX_SIDENAV_CONFIG = new InjectionToken<CngxSidenavConfig>('CNGX_S
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/sidenav/config/sidenav.config.defaults.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withSidenavPersistence
  */
 export const CNGX_SIDENAV_STORAGE = new InjectionToken<Storage | null>('CNGX_SIDENAV_STORAGE', {

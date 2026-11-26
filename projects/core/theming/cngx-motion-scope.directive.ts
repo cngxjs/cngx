@@ -32,7 +32,7 @@ import type { CngxMotionPreference } from './motion';
  *
  * @relatedTo provideMotion
  * @relatedTo CNGX_MOTION
- * @since 0.1.0
+ * @since 0.3.0
  * @axis level atom
  */
 @Directive({

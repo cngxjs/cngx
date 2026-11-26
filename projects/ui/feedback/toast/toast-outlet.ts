@@ -58,7 +58,7 @@ export type ToastPosition =
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/toast/toast-outlet.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxToaster, CngxToast, CngxToastOn
  *
  * <example-url>/#/ui/feedback/toast/custom-component-body</example-url>

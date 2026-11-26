@@ -32,7 +32,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * @typeParam T - The item type the predicate operates on.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/data/filter/filter.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFilterChips, CngxSort, CngxPaginate, CngxSmartDataSource
  *
  * <example-url>/#/common/data/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>

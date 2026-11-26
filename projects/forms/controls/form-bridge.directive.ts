@@ -67,7 +67,7 @@ const parentBoundWarned = new WeakSet<object>();
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/controls/form-bridge.directive.ts
  * @selector [formControl], [formControlName]
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTypedControl, CngxBindField, CngxListboxFieldBridge
  * @axis level organism
  */

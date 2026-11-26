@@ -76,7 +76,7 @@ export interface AlertState {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/feedback/alert/alerter.service.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxAlertStack, CngxAlertOn, CngxToaster, CngxBanner
  *
  * <example-url>/#/ui/feedback/alert-stack/basic-stack</example-url>

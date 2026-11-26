@@ -80,7 +80,7 @@ function partitionFeatures(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/provide-cngx-tabs.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabsAt
  */
 export function provideCngxTabs(...features: readonly CngxTabsFeature[]): EnvironmentProviders {
@@ -108,7 +108,7 @@ export function provideCngxTabs(...features: readonly CngxTabsFeature[]): Enviro
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/tabs/provide-cngx-tabs.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTabGroup, CngxTabsConfig, provideCngxTabs
  */
 export function provideCngxTabsAt(...features: readonly CngxTabsFeature[]): Provider[] {

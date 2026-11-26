@@ -32,7 +32,7 @@ const filledEqual = (a: readonly boolean[], b: readonly boolean[]): boolean =>
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/password-strength-meter/password-strength-meter.component.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxSegmentedProgress, CngxBadge
  * <example-url>/#/common/display/password-strength-meter/strength-levels</example-url>
  * @axis level atom

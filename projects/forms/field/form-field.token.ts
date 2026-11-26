@@ -52,7 +52,7 @@ export interface CngxFormFieldRevealContract {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorScopeFieldBridge, CngxFormFieldPresenter, CngxFormFieldRevealContract, CngxErrorScope
  */
 export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
@@ -87,7 +87,7 @@ const NO_ERROR_MESSAGES: ErrorMessageMap = {};
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withErrorMessages, provideErrorMessages, CngxFieldErrors, CngxFormErrors
  */
 export const CNGX_ERROR_MESSAGES = new InjectionToken<Signal<ErrorMessageMap>>(
@@ -217,7 +217,7 @@ export interface FormFieldFeature {
  * merge `with*` features the same way.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-field.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideFormField, FormFieldConfig, CngxFormFieldPresenter
  */
 export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxFormFieldConfig', {

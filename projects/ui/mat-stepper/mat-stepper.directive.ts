@@ -87,7 +87,7 @@ import {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/mat-stepper/mat-stepper.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxStepper, CngxStepperPresenter, CngxMatTabs, CngxStepperFooter
  * <example-url>/#/ui/mat-stepper/stepper-footer/mat-stepper-footer</example-url>
  * @axis level organism

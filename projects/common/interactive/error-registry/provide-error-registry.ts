@@ -28,7 +28,7 @@ export interface _ErrorRegistryConfig {
  * returned by the `with*` helpers. Mirrors the `NavConfigFeature` shape.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface ErrorRegistryFeature {
   /** @internal */
@@ -55,7 +55,7 @@ export interface ErrorRegistryFeature {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxErrorScope, CngxErrorAggregator
  * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
@@ -128,7 +128,7 @@ export function provideErrorRegistry(
  * the global listener.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
 export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
@@ -149,7 +149,7 @@ export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
  * the implication when wiring a guard that cancels based on form errors.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/error-registry/provide-error-registry.ts
- * @since 0.1.0
+ * @since 0.3.0
  * <example-url>/#/common/interactive/error/registry/provider-and-reveal-features</example-url>
  */
 export function withRevealOnNavigate(): ErrorRegistryFeature {

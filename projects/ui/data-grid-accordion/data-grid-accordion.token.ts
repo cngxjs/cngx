@@ -19,7 +19,7 @@ import { CngxRuntimeError } from '@cngx/utils';
  * rows.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDataGridAccordion, CngxDataGridRow, CngxSort, CngxFilter
  */
 export interface CngxDataGridAccordionContext {
@@ -50,7 +50,7 @@ export interface CngxDataGridAccordionContext {
  * {@link CngxDataGridRow} injects it.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/data-grid-accordion/data-grid-accordion.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDataGridAccordion, CngxDataGridRow
  */
 export const CNGX_DATA_GRID_ACCORDION = new InjectionToken<CngxDataGridAccordionContext>(

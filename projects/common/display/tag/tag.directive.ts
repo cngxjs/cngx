@@ -92,7 +92,7 @@ const PREDEFINED_TAG_COLORS: ReadonlySet<string> = new Set([
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/tag.directive.ts
  * @selector cngx-tag
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTagGroup, CngxChip, CngxBadge, CngxTagLabel
  * @slot cngxTagLabel Replaces the tag's text body.
  * @slot cngxTagPrefix Content before the label, typically an icon or swatch.

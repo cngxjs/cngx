@@ -13,7 +13,7 @@
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- augmentation point, filled by each lib entry
 export interface CngxLanguagePack {}
@@ -21,7 +21,7 @@ export interface CngxLanguagePack {}
 /**
  * Locale metadata every pack carries next to its sections.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxLanguagePackMeta {
   /** BCP 47 tag of the pack, e.g. `'de'` or `'de-CH'`. Drives number format and plural rules. */
@@ -39,7 +39,7 @@ export interface CngxLanguagePackMeta {
  * { "one": "{count} error", "other": "{count} errors" }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPluralMessage {
   readonly zero?: string;
@@ -54,7 +54,7 @@ export interface CngxPluralMessage {
  * Makes every section and every key of a section optional while keeping a
  * present message whole: a plural object that is given still needs `other`.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPartialSections<T> = {
   readonly [S in keyof T]?: { readonly [K in keyof NonNullable<T[S]>]?: NonNullable<T[S]>[K] };
@@ -63,6 +63,6 @@ export type CngxPartialSections<T> = {
 /**
  * A pack that may leave sections or keys out; missing keys read English.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxPartialLanguagePack = CngxPartialSections<CngxLanguagePack>;

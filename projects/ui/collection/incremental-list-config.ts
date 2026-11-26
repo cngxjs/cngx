@@ -21,7 +21,7 @@ import { injectCollectionSiteLabels } from './i18n/collection-i18n';
  * single keys via {@link withIncrementalListAriaLabels}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxIncrementalListAriaLabels {
   /** Busy indicator label while the first load runs. */
@@ -57,7 +57,7 @@ export interface CngxIncrementalListAriaLabels {
  * projected. Library default is unset (the built-in views render).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxIncrementalListTemplates {
   /** Row template for each accumulated item. */
@@ -85,7 +85,7 @@ export interface CngxIncrementalListTemplates {
  * a handler.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxIncrementalListConfig {
   readonly ariaLabels?:
@@ -110,7 +110,7 @@ const NO_ARIA_LABELS: Partial<CngxIncrementalListAriaLabels> = {};
  * root, then the library defaults.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_INCREMENTAL_LIST_CONFIG = new InjectionToken<CngxIncrementalListConfig>(
   'CngxIncrementalListConfig',
@@ -126,7 +126,7 @@ export const CNGX_INCREMENTAL_LIST_CONFIG = new InjectionToken<CngxIncrementalLi
  * shallow-merges `payload` into the matching sub-tree.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxIncrementalListConfigFeature =
   | {
@@ -170,7 +170,7 @@ function applyFeatures(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withIncrementalListAriaLabels(
   payload: Partial<CngxIncrementalListAriaLabels> | Signal<Partial<CngxIncrementalListAriaLabels>>,
@@ -189,7 +189,7 @@ export function withIncrementalListAriaLabels(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function withIncrementalListTemplates(
   payload: Partial<CngxIncrementalListTemplates>,
@@ -204,7 +204,7 @@ export function withIncrementalListTemplates(
  * the keys they override.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideIncrementalListConfig(
   ...features: CngxIncrementalListConfigFeature[]
@@ -229,7 +229,7 @@ export function provideIncrementalListConfig(
  * re-phrase its labels without disturbing the rest of the app.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function provideIncrementalListConfigAt(
   ...features: CngxIncrementalListConfigFeature[]
@@ -250,7 +250,7 @@ export function provideIncrementalListConfigAt(
  * `inject(CNGX_INCREMENTAL_LIST_CONFIG)`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectIncrementalListConfig(): CngxIncrementalListConfig {
   return inject(CNGX_INCREMENTAL_LIST_CONFIG);
@@ -266,7 +266,7 @@ export function injectIncrementalListConfig(): CngxIncrementalListConfig {
  * message. Runs in injection context.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/ui/collection/incremental-list-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectIncrementalListAriaLabels(): Signal<CngxIncrementalListAriaLabels> {
   return createFilledOverrideMerge(

@@ -30,7 +30,7 @@ import type { CngxFormFieldControl } from './models';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/range-slider-field-bridge.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSliderFieldBridge, CngxFormField, CngxRangeSlider, adaptFormControl
  * <example-url>/#/forms/field/slider-forms/signal-forms-range-slider</example-url>
  * @axis level molecule

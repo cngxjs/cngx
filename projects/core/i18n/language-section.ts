@@ -20,7 +20,7 @@ const NO_SECTION = {};
  * export const injectTocSection = createLanguageSection('toc', CNGX_TOC_LANGUAGE_EN);
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo injectLanguageSection, createSectionBundle, createNestedLanguageSection
  */
 export function createLanguageSection<K extends keyof CngxLanguagePack>(
@@ -64,7 +64,7 @@ type NestedRecordKey<T, N extends keyof T> =
  * );
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createLanguageSection, createDefaultsFill
  */
 export function createNestedLanguageSection<

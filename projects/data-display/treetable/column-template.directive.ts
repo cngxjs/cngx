@@ -23,7 +23,7 @@ import type {
  * @typeParam T - The data type of the tree nodes.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, CngxHeaderTpl, CngxEmptyTpl
  */
 @Directive({ selector: 'ng-template[cngxCell]', standalone: true })
@@ -55,7 +55,7 @@ export class CngxCellTpl<T = unknown> {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, CngxCellTpl, CngxEmptyTpl
  */
 @Directive({ selector: 'ng-template[cngxHeader]', standalone: true })
@@ -85,7 +85,7 @@ export class CngxHeaderTpl {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, CngxCellTpl, CngxHeaderTpl
  */
 @Directive({ selector: 'ng-template[cngxEmpty]', standalone: true })
@@ -120,7 +120,7 @@ export class CngxEmptyTpl {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, CngxRefreshTpl, CngxEmptyTpl, CngxErrorTpl
  */
 @Directive({ selector: 'ng-template[cngxSkeletonRow]', standalone: true })
@@ -151,7 +151,7 @@ export class CngxSkeletonRowTpl {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, CngxSkeletonRowTpl, CngxEmptyTpl, CngxErrorTpl
  */
 @Directive({ selector: 'ng-template[cngxRefresh]', standalone: true })
@@ -186,7 +186,7 @@ export class CngxRefreshTpl {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/column-template.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxTreetable, CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl
  */
 @Directive({ selector: 'ng-template[cngxError]', standalone: true })

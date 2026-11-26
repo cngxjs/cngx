@@ -97,7 +97,7 @@ function segmentsEqual(a: readonly SummarySegment[], b: readonly SummarySegment[
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/form-errors.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFieldErrors, CngxError, focusFirstError, CNGX_ERROR_MESSAGES, withErrorMessages
  * <example-url>/#/forms/field/form-errors/basic</example-url>
  * <example-url>/#/forms/field/form-errors/show-on-submit</example-url>

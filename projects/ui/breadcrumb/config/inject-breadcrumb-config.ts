@@ -23,7 +23,7 @@ import { CNGX_BREADCRUMB_CONFIG } from './breadcrumb.config.defaults';
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
   return inject(CNGX_BREADCRUMB_CONFIG);
@@ -43,7 +43,7 @@ export function injectBreadcrumbConfig(): CngxBreadcrumbConfig {
  * }
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectBreadcrumbAriaLabels(): Signal<Required<CngxBreadcrumbAriaLabels>> {
   return createFilledOverrideMerge(injectBreadcrumbSiteCopy(), injectBreadcrumbConfig().ariaLabels);

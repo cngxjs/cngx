@@ -87,7 +87,7 @@ const TREETABLE_SECTION_LABELS = new InjectionToken<Signal<CngxResolvedTreetable
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/data-display/treetable/i18n/treetable-i18n.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withTreetableLabels, provideTreetable, provideTreetableAt, TreetableLabels, CNGX_TREETABLE_LANGUAGE_EN
  */
 export function injectTreetableLabels(): Signal<Required<TreetableLabels>> {

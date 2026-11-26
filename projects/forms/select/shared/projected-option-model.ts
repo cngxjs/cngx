@@ -254,7 +254,7 @@ export type CngxProjectedOptionModelFactory = <T>(
  * async labels, or fold-in of custom group sub-types.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/shared/projected-option-model.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSelectShell, CngxSelectOption, CngxSelectOptgroup
  */
 export const CNGX_PROJECTED_OPTION_MODEL_FACTORY =

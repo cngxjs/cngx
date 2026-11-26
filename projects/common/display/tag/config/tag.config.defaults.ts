@@ -49,7 +49,7 @@ export const CNGX_TAG_DEFAULTS: CngxTagConfig = {
  * `viewProviders` (sub-tree cascade).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/display/tag/config/tag.config.defaults.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_TAG_CONFIG = new InjectionToken<CngxTagConfig>('CNGX_TAG_CONFIG', {
   providedIn: 'root',

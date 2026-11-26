@@ -20,7 +20,7 @@ import {
  * (`let-err`), for a projected `cngxFailed` and a config `failed` template.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFailed, CngxActionStatusTemplates
  */
 export interface CngxActionStatusFailedContext {
@@ -33,7 +33,7 @@ export interface CngxActionStatusFailedContext {
  * language pack. An empty label renders no cell for that state.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withActionStatusLabels
  */
 export type CngxActionStatusLabels = CngxActionStatusLanguageSection;
@@ -44,7 +44,7 @@ export type CngxActionStatusLabels = CngxActionStatusLanguageSection;
  * state.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withActionStatusTemplates
  */
 export interface CngxActionStatusTemplates {
@@ -72,7 +72,7 @@ export interface CngxActionStatusTemplates {
  *      language pack (English: empty, no cell).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideActionStatusConfig, provideActionStatusConfigAt, injectActionStatusConfig
  */
 export interface CngxActionStatusConfig {
@@ -87,7 +87,7 @@ export interface CngxActionStatusConfig {
  * an empty object: no templates, the labels of the language pack.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideActionStatusConfig, injectActionStatusConfig
  */
 export const CNGX_ACTION_STATUS_CONFIG = new InjectionToken<CngxActionStatusConfig>(
@@ -101,7 +101,7 @@ export const CNGX_ACTION_STATUS_CONFIG = new InjectionToken<CngxActionStatusConf
  * {@link provideActionStatusConfigAt}.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxActionStatusConfigFeature {
   readonly config: CngxActionStatusConfig;
@@ -117,7 +117,7 @@ export interface CngxActionStatusConfigFeature {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideActionStatusConfig
  */
 export function withActionStatusLabels(
@@ -154,7 +154,7 @@ export function withActionStatusLabels(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo makeActionStatusConfig, provideActionStatusConfig
  */
 export function withActionStatusTemplates(
@@ -197,7 +197,7 @@ function mergeLabels(
  * rendered holder component (see {@link withActionStatusTemplates}).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withActionStatusTemplates, CNGX_ACTION_STATUS_CONFIG
  */
 export function makeActionStatusConfig(
@@ -219,7 +219,7 @@ export function makeActionStatusConfig(
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo withActionStatusLabels, withActionStatusTemplates, provideActionStatusConfigAt
  */
 export function provideActionStatusConfig(
@@ -248,7 +248,7 @@ export function provideActionStatusConfig(
  * cascade: a scoped `{ failed }` keeps the parent's `succeeded`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo provideActionStatusConfig
  */
 export function provideActionStatusConfigAt(
@@ -270,7 +270,7 @@ export function provideActionStatusConfigAt(
  * Inject the action status config resolved for the current injector.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/action-status/action-status-config.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export function injectActionStatusConfig(): CngxActionStatusConfig {
   return inject(CNGX_ACTION_STATUS_CONFIG);

@@ -30,7 +30,7 @@ export function formatSliderValue(value: number, locale: string | undefined): st
  * so the cross-clamp math lives here rather than in an effect.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-core.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxSliderCoreOptions {
   /** Writable source of truth. The only signal the core ever writes. */
@@ -67,7 +67,7 @@ export interface CngxSliderCoreOptions {
  * to its thumb-position CSS var, and `ariaValueText` to `aria-valuetext`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-core.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxSliderCore {
   /** Raw model value (may sit outside the effective bounds until first write). */
@@ -125,7 +125,7 @@ function clamp(value: number, lo: number, hi: number): number {
  * path stays valid without an effect syncing state (Pillar 1).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/slider-core.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxSlider, CngxRangeSlider, CngxSliderThumb
  */
 export function createSliderCore(options: CngxSliderCoreOptions): CngxSliderCore {

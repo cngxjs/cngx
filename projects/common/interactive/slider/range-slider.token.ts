@@ -21,7 +21,7 @@ export interface CngxSliderThumbBounds {
  * other and no effect is needed to keep them ordered.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRangeSlider, CngxSliderThumb
  */
 export interface CngxSliderRangeHost {
@@ -61,7 +61,7 @@ export interface CngxSliderRangeHost {
  * element-injector hierarchy.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/slider/range-slider.token.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxRangeSlider, CngxSliderThumb
  */
 export const CNGX_SLIDER_RANGE = new InjectionToken<CngxSliderRangeHost>('CNGX_SLIDER_RANGE');

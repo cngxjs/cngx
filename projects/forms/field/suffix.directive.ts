@@ -21,7 +21,7 @@ import { CNGX_FIELD_AFFIX } from './field-box.token';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/field/suffix.directive.ts
- * @since 0.2.0
+ * @since 0.3.0
  * @relatedTo CngxPrefix, CngxFieldBox, CngxFormField, CngxInput, withCurrency
  * <example-url>/#/forms/field/affix/currency-and-unit</example-url>
  * <example-url>/#/forms/field/affix/icon-and-icon-button</example-url>

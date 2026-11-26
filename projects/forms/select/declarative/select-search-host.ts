@@ -48,7 +48,7 @@ export interface CngxSelectShellSearchHost {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/declarative/select-search-host.ts
- * @since 0.1.0
+ * @since 0.3.0
  */
 export const CNGX_SELECT_SHELL_SEARCH_HOST = new InjectionToken<CngxSelectShellSearchHost>(
   'CNGX_SELECT_SHELL_SEARCH_HOST',

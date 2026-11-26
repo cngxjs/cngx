@@ -51,7 +51,7 @@ export interface FieldSyncOptions<V> {
  * });
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL
  */
 export function createFieldSync<V>(options: FieldSyncOptions<V>): void {

@@ -34,7 +34,7 @@ import {
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/interactive/button-toggle/button-toggle-group.component.ts
  * @selector cngx-button-toggle-group
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxButtonToggle, CngxRadioGroup, CngxButtonMultiToggleGroup, CngxButtonGroup, CngxRovingTabindex, CngxChipGroup
  * <example-url>/#/common/interactive/button-toggle/group/basic-view-switcher</example-url>
  * <example-url>/#/common/interactive/button-toggle/group/disabled-group-cascade-vs-per-toggle</example-url>

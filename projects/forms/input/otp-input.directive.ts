@@ -24,7 +24,7 @@ import { injectInputAriaLabels } from './input-config';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/otp-input.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxOtpInput, CngxInput
  * <example-url>/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>/#/forms/input/otp/6-digit-otp</example-url>
@@ -154,7 +154,7 @@ export class CngxOtpSlot {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/input/otp-input.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxOtpSlot, CngxInput, withInputAriaLabels
  * <example-url>/#/forms/input/otp/4-digit-pin</example-url>
  * <example-url>/#/forms/input/otp/6-digit-otp</example-url>

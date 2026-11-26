@@ -26,7 +26,7 @@ export interface CngxPopoverArrowContext {
  * Marks the header content inside `cngx-popover-panel`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopoverBody, CngxPopoverFooter
  */
 @Directive({ selector: '[cngxPopoverHeader]', standalone: true })
@@ -36,7 +36,7 @@ export class CngxPopoverHeader {}
  * Marks the body content inside `cngx-popover-panel`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopoverHeader, CngxPopoverFooter
  */
 @Directive({ selector: '[cngxPopoverBody]', standalone: true })
@@ -46,7 +46,7 @@ export class CngxPopoverBody {}
  * Marks the footer content inside `cngx-popover-panel`.
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopoverHeader, CngxPopoverBody, CngxPopoverAction
  */
 @Directive({ selector: '[cngxPopoverFooter]', standalone: true })
@@ -64,7 +64,7 @@ export class CngxPopoverFooter {}
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel
  */
 @Directive({ selector: 'ng-template[cngxPopoverClose]', standalone: true })
@@ -79,7 +79,7 @@ export class CngxPopoverClose {
  * then the `popover` section of the active language pack. A template that
  * only restyles the state can print it instead of carrying its own string.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPopoverStateCopyContext {
   /** The resolved default copy of the state view. */
@@ -96,7 +96,7 @@ export interface CngxPopoverStateCopyContext {
  * from `[errorText]`, then `withPopoverPanelLabels(...)`, then the language
  * pack.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxPopoverErrorContext {
   /** The raw error behind the error view. */
@@ -118,7 +118,7 @@ export interface CngxPopoverErrorContext {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopoverEmpty, CngxPopoverError
  */
 @Directive({ selector: 'ng-template[cngxPopoverLoading]', standalone: true })
@@ -138,7 +138,7 @@ export class CngxPopoverLoading {
  * `CngxPopoverStateCopyContext` (`$implicit` / `text` = resolved empty copy).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopoverLoading, CngxPopoverError
  */
 @Directive({ selector: 'ng-template[cngxPopoverEmpty]', standalone: true })
@@ -159,7 +159,7 @@ export class CngxPopoverEmpty {
  * resolved error copy).
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopoverLoading, CngxPopoverEmpty
  */
 @Directive({ selector: 'ng-template[cngxPopoverError]', standalone: true })
@@ -192,7 +192,7 @@ export class CngxPopoverError {
  * ```
  *
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/popover/popover-panel-slots.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxPopoverPanel, CngxPopover
  */
 @Directive({ selector: 'ng-template[cngxPopoverArrow]', standalone: true })

@@ -48,7 +48,7 @@ import { applySrOnly } from '../dialog/sr-only';
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/common/dialog/draggable/dialog-draggable.directive.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxDialog, CngxBottomSheet
  * <example-url>/#/common/dialog/alert-dialog</example-url>
  * <example-url>/#/common/dialog/bottom-sheet</example-url>

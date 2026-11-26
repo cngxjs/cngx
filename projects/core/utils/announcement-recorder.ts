@@ -5,7 +5,7 @@ import { signal, type Signal } from '@angular/core';
  * attributes when the observer handles the batch (for `'busy-cleared'`, the
  * batch that clears busy). `null` means nothing attribute-based suppresses it.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | 'aria-modal';
 
@@ -18,14 +18,14 @@ export type CngxAnnouncementSuppression = 'hidden' | 'aria-hidden' | 'inert' | '
  * - `'busy-cleared'`: `aria-busy` cleared on the region or an ancestor after
  *   text was written while busy; the entry holds what AT reads after the flip.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export type CngxAnnouncementOrigin = 'mutation' | 'insertion' | 'became-live' | 'busy-cleared';
 
 /**
  * One text a live region exposed, as observed in the DOM.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxRecordedAnnouncement {
   /** `Date.now()` when the observer saw the write. */
@@ -72,7 +72,7 @@ export interface CngxRecordedAnnouncement {
 /**
  * Options for {@link createAnnouncementRecorder}.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAnnouncementRecorderOptions {
   /** Subtree to observe. Defaults to the global `document`. */
@@ -90,7 +90,7 @@ export interface CngxAnnouncementRecorderOptions {
 /**
  * The handle {@link createAnnouncementRecorder} returns.
  *
- * @since 0.1.0
+ * @since 0.3.0
  */
 export interface CngxAnnouncementRecorder {
   /** The recorded entries, oldest first, at most `limit`. */
@@ -279,7 +279,7 @@ const CANDIDATE_SELECTOR = '[aria-live],[role],output';
  * recorder.destroy();
  * ```
  *
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo createAnnouncementCapture, resolveHeardAnnouncements, CngxLiveAnnouncer
  */
 export function createAnnouncementRecorder(

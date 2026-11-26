@@ -209,7 +209,7 @@ export interface CngxTreeSelectChange<T = unknown> {
  *
  * @wcag AA
  * @github https://github.com/cngxjs/cngx/blob/main/projects/forms/select/tree-select/tree-select.component.ts
- * @since 0.1.0
+ * @since 0.3.0
  * @relatedTo CngxMultiSelect, CngxSelect, CngxReorderableMultiSelect, CngxTreeSelectNode, CngxTreeSelectChip
  * @playground Material theme ./examples/material-theme/material-theme.component.ts
  * <example-url>/#/forms/select/tree-select/basic-single-level-toggle</example-url>
