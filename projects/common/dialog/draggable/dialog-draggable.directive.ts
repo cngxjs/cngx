@@ -204,10 +204,8 @@ export class CngxDialogDraggable {
 
     // Don't drag if the target is an interactive element inside the handle
     const target = event.target as HTMLElement;
-    if (
-      target.closest('button, a, input, select, textarea, [tabindex]') &&
-      target !== this.currentHandle
-    ) {
+    const interactiveTarget = target.closest('button, a, input, select, textarea, [tabindex]');
+    if (interactiveTarget !== null && interactiveTarget !== this.currentHandle) {
       return;
     }
 

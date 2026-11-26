@@ -28,6 +28,19 @@ class FormFieldHost {
 
 @Component({
   template: `
+    <div cngxDialogDraggable>
+      <p id="text">Body text</p>
+      <button id="action" type="button">Close</button>
+    </div>
+  `,
+  imports: [CngxDialogDraggable],
+})
+class ChildContentHost {
+  readonly draggable = viewChild.required(CngxDialogDraggable);
+}
+
+@Component({
+  template: `
     <div cngxDialogDraggable [handle]="handle()">
       <div id="handle-a">A</div>
       <div id="handle-b">B</div>
@@ -217,6 +230,37 @@ describe('CngxDialogDraggable', () => {
 
       fixture.destroy();
       expect(document.documentElement.style.userSelect).toBe('');
+    });
+  });
+
+  describe('pointerdown target scoping', () => {
+    function pointerDownOn(handle: HTMLElement, target: HTMLElement) {
+      const rec = handle as unknown as Record<string, unknown>;
+      rec['setPointerCapture'] = vi.fn();
+      rec['releasePointerCapture'] = vi.fn();
+      target.dispatchEvent(
+        new MouseEvent('pointerdown', { button: 0, clientX: 10, clientY: 10, bubbles: true }),
+      );
+    }
+
+    it('starts a drag from non-interactive content inside the focusable handle', () => {
+      const { el, directive, fixture } = setup(ChildContentHost);
+      const text = fixture.nativeElement.querySelector('#text') as HTMLElement;
+
+      pointerDownOn(el, text);
+      fixture.detectChanges();
+
+      expect(directive.isDragging()).toBe(true);
+    });
+
+    it('does not start a drag from an interactive child', () => {
+      const { el, directive, fixture } = setup(ChildContentHost);
+      const button = fixture.nativeElement.querySelector('#action') as HTMLElement;
+
+      pointerDownOn(el, button);
+      fixture.detectChanges();
+
+      expect(directive.isDragging()).toBe(false);
     });
   });
 
