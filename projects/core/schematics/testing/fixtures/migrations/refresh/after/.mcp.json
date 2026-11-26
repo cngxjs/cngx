@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@cngx/mcp@0.3.0"
+        "@cngx/mcp@DEFAULT_MCP_VERSION"
       ]
     }
   }

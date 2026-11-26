@@ -44,6 +44,7 @@ import {
   runToolingSection,
   skipGitTagNote,
   stampManifest,
+  stampDefaultMcpVersion,
   stampPlaygroundPins,
   stampRefreshMigration,
   stampSchematicsDist,
@@ -1070,7 +1071,7 @@ describe('stampToolingChangelog', () => {
 });
 
 describe('releaseCommitFiles', () => {
-  it('holds the root, tooling, plugin pin and docs config files, each an existing file', () => {
+  it('holds the root, tooling, plugin pin, schematics default and docs config files, each an existing file', () => {
     const files = releaseCommitFiles();
 
     expect(files).toEqual([
@@ -1083,11 +1084,38 @@ describe('releaseCommitFiles', () => {
       'packages/cli/package-lock.json',
       'packages/cli/CHANGELOG.md',
       'packages/plugin/.mcp.json',
+      'projects/core/schematics/engine/versions.ts',
       '.compodocrc.json',
     ]);
     for (const file of files) {
       expect(() => readFileSync(join(ROOT_DIR, file))).not.toThrow();
     }
+  });
+});
+
+describe('stampDefaultMcpVersion', () => {
+  const source = [
+    "export const DEFAULT_MCP_VERSION = '0.3.0';",
+    "export const DEFAULT_ESLINT_PLUGIN_VERSION = '0.2.0';",
+    '',
+  ].join('\n');
+
+  it('sets the constant to the release version, the rest byte for byte', () => {
+    expect(stampDefaultMcpVersion(source, '0.4.0-rc.1')).toBe(source.replace("'0.3.0'", "'0.4.0-rc.1'"));
+  });
+
+  it('refuses a source without the declaration', () => {
+    expect(() => stampDefaultMcpVersion("export const OTHER = '0.3.0';\n", '0.4.0')).toThrow(
+      /projects\/core\/schematics\/engine\/versions\.ts has no DEFAULT_MCP_VERSION declaration/,
+    );
+  });
+
+  it('moves only the constant of the real file', () => {
+    const text = readFileSync(join(ROOT_DIR, 'projects/core/schematics/engine/versions.ts'), 'utf8');
+    const stamped = stampDefaultMcpVersion(text, '9.9.9');
+    const changed = stamped.split('\n').filter((line, i) => line !== text.split('\n')[i]);
+
+    expect(changed).toEqual(["export const DEFAULT_MCP_VERSION = '9.9.9';"]);
   });
 });
 
@@ -1150,7 +1178,7 @@ describe('releaseFinishSteps', () => {
       { id: 'root-version', text: 'set "version" in package.json to 0.3.0' },
       {
         id: 'tooling-files',
-        text: 'stamp packages/{mcp,cli}/CHANGELOG.md with the 0.3.0 section and set the @cngx/mcp pin in packages/plugin/.mcp.json to 0.3.0',
+        text: 'stamp packages/{mcp,cli}/CHANGELOG.md with the 0.3.0 section and set the @cngx/mcp pin in packages/plugin/.mcp.json and DEFAULT_MCP_VERSION in projects/core/schematics/engine/versions.ts to 0.3.0',
       },
       {
         id: 'docs-pins',

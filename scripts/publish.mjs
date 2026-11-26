@@ -28,6 +28,7 @@ const ROOT = resolve(__dirname, '..');
 const CSS_ONLY_LIBS = new Set(['themes']);
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
 const DOCS_CONFIG = '.compodocrc.json';
+const SCHEMATICS_VERSIONS = 'projects/core/schematics/engine/versions.ts';
 const SOURCE_MIGRATIONS = join(ROOT, 'projects', 'core', 'schematics', 'migrations', 'migrations.json');
 
 function readRootPkg() {
@@ -317,7 +318,8 @@ export function stampToolingChangelog(text, version, date) {
 
 // Every file a real release run leaves changed, relative to the repo root:
 // the root version and changelog, both tooling manifests, lockfiles and
-// changelogs, and the plugin's @cngx/mcp pin.
+// changelogs, the plugin's @cngx/mcp pin and the schematics' local-build
+// default of it.
 export function releaseCommitFiles() {
   return [
     'package.json',
@@ -328,8 +330,21 @@ export function releaseCommitFiles() {
       `packages/${name}/CHANGELOG.md`,
     ]),
     'packages/plugin/.mcp.json',
+    SCHEMATICS_VERSIONS,
     DOCS_CONFIG,
   ];
+}
+
+// A local build of the schematics (no versions.json) pins @cngx/mcp at
+// DEFAULT_MCP_VERSION, and engine/versions.spec.ts holds that constant to
+// packages/mcp/package.json. The release moves the manifest, so it moves the
+// constant too; the rest of the file stays byte for byte.
+export function stampDefaultMcpVersion(text, nextVersion) {
+  const declaration = /(export const DEFAULT_MCP_VERSION = ')[^']*(';)/;
+  if (!declaration.test(text)) {
+    throw new Error(`${SCHEMATICS_VERSIONS} has no DEFAULT_MCP_VERSION declaration`);
+  }
+  return text.replace(declaration, `$1${nextVersion}$2`);
 }
 
 // The docs config pins the @cngx packages its playgrounds install. A release
@@ -378,7 +393,7 @@ export function releaseFinishSteps({ nextVersion, skipGitTag }) {
       id: 'tooling-files',
       text:
         `stamp packages/{${TOOLING_PACKAGES.join(',')}}/CHANGELOG.md with the ${nextVersion} section ` +
-        `and set the @cngx/mcp pin in packages/plugin/.mcp.json to ${nextVersion}`,
+        `and set the @cngx/mcp pin in packages/plugin/.mcp.json and DEFAULT_MCP_VERSION in ${SCHEMATICS_VERSIONS} to ${nextVersion}`,
     },
     {
       id: 'docs-pins',
@@ -1085,8 +1100,13 @@ function main() {
       const pluginMcpPath = join(ROOT, 'packages', 'plugin', '.mcp.json');
       const pluginMcp = bumpMcpPin(JSON.parse(readFileSync(pluginMcpPath, 'utf8')), nextVersion);
       writeFileSync(pluginMcpPath, JSON.stringify(pluginMcp, null, 2) + '\n');
+      const schematicsVersionsPath = join(ROOT, SCHEMATICS_VERSIONS);
+      writeFileSync(
+        schematicsVersionsPath,
+        stampDefaultMcpVersion(readFileSync(schematicsVersionsPath, 'utf8'), nextVersion),
+      );
       done.push('tooling-files');
-      console.log(`Tooling changelogs and the plugin @cngx/mcp pin updated to ${nextVersion}`);
+      console.log(`Tooling changelogs, the plugin @cngx/mcp pin and DEFAULT_MCP_VERSION updated to ${nextVersion}`);
 
       // The docs build of this commit installs the packages just published.
       const docsConfigPath = join(ROOT, DOCS_CONFIG);

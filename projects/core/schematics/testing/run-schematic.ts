@@ -7,7 +7,7 @@ import { callRule, type Rule, type Schematic, type SchematicContext, type Tree }
 import { SchematicTestRunner, UnitTestTree } from '@angular-devkit/schematics/testing';
 import { lastValueFrom, of } from 'rxjs';
 
-import { createMemoryTree, listFiles } from '../engine';
+import { createMemoryTree, DEFAULT_MCP_VERSION, listFiles } from '../engine';
 
 const FIXTURES = join(__dirname, 'fixtures');
 
@@ -59,6 +59,8 @@ export function readFixture(name: FixtureName): Readonly<Record<string, string>>
   return readFiles(join(FIXTURES, name));
 }
 
+const MCP_VERSION_TOKEN = 'DEFAULT_MCP_VERSION';
+
 export interface MigrationFixture {
   /** The stock app with the `before/` files on top: the tree a migration runs on. */
   readonly before: Readonly<Record<string, string>>;
@@ -70,11 +72,16 @@ export interface MigrationFixture {
  * `fixtures/migrations/<name>/{before,after}`. Both folders hold only what
  * differs from the stock standalone app, so a pair states the migration's
  * effect and nothing else: `after/` lists every file the migration writes.
+ * `after/` names the `@cngx/mcp` pin as the token `DEFAULT_MCP_VERSION`, read
+ * here as the constant, so a release that moves the pin leaves the fixture alone.
  */
 export function readMigrationFixture(name: string): MigrationFixture {
   const root = join(FIXTURES, 'migrations', name);
   const before = { ...readFixture('standalone-app'), ...readFiles(join(root, 'before')) };
-  return { before, after: { ...before, ...readFiles(join(root, 'after')) } };
+  const written = Object.entries(readFiles(join(root, 'after'))).map(
+    ([path, text]) => [path, text.replaceAll(MCP_VERSION_TOKEN, DEFAULT_MCP_VERSION)] as const,
+  );
+  return { before, after: { ...before, ...Object.fromEntries(written) } };
 }
 
 /** Every file of a tree, keyed by its path without the leading slash. */
