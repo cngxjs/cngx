@@ -315,4 +315,4 @@ The consumer-side DI surface mirrors the `provide*` surface one-to-one.
 
 ## License
 
-MIT.
+MIT. Contributions require a signed CLA, see [CONTRIBUTING.md](./CONTRIBUTING.md#contributor-license-agreement).
