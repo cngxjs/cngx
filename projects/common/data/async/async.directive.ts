@@ -57,6 +57,9 @@ export interface CngxAsyncContext<T> {
  * elsewhere in the meantime, is never touched.
  *
  * ### Minimal - just content
+ * Without an error template a failed first load renders nothing, and dev mode
+ * warns with [`CNGX1085`](/error-codes/cngx1085.md). Bind `error:` once the
+ * state can fail.
  * ```html
  * <ul *cngxAsync="residents; let data">
  *   @for (r of data; track r.id) { <li>{{ r.name }}</li> }
@@ -148,7 +151,7 @@ export class CngxAsync<T> {
   // on: the switch that lost it plus one more, so a short skeleton in between
   // is bridged but a much later refresh never pulls focus back.
   private focusSwitchesLeft = 0;
-  // Dev-only, once per instance: a failed first load with no error template.
+  // CNGX1085 fires once: a retry that fails again must not repeat it.
   private missingErrorTemplateWarned = false;
 
   constructor() {

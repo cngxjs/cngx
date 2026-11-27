@@ -433,11 +433,13 @@ describe('CngxAsync without an error template (CNGX1085)', () => {
 
   it('does not warn when an error template is bound', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    const { host, el } = createFixture();
-    host.state.setError('boom');
-    TestBed.flushEffects();
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    fixture.componentInstance.state.setError('boom');
+    fixture.detectChanges();
 
-    expect(el.querySelector('.error')?.textContent).toContain('boom');
+    expect(fixture.nativeElement.querySelector('.error')?.textContent).toContain('boom');
     expect(warn).not.toHaveBeenCalled();
   });
 });
