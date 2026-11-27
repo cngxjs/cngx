@@ -167,6 +167,37 @@ describe('CngxContextMenuTrigger', () => {
     }
   });
 
+  it('restores focus when the menu closes before the open effect flushed', async () => {
+    const { triggerEl, popover } = setup();
+    triggerEl.focus();
+    triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true }));
+    // Focus moves into the menu on this microtask; the `isOpen` effect has not run yet.
+    await Promise.resolve();
+    popover.hide();
+    TestBed.flushEffects();
+    await Promise.resolve();
+    expect(document.activeElement).toBe(triggerEl);
+  });
+
+  it('keeps focus on the outside control that dismissed the menu by focus-out', async () => {
+    const outside = document.createElement('button');
+    outside.type = 'button';
+    document.body.appendChild(outside);
+    try {
+      const { triggerEl, popover } = setup();
+      triggerEl.focus();
+      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true }));
+      await Promise.resolve();
+      outside.focus();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(popover.isVisible()).toBe(false);
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      outside.remove();
+    }
+  });
+
   describe('dismiss handler wiring', () => {
     function setupWithFactory(features: Parameters<typeof provideMenuConfig>): {
       attach: ReturnType<typeof vi.fn>;
@@ -250,6 +281,31 @@ describe('CngxContextMenuTrigger', () => {
       ctx.popover.hide();
       TestBed.flushEffects();
       expect(ctx.teardown).toHaveBeenCalledTimes(1);
+    });
+
+    it('teardown invoked when the menu closes before the open effect flushed', () => {
+      const ctx = setupWithFactory([withDismissOnOutsideClick(true)]);
+      ctx.triggerEl.dispatchEvent(
+        new MouseEvent('contextmenu', { bubbles: true, clientX: 2, clientY: 2 }),
+      );
+      ctx.popover.hide();
+      TestBed.flushEffects();
+      expect(ctx.teardown).toHaveBeenCalledTimes(1);
+    });
+
+    it('a second contextmenu while open keeps the menu open and the binding attached', async () => {
+      const ctx = setupWithFactory([]);
+      const menuEl = ctx.fixture.debugElement.query(By.directive(CngxMenu))
+        .nativeElement as HTMLElement;
+      ctx.triggerEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+      TestBed.flushEffects();
+      ctx.triggerEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(ctx.popover.isVisible()).toBe(true);
+      expect(ctx.attach).toHaveBeenCalledTimes(1);
+      expect(ctx.teardown).not.toHaveBeenCalled();
+      expect(menuEl.contains(document.activeElement)).toBe(true);
     });
 
     it('teardown invoked on directive destroy mid-open', () => {

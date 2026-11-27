@@ -195,6 +195,8 @@ export class CngxContextMenuFor<T = unknown> {
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(() => this.core.destroy());
     effect(() => {
+      // A close before this flush leaves `isOpen` unchanged; the cycle count re-runs the close branch.
+      this.core.openCycle();
       const open = this.isOpen();
       untracked(() => {
         if (open) {

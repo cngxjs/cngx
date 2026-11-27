@@ -1,7 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, type Provider, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  CNGX_MENU_DISMISS_HANDLER_FACTORY,
+  type CngxMenuDismissHandler,
+} from '@cngx/common/interactive';
 
 import { CngxContextMenu } from './context-menu.component';
 import { CngxContextMenuFor } from './context-menu-for.directive';
@@ -148,8 +153,8 @@ describe('CngxContextMenuFor', () => {
   });
 
   describe('shared panel ownership', () => {
-    function setupShared() {
-      TestBed.configureTestingModule({ imports: [SharedPanelHost] });
+    function setupShared(providers: Provider[] = []) {
+      TestBed.configureTestingModule({ imports: [SharedPanelHost], providers });
       const fixture = TestBed.createComponent(SharedPanelHost);
       fixture.detectChanges();
       TestBed.flushEffects();
@@ -257,6 +262,24 @@ describe('CngxContextMenuFor', () => {
       expect(targetB.getAttribute('aria-expanded')).toBe('true');
     });
 
+    it('a takeover before any effect flush still stands the first trigger down', () => {
+      const teardown = vi.fn();
+      const attach = vi.fn(() => teardown);
+      const handler: CngxMenuDismissHandler = { attach };
+      const { fixture, targetA, targetB, triggerB, panel } = setupShared([
+        { provide: CNGX_MENU_DISMISS_HANDLER_FACTORY, useValue: () => handler },
+      ]);
+
+      rightClick(targetA);
+      rightClick(targetB);
+      flush(fixture);
+
+      // One binding per core; A detached its own, B still holds its binding.
+      expect(attach).toHaveBeenCalledTimes(2);
+      expect(teardown).toHaveBeenCalledTimes(1);
+      expect(panel.openOwner()).toBe(triggerB);
+    });
+
     it('a modified Shift+F10 (Ctrl held) neither claims nor opens', () => {
       const { fixture, targetA, panel } = setupShared();
 
@@ -286,6 +309,18 @@ describe('CngxContextMenuFor', () => {
       expect(targetA.getAttribute('aria-expanded')).toBe('false');
       expect(targetB.getAttribute('aria-expanded')).toBe('false');
     });
+  });
+
+  it('restores focus when the menu closes before the open effect flushed', async () => {
+    const { target, panel } = setupData();
+    target.focus();
+    target.dispatchEvent(new KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true }));
+    // Focus moves into the menu on this microtask; the `isOpen` effect has not run yet.
+    await Promise.resolve();
+    panel.popover.hide();
+    TestBed.flushEffects();
+    await Promise.resolve();
+    expect(document.activeElement).toBe(target);
   });
 
   it('keyboard resolver derives the datum from the Shift+F10 target', () => {
