@@ -200,8 +200,8 @@ html { @include cngx-density.density($theme); }
     });
   });
 
-  test('the routed foundation knobs paint the idle segment', async ({ page }) => {
-    expect(await computedValue(page, '#toggle-idle', 'background-color')).toBe(matSys('surface'));
+  test('the idle segment rests transparent in the routed ink and outline', async ({ page }) => {
+    expect(await computedValue(page, '#toggle-idle', 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(await computedValue(page, '#toggle-idle', 'color')).toBe(matSys('on-surface'));
     expect(await computedValue(page, '#toggle-idle', 'border-top-color')).toBe(matSys('outline'));
   });
@@ -218,18 +218,10 @@ html { @include cngx-density.density($theme); }
     expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(matSys('outline'));
   });
 
-  test('the unchecked hover layer follows a consumer surface override on the segment', async ({
-    page,
-  }) => {
-    // A consumer re-skins the segment surface on the toggle itself (the knobs
-    // are assigned on the button too, so a group override does not reach it);
-    // the hover layer must sit on that surface, not on the Material one.
-    await page.locator('#toggle-idle').evaluate((el) => {
-      (el as HTMLElement).style.setProperty('--cngx-color-surface', 'rgb(240, 200, 120)');
-    });
+  test('the unchecked hover layer lies over the transparent rest', async ({ page }) => {
     const expected = await page.evaluate((onSurface) => {
       const probe = document.createElement('div');
-      probe.style.background = `color-mix(in srgb, ${onSurface} 8%, rgb(240, 200, 120))`;
+      probe.style.background = `color-mix(in srgb, ${onSurface} 8%, transparent)`;
       document.body.append(probe);
       const value = getComputedStyle(probe).backgroundColor;
       probe.remove();
