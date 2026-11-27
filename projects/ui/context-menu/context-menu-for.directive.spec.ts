@@ -337,6 +337,20 @@ describe('CngxContextMenuFor', () => {
     expect(teardown).toHaveBeenCalledTimes(1);
   });
 
+  it('releases the panel claim when the menu closes before the open effect flushed', () => {
+    const { fixture, target, panel } = setupData();
+    rightClick(target);
+    panel.popover.hide();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(panel.openOwner()).toBeNull();
+
+    panel.popover.show();
+    TestBed.flushEffects();
+    fixture.detectChanges();
+    expect(target.getAttribute('aria-expanded')).toBe('false');
+  });
+
   it('keyboard resolver derives the datum from the Shift+F10 target', () => {
     const { fixture, target, host, panel } = setupResolver();
     host.keyboardResolver.set((event) => {

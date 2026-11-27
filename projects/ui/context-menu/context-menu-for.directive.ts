@@ -225,6 +225,9 @@ export class CngxContextMenuFor<T = unknown> {
     // core through the handlers claimPanel() registers per open. Release the
     // claim when the popover closes, so the next opener starts clean.
     effect(() => {
+      // Same fast-close edge as the open-state effect: a close before this
+      // flush leaves `isVisible()` unchanged, the cycle count re-runs the release.
+      this.core.openCycle();
       const panel = this.panel();
       if (!panel.popover.isVisible()) {
         untracked(() => this.releasePanel(panel));
