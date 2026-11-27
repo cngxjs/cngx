@@ -1,7 +1,7 @@
 import { Component, resource, signal, type TemplateRef, viewChild } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { type AsyncStatus, buildAsyncStateView } from '@cngx/core/utils';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ManualAsyncState } from '../async-state/create-manual-state';
 import { createManualState } from '../async-state/create-manual-state';
@@ -366,5 +366,80 @@ describe('CngxAsync focus target selection', () => {
     await render();
 
     expect(document.activeElement).toBe(el.querySelector('.retry'));
+  });
+});
+
+@Component({
+  template: `<div class="wrap">
+    <p *cngxAsync="state; let data">CONTENT {{ data }}</p>
+  </div>`,
+  imports: [CngxAsync],
+})
+class NoErrorTemplateHost {
+  state: ManualAsyncState<string> = createManualState<string>();
+}
+
+describe('CngxAsync without an error template (CNGX1085)', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function setup(): {
+    fixture: ComponentFixture<NoErrorTemplateHost>;
+    state: ManualAsyncState<string>;
+  } {
+    TestBed.configureTestingModule({ imports: [NoErrorTemplateHost] });
+    const fixture = TestBed.createComponent(NoErrorTemplateHost);
+    fixture.detectChanges();
+    return { fixture, state: fixture.componentInstance.state };
+  }
+
+  it('renders nothing and warns once on a failed first load', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, state } = setup();
+    state.set('loading');
+    fixture.detectChanges();
+    state.setError('boom');
+    fixture.detectChanges();
+
+    const wrap = fixture.nativeElement.querySelector('.wrap') as HTMLElement;
+    expect(wrap.textContent!.trim()).toBe('');
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^CNGX1085: \[cngxAsync\]/), wrap);
+  });
+
+  it('does not warn again when a retry fails again', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, state } = setup();
+    state.setError('first');
+    fixture.detectChanges();
+    state.set('loading');
+    fixture.detectChanges();
+    state.setError('second');
+    fixture.detectChanges();
+
+    expect(warn).toHaveBeenCalledOnce();
+  });
+
+  it('does not warn on a failed refresh that keeps the content', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture, state } = setup();
+    state.setSuccess('data');
+    fixture.detectChanges();
+    state.setError('late');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('CONTENT data');
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('does not warn when an error template is bound', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ imports: [Host] });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    fixture.componentInstance.state.setError('boom');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.error')?.textContent).toContain('boom');
+    expect(warn).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { CNGX_FOCUSABLE_SELECTOR } from '@cngx/common/a11y';
 import type { CngxAsyncState } from '@cngx/core/utils';
+import { cngxDevWarn } from '@cngx/utils';
 
 import { resolveAsyncView, type AsyncView } from '../async-state/resolve-view';
 
@@ -40,7 +41,7 @@ export interface CngxAsyncContext<T> {
  * - **loading (first load)** → skeleton template (or nothing)
  * - **success + has data** → content template with typed data
  * - **success + empty** → empty template (or nothing)
- * - **error (first load)** → error template (or nothing)
+ * - **error (first load)** → error template (or nothing; dev mode warns once, [`CNGX1085`](/error-codes/cngx1085.md))
  * - **refreshing / loading (with data)** → content template (old data stays visible)
  * - **error (with data)** → content template (old data stays visible) -
  *   `resolveAsyncView` reports this as `content+error`, but a structural
@@ -56,6 +57,9 @@ export interface CngxAsyncContext<T> {
  * elsewhere in the meantime, is never touched.
  *
  * ### Minimal - just content
+ * Without an error template a failed first load renders nothing, and dev mode
+ * warns with [`CNGX1085`](/error-codes/cngx1085.md). Bind `error:` once the
+ * state can fail.
  * ```html
  * <ul *cngxAsync="residents; let data">
  *   @for (r of data; track r.id) { <li>{{ r.name }}</li> }
@@ -147,6 +151,8 @@ export class CngxAsync<T> {
   // on: the switch that lost it plus one more, so a short skeleton in between
   // is bridged but a much later refresh never pulls focus back.
   private focusSwitchesLeft = 0;
+  // CNGX1085 fires once: a retry that fails again must not repeat it.
+  private missingErrorTemplateWarned = false;
 
   constructor() {
     effect(() => {
@@ -255,6 +261,21 @@ export class CngxAsync<T> {
         break;
       }
       case 'error':
+        if (
+          typeof ngDevMode !== 'undefined' &&
+          ngDevMode &&
+          !tpl &&
+          !this.missingErrorTemplateWarned
+        ) {
+          this.missingErrorTemplateWarned = true;
+          const anchor = this.vcr.element.nativeElement as Node;
+          cngxDevWarn(
+            'CNGX1085',
+            '[cngxAsync] reached the error state on a first load without an error template, ' +
+              'so it renders nothing. Bind one via "error: errTpl" in the microsyntax.',
+            anchor.parentElement ?? anchor,
+          );
+        }
         this.renderTemplate(tpl, { $implicit: s.error() });
         break;
     }
