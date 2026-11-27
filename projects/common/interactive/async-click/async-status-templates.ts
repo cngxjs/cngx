@@ -1,5 +1,7 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
+import { type CngxActionStatusFailedContext } from '../action-status/action-status-config';
+
 /**
  * Template shown while an async action is executing.
  *
@@ -21,7 +23,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  */
 @Directive({ selector: 'ng-template[cngxPending]', standalone: true })
 export class CngxPending {
-  readonly templateRef = inject(TemplateRef);
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
 }
 
 /**
@@ -40,12 +42,13 @@ export class CngxPending {
  */
 @Directive({ selector: 'ng-template[cngxSucceeded]', standalone: true })
 export class CngxSucceeded {
-  readonly templateRef = inject(TemplateRef);
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
 }
 
 /**
  * Template shown after an async action fails (for `feedbackDuration` ms).
- * The implicit template context provides the error value.
+ * The implicit template context provides the error value, typed `unknown`
+ * (`CngxActionStatusFailedContext`): narrow it before reading a property.
  *
  * ```html
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
@@ -60,5 +63,12 @@ export class CngxSucceeded {
  */
 @Directive({ selector: 'ng-template[cngxFailed]', standalone: true })
 export class CngxFailed {
-  readonly templateRef = inject(TemplateRef);
+  readonly templateRef = inject<TemplateRef<CngxActionStatusFailedContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFailed,
+    ctx: unknown,
+  ): ctx is CngxActionStatusFailedContext {
+    return true;
+  }
 }

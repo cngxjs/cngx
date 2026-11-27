@@ -87,6 +87,26 @@ describe('CngxAsyncStatus', () => {
     expect(btn.getAttribute('aria-busy')).toBe('true');
   });
 
+  it('takes disableWhilePending as a bare attribute', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxAsyncStatus],
+      template: `<button [cngxAsyncStatus]="mockState" disableWhilePending>Go</button>`,
+    })
+    class BareHost {
+      readonly mock = buildMockState();
+      readonly mockState = this.mock.state;
+    }
+    TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection()] });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    fixture.componentInstance.mock.status.set('pending');
+    fixture.detectChanges();
+
+    expect(btn.getAttribute('aria-disabled')).toBe('true');
+  });
+
   it('disableWhilePending reflects aria-disabled while busy, never native disabled', () => {
     const { fixture, btn, host } = setup(true);
     expect(btn.hasAttribute('disabled')).toBe(false);

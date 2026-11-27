@@ -1,4 +1,5 @@
 import {
+  booleanAttribute,
   computed,
   Directive,
   contentChild,
@@ -124,7 +125,7 @@ export class CngxAsyncStatus {
    * attribute is never set, so a focused host keeps focus. A non-button host
    * with its own key handler reads `aria-disabled` itself.
    */
-  readonly disableWhilePending = input<boolean>(false);
+  readonly disableWhilePending = input(false, { transform: booleanAttribute });
 
   /** Display bucket of the reflected state (`loading`/`refreshing` → `pending`). */
   readonly status: Signal<CngxAsyncDisplayStatus> = computed(() =>
