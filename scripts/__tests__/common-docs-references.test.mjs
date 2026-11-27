@@ -277,12 +277,6 @@ const KNOWN_FAILURES = [
   {
     slice: '10 data',
     file: 'projects/common/data/paginate/README.md',
-    kind: 'unknown-import',
-    ref: 'CngxAsyncState from @cngx/common/data',
-  },
-  {
-    slice: '10 data',
-    file: 'projects/common/data/paginate/README.md',
     kind: 'unknown-binding',
     ref: 'div [cngxPaginate]',
   },

@@ -35,7 +35,7 @@ export * from './async-state';
 export { CngxAsyncRegistry, type CngxAsyncOperation } from './async-registry/async-registry';
 export { provideAsyncRegistry, injectAsyncRegistry } from './async-registry/provide-async-registry';
 export { injectLatencyProbe } from './async-registry/inject-latency-probe';
-export { type CngxLatencyProbe } from '@cngx/core/utils';
+export { type AsyncStatus, type CngxAsyncState, type CngxLatencyProbe } from '@cngx/core/utils';
 export {
   CNGX_ASYNC_LABEL,
   CNGX_ASYNC_SKIP,
