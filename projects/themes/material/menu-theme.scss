@@ -16,7 +16,7 @@
 //   item        48 high: 20 label line + 2 * 14 block (sm * 1.75), 12 inline
 //               (sm * 1.5), square corners, label-large, on-surface
 //   highlight   on-surface hover state layer (8%)
-//   separator   outline-variant, 8 block margin, full bleed
+//   separator   surface-variant, 8 block margin, full bleed
 //
 // Spacing derives from the --cngx-space-* scale, so a density island scales
 // the menu the way Material density scales mat-menu. The item tokens and the
@@ -38,7 +38,7 @@ $_items: ':is([cngxMenuItem], [cngxMenuItemCheckbox], [cngxMenuItemRadio], [cngx
       --cngx-menu-border: none;
       --cngx-menu-radius: var(--mat-sys-corner-extra-small);
       --cngx-menu-shadow: #{bridge.$mdc-elevation-2};
-      --cngx-menu-separator-color: var(--mat-sys-outline-variant);
+      --cngx-menu-separator-color: var(--mat-sys-surface-variant);
       --cngx-menu-item-checked-color: var(--mat-sys-primary);
       --cngx-menu-item-kbd-color: var(--mat-sys-on-surface-variant);
       --cngx-menu-item-highlight-bg: color-mix(
