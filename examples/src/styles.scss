@@ -3585,8 +3585,8 @@ cngx-radio-group .cngx-radio + .cngx-radio {
     max-height: 124px;
   }
 
-  // Contained draws a border on every tab, so clamp to the height of four
-  // whole tabs; the 1px tab-seam overlap is the only residual.
+  // Contained tabs are taller (a border on every tab), so the clamp grows;
+  // a tab at the edge still sits partly visible, as in the line skin.
   cngx-tab-group[data-skin='contained'] .cngx-tabs__strip {
     max-height: 142px;
   }
