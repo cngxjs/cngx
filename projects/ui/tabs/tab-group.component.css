@@ -1,8 +1,8 @@
 /**
  * @overview
  * Thematic skins for `<cngx-tab-group>`. Pairs with the structural
- * `tabs-base.css` in `@cngx/common/tabs` (which owns layout, scroll-
- * snap, sizes, base color / background, sr-only) - this file owns the
+ * `tabs-base.css` in `@cngx/common/tabs` (which owns layout, sizes,
+ * base color / background, sr-only) - this file owns the
  * per-skin treatment, hover affordance, strip border, the per-tab
  * error badge and the rejected-tab treatment. Tokens defined in
  * `tabs-base.css` read with bare `var(--cngx-tab-*)` (no second
