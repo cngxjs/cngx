@@ -555,6 +555,11 @@
                 "file": "error-codes/cngx1084.md"
             },
             {
+                "title": "CNGX1085",
+                "label": "CNGX1085: Failed first load without an error template",
+                "file": "error-codes/cngx1085.md"
+            },
+            {
                 "title": "CNGX2001",
                 "label": "CNGX2001: Unknown filter operator",
                 "file": "error-codes/cngx2001.md"

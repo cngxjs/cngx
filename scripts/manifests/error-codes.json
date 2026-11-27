@@ -1707,6 +1707,23 @@
       ]
     },
     {
+      "code": "CNGX1085",
+      "lib": "common",
+      "severity": "warn",
+      "production": "stripped",
+      "title": "Failed first load without an error template",
+      "page": "core-concepts/error-codes/cngx1085.md",
+      "url": "https://cngxjs.github.io/cngx/main/additional-documentation/error-codes/cngx1085.html",
+      "status": "active",
+      "files": ["projects/common/data/async/async.directive.ts"],
+      "messages": [
+        {
+          "file": "projects/common/data/async/async.directive.ts",
+          "text": "[cngxAsync] reached the error state on a first load without an error template, so it renders nothing. Bind one via \"error: errTpl\" in the microsyntax."
+        }
+      ]
+    },
+    {
       "code": "CNGX2001",
       "lib": "forms",
       "severity": "warn",
