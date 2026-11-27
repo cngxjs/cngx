@@ -144,8 +144,15 @@ jobs:
         uses: ./.github/actions/setup-playwright
       # Geometry specs run in the browser-mode vitest provider. CI sets CI=1,
       # so Chromium runs headless. A geometry regression fails the PR.
+      # The runner image exports CHROME_BIN=/usr/bin/google-chrome, and the
+      # unit-test builder launches whatever CHROME_BIN names. Cleared here so
+      # the specs run in the Chromium the pinned Playwright installed above,
+      # not in the Google Chrome of the image, which moves with every image
+      # release (157 -> 158 turned computed `flex-start` into `flow-start`).
       - name: Run geometry specs
         run: npm run test:geometry
+        env:
+          CHROME_BIN: ''
 
   # The root suite is not route-scoped, so every pull request runs all of it,
   # split by test across a fixed matrix.
