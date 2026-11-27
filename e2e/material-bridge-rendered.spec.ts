@@ -746,6 +746,34 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
   });
 });
 
+test.describe('material-bridge rendered values: select family panel', () => {
+  // The lab renders no mat-select, so this tier is the home of the pin: the
+  // literal is the MDC elevation 2 shadow `.mat-mdc-select-panel` paints
+  // (`$mdc-elevation-2` in `_bridge.scss`), not --mat-sys-level2.
+  const MDC_ELEVATION_2 =
+    '0 3px 1px -2px rgb(0 0 0 / 0.2), 0 2px 2px 0 rgb(0 0 0 / 0.14), 0 1px 5px 0 rgb(0 0 0 / 0.12)';
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: ['projects/forms/select/shared/select-base.css'],
+      bridgeCss: compileBridge('select-theme'),
+      html: `<cngx-select class="cngx-select"><div id="select-panel" class="cngx-select__panel"></div></cngx-select>`,
+    });
+  });
+
+  test('the panel paints the mat-select elevation 2 shadow', async ({ page }) => {
+    const expected = await page.evaluate((shadow) => {
+      const probe = document.createElement('div');
+      probe.style.boxShadow = shadow;
+      document.body.append(probe);
+      const value = getComputedStyle(probe).boxShadow;
+      probe.remove();
+      return value;
+    }, MDC_ELEVATION_2);
+    expect(await computedValue(page, '#select-panel', 'box-shadow')).toBe(expected);
+  });
+});
+
 test.describe('material-bridge rendered values: system and density bridge vs the root axes', () => {
   // The bridges assign on the theme host, the same <html> the root axis
   // providers reflect data-density / data-contrast onto. The axis rules live

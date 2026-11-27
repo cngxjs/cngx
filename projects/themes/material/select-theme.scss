@@ -21,7 +21,8 @@
     // the only line between the options and the action buttons.
     --cngx-select-action-border: 1px solid var(--mat-sys-outline-variant);
     --cngx-select-panel-radius: 4px;
-    --cngx-select-panel-shadow: var(--mat-sys-level2, 0 4px 12px oklch(0 0 0 / 0.12));
+    // mat-select paints the MDC elevation 2 literal, not --mat-sys-level2.
+    --cngx-select-panel-shadow: #{bridge.$mdc-elevation-2};
 
     // Trigger surfaces - Material's outlined-input surface. Every variant
     // -bg, -color and -border token falls back to its family token, so the
