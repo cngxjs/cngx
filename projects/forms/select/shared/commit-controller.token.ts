@@ -121,7 +121,9 @@ export type CngxSelectCommitControllerFactory = <T>() => CngxSelectCommitControl
  *   providers: [
  *     {
  *       provide: CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
- *       useValue: <T>() => createRetryingCommitController<T>({ attempts: 3 }),
+ *       // createAppCommitController is the app's own factory; it returns
+ *       // the CngxSelectCommitController<T> shape.
+ *       useValue: <T>() => createAppCommitController<T>(),
  *     },
  *   ],
  * });
