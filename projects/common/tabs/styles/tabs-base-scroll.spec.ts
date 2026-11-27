@@ -9,13 +9,17 @@ import { describe, expect, it } from 'vitest';
  * active tab scrolls it. Snap points there have no user scroll to shape, but
  * WebKit re-snaps to them when the strip relayouts during that smooth scroll,
  * which strands the active tab off-screen. jsdom renders no layout, so this
- * pins the rule statically off the raw CSS.
+ * pins the rule statically off the raw CSS of both strip stylesheets.
  */
 
-const BASE_CSS = readFileSync(resolve(__dirname, 'tabs-base.css'), 'utf8');
+/** Every stylesheet that styles the strip: the structural base and the ui skin. */
+const STRIP_STYLESHEETS: ReadonlyArray<readonly [string, string]> = [
+  ['tabs-base.css', resolve(__dirname, 'tabs-base.css')],
+  ['tab-group.component.css', resolve(__dirname, '../../../ui/tabs/tab-group.component.css')],
+];
 
-describe('tab strip scrolling (tabs-base.css)', () => {
-  it('declares no scroll-snap on the non-scrollable strip or its tabs', () => {
-    expect(BASE_CSS).not.toMatch(/scroll-snap/);
+describe('tab strip scrolling', () => {
+  it.each(STRIP_STYLESHEETS)('%s declares no scroll-snap on the strip or its tabs', (_, path) => {
+    expect(readFileSync(path, 'utf8')).not.toMatch(/scroll-snap/);
   });
 });
