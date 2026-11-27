@@ -1,4 +1,4 @@
-import { type Signal } from '@angular/core';
+import { type Signal, signal } from '@angular/core';
 import { type CngxDirection } from '@cngx/core';
 import { coerceSignal } from '@cngx/core/utils';
 
@@ -110,6 +110,15 @@ export interface CngxContextMenuTriggerCore {
   /** The dismissal source that closed the menu most recently. */
   readonly lastDismissSource: Signal<CngxMenuDismissSource | null>;
   /**
+   * Bumped on every open. The open branch runs eagerly in the handlers, so a
+   * menu that opens and closes before the host's `isOpen` effect flushed
+   * leaves `isOpen` at its last read value and the effect would not re-run.
+   * A host built on this core must read `openCycle()` in the same effect that
+   * calls `syncOpenState` / `standDown`, or a fast close skips focus restore
+   * and listener teardown.
+   */
+  readonly openCycle: Signal<number>;
+  /**
    * The core's submenu focus-stack model. Exposed for host-side wiring the
    * pure factory cannot install itself - the DI hosts pass it to
    * `connectSubmenuHoverToFocusStack` (an `effect`, so it needs their
@@ -144,7 +153,10 @@ export interface CngxContextMenuTriggerCore {
    * no-op. No-op on a leaf.
    */
   noteActiveSubmenuOpened(): void;
-  /** Drive from the directive's `isOpen` effect (inside `untracked`). */
+  /**
+   * Drive from the directive's `isOpen` effect (inside `untracked`), and
+   * track `openCycle()` in that effect.
+   */
   syncOpenState(open: boolean): void;
   /**
    * Relinquish an open WITHOUT restoring focus: detach the dismiss binding,
@@ -234,6 +246,8 @@ export function createContextMenuTriggerCore(
     virtualAnchor = null;
   };
 
+  const openCycle = signal(0);
+
   const openAt = (x: number, y: number): void => {
     // Capture the pre-open focus eagerly BEFORE show(): the effect-driven
     // capture races the queueMicrotask focus transfer below in real browsers
@@ -256,11 +270,13 @@ export function createContextMenuTriggerCore(
     // window in which an immediate scroll / blur / outside-pointerdown would
     // fail to dismiss. `open()` is idempotent, so the effect's call is safe.
     lifecycle.open();
+    openCycle.update((n) => n + 1);
     deps.menu().ad.highlightFirst();
   };
 
   return {
     lastDismissSource: lifecycle.lastDismissSource,
+    openCycle: openCycle.asReadonly(),
     focusStack,
     handleContextMenu(event: MouseEvent): void {
       const decision = resolveOpen(event);

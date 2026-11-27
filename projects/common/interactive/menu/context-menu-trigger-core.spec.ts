@@ -212,6 +212,29 @@ describe('createContextMenuTriggerCore', () => {
     expect(popover.show).not.toHaveBeenCalled();
   });
 
+  function shiftF10(): KeyboardEvent {
+    return { key: 'F10', shiftKey: true, preventDefault: vi.fn() } as unknown as KeyboardEvent;
+  }
+
+  it('openCycle counts every open, pointer and keyboard alike', () => {
+    const core = build();
+    expect(core.openCycle()).toBe(0);
+    core.handleContextMenu(mouse());
+    expect(core.openCycle()).toBe(1);
+    core.handleKeydown(shiftF10());
+    expect(core.openCycle()).toBe(2);
+  });
+
+  it('openCycle stays put when resolveOpen or resolveKeyboardOpen vetoes the open', () => {
+    const pointer = build({ resolveOpen: () => ({ open: false }) });
+    pointer.handleContextMenu(mouse());
+    expect(pointer.openCycle()).toBe(0);
+
+    const keyboard = build({ resolveKeyboardOpen: () => ({ open: false }) });
+    keyboard.handleKeydown(shiftF10());
+    expect(keyboard.openCycle()).toBe(0);
+  });
+
   it('standDown detaches, resets the stack, and discards focus without restoring', () => {
     const reset = vi.fn();
     const discardFocus = vi.fn();
