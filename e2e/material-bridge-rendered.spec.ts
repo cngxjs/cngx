@@ -200,8 +200,8 @@ html { @include cngx-density.density($theme); }
     });
   });
 
-  test('the routed foundation knobs paint the idle segment', async ({ page }) => {
-    expect(await computedValue(page, '#toggle-idle', 'background-color')).toBe(matSys('surface'));
+  test('the idle segment rests transparent in the routed ink and outline', async ({ page }) => {
+    expect(await computedValue(page, '#toggle-idle', 'background-color')).toBe('rgba(0, 0, 0, 0)');
     expect(await computedValue(page, '#toggle-idle', 'color')).toBe(matSys('on-surface'));
     expect(await computedValue(page, '#toggle-idle', 'border-top-color')).toBe(matSys('outline'));
   });
@@ -218,18 +218,10 @@ html { @include cngx-density.density($theme); }
     expect(await computedValue(page, '#toggle-checked', 'border-top-color')).toBe(matSys('outline'));
   });
 
-  test('the unchecked hover layer follows a consumer surface override on the segment', async ({
-    page,
-  }) => {
-    // A consumer re-skins the segment surface on the toggle itself (the knobs
-    // are assigned on the button too, so a group override does not reach it);
-    // the hover layer must sit on that surface, not on the Material one.
-    await page.locator('#toggle-idle').evaluate((el) => {
-      (el as HTMLElement).style.setProperty('--cngx-color-surface', 'rgb(240, 200, 120)');
-    });
+  test('the unchecked hover layer lies over the transparent rest', async ({ page }) => {
     const expected = await page.evaluate((onSurface) => {
       const probe = document.createElement('div');
-      probe.style.background = `color-mix(in srgb, ${onSurface} 8%, rgb(240, 200, 120))`;
+      probe.style.background = `color-mix(in srgb, ${onSurface} 8%, transparent)`;
       document.body.append(probe);
       const value = getComputedStyle(probe).backgroundColor;
       probe.remove();
@@ -743,6 +735,34 @@ test.describe('material-bridge rendered values: select family trigger chain', ()
         '0px',
       );
     }
+  });
+});
+
+test.describe('material-bridge rendered values: select family panel', () => {
+  // The lab renders no mat-select, so this tier is the home of the pin: the
+  // literal is the MDC elevation 2 shadow `.mat-mdc-select-panel` paints
+  // (`$mdc-elevation-2` in `_bridge.scss`), not --mat-sys-level2.
+  const MDC_ELEVATION_2 =
+    '0 3px 1px -2px rgb(0 0 0 / 0.2), 0 2px 2px 0 rgb(0 0 0 / 0.14), 0 1px 5px 0 rgb(0 0 0 / 0.12)';
+
+  test.beforeEach(async ({ page }) => {
+    await renderFixture(page, {
+      componentCss: ['projects/forms/select/shared/select-base.css'],
+      bridgeCss: compileBridge('select-theme'),
+      html: `<cngx-select class="cngx-select"><div id="select-panel" class="cngx-select__panel"></div></cngx-select>`,
+    });
+  });
+
+  test('the panel paints the mat-select elevation 2 shadow', async ({ page }) => {
+    const expected = await page.evaluate((shadow) => {
+      const probe = document.createElement('div');
+      probe.style.boxShadow = shadow;
+      document.body.append(probe);
+      const value = getComputedStyle(probe).boxShadow;
+      probe.remove();
+      return value;
+    }, MDC_ELEVATION_2);
+    expect(await computedValue(page, '#select-panel', 'box-shadow')).toBe(expected);
   });
 });
 

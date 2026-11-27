@@ -35,3 +35,30 @@ for (const scheme of ['light', 'dark'] as const) {
     await expect(wrapper).toHaveCSS('box-shadow', 'none');
   });
 }
+
+// mat-menu paints its divider in surface-variant (`menu-divider-color` in
+// `_m3-menu.scss`); the cngxMenu separator takes the same role. Light only:
+// the two roles resolve equal in the dark scheme, so a dark pin proves nothing.
+test('menu buttons: the cngxMenu separator paints the mat-menu divider role', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/#/material-lab');
+  await page.waitForFunction(() =>
+    Array.from(document.styleSheets).some((sheet) =>
+      sheet.href?.endsWith('/material-lab-theme.css'),
+    ),
+  );
+
+  await page.locator("#menu-buttons [cngxIconMenuButton][aria-label='More actions']").click();
+  const separator = page.locator("[cngxPopover]:popover-open ul[cngxMenu] [cngxMenuSeparator]");
+  await expect(separator).toBeVisible();
+  const expected = await page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.style.background = 'var(--mat-sys-surface-variant)';
+    document.body.append(probe);
+    const value = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return value;
+  });
+  expect(expected).not.toBe('rgba(0, 0, 0, 0)');
+  await expect(separator).toHaveCSS('background-color', expected);
+});

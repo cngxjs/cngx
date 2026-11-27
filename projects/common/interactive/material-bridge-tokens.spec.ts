@@ -278,10 +278,13 @@ $theme: mat.define-theme((
     expect(css).not.toMatch(/--cngx-button-toggle-padding-(block|inline): \d+px/);
   });
 
-  it('lays the on-surface hover state layer over both segment states (M3)', () => {
+  it('rests the unchecked segment transparent and lays the on-surface hover layer over both states (M3)', () => {
     const css = bridgeCss('button-toggle-theme');
+    expect(css).toMatch(
+      /button\.cngx-button-toggle:not\(\.cngx-button-toggle--checked\):not\(\.cngx-button-toggle--disabled\)\s*\{\s*background: transparent;/,
+    );
     expect(css).toContain(
-      'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--cngx-color-surface))',
+      'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent)',
     );
     expect(css).toContain(
       'background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, var(--mat-sys-secondary-container))',

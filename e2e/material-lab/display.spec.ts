@@ -155,11 +155,19 @@ for (const scheme of ['light', 'dark'] as const) {
       );
     });
 
+    test('button-toggle: the unchecked segment rests transparent like mat-button-toggle', async ({ page }) => {
+      await expectSame(
+        page,
+        mat('button-toggle', '.mat-button-toggle:not(.mat-button-toggle-checked)'),
+        cngx('button-toggle', 'button[aria-checked=false]'),
+        ['background-color'],
+      );
+    });
+
     test('button-toggle: hover lays the mat on-surface state layer over the segment', async ({ page }) => {
       // mat paints its hover as a translucent overlay on the segment. cngx
-      // must lay the same layer over its own resting segment colour; the
-      // unchecked rest itself (surface vs transparent) is an open roadmap
-      // rest, the checked rest is pinned equal above.
+      // must lay the same layer over its own resting segment colour; both
+      // rests are pinned equal (unchecked just above, checked further up).
       for (const [toggle, segment] of [
         ['.mat-button-toggle:not(.mat-button-toggle-checked)', 'button[aria-checked=false]'],
         ['.mat-button-toggle-checked', 'button[aria-checked=true]'],

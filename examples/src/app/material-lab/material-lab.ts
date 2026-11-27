@@ -41,6 +41,7 @@ import { CngxAvatar, CngxIcon } from '@cngx/common/display';
 import {
   CngxMenu,
   CngxMenuItem,
+  CngxMenuSeparator,
   CngxNavIcon,
   CngxNavLink,
   CngxSlider,
@@ -213,6 +214,7 @@ interface FieldModel {
     CngxIconButton,
     CngxMenu,
     CngxMenuItem,
+    CngxMenuSeparator,
     CngxNavIcon,
     CngxNavLink,
     CngxNavRail,
@@ -411,6 +413,7 @@ interface FieldModel {
         <div cngxPopover placement="bottom-end" #morePop="cngxPopover">
           <ul cngxMenu [label]="'More actions'" tabindex="0" #moreMenu="cngxMenu">
             <li cngxMenuItem value="rename">Rename</li>
+            <li cngxMenuSeparator></li>
             <li cngxMenuItem value="archive">Archive</li>
           </ul>
         </div>
