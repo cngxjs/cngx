@@ -308,6 +308,28 @@ describe('CngxContextMenuTrigger', () => {
       expect(menuEl.contains(document.activeElement)).toBe(true);
     });
 
+    it('open, close and reopen before one flush settle as one cycle, then close and restore', async () => {
+      const ctx = setupWithFactory([]);
+      const menuEl = ctx.fixture.debugElement.query(By.directive(CngxMenu))
+        .nativeElement as HTMLElement;
+      ctx.triggerEl.focus();
+      ctx.triggerEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+      ctx.popover.hide();
+      ctx.triggerEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(ctx.popover.isVisible()).toBe(true);
+      expect(ctx.attach).toHaveBeenCalledTimes(1);
+      expect(ctx.teardown).not.toHaveBeenCalled();
+      expect(menuEl.contains(document.activeElement)).toBe(true);
+
+      ctx.popover.hide();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(ctx.teardown).toHaveBeenCalledTimes(1);
+      expect(document.activeElement).toBe(ctx.triggerEl);
+    });
+
     it('teardown invoked on directive destroy mid-open', () => {
       const ctx = setupWithFactory([withDismissOnOutsideClick(true)]);
       ctx.triggerEl.dispatchEvent(

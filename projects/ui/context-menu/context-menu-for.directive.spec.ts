@@ -98,8 +98,8 @@ describe('CngxContextMenuFor', () => {
       .forEach((el) => el.remove());
   });
 
-  function setupData() {
-    TestBed.configureTestingModule({ imports: [DataHost] });
+  function setupData(providers: Provider[] = []) {
+    TestBed.configureTestingModule({ imports: [DataHost], providers });
     const fixture = TestBed.createComponent(DataHost);
     fixture.detectChanges();
     TestBed.flushEffects();
@@ -321,6 +321,20 @@ describe('CngxContextMenuFor', () => {
     TestBed.flushEffects();
     await Promise.resolve();
     expect(document.activeElement).toBe(target);
+  });
+
+  it('detaches the dismiss binding when the menu closes before the open effect flushed', () => {
+    const teardown = vi.fn();
+    const attach = vi.fn(() => teardown);
+    const handler: CngxMenuDismissHandler = { attach };
+    const { target, panel } = setupData([
+      { provide: CNGX_MENU_DISMISS_HANDLER_FACTORY, useValue: () => handler },
+    ]);
+    rightClick(target);
+    panel.popover.hide();
+    TestBed.flushEffects();
+    expect(attach).toHaveBeenCalledTimes(1);
+    expect(teardown).toHaveBeenCalledTimes(1);
   });
 
   it('keyboard resolver derives the datum from the Shift+F10 target', () => {
