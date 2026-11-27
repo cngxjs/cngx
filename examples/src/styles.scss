@@ -3579,21 +3579,16 @@ cngx-radio-group .cngx-radio + .cngx-radio {
 
   // Clip the strip to roughly four tabs (real overflow, not display:none) so
   // the molecule's self-healing scrollIntoView can scroll a tab picked from
-  // the More menu into view - it snaps to the top via the base
-  // scroll-snap-align. A tab at the bottom edge may sit partly visible at
-  // rest, the same honest-overflow look as the horizontal strip.
+  // the More menu into view. A tab at the edge may sit partly visible, the
+  // same honest-overflow look as the horizontal strip.
   cngx-tab-group[data-orientation='vertical'] .cngx-tabs__strip {
     max-height: 124px;
   }
 
-  // Contained draws a border on every tab, so a partly-clipped tab reads as a
-  // broken box. Clamp to four whole tabs and force mandatory snapping so a tab
-  // always aligns flush to the top edge after a scroll - the top border stays
-  // continuous and no tab is sliced. (The 1px tab-seam overlap is the only
-  // residual, and it is invisible.)
+  // Contained draws a border on every tab, so clamp to the height of four
+  // whole tabs; the 1px tab-seam overlap is the only residual.
   cngx-tab-group[data-skin='contained'] .cngx-tabs__strip {
     max-height: 142px;
-    scroll-snap-type: y mandatory;
   }
 
   cngx-tab-group[data-skin='segmented'] .cngx-tabs__strip {

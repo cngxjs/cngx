@@ -28,7 +28,7 @@
  *
  * **Orientation**
  *
- * - `[data-orientation="vertical"]` on the host - flips the strip into a left-column grid and changes scroll-snap to the Y axis
+ * - `[data-orientation="vertical"]` on the host - flips the strip into a left-column grid
  *
  * **Slots**
  *
@@ -451,7 +451,6 @@
      */
     overflow-x: hidden;
     overflow-y: hidden;
-    scroll-snap-type: x proximity;
   }
 
   .cngx-tabs__tab {
@@ -470,7 +469,6 @@
     font: inherit;
     text-align: start;
     white-space: nowrap;
-    scroll-snap-align: start;
   }
 
   .cngx-tabs__tab[aria-selected='true'] {
@@ -712,11 +710,9 @@
      * contract above.
      */
     overflow-y: hidden;
-    scroll-snap-type: y proximity;
   }
 
   cngx-tab-group[data-orientation='vertical'] .cngx-tabs__tab {
-    scroll-snap-align: start;
     white-space: normal;
     /*
      * Every tab is the width of the widest one - keeps the line ink-bar,
