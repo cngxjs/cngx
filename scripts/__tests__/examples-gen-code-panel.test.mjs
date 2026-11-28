@@ -536,4 +536,29 @@ describe('storyLocalImports', () => {
       'examples/src/app/_fixtures/chip-labels.ts',
     );
   });
+
+  it('resolves a parent-relative sibling from a Windows-style story dir', () => {
+    const dirs = {
+      storyDir: 'D:\\cngx\\examples\\stories\\forms\\field\\skin',
+      appFixturesDir: 'D:\\cngx\\examples\\src\\app\\_fixtures',
+    };
+    const entry = {
+      module: '../affix/_affix-detach.directive',
+      panelPath: '../affix/_affix-detach.directive.ts',
+    };
+    expect(panel.storyLocalSourcePath(entry, dirs)).toBe(
+      'D:/cngx/examples/stories/forms/field/affix/_affix-detach.directive.ts',
+    );
+    const fixture = { module: './fixtures/chip-labels', panelPath: 'fixtures/chip-labels.ts' };
+    expect(panel.storyLocalSourcePath(fixture, dirs)).toBe(
+      'D:/cngx/examples/src/app/_fixtures/chip-labels.ts',
+    );
+  });
+});
+
+describe('toPosixPath', () => {
+  it('turns Windows separators into POSIX ones and leaves POSIX paths alone', () => {
+    expect(panel.toPosixPath('projects\\core\\public-api.ts')).toBe('projects/core/public-api.ts');
+    expect(panel.toPosixPath('projects/core/public-api.ts')).toBe('projects/core/public-api.ts');
+  });
 });
