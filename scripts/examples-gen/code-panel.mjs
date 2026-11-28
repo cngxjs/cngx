@@ -471,6 +471,15 @@ export function storyLocalImports(displayedLines) {
 }
 
 /**
+ * `p` with Windows separators turned into POSIX ones. Node's `path` APIs
+ * return backslash paths on Windows; the generator splits, matches and
+ * `posix.join`s on `/`, so every path from them goes through here first.
+ */
+export function toPosixPath(p) {
+  return p.replaceAll('\\', '/');
+}
+
+/**
  * Where a {@link storyLocalImports} entry lives on disk, resolved the way the
  * live component resolves it: a `'./fixtures/<file>'` entry under
  * `appFixturesDir` (the depth-rewritten `_fixtures` import), any other entry
@@ -478,9 +487,9 @@ export function storyLocalImports(displayedLines) {
  */
 export function storyLocalSourcePath({ panelPath, module }, { storyDir, appFixturesDir }) {
   if (module.startsWith('./fixtures/')) {
-    return posix.join(appFixturesDir, panelPath.slice('fixtures/'.length));
+    return posix.join(toPosixPath(appFixturesDir), panelPath.slice('fixtures/'.length));
   }
-  return posix.join(storyDir, panelPath);
+  return posix.join(toPosixPath(storyDir), panelPath);
 }
 
 /**

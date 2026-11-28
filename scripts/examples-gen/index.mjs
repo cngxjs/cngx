@@ -29,6 +29,7 @@ import {
   storyLocalSourcePath,
   stripCommentsForScan,
   templateUsesClass,
+  toPosixPath,
 } from './code-panel.mjs';
 import { parseStory } from './story.mjs';
 
@@ -203,8 +204,10 @@ const KNOWN_ANGULAR_IMPORTS = new Map([
 async function buildPublicApiImportMap() {
   const map = new Map(KNOWN_ANGULAR_IMPORTS);
   const apis = [];
-  for await (const f of walkFiles(join(ROOT, 'projects'), (p) => p.endsWith('/public-api.ts'))) {
-    apis.push(relative(ROOT, f));
+  for await (const f of walkFiles(join(ROOT, 'projects'), (p) =>
+    toPosixPath(p).endsWith('/public-api.ts'),
+  )) {
+    apis.push(toPosixPath(relative(ROOT, f)));
   }
   for (const rel of apis) {
     const parts = rel.split('/').slice(1, -1);
@@ -632,7 +635,7 @@ async function main() {
   const helperFilesCopied = new Set();
 
   for await (const storyPath of walkFiles(STORIES_ROOT, (p) => p.endsWith('.story.ts'))) {
-    const relPath = relative(STORIES_ROOT, storyPath);
+    const relPath = toPosixPath(relative(STORIES_ROOT, storyPath));
     const pathSegments = relPath.split('/');
     const fileBase = pathSegments.pop().replace(/\.story\.ts$/, '');
     const lib = pathSegments[0] ?? '';
